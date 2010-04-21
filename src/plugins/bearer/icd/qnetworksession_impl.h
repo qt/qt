@@ -56,18 +56,33 @@
 #include <QtNetwork/private/qnetworksession_p.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 
-//#include "qnetworkconfigmanager_maemo_p.h"
-//#include "qnetworksession.h"
-
-//#include <qnetworksession.h>
-//#include <QNetworkInterface>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qtimer.h>
+
+#include <QtDBus/qdbusconnection.h>
+#include <QtDBus/qdbusinterface.h>
+#include <QtDBus/qdbusmessage.h>
+#include <QtDBus/qdbusmetatype.h>
 
 #include <icd/dbus_api.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
 class QIcdEngine;
+
+struct ICd2DetailsDBusStruct
+{
+    QString serviceType;
+    uint serviceAttributes;
+    QString setviceId;
+    QString networkType;
+    uint networkAttributes;
+    QByteArray networkId;
+};
+
+typedef QList<ICd2DetailsDBusStruct> ICd2DetailsList;
 
 class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 {
@@ -75,8 +90,34 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 
 public:
     QNetworkSessionPrivateImpl(QIcdEngine *engine)
-    :   engine(engine), connectFlags(ICD_CONNECTION_FLAG_USER_EVENT), currentState(QNetworkSession::Invalid)
+    :   engine(engine),
+        connectFlags(ICD_CONNECTION_FLAG_USER_EVENT),
+        currentState(QNetworkSession::Invalid),
+        m_asynchCallActive(false)
     {
+        m_stopTimer.setSingleShot(true);
+        connect(&m_stopTimer, SIGNAL(timeout()), this, SLOT(finishStopBySendingClosedSignal()));
+
+        QDBusConnection systemBus = QDBusConnection::systemBus();
+
+        m_dbusInterface = new QDBusInterface(ICD_DBUS_API_INTERFACE,
+                                         ICD_DBUS_API_PATH,
+                                         ICD_DBUS_API_INTERFACE,
+                                         systemBus,
+                                         this);
+
+        systemBus.connect(ICD_DBUS_API_INTERFACE,
+                        ICD_DBUS_API_PATH,
+                        ICD_DBUS_API_INTERFACE,
+                        ICD_DBUS_API_CONNECT_SIG,
+                        this,
+                        SLOT(stateChange(const QDBusMessage&)));
+
+        qDBusRegisterMetaType<ICd2DetailsDBusStruct>();
+        qDBusRegisterMetaType<ICd2DetailsList>();
+
+        m_connectRequestTimer.setSingleShot(true);
+        connect(&m_connectRequestTimer, SIGNAL(timeout()), this, SLOT(connectTimeout()));
     }
 
     ~QNetworkSessionPrivateImpl()
@@ -90,7 +131,9 @@ public:
     //notification hooks to discover future state changes.
     void syncStateWithInterface();
 
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface currentInterface() const;
+#endif
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
 
@@ -117,16 +160,21 @@ private:
 private Q_SLOTS:
     void do_open();
     void networkConfigurationsChanged();
-    void configurationChanged(const QNetworkConfiguration &config);
+    void iapStateChanged(const QString& iapid, uint icd_connection_state);
     void updateProxies(QNetworkSession::State newState);
+    void finishStopBySendingClosedSignal();
+    void stateChange(const QDBusMessage& rep);
+    void connectTimeout();
 
 private:
     QNetworkConfigurationManager manager;
     QIcdEngine *engine;
 
+    // The config set on QNetworkSession.
+    QNetworkConfiguration config;
+
     QNetworkConfiguration& copyConfig(QNetworkConfiguration &fromConfig, QNetworkConfiguration &toConfig, bool deepCopy = true);
     void clearConfiguration(QNetworkConfiguration &config);
-    void cleanupAnyConfiguration();
 
     bool opened;
     icd_connection_flags connectFlags;
@@ -137,16 +185,34 @@ private:
     QString currentNetworkInterface;
     friend class IcdListener;
     void updateState(QNetworkSession::State);
-    void updateIdentifier(QString &newId);
+    void updateIdentifier(const QString &newId);
     quint64 getStatistics(bool sent) const;
     void cleanupSession(void);
 
     void updateProxyInformation();
     void clearProxyInformation();
     QNetworkSession::State currentState;
+
+    QDBusInterface *m_dbusInterface;
+
+    QTimer m_stopTimer;
+
+    bool m_asynchCallActive;
+    QTimer m_connectRequestTimer;
 };
 
+// Marshall the ICd2DetailsDBusStruct data into a D-Bus argument
+QDBusArgument &operator<<(QDBusArgument &argument, const ICd2DetailsDBusStruct &icd2);
+
+// Retrieve the ICd2DetailsDBusStruct data from the D-Bus argument
+const QDBusArgument &operator>>(const QDBusArgument &argument, ICd2DetailsDBusStruct &icd2);
+
+Q_DECLARE_METATYPE(ICd2DetailsDBusStruct);
+Q_DECLARE_METATYPE(ICd2DetailsList);
+
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSIONPRIVATE_H
 

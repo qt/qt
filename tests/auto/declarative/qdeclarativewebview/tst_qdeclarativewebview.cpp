@@ -122,8 +122,7 @@ void tst_qdeclarativewebview::cleanupTestCase()
 void tst_qdeclarativewebview::checkNoErrors(const QDeclarativeComponent& component)
 {
     // Wait until the component is ready
-    QTRY_VERIFY(component.isReady());
-
+    QTRY_VERIFY(component.isReady() || component.isError());
 
     if (component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
@@ -313,8 +312,8 @@ void tst_qdeclarativewebview::multipleWindows()
 
     QDeclarativeGrid *grid = qobject_cast<QDeclarativeGrid*>(component.create());
     QVERIFY(grid != 0);
-    QTRY_COMPARE(grid->children().count(), 2+5); // Component, Loader, 5 WebViews
-    QDeclarativeItem* popup = qobject_cast<QDeclarativeItem*>(grid->children().at(3)); // first popup after Component, Loaded, original.
+    QTRY_COMPARE(grid->children().count(), 2+4); // Component, Loader (with 1 WebView), 4 new-window WebViews
+    QDeclarativeItem* popup = qobject_cast<QDeclarativeItem*>(grid->children().at(2)); // first popup after Component and Loader.
     QVERIFY(popup != 0);
     QTRY_COMPARE(popup->x(), 150.0);
 }
@@ -454,7 +453,7 @@ void tst_qdeclarativewebview::newWindowComponent()
     QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
     QDeclarativeComponent substituteComponent(&engine);
-    substituteComponent.setData("import Qt 4.6; WebView { objectName: 'newWebView'; url: 'basic.html'; }", QUrl::fromLocalFile(""));
+    substituteComponent.setData("import Qt 4.7; WebView { objectName: 'newWebView'; url: 'basic.html'; }", QUrl::fromLocalFile(""));
     QSignalSpy newWindowComponentSpy(wv, SIGNAL(newWindowComponentChanged()));
 
     wv->setProperty("newWindowComponent", QVariant::fromValue(&substituteComponent));

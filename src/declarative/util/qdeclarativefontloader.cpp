@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativefontloader_p.h"
+#include "private/qdeclarativefontloader_p.h"
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeengine.h>
@@ -61,7 +61,7 @@ class QDeclarativeFontLoaderPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeFontLoader)
 
 public:
-    QDeclarativeFontLoaderPrivate() : reply(0), status(QDeclarativeFontLoader::Null) {}
+    QDeclarativeFontLoaderPrivate() : reply(0), status(QDeclarativeFontLoader::Null), redirectCount(0) {}
 
     void addFontToDatabase(const QByteArray &);
 
@@ -69,6 +69,7 @@ public:
     QString name;
     QNetworkReply *reply;
     QDeclarativeFontLoader::Status status;
+    int redirectCount;
 };
 
 
@@ -206,15 +207,31 @@ QDeclarativeFontLoader::Status QDeclarativeFontLoader::status() const
     return d->status;
 }
 
+#define FONTLOADER_MAXIMUM_REDIRECT_RECURSION 16
+
 void QDeclarativeFontLoader::replyFinished()
 {
     Q_D(QDeclarativeFontLoader);
     if (d->reply) {
+        d->redirectCount++;
+        if (d->redirectCount < FONTLOADER_MAXIMUM_REDIRECT_RECURSION) {
+            QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+            if (redirect.isValid()) {
+                QUrl url = d->reply->url().resolved(redirect.toUrl());
+                d->reply->deleteLater();
+                d->reply = 0;
+                setSource(url);
+                return;
+            }
+        }
+        d->redirectCount=0;
+
         if (!d->reply->error()) {
             QByteArray ba = d->reply->readAll();
             d->addFontToDatabase(ba);
         } else {
             d->status = Error;
+            qWarning() << "Cannot load font:" << d->reply->url();
             emit statusChanged();
         }
         d->reply->deleteLater();

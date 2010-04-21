@@ -35,8 +35,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSWebKitPoint);
 
 static const HashTableValue JSWebKitPointTableValues[3] =
 {
-    { "x", DontDelete, (intptr_t)jsWebKitPointX, (intptr_t)setJSWebKitPointX },
-    { "y", DontDelete, (intptr_t)jsWebKitPointY, (intptr_t)setJSWebKitPointY },
+    { "x", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitPointX), (intptr_t)setJSWebKitPointX },
+    { "y", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsWebKitPointY), (intptr_t)setJSWebKitPointY },
     { 0, 0, 0, 0 }
 };
 
@@ -96,20 +96,22 @@ bool JSWebKitPoint::getOwnPropertyDescriptor(ExecState* exec, const Identifier& 
     return getStaticValueDescriptor<JSWebKitPoint, Base>(exec, &JSWebKitPointTable, this, propertyName, descriptor);
 }
 
-JSValue jsWebKitPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitPointX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
+    JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitPoint* imp = static_cast<WebKitPoint*>(castedThis->impl());
-    return jsNumber(exec, imp->x());
+    JSValue result = jsNumber(exec, imp->x());
+    return result;
 }
 
-JSValue jsWebKitPointY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsWebKitPointY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
+    JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     WebKitPoint* imp = static_cast<WebKitPoint*>(castedThis->impl());
-    return jsNumber(exec, imp->y());
+    JSValue result = jsNumber(exec, imp->y());
+    return result;
 }
 
 void JSWebKitPoint::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -119,13 +121,15 @@ void JSWebKitPoint::put(ExecState* exec, const Identifier& propertyName, JSValue
 
 void setJSWebKitPointX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitPoint* imp = static_cast<WebKitPoint*>(static_cast<JSWebKitPoint*>(thisObject)->impl());
+    JSWebKitPoint* castedThisObj = static_cast<JSWebKitPoint*>(thisObject);
+    WebKitPoint* imp = static_cast<WebKitPoint*>(castedThisObj->impl());
     imp->setX(value.toFloat(exec));
 }
 
 void setJSWebKitPointY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitPoint* imp = static_cast<WebKitPoint*>(static_cast<JSWebKitPoint*>(thisObject)->impl());
+    JSWebKitPoint* castedThisObj = static_cast<JSWebKitPoint*>(thisObject);
+    WebKitPoint* imp = static_cast<WebKitPoint*>(castedThisObj->impl());
     imp->setY(value.toFloat(exec));
 }
 

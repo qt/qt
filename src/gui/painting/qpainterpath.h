@@ -288,6 +288,8 @@ public:
     QPainterPath createStroke(const QPainterPath &path) const;
 
 private:
+    Q_DISABLE_COPY(QPainterPathStroker)
+
     friend class QX11PaintEngine;
 
     QScopedPointer<QPainterPathStrokerPrivate> d_ptr;

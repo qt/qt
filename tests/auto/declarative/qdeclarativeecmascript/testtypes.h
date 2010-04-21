@@ -90,6 +90,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
+    Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
 
 public:
     MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
@@ -138,6 +139,9 @@ public:
     void setResettableProperty(int v) { m_resetProperty = v; }
     void resetProperty() { m_resetProperty = 13; }
 
+    QRegExp regExp() { return m_regExp; }
+    void setRegExp(const QRegExp &regExp) { m_regExp = regExp; }
+
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -162,6 +166,7 @@ private:
     QList<QObject *> m_objectQList;
     int m_value;
     int m_resetProperty;
+    QRegExp m_regExp;
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
@@ -205,28 +210,20 @@ public slots:
 class MyDefaultObject1 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int horseLegs READ horseLegs CONSTANT);
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
+    Q_PROPERTY(int horseLegs READ horseLegs CONSTANT)
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT)
+    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT)
 public:
     int horseLegs() const { return 4; }
     int antLegs() const { return 6; }
-};
-
-class MyDefaultObject2 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
-    Q_PROPERTY(int emuLegs READ emuLegs CONSTANT);
-public:
-    int antLegs() const { return 5; } // Had an accident
     int emuLegs() const { return 2; }
 };
 
 class MyDefaultObject3 : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs CONSTANT);
-    Q_PROPERTY(int humanLegs READ humanLegs CONSTANT);
+    Q_PROPERTY(int antLegs READ antLegs CONSTANT)
+    Q_PROPERTY(int humanLegs READ humanLegs CONSTANT)
 public:
     int antLegs() const { return 7; } // Mutant
     int humanLegs() const { return 2; }
@@ -237,9 +234,9 @@ class MyDeferredObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
-    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2);
-    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2");
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty)
+    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2)
+    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2")
 
 public:
     MyDeferredObject() : m_value(0), m_object(0), m_object2(0) {}
@@ -266,7 +263,7 @@ QML_DECLARE_TYPE(MyDeferredObject);
 class MyBaseExtendedObject : public QObject
 {
 Q_OBJECT
-Q_PROPERTY(int baseProperty READ baseProperty WRITE setBaseProperty);
+Q_PROPERTY(int baseProperty READ baseProperty WRITE setBaseProperty)
 public:
     MyBaseExtendedObject() : m_value(0) {}
 
@@ -281,7 +278,7 @@ QML_DECLARE_TYPE(MyBaseExtendedObject);
 class MyExtendedObject : public MyBaseExtendedObject
 {
 Q_OBJECT
-Q_PROPERTY(int coreProperty READ coreProperty WRITE setCoreProperty);
+Q_PROPERTY(int coreProperty READ coreProperty WRITE setCoreProperty)
 public:
     MyExtendedObject() : m_value(0) {}
 
@@ -299,34 +296,34 @@ class MyTypeObject : public QObject
     Q_ENUMS(MyEnum)
     Q_FLAGS(MyFlags)
 
-    Q_PROPERTY(QString id READ id WRITE setId);
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
-    Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty);
-    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty);
-    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty);
-    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty);
-    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty);
-    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty);
-    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty);
-    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty);
-    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty);
-    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty);
-    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty);
-    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty);
-    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty);
-    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty);
-    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
-    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
-    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
-    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged);
-    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2);
-    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
-    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
-    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
-    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty);
-    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty);
+    Q_PROPERTY(QString id READ id WRITE setId)
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty)
+    Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty)
+    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty)
+    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty)
+    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty)
+    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty)
+    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty)
+    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty)
+    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty)
+    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty)
+    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty)
+    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty)
+    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty)
+    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty)
+    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty)
+    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty)
+    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty)
+    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty)
+    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged)
+    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2)
+    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty)
+    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty)
+    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty)
+    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty)
+    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty)
 
-    Q_PROPERTY(QDeclarativeScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
+    Q_PROPERTY(QDeclarativeScriptString scriptProperty READ scriptProperty WRITE setScriptProperty)
 
 public:
     MyTypeObject()
@@ -601,6 +598,71 @@ private:
     int m_invoked;
     bool m_invokedError;
     QVariantList m_actuals;
+};
+
+class NumberAssignment : public QObject
+{
+    Q_OBJECT
+public:
+    Q_PROPERTY(qreal test1 READ test1 WRITE setTest1);
+    qreal _test1;
+    qreal test1() const { return _test1; }
+    void setTest1(qreal v) { _test1 = v; }
+
+    Q_PROPERTY(qreal test2 READ test2 WRITE setTest2);
+    qreal _test2;
+    qreal test2() const { return _test2; }
+    void setTest2(qreal v) { _test2 = v; }
+
+    Q_PROPERTY(qreal test3 READ test3 WRITE setTest3);
+    qreal _test3;
+    qreal test3() const { return _test3; }
+    void setTest3(qreal v) { _test3 = v; }
+
+    Q_PROPERTY(qreal test4 READ test4 WRITE setTest4);
+    qreal _test4;
+    qreal test4() const { return _test4; }
+    void setTest4(qreal v) { _test4 = v; }
+
+    Q_PROPERTY(int test5 READ test5 WRITE setTest5);
+    int _test5;
+    int test5() const { return _test5; }
+    void setTest5(int v) { _test5 = v; }
+
+    Q_PROPERTY(int test6 READ test6 WRITE setTest6);
+    int _test6;
+    int test6() const { return _test6; }
+    void setTest6(int v) { _test6 = v; }
+
+    Q_PROPERTY(int test7 READ test7 WRITE setTest7);
+    int _test7;
+    int test7() const { return _test7; }
+    void setTest7(int v) { _test7 = v; }
+
+    Q_PROPERTY(int test8 READ test8 WRITE setTest8);
+    int _test8;
+    int test8() const { return _test8; }
+    void setTest8(int v) { _test8 = v; }
+
+    Q_PROPERTY(unsigned int test9 READ test9 WRITE setTest9);
+    unsigned int _test9;
+    unsigned int test9() const { return _test9; }
+    void setTest9(unsigned int v) { _test9 = v; }
+
+    Q_PROPERTY(unsigned int test10 READ test10 WRITE setTest10);
+    unsigned int _test10;
+    unsigned int test10() const { return _test10; }
+    void setTest10(unsigned int v) { _test10 = v; }
+
+    Q_PROPERTY(unsigned int test11 READ test11 WRITE setTest11);
+    unsigned int _test11;
+    unsigned int test11() const { return _test11; }
+    void setTest11(unsigned int v) { _test11 = v; }
+
+    Q_PROPERTY(unsigned int test12 READ test12 WRITE setTest12);
+    unsigned int _test12;
+    unsigned int test12() const { return _test12; }
+    void setTest12(unsigned int v) { _test12 = v; }
 };
 
 void registerTypes();

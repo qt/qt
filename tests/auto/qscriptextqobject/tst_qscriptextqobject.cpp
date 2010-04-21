@@ -533,6 +533,8 @@ private slots:
     void objectDeleted();
     void connectToDestroyedSignal();
     void emitAfterReceiverDeleted();
+    void inheritedSlots();
+    void enumerateMetaObject();
 
 private:
     QScriptEngine *m_engine;
@@ -2658,6 +2660,21 @@ void tst_QScriptExtQObject::enumerate_data()
             << "mySignal()"
             // slots
             << "mySlot()" << "myOtherSlot()");
+
+    QTest::newRow( "don't enumerate slots" )
+        << int(QScriptEngine::ExcludeSlots)
+        << (QStringList()
+            // meta-object-defined properties:
+            //   inherited
+            << "objectName"
+            //   non-inherited
+            << "p1" << "p2" << "p4" << "p6"
+            // dynamic properties
+            << "dp1" << "dp2" << "dp3"
+            // inherited signals
+            << "destroyed(QObject*)" << "destroyed()"
+            // signals
+            << "mySignal()");
 }
 
 void tst_QScriptExtQObject::enumerate()
@@ -2850,6 +2867,28 @@ void tst_QScriptExtQObject::wrapOptions()
         QVERIFY(obj.property("intProperty").isValid());
         QVERIFY(obj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
     }
+    // exclude slots
+    {
+        QScriptValue obj = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership,
+                                                QScriptEngine::ExcludeSlots);
+        QVERIFY(!obj.property("deleteLater").isValid());
+        QVERIFY(!(obj.propertyFlags("deleteLater") & QScriptValue::QObjectMember));
+        QVERIFY(!obj.property("mySlot").isValid());
+        QVERIFY(!(obj.propertyFlags("mySlot") & QScriptValue::QObjectMember));
+
+        QVERIFY(obj.property("myInvokable").isFunction());
+        QVERIFY(obj.propertyFlags("myInvokable") & QScriptValue::QObjectMember);
+
+        QVERIFY(obj.property("mySignal").isFunction());
+        QVERIFY(obj.propertyFlags("mySignal") & QScriptValue::QObjectMember);
+        QVERIFY(obj.property("destroyed").isFunction());
+        QVERIFY(obj.propertyFlags("destroyed") & QScriptValue::QObjectMember);
+
+        QVERIFY(obj.property("objectName").isValid());
+        QVERIFY(obj.propertyFlags("objectName") & QScriptValue::QObjectMember);
+        QVERIFY(obj.property("intProperty").isValid());
+        QVERIFY(obj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
+    }
     // exclude all that we can
     {
         QScriptValue obj = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership,
@@ -2870,6 +2909,33 @@ void tst_QScriptExtQObject::wrapOptions()
         obj.setProperty("child", QScriptValue(m_engine, 123));
         QCOMPARE(obj.property("child")
                  .strictlyEquals(QScriptValue(m_engine, 123)), true);
+    }
+    // exclude absolutely all that we can
+    {
+        QScriptValue obj = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership,
+                                                QScriptEngine::ExcludeSuperClassMethods
+                                                | QScriptEngine::ExcludeSuperClassProperties
+                                                | QScriptEngine::ExcludeChildObjects
+                                                | QScriptEngine::ExcludeSlots);
+        QVERIFY(!obj.property("deleteLater").isValid());
+        QVERIFY(!(obj.propertyFlags("deleteLater") & QScriptValue::QObjectMember));
+
+        QVERIFY(!obj.property("mySlot").isValid());
+        QVERIFY(!(obj.propertyFlags("mySlot") & QScriptValue::QObjectMember));
+
+        QVERIFY(obj.property("mySignal").isFunction());
+        QVERIFY(obj.propertyFlags("mySignal") & QScriptValue::QObjectMember);
+
+        QVERIFY(obj.property("myInvokable").isFunction());
+        QVERIFY(obj.propertyFlags("myInvokable") & QScriptValue::QObjectMember);
+
+        QVERIFY(!obj.property("objectName").isValid());
+        QVERIFY(!(obj.propertyFlags("objectName") & QScriptValue::QObjectMember));
+
+        QVERIFY(obj.property("intProperty").isValid());
+        QVERIFY(obj.propertyFlags("intProperty") & QScriptValue::QObjectMember);
+
+        QVERIFY(!obj.property("child").isValid());
     }
 
     delete child;
@@ -3040,6 +3106,61 @@ void tst_QScriptExtQObject::emitAfterReceiverDeleted()
         m_myObject->emitMySignal();
         QCOMPARE(signalHandlerExceptionSpy.count(), 0);
         QVERIFY(!m_engine->hasUncaughtException());
+    }
+}
+
+void tst_QScriptExtQObject::inheritedSlots()
+{
+    QScriptEngine eng;
+
+    QPushButton prototypeButton;
+    QScriptValue scriptPrototypeButton = eng.newQObject(&prototypeButton);
+
+    QPushButton button;
+    QScriptValue scriptButton = eng.newQObject(&button, QScriptEngine::QtOwnership,
+                                               QScriptEngine::ExcludeSlots);
+    scriptButton.setPrototype(scriptPrototypeButton);
+
+    QVERIFY(scriptButton.property("click").isFunction());
+    QVERIFY(scriptButton.property("click").strictlyEquals(scriptPrototypeButton.property("click")));
+
+    QSignalSpy prototypeButtonClickedSpy(&prototypeButton, SIGNAL(clicked()));
+    QSignalSpy buttonClickedSpy(&button, SIGNAL(clicked()));
+    scriptButton.property("click").call(scriptButton);
+    QCOMPARE(buttonClickedSpy.count(), 1);
+    QCOMPARE(prototypeButtonClickedSpy.count(), 0);
+}
+
+void tst_QScriptExtQObject::enumerateMetaObject()
+{
+    QScriptValue myClass = m_engine->newQMetaObject(m_myObject->metaObject(), m_engine->undefinedValue());
+
+    QStringList expectedNames;
+    expectedNames << "FooPolicy" << "BarPolicy" << "BazPolicy"
+                  << "FooStrategy" << "BarStrategy" << "BazStrategy"
+                  << "NoAbility" << "FooAbility" << "BarAbility" << "BazAbility" << "AllAbility";
+
+    for (int x = 0; x < 2; ++x) {
+        QSet<QString> actualNames;
+        if (x == 0) {
+            // From C++
+            QScriptValueIterator it(myClass);
+            while (it.hasNext()) {
+                it.next();
+                actualNames.insert(it.name());
+            }
+        } else {
+            // From JS
+            m_engine->globalObject().setProperty("MyClass", myClass);
+            QScriptValue ret = m_engine->evaluate("a=[]; for (var p in MyClass) if (MyClass.hasOwnProperty(p)) a.push(p); a");
+            QVERIFY(ret.isArray());
+            QStringList strings = qscriptvalue_cast<QStringList>(ret);
+            for (int i = 0; i < strings.size(); ++i)
+                actualNames.insert(strings.at(i));
+        }
+        QCOMPARE(actualNames.size(), expectedNames.size());
+        for (int i = 0; i < expectedNames.size(); ++i)
+            QVERIFY(actualNames.contains(expectedNames.at(i)));
     }
 }
 

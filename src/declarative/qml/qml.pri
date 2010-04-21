@@ -31,13 +31,14 @@ SOURCES += \
     $$PWD/qdeclarativerewrite.cpp \
     $$PWD/qdeclarativevaluetype.cpp \
     $$PWD/qdeclarativecompiledbindings.cpp \
+    $$PWD/qdeclarativefastproperties.cpp \
     $$PWD/qdeclarativexmlhttprequest.cpp \
     $$PWD/qdeclarativesqldatabase.cpp \
     $$PWD/qmetaobjectbuilder.cpp \
     $$PWD/qdeclarativewatcher.cpp \
-    $$PWD/qdeclarativescript.cpp \
     $$PWD/qdeclarativecleanup.cpp \
     $$PWD/qdeclarativepropertycache.cpp \
+    $$PWD/qdeclarativenotifier.cpp \
     $$PWD/qdeclarativeintegercache.cpp \
     $$PWD/qdeclarativetypenamecache.cpp \
     $$PWD/qdeclarativescriptstring.cpp \
@@ -93,7 +94,7 @@ HEADERS += \
     $$PWD/qdeclarativecompositetypemanager_p.h \
     $$PWD/qdeclarativelist.h \
     $$PWD/qdeclarativelist_p.h \
-    $$PWD/qdeclarativedeclarativedata_p.h \
+    $$PWD/qdeclarativedata_p.h \
     $$PWD/qdeclarativeerror.h \
     $$PWD/qdeclarativescriptparser_p.h \
     $$PWD/qdeclarativeenginedebug_p.h \
@@ -102,12 +103,14 @@ HEADERS += \
     $$PWD/qbitfield_p.h \
     $$PWD/qdeclarativevaluetype_p.h \
     $$PWD/qdeclarativecompiledbindings_p.h \
+    $$PWD/qdeclarativefastproperties_p.h \
     $$PWD/qdeclarativexmlhttprequest_p.h \
     $$PWD/qdeclarativesqldatabase_p.h \
     $$PWD/qmetaobjectbuilder_p.h \
     $$PWD/qdeclarativewatcher_p.h \
     $$PWD/qdeclarativecleanup_p.h \
     $$PWD/qdeclarativepropertycache_p.h \
+    $$PWD/qdeclarativenotifier_p.h \
     $$PWD/qdeclarativeintegercache_p.h \
     $$PWD/qdeclarativetypenamecache_p.h \
     $$PWD/qdeclarativescriptstring.h \
@@ -118,7 +121,6 @@ HEADERS += \
     $$PWD/qdeclarativetypenamescriptclass_p.h \
     $$PWD/qdeclarativelistscriptclass_p.h \
     $$PWD/qdeclarativeworkerscript_p.h \
-    $$PWD/qdeclarativescriptclass_p.h \
     $$PWD/qdeclarativeguard_p.h \
     $$PWD/qdeclarativeimageprovider.h \
     $$PWD/qdeclarativenetworkaccessmanagerfactory.h \

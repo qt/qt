@@ -80,6 +80,7 @@ public:
             rendering(true)
     {
     }
+    void focusChanged(bool);
 
     QUrl url; // page url might be different if it has not loaded yet
     QWebPage *page;
@@ -119,6 +120,10 @@ public:
     \inherits Item
 
     A WebView renders web content based on a URL.
+
+    This type is made available by importing the \c org.webkit module:
+
+    \bold{import org.webkit 1.0}
 
     If the width and height of the item is not set, they will
     dynamically adjust to a size appropriate for the content.
@@ -378,11 +383,12 @@ QVariant QDeclarativeWebView::evaluateJavaScript(const QString &scriptSource)
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
 }
 
-void QDeclarativeWebView::focusChanged(bool hasFocus)
+void QDeclarativeWebViewPrivate::focusChanged(bool hasFocus)
 {
+    Q_Q(QDeclarativeWebView);
     QFocusEvent e(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
-    page()->event(&e);
-    QDeclarativeItem::focusChanged(hasFocus);
+    q->page()->event(&e);
+    QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
 void QDeclarativeWebView::initialLayout()
@@ -1212,6 +1218,14 @@ QString QDeclarativeWebPage::chooseFile(QWebFrame *originatingFrame, const QStri
     return oldFile;
 }
 
+/*!
+    \qmlsignal WebView::alert(message)
+
+    This signal is emitted when the web engine sends a JavaScript alert. The \a message is the text
+    to be displayed in the alert to the user.
+*/
+
+
 void QDeclarativeWebPage::javaScriptAlert(QWebFrame *originatingFrame, const QString& msg)
 {
     Q_UNUSED(originatingFrame)
@@ -1237,94 +1251,9 @@ bool QDeclarativeWebPage::javaScriptPrompt(QWebFrame *originatingFrame, const QS
 }
 
 
-/*
-    Qt WebKit does not understand non-QWidget plugins, so dummy widgets
-    are created, parented to a single dummy tool window.
-
-    The requirements for QML object plugins are input to the Qt WebKit
-    non-QWidget plugin support, which will obsolete this kludge.
-*/
-class QWidget_Dummy_Plugin : public QWidget
-{
-    Q_OBJECT
-public:
-    static QWidget *dummy_shared_parent()
-    {
-        static QWidget *dsp = 0;
-        if (!dsp) {
-            dsp = new QWidget(0,Qt::Tool);
-            dsp->setGeometry(-10000,-10000,0,0);
-            dsp->show();
-        }
-        return dsp;
-    }
-    QWidget_Dummy_Plugin(const QUrl& url, QDeclarativeWebView *view, const QStringList &paramNames, const QStringList &paramValues) :
-        QWidget(dummy_shared_parent()),
-        propertyNames(paramNames),
-        propertyValues(paramValues),
-        webview(view)
-    {
-        QDeclarativeEngine *engine = qmlEngine(webview);
-        component = new QDeclarativeComponent(engine, url, this);
-        item = 0;
-        if (component->isLoading())
-            connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)), this, SLOT(qmlLoaded()));
-        else
-            qmlLoaded();
-    }
-
-public Q_SLOTS:
-    void qmlLoaded()
-    {
-        if (component->isError()) {
-            // ### Could instead give these errors to the WebView to handle.
-            qWarning() << component->errors();
-            return;
-        }
-        item = qobject_cast<QDeclarativeItem*>(component->create(qmlContext(webview)));
-        item->setParent(webview);
-        QString jsObjName;
-        for (int i=0; i<propertyNames.count(); ++i) {
-            if (propertyNames[i] != QLatin1String("type") && propertyNames[i] != QLatin1String("data")) {
-                item->setProperty(propertyNames[i].toUtf8(),propertyValues[i]);
-                if (propertyNames[i] == QLatin1String("objectname"))
-                    jsObjName = propertyValues[i]; 
-            }
-        }
-        if (!jsObjName.isNull()) { 
-            QWebFrame *f = webview->page()->mainFrame(); 
-            f->addToJavaScriptWindowObject(jsObjName, item); 
-        }
-        resizeEvent(0);
-        delete component;
-        component = 0;
-    }
-    void resizeEvent(QResizeEvent*)
-    {
-        if (item) {
-            item->setX(x());
-            item->setY(y());
-            item->setWidth(width());
-            item->setHeight(height());
-        }
-    }
-
-private:
-    QDeclarativeComponent *component;
-    QDeclarativeItem *item;
-    QStringList propertyNames, propertyValues;
-    QDeclarativeWebView *webview;
-};
-
 QDeclarativeWebView *QDeclarativeWebPage::viewItem()
 {
     return static_cast<QDeclarativeWebView*>(parent());
-}
-
-QObject *QDeclarativeWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
-{
-    QUrl comp = qmlContext(viewItem())->resolvedUrl(url);
-    return new QWidget_Dummy_Plugin(comp,viewItem(),paramNames,paramValues);
 }
 
 QWebPage *QDeclarativeWebPage::createWindow(WebWindowType type)
@@ -1336,5 +1265,3 @@ QWebPage *QDeclarativeWebPage::createWindow(WebWindowType type)
 }
 
 QT_END_NAMESPACE
-
-#include <qdeclarativewebview.moc>

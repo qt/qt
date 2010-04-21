@@ -1079,6 +1079,8 @@ QDir::Filters QDir::filter() const
     \value NoSymLinks  Do not list symbolic links (ignored by operating
                        systems that don't support symbolic links).
     \value NoDotAndDotDot Do not list the special entries "." and "..".
+    \value NoDot       Do not list the special entry ".".
+    \value NoDotDot    Do not list the special entry "..".
     \value AllEntries  List directories, files, drives and symlinks (this does not list
                 broken symlinks unless you specify System).
     \value Readable    List files for which the application has read
@@ -2123,7 +2125,7 @@ QString QDir::cleanPath(const QString &path)
     QString ret = (used == len ? name : QString(out, used));
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
-#ifdef Q_OS_WIN
+#if defined (Q_OS_WIN) || defined (Q_OS_SYMBIAN)
         if (!(ret.length() == 3 && ret.at(1) == QLatin1Char(':')))
 #endif
             ret.chop(1);
@@ -2367,7 +2369,9 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
         if (filters & QDir::Files) flags << QLatin1String("Files");
         if (filters & QDir::Drives) flags << QLatin1String("Drives");
         if (filters & QDir::NoSymLinks) flags << QLatin1String("NoSymLinks");
-        if (filters & QDir::NoDotAndDotDot) flags << QLatin1String("NoDotAndDotDot");
+        if (filters & QDir::NoDotAndDotDot) flags << QLatin1String("NoDotAndDotDot"); // ### Qt5: remove (because NoDotAndDotDot=NoDot|NoDotDot)
+        if (filters & QDir::NoDot) flags << QLatin1String("NoDot");
+        if (filters & QDir::NoDotDot) flags << QLatin1String("NoDotDot");
         if ((filters & QDir::AllEntries) == QDir::AllEntries) flags << QLatin1String("AllEntries");
         if (filters & QDir::Readable) flags << QLatin1String("Readable");
         if (filters & QDir::Writable) flags << QLatin1String("Writable");

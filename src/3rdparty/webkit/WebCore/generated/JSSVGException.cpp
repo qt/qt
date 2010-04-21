@@ -41,10 +41,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGException);
 
 static const HashTableValue JSSVGExceptionTableValues[5] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionCode, (intptr_t)0 },
-    { "name", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionName, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionMessage, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGExceptionConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionCode), (intptr_t)0 },
+    { "name", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionName), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -59,9 +59,9 @@ static JSC_CONST_HASHTABLE HashTable JSSVGExceptionTable =
 
 static const HashTableValue JSSVGExceptionConstructorTableValues[4] =
 {
-    { "SVG_WRONG_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionSVG_WRONG_TYPE_ERR, (intptr_t)0 },
-    { "SVG_INVALID_VALUE_ERR", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionSVG_INVALID_VALUE_ERR, (intptr_t)0 },
-    { "SVG_MATRIX_NOT_INVERTABLE", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE, (intptr_t)0 },
+    { "SVG_WRONG_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionSVG_WRONG_TYPE_ERR), (intptr_t)0 },
+    { "SVG_INVALID_VALUE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionSVG_INVALID_VALUE_ERR), (intptr_t)0 },
+    { "SVG_MATRIX_NOT_INVERTABLE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -109,10 +109,10 @@ bool JSSVGExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, const 
 
 static const HashTableValue JSSVGExceptionPrototypeTableValues[5] =
 {
-    { "SVG_WRONG_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionSVG_WRONG_TYPE_ERR, (intptr_t)0 },
-    { "SVG_INVALID_VALUE_ERR", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionSVG_INVALID_VALUE_ERR, (intptr_t)0 },
-    { "SVG_MATRIX_NOT_INVERTABLE", DontDelete|ReadOnly, (intptr_t)jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE, (intptr_t)0 },
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsSVGExceptionPrototypeFunctionToString, (intptr_t)0 },
+    { "SVG_WRONG_TYPE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionSVG_WRONG_TYPE_ERR), (intptr_t)0 },
+    { "SVG_INVALID_VALUE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionSVG_INVALID_VALUE_ERR), (intptr_t)0 },
+    { "SVG_MATRIX_NOT_INVERTABLE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE), (intptr_t)0 },
+    { "toString", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsSVGExceptionPrototypeFunctionToString), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -142,8 +142,8 @@ bool JSSVGExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSSVGException::s_info = { "SVGException", 0, &JSSVGExceptionTable, 0 };
 
-JSSVGException::JSSVGException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGException> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGException::JSSVGException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGException> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -151,6 +151,7 @@ JSSVGException::JSSVGException(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 JSSVGException::~JSSVGException()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -168,34 +169,37 @@ bool JSSVGException::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSSVGException, Base>(exec, &JSSVGExceptionTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGException* castedThis = static_cast<JSSVGException*>(asObject(slot.slotBase()));
+    JSSVGException* castedThis = static_cast<JSSVGException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGException* imp = static_cast<SVGException*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsSVGExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGException* castedThis = static_cast<JSSVGException*>(asObject(slot.slotBase()));
+    JSSVGException* castedThis = static_cast<JSSVGException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGException* imp = static_cast<SVGException*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsSVGExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGException* castedThis = static_cast<JSSVGException*>(asObject(slot.slotBase()));
+    JSSVGException* castedThis = static_cast<JSSVGException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGException* imp = static_cast<SVGException*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
-JSValue jsSVGExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    UNUSED_PARAM(slot);
-    return JSSVGException::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
+    JSSVGException* domObject = static_cast<JSSVGException*>(asObject(slotBase));
+    return JSSVGException::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
@@ -217,17 +221,17 @@ JSValue JSC_HOST_CALL jsSVGExceptionPrototypeFunctionToString(ExecState* exec, J
 
 // Constant getters
 
-JSValue jsSVGExceptionSVG_WRONG_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGExceptionSVG_WRONG_TYPE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGExceptionSVG_INVALID_VALUE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGExceptionSVG_INVALID_VALUE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }

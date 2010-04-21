@@ -42,8 +42,8 @@
 #ifndef QDECLARATIVEITEM_H
 #define QDECLARATIVEITEM_H
 
-#include <qdeclarative.h>
-#include <qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
 
 #include <QtCore/QObject>
 #include <QtCore/QList>
@@ -71,13 +71,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeItem : public QGraphicsObject, public QDe
 
     Q_PROPERTY(QDeclarativeItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QDeclarativeListProperty<QObject> data READ data DESIGNABLE false)
-    Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> children READ fxChildren DESIGNABLE false NOTIFY childrenChanged)
     Q_PROPERTY(QDeclarativeListProperty<QObject> resources READ resources DESIGNABLE false)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeState> states READ states DESIGNABLE false)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeTransition> transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
-    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
     Q_PROPERTY(QRectF childrenRect READ childrenRect NOTIFY childrenRectChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QDeclarativeAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QDeclarativeAnchorLine left READ left CONSTANT FINAL)
@@ -94,7 +91,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeItem : public QGraphicsObject, public QDe
     Q_PROPERTY(QDeclarativeListProperty<QGraphicsTransform> transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
-    Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
@@ -110,10 +106,8 @@ public:
 
     QDeclarativeItem *parentItem() const;
     void setParentItem(QDeclarativeItem *parent);
-    void setParent(QDeclarativeItem *parent) { setParentItem(parent); }
 
     QDeclarativeListProperty<QObject> data();
-    QDeclarativeListProperty<QDeclarativeItem> fxChildren();
     QDeclarativeListProperty<QObject> resources();
 
     QDeclarativeAnchors *anchors();
@@ -161,8 +155,8 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
-    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, int x, int y) const;
-    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, int x, int y) const;
+    Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
+    Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
 
     QDeclarativeAnchorLine left() const;
     QDeclarativeAnchorLine right() const;
@@ -173,18 +167,16 @@ public:
     QDeclarativeAnchorLine baseline() const;
 
 Q_SIGNALS:
-    void widthChanged();
-    void heightChanged();
     void childrenChanged();
-    void childrenRectChanged();
-    void baselineOffsetChanged();
+    void childrenRectChanged(const QRectF &);
+    void baselineOffsetChanged(qreal);
     void stateChanged(const QString &);
-    void focusChanged();
-    void wantsFocusChanged();
-    void parentChanged();
+    void focusChanged(bool);
+    void wantsFocusChanged(bool);
+    void parentChanged(QDeclarativeItem *);
     void transformOriginChanged(TransformOrigin);
-    void smoothChanged();
-    void clipChanged();
+    void smoothChanged(bool);
+    void clipChanged(bool);
 
 protected:
     bool isComponentComplete() const;
@@ -199,7 +191,6 @@ protected:
 
     virtual void classBegin();
     virtual void componentComplete();
-    virtual void focusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void inputMethodEvent(QInputMethodEvent *);
@@ -236,9 +227,11 @@ QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, QDeclarativeItem *item);
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeItem)
+QML_DECLARE_TYPE(QGraphicsObject)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
 QML_DECLARE_TYPE(QGraphicsRotation)
+QML_DECLARE_TYPE(QGraphicsWidget)
 QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER

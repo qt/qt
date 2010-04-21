@@ -233,17 +233,17 @@ QWidget *QGstreamerVideoWidgetControl::videoWidget()
     return m_widget;
 }
 
-QVideoWidget::AspectRatioMode QGstreamerVideoWidgetControl::aspectRatioMode() const
+Qt::AspectRatioMode QGstreamerVideoWidgetControl::aspectRatioMode() const
 {
     return m_aspectRatioMode;
 }
 
-void QGstreamerVideoWidgetControl::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+void QGstreamerVideoWidgetControl::setAspectRatioMode(Qt::AspectRatioMode mode)
 {
     if (m_videoSink) {
         g_object_set(G_OBJECT(m_videoSink),
                      "force-aspect-ratio",
-                     (mode == QVideoWidget::KeepAspectRatio),
+                     (mode == Qt::KeepAspectRatio),
                      (const char*)NULL);
     }
 

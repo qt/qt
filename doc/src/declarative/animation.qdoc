@@ -58,7 +58,8 @@ types listed above. If the property you are animating is a number or color, you 
 NumberAnimation or ColorAnimation. These elements don't add any additional functionality,
 but will help enforce type correctness and are slightly more efficient.
 
-A property animation can be specified as a value source. This is especially useful for repeating animations.
+A property animation can be specified as a value source using the \e Animation \bold on \e property syntax. This is especially useful
+for repeating animations.
 
 The following example creates a bouncing effect:
 \qml
@@ -70,8 +71,8 @@ Rectangle {
         source: "qt-logo.png"
         x: 60-img.width/2
         y: 0
-        y: SequentialAnimation {
-            repeat: true
+        SequentialAnimation on y {
+            loops: Animation.Infinite
             NumberAnimation { to: 200-img.height; easing.type: "OutBounce"; duration: 2000 }
             PauseAnimation { duration: 1000 }
             NumberAnimation { to: 0; easing.type: "OutQuad"; duration: 1000 }
@@ -93,7 +94,7 @@ Rectangle {
     Rectangle {
         color: "red"
         width: 50; height: 50
-        x: NumberAnimation { to: 50; }
+        NumberAnimation on x { to: 50; }
     }
 }
 \endqml
@@ -226,7 +227,7 @@ Rectangle {
     id: redRect
     color: "red"
     width: 100; height: 100
-    x: Behavior { NumberAnimation { duration: 300; easing.type: "InOutQuad" } }
+    Behavior on x { NumberAnimation { duration: 300; easing.type: "InOutQuad" } }
 }
 \endqml
 

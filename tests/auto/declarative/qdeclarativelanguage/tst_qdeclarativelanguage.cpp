@@ -52,6 +52,7 @@
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
+#include "testhttpserver.h"
 
 /*
 This test case covers QML language issues.  This covers everything that does not
@@ -87,6 +88,7 @@ private slots:
     void assignBasicTypes();
     void assignTypeExtremes();
     void assignCompositeToType();
+    void assignLiteralToVariant();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -111,10 +113,13 @@ private slots:
     void i18n();
     void i18n_data();
     void onCompleted();
+    void onDestruction();
     void scriptString();
     void defaultPropertyListOrder();
     void declaredPropertyValues();
 
+    void basicRemote_data();
+    void basicRemote();
     void importsBuiltin_data();
     void importsBuiltin();
     void importsLocal_data();
@@ -136,7 +141,7 @@ private slots:
 
 private:
     QDeclarativeEngine engine;
-    void testType(const QString& qml, const QString& type);
+    void testType(const QString& qml, const QString& type, const QString& error);
 };
 
 #define VERIFY_ERRORS(errorfile) \
@@ -264,6 +269,8 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
     QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
+    QTest::newRow("importNonExist (installed)") << "importNonExist.qml" << "importNonExist.errors.txt" << false;
+    QTest::newRow("importNewerVersion (installed)") << "importNewerVersion.qml" << "importNewerVersion.errors.txt" << false;
     QTest::newRow("invalidImportID") << "invalidImportID.qml" << "invalidImportID.errors.txt" << false;
 
     QTest::newRow("signal.1") << "signal.1.qml" << "signal.1.errors.txt" << false;
@@ -281,18 +288,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("property.6") << "property.6.qml" << "property.6.errors.txt" << false;
     QTest::newRow("property.7") << "property.7.qml" << "property.7.errors.txt" << false;
 
-    QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
-    QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;
-    QTest::newRow("Script.3") << "script.3.qml" << "script.3.errors.txt" << false;
-    QTest::newRow("Script.4") << "script.4.qml" << "script.4.errors.txt" << false;
-    QTest::newRow("Script.5") << "script.5.qml" << "script.5.errors.txt" << false;
-    QTest::newRow("Script.6") << "script.6.qml" << "script.6.errors.txt" << false;
-    QTest::newRow("Script.7") << "script.7.qml" << "script.7.errors.txt" << false;
-    QTest::newRow("Script.8") << "script.8.qml" << "script.8.errors.txt" << false;
-    QTest::newRow("Script.9") << "script.9.qml" << "script.9.errors.txt" << false;
-    QTest::newRow("Script.10") << "script.10.qml" << "script.10.errors.txt" << false;
-    QTest::newRow("Script.11") << "script.11.qml" << "script.11.errors.txt" << false;
-    QTest::newRow("Script.12") << "script.12.qml" << "script.12.errors.txt" << false;
+    QTest::newRow("importScript.1") << "importscript.1.qml" << "importscript.1.errors.txt" << false;
 
     QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
     QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
@@ -324,14 +320,17 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidAttachedProperty.10") << "invalidAttachedProperty.10.qml" << "invalidAttachedProperty.10.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.11") << "invalidAttachedProperty.11.qml" << "invalidAttachedProperty.11.errors.txt" << false;
 
+    QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
+    QTest::newRow("emptySignal.2") << "emptySignal.2.qml" << "emptySignal.2.errors.txt" << false;
+
     QTest::newRow("nestedErrors") << "nestedErrors.qml" << "nestedErrors.errors.txt" << false;
     QTest::newRow("defaultGrouped") << "defaultGrouped.qml" << "defaultGrouped.errors.txt" << false;
-    QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
     QTest::newRow("doubleSignal") << "doubleSignal.qml" << "doubleSignal.errors.txt" << false;
     QTest::newRow("invalidRoot") << "invalidRoot.qml" << "invalidRoot.errors.txt" << false;
     QTest::newRow("missingValueTypeProperty") << "missingValueTypeProperty.qml" << "missingValueTypeProperty.errors.txt" << false;
     QTest::newRow("objectValueTypeProperty") << "objectValueTypeProperty.qml" << "objectValueTypeProperty.errors.txt" << false;
     QTest::newRow("enumTypes") << "enumTypes.qml" << "enumTypes.errors.txt" << false;
+    QTest::newRow("destroyedSignal") << "destroyedSignal.qml" << "destroyedSignal.errors.txt" << false;
 }
 
 
@@ -486,6 +485,37 @@ void tst_qdeclarativelanguage::assignCompositeToType()
     QVERIFY(object != 0);
 }
 
+// Test that literals are stored correctly in variant properties
+void tst_qdeclarativelanguage::assignLiteralToVariant()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("assignLiteralToVariant.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").userType(), (int)QVariant::Int);
+    QCOMPARE(object->property("test2").userType(), (int)QMetaType::Double);
+    QCOMPARE(object->property("test3").userType(), (int)QVariant::String);
+    QCOMPARE(object->property("test4").userType(), (int)QVariant::Color);
+    QCOMPARE(object->property("test5").userType(), (int)QVariant::RectF);
+    QCOMPARE(object->property("test6").userType(), (int)QVariant::PointF);
+    QCOMPARE(object->property("test7").userType(), (int)QVariant::SizeF);
+    QCOMPARE(object->property("test8").userType(), (int)QVariant::Vector3D);
+    QCOMPARE(object->property("test9").userType(), (int)QVariant::String);
+
+    QVERIFY(object->property("test1") == QVariant(1));
+    QVERIFY(object->property("test2") == QVariant((double)1.7));
+    QVERIFY(object->property("test3") == QVariant(QString(QLatin1String("Hello world!"))));
+    QVERIFY(object->property("test4") == QVariant(QColor::fromRgb(0xFF008800)));
+    QVERIFY(object->property("test5") == QVariant(QRectF(10, 10, 10, 10)));
+    QVERIFY(object->property("test6") == QVariant(QPointF(10, 10)));
+    QVERIFY(object->property("test7") == QVariant(QSizeF(10, 10)));
+    QVERIFY(object->property("test8") == QVariant(QVector3D(100, 100, 100)));
+    QVERIFY(object->property("test9") == QVariant(QString(QLatin1String("#FF008800"))));
+
+    delete object;
+}
+
 // Tests that custom parser types can be instantiated
 void tst_qdeclarativelanguage::customParserTypes()
 {
@@ -582,7 +612,6 @@ void tst_qdeclarativelanguage::dynamicProperties()
     QCOMPARE(object->property("colorProperty"), QVariant(QColor("red")));
     QCOMPARE(object->property("dateProperty"), QVariant(QDate(1945, 9, 2)));
     QCOMPARE(object->property("varProperty"), QVariant("Hello World!"));
-    QCOMPARE(object->property("variantProperty"), QVariant(12));
 }
 
 // Test that nested types can use dynamic properties
@@ -688,7 +717,7 @@ void tst_qdeclarativelanguage::propertyValueSource()
     MyPropertyValueSource *valueSource = 
         qobject_cast<MyPropertyValueSource *>(valueSources.at(0));
     QVERIFY(valueSource != 0);
-    QCOMPARE(valueSource->prop.object(), object);
+    QCOMPARE(valueSource->prop.object(), qobject_cast<QObject*>(object));
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
     }
 
@@ -709,7 +738,7 @@ void tst_qdeclarativelanguage::propertyValueSource()
     MyPropertyValueSource *valueSource = 
         qobject_cast<MyPropertyValueSource *>(valueSources.at(0));
     QVERIFY(valueSource != 0);
-    QCOMPARE(valueSource->prop.object(), object);
+    QCOMPARE(valueSource->prop.object(), qobject_cast<QObject*>(object));
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
     }
 }
@@ -1022,6 +1051,20 @@ void tst_qdeclarativelanguage::onCompleted()
     QVERIFY(object != 0);
 }
 
+// Check that the Component::onDestruction attached property works
+void tst_qdeclarativelanguage::onDestruction()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("onDestruction.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QTest::ignoreMessage(QtDebugMsg, "Destruction 6 10");
+    QTest::ignoreMessage(QtDebugMsg, "Destruction 6 10");
+    QTest::ignoreMessage(QtDebugMsg, "Destruction 10 11");
+    delete object;
+}
+
 // Check that assignments to QDeclarativeScriptString properties work
 void tst_qdeclarativelanguage::scriptString()
 {
@@ -1031,12 +1074,12 @@ void tst_qdeclarativelanguage::scriptString()
     MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->scriptProperty().script(), QString("foo + bar"));
-    QCOMPARE(object->scriptProperty().scopeObject(), object);
+    QCOMPARE(object->scriptProperty().scopeObject(), qobject_cast<QObject*>(object));
     QCOMPARE(object->scriptProperty().context(), qmlContext(object));
 
     QVERIFY(object->grouped() != 0);
     QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
-    QCOMPARE(object->grouped()->script().scopeObject(), object);
+    QCOMPARE(object->grouped()->script().scopeObject(), qobject_cast<QObject*>(object));
     QCOMPARE(object->grouped()->script().context(), qmlContext(object));
 }
 
@@ -1062,12 +1105,11 @@ void tst_qdeclarativelanguage::defaultPropertyListOrder()
 void tst_qdeclarativelanguage::declaredPropertyValues()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
-    QEXPECT_FAIL("", "QTBUG-7860", Abort);
     VERIFY_ERRORS(0);
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.
-void tst_qdeclarativelanguage::testType(const QString& qml, const QString& type)
+void tst_qdeclarativelanguage::testType(const QString& qml, const QString& type, const QString& expectederror)
 {
     QDeclarativeComponent component(&engine);
     component.setData(qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
@@ -1076,6 +1118,13 @@ void tst_qdeclarativelanguage::testType(const QString& qml, const QString& type)
 
     if (type.isEmpty()) {
         QVERIFY(component.isError());
+        QString actualerror;
+        foreach (const QDeclarativeError e, component.errors()) {
+            if (!actualerror.isEmpty())
+                actualerror.append("; ");
+            actualerror.append(e.description());
+        }
+        QCOMPARE(actualerror,expectederror);
     } else {
         VERIFY_ERRORS(0);
         QObject *object = component.create();
@@ -1095,166 +1144,245 @@ void tst_qdeclarativelanguage::importsBuiltin_data()
 
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
 
     // import built-ins
     QTest::newRow("missing import")
         << "Test {}"
-        << "";
+        << ""
+        << "Test is not a type";
     QTest::newRow("not in version 0.0")
         << "import com.nokia.Test 0.0\n"
            "Test {}"
-        << "";
+        << ""
+        << "Test is not a type";
+    QTest::newRow("version not installed")
+        << "import com.nokia.Test 99.0\n"
+           "Test {}"
+        << ""
+        << "module \"com.nokia.Test\" version 99.0 is not installed";
     QTest::newRow("in version 0.0")
         << "import com.nokia.Test 0.0\n"
            "TestTP {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("qualified in version 0.0")
         << "import com.nokia.Test 0.0 as T\n"
            "T.TestTP {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("in version 1.0")
         << "import com.nokia.Test 1.0\n"
            "Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("qualified wrong")
         << "import com.nokia.Test 1.0 as T\n" // QT-610
            "Test {}"
-        << "";
+        << ""
+        << "Test is not a type";
     QTest::newRow("qualified right")
         << "import com.nokia.Test 1.0 as T\n"
            "T.Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("qualified right but not in version 0.0")
         << "import com.nokia.Test 0.0 as T\n"
            "T.Test {}"
-        << "";
+        << ""
+        << "T.Test is not a type";
     QTest::newRow("in version 1.1")
         << "import com.nokia.Test 1.1\n"
            "Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("in version 1.3")
         << "import com.nokia.Test 1.3\n"
            "Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("in version 1.5")
         << "import com.nokia.Test 1.5\n"
            "Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("changed in version 1.8")
         << "import com.nokia.Test 1.8\n"
            "Test {}"
-        << "TestType2";
+        << "TestType2"
+        << "";
     QTest::newRow("in version 1.12")
         << "import com.nokia.Test 1.12\n"
            "Test {}"
-        << "TestType2";
+        << "TestType2"
+        << "";
     QTest::newRow("old in version 1.9")
         << "import com.nokia.Test 1.9\n"
            "OldTest {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("old in version 1.11")
         << "import com.nokia.Test 1.11\n"
            "OldTest {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("multiversion 1")
         << "import com.nokia.Test 1.11\n"
            "import com.nokia.Test 1.12\n"
            "Test {}"
-        << "TestType2";
+        << "TestType2"
+        << "";
     QTest::newRow("multiversion 2")
         << "import com.nokia.Test 1.11\n"
            "import com.nokia.Test 1.12\n"
            "OldTest {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("qualified multiversion 3")
         << "import com.nokia.Test 1.0 as T0\n"
            "import com.nokia.Test 1.8 as T8\n"
            "T0.Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
     QTest::newRow("qualified multiversion 4")
         << "import com.nokia.Test 1.0 as T0\n"
            "import com.nokia.Test 1.8 as T8\n"
            "T8.Test {}"
-        << "TestType2";
+        << "TestType2"
+        << "";
 }
 
 void tst_qdeclarativelanguage::importsBuiltin()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
-    testType(qml,type);
+    QFETCH(QString, error);
+    testType(qml,type,error);
 }
 
 void tst_qdeclarativelanguage::importsLocal_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
 
     // import locals
     QTest::newRow("local import")
         << "import \"subdir\"\n" // QT-613
            "Test {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("local import second")
-        << "import Qt 4.6\nimport \"subdir\"\n"
+        << "import Qt 4.7\nimport \"subdir\"\n"
            "Test {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("local import subsubdir")
-        << "import Qt 4.6\nimport \"subdir/subsubdir\"\n"
+        << "import Qt 4.7\nimport \"subdir/subsubdir\"\n"
            "SubTest {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("local import QTBUG-7721 A")
         << "subdir.Test {}" // no longer allowed (QTBUG-7721)
-        << "";
+        << ""
+        << "subdir.Test is not a type";
     QTest::newRow("local import QTBUG-7721 B")
         << "import \"subdir\" as X\n"
            "X.subsubdir.SubTest {}" // no longer allowed (QTBUG-7721)
-        << "";
+        << ""
+        << "X.subsubdir.SubTest is not a type";
     QTest::newRow("local import as")
         << "import \"subdir\" as T\n"
            "T.Test {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("wrong local import as")
         << "import \"subdir\" as T\n"
            "Test {}"
-        << "";
+        << ""
+        << "Test is not a type";
     QTest::newRow("library precedence over local import")
         << "import \"subdir\"\n"
            "import com.nokia.Test 1.0\n"
            "Test {}"
-        << "TestType";
+        << "TestType"
+        << "";
 }
 
 void tst_qdeclarativelanguage::importsLocal()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
-    testType(qml,type);
+    QFETCH(QString, error);
+    testType(qml,type,error);
+}
+
+void tst_qdeclarativelanguage::basicRemote_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
+
+    QString serverdir = "http://127.0.0.1:14447/qtest/declarative/qmllanguage/";
+
+    QTest::newRow("no need for qmldir") << QUrl(serverdir+"Test.qml") << "" << "";
+    QTest::newRow("need qmldir") << QUrl(serverdir+"TestLocal.qml") << "" << "";
+}
+
+void tst_qdeclarativelanguage::basicRemote()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QString, type);
+    QFETCH(QString, error);
+
+    TestHTTPServer server(14447);
+    server.serveDirectory(SRCDIR);
+
+    QDeclarativeComponent component(&engine, url);
+
+    QTRY_VERIFY(!component.isLoading());
+
+    if (error.isEmpty()) {
+        if (component.isError())
+            qDebug() << component.errors();
+        QVERIFY(!component.isError());
+    } else {
+        QVERIFY(component.isError());
+    }
 }
 
 void tst_qdeclarativelanguage::importsRemote_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
 
-    QString serverdir = "http://127.0.0.1:14445/qtest/declarative/qmllanguage";
+    QString serverdir = "http://127.0.0.1:14447/qtest/declarative/qmllanguage";
 
-    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QDeclarativeRectangle";
-    QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QDeclarativeText";
-    QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QDeclarativeImage";
+    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QDeclarativeRectangle"
+        << "";
+    QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QDeclarativeText"
+        << "";
+    QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QDeclarativeImage"
+        << "";
+    QTest::newRow("wrong remote import with undeclared local") << "import \""+serverdir+"\"\nWrongTestLocal {}" << ""
+        << "WrongTestLocal is not a type";
+    QTest::newRow("wrong remote import of internal local") << "import \""+serverdir+"\"\nLocalInternal {}" << ""
+        << "LocalInternal is not a type";
+    QTest::newRow("wrong remote import of undeclared local") << "import \""+serverdir+"\"\nUndeclaredLocal {}" << ""
+        << "UndeclaredLocal is not a type";
 }
-
-#include "testhttpserver.h"
 
 void tst_qdeclarativelanguage::importsRemote()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
+    QFETCH(QString, error);
 
-    TestHTTPServer server(14445);
+    TestHTTPServer server(14447);
     server.serveDirectory(SRCDIR);
 
-    testType(qml,type);
+    testType(qml,type,error);
 }
 
 void tst_qdeclarativelanguage::importsInstalled_data()
@@ -1263,43 +1391,57 @@ void tst_qdeclarativelanguage::importsInstalled_data()
 
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
 
     // import installed
     QTest::newRow("installed import 0")
         << "import com.nokia.installedtest 0.0\n"
            "InstalledTestTP {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("installed import 0 as TP")
         << "import com.nokia.installedtest 0.0 as TP\n"
            "TP.InstalledTestTP {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("installed import 1")
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("installed import 2")
         << "import com.nokia.installedtest 1.3\n"
            "InstalledTest {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("installed import 3")
         << "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
-        << "QDeclarativeText";
-    QTest::newRow("installed import 4")
+        << "QDeclarativeText"
+        << "";
+    QTest::newRow("installed import minor version not available") // QTBUG-9627
         << "import com.nokia.installedtest 1.10\n"
            "InstalledTest {}"
-        << "QDeclarativeText";
+        << ""
+        << "module \"com.nokia.installedtest\" version 1.10 is not installed";
+    QTest::newRow("installed import major version not available") // QTBUG-9627
+        << "import com.nokia.installedtest 9.0\n"
+           "InstalledTest {}"
+        << ""
+        << "module \"com.nokia.installedtest\" version 9.0 is not installed";
     QTest::newRow("installed import visibility") // QT-614
         << "import com.nokia.installedtest 1.4\n"
            "PrivateType {}"
-        << "";
+        << ""
+        << "PrivateType is not a type";
 }
 
 void tst_qdeclarativelanguage::importsInstalled()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
-    testType(qml,type);
+    QFETCH(QString, error);
+    testType(qml,type,error);
 }
 
 
@@ -1307,58 +1449,77 @@ void tst_qdeclarativelanguage::importsOrder_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
+    QTest::addColumn<QString>("error");
 
     QTest::newRow("installed import overrides 1") <<
            "import com.nokia.installedtest 1.0\n"
            "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
-        << "QDeclarativeText";
+        << "QDeclarativeText"
+        << "";
     QTest::newRow("installed import overrides 2") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
     QTest::newRow("installed import re-overrides 1") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
-        << "QDeclarativeText";
+        << "QDeclarativeText"
+        << "";
     QTest::newRow("installed import re-overrides 2") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QDeclarativeRectangle";
+        << "QDeclarativeRectangle"
+        << "";
 
     QTest::newRow("installed import versus builtin 1") <<
            "import com.nokia.installedtest 1.5\n"
-           "import Qt 4.6\n"
+           "import Qt 4.7\n"
            "Rectangle {}"
-        << "QDeclarativeRectangle";
-    QTest::newRow("installed import versus builtin 2") <<
-           "import Qt 4.6\n"
-           "import com.nokia.installedtest 1.5\n"
-           "Rectangle {}"
-        << "QDeclarativeText";
-    QTest::newRow("namespaces cannot be overridden by types 1") <<
-           "import Qt 4.6 as Rectangle\n"
-           "import com.nokia.installedtest 1.5\n"
-           "Rectangle {}"
+        << "QDeclarativeRectangle"
         << "";
+    QTest::newRow("installed import versus builtin 2") <<
+           "import Qt 4.7\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle {}"
+        << "QDeclarativeText"
+        << "";
+    QTest::newRow("namespaces cannot be overridden by types 1") <<
+           "import Qt 4.7 as Rectangle\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle {}"
+        << ""
+        << "Namespace Rectangle cannot be used as a type";
     QTest::newRow("namespaces cannot be overridden by types 2") <<
-           "import Qt 4.6 as Rectangle\n"
+           "import Qt 4.7 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle.Image {}"
-        << "QDeclarativeImage";
+        << "QDeclarativeImage"
+        << "";
+    QTest::newRow("local last 1") <<
+           "LocalLast {}"
+        << "QDeclarativeText"
+        << "";
+    QTest::newRow("local last 2") <<
+           "import com.nokia.installedtest 1.0\n"
+           "LocalLast {}"
+        << "QDeclarativeRectangle"
+        << ""; // i.e. from com.nokia.installedtest, not data/LocalLast.qml
 }
 
 void tst_qdeclarativelanguage::importsOrder()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
-    testType(qml,type);
+    QFETCH(QString, error);
+    testType(qml,type,error);
 }
 
 void tst_qdeclarativelanguage::qmlAttachedPropertiesObjectMethod()
@@ -1392,7 +1553,7 @@ void tst_qdeclarativelanguage::qmlAttachedPropertiesObjectMethod()
 void tst_qdeclarativelanguage::crash1()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nComponent {}", QUrl());
+    component.setData("import Qt 4.7\nComponent {}", QUrl());
 }
 
 void tst_qdeclarativelanguage::crash2()
@@ -1418,12 +1579,12 @@ void tst_qdeclarativelanguage::initTestCase()
 {
     registerTypes();
 
-    QML_REGISTER_TYPE(com.nokia.Test, 0, 0, TestTP, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 0, Test, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 5, Test, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 8, Test, TestType2);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 9, OldTest, TestType);
-    QML_REGISTER_TYPE(com.nokia.Test, 1, 12, Test, TestType2);
+    qmlRegisterType<TestType>("com.nokia.Test", 0, 0, "TestTP");
+    qmlRegisterType<TestType>("com.nokia.Test", 1, 0, "Test");
+    qmlRegisterType<TestType>("com.nokia.Test", 1, 5, "Test");
+    qmlRegisterType<TestType2>("com.nokia.Test", 1, 8, "Test");
+    qmlRegisterType<TestType>("com.nokia.Test", 1, 9, "OldTest");
+    qmlRegisterType<TestType2>("com.nokia.Test", 1, 12, "Test");
 
     // Create locale-specific file
     // For POSIX, this will just be data/I18nType.qml, since POSIX is 7-bit

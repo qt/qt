@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEEXPRESSION_H
 #define QDECLARATIVEEXPRESSION_H
 
-#include "qdeclarativeerror.h"
+#include <QtDeclarative/qdeclarativeerror.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
@@ -58,6 +58,7 @@ class QDeclarativeRefCount;
 class QDeclarativeEngine;
 class QDeclarativeContext;
 class QDeclarativeExpressionPrivate;
+class QDeclarativeContextData;
 class Q_DECLARATIVE_EXPORT QDeclarativeExpression : public QObject
 {
     Q_OBJECT
@@ -91,18 +92,21 @@ Q_SIGNALS:
     void valueChanged();
 
 protected:
-    QDeclarativeExpression(QDeclarativeContext *, const QString &, QObject *, 
-                  QDeclarativeExpressionPrivate &dd);
-    QDeclarativeExpression(QDeclarativeContext *, void *, QDeclarativeRefCount *rc, QObject *me, const QString &,
-                  int, QDeclarativeExpressionPrivate &dd);
+    QDeclarativeExpression(QDeclarativeContextData *, const QString &, QObject *, 
+                           QDeclarativeExpressionPrivate &dd);
+    QDeclarativeExpression(QDeclarativeContextData *, void *, QDeclarativeRefCount *rc, 
+                           QObject *me, const QString &, int, QDeclarativeExpressionPrivate &dd);
 
 private Q_SLOTS:
     void __q_notify();
 
 private:
+    QDeclarativeExpression(QDeclarativeContextData *, const QString &, QObject *);
+
     Q_DECLARE_PRIVATE(QDeclarativeExpression)
     friend class QDeclarativeDebugger;
     friend class QDeclarativeContext;
+    friend class QDeclarativeVME;
 };
 
 QT_END_NAMESPACE

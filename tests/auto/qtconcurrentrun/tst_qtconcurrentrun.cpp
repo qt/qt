@@ -49,7 +49,7 @@
 
 using namespace QtConcurrent;
 
-class TestRunFunction: public QObject
+class tst_QtConcurrentRun: public QObject
 {
     Q_OBJECT
 private slots:
@@ -73,7 +73,7 @@ private slots:
 #endif
 
 
-QTEST_MAIN(TestRunFunction)
+QTEST_MAIN(tst_QtConcurrentRun)
 
 void light()
 {
@@ -91,7 +91,7 @@ void heavy()
 }
 
 
-void TestRunFunction::runLightFunction()
+void tst_QtConcurrentRun::runLightFunction()
 {
     qDebug("starting function");
     QFuture<void> future = run(F(light));
@@ -100,7 +100,7 @@ void TestRunFunction::runLightFunction()
     qDebug("done");
 }
 
-void TestRunFunction::runHeavyFunction()
+void tst_QtConcurrentRun::runHeavyFunction()
 {
     qDebug("starting function");
     QFuture<void> future = run(F(heavy));
@@ -141,7 +141,7 @@ public:
     int operator()(int in) const { return in; }
 };
 
-void TestRunFunction::returnValue()
+void tst_QtConcurrentRun::returnValue()
 {
     QFuture<int> f;
     
@@ -217,7 +217,7 @@ struct TestConstClass
     void fooInt(int) const { };
 };
 
-void TestRunFunction::functionObject()
+void tst_QtConcurrentRun::functionObject()
 {
     QFuture<void> f;
     TestClass c;
@@ -235,7 +235,7 @@ void TestRunFunction::functionObject()
 }
 
 
-void TestRunFunction::memberFunctions()
+void tst_QtConcurrentRun::memberFunctions()
 {
     TestClass c;
 
@@ -278,7 +278,7 @@ void stringIntFunction(QString)
 }
 
 
-void TestRunFunction::implicitConvertibleTypes()
+void tst_QtConcurrentRun::implicitConvertibleTypes()
 {
     double d;
     run(F(doubleFunction), d).waitForFinished();
@@ -294,7 +294,7 @@ void TestRunFunction::implicitConvertibleTypes()
 
 void fn() { }
 
-void TestRunFunction::runWaitLoop()
+void tst_QtConcurrentRun::runWaitLoop()
 {
     for (int i = 0; i < 1000; ++i)
         run(fn).waitForFinished();
@@ -324,7 +324,7 @@ int recursiveResult(int level)
     return 1;
 }
 
-void TestRunFunction::recursive()
+void tst_QtConcurrentRun::recursive()
 {
     int levels = 15;
 
@@ -375,7 +375,7 @@ int fn2(double, int *)
 }
 
 #if 0
-void TestRunFunction::createFunctor()
+void tst_QtConcurrentRun::createFunctor()
 {
     e = 0;
     ::QtConcurrent::createFunctor(vfn0)();

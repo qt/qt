@@ -114,15 +114,14 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         }
     } else if (old_height > span->height()) {
         //remove the span from all the subspans lists that intersect the columns not covered anymore
-        Index::iterator it_y = index.lowerBound(-span->bottom());
-        if (it_y == index.end())
-            it_y = index.find(-span->top());    // This is the only span remaining and we are deleting it.
+        Index::iterator it_y = index.lowerBound(-qMax(span->bottom(), span->top())); //qMax usefull if height is 0
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->top() + old_height -1) {
             if (-it_y.key() > span->bottom()) {
-                (*it_y).remove(-span->left());
+                int removed = (*it_y).remove(-span->left());
+                Q_ASSERT(removed == 1); Q_UNUSED(removed);
                 if (it_y->isEmpty()) {
-                    it_y = index.erase(it_y) - 1;
+                    it_y = index.erase(it_y);
                 }
             }
             if(it_y == index.begin())
@@ -1847,7 +1846,9 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
             selection.append(QItemSelectionRange(topLeft, bottomRight));
         }
     } else { // nothing moved
-        selection.append(QItemSelectionRange(tl, br));
+        QItemSelectionRange range(tl, br);
+        if (!range.isEmpty())
+            selection.append(range);
     }
 
     d->selectionModel->select(selection, command);
@@ -1858,6 +1859,9 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
 
     Returns the rectangle from the viewport of the items in the given
     \a selection.
+
+    Since 4.7, the returned region only contains rectangles intersecting
+    (or included in) the viewport.
 */
 QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) const
 {
@@ -1867,6 +1871,7 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
         return QRegion();
 
     QRegion selectionRegion;
+    const QRect &viewportRect = d->viewport->rect();
     bool verticalMoved = verticalHeader()->sectionsMoved();
     bool horizontalMoved = horizontalHeader()->sectionsMoved();
 
@@ -1876,8 +1881,11 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
             if (range.parent() != d->root || !range.isValid())
                 continue;
             for (int r = range.top(); r <= range.bottom(); ++r)
-                for (int c = range.left(); c <= range.right(); ++c)
-                    selectionRegion += QRegion(visualRect(d->model->index(r, c, d->root)));
+                for (int c = range.left(); c <= range.right(); ++c) {
+                    const QRect &rangeRect = visualRect(d->model->index(r, c, d->root));
+                    if (viewportRect.intersects(rangeRect))
+                        selectionRegion += rangeRect;
+                }
         }
     } else if (horizontalMoved) {
         for (int i = 0; i < selection.count(); ++i) {
@@ -1889,9 +1897,11 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
             if (top > bottom)
                 qSwap<int>(top, bottom);
             int height = bottom - top;
-            for (int c = range.left(); c <= range.right(); ++c)
-                selectionRegion += QRegion(QRect(columnViewportPosition(c), top,
-                                                 columnWidth(c), height));
+            for (int c = range.left(); c <= range.right(); ++c) {
+                const QRect rangeRect(columnViewportPosition(c), top, columnWidth(c), height);
+                if (viewportRect.intersects(rangeRect))
+                    selectionRegion += rangeRect;
+            }
         }
     } else if (verticalMoved) {
         for (int i = 0; i < selection.count(); ++i) {
@@ -1903,9 +1913,11 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
             if (left > right)
                 qSwap<int>(left, right);
             int width = right - left;
-            for (int r = range.top(); r <= range.bottom(); ++r)
-                selectionRegion += QRegion(QRect(left, rowViewportPosition(r),
-                                                 width, rowHeight(r)));
+            for (int r = range.top(); r <= range.bottom(); ++r) {
+                const QRect rangeRect(left, rowViewportPosition(r), width, rowHeight(r));
+                if (viewportRect.intersects(rangeRect))
+                    selectionRegion += rangeRect;
+            }
         }
     } else { // nothing moved
         const int gridAdjust = showGrid() ? 1 : 0;
@@ -1926,12 +1938,17 @@ QRegion QTableView::visualRegionForSelection(const QItemSelection &selection) co
                 rleft = columnViewportPosition(range.right());
                 rright = columnViewportPosition(range.left()) + columnWidth(range.left());
             }
-            selectionRegion += QRect(QPoint(rleft, rtop), QPoint(rright - 1 - gridAdjust, rbottom - 1 - gridAdjust));
+            const QRect rangeRect(QPoint(rleft, rtop), QPoint(rright - 1 - gridAdjust, rbottom - 1 - gridAdjust));
+            if (viewportRect.intersects(rangeRect))
+                selectionRegion += rangeRect;
             if (d->hasSpans()) {
                 foreach (QSpanCollection::Span *s,
                          d->spans.spansInRect(range.left(), range.top(), range.width(), range.height())) {
-                    if (range.contains(s->top(), s->left(), range.parent()))
-                        selectionRegion += d->visualSpanRect(*s);
+                    if (range.contains(s->top(), s->left(), range.parent())) {
+                        const QRect &visualSpanRect = d->visualSpanRect(*s);
+                        if (viewportRect.intersects(visualSpanRect))
+                            selectionRegion += visualSpanRect;
+                    }
                 }
             }
         }

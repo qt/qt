@@ -1869,13 +1869,18 @@ void QLineEdit::paintEvent(QPaintEvent *)
     }
     QRect lineRect(r.x() + d->horizontalMargin, d->vscroll, r.width() - 2*d->horizontalMargin, fm.height());
 
+    int minLB = qMax(0, -fm.minLeftBearing());
+    int minRB = qMax(0, -fm.minRightBearing());
+
     if (d->control->text().isEmpty()) {
         if (!hasFocus() && !d->placeholderText.isEmpty()) {
             QColor col = pal.text().color();
             col.setAlpha(128);
             QPen oldpen = p.pen();
             p.setPen(col);
-            p.drawText(lineRect, va, d->placeholderText);
+            lineRect.adjust(minLB, 0, 0, 0);
+            QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
+            p.drawText(lineRect, va, elidedText);
             p.setPen(oldpen);
             return;
         }
@@ -1889,8 +1894,6 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // the below code handles all scrolling based on the textline (widthUsed,
     // minLB, minRB), the line edit rect (lineRect) and the cursor position
     // (cix).
-    int minLB = qMax(0, -fm.minLeftBearing());
-    int minRB = qMax(0, -fm.minRightBearing());
     int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
     if ((minLB + widthUsed) <=  lineRect.width()) {
         // text fits in lineRect; use hscroll for alignment
@@ -2046,7 +2049,7 @@ void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     extern bool qt_use_rtl_extensions;
 #endif
 
@@ -2118,7 +2121,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     }
 #endif
 
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if (!d->control->isReadOnly() && qt_use_rtl_extensions) {
 #else
     if (!d->control->isReadOnly()) {

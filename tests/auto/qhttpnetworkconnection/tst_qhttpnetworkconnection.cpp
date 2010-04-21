@@ -385,7 +385,7 @@ void tst_QHttpNetworkConnection::post_data()
     QTest::addColumn<int>("contentLength");
     QTest::addColumn<int>("downloadSize");
 
-    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
+    QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
     QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << 997 + QtNetworkSettings::serverName().size();
 }
 
@@ -801,7 +801,7 @@ void tst_QHttpNetworkConnection::getMultiple_data()
 
     QTest::newRow("6 connections, no pipelining, 100 requests")  << quint16(6) << false << 100;
     QTest::newRow("1 connection, no pipelining, 100 requests")  << quint16(1) << false << 100;
-    QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(2) << true << 100;
+    QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(6) << true << 100;
     QTest::newRow("1 connection, pipelining allowed, 100 requests")  << quint16(1) << true << 100;
 }
 

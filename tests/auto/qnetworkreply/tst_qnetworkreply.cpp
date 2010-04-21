@@ -205,6 +205,10 @@ private Q_SLOTS:
 #endif
     void ioGetFromHttpBrokenServer_data();
     void ioGetFromHttpBrokenServer();
+    void ioGetFromHttpStatus100_data();
+    void ioGetFromHttpStatus100();
+    void ioGetFromHttpNoHeaders_data();
+    void ioGetFromHttpNoHeaders();
     void ioGetFromHttpWithCache_data();
     void ioGetFromHttpWithCache();
 
@@ -279,6 +283,9 @@ private Q_SLOTS:
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
 #endif
+
+    // NOTE: This test must be last!
+    void parentingRepliesToTheApp();
 };
 
 QT_BEGIN_NAMESPACE
@@ -1403,10 +1410,10 @@ void tst_QNetworkReply::deleteFromHttp_data()
     // for status codes to expect, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
 
     QTest::newRow("405-method-not-allowed") << QUrl("http://" + QtNetworkSettings::serverName() + "/index.html") << 405 << QNetworkReply::ContentOperationNotPermittedError;
-    QTest::newRow("200-ok") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?200-ok") << 200 << QNetworkReply::NoError;
-    QTest::newRow("202-accepted") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?202-accepted") << 202 << QNetworkReply::NoError;
-    QTest::newRow("204-no-content") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?204-no-content") << 204 << QNetworkReply::NoError;
-    QTest::newRow("404-not-found") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?404-not-found") << 404 << QNetworkReply::ContentNotFoundError;
+    QTest::newRow("200-ok") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?200-ok") << 200 << QNetworkReply::NoError;
+    QTest::newRow("202-accepted") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?202-accepted") << 202 << QNetworkReply::NoError;
+    QTest::newRow("204-no-content") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?204-no-content") << 204 << QNetworkReply::NoError;
+    QTest::newRow("404-not-found") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/http-delete.cgi?404-not-found") << 404 << QNetworkReply::ContentNotFoundError;
 }
 
 void tst_QNetworkReply::deleteFromHttp()
@@ -2157,6 +2164,60 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer()
 
     QCOMPARE(reply->url(), request.url());
     QVERIFY(reply->error() != QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::ioGetFromHttpStatus100_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::newRow("normal") << QByteArray("HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    QTest::newRow("minimal") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    QTest::newRow("minimal2") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.0 200 OK\r\n\r\n");
+    QTest::newRow("minimal3") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.0 200 OK\n\n");
+    QTest::newRow("with_headers") << QByteArray("HTTP/1.1 100 Continue\r\nBla: x\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    QTest::newRow("with_headers2") << QByteArray("HTTP/1.1 100 Continue\nBla: x\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+}
+
+void tst_QNetworkReply::ioGetFromHttpStatus100()
+{
+    QFETCH(QByteArray, dataToSend);
+    MiniHttpServer server(dataToSend);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(reply->rawHeader("bla").isNull());
+}
+
+void tst_QNetworkReply::ioGetFromHttpNoHeaders_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::newRow("justStatus+noheaders+disconnect") << QByteArray("HTTP/1.0 200 OK\r\n\r\n");
+}
+
+void tst_QNetworkReply::ioGetFromHttpNoHeaders()
+{
+    QFETCH(QByteArray, dataToSend);
+    MiniHttpServer server(dataToSend);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
 }
 
 void tst_QNetworkReply::ioGetFromHttpWithCache_data()
@@ -3302,7 +3363,7 @@ void tst_QNetworkReply::lastModifiedHeaderForFile()
 void tst_QNetworkReply::lastModifiedHeaderForHttp()
 {
     // Tue, 22 May 2007 12:04:57 GMT according to webserver
-    QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/fluke.gif";
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
@@ -3825,10 +3886,10 @@ void tst_QNetworkReply::authorizationError_data()
     QTest::addColumn<QString>("httpBody");
 
     QTest::newRow("unknown-authorization-method") << "http://" + QtNetworkSettings::serverName() +
-                                                     "/cgi-bin/http-unknown-authentication-method.cgi?401-authorization-required" << 1 << 1
+                                                     "/qtest/cgi-bin/http-unknown-authentication-method.cgi?401-authorization-required" << 1 << 1
                                                   << int(QNetworkReply::AuthenticationRequiredError) << 401 << "authorization required";
     QTest::newRow("unknown-proxy-authorization-method") << "http://" + QtNetworkSettings::serverName() +
-                                                           "/cgi-bin/http-unknown-authentication-method.cgi?407-proxy-authorization-required" << 1 << 1
+                                                           "/qtest/cgi-bin/http-unknown-authentication-method.cgi?407-proxy-authorization-required" << 1 << 1
                                                         << int(QNetworkReply::ProxyAuthenticationRequiredError) << 407
                                                         << "authorization required";
 }
@@ -3873,7 +3934,7 @@ void tst_QNetworkReply::httpConnectionCount()
     for (int i = 0; i < 10; i++) {
         QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/" +  QString::number(i)));
         QNetworkReply* reply = manager.get(request);
-        reply->setParent(this);
+        reply->setParent(&server);
     }
 
     int pendingConnectionCount = 0;
@@ -3952,7 +4013,7 @@ void tst_QNetworkReply::httpReUsingConnectionSequential()
 }
 
 class HttpReUsingConnectionFromFinishedSlot : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     QNetworkReply* reply1;
     QNetworkReply* reply2;
@@ -4052,7 +4113,7 @@ public slots:
         }
     }
     void startOne() {
-        QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+        QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/fluke.gif";
         QNetworkRequest request(url);
         QNetworkReply *reply = manager.get(request);
         reply->setParent(this);
@@ -4146,6 +4207,14 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 }
 
 #endif // QT_NO_OPENSSL
+
+// NOTE: This test must be last testcase in tst_qnetworkreply!
+void tst_QNetworkReply::parentingRepliesToTheApp()
+{
+    QNetworkRequest request (QUrl("http://" + QtNetworkSettings::serverName()));
+    manager.get(request)->setParent(this); // parent to this object
+    manager.get(request)->setParent(qApp); // parent to the app
+}
 
 QTEST_MAIN(tst_QNetworkReply)
 #include "tst_qnetworkreply.moc"

@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEGRIDVIEW_H
 #define QDECLARATIVEGRIDVIEW_H
 
-#include "qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p.h"
 
 QT_BEGIN_HEADER
 
@@ -66,6 +66,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
     Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
     Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+    Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
@@ -106,6 +107,9 @@ public:
     bool highlightFollowsCurrentItem() const;
     void setHighlightFollowsCurrentItem(bool);
 
+    int highlightMoveDuration() const;
+    void setHighlightMoveDuration(int);
+
     enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
     HighlightRangeMode highlightRangeMode() const;
     void setHighlightRangeMode(HighlightRangeMode mode);
@@ -137,6 +141,12 @@ public:
     SnapMode snapMode() const;
     void setSnapMode(SnapMode mode);
 
+    enum PositionMode { Beginning, Center, End, Visible, Contain };
+    Q_ENUMS(PositionMode);
+
+    Q_INVOKABLE void positionViewAtIndex(int index, int mode);
+    Q_INVOKABLE int indexAt(int x, int y) const;
+
     static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
@@ -144,7 +154,6 @@ public Q_SLOTS:
     void moveCurrentIndexDown();
     void moveCurrentIndexLeft();
     void moveCurrentIndexRight();
-    void positionViewAtIndex(int index);
 
 Q_SIGNALS:
     void countChanged();
@@ -156,6 +165,7 @@ Q_SIGNALS:
     void preferredHighlightBeginChanged();
     void preferredHighlightEndChanged();
     void highlightRangeModeChanged();
+    void highlightMoveDurationChanged();
     void modelChanged();
     void delegateChanged();
     void flowChanged();
@@ -164,6 +174,7 @@ Q_SIGNALS:
     void snapModeChanged();
 
 protected:
+    virtual bool event(QEvent *event);
     virtual void viewportMoved();
     virtual qreal minYExtent() const;
     virtual qreal maxYExtent() const;
@@ -181,7 +192,6 @@ private Q_SLOTS:
     void destroyRemoved();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
-    void layout();
 
 private:
     void refill();
@@ -192,7 +202,7 @@ class QDeclarativeGridViewAttached : public QObject
     Q_OBJECT
 public:
     QDeclarativeGridViewAttached(QObject *parent)
-        : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
+        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QDeclarativeGridViewAttached() {}
 
     Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)

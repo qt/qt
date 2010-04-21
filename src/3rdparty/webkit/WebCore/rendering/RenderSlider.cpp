@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -35,6 +35,7 @@
 #include "RenderLayer.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
+#include "StepRange.h"
 #include <wtf/MathExtras.h>
 
 using std::min;
@@ -45,70 +46,10 @@ using namespace HTMLNames;
 
 static const int defaultTrackLength = 129;
 
-// FIXME: The SliderRange class and functions are entirely based on the DOM,
-// and could be put with HTMLInputElement (possibly with a new name) instead of here.
-struct SliderRange {
-    bool isIntegral;
-    double minimum;
-    double maximum;  // maximum must be >= minimum.
-
-    explicit SliderRange(HTMLInputElement*);
-    double clampValue(double value);
-
-    // Map value into 0-1 range
-    double proportionFromValue(double value)
-    {
-        if (minimum == maximum)
-            return 0;
-
-        return (value - minimum) / (maximum - minimum);
-    }
-    
-    // Map from 0-1 range to value
-    double valueFromProportion(double proportion)
-    {
-        return minimum + proportion * (maximum - minimum);
-    }
-    
-    double valueFromElement(HTMLInputElement*, bool* wasClamped = 0);
-};
-
-SliderRange::SliderRange(HTMLInputElement* element)
-{
-    // FIXME: What's the right way to handle an integral range with non-integral minimum and maximum?
-    // Currently values are guaranteed to be integral but could be outside the range in that case.
-
-    isIntegral = !equalIgnoringCase(element->getAttribute(precisionAttr), "float");
-
-    maximum = element->rangeMaximum();
-    minimum = element->rangeMinimum();
-}
-
-double SliderRange::clampValue(double value)
-{
-    double clampedValue = max(minimum, min(value, maximum));
-    return isIntegral ? round(clampedValue) : clampedValue;
-}
-
-double SliderRange::valueFromElement(HTMLInputElement* element, bool* wasClamped)
-{
-    double oldValue;
-    bool parseSuccess = HTMLInputElement::formStringToDouble(element->value(), &oldValue);
-    if (!parseSuccess)
-        oldValue = (minimum + maximum) / 2;
-    double newValue = clampValue(oldValue);
-
-    if (wasClamped)
-        *wasClamped = !parseSuccess || newValue != oldValue;
-
-    return newValue;
-}
-
 // Returns a value between 0 and 1.
-// As with SliderRange, this could be on HTMLInputElement instead of here.
 static double sliderPosition(HTMLInputElement* element)
 {
-    SliderRange range(element);
+    StepRange range(element);
     return range.proportionFromValue(range.valueFromElement(element));
 }
 
@@ -352,9 +293,8 @@ void RenderSlider::layout()
             thumb->repaintDuringLayoutIfMoved(oldThumbRect);
 
         statePusher.pop();
+        addOverflowFromChild(thumb);
     }
-
-    addOverflowFromChild(thumb);
 
     repainter.repaintAfterLayout();    
 
@@ -363,15 +303,6 @@ void RenderSlider::layout()
 
 void RenderSlider::updateFromElement()
 {
-    HTMLInputElement* element = static_cast<HTMLInputElement*>(node());
-
-    // Send the value back to the element if the range changes it.
-    SliderRange range(element);
-    bool clamped;
-    double value = range.valueFromElement(element, &clamped);
-    if (clamped)
-        element->setValueFromRenderer(String::number(value));
-
     // Layout will take care of the thumb's size and position.
     if (!m_thumb) {
         m_thumb = new SliderThumbElement(document(), node());
@@ -421,12 +352,12 @@ void RenderSlider::setValueForPosition(int position)
     HTMLInputElement* element = static_cast<HTMLInputElement*>(node());
 
     // Calculate the new value based on the position, and send it to the element.
-    SliderRange range(element);
+    StepRange range(element);
     double fraction = static_cast<double>(position) / trackSize();
     if (style()->appearance() == SliderVerticalPart || style()->appearance() == MediaVolumeSliderPart)
         fraction = 1 - fraction;
     double value = range.clampValue(range.valueFromProportion(fraction));
-    element->setValueFromRenderer(String::number(value));
+    element->setValueFromRenderer(HTMLInputElement::serializeForNumberType(value));
 
     // Also update the position if appropriate.
     if (position != currentPosition()) {

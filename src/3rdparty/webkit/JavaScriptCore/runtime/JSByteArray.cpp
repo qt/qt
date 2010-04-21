@@ -42,10 +42,18 @@ JSByteArray::JSByteArray(ExecState* exec, NonNullPassRefPtr<Structure> structure
 {
     putDirect(exec->globalData().propertyNames->length, jsNumber(exec, m_storage->length()), ReadOnly | DontDelete);
 }
-    
+
+#if !ASSERT_DISABLED
+JSByteArray::~JSByteArray()
+{
+    ASSERT(vptr() == JSGlobalData::jsByteArrayVPtr);
+}
+#endif
+
+
 PassRefPtr<Structure> JSByteArray::createStructure(JSValue prototype)
 {
-    PassRefPtr<Structure> result = Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+    PassRefPtr<Structure> result = Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
     return result;
 }
 
@@ -96,12 +104,12 @@ void JSByteArray::put(ExecState* exec, unsigned propertyName, JSValue value)
     setIndex(exec, propertyName, value);
 }
 
-void JSByteArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSByteArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     unsigned length = m_storage->length();
     for (unsigned i = 0; i < length; ++i)
         propertyNames.add(Identifier::from(exec, i));
-    JSObject::getOwnPropertyNames(exec, propertyNames);
+    JSObject::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 }

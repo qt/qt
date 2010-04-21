@@ -67,8 +67,6 @@
     document describes how events are delivered and handled in a typical
     application.
 
-    \tableofcontents
-
     \section1 How Events are Delivered
 
     When an event occurs, Qt creates an event object to represent it by

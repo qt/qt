@@ -55,8 +55,8 @@
 
 #include "qdeclarativeexpression.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <QtScript/qscriptvalue.h>
 
@@ -70,15 +70,16 @@ public:
 
     bool isValid() const;
 
-    QDeclarativeContext *context() const;
-    void setContext(QDeclarativeContext *);
+    QDeclarativeContextData *context() const;
+    void setContext(QDeclarativeContextData *);
 
     virtual void refresh();
 
 private:
     friend class QDeclarativeContext;
+    friend class QDeclarativeContextData;
     friend class QDeclarativeContextPrivate;
-    QDeclarativeContext *m_context;
+    QDeclarativeContextData *m_context;
     QDeclarativeAbstractExpression **m_prevExpression;
     QDeclarativeAbstractExpression  *m_nextExpression;
 };
@@ -129,24 +130,7 @@ public:
     QString url; // This is a QString for a reason.  QUrls are slooooooow...
     int line;
 
-    struct SignalGuard : public QDeclarativeGuard<QObject> {
-        SignalGuard() : isDuplicate(false), notifyIndex(-1) {}
-
-        SignalGuard &operator=(QObject *obj) {
-            QDeclarativeGuard<QObject>::operator=(obj);
-            return *this;
-        }
-        SignalGuard &operator=(const SignalGuard &o) {
-            QDeclarativeGuard<QObject>::operator=(o);
-            isDuplicate = o.isDuplicate;
-            notifyIndex = o.notifyIndex;
-            return *this;
-        }
-
-        bool isDuplicate:1;
-        int notifyIndex:31;
-    };
-    SignalGuard *guardList;
+    QDeclarativeNotifierEndpoint *guardList;
     int guardListLength;
 };
 
@@ -160,13 +144,15 @@ public:
     QDeclarativeExpressionPrivate(QDeclarativeExpressionData *);
     ~QDeclarativeExpressionPrivate();
 
-    void init(QDeclarativeContext *, const QString &, QObject *);
-    void init(QDeclarativeContext *, void *, QDeclarativeRefCount *, QObject *, const QString &, int);
+    void init(QDeclarativeContextData *, const QString &, QObject *);
+    void init(QDeclarativeContextData *, void *, QDeclarativeRefCount *, QObject *, const QString &, int);
 
     QDeclarativeExpressionData *data;
 
     QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);
-    QVariant evalQtScript(QObject *secondaryScope, bool *isUndefined = 0);
+    QScriptValue scriptValue(QObject *secondaryScope = 0, bool *isUndefined = 0);
+
+    QScriptValue eval(QObject *secondaryScope, bool *isUndefined = 0);
 
     void updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties);
     void clearGuards();
@@ -181,8 +167,10 @@ public:
     virtual void emitValueChanged();
 
     static void exceptionToError(QScriptEngine *, QDeclarativeError &);
-    static QScriptValue evalInObjectScope(QDeclarativeContext *, QObject *, const QString &, QScriptValue * = 0);
-    static QScriptValue evalInObjectScope(QDeclarativeContext *, QObject *, const QScriptProgram &, QScriptValue * = 0);
+    static QScriptValue evalInObjectScope(QDeclarativeContextData *, QObject *, const QString &, const QString &,
+                                          int, QScriptValue *);
+    static QScriptValue evalInObjectScope(QDeclarativeContextData *, QObject *, const QScriptProgram &, 
+                                          QScriptValue *);
 };
 
 QT_END_NAMESPACE

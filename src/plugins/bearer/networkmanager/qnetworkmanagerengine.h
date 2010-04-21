@@ -60,6 +60,9 @@
 #include <QMap>
 #include <QVariant>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkManagerEngine : public QBearerEngineImpl
@@ -69,6 +72,8 @@ class QNetworkManagerEngine : public QBearerEngineImpl
 public:
     QNetworkManagerEngine(QObject *parent = 0);
     ~QNetworkManagerEngine();
+
+    Q_INVOKABLE void init();
 
     bool networkManagerAvailable() const;
 
@@ -134,6 +139,9 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif
 

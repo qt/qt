@@ -56,6 +56,9 @@
 #include <QDBusMessage>
 #include <QDBusReply>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
@@ -91,6 +94,15 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
     connect(userSettings, SIGNAL(newConnection(QDBusObjectPath)),
             this, SLOT(newConnection(QDBusObjectPath)));
 
+    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+}
+
+QNetworkManagerEngine::~QNetworkManagerEngine()
+{
+}
+
+void QNetworkManagerEngine::init()
+{
     // Get current list of access points.
     foreach (const QDBusObjectPath &devicePath, interface->getDevices())
         deviceAdded(devicePath);
@@ -111,10 +123,6 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
         connect(activeConnection, SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)),
                 this, SLOT(activeConnectionPropertiesChanged(QString,QMap<QString,QVariant>)));
     }
-}
-
-QNetworkManagerEngine::~QNetworkManagerEngine()
-{
 }
 
 bool QNetworkManagerEngine::networkManagerAvailable() const
@@ -146,7 +154,7 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
                 continue;
 
             QNetworkManagerInterfaceDevice device(devices.at(0).path());
-            return device.networkInterface().name();
+            return device.networkInterface();
         }
     }
 
@@ -597,7 +605,11 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
     ptr->isValid = true;
     ptr->id = QString::number(qHash(objectPath.path()));
     ptr->type = QNetworkConfiguration::InternetAccessPoint;
-    ptr->purpose = QNetworkConfiguration::PublicPurpose;
+    if(accessPoint->flags() == NM_802_11_AP_FLAGS_PRIVACY) {
+        ptr->purpose = QNetworkConfiguration::PrivatePurpose;
+    } else {
+        ptr->purpose = QNetworkConfiguration::PublicPurpose;
+    }
     ptr->state = QNetworkConfiguration::Undefined;
     ptr->bearer = QLatin1String("WLAN");
 
@@ -713,6 +725,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
     if (connectionType == QLatin1String("802-3-ethernet")) {
         cpPriv->bearer = QLatin1String("Ethernet");
+        cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
 
         foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
             QNetworkManagerInterfaceDevice device(devicePath.path());
@@ -729,7 +742,12 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
         cpPriv->bearer = QLatin1String("WLAN");
 
         const QString connectionSsid = map.value("802-11-wireless").value("ssid").toString();
-
+        const QString connectionSecurity = map.value("802-11-wireless").value("security").toString();
+        if(!connectionSecurity.isEmpty()) {
+            cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
+        } else {
+            cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
+        }
         for (int i = 0; i < accessPoints.count(); ++i) {
             if (connectionSsid == accessPoints.at(i)->ssid()) {
                 cpPriv->state |= QNetworkConfiguration::Discovered;
@@ -900,3 +918,5 @@ QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration(
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT

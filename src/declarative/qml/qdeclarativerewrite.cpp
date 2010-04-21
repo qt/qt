@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativerewrite_p.h"
+#include "private/qdeclarativerewrite_p.h"
 
-#include "qdeclarativeglobal_p.h"
+#include "private/qdeclarativeglobal_p.h"
 
 #include <QtCore/qdebug.h>
 

@@ -59,6 +59,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeImageBase : public QDeclarativeItem
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
 
+    Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
+
 public:
     ~QDeclarativeImageBase();
     enum Status { Null, Ready, Loading, Error };
@@ -71,8 +73,12 @@ public:
     bool asynchronous() const;
     void setAsynchronous(bool);
 
+    virtual void setSourceSize(const QSize&);
+    QSize sourceSize() const;
+
 Q_SIGNALS:
     void sourceChanged(const QUrl &);
+    void sourceSizeChanged();
     void statusChanged(Status);
     void progressChanged(qreal progress);
     void asynchronousChanged();

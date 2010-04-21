@@ -36,8 +36,6 @@ HEADERS += \
 SOURCES += \
         remoteconnection.cpp \
         deployment.cpp \
-        symbian/epocroot.cpp \
-		windows/registry.cpp \
         main.cpp
 
 LIBS += ole32.lib advapi32.lib

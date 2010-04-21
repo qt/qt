@@ -39,12 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepath_p.h"
-#include "qdeclarativepath_p_p.h"
-
-#include <qfxperf_p_p.h>
+#include "private/qdeclarativepath_p.h"
+#include "private/qdeclarativepath_p_p.h"
 
 #include <QSet>
+#include <QTime>
 
 #include <private/qbezier_p.h>
 
@@ -314,7 +313,6 @@ QStringList QDeclarativePath::attributes() const
     Q_D(const QDeclarativePath);
     return d->_attributes;
 }
-#include <QTime>
 
 static inline QBezier nextBezier(const QPainterPath &path, int *from, qreal *bezLength)
 {
@@ -356,9 +354,6 @@ static inline QBezier nextBezier(const QPainterPath &path, int *from, qreal *bez
 void QDeclarativePath::createPointCache() const
 {
     Q_D(const QDeclarativePath);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::QDeclarativePathViewPathCache> pc;
-#endif
     qreal pathLength = d->_path.length();
     const int points = int(pathLength*2);
     const int lastElement = d->_path.elementCount() - 1;

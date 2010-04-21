@@ -380,7 +380,7 @@ QPainterState *QPaintEngineEx::createState(QPainterState *orig) const
     return new QPainterState(orig);
 }
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
@@ -607,11 +607,11 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 {
     qreal right = r.x() + r.width();
     qreal bottom = r.y() + r.height();
-    qreal pts[] = { r.x(), r.y(),
-                    right, r.y(),
+    qreal pts[] = { qreal(r.x()), qreal(r.y()),
+                    right, qreal(r.y()),
                     right, bottom,
-                    r.x(), bottom,
-                    r.x(), r.y() };
+                    qreal(r.x()), bottom,
+                    qreal(r.x()), qreal(r.y()) };
     QVectorPath vp(pts, 5, 0, QVectorPath::RectangleHint);
     clip(vp, op);
 }
@@ -711,11 +711,11 @@ void QPaintEngineEx::drawRects(const QRect *rects, int rectCount)
         // ### Is there a one off here?
         qreal right = r.x() + r.width();
         qreal bottom = r.y() + r.height();
-        qreal pts[] = { r.x(), r.y(),
-                        right, r.y(),
+        qreal pts[] = { qreal(r.x()), qreal(r.y()),
+                        right, qreal(r.y()),
                         right, bottom,
-                        r.x(), bottom,
-                        r.x(), r.y() };
+                        qreal(r.x()), bottom,
+                        qreal(r.x()), qreal(r.y()) };
         QVectorPath vp(pts, 5, 0, QVectorPath::RectangleHint);
         draw(vp);
     }
@@ -903,7 +903,8 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() +1/63., points[i].y() };
+            qreal pts[] = { qreal(points[i].x()), qreal(points[i].y()),
+                            qreal(points[i].x() +1/63.), qreal(points[i].y()) };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }

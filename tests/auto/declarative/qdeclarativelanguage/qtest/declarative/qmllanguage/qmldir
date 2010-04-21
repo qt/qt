@@ -1,3 +1,5 @@
-Test 0.0 Test.qml
-TestSubDir 0.0 TestSubDir.qml
-TestLocal 0.0 TestLocal.qml
+Test Test.qml
+TestSubDir TestSubDir.qml
+TestLocal TestLocal.qml
+NamedLocal LocalInternal.qml
+internal LocalInternal LocalInternal.qml

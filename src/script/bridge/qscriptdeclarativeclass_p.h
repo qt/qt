@@ -130,6 +130,7 @@ public:
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual QScriptValue::PropertyFlags propertyFlags(Object *, const Identifier &);
     virtual Value call(Object *, QScriptContext *);
+    virtual bool compare(Object *, Object *);
 
     virtual QStringList propertyNames(Object *);
 

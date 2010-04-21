@@ -112,6 +112,7 @@ public:
 };
 
 #ifndef QT_NO_THREAD
+
 class QThreadPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QThread)
@@ -125,6 +126,9 @@ public:
     bool running;
     bool finished;
     bool terminated;
+
+    bool exited;
+    int returnCode;
 
     uint stackSize;
     QThread::Priority priority;

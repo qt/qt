@@ -1,10 +1,10 @@
-ImageDetails 0.0 ImageDetails.qml
-LikeOMeter 0.0 LikeOMeter.qml
-Loading 0.0 Loading.qml
-MediaButton 0.0 MediaButton.qml
-MediaLineEdit 0.0 MediaLineEdit.qml
-Progress 0.0 Progress.qml
-RssModel 0.0 RssModel.qml
-ScrollBar 0.0 ScrollBar.qml
-Slider 0.0 Slider.qml
-Star 0.0 Star.qml
+ImageDetails ImageDetails.qml
+LikeOMeter LikeOMeter.qml
+Loading Loading.qml
+MediaButton MediaButton.qml
+MediaLineEdit MediaLineEdit.qml
+Progress Progress.qml
+RssModel RssModel.qml
+ScrollBar ScrollBar.qml
+Slider Slider.qml
+Star Star.qml

@@ -43,14 +43,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSXPathResult);
 
 static const HashTableValue JSXPathResultTableValues[9] =
 {
-    { "resultType", DontDelete|ReadOnly, (intptr_t)jsXPathResultResultType, (intptr_t)0 },
-    { "numberValue", DontDelete|ReadOnly, (intptr_t)jsXPathResultNumberValue, (intptr_t)0 },
-    { "stringValue", DontDelete|ReadOnly, (intptr_t)jsXPathResultStringValue, (intptr_t)0 },
-    { "booleanValue", DontDelete|ReadOnly, (intptr_t)jsXPathResultBooleanValue, (intptr_t)0 },
-    { "singleNodeValue", DontDelete|ReadOnly, (intptr_t)jsXPathResultSingleNodeValue, (intptr_t)0 },
-    { "invalidIteratorState", DontDelete|ReadOnly, (intptr_t)jsXPathResultInvalidIteratorState, (intptr_t)0 },
-    { "snapshotLength", DontDelete|ReadOnly, (intptr_t)jsXPathResultSnapshotLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsXPathResultConstructor, (intptr_t)0 },
+    { "resultType", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultResultType), (intptr_t)0 },
+    { "numberValue", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultNumberValue), (intptr_t)0 },
+    { "stringValue", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultStringValue), (intptr_t)0 },
+    { "booleanValue", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultBooleanValue), (intptr_t)0 },
+    { "singleNodeValue", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultSingleNodeValue), (intptr_t)0 },
+    { "invalidIteratorState", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultInvalidIteratorState), (intptr_t)0 },
+    { "snapshotLength", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultSnapshotLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -65,16 +65,16 @@ static JSC_CONST_HASHTABLE HashTable JSXPathResultTable =
 
 static const HashTableValue JSXPathResultConstructorTableValues[11] =
 {
-    { "ANY_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultANY_TYPE, (intptr_t)0 },
-    { "NUMBER_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultNUMBER_TYPE, (intptr_t)0 },
-    { "STRING_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultSTRING_TYPE, (intptr_t)0 },
-    { "BOOLEAN_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultBOOLEAN_TYPE, (intptr_t)0 },
-    { "UNORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultUNORDERED_NODE_ITERATOR_TYPE, (intptr_t)0 },
-    { "ORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultORDERED_NODE_ITERATOR_TYPE, (intptr_t)0 },
-    { "UNORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE, (intptr_t)0 },
-    { "ORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultORDERED_NODE_SNAPSHOT_TYPE, (intptr_t)0 },
-    { "ANY_UNORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultANY_UNORDERED_NODE_TYPE, (intptr_t)0 },
-    { "FIRST_ORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultFIRST_ORDERED_NODE_TYPE, (intptr_t)0 },
+    { "ANY_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultANY_TYPE), (intptr_t)0 },
+    { "NUMBER_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultNUMBER_TYPE), (intptr_t)0 },
+    { "STRING_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultSTRING_TYPE), (intptr_t)0 },
+    { "BOOLEAN_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultBOOLEAN_TYPE), (intptr_t)0 },
+    { "UNORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultUNORDERED_NODE_ITERATOR_TYPE), (intptr_t)0 },
+    { "ORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultORDERED_NODE_ITERATOR_TYPE), (intptr_t)0 },
+    { "UNORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE), (intptr_t)0 },
+    { "ORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultORDERED_NODE_SNAPSHOT_TYPE), (intptr_t)0 },
+    { "ANY_UNORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultANY_UNORDERED_NODE_TYPE), (intptr_t)0 },
+    { "FIRST_ORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultFIRST_ORDERED_NODE_TYPE), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -99,7 +99,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -122,18 +122,18 @@ bool JSXPathResultConstructor::getOwnPropertyDescriptor(ExecState* exec, const I
 
 static const HashTableValue JSXPathResultPrototypeTableValues[13] =
 {
-    { "ANY_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultANY_TYPE, (intptr_t)0 },
-    { "NUMBER_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultNUMBER_TYPE, (intptr_t)0 },
-    { "STRING_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultSTRING_TYPE, (intptr_t)0 },
-    { "BOOLEAN_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultBOOLEAN_TYPE, (intptr_t)0 },
-    { "UNORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultUNORDERED_NODE_ITERATOR_TYPE, (intptr_t)0 },
-    { "ORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultORDERED_NODE_ITERATOR_TYPE, (intptr_t)0 },
-    { "UNORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE, (intptr_t)0 },
-    { "ORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultORDERED_NODE_SNAPSHOT_TYPE, (intptr_t)0 },
-    { "ANY_UNORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultANY_UNORDERED_NODE_TYPE, (intptr_t)0 },
-    { "FIRST_ORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)jsXPathResultFIRST_ORDERED_NODE_TYPE, (intptr_t)0 },
-    { "iterateNext", DontDelete|Function, (intptr_t)jsXPathResultPrototypeFunctionIterateNext, (intptr_t)0 },
-    { "snapshotItem", DontDelete|Function, (intptr_t)jsXPathResultPrototypeFunctionSnapshotItem, (intptr_t)1 },
+    { "ANY_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultANY_TYPE), (intptr_t)0 },
+    { "NUMBER_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultNUMBER_TYPE), (intptr_t)0 },
+    { "STRING_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultSTRING_TYPE), (intptr_t)0 },
+    { "BOOLEAN_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultBOOLEAN_TYPE), (intptr_t)0 },
+    { "UNORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultUNORDERED_NODE_ITERATOR_TYPE), (intptr_t)0 },
+    { "ORDERED_NODE_ITERATOR_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultORDERED_NODE_ITERATOR_TYPE), (intptr_t)0 },
+    { "UNORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE), (intptr_t)0 },
+    { "ORDERED_NODE_SNAPSHOT_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultORDERED_NODE_SNAPSHOT_TYPE), (intptr_t)0 },
+    { "ANY_UNORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultANY_UNORDERED_NODE_TYPE), (intptr_t)0 },
+    { "FIRST_ORDERED_NODE_TYPE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsXPathResultFIRST_ORDERED_NODE_TYPE), (intptr_t)0 },
+    { "iterateNext", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathResultPrototypeFunctionIterateNext), (intptr_t)0 },
+    { "snapshotItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathResultPrototypeFunctionSnapshotItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -189,17 +189,18 @@ bool JSXPathResult::getOwnPropertyDescriptor(ExecState* exec, const Identifier& 
     return getStaticValueDescriptor<JSXPathResult, Base>(exec, &JSXPathResultTable, this, propertyName, descriptor);
 }
 
-JSValue jsXPathResultResultType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultResultType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
-    return jsNumber(exec, imp->resultType());
+    JSValue result = jsNumber(exec, imp->resultType());
+    return result;
 }
 
-JSValue jsXPathResultNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultNumberValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     ExceptionCode ec = 0;
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->numberValue(ec));
@@ -207,9 +208,9 @@ JSValue jsXPathResultNumberValue(ExecState* exec, const Identifier&, const Prope
     return result;
 }
 
-JSValue jsXPathResultStringValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultStringValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     ExceptionCode ec = 0;
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
     JSC::JSValue result = jsString(exec, imp->stringValue(ec));
@@ -217,9 +218,9 @@ JSValue jsXPathResultStringValue(ExecState* exec, const Identifier&, const Prope
     return result;
 }
 
-JSValue jsXPathResultBooleanValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultBooleanValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     ExceptionCode ec = 0;
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
     JSC::JSValue result = jsBoolean(imp->booleanValue(ec));
@@ -227,9 +228,9 @@ JSValue jsXPathResultBooleanValue(ExecState* exec, const Identifier&, const Prop
     return result;
 }
 
-JSValue jsXPathResultSingleNodeValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultSingleNodeValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     ExceptionCode ec = 0;
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
     JSC::JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->singleNodeValue(ec)));
@@ -237,17 +238,18 @@ JSValue jsXPathResultSingleNodeValue(ExecState* exec, const Identifier&, const P
     return result;
 }
 
-JSValue jsXPathResultInvalidIteratorState(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultInvalidIteratorState(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
-    return jsBoolean(imp->invalidIteratorState());
+    JSValue result = jsBoolean(imp->invalidIteratorState());
+    return result;
 }
 
-JSValue jsXPathResultSnapshotLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultSnapshotLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slotBase));
     ExceptionCode ec = 0;
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->snapshotLength(ec));
@@ -255,9 +257,9 @@ JSValue jsXPathResultSnapshotLength(ExecState* exec, const Identifier&, const Pr
     return result;
 }
 
-JSValue jsXPathResultConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathResultConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSXPathResult* domObject = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
+    JSXPathResult* domObject = static_cast<JSXPathResult*>(asObject(slotBase));
     return JSXPathResult::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSXPathResult::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -298,52 +300,52 @@ JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionSnapshotItem(ExecState* exec
 
 // Constant getters
 
-JSValue jsXPathResultANY_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultANY_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsXPathResultNUMBER_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultNUMBER_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsXPathResultSTRING_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultSTRING_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsXPathResultBOOLEAN_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultBOOLEAN_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsXPathResultUNORDERED_NODE_ITERATOR_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultUNORDERED_NODE_ITERATOR_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsXPathResultORDERED_NODE_ITERATOR_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultORDERED_NODE_ITERATOR_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValue jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSValue jsXPathResultORDERED_NODE_SNAPSHOT_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultORDERED_NODE_SNAPSHOT_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(7));
 }
 
-JSValue jsXPathResultANY_UNORDERED_NODE_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultANY_UNORDERED_NODE_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValue jsXPathResultFIRST_ORDERED_NODE_TYPE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsXPathResultFIRST_ORDERED_NODE_TYPE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(9));
 }

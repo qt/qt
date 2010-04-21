@@ -15,36 +15,53 @@ contains( CONFIG, no_icon ) {
         }
 
         # Try to produce indentical string to fixedTarget in SymbianMakefileGenerator, replaced chars taken
-        # from SymbianMakefileGenerator::removeSpecialCharacters.
+        # from SymbianCommonGenerator::removeSpecialCharacters.
         #
         # Note: it is not a major problem even baseTarget is not 100% identical to fixedTarget since qmake
         # only uses filename from RSS_RULES.icon_file when referring to icon file name.
         baseTarget = $$basename(TARGET)
         baseTarget = $$replace(baseTarget, /,_)
         baseTarget = $$replace(baseTarget, \\,_)
-        baseTarget = $$replace(baseTarget, -,_)
-        baseTarget = $$replace(baseTarget, :,_)
-        baseTarget = $$replace(baseTarget, \.,_)
         baseTarget = $$replace(baseTarget, " ",_)
+        symbian-abld|symbian-sbsv2 {
+            baseTarget = $$replace(baseTarget, -,_)
+            baseTarget = $$replace(baseTarget, \.,_)
+            baseTarget = $$replace(baseTarget, :,_)
+        }
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
-        symbian-abld {
+        !symbian-sbsv2 {
+            !contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON #absolute path
             #Makefile: requires paths with backslash
-            contains(QMAKE_HOST.os, "Windows"):ICON = $$replace(ICON, /, \\)
+            ICON_backslashed = $$ICON
+
+            symbian-abld {
+                mifIconZDir = ${ZDIR}$$APP_RESOURCE_DIR
+            } else {
+                isEmpty(DESTDIR) {
+                    mifIconZDir = .
+                } else {
+                    mifIconZDir = $$DESTDIR
+                }
+            }
 
             # Extra compiler rules for mifconv
-            mifconv.output = ${ZDIR}$$APP_RESOURCE_DIR/$${baseTarget}.mif
+            mifconv.target = $$mifIconZDir/$${baseTarget}.mif
+            contains(QMAKE_HOST.os, "Windows") {
+                ICON_backslashed = $$replace(ICON_backslashed, /, \\)
+                mifconv.target = $$replace(mifconv.target, /, \\)
+            }
             # Based on: http://www.forum.nokia.com/document/Cpp_Developers_Library
             # svg-t icons should always use /c32 depth
-            mifconv.commands = mifconv ${QMAKE_FILE_OUT} /c32 ${QMAKE_FILE_IN}
-            mifconv.input = ICON
-            mifconv.CONFIG = no_link combine
-            # target_predeps together with combine seems not to work correctly, lets define it by ourselves
-            PRE_TARGETDEPS += $$mifconv.output
-            QMAKE_EXTRA_COMPILERS += mifconv
+            mifconv.commands = mifconv $$mifconv.target /c32 $$ICON_backslashed
+
+            mifconv.depends = $$ICON
+            PRE_TARGETDEPS += $$mifconv.target
+            QMAKE_EXTRA_TARGETS += mifconv
+            QMAKE_DISTCLEAN += $$mifconv.target
         }
         # Rules to use generated MIF file from symbian resources
-        RSS_RULES.number_of_icons = $$size(ICON)
+        RSS_RULES.number_of_icons = $$size(ICON_backslashed)
         RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif
     }
 }

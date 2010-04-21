@@ -66,7 +66,7 @@
 #include "qstring.h"
 #include "qprocess.h"
 #include "qprocess_p.h"
-#include "qeventdispatcher_symbian_p.h"
+#include "private/qeventdispatcher_symbian_p.h"
 
 #include <private/qthread_p.h>
 #include <qmutex.h>
@@ -237,11 +237,15 @@ static void qt_create_symbian_commandline(const QStringList &arguments, QString 
                 --i;
                 endQuote += QLatin1String("\\");
             }
-            commandLine += QLatin1String(" \"") + tmp.left(i) + endQuote;
+            commandLine += QLatin1String("\"") + tmp.left(i) + endQuote + QLatin1Char(' ');
         } else {
-            commandLine += QLatin1Char(' ') + tmp;
+            commandLine += tmp + QLatin1Char(' ');
         }
     }
+
+    // Chop the extra trailing space if any arguments were appended
+    if (arguments.size())
+        commandLine.chop(1);
 }
 
 static TInt qt_create_symbian_process(RProcess **proc, const QString &programName, const QStringList &arguments)

@@ -27,14 +27,17 @@
 
 #include "CallFrame.h"
 #include "GlobalEvalFunction.h"
-#include "JSGlobalObject.h"
-#include "LiteralParser.h"
-#include "JSString.h"
 #include "Interpreter.h"
-#include "Parser.h"
-#include "dtoa.h"
+#include "JSGlobalObject.h"
+#include "JSString.h"
+#include "JSStringBuilder.h"
 #include "Lexer.h"
+#include "LiteralParser.h"
 #include "Nodes.h"
+#include "Parser.h"
+#include "StringBuilder.h"
+#include "StringExtras.h"
+#include "dtoa.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,24 +58,24 @@ static JSValue encode(ExecState* exec, const ArgList& args, const char* doNotEsc
     if (!cstr.c_str())
         return throwError(exec, URIError, "String contained an illegal UTF-16 sequence.");
 
-    UString result = "";
+    JSStringBuilder builder;
     const char* p = cstr.c_str();
     for (size_t k = 0; k < cstr.size(); k++, p++) {
         char c = *p;
         if (c && strchr(doNotEscape, c))
-            result.append(c);
+            builder.append(c);
         else {
             char tmp[4];
-            sprintf(tmp, "%%%02X", static_cast<unsigned char>(c));
-            result += tmp;
+            snprintf(tmp, 4, "%%%02X", static_cast<unsigned char>(c));
+            builder.append(tmp);
         }
     }
-    return jsString(exec, result);
+    return builder.build(exec);
 }
 
 static JSValue decode(ExecState* exec, const ArgList& args, const char* doNotUnescape, bool strict)
 {
-    UString result = "";
+    JSStringBuilder builder;
     UString str = args.at(0).toString(exec);
     int k = 0;
     int len = str.size();
@@ -106,7 +109,7 @@ static JSValue decode(ExecState* exec, const ArgList& args, const char* doNotUne
                             charLen = 0;
                         else if (character >= 0x10000) {
                             // Convert to surrogate pair.
-                            result.append(static_cast<UChar>(0xD800 | ((character - 0x10000) >> 10)));
+                            builder.append(static_cast<UChar>(0xD800 | ((character - 0x10000) >> 10)));
                             u = static_cast<UChar>(0xDC00 | ((character - 0x10000) & 0x3FF));
                         } else
                             u = static_cast<UChar>(character);
@@ -131,9 +134,9 @@ static JSValue decode(ExecState* exec, const ArgList& args, const char* doNotUne
             }
         }
         k++;
-        result.append(c);
+        builder.append(c);
     }
-    return jsString(exec, result);
+    return builder.build(exec);
 }
 
 bool isStrWhiteSpace(UChar c)
@@ -376,32 +379,30 @@ JSValue JSC_HOST_CALL globalFuncEscape(ExecState* exec, JSObject*, JSValue, cons
         "0123456789"
         "*+-./@_";
 
-    UString result = "";
-    UString s;
+    JSStringBuilder builder;
     UString str = args.at(0).toString(exec);
     const UChar* c = str.data();
-    for (int k = 0; k < str.size(); k++, c++) {
+    for (unsigned k = 0; k < str.size(); k++, c++) {
         int u = c[0];
         if (u > 255) {
             char tmp[7];
             sprintf(tmp, "%%u%04X", u);
-            s = UString(tmp);
+            builder.append(tmp);
         } else if (u != 0 && strchr(do_not_escape, static_cast<char>(u)))
-            s = UString(c, 1);
+            builder.append(c, 1);
         else {
             char tmp[4];
             sprintf(tmp, "%%%02X", u);
-            s = UString(tmp);
+            builder.append(tmp);
         }
-        result += s;
     }
 
-    return jsString(exec, result);
+    return builder.build(exec);
 }
 
 JSValue JSC_HOST_CALL globalFuncUnescape(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    UString result = "";
+    StringBuilder builder;
     UString str = args.at(0).toString(exec);
     int k = 0;
     int len = str.size();
@@ -420,10 +421,10 @@ JSValue JSC_HOST_CALL globalFuncUnescape(ExecState* exec, JSObject*, JSValue, co
             k += 2;
         }
         k++;
-        result.append(*c);
+        builder.append(*c);
     }
 
-    return jsString(exec, result);
+    return jsString(exec, builder.build());
 }
 
 #ifndef NDEBUG

@@ -44,13 +44,17 @@
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QHBoxLayout>
-#include <QtGui/QPushButton>
 #include <QtGui/QLineEdit>
 #include <QtGui/QFocusEvent>
 #include <QtGui/QPalette>
 #include <QtGui/QCursor>
+#include <QtGui/QToolButton>
+#include <QtGui/QPainter>
+#include <QtGui/QStyle>
+#include <QtGui/QStyleOption>
 
 #include <QtCore/QDebug>
+#include <QtCore/QPropertyAnimation>
 
 enum { debugFilter = 0 };
 
@@ -61,10 +65,42 @@ namespace qdesigner_internal {
 HintLineEdit::HintLineEdit(QWidget *parent) :
     QLineEdit(parent),
     m_defaultFocusPolicy(focusPolicy()),
-    m_hintColor(QColor(0xbbbbbb)),
-    m_refuseFocus(false),
-    m_showingHintText(false)
+    m_refuseFocus(false)
 {
+}
+
+IconButton::IconButton(QWidget *parent)
+    : QToolButton(parent)
+{
+    setCursor(Qt::ArrowCursor);
+}
+
+void IconButton::paintEvent(QPaintEvent *)
+{
+    QPainter painter(this);
+    // Note isDown should really use the active state but in most styles
+    // this has no proper feedback
+    QPixmap iconpixmap = icon().pixmap(ICONBUTTON_SIZE, ICONBUTTON_SIZE, isDown() ?
+                                       QIcon::Selected : QIcon::Normal);
+    QRect pixmapRect = QRect(0, 0, iconpixmap.width(), iconpixmap.height());
+    pixmapRect.moveCenter(rect().center());
+    painter.setOpacity(m_fader);
+    painter.drawPixmap(pixmapRect, iconpixmap);
+}
+
+void IconButton::animateShow(bool visible)
+{
+    if (visible) {
+        QPropertyAnimation *animation = new QPropertyAnimation(this, "fader");
+        animation->setDuration(160);
+        animation->setEndValue(1.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    } else {
+        QPropertyAnimation *animation = new QPropertyAnimation(this, "fader");
+        animation->setDuration(160);
+        animation->setEndValue(0.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
 }
 
 bool HintLineEdit::refuseFocus() const
@@ -111,92 +147,53 @@ void HintLineEdit::focusInEvent(QFocusEvent *e)
         }
     }
 
-    hideHintText();
     QLineEdit::focusInEvent(e);
 }
-
-void HintLineEdit::focusOutEvent(QFocusEvent *e)
-{
-    if (debugFilter)
-        qDebug() << Q_FUNC_INFO;
-    // Focus out: Switch to displaying the hint text unless there is user input
-    showHintText();
-    QLineEdit::focusOutEvent(e);
-}
-
-QString HintLineEdit::hintText() const
-{
-    return m_hintText;
-}
-
-void HintLineEdit::setHintText(const QString &ht)
-{
-    if (ht == m_hintText)
-        return;
-    hideHintText();
-    m_hintText = ht;
-    if (!hasFocus() && !ht.isEmpty())
-        showHintText();
-}
-
-void HintLineEdit::showHintText(bool force)
-{
-    if (m_showingHintText || m_hintText.isEmpty())
-        return;
-    if (force || text().isEmpty()) {
-        m_showingHintText = true;
-        setText(m_hintText);
-        setTextColor(m_hintColor, &m_textColor);
-    }
-}
-void HintLineEdit::hideHintText()
-{
-    if (m_showingHintText && !m_hintText.isEmpty()) {
-        m_showingHintText = false;
-        setText(QString());
-        setTextColor(m_textColor);
-    }
-}
-
-bool  HintLineEdit::isShowingHintText() const
-{
-    return m_showingHintText;
-}
-
-QString  HintLineEdit::typedText() const
-{
-    return m_showingHintText ? QString() : text();
-}
-
-void HintLineEdit::setTextColor(const QColor &newColor, QColor *oldColor)
-{
-    QPalette pal = palette();
-    if (oldColor)
-        *oldColor = pal.color(QPalette::Text);
-    pal.setColor(QPalette::Text, newColor);
-    setPalette(pal);}
 
 // ------------------- FilterWidget
 FilterWidget::FilterWidget(QWidget *parent, LayoutMode lm)  :
     QWidget(parent),
-    m_button(new QPushButton),
-    m_editor(new HintLineEdit)
+    m_editor(new HintLineEdit(this)),
+    m_button(new IconButton(m_editor)),
+    m_buttonwidth(0)
 {
-    m_editor->setHintText(tr("<Filter>"));
+    m_editor->setPlaceholderText(tr("Filter"));
+
+    // Let the style determine minimum height for our widget
+    QSize size(ICONBUTTON_SIZE + 2, ICONBUTTON_SIZE + 2);
+
+    // Note KDE does not reserve space for the highlight color
+    if (style()->inherits("OxygenStyle")) {
+        size = size.expandedTo(QSize(24, 0));
+    }
+
+    // Make room for clear icon
+    QMargins margins = m_editor->textMargins();
+    if (layoutDirection() == Qt::LeftToRight)
+        margins.setRight(size.width());
+    else
+        margins.setLeft(size.width());
+
+    m_editor->setTextMargins(margins);
+
     QHBoxLayout *l = new QHBoxLayout(this);
     l->setMargin(0);
     l->setSpacing(0);
-
     if (lm == LayoutAlignRight)
         l->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
     l->addWidget(m_editor);
 
-    m_button->setIcon(createIconSet(QLatin1String("resetproperty.png")));
-    m_button->setIconSize(QSize(8, 8));
-    m_button->setFlat(true);
-    l->addWidget(m_button);
+    // KDE has custom icons for this. Notice that icon namings are counter intuitive
+    // If these icons are not avaiable we use the freedesktop standard name before
+    // falling back to a bundled resource
+    QIcon icon = QIcon::fromTheme(layoutDirection() == Qt::LeftToRight ?
+                     QLatin1String("edit-clear-locationbar-rtl") :
+                     QLatin1String("edit-clear-locationbar-ltr"),
+                     QIcon::fromTheme("edit-clear", createIconSet(QLatin1String("cleartext.png"))));
 
+    m_button->setIcon(icon);
+    m_button->setToolTip(tr("Clear text"));
     connect(m_button, SIGNAL(clicked()), this, SLOT(reset()));
     connect(m_editor, SIGNAL(textChanged(QString)), this, SLOT(checkButton(QString)));
     connect(m_editor, SIGNAL(textEdited(QString)), this, SIGNAL(filterChanged(QString)));
@@ -204,22 +201,35 @@ FilterWidget::FilterWidget(QWidget *parent, LayoutMode lm)  :
 
 QString FilterWidget::text() const
 {
-    return m_editor->typedText();
+    return m_editor->text();
 }
 
 void FilterWidget::checkButton(const QString &)
 {
-    m_button->setEnabled(!text().isEmpty());
+    m_button->animateShow(!m_editor->text().isEmpty());
 }
 
 void FilterWidget::reset()
 {
     if (debugFilter)
         qDebug() << Q_FUNC_INFO;
-    if (!text().isEmpty()) {
+
+    if (!m_editor->text().isEmpty()) {
         // Editor has lost focus once this is pressed
-        m_editor->showHintText(true);
+        m_editor->clear();
         emit filterChanged(QString());
+    }
+}
+
+void FilterWidget::resizeEvent(QResizeEvent *)
+{
+    QRect contentRect = m_editor->rect();
+    if (layoutDirection() == Qt::LeftToRight) {
+        const int iconoffset = m_editor->textMargins().right() + 4;
+        m_button->setGeometry(contentRect.adjusted(m_editor->width() - iconoffset, 0, 0, 0));
+    } else {
+        const int iconoffset = m_editor->textMargins().left() + 4;
+        m_button->setGeometry(contentRect.adjusted(0, 0, -m_editor->width() + iconoffset, 0));
     }
 }
 

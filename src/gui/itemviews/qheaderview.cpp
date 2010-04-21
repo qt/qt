@@ -2220,16 +2220,24 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
         case QHeaderViewPrivate::MoveSection: {
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
                 || !d->sectionIndicator->isHidden()) {
-                int indicatorCenter = (d->orientation == Qt::Horizontal
-                                       ? d->sectionIndicator->width()
-                                       : d->sectionIndicator->height()) / 2;
-                int centerOffset = indicatorCenter - d->sectionIndicatorOffset;
-                // This will drop the moved section to the position under the center of the indicator.
-                // If centerOffset is 0, the section will be moved to the position of the mouse cursor.
-                int visual = visualIndexAt(pos + centerOffset);
+                int visual = visualIndexAt(pos);
                 if (visual == -1)
                     return;
-                d->target = d->logicalIndex(visual);
+                int posThreshold = d->headerSectionPosition(visual) + d->headerSectionSize(visual) / 2;
+                int moving = visualIndex(d->section);
+                if (visual < moving) {
+                    if (pos < posThreshold)
+                        d->target = d->logicalIndex(visual);
+                    else
+                        d->target = d->logicalIndex(visual + 1);
+                } else if (visual > moving) {
+                    if (pos > posThreshold)
+                        d->target = d->logicalIndex(visual);
+                    else
+                        d->target = d->logicalIndex(visual - 1);
+                } else {
+                    d->target = d->section;
+                }
                 d->updateSectionIndicator(d->section, pos);
             }
             return;

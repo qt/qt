@@ -448,11 +448,12 @@ void QSpinBox::setRange(int minimum, int maximum)
 }
 
 /*!
-    This virtual function is used by the spin box whenever it needs
-    to display the given \a value. The default implementation returns
-    a string containing \a value printed in the standard way using
-    QWidget::locale().toString(). Reimplementations may return anything. (See
-    the example in the detailed description.)
+    This virtual function is used by the spin box whenever it needs to
+    display the given \a value. The default implementation returns a
+    string containing \a value printed in the standard way using
+    QWidget::locale().toString(), but with the thousand separator
+    removed. Reimplementations may return anything. (See the example
+    in the detailed description.)
 
     Note: QSpinBox does not call this function for specialValueText()
     and that neither prefix() nor suffix() should be included in the
@@ -461,7 +462,7 @@ void QSpinBox::setRange(int minimum, int maximum)
     If you reimplement this, you may also need to reimplement
     valueFromText() and validate()
 
-    \sa valueFromText(), validate()
+    \sa valueFromText(), validate(), QLocale::groupSeparator()
 */
 
 QString QSpinBox::textFromValue(int value) const
@@ -869,7 +870,7 @@ void QDoubleSpinBox::setDecimals(int decimals)
     If you reimplement this, you may also need to reimplement
     valueFromText().
 
-    \sa valueFromText()
+    \sa valueFromText(), QLocale::groupSeparator()
 */
 
 

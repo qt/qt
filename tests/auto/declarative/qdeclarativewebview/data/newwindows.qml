@@ -23,8 +23,8 @@ Grid {
                 newWindowParent: pages
                 url: "newwindows.html"
                 Timer {
-                    interval: 10; running: webView.status==WebView.Ready && total<4; repeat: false;
-                    onTriggered: {total++; webView.evaluateJavaScript("clickTheLink()")}
+                    interval: 10; running: total<4; repeat: false;
+                    onTriggered: { if (webView.status==WebView.Ready) { total++; webView.evaluateJavaScript("clickTheLink()") } }
                 }
             }
         }

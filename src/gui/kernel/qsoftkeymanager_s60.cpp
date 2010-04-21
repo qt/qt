@@ -46,6 +46,7 @@
 #include "qmenubar.h"
 #include "private/qt_s60_p.h"
 #include "private/qmenu_p.h"
+#include "private/qaction_p.h"
 #include "private/qsoftkeymanager_p.h"
 #include "private/qsoftkeymanager_s60_p.h"
 #include "private/qobject_p.h"
@@ -288,11 +289,7 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
         setNativeSoftkey(cba, position, command, nativeText);
-        // QMainWindow "Options" action is set to invisible in order it does not appear in context menu
-        // and all invisible actions are by default disabled.
-        // However we never want to dim options softkey, even it is set to invisible
-        QVariant property = action->property(MENU_ACTION_PROPERTY);
-        const bool dimmed = (property.isValid() && property.toBool()) ? false : !action->isEnabled();
+        const bool dimmed = !action->isEnabled() && !QSoftKeyManager::isForceEnabledInSofkeys(action);
         cba.DimCommand(command, dimmed);
         realSoftKeyActions.insert(command, action);
         return true;
@@ -316,17 +313,8 @@ bool QSoftKeyManagerPrivateS60::setMiddleSoftkey(CEikButtonGroupContainer &cba)
 bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
 {
     if (!setSoftkey(cba, QAction::NegativeSoftKey, RSK_POSITION)) {
-        Qt::WindowType windowType = Qt::Window;
-        QAction *action = requestedSoftKeyActions.value(0);
-        if (action) {
-            QWidget *actionParent = action->parentWidget();
-            Q_ASSERT_X(actionParent, Q_FUNC_INFO, "No parent set for softkey action!");
-
-            QWidget *actionWindow = actionParent->window();
-            Q_ASSERT_X(actionWindow, Q_FUNC_INFO, "Softkey action does not have window!");
-            windowType = actionWindow->windowType();
-        }
-
+        const Qt::WindowType windowType = initialSoftKeySource
+            ? initialSoftKeySource->window()->windowType() : Qt::Window;
         if (windowType != Qt::Dialog && windowType != Qt::Popup) {
             QString text(QSoftKeyManager::tr("Exit"));
             TPtrC nativeText = qt_QString2TPtrC(text);
@@ -335,6 +323,7 @@ bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
                 cbaHasImage[RSK_POSITION] = false;
             }
             setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, nativeText);
+            cba.DimCommand(EAknSoftkeyExit, false);
             return true;
         }
     }
@@ -377,17 +366,30 @@ void QSoftKeyManagerPrivateS60::updateSoftKeys_sys()
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }
 
+static void resetMenuBeingConstructed(TAny* /*aAny*/)
+{
+    S60->menuBeingConstructed = false;
+}
+
+void QSoftKeyManagerPrivateS60::tryDisplayMenuBarL()
+{
+    CleanupStack::PushL(TCleanupItem(resetMenuBeingConstructed, NULL));
+    S60->menuBeingConstructed = true;
+    S60->menuBar()->TryDisplayMenuBarL();
+    CleanupStack::PopAndDestroy(); // Reset menuBeingConstructed to false in all cases
+}
+
 bool QSoftKeyManagerPrivateS60::handleCommand(int command)
 {
     QAction *action = realSoftKeyActions.value(command);
     if (action) {
-        QVariant property = action->property(MENU_ACTION_PROPERTY);
-        if (property.isValid() && property.toBool()) {
-            QT_TRAP_THROWING(S60->menuBar()->TryDisplayMenuBarL());
+        bool property = QActionPrivate::get(action)->menuActionSoftkeys;
+        if (property) {
+            QT_TRAP_THROWING(tryDisplayMenuBarL());
         } else if (action->menu()) {
             // TODO: This is hack, in order to use exising QMenuBar implementation for Symbian
             // menubar needs to have widget to which it is associated. Since we want to associate
-            // menubar to action (which is inherited from QObejct), we create and associate QWidget
+            // menubar to action (which is inherited from QObject), we create and associate QWidget
             // to action and pass that for QMenuBar. This associates the menubar to action, and we
             // can have own menubar for each action.
             QWidget *actionContainer = action->property("_q_action_widget").value<QWidget*>();
@@ -406,15 +408,15 @@ bool QSoftKeyManagerPrivateS60::handleCommand(int command)
                 action->setProperty("_q_action_widget", v);
             }
             qt_symbian_next_menu_from_action(actionContainer);
-            QT_TRAP_THROWING(S60->menuBar()->TryDisplayMenuBarL());
-        } else {
-            Q_ASSERT(action->softKeyRole() != QAction::NoSoftKey);
-            QWidget *actionParent = action->parentWidget();
-            Q_ASSERT_X(actionParent, Q_FUNC_INFO, "No parent set for softkey action!");
-            if (actionParent->isEnabled()) {
-                action->activate(QAction::Trigger);
-                return true;
-            }
+            QT_TRAP_THROWING(tryDisplayMenuBarL());
+        }
+
+        Q_ASSERT(action->softKeyRole() != QAction::NoSoftKey);
+        QWidget *actionParent = action->parentWidget();
+        Q_ASSERT_X(actionParent, Q_FUNC_INFO, "No parent set for softkey action!");
+        if (actionParent->isEnabled()) {
+            action->activate(QAction::Trigger);
+            return true;
         }
     }
     return false;

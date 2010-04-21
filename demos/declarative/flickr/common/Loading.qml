@@ -1,8 +1,8 @@
-import Qt 4.6
+import Qt 4.7
 
 Image {
-    id: loading; source: "pics/loading.png"; transformOrigin: "Center"
+    id: loading; source: "pics/loading.png"
     NumberAnimation on rotation {
-        from: 0; to: 360; running: loading.visible == true; repeat: true; duration: 900
+        from: 0; to: 360; running: loading.visible == true; loops: Animation.Infinite; duration: 900
     }
 }

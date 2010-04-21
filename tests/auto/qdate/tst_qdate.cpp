@@ -99,6 +99,7 @@ private slots:
     void standaloneShortMonthName() const;
     void longMonthName() const;
     void standaloneLongMonthName() const;
+    void roundtrip() const;
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -668,17 +669,18 @@ void tst_QDate::toString_format()
 
 void tst_QDate::isLeapYear()
 {
-    QVERIFY(QDate::isLeapYear(-4444));
-    QVERIFY(!QDate::isLeapYear(-4443));
-    QVERIFY(QDate::isLeapYear(-8));
-    QVERIFY(!QDate::isLeapYear(-7));
-    QVERIFY(QDate::isLeapYear(-4));
+    QVERIFY(QDate::isLeapYear(-4445));
+    QVERIFY(!QDate::isLeapYear(-4444));
+    QVERIFY(!QDate::isLeapYear(-6));
+    QVERIFY(QDate::isLeapYear(-5));
+    QVERIFY(!QDate::isLeapYear(-4));
     QVERIFY(!QDate::isLeapYear(-3));
     QVERIFY(!QDate::isLeapYear(-2));
-    QVERIFY(!QDate::isLeapYear(-1));
+    QVERIFY(QDate::isLeapYear(-1));
+    QVERIFY(!QDate::isLeapYear(0)); // Doesn't exist
     QVERIFY(!QDate::isLeapYear(1));
-    QVERIFY(!QDate::isLeapYear(1));
-    QVERIFY(!QDate::isLeapYear(1));
+    QVERIFY(!QDate::isLeapYear(2));
+    QVERIFY(!QDate::isLeapYear(3));
     QVERIFY(QDate::isLeapYear(4));
     QVERIFY(!QDate::isLeapYear(7));
     QVERIFY(QDate::isLeapYear(8));
@@ -907,6 +909,38 @@ void tst_QDate::standaloneLongMonthName() const
     QLocale locale = QLocale::system();
     for(int i = 1; i <= 12; ++i) {
         QCOMPARE(QDate::longMonthName(i, QDate::StandaloneFormat), locale.standaloneMonthName(i, QLocale::LongFormat));
+    }
+}
+
+void tst_QDate::roundtrip() const
+{
+    // Test round trip, this exercises setDate(), isValid(), isLeapYear(),
+    // year(), month(), day(), julianDayFromDate(), and getDateFromJulianDay()
+    // to ensure they are internally consistent (but doesn't guarantee correct)
+
+    // Test Julian round trip in both BC and AD
+    QDate testDate;
+    QDate loopDate = QDate::fromJulianDay(1684899); //  1 Jan 100 BC
+    while ( loopDate.toJulianDay() <= 1757948 ) {   // 31 Dec 100 AD
+        testDate.setDate( loopDate.year(), loopDate.month(), loopDate.day() );
+        QCOMPARE( loopDate.toJulianDay(), testDate.toJulianDay() );
+        loopDate = loopDate.addDays(1);
+    }
+
+    // Test Julian and Gregorian round trip during changeover period
+    loopDate = QDate::fromJulianDay(2298153);     //  1 Jan 1580 AD
+    while ( loopDate.toJulianDay() <= 2300334 ) { // 31 Dec 1585 AD
+        testDate.setDate( loopDate.year(), loopDate.month(), loopDate.day() );
+        QCOMPARE( loopDate.toJulianDay(), testDate.toJulianDay() );
+        loopDate = loopDate.addDays(1);
+    }
+
+    // Test Gregorian round trip during current useful period
+    loopDate = QDate::fromJulianDay(2378497);     //  1 Jan 1900 AD
+    while ( loopDate.toJulianDay() <= 2488433 ) { // 31 Dec 2100 AD
+        testDate.setDate( loopDate.year(), loopDate.month(), loopDate.day() );
+        QCOMPARE( loopDate.toJulianDay(), testDate.toJulianDay() );
+        loopDate = loopDate.addDays(1);
     }
 }
 

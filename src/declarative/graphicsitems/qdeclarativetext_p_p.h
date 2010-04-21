@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeitem.h"
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <qdeclarative.h>
 
@@ -63,7 +63,7 @@
 QT_BEGIN_NAMESPACE
 
 class QTextLayout;
-class QTextDocument;
+class QTextDocumentWithImageResources;
 
 class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
 {
@@ -72,8 +72,8 @@ public:
     QDeclarativeTextPrivate()
       : color((QRgb)0), style(QDeclarativeText::Normal),
         hAlign(QDeclarativeText::AlignLeft), vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-        imgDirty(true), dirty(true), wrap(false), richText(false), singleline(false), cache(true), doc(0),
-        format(QDeclarativeText::AutoText)
+        imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), doc(0),
+        format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
     {
 #if defined(QML_NO_TEXT_CACHE)
         cache = false;
@@ -84,6 +84,7 @@ public:
 
     ~QDeclarativeTextPrivate();
 
+    void ensureDoc();
     void updateSize();
     void updateLayout();
     void markImgDirty() {
@@ -115,14 +116,14 @@ public:
     QDeclarativeText::TextElideMode elideMode;
     bool imgDirty:1;
     bool dirty:1;
-    bool wrap:1;
     bool richText:1;
     bool singleline:1;
     bool cache:1;
-    QTextDocument *doc;
+    QTextDocumentWithImageResources *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;
     QDeclarativeText::TextFormat format;
+    QDeclarativeText::WrapMode wrapMode;
 };
 
 QT_END_NAMESPACE

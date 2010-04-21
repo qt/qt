@@ -36,6 +36,7 @@
 #include "EventNames.h"
 #include "RenderLayer.h"
 #include "RenderLayerBacking.h"
+#include "RenderStyle.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {
@@ -58,7 +59,7 @@ KeyframeAnimation::~KeyframeAnimation()
 {
     // Make sure to tell the renderer that we are ending. This will make sure any accelerated animations are removed.
     if (!postActive())
-        endAnimation(true);
+        endAnimation();
 }
 
 void KeyframeAnimation::getKeyframeAnimationInterval(const RenderStyle*& fromStyle, const RenderStyle*& toStyle, double& prog) const
@@ -119,9 +120,11 @@ void KeyframeAnimation::animate(CompositeAnimation*, RenderObject*, const Render
     }
 
     // If we are waiting for the start timer, we don't want to change the style yet.
-    // Special case - if the delay time is 0, then we do want to set the first frame of the
+    // Special case 1 - if the delay time is 0, then we do want to set the first frame of the
     // animation right away. This avoids a flash when the animation starts.
-    if (waitingToStart() && m_animation->delay() > 0)
+    // Special case 2 - if there is a backwards fill mode, then we want to continue
+    // through to the style blend so that we get the fromStyle.
+    if (waitingToStart() && m_animation->delay() > 0 && !m_animation->fillsBackwards())
         return;
 
     // FIXME: we need to be more efficient about determining which keyframes we are animating between.
@@ -191,40 +194,54 @@ bool KeyframeAnimation::hasAnimationForProperty(int property) const
     return false;
 }
 
-bool KeyframeAnimation::startAnimation(double beginTime)
+bool KeyframeAnimation::startAnimation(double timeOffset)
 {
 #if USE(ACCELERATED_COMPOSITING)
     if (m_object && m_object->hasLayer()) {
         RenderLayer* layer = toRenderBoxModelObject(m_object)->layer();
         if (layer->isComposited())
-            return layer->backing()->startAnimation(beginTime, m_animation.get(), m_keyframes);
+            return layer->backing()->startAnimation(timeOffset, m_animation.get(), m_keyframes);
     }
 #else
-    UNUSED_PARAM(beginTime);
+    UNUSED_PARAM(timeOffset);
 #endif
     return false;
 }
 
-void KeyframeAnimation::endAnimation(bool reset)
+void KeyframeAnimation::pauseAnimation(double timeOffset)
 {
-    if (m_object) {
+    if (!m_object)
+        return;
+
 #if USE(ACCELERATED_COMPOSITING)
-        if (m_object->hasLayer()) {
-            RenderLayer* layer = toRenderBoxModelObject(m_object)->layer();
-            if (layer->isComposited()) {
-                if (reset)
-                    layer->backing()->animationFinished(m_keyframes.animationName());
-                else
-                    layer->backing()->animationPaused(m_keyframes.animationName());
-            }
-        }
-#else
-        UNUSED_PARAM(reset);
-#endif
-        // Restore the original (unanimated) style
-        if (!paused())
-            setNeedsStyleRecalc(m_object->node());
+    if (m_object->hasLayer()) {
+        RenderLayer* layer = toRenderBoxModelObject(m_object)->layer();
+        if (layer->isComposited())
+            layer->backing()->animationPaused(timeOffset, m_keyframes.animationName());
     }
+#else
+    UNUSED_PARAM(timeOffset);
+#endif
+    // Restore the original (unanimated) style
+    if (!paused())
+        setNeedsStyleRecalc(m_object->node());
+}
+
+void KeyframeAnimation::endAnimation()
+{
+    if (!m_object)
+        return;
+
+#if USE(ACCELERATED_COMPOSITING)
+    if (m_object->hasLayer()) {
+        RenderLayer* layer = toRenderBoxModelObject(m_object)->layer();
+        if (layer->isComposited())
+            layer->backing()->animationFinished(m_keyframes.animationName());
+    }
+#endif
+    // Restore the original (unanimated) style
+    if (!paused())
+        setNeedsStyleRecalc(m_object->node());
 }
 
 bool KeyframeAnimation::shouldSendEventForListener(Document::ListenerType listenerType) const
@@ -245,7 +262,10 @@ void KeyframeAnimation::onAnimationIteration(double elapsedTime)
 void KeyframeAnimation::onAnimationEnd(double elapsedTime)
 {
     sendAnimationEvent(eventNames().webkitAnimationEndEvent, elapsedTime);
-    endAnimation(true);
+    // End the animation if we don't fill forwards. Forward filling
+    // animations are ended properly in the class destructor.
+    if (!m_animation->fillsForwards())
+        endAnimation();
 }
 
 bool KeyframeAnimation::sendAnimationEvent(const AtomicString& eventType, double elapsedTime)
@@ -266,7 +286,7 @@ bool KeyframeAnimation::sendAnimationEvent(const AtomicString& eventType, double
         if (m_object->node() && m_object->node()->isElementNode())
             element = static_cast<Element*>(m_object->node());
 
-        ASSERT(!element || element->document() && !element->document()->inPageCache());
+        ASSERT(!element || (element->document() && !element->document()->inPageCache()));
         if (!element)
             return false;
 

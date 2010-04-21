@@ -46,6 +46,7 @@
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 
@@ -58,6 +59,7 @@ class QDeclarativeEngine;
 class QDeclarativeRefCount;
 class QDeclarativeContextPrivate;
 class QDeclarativeCompositeTypeData;
+class QDeclarativeContextData;
 
 class Q_DECLARATIVE_EXPORT QDeclarativeContext : public QObject
 {
@@ -69,14 +71,17 @@ public:
     QDeclarativeContext(QDeclarativeContext *parent, QObject *objParent=0);
     virtual ~QDeclarativeContext();
 
+    bool isValid() const;
+
     QDeclarativeEngine *engine() const;
     QDeclarativeContext *parentContext() const;
 
-    void addDefaultObject(QObject *);
-    void setContextProperty(const QString &, QObject *);
-    void setContextProperty(const QString &, const QVariant &);
+    QObject *contextObject() const;
+    void setContextObject(QObject *);
 
     QVariant contextProperty(const QString &) const;
+    void setContextProperty(const QString &, QObject *);
+    void setContextProperty(const QString &, const QVariant &);
 
     QUrl resolvedUrl(const QUrl &);
 
@@ -95,7 +100,8 @@ private:
     friend class QDeclarativeComponentPrivate;
     friend class QDeclarativeScriptPrivate;
     friend class QDeclarativeBoundSignalProxy;
-    QDeclarativeContext(QDeclarativeContext *parent, QObject *objParent, bool);
+    friend class QDeclarativeContextData;
+    QDeclarativeContext(QDeclarativeContextData *);
     QDeclarativeContext(QDeclarativeEngine *, bool);
 };
 QT_END_NAMESPACE

@@ -40,14 +40,15 @@
 ****************************************************************************/
 
 #include "qdeclarativecontext.h"
-#include "qdeclarativecontext_p.h"
+#include "private/qdeclarativecontext_p.h"
 
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativecomponent_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeinfo.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
@@ -58,114 +59,43 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeContextPrivate::QDeclarativeContextPrivate()
-: parent(0), engine(0), isInternal(false), propertyNames(0), 
-  notifyIndex(-1), highPriorityCount(0), imports(0), expressions(0), contextObjects(0),
-  idValues(0), idValueCount(0), optimizedBindings(0)
+: data(0), notifyIndex(-1)
 {
-}
-
-void QDeclarativeContextPrivate::addScript(const QDeclarativeParser::Object::ScriptBlock &script, QObject *scopeObject)
-{
-    Q_Q(QDeclarativeContext);
-
-    if (!engine) 
-        return;
-
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
-
-    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-
-    scriptContext->pushScope(enginePriv->contextClass->newContext(q, scopeObject));
-    scriptContext->pushScope(enginePriv->globalClass->globalObject());
-    
-    QScriptValue scope = scriptEngine->newObject();
-    scriptContext->setActivationObject(scope);
-    scriptContext->pushScope(scope);
-
-    for (int ii = 0; ii < script.codes.count(); ++ii) {
-        scriptEngine->evaluate(script.codes.at(ii), script.files.at(ii), script.lineNumbers.at(ii));
-
-        if (scriptEngine->hasUncaughtException()) {
-            QDeclarativeError error;
-            QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
-            qWarning().nospace() << qPrintable(error.toString());
-        }
-    }
-
-    scriptEngine->popContext();
-
-    scripts.append(scope);
-}
-
-void QDeclarativeContextPrivate::destroyed(ContextGuard *guard)
-{
-    Q_Q(QDeclarativeContext);
-
-    // process of being deleted (which is *probably* why obj has been destroyed
-    // anyway), as we're about to get deleted which will invalidate all the
-    // expressions that could depend on us
-    QObject *parent = q->parent();
-    if (parent && QObjectPrivate::get(parent)->wasDeleted) 
-        return;
-
-    while(guard->bindings) {
-        QObject *o = guard->bindings->target;
-        int mi = guard->bindings->methodIndex;
-        guard->bindings->clear();
-        if (o) o->qt_metacall(QMetaObject::InvokeMetaMethod, mi, 0);
-    }
-
-    for (int ii = 0; ii < idValueCount; ++ii) {
-        if (&idValues[ii] == guard) {
-            QMetaObject::activate(q, ii + notifyIndex, 0);
-            return;
-        }
-    }
-}
-
-void QDeclarativeContextPrivate::init()
-{
-    Q_Q(QDeclarativeContext);
-
-    if (parent) 
-        parent->d_func()->childContexts.insert(q);
 }
 
 /*!
     \class QDeclarativeContext
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeContext class defines a context within a QML engine.
     \mainclass
 
     Contexts allow data to be exposed to the QML components instantiated by the
     QML engine.
 
-    Each QDeclarativeContext contains a set of properties, distinct from
-    its QObject properties, that allow data to be
-    explicitly bound to a context by name.  The context properties are defined or
-    updated by calling QDeclarativeContext::setContextProperty().  The following example shows
-    a Qt model being bound to a context and then accessed from a QML file.
+    Each QDeclarativeContext contains a set of properties, distinct from its QObject 
+    properties, that allow data to be explicitly bound to a context by name.  The 
+    context properties are defined and updated by calling 
+    QDeclarativeContext::setContextProperty().  The following example shows a Qt model 
+    being bound to a context and then accessed from a QML file.
 
     \code
     QDeclarativeEngine engine;
-    QDeclarativeContext context(engine.rootContext());
-    context.setContextProperty("myModel", modelData);
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->setContextProperty("myModel", modelData);
 
     QDeclarativeComponent component(&engine, "ListView { model=myModel }");
-    component.create(&context);
+    component.create(context);
     \endcode
 
-    To simplify binding and maintaining larger data sets, QObject's can be
-    added to a QDeclarativeContext.  These objects are known as the context's default
-    objects.  In this case all the properties of the QObject are
-    made available by name in the context, as though they were all individually
-    added by calling QDeclarativeContext::setContextProperty().  Changes to the property's
-    values are detected through the property's notify signal.  This method is
-    also slightly more faster than manually adding property values.
+    To simplify binding and maintaining larger data sets, a context object can be set
+    on a QDeclarativeContext.  All the properties of the context object are available
+    by name in the context, as though they were all individually added through calls
+    to QDeclarativeContext::setContextProperty().  Changes to the property's values are 
+    detected through the property's notify signal.  Setting a context object is both 
+    faster and easier than manually adding and maintaing context property values.
 
-    The following example has the same effect as the one above, but it is
-    achieved using a default object.
+    The following example has the same effect as the previous one, but it uses a context
+    object.
 
     \code
     class MyDataSet : ... {
@@ -174,46 +104,42 @@ void QDeclarativeContextPrivate::init()
         ...
     };
 
-    MyDataSet myDataSet;
+    MyDataSet *myDataSet = new MyDataSet;
     QDeclarativeEngine engine;
-    QDeclarativeContext context(engine.rootContext());
-    context.addDefaultObject(&myDataSet);
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->setContextObject(myDataSet);
 
     QDeclarativeComponent component(&engine, "ListView { model=myModel }");
-    component.create(&context);
+    component.create(context);
     \endcode
 
-    Default objects added first take precedence over those added later.  All properties 
-    added explicitly by QDeclarativeContext::setContextProperty() take precedence over default 
-    object properties.
+    All properties added explicitly by QDeclarativeContext::setContextProperty() take 
+    precedence over context object's properties.
 
-    Contexts are hierarchal, with the \l {QDeclarativeEngine::rootContext()}{root context}
-    being created by the QDeclarativeEngine.  A component instantiated in a given context
-    has access to that context's data, as well as the data defined by its
-    ancestor contexts.  Data values (including those added implicitly by the
-    default objects) in a context override those in ancestor contexts.  Data
-    that should be available to all components instantiated by the QDeclarativeEngine
-    should be added to the \l {QDeclarativeEngine::rootContext()}{root context}.
+    Contexts form a hierarchy.  The root of this heirarchy is the QDeclarativeEngine's
+    \l {QDeclarativeEngine::rootContext()}{root context}.  A component instance can 
+    access the data in its own context, as well as all its ancestor contexts.  Data
+    can be made available to all instances by modifying the 
+    \l {QDeclarativeEngine::rootContext()}{root context}.
 
-    In the following example,
+    The following example defines two contexts - \c context1 and \c context2.  The
+    second context overrides the "b" context property inherited from the first with a
+    new value.
 
     \code
     QDeclarativeEngine engine;
-    QDeclarativeContext context1(engine.rootContext());
-    QDeclarativeContext context2(&context1);
-    QDeclarativeContext context3(&context2);
+    QDeclarativeContext *context1 = new QDeclarativeContext(engine.rootContext());
+    QDeclarativeContext *context2 = new QDeclarativeContext(context1);
 
-    context1.setContextProperty("a", 12);
-    context2.setContextProperty("b", 13);
-    context3.setContextProperty("a", 14);
-    context3.setContextProperty("c", 14);
+    context1->setContextProperty("a", 12);
+    context1->setContextProperty("b", 12);
+
+    context2->setContextProperty("b", 15);
     \endcode
 
-    a QML component instantiated in context1 would have access to the "a" data,
-    a QML component instantiated in context2 would have access to the "a" and
-    "b" data, and a QML component instantiated in context3 would have access to
-    the "a", "b" and "c" data - although its "a" data would return 14, unlike
-    that in context1 or context2.
+    While QML objects instantiated in a context are not strictly owned by that 
+    context, their bindings are.  If a context is destroyed, the property bindings of 
+    outstanding QML objects will stop evaluating.
 */
 
 /*! \internal */
@@ -221,8 +147,9 @@ QDeclarativeContext::QDeclarativeContext(QDeclarativeEngine *e, bool)
 : QObject(*(new QDeclarativeContextPrivate))
 {
     Q_D(QDeclarativeContext);
-    d->engine = e;
-    d->init();
+    d->data = new QDeclarativeContextData(this);
+
+    d->data->engine = e;
 }
 
 /*!
@@ -233,10 +160,9 @@ QDeclarativeContext::QDeclarativeContext(QDeclarativeEngine *engine, QObject *pa
 : QObject(*(new QDeclarativeContextPrivate), parent)
 {
     Q_D(QDeclarativeContext);
-    QDeclarativeContext *parentContext = engine?engine->rootContext():0;
-    d->parent = parentContext;
-    d->engine = parentContext->engine();
-    d->init();
+    d->data = new QDeclarativeContextData(this);
+
+    d->data->setParent(engine?QDeclarativeContextData::get(engine->rootContext()):0);
 }
 
 /*!
@@ -247,22 +173,19 @@ QDeclarativeContext::QDeclarativeContext(QDeclarativeContext *parentContext, QOb
 : QObject(*(new QDeclarativeContextPrivate), parent)
 {
     Q_D(QDeclarativeContext);
-    d->parent = parentContext;
-    d->engine = parentContext->engine();
-    d->init();
+    d->data = new QDeclarativeContextData(this);
+
+    d->data->setParent(parentContext?QDeclarativeContextData::get(parentContext):0);
 }
 
 /*!
     \internal
 */
-QDeclarativeContext::QDeclarativeContext(QDeclarativeContext *parentContext, QObject *parent, bool)
-: QObject(*(new QDeclarativeContextPrivate), parent)
+QDeclarativeContext::QDeclarativeContext(QDeclarativeContextData *data)
+: QObject(*(new QDeclarativeContextPrivate), 0)
 {
     Q_D(QDeclarativeContext);
-    d->parent = parentContext;
-    d->engine = parentContext->engine();
-    d->isInternal = true;
-    d->init();
+    d->data = data;
 }
 
 /*!
@@ -275,78 +198,15 @@ QDeclarativeContext::QDeclarativeContext(QDeclarativeContext *parentContext, QOb
 QDeclarativeContext::~QDeclarativeContext()
 {
     Q_D(QDeclarativeContext);
-    if (d->parent) 
-        d->parent->d_func()->childContexts.remove(this);
 
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = d->childContexts.begin();
-            iter != d->childContexts.end();
-            ++iter) {
-        (*iter)->d_func()->invalidateEngines();
-        (*iter)->d_func()->parent = 0;
-    }
-
-    QDeclarativeAbstractExpression *expression = d->expressions;
-    while (expression) {
-        QDeclarativeAbstractExpression *nextExpression = expression->m_nextExpression;
-
-        expression->m_context = 0;
-        expression->m_prevExpression = 0;
-        expression->m_nextExpression = 0;
-
-        expression = nextExpression;
-    }
-
-    while (d->contextObjects) {
-        QDeclarativeDeclarativeData *co = d->contextObjects;
-        d->contextObjects = d->contextObjects->nextContextObject;
-
-        co->context = 0;
-        co->nextContextObject = 0;
-        co->prevContextObject = 0;
-    }
-
-    if (d->propertyNames)
-        d->propertyNames->release();
-
-    if (d->imports)
-        d->imports->release();
-
-    if (d->optimizedBindings)
-        d->optimizedBindings->release();
-
-    delete [] d->idValues;
+    if (!d->data->isInternal)
+        d->data->destroy();
 }
 
-void QDeclarativeContextPrivate::invalidateEngines()
+bool QDeclarativeContext::isValid() const
 {
-    if (!engine)
-        return;
-    engine = 0;
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = childContexts.begin();
-            iter != childContexts.end();
-            ++iter) {
-        (*iter)->d_func()->invalidateEngines();
-    }
-}
-
-/* 
-Refreshes all expressions that could possibly depend on this context.
-Refreshing flushes all context-tree dependent caches in the expressions, and should occur every
-time the context tree *structure* (not values) changes.
-*/
-void QDeclarativeContextPrivate::refreshExpressions()
-{
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = childContexts.begin();
-            iter != childContexts.end();
-            ++iter) {
-        (*iter)->d_func()->refreshExpressions();
-    }
-
-    QDeclarativeAbstractExpression *expression = expressions;
-    while (expression) {
-        expression->refresh();
-        expression = expression->m_nextExpression;
-    }
+    Q_D(const QDeclarativeContext);
+    return d->data && d->data->isValid();
 }
 
 /*!
@@ -356,7 +216,7 @@ void QDeclarativeContextPrivate::refreshExpressions()
 QDeclarativeEngine *QDeclarativeContext::engine() const
 {
     Q_D(const QDeclarativeContext);
-    return d->engine;
+    return d->data->engine;
 }
 
 /*!
@@ -366,17 +226,38 @@ QDeclarativeEngine *QDeclarativeContext::engine() const
 QDeclarativeContext *QDeclarativeContext::parentContext() const
 {
     Q_D(const QDeclarativeContext);
-    return d->parent;
+    return d->data->parent?d->data->parent->asQDeclarativeContext():0;
 }
 
 /*!
-    Add \a defaultObject to this context.  The object will be added after
-    any existing default objects.
+    Return the context object, or 0 if there is no context object.
 */
-void QDeclarativeContext::addDefaultObject(QObject *defaultObject)
+QObject *QDeclarativeContext::contextObject() const
+{
+    Q_D(const QDeclarativeContext);
+    return d->data->contextObject;
+}
+
+/*!
+    Set the context \a object.
+*/
+void QDeclarativeContext::setContextObject(QObject *object)
 {
     Q_D(QDeclarativeContext);
-    d->defaultObjects.prepend(defaultObject);
+
+    QDeclarativeContextData *data = d->data;
+
+    if (data->isInternal) {
+        qWarning("QDeclarativeContext: Cannot set context object for internal context.");
+        return;
+    }
+
+    if (!isValid()) {
+        qWarning("QDeclarativeContext: Cannot set context object on invalid context.");
+        return;
+    }
+
+    data->contextObject = object;
 }
 
 /*!
@@ -388,48 +269,39 @@ void QDeclarativeContext::setContextProperty(const QString &name, const QVariant
     if (d->notifyIndex == -1)
         d->notifyIndex = this->metaObject()->methodCount();
 
-    if (d->engine) {
+    QDeclarativeContextData *data = d->data;
+
+    if (data->isInternal) {
+        qWarning("QDeclarativeContext: Cannot set property on internal context.");
+        return;
+    }
+
+    if (!isValid()) {
+        qWarning("QDeclarativeContext: Cannot set property on invalid context.");
+        return;
+    }
+
+    if (data->engine) {
         bool ok;
-        QObject *o = QDeclarativeEnginePrivate::get(d->engine)->toQObject(value, &ok);
+        QObject *o = QDeclarativeEnginePrivate::get(data->engine)->toQObject(value, &ok);
         if (ok) {
             setContextProperty(name, o);
             return;
         }
     }
 
-    if (!d->propertyNames) d->propertyNames = new QDeclarativeIntegerCache(d->engine);
+    if (!data->propertyNames) data->propertyNames = new QDeclarativeIntegerCache(data->engine);
 
-    int idx = d->propertyNames->value(name);
+    int idx = data->propertyNames->value(name);
     if (idx == -1) {
-        d->propertyNames->add(name, d->idValueCount + d->propertyValues.count());
+        data->propertyNames->add(name, data->idValueCount + d->propertyValues.count());
         d->propertyValues.append(value);
 
-        d->refreshExpressions();
+        data->refreshExpressions();
     } else {
         d->propertyValues[idx] = value;
         QMetaObject::activate(this, idx + d->notifyIndex, 0);
     }
-}
-
-void QDeclarativeContextPrivate::setIdProperty(int idx, QObject *obj)
-{
-    if (notifyIndex == -1) {
-        Q_Q(QDeclarativeContext);
-        notifyIndex = q->metaObject()->methodCount();
-    }
-
-    idValues[idx].priv = this;
-    idValues[idx] = obj;
-}
-
-void QDeclarativeContextPrivate::setIdPropertyData(QDeclarativeIntegerCache *data)
-{
-    Q_ASSERT(!propertyNames);
-    propertyNames = data;
-    propertyNames->addref();
-
-    idValueCount = data->count();
-    idValues = new ContextGuard[idValueCount];
 }
 
 /*!
@@ -443,14 +315,26 @@ void QDeclarativeContext::setContextProperty(const QString &name, QObject *value
     if (d->notifyIndex == -1)
         d->notifyIndex = this->metaObject()->methodCount();
 
-    if (!d->propertyNames) d->propertyNames = new QDeclarativeIntegerCache(d->engine);
-    int idx = d->propertyNames->value(name);
+    QDeclarativeContextData *data = d->data;
+
+    if (data->isInternal) {
+        qWarning("QDeclarativeContext: Cannot set property on internal context.");
+        return;
+    }
+
+    if (!isValid()) {
+        qWarning("QDeclarativeContext: Cannot set property on invalid context.");
+        return;
+    }
+
+    if (!data->propertyNames) data->propertyNames = new QDeclarativeIntegerCache(data->engine);
+    int idx = data->propertyNames->value(name);
 
     if (idx == -1) {
-        d->propertyNames->add(name, d->idValueCount  + d->propertyValues.count());
+        data->propertyNames->add(name, data->idValueCount + d->propertyValues.count());
         d->propertyValues.append(QVariant::fromValue(value));
 
-        d->refreshExpressions();
+        data->refreshExpressions();
     } else {
         d->propertyValues[idx] = QVariant::fromValue(value);
         QMetaObject::activate(this, idx + d->notifyIndex, 0);
@@ -466,26 +350,27 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
     Q_D(const QDeclarativeContext);
     QVariant value;
     int idx = -1;
-    if (d->propertyNames)
-        idx = d->propertyNames->value(name);
+
+    QDeclarativeContextData *data = d->data;
+
+    if (data->propertyNames)
+        idx = data->propertyNames->value(name);
 
     if (idx == -1) {
         QByteArray utf8Name = name.toUtf8();
-        for (int ii = d->defaultObjects.count() - 1; ii >= 0; --ii) {
-            QObject *obj = d->defaultObjects.at(ii);
+        if (data->contextObject) {
+            QObject *obj = data->contextObject;
             QDeclarativePropertyCache::Data local;
-            QDeclarativePropertyCache::Data *property = QDeclarativePropertyCache::property(d->engine, obj, name, local);
+            QDeclarativePropertyCache::Data *property = 
+                QDeclarativePropertyCache::property(data->engine, obj, name, local);
 
-            if (property) {
-                value = obj->metaObject()->property(property->coreIndex).read(obj);
-                break;
-            }
+            if (property) value = obj->metaObject()->property(property->coreIndex).read(obj);
         }
         if (!value.isValid() && parentContext())
             value = parentContext()->contextProperty(name);
     } else {
         if (idx >= d->propertyValues.count())
-            value = QVariant::fromValue(d->idValues[idx - d->propertyValues.count()].data());
+            value = QVariant::fromValue(data->idValues[idx - d->propertyValues.count()].data());
         else
             value = d->propertyValues[idx];
     }
@@ -502,26 +387,33 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
 QUrl QDeclarativeContext::resolvedUrl(const QUrl &src)
 {
     Q_D(QDeclarativeContext);
-    QDeclarativeContext *ctxt = this;
+    return d->data->resolvedUrl(src);
+}
+
+QUrl QDeclarativeContextData::resolvedUrl(const QUrl &src)
+{
+    QDeclarativeContextData *ctxt = this;
+
     if (src.isRelative() && !src.isEmpty()) {
         if (ctxt) {
             while(ctxt) {
-                if(ctxt->d_func()->url.isValid())
+                if(ctxt->url.isValid())
                     break;
                 else
-                    ctxt = ctxt->parentContext();
+                    ctxt = ctxt->parent;
             }
 
             if (ctxt)
-                return ctxt->d_func()->url.resolved(src);
-            else if (d->engine)
-                return d->engine->baseUrl().resolved(src);
+                return ctxt->url.resolved(src);
+            else if (engine)
+                return engine->baseUrl().resolved(src);
         }
         return QUrl();
     } else {
         return src;
     }
 }
+
 
 /*!
     Explicitly sets the url resolvedUrl() will use for relative references to \a baseUrl.
@@ -533,7 +425,9 @@ QUrl QDeclarativeContext::resolvedUrl(const QUrl &src)
 */
 void QDeclarativeContext::setBaseUrl(const QUrl &baseUrl)
 {
-    d_func()->url = baseUrl;
+    Q_D(QDeclarativeContext);
+
+    d->data->url = baseUrl;
 }
 
 /*!
@@ -542,12 +436,13 @@ void QDeclarativeContext::setBaseUrl(const QUrl &baseUrl)
 */
 QUrl QDeclarativeContext::baseUrl() const
 {
-    const QDeclarativeContext* p = this;
-    while (p && p->d_func()->url.isEmpty()) {
-        p = p->parentContext();
-    }
-    if (p)
-        return p->d_func()->url;
+    Q_D(const QDeclarativeContext);
+    const QDeclarativeContextData* data = d->data;
+    while (data && data->url.isEmpty()) 
+        data = data->parent;
+
+    if (data)
+        return data->url;
     else
         return QUrl();
 }
@@ -576,6 +471,300 @@ QObject *QDeclarativeContextPrivate::context_at(QDeclarativeListProperty<QObject
     } else {
         return ((const QList<QObject*> *)d->propertyValues.at(contextProperty).constData())->at(index);
     }
+}
+
+
+QDeclarativeContextData::QDeclarativeContextData()
+: parent(0), engine(0), isInternal(false), publicContext(0), propertyNames(0), contextObject(0),
+  imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
+  contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
+  componentAttached(0)
+{
+}
+
+QDeclarativeContextData::QDeclarativeContextData(QDeclarativeContext *ctxt)
+: parent(0), engine(0), isInternal(false), publicContext(ctxt), propertyNames(0), contextObject(0),
+  imports(0), childContexts(0), nextChild(0), prevChild(0), expressions(0), contextObjects(0),
+  contextGuards(0), idValues(0), idValueCount(0), optimizedBindings(0), linkedContext(0),
+  componentAttached(0)
+{
+}
+
+void QDeclarativeContextData::invalidate()
+{
+    while (childContexts) 
+        childContexts->invalidate();
+
+    while (componentAttached) {
+        QDeclarativeComponentAttached *a = componentAttached;
+        componentAttached = a->next;
+        if (componentAttached) componentAttached->prev = &componentAttached;
+
+        a->next = 0;
+        a->prev = 0;
+
+        emit a->destruction();
+    }
+
+    if (prevChild) {
+        *prevChild = nextChild;
+        if (nextChild) nextChild->prevChild = prevChild;
+        nextChild = 0;
+        prevChild = 0;
+    }
+
+    engine = 0;
+    parent = 0;
+}
+
+void QDeclarativeContextData::destroy()
+{
+    if (linkedContext) 
+        linkedContext->destroy();
+
+    if (engine) invalidate();
+
+    QDeclarativeAbstractExpression *expression = expressions;
+    while (expression) {
+        QDeclarativeAbstractExpression *nextExpression = expression->m_nextExpression;
+
+        expression->m_context = 0;
+        expression->m_prevExpression = 0;
+        expression->m_nextExpression = 0;
+
+        expression = nextExpression;
+    }
+    expressions = 0;
+
+    while (contextObjects) {
+        QDeclarativeData *co = contextObjects;
+        contextObjects = contextObjects->nextContextObject;
+
+        co->context = 0;
+        co->outerContext = 0;
+        co->nextContextObject = 0;
+        co->prevContextObject = 0;
+    }
+
+    QDeclarativeGuardedContextData *contextGuard = contextGuards;
+    while (contextGuard) {
+        QDeclarativeGuardedContextData *next = contextGuard->m_next;
+        contextGuard->m_next = 0;
+        contextGuard->m_prev = 0;
+        contextGuard->m_contextData = 0;
+        contextGuard = next;
+    }
+    contextGuards = 0;
+
+    if (propertyNames)
+        propertyNames->release();
+
+    if (imports)
+        imports->release();
+
+    if (optimizedBindings)
+        optimizedBindings->release();
+
+    delete [] idValues;
+
+    if (isInternal)
+        delete publicContext;
+
+    delete this;
+}
+
+void QDeclarativeContextData::setParent(QDeclarativeContextData *p)
+{
+    if (p) {
+        parent = p;
+        engine = p->engine;
+        nextChild = p->childContexts;
+        if (nextChild) nextChild->prevChild = &nextChild;
+        prevChild = &p->childContexts;
+        p->childContexts = this;
+    }
+}
+
+/* 
+Refreshes all expressions that could possibly depend on this context.  Refreshing flushes all 
+context-tree dependent caches in the expressions, and should occur every time the context tree 
+ *structure* (not values) changes.
+*/
+void QDeclarativeContextData::refreshExpressions()
+{
+    QDeclarativeContextData *child = childContexts;
+    while (child) {
+        child->refreshExpressions();
+        child = child->nextChild;
+    }
+
+    QDeclarativeAbstractExpression *expression = expressions;
+    while (expression) {
+        expression->refresh();
+        expression = expression->m_nextExpression;
+    }
+}
+
+void QDeclarativeContextData::addObject(QObject *o)
+{
+    QDeclarativeData *data = QDeclarativeData::get(o, true);
+
+    Q_ASSERT(data->context == 0);
+
+    data->context = this;
+    data->outerContext = this;
+
+    data->nextContextObject = contextObjects;
+    if (data->nextContextObject) 
+        data->nextContextObject->prevContextObject = &data->nextContextObject;
+    data->prevContextObject = &contextObjects;
+    contextObjects = data;
+}
+
+void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object::ScriptBlock &script)
+{
+    if (!engine) 
+        return;
+
+    Q_ASSERT(script.codes.count() == 1);
+
+    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
+    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
+
+    const QString &code = script.codes.at(0);
+    const QString &url = script.files.at(0);
+    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas.at(0);
+
+    Q_ASSERT(!url.isEmpty());
+
+    if (pragmas & QDeclarativeParser::Object::ScriptBlock::Shared) {
+
+        QHash<QString, QScriptValue>::Iterator iter = enginePriv->m_sharedScriptImports.find(url);
+        if (iter == enginePriv->m_sharedScriptImports.end()) {
+            QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
+            scriptContext->pushScope(enginePriv->contextClass->newContext(0, 0));
+            scriptContext->pushScope(enginePriv->globalClass->globalObject());
+        
+            QScriptValue scope = scriptEngine->newObject();
+            scriptContext->setActivationObject(scope);
+            scriptContext->pushScope(scope);
+
+            scriptEngine->evaluate(code, url, 1);
+
+            if (scriptEngine->hasUncaughtException()) {
+                QDeclarativeError error;
+                QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
+                qWarning().nospace() << qPrintable(error.toString());
+            }
+
+            scriptEngine->popContext();
+
+            iter = enginePriv->m_sharedScriptImports.insert(url, scope);
+        }
+
+        importedScripts.append(*iter);
+
+    } else {
+
+        QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
+        scriptContext->pushScope(enginePriv->contextClass->newContext(this, 0));
+        scriptContext->pushScope(enginePriv->globalClass->globalObject());
+        
+        QScriptValue scope = scriptEngine->newObject();
+        scriptContext->setActivationObject(scope);
+        scriptContext->pushScope(scope);
+
+        scriptEngine->evaluate(code, url, 1);
+
+        if (scriptEngine->hasUncaughtException()) {
+            QDeclarativeError error;
+            QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
+            qWarning().nospace() << qPrintable(error.toString());
+        }
+
+        scriptEngine->popContext();
+
+        importedScripts.append(scope);
+
+    }
+}
+
+void QDeclarativeContextData::addScript(const QDeclarativeParser::Object::ScriptBlock &script, 
+                                        QObject *scopeObject)
+{
+    if (!engine) 
+        return;
+
+    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
+    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
+
+    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
+    scriptContext->pushScope(enginePriv->contextClass->newContext(this, scopeObject));
+    scriptContext->pushScope(enginePriv->globalClass->globalObject());
+    
+    QScriptValue scope = scriptEngine->newObject();
+    scriptContext->setActivationObject(scope);
+    scriptContext->pushScope(scope);
+
+    for (int ii = 0; ii < script.codes.count(); ++ii) {
+        scriptEngine->evaluate(script.codes.at(ii), script.files.at(ii), script.lineNumbers.at(ii));
+
+        if (scriptEngine->hasUncaughtException()) {
+            QDeclarativeError error;
+            QDeclarativeExpressionPrivate::exceptionToError(scriptEngine, error);
+            qWarning().nospace() << qPrintable(error.toString());
+        }
+    }
+
+    scriptEngine->popContext();
+
+    scripts.append(scope);
+}
+
+void QDeclarativeContextData::setIdProperty(int idx, QObject *obj)
+{
+    idValues[idx] = obj;
+    idValues[idx].context = this;
+}
+
+void QDeclarativeContextData::setIdPropertyData(QDeclarativeIntegerCache *data)
+{
+    Q_ASSERT(!propertyNames);
+    propertyNames = data;
+    propertyNames->addref();
+
+    idValueCount = data->count();
+    idValues = new ContextGuard[idValueCount];
+}
+
+QString QDeclarativeContextData::findObjectId(const QObject *obj) const
+{
+    if (!idValues || !propertyNames)
+        return QString();
+
+    for (int i=0; i<idValueCount; i++) {
+        if (idValues[i] == obj)
+            return propertyNames->findId(i);
+    }    
+
+    if (linkedContext)
+        return linkedContext->findObjectId(obj);
+    return QString();
+}
+
+QDeclarativeContext *QDeclarativeContextData::asQDeclarativeContext()
+{
+    if (!publicContext) 
+        publicContext = new QDeclarativeContext(this);
+    return publicContext;
+}
+
+QDeclarativeContextPrivate *QDeclarativeContextData::asQDeclarativeContextPrivate()
+{
+    return QDeclarativeContextPrivate::get(asQDeclarativeContext());
 }
 
 QT_END_NAMESPACE

@@ -38,7 +38,7 @@ namespace Phonon
 namespace MMF
 {
 class AbstractPlayer;
-class VideoOutput;
+class AbstractVideoOutput;
 
 /**
  * @short Facade class which wraps MMF client utility instance
@@ -85,7 +85,7 @@ public:
      */
     AbstractPlayer *abstractPlayer() const;
 
-    void setVideoOutput(VideoOutput* videoOutput);
+    void setVideoOutput(AbstractVideoOutput* videoOutput);
 
 public Q_SLOTS:
     void volumeChanged(qreal volume);
@@ -106,6 +106,9 @@ Q_SIGNALS:
                       Phonon::State oldState);
     void finished();
     void tick(qint64 time);
+
+private Q_SLOTS:
+    void handlePrefinishMarkReached(qint32);
 
 private:
     void switchToSource(const MediaSource &source);

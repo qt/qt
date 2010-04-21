@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVELISTVIEW_H
 #define QDECLARATIVELISTVIEW_H
 
-#include "qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p.h"
 
 QT_BEGIN_HEADER
 
@@ -101,7 +101,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeListView : public QDeclarativeFlickable
     Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem NOTIFY highlightFollowsCurrentItemChanged)
     Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
+    Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
     Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
+    Q_PROPERTY(int highlightResizeDuration READ highlightResizeDuration WRITE setHighlightResizeDuration NOTIFY highlightResizeDurationChanged)
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
@@ -176,8 +178,14 @@ public:
     qreal highlightMoveSpeed() const;
     void setHighlightMoveSpeed(qreal);
 
+    int highlightMoveDuration() const;
+    void setHighlightMoveDuration(int);
+
     qreal highlightResizeSpeed() const;
     void setHighlightResizeSpeed(qreal);
+
+    int highlightResizeDuration() const;
+    void setHighlightResizeDuration(int);
 
     enum SnapMode { NoSnap, SnapToItem, SnapOneItem };
     SnapMode snapMode() const;
@@ -191,10 +199,15 @@ public:
 
     static QDeclarativeListViewAttached *qmlAttachedProperties(QObject *);
 
+    enum PositionMode { Beginning, Center, End, Visible, Contain };
+    Q_ENUMS(PositionMode);
+
+    Q_INVOKABLE void positionViewAtIndex(int index, int mode);
+    Q_INVOKABLE int indexAt(int x, int y) const;
+
 public Q_SLOTS:
     void incrementCurrentIndex();
     void decrementCurrentIndex();
-    void positionViewAtIndex(int index);
 
 Q_SIGNALS:
     void countChanged();
@@ -203,7 +216,9 @@ Q_SIGNALS:
     void currentIndexChanged();
     void currentSectionChanged();
     void highlightMoveSpeedChanged();
+    void highlightMoveDurationChanged();
     void highlightResizeSpeedChanged();
+    void highlightResizeDurationChanged();
     void highlightChanged();
     void highlightItemChanged();
     void modelChanged();
@@ -219,6 +234,7 @@ Q_SIGNALS:
     void footerChanged();
 
 protected:
+    virtual bool event(QEvent *event);
     virtual void viewportMoved();
     virtual qreal minYExtent() const;
     virtual qreal maxYExtent() const;

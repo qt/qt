@@ -1,14 +1,14 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
 
 //![1]
 Item {
     id: container
 //![4]
-    property alias color: rectangle.color
+    property alias cellColor: rectangle.color
 //![4]
 //![5]
-    signal clicked(color color)
+    signal clicked(color cellColor)
 //![5]
 
     width: 40; height: 25
@@ -25,7 +25,7 @@ Item {
 //![3]
     MouseArea {
         anchors.fill: parent
-        onClicked: container.clicked(container.color)
+        onClicked: container.clicked(container.cellColor)
     }
 //![3]
 }

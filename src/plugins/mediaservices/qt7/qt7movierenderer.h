@@ -53,7 +53,7 @@
 #include <QtGui/qmacdefines_mac.h>
 #include "qt7videooutputcontrol.h"
 
-#include <CoreVideo/CVOpenGLTexture.h>
+#include <QuartzCore/CVOpenGLTexture.h>
 #include <QuickTime/QuickTime.h>
 
 
@@ -74,7 +74,6 @@ public:
     QT7MovieRenderer(QObject *parent = 0);
     virtual ~QT7MovieRenderer();
 
-    void setEnabled(bool);
     void setMovie(void *movie);
     void updateNaturalSize(const QSize &newSize);
 

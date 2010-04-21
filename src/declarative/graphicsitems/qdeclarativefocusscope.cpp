@@ -39,7 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativefocusscope_p.h"
+#include "private/qdeclarativefocusscope_p.h"
+
+#include "private/qdeclarativeitem_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,7 +64,8 @@ QT_BEGIN_NAMESPACE
 QDeclarativeFocusScope::QDeclarativeFocusScope(QDeclarativeItem *parent) :
     QDeclarativeItem(parent)
 {
-    setFlag(QGraphicsItem::ItemIsFocusScope);
+    Q_D(QDeclarativeItem);
+    d->flags |= QGraphicsItem::ItemIsFocusScope;
 }
 
 QDeclarativeFocusScope::~QDeclarativeFocusScope()

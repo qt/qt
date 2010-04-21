@@ -3786,6 +3786,12 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
     QGraphicsItem *toolTipItem = 0;
     for (int i = 0; i < itemsAtPos.size(); ++i) {
         QGraphicsItem *tmp = itemsAtPos.at(i);
+        if (tmp->d_func()->isProxyWidget()) {
+            // if the item is a proxy widget, the event is forwarded to it
+            sendEvent(tmp, helpEvent);
+            if (helpEvent->isAccepted())
+                return;
+        }
         if (!tmp->toolTip().isEmpty()) {
             toolTipItem = tmp;
             break;
@@ -4301,6 +4307,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     if (!subPix.isNull()) {
         // Blit the subpixmap into the main pixmap.
         pixmapPainter.begin(pix);
+        pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
         pixmapPainter.setClipRegion(pixmapExposed);
         pixmapPainter.drawPixmap(br.topLeft(), subPix);
         pixmapPainter.end();
@@ -4466,6 +4473,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         // Create or reuse offscreen pixmap, possibly scroll/blit from the old one.
+        // If the world transform is rotated we always recreate the cache to avoid
+        // wrong blending.
         bool pixModified = false;
         QGraphicsItemCache::DeviceData *deviceData = &itemCache->deviceData[widget];
         bool invertable = true;
@@ -4473,7 +4482,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         if (invertable)
             diff *= painter->worldTransform();
         deviceData->lastTransform = painter->worldTransform();
-        if (!invertable || diff.type() > QTransform::TxTranslate) {
+        if (!invertable
+            || diff.type() > QTransform::TxTranslate
+            || painter->worldTransform().type() > QTransform::TxScale) {
             pixModified = true;
             itemCache->allExposed = true;
             itemCache->exposed.clear();
@@ -4715,7 +4726,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
-                                    painter, opacity, wasDirtyParentSceneTransform, drawItem);
+                                    painter, opacity, wasDirtyParentSceneTransform, itemHasContents && !itemIsFullyTransparent);
         QGraphicsEffectSource *source = item->d_ptr->graphicsEffect->d_func()->source;
         QGraphicsItemEffectSourcePrivate *sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
                                                     (source->d_func());

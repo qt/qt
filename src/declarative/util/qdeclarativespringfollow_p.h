@@ -59,7 +59,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeSpringFollow : public QObject,
     Q_DECLARE_PRIVATE(QDeclarativeSpringFollow)
     Q_INTERFACES(QDeclarativePropertyValueSource)
 
-    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
+    Q_PROPERTY(qreal to READ to WRITE setTo)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
     Q_PROPERTY(qreal spring READ spring WRITE setSpring)
     Q_PROPERTY(qreal damping READ damping WRITE setDamping)
@@ -76,22 +76,30 @@ public:
 
     virtual void setTarget(const QDeclarativeProperty &);
 
-    qreal sourceValue() const;
-    void setSourceValue(qreal value);
+    qreal to() const;
+    void setTo(qreal value);
+
     qreal velocity() const;
     void setVelocity(qreal velocity);
+
     qreal spring() const;
     void setSpring(qreal spring);
+
     qreal damping() const;
     void setDamping(qreal damping);
+
     qreal epsilon() const;
     void setEpsilon(qreal epsilon);
+
     qreal mass() const;
     void setMass(qreal modulus);
+
     qreal modulus() const;
     void setModulus(qreal modulus);
+
     bool enabled() const;
     void setEnabled(bool enabled);
+
     bool inSync() const;
 
     qreal value() const;

@@ -107,6 +107,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace qdesigner_internal;
 
+const char *QDesignerActions::defaultToolbarPropertyName = "__qt_defaultToolBarAction";
+
 //#ifdef Q_WS_MAC
 #  define NONMODAL_PREVIEW
 //#endif
@@ -200,9 +202,15 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
 #endif
       m_previewManager(0)
 {
+#ifdef Q_WS_X11
     m_newFormAction->setIcon(QIcon::fromTheme("document-new", m_newFormAction->icon()));
     m_openFormAction->setIcon(QIcon::fromTheme("document-open", m_openFormAction->icon()));
     m_saveFormAction->setIcon(QIcon::fromTheme("document-save", m_saveFormAction->icon()));
+    m_saveFormAsAction->setIcon(QIcon::fromTheme("document-save-as", m_saveFormAsAction->icon()));
+    m_printPreviewAction->setIcon(QIcon::fromTheme("document-print", m_printPreviewAction->icon()));
+    m_closeFormAction->setIcon(QIcon::fromTheme("window-close", m_closeFormAction->icon()));
+    m_quitAction->setIcon(QIcon::fromTheme("application-exit", m_quitAction->icon()));
+#endif
 
     Q_ASSERT(m_core != 0);
     qdesigner_internal::QDesignerFormWindowManager *ifwm = qobject_cast<qdesigner_internal::QDesignerFormWindowManager *>(m_core->formWindowManager());
@@ -229,6 +237,10 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     m_preferencesAction->setObjectName(QLatin1String("__qt_preferences_action"));
 
     m_helpActions = createHelpActions();
+
+    m_newFormAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    m_openFormAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    m_saveFormAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
 
     QDesignerFormWindowManagerInterface *formWindowManager = m_core->formWindowManager();
     Q_ASSERT(formWindowManager != 0);
@@ -316,6 +328,9 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     m_editActions->addAction(formWindowManager->actionLower());
     m_editActions->addAction(formWindowManager->actionRaise());
 
+    formWindowManager->actionLower()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionRaise()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+
 //
 // edit mode actions
 //
@@ -343,6 +358,7 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
         if (QDesignerFormEditorPluginInterface *formEditorPlugin = qobject_cast<QDesignerFormEditorPluginInterface*>(plugin)) {
             if (QAction *action = formEditorPlugin->action()) {
                 m_toolActions->addAction(action);
+                action->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
                 action->setCheckable(true);
             }
         }
@@ -369,6 +385,15 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     m_formActions->addAction(formWindowManager->actionAdjustSize());
     m_formActions->addAction(formWindowManager->actionSimplifyLayout());
     m_formActions->addAction(createSeparator(this));
+
+    formWindowManager->actionHorizontalLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionVerticalLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionSplitHorizontal()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionSplitVertical()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionGridLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionFormLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionBreakLayout()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
+    formWindowManager->actionAdjustSize()->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
 
     m_previewFormAction->setShortcut(tr("CTRL+R"));
     m_formActions->addAction(m_previewFormAction);
@@ -490,13 +515,13 @@ QAction *QDesignerActions::createRecentFilesMenu()
     }
     updateRecentFileActions();
     menu->addSeparator();
-    act = new QAction(tr("Clear &Menu"), this);
+    act = new QAction(QIcon::fromTheme("edit-clear"), tr("Clear &Menu"), this);
     act->setObjectName(QLatin1String("__qt_action_clear_menu_"));
     connect(act, SIGNAL(triggered()), this, SLOT(clearRecentFiles()));
     m_recentFilesActions->addAction(act);
     menu->addAction(act);
 
-    act = new QAction(tr("&Recent Forms"), this);
+    act = new QAction(QIcon::fromTheme("document-open-recent"), tr("&Recent Forms"), this);
     act->setMenu(menu);
     return act;
 }

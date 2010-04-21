@@ -410,6 +410,7 @@ Option::init(int argc, char **argv)
     Option::res_ext = ".res";
 #else
     Option::dirlist_sep = ":";
+    Option::shellPath = QStringList("sh");
 #endif
     Option::sysenv_mod = "QMAKE_ENV_";
     Option::field_sep = ' ';
@@ -612,7 +613,7 @@ bool Option::postProcessProject(QMakeProject *project)
 QString
 Option::fixString(QString string, uchar flags)
 {
-    const QString orig_string = string;
+    //const QString orig_string = string;
     static QHash<FixStringCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FixStringCacheKey, QString>;

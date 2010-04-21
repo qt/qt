@@ -40,13 +40,13 @@
 ****************************************************************************/
 
 #include "qdeclarativeexpression.h"
-#include "qdeclarativeexpression_p.h"
+#include "private/qdeclarativeexpression_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativerewrite_p.h"
-#include "qdeclarativecompiler_p.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativerewrite_p.h"
+#include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtScript/qscriptprogram.h>
@@ -95,11 +95,18 @@ QDeclarativeExpressionPrivate::QDeclarativeExpressionPrivate(QDeclarativeExpress
 
 QDeclarativeExpressionPrivate::~QDeclarativeExpressionPrivate()
 {
-    if (data) { data->q = 0; data->release(); data = 0; }
+    if (data) { 
+        delete [] data->guardList; 
+        data->guardList = 0; 
+        data->guardListLength = 0; 
+        data->q = 0; 
+        data->release(); 
+        data = 0; 
+    }
 }
 
-void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, const QString &expr, 
-                                QObject *me)
+void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, const QString &expr, 
+                                         QObject *me)
 {
     data->expression = expr;
 
@@ -107,8 +114,8 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, const QStrin
     data->me = me;
 }
 
-void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, QDeclarativeRefCount *rc, 
-                                QObject *me, const QString &url, int lineNumber)
+void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, void *expr, QDeclarativeRefCount *rc, 
+                                         QObject *me, const QString &url, int lineNumber)
 {
     data->url = url;
     data->line = lineNumber;
@@ -127,7 +134,7 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
     bool isShared = progIdx & 0x80000000;
     progIdx &= 0x7FFFFFFF;
 
-    QDeclarativeEngine *engine = ctxt->engine();
+    QDeclarativeEngine *engine = ctxt->engine;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
@@ -167,10 +174,11 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
     data->me = me;
 }
 
-QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContext *context, QObject *object, 
-                                                              const QString &program, QScriptValue *contextObject)
+QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContextData *context, QObject *object, 
+                                                              const QString &program, const QString &fileName,
+                                                              int lineNumber, QScriptValue *contextObject)
 {
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
     if (contextObject) {
         *contextObject = ep->contextClass->newContext(context, object);
@@ -179,15 +187,16 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
         scriptContext->pushScope(ep->contextClass->newContext(context, object));
     }
     scriptContext->pushScope(ep->globalClass->globalObject());
-    QScriptValue rv = ep->scriptEngine.evaluate(program);
+    QScriptValue rv = ep->scriptEngine.evaluate(program, fileName, lineNumber);
     ep->scriptEngine.popContext();
     return rv;
 }
 
-QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContext *context, QObject *object, 
-                                                     const QScriptProgram &program, QScriptValue *contextObject)
+QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContextData *context, QObject *object, 
+                                                              const QScriptProgram &program, 
+                                                              QScriptValue *contextObject)
 {
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
     if (contextObject) {
         *contextObject = ep->contextClass->newContext(context, object);
@@ -219,10 +228,10 @@ QDeclarativeExpression::QDeclarativeExpression()
 }
 
 /*!  \internal */
-QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, void *expr,
-                             QDeclarativeRefCount *rc, QObject *me, 
-                             const QString &url, int lineNumber,
-                             QDeclarativeExpressionPrivate &dd)
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, void *expr,
+                                               QDeclarativeRefCount *rc, QObject *me, 
+                                               const QString &url, int lineNumber,
+                                               QDeclarativeExpressionPrivate &dd)
 : QObject(dd, 0)
 {
     Q_D(QDeclarativeExpression);
@@ -237,7 +246,18 @@ QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, void *
     the expression's execution.
 */
 QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, const QString &expression,
-                             QObject *scope)
+                                               QObject *scope)
+: QObject(*new QDeclarativeExpressionPrivate, 0)
+{
+    Q_D(QDeclarativeExpression);
+    d->init(QDeclarativeContextData::get(ctxt), expression, scope);
+}
+
+/*! 
+    \internal
+*/
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, const QString &expression,
+                                               QObject *scope)
 : QObject(*new QDeclarativeExpressionPrivate, 0)
 {
     Q_D(QDeclarativeExpression);
@@ -245,8 +265,8 @@ QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, const 
 }
 
 /*!  \internal */
-QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, const QString &expression,
-                             QObject *scope, QDeclarativeExpressionPrivate &dd)
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, const QString &expression,
+                                               QObject *scope, QDeclarativeExpressionPrivate &dd)
 : QObject(dd, 0)
 {
     Q_D(QDeclarativeExpression);
@@ -267,7 +287,7 @@ QDeclarativeExpression::~QDeclarativeExpression()
 QDeclarativeEngine *QDeclarativeExpression::engine() const
 {
     Q_D(const QDeclarativeExpression);
-    return d->data->context()?d->data->context()->engine():0;
+    return d->data->context()?d->data->context()->engine:0;
 }
 
 /*!
@@ -277,7 +297,8 @@ QDeclarativeEngine *QDeclarativeExpression::engine() const
 QDeclarativeContext *QDeclarativeExpression::context() const
 {
     Q_D(const QDeclarativeExpression);
-    return d->data->context();
+    QDeclarativeContextData *data = d->data->context();
+    return data?data->asQDeclarativeContext():0;
 }
 
 /*!
@@ -331,15 +352,10 @@ void QDeclarativeExpressionPrivate::exceptionToError(QScriptEngine *scriptEngine
     }
 }
 
-QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUndefined)
+QScriptValue QDeclarativeExpressionPrivate::eval(QObject *secondaryScope, bool *isUndefined)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BindValueQt> perfqt;
-#endif
-
     QDeclarativeExpressionData *data = this->data;
-    QDeclarativeContextPrivate *ctxtPriv = data->context()->d_func();
-    QDeclarativeEngine *engine = data->context()->engine();
+    QDeclarativeEngine *engine = data->context()->engine;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
@@ -361,7 +377,7 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
             const QString code = rewriteBinding(data->expression, &ok);
             if (!ok) {
                 scriptEngine->popContext();
-                return QVariant();
+                return QScriptValue();
             }
             data->expressionFunction = scriptEngine->evaluate(code, data->url, data->line);
         }
@@ -370,7 +386,7 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
         data->expressionFunctionValid = true;
     }
 
-    QDeclarativeContext *oldSharedContext = 0;
+    QDeclarativeContextData *oldSharedContext = 0;
     QObject *oldSharedScope = 0;
     QObject *oldOverride = 0;
     if (data->isShared) {
@@ -398,58 +414,20 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
     if (scriptEngine->hasUncaughtException()) {
        exceptionToError(scriptEngine, data->error);
        scriptEngine->clearExceptions();
-       return QVariant();
+       return QScriptValue();
     } else {
         data->error = QDeclarativeError();
+        return svalue;
     }
-
-    QVariant rv;
-
-    if (svalue.isArray()) {
-        int length = svalue.property(QLatin1String("length")).toInt32();
-        if (length && svalue.property(0).isObject()) {
-            QList<QObject *> list;
-            for (int ii = 0; ii < length; ++ii) {
-                QScriptValue arrayItem = svalue.property(ii);
-                QObject *d = arrayItem.toQObject();
-                list << d;
-            }
-            rv = QVariant::fromValue(list);
-        }
-    } else if (svalue.isObject() &&
-               ep->objectClass->scriptClass(svalue) == ep->objectClass) {
-        QObject *o = svalue.toQObject();
-        int type = QMetaType::QObjectStar;
-        // If the object is null, we extract the predicted type.  While this isn't
-        // 100% reliable, in many cases it gives us better error messages if we
-        // assign this null-object to an incompatible property
-        if (!o) type = ep->objectClass->objectType(svalue);
-
-        return QVariant(type, &o);
-    }
-
-    if (rv.isNull())
-        rv = svalue.toVariant();
-
-    return rv;
 }
 
-QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
+QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope, bool *isUndefined)
 {
     Q_Q(QDeclarativeExpression);
-
-    QVariant rv;
-    if (!q->engine()) {
-        qWarning("QDeclarativeExpression: Attempted to evaluate an expression in an invalid context");
-        return rv;
-    }
+    Q_ASSERT(q->engine());
 
     if (data->expression.isEmpty())
-        return rv;
-
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BindValue> perf;
-#endif
+        return QScriptValue();
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
 
@@ -465,7 +443,7 @@ QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isU
     QDeclarativeExpressionData *localData = data;
     localData->addref();
 
-    rv = evalQtScript(secondaryScope, isUndefined);
+    QScriptValue value = eval(secondaryScope, isUndefined);
 
     ep->currentExpression = lastCurrentExpression;
     ep->captureProperties = lastCaptureProperties;
@@ -483,7 +461,21 @@ QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isU
 
     lastCapturedProperties.copyAndClear(ep->capturedProperties);
 
-    return rv;
+    return value;
+}
+
+QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
+{
+    Q_Q(QDeclarativeExpression);
+
+    if (!data || !data->context() || !data->context()->isValid()) {
+        qWarning("QDeclarativeExpression: Attempted to evaluate an expression in an invalid context");
+        return QVariant();
+    }
+
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(q->engine());
+
+    return ep->scriptValueToVariant(scriptValue(secondaryScope, isUndefined), qMetaTypeId<QList<QObject*> >());
 }
 
 /*!
@@ -622,137 +614,96 @@ void QDeclarativeExpression::__q_notify()
 
 void QDeclarativeExpressionPrivate::clearGuards()
 {
-    Q_Q(QDeclarativeExpression);
-
-    static int notifyIdx = -1;
-    if (notifyIdx == -1) 
-        notifyIdx = 
-            QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
-
-    for (int ii = 0; ii < data->guardListLength; ++ii) {
-        if (data->guardList[ii].data()) {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(data->guardList[ii].data(), 
-                                       data->guardList[ii].notifyIndex, 
-                                       q, notifyIdx);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
-#endif
-        }
-    }
-
-    delete [] data->guardList; data->guardList = 0; 
+    delete [] data->guardList; 
+    data->guardList = 0; 
     data->guardListLength = 0;
 }
 
 void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties)
 {
-    //clearGuards();
     Q_Q(QDeclarativeExpression);
 
     static int notifyIdx = -1;
     if (notifyIdx == -1) 
-        notifyIdx = 
-            QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
+        notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
 
-    QDeclarativeExpressionData::SignalGuard *newGuardList = 0;
-    
-    if (properties.count() != data->guardListLength)
-        newGuardList = new QDeclarativeExpressionData::SignalGuard[properties.count()];
+    if (properties.count() != data->guardListLength) {
+        QDeclarativeNotifierEndpoint *newGuardList = 
+            new QDeclarativeNotifierEndpoint[properties.count()];
 
-    bool outputWarningHeader = false;
-    int hit = 0;
-    for (int ii = 0; ii < properties.count(); ++ii) {
-        const QDeclarativeEnginePrivate::CapturedProperty &property = properties.at(ii);
+        for (int ii = 0; ii < qMin(data->guardListLength, properties.count()); ++ii) 
+           data->guardList[ii].copyAndClear(newGuardList[ii]);
 
-        bool needGuard = true;
-        if (ii >= data->guardListLength) {
-            // New guard
-        } else if(data->guardList[ii].data() == property.object && 
-                  data->guardList[ii].notifyIndex == property.notifyIndex) {
-            // Cache hit
-            if (!data->guardList[ii].isDuplicate || 
-                (data->guardList[ii].isDuplicate && hit == ii)) {
-                needGuard = false;
-                ++hit;
-            }
-        } else if(data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
-            // Cache miss
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(data->guardList[ii].data(), 
-                                       data->guardList[ii].notifyIndex, 
-                                       q, notifyIdx);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
-#endif
-        } 
-        /* else {
-            // Cache miss, but nothing to do
-        } */
-
-        if (needGuard) {
-            if (!newGuardList) {
-                newGuardList = new QDeclarativeExpressionData::SignalGuard[properties.count()];
-                for (int jj = 0; jj < ii; ++jj)
-                    newGuardList[jj] = data->guardList[jj];
-            }
-
-            if (property.notifyIndex != -1) {
-                bool existing = false;
-                for (int jj = 0; !existing && jj < ii; ++jj) 
-                    existing = newGuardList[jj].data() == property.object &&
-                        newGuardList[jj].notifyIndex == property.notifyIndex;
-
-                newGuardList[ii] = property.object;
-                newGuardList[ii].notifyIndex = property.notifyIndex;
-                if (existing)
-                    newGuardList[ii].isDuplicate = true;
-                else
-                    QMetaObject::connect(property.object, property.notifyIndex,
-                                         q, notifyIdx);
-            } else {
-                if (!outputWarningHeader) {
-                    outputWarningHeader = true;
-                    qWarning() << "QDeclarativeExpression: Expression" << q->expression()
-                               << "depends on non-NOTIFYable properties:";
-                }
-
-                const QMetaObject *metaObj = property.object->metaObject();
-                QMetaProperty metaProp = metaObj->property(property.coreIndex);
-
-                qWarning().nospace() << "    " << metaObj->className()
-                                     << "::" << metaProp.name();
-            }
-        } else if (newGuardList) {
-            newGuardList[ii] = data->guardList[ii];
-        }
-    }
-
-    for (int ii = properties.count(); ii < data->guardListLength; ++ii) {
-        if (data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(data->guardList[ii].data(), 
-                                       data->guardList[ii].notifyIndex, 
-                                       q, notifyIdx);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
-#endif
-        }
-    }
-
-    if (newGuardList) {
-        if (data->guardList) delete [] data->guardList;
+        delete [] data->guardList;
         data->guardList = newGuardList;
         data->guardListLength = properties.count();
+    }
+
+    bool outputWarningHeader = false;
+    bool noChanges = true;
+    for (int ii = 0; ii < properties.count(); ++ii) {
+        QDeclarativeNotifierEndpoint &guard = data->guardList[ii];
+        const QDeclarativeEnginePrivate::CapturedProperty &property = properties.at(ii);
+
+        guard.target = q;
+        guard.targetMethod = notifyIdx;
+
+        if (property.notifier != 0) {
+
+            if (!noChanges && guard.isConnected(property.notifier)) {
+                // Nothing to do
+
+            } else {
+                noChanges = false;
+
+                bool existing = false;
+                for (int jj = 0; !existing && jj < ii; ++jj) 
+                    if (data->guardList[jj].isConnected(property.notifier)) 
+                        existing = true;
+
+                if (existing) {
+                    // duplicate
+                    guard.disconnect();
+                } else {
+                    guard.connect(property.notifier);
+                }
+            }
+
+
+        } else if (property.notifyIndex != -1) {
+
+            if (!noChanges && guard.isConnected(property.object, property.notifyIndex)) {
+                // Nothing to do
+
+            } else {
+                noChanges = false;
+
+                bool existing = false;
+                for (int jj = 0; !existing && jj < ii; ++jj) 
+                    if (data->guardList[jj].isConnected(property.object, property.notifyIndex)) 
+                        existing = true;
+
+                if (existing) {
+                    // duplicate
+                    guard.disconnect();
+                } else {
+                    guard.connect(property.object, property.notifyIndex);
+                }
+            }
+
+        } else {
+            if (!outputWarningHeader) {
+                outputWarningHeader = true;
+                qWarning() << "QDeclarativeExpression: Expression" << q->expression()
+                    << "depends on non-NOTIFYable properties:";
+            }
+
+            const QMetaObject *metaObj = property.object->metaObject();
+            QMetaProperty metaProp = metaObj->property(property.coreIndex);
+
+            qWarning().nospace() << "    " << metaObj->className()
+                                 << "::" << metaProp.name();
+        }
     }
 }
 
@@ -784,12 +735,12 @@ QDeclarativeAbstractExpression::~QDeclarativeAbstractExpression()
     }
 }
 
-QDeclarativeContext *QDeclarativeAbstractExpression::context() const
+QDeclarativeContextData *QDeclarativeAbstractExpression::context() const
 {
     return m_context;
 }
 
-void QDeclarativeAbstractExpression::setContext(QDeclarativeContext *context)
+void QDeclarativeAbstractExpression::setContext(QDeclarativeContextData *context)
 {
     if (m_prevExpression) {
         *m_prevExpression = m_nextExpression;
@@ -802,13 +753,11 @@ void QDeclarativeAbstractExpression::setContext(QDeclarativeContext *context)
     m_context = context;
 
     if (m_context) {
-        QDeclarativeContextPrivate *cp = 
-            static_cast<QDeclarativeContextPrivate *>(QObjectPrivate::get(m_context));
-        m_nextExpression = cp->expressions;
+        m_nextExpression = m_context->expressions;
         if (m_nextExpression) 
             m_nextExpression->m_prevExpression = &m_nextExpression;
-        m_prevExpression = &cp->expressions;
-        cp->expressions = this;
+        m_prevExpression = &context->expressions;
+        m_context->expressions = this;
     }
 }
 

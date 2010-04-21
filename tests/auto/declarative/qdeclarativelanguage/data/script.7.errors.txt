@@ -1,1 +1,0 @@
-5:9:Variable declarations not allow in inline Script blocks

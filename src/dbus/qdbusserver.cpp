@@ -42,12 +42,14 @@
 #include "qdbusserver.h"
 #include "qdbusconnection_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 /*!
     \class QDBusServer
     \inmodule QtDBus
-    \since 4.2
+    \internal
 
     \brief The QDBusServer class provides peer-to-peer communication
     between processes on the same computer.
@@ -119,3 +121,5 @@ QString QDBusServer::address() const
  */
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

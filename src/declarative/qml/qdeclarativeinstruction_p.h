@@ -74,6 +74,7 @@ public:
         //                      top of the stack.
         Init,                     /* init */
         CreateObject,             /* create */
+        CreateSimpleObject,       /* createSimple */
         SetId,                    /* setId */
         SetDefault,
         CreateComponent,          /* createComponent */
@@ -113,12 +114,15 @@ public:
         StoreRectF,               /* storeRect */
         StoreVector3D,            /* storeVector3D */
         StoreVariant,             /* storeString */
+        StoreVariantInteger,      /* storeInteger */
+        StoreVariantDouble,       /* storeDouble */
         StoreObject,              /* storeObject */
         StoreVariantObject,       /* storeObject */
         StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
         StoreScript,              /* storeScript */
+        StoreImportedScript,      /* storeScript */
         StoreScriptString,        /* storeScriptString */
 
         //
@@ -172,6 +176,11 @@ public:
         int type;
         int data;
         int bindingBits;
+        ushort column;
+    };
+    struct CreateSimpleInstruction {
+        void (*create)(void *);
+        int typeSize;
         ushort column;
     };
     struct StoreMetaInstruction {
@@ -304,6 +313,7 @@ public:
     union {
         InitInstruction init;
         CreateInstruction create;
+        CreateSimpleInstruction createSimple;
         StoreMetaInstruction storeMeta;
         SetIdInstruction setId;
         AssignValueSourceInstruction assignValueSource;

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeflickable_p.h"
-#include "qdeclarativeflickable_p_p.h"
+#include "private/qdeclarativeflickable_p.h"
+#include "private/qdeclarativeflickable_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QPointer>
@@ -137,7 +137,8 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
 void QDeclarativeFlickablePrivate::init()
 {
     Q_Q(QDeclarativeFlickable);
-    viewport->setParent(q);
+    QDeclarative_setParent_noEvent(viewport, q);
+    viewport->setParentItem(q);
     static int timelineUpdatedIdx = -1;
     static int timelineCompletedIdx = -1;
     static int flickableTickedIdx = -1;
@@ -264,6 +265,7 @@ void QDeclarativeFlickablePrivate::fixupY()
 
 void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
 {
+    Q_Q(QDeclarativeFlickable);
     if (data.move.value() > minExtent || maxExtent > minExtent) {
         timeline.reset(data.move);
         if (data.move.value() != minExtent) {
@@ -273,6 +275,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
                 timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
             } else {
                 data.move.setValue(minExtent);
+                q->viewportMoved();
             }
         }
         //emit flickingChanged();
@@ -284,6 +287,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
         } else {
             data.move.setValue(maxExtent);
+            q->viewportMoved();
         }
         //emit flickingChanged();
     } else {
@@ -399,8 +403,10 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     These properties describe the position and size of the currently viewed area.
     The size is defined as the percentage of the full view currently visible,
-    scaled to 0.0 - 1.0.  The page position is in the range 0.0 (beginning) to
-    size ratio (end), i.e. yPosition is in the range 0.0 - heightRatio.
+    scaled to 0.0 - 1.0.  The page position is usually in the range 0.0 (beginning) to
+    1.0 minus size ratio (end), i.e. yPosition is in the range 0.0 to 1.0-heightRatio.
+    However, it is possible for the contents to be dragged outside of the normal
+    range, resulting in the page positions also being outside the normal range.
 
     These properties are typically used to draw a scrollbar, for example:
     \code
@@ -810,6 +816,8 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->vData.velocity = qMin(event->delta() - d->vData.smoothVelocity.value(), qreal(-250.0));
         d->flicked = false;
         d->flickY(d->vData.velocity);
+        if (d->flicked)
+            movementStarting();
         event->accept();
     } else if (xflick()) {
         if (event->delta() > 0)
@@ -818,6 +826,8 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->hData.velocity = qMin(event->delta() - d->hData.smoothVelocity.value(), qreal(-250.0));
         d->flicked = false;
         d->flickX(d->hData.velocity);
+        if (d->flicked)
+            movementStarting();
         event->accept();
     } else {
         QDeclarativeItem::wheelEvent(event);
@@ -987,10 +997,10 @@ QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
     return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append);
 }
 
-QDeclarativeListProperty<QDeclarativeItem> QDeclarativeFlickable::flickableChildren()
+QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
 {
     Q_D(QDeclarativeFlickable);
-    return d->viewport->fxChildren();
+    return QGraphicsItemPrivate::get(d->viewport)->childrenList();
 }
 
 /*!

@@ -61,10 +61,14 @@ private slots:
     void test_vertical_spacing();
     void test_vertical_animated();
     void test_grid();
+    void test_grid_topToBottom();
     void test_grid_spacing();
     void test_grid_animated();
+    void test_grid_zero_columns();
     void test_propertychanges();
     void test_repeater();
+    void test_flow();
+    void test_flow_resize();
 private:
     QDeclarativeView *createView(const QString &filename);
 };
@@ -92,6 +96,10 @@ void tst_QDeclarativePositioners::test_horizontal()
     QCOMPARE(two->y(), 0.0);
     QCOMPARE(three->x(), 70.0);
     QCOMPARE(three->y(), 0.0);
+
+    QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
+    QCOMPARE(row->width(), 110.0);
+    QCOMPARE(row->height(), 50.0);
 }
 
 void tst_QDeclarativePositioners::test_horizontal_spacing()
@@ -113,6 +121,10 @@ void tst_QDeclarativePositioners::test_horizontal_spacing()
     QCOMPARE(two->y(), 0.0);
     QCOMPARE(three->x(), 90.0);
     QCOMPARE(three->y(), 0.0);
+
+    QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
+    QCOMPARE(row->width(), 130.0);
+    QCOMPARE(row->height(), 50.0);
 }
 
 void tst_QDeclarativePositioners::test_horizontal_animated()
@@ -133,6 +145,11 @@ void tst_QDeclarativePositioners::test_horizontal_animated()
     QCOMPARE(two->x(), -100.0);
     QCOMPARE(three->x(), -100.0);
 
+    QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
+    QVERIFY(row);
+    QCOMPARE(row->width(), 100.0);
+    QCOMPARE(row->height(), 50.0);
+
     //QTRY_COMPARE used instead of waiting for the expected time of animation completion
     //Note that this means the duration of the animation is NOT tested
 
@@ -147,6 +164,11 @@ void tst_QDeclarativePositioners::test_horizontal_animated()
     //Add 'two'
     two->setOpacity(1.0);
     QCOMPARE(two->opacity(), 1.0);
+
+    // New size should be immediate
+    QCOMPARE(row->width(), 150.0);
+    QCOMPARE(row->height(), 50.0);
+
     QTest::qWait(0);//Let the animation start
     QCOMPARE(two->x(), -100.0);
     QCOMPARE(three->x(), 50.0);
@@ -174,6 +196,11 @@ void tst_QDeclarativePositioners::test_vertical()
     QCOMPARE(two->y(), 50.0);
     QCOMPARE(three->x(), 0.0);
     QCOMPARE(three->y(), 60.0);
+
+    QDeclarativeItem *column = canvas->rootObject()->findChild<QDeclarativeItem*>("column");
+    QVERIFY(column);
+    QCOMPARE(column->height(), 80.0);
+    QCOMPARE(column->width(), 50.0);
 }
 
 void tst_QDeclarativePositioners::test_vertical_spacing()
@@ -195,6 +222,10 @@ void tst_QDeclarativePositioners::test_vertical_spacing()
     QCOMPARE(two->y(), 60.0);
     QCOMPARE(three->x(), 0.0);
     QCOMPARE(three->y(), 80.0);
+
+    QDeclarativeItem *column = canvas->rootObject()->findChild<QDeclarativeItem*>("column");
+    QCOMPARE(column->height(), 100.0);
+    QCOMPARE(column->width(), 50.0);
 }
 
 void tst_QDeclarativePositioners::test_vertical_animated()
@@ -214,6 +245,11 @@ void tst_QDeclarativePositioners::test_vertical_animated()
     QVERIFY(three != 0);
     QCOMPARE(three->y(), -100.0);
 
+    QDeclarativeItem *column = canvas->rootObject()->findChild<QDeclarativeItem*>("column");
+    QVERIFY(column);
+    QCOMPARE(column->height(), 100.0);
+    QCOMPARE(column->width(), 50.0);
+
     //QTRY_COMPARE used instead of waiting for the expected time of animation completion
     //Note that this means the duration of the animation is NOT tested
 
@@ -228,6 +264,8 @@ void tst_QDeclarativePositioners::test_vertical_animated()
     //Add 'two'
     two->setOpacity(1.0);
     QTRY_COMPARE(two->opacity(), 1.0);
+    QCOMPARE(column->height(), 150.0);
+    QCOMPARE(column->width(), 50.0);
     QTest::qWait(0);//Let the animation start
     QCOMPARE(two->y(), -100.0);
     QCOMPARE(three->y(), 50.0);
@@ -239,7 +277,7 @@ void tst_QDeclarativePositioners::test_vertical_animated()
 
 void tst_QDeclarativePositioners::test_grid()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/grid.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/gridtest.qml");
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -262,6 +300,41 @@ void tst_QDeclarativePositioners::test_grid()
     QCOMPARE(four->y(), 50.0);
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QCOMPARE(grid->width(), 120.0);
+    QCOMPARE(grid->height(), 100.0);
+}
+
+void tst_QDeclarativePositioners::test_grid_topToBottom()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/grid-toptobottom.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(two->y(), 50.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 100.0);
+    QCOMPARE(four->x(), 50.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QCOMPARE(grid->width(), 100.0);
+    QCOMPARE(grid->height(), 120.0);
 }
 
 void tst_QDeclarativePositioners::test_grid_spacing()
@@ -289,6 +362,10 @@ void tst_QDeclarativePositioners::test_grid_spacing()
     QCOMPARE(four->y(), 54.0);
     QCOMPARE(five->x(), 54.0);
     QCOMPARE(five->y(), 54.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QCOMPARE(grid->width(), 128.0);
+    QCOMPARE(grid->height(), 104.0);
 }
 
 void tst_QDeclarativePositioners::test_grid_animated()
@@ -321,6 +398,11 @@ void tst_QDeclarativePositioners::test_grid_animated()
     QCOMPARE(five->x(), -100.0);
     QCOMPARE(five->y(), -100.0);
 
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QVERIFY(grid);
+    QCOMPARE(grid->width(), 150.0);
+    QCOMPARE(grid->height(), 100.0);
+
     //QTRY_COMPARE used instead of waiting for the expected time of animation completion
     //Note that this means the duration of the animation is NOT tested
 
@@ -339,6 +421,8 @@ void tst_QDeclarativePositioners::test_grid_animated()
     //Add 'two'
     two->setOpacity(1.0);
     QCOMPARE(two->opacity(), 1.0);
+    QCOMPARE(grid->width(), 150.0);
+    QCOMPARE(grid->height(), 100.0);
     QTest::qWait(0);//Let the animation start
     QCOMPARE(two->x(), -100.0);
     QCOMPARE(two->y(), -100.0);
@@ -363,11 +447,44 @@ void tst_QDeclarativePositioners::test_grid_animated()
     QTRY_COMPARE(five->y(), 50.0);
 
 }
+
+void tst_QDeclarativePositioners::test_grid_zero_columns()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/gridzerocolumns.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 70.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 120.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 0.0);
+    QCOMPARE(five->y(), 50.0);
+
+    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QCOMPARE(grid->width(), 170.0);
+    QCOMPARE(grid->height(), 60.0);
+}
+
 void tst_QDeclarativePositioners::test_propertychanges()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/propertychanges.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/propertychangestest.qml");
 
     QDeclarativeGrid *grid = qobject_cast<QDeclarativeGrid*>(canvas->rootObject());
+    QVERIFY(grid != 0);
     QDeclarativeTransition *rowTransition = canvas->rootObject()->findChild<QDeclarativeTransition*>("rowTransition");
     QDeclarativeTransition *columnTransition = canvas->rootObject()->findChild<QDeclarativeTransition*>("columnTransition");
 
@@ -421,7 +538,7 @@ void tst_QDeclarativePositioners::test_propertychanges()
 
 void tst_QDeclarativePositioners::test_repeater()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/repeater.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/repeatertest.qml");
 
     QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
     QVERIFY(one != 0);
@@ -438,6 +555,69 @@ void tst_QDeclarativePositioners::test_repeater()
     QCOMPARE(two->y(), 0.0);
     QCOMPARE(three->x(), 100.0);
     QCOMPARE(three->y(), 0.0);
+}
+
+void tst_QDeclarativePositioners::test_flow()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 50.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 70.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 70.0);
+
+    QDeclarativeItem *flow = canvas->rootObject()->findChild<QDeclarativeItem*>("flow");
+    QVERIFY(flow);
+    QCOMPARE(flow->width(), 90.0);
+    QCOMPARE(flow->height(), 120.0);
+}
+
+void tst_QDeclarativePositioners::test_flow_resize()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/flowtest.qml");
+
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(root);
+    root->setWidth(125);
+
+    QDeclarativeRectangle *one = canvas->rootObject()->findChild<QDeclarativeRectangle*>("one");
+    QVERIFY(one != 0);
+    QDeclarativeRectangle *two = canvas->rootObject()->findChild<QDeclarativeRectangle*>("two");
+    QVERIFY(two != 0);
+    QDeclarativeRectangle *three = canvas->rootObject()->findChild<QDeclarativeRectangle*>("three");
+    QVERIFY(three != 0);
+    QDeclarativeRectangle *four = canvas->rootObject()->findChild<QDeclarativeRectangle*>("four");
+    QVERIFY(four != 0);
+    QDeclarativeRectangle *five = canvas->rootObject()->findChild<QDeclarativeRectangle*>("five");
+    QVERIFY(five != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 70.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 50.0);
 }
 
 QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)

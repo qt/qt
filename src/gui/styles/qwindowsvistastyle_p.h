@@ -86,6 +86,7 @@
 #include <qlistview.h>
 #include <qtableview.h>
 #include <qbasictimer.h>
+#include <qdatetime.h>
 #include <qcommandlinkbutton.h>
 
 QT_BEGIN_NAMESPACE

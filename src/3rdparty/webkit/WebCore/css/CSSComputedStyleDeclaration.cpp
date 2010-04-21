@@ -33,10 +33,8 @@
 #include "CSSReflectValue.h"
 #include "CSSTimingFunctionValue.h"
 #include "CSSValueList.h"
-#include "CachedImage.h"
 #include "Document.h"
 #include "ExceptionCode.h"
-#include "Pair.h"
 #include "Rect.h"
 #include "RenderBox.h"
 #include "RenderLayer.h"
@@ -148,6 +146,7 @@ static const int computedProperties[] = {
     CSSPropertyWebkitAnimationDelay,
     CSSPropertyWebkitAnimationDirection,
     CSSPropertyWebkitAnimationDuration,
+    CSSPropertyWebkitAnimationFillMode,
     CSSPropertyWebkitAnimationIterationCount,
     CSSPropertyWebkitAnimationName,
     CSSPropertyWebkitAnimationPlayState,
@@ -173,6 +172,7 @@ static const int computedProperties[] = {
     CSSPropertyWebkitBoxReflect,
     CSSPropertyWebkitBoxShadow,
     CSSPropertyWebkitBoxSizing,
+    CSSPropertyWebkitColorCorrection,
     CSSPropertyWebkitColumnBreakAfter,
     CSSPropertyWebkitColumnBreakBefore,
     CSSPropertyWebkitColumnBreakInside,
@@ -262,7 +262,7 @@ static const int computedProperties[] = {
     CSSPropertyWritingMode,
     CSSPropertyGlyphOrientationHorizontal,
     CSSPropertyGlyphOrientationVertical,
-    CSSPropertyWebkitShadow
+    CSSPropertyWebkitSvgShadow
 #endif
 };
 
@@ -630,9 +630,9 @@ static PassRefPtr<CSSValue> fillRepeatToCSSValue(EFillRepeat xRepeat, EFillRepea
     // if the two values are equivalent to repeat-x or repeat-y, just return the shorthand.
     if (xRepeat == yRepeat)
         return CSSPrimitiveValue::create(xRepeat);
-    if (xRepeat == CSSValueRepeat && yRepeat == CSSValueNoRepeat)
+    if (xRepeat == RepeatFill && yRepeat == NoRepeatFill)
         return CSSPrimitiveValue::createIdentifier(CSSValueRepeatX);
-    if (xRepeat == CSSValueNoRepeat && yRepeat == CSSValueRepeat)
+    if (xRepeat == NoRepeatFill && yRepeat == RepeatFill)
         return CSSPrimitiveValue::createIdentifier(CSSValueRepeatY);
 
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -899,9 +899,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
                 return CSSPrimitiveValue::createIdentifier(CSSValueNormal);
             return CSSPrimitiveValue::create(style->letterSpacing(), CSSPrimitiveValue::CSS_PX);
         case CSSPropertyWebkitLineClamp:
-            if (style->lineClamp() == -1)
+            if (style->lineClamp().isNone())
                 return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-            return CSSPrimitiveValue::create(style->lineClamp(), CSSPrimitiveValue::CSS_PERCENTAGE);
+            return CSSPrimitiveValue::create(style->lineClamp().value(), style->lineClamp().isPercentage() ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyLineHeight: {
             Length length = style->lineHeight();
             if (length.isNegative())
@@ -911,8 +911,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
                 // for how high to be in pixels does include things like minimum font size and the zoom factor.
                 // On the other hand, since font-size doesn't include the zoom factor, we really can't do
                 // that here either.
-                // The line height returned is rounded to the nearest integer.
-                return CSSPrimitiveValue::create(length.calcMinValue(style->fontDescription().specifiedSize(), true), CSSPrimitiveValue::CSS_PX);
+                return CSSPrimitiveValue::create(static_cast<int>(length.percent() * style->fontDescription().specifiedSize()) / 100, CSSPrimitiveValue::CSS_PX);
             return CSSPrimitiveValue::create(length.value(), CSSPrimitiveValue::CSS_PX);
         }
         case CSSPropertyListStyleImage:
@@ -1200,6 +1199,30 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
         }
         case CSSPropertyWebkitAnimationDuration:
             return getDurationValue(style->animations());
+        case CSSPropertyWebkitAnimationFillMode: {
+            RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+            const AnimationList* t = style->animations();
+            if (t) {
+                for (size_t i = 0; i < t->size(); ++i) {
+                    switch (t->animation(i)->fillMode()) {
+                    case AnimationFillModeNone:
+                        list->append(CSSPrimitiveValue::createIdentifier(CSSValueNone));
+                        break;
+                    case AnimationFillModeForwards:
+                        list->append(CSSPrimitiveValue::createIdentifier(CSSValueForwards));
+                        break;
+                    case AnimationFillModeBackwards:
+                        list->append(CSSPrimitiveValue::createIdentifier(CSSValueBackwards));
+                        break;
+                    case AnimationFillModeBoth:
+                        list->append(CSSPrimitiveValue::createIdentifier(CSSValueBoth));
+                        break;
+                    }
+                }
+            } else
+                list->append(CSSPrimitiveValue::createIdentifier(CSSValueNone));
+            return list.release();
+        }
         case CSSPropertyWebkitAnimationIterationCount: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const AnimationList* t = style->animations();
@@ -1348,6 +1371,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             return getTimingFunctionValue(style->transitions());
         case CSSPropertyPointerEvents:
             return CSSPrimitiveValue::create(style->pointerEvents());
+        case CSSPropertyWebkitColorCorrection:
+            return CSSPrimitiveValue::create(style->colorSpace());
 
         /* Shorthand properties, currently not supported see bug 13658*/
         case CSSPropertyBackground:
@@ -1475,7 +1500,7 @@ unsigned CSSComputedStyleDeclaration::length() const
 String CSSComputedStyleDeclaration::item(unsigned i) const
 {
     if (i >= length())
-        return String();
+        return "";
 
     return getPropertyName(static_cast<CSSPropertyID>(computedProperties[i]));
 }

@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativespringfollow_p.h"
+#include "private/qdeclarativespringfollow_p.h"
 
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
 #include <QtCore/qdebug.h>
 
@@ -59,13 +59,13 @@ class QDeclarativeSpringFollowPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeSpringFollow)
 public:
     QDeclarativeSpringFollowPrivate()
-        : currentValue(0), sourceValue(0), maxVelocity(0), lastTime(0)
+        : currentValue(0), to(0), maxVelocity(0), lastTime(0)
         , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.01)
         , modulus(0.0), useMass(false), haveModulus(false), enabled(true), mode(Track), clock(this) {}
 
     QDeclarativeProperty property;
     qreal currentValue;
-    qreal sourceValue;
+    qreal to;
     qreal maxVelocity;
     qreal velocityms;
     int lastTime;
@@ -102,7 +102,7 @@ void QDeclarativeSpringFollowPrivate::tick(int time)
     int elapsed = time - lastTime;
     if (!elapsed)
         return;
-    qreal srcVal = sourceValue;
+    qreal srcVal = to;
     if (haveModulus) {
         currentValue = fmod(currentValue, modulus);
         srcVal = fmod(srcVal, modulus);
@@ -158,16 +158,16 @@ void QDeclarativeSpringFollowPrivate::tick(int time)
             currentValue += moveBy;
             if (haveModulus)
                 currentValue = fmod(currentValue, modulus);
-            if (currentValue > sourceValue) {
-                currentValue = sourceValue;
+            if (currentValue > to) {
+                currentValue = to;
                 clock.stop();
             }
         } else {
             currentValue -= moveBy;
             if (haveModulus && currentValue < 0.0)
                 currentValue = fmod(currentValue, modulus) + modulus;
-            if (currentValue < sourceValue) {
-                currentValue = sourceValue;
+            if (currentValue < to) {
+                currentValue = to;
                 clock.stop();
             }
         }
@@ -196,9 +196,9 @@ void QDeclarativeSpringFollowPrivate::start()
 
     Q_Q(QDeclarativeSpringFollow);
     if (mode == QDeclarativeSpringFollowPrivate::Track) {
-        currentValue = sourceValue;
+        currentValue = to;
         property.write(currentValue);
-    } else if (sourceValue != currentValue && clock.state() != QAbstractAnimation::Running) {
+    } else if (to != currentValue && clock.state() != QAbstractAnimation::Running) {
         lastTime = 0;
         currentValue = property.read().toReal();
         clock.start(); // infinity??
@@ -224,11 +224,11 @@ void QDeclarativeSpringFollowPrivate::stop()
         color: "#00ff00"
         y: 200  // initial value
         SequentialAnimation on y {
-            running: true
-            repeat: true
+            loops: Animation.Infinite
             NumberAnimation {
                 to: 200
-                easing: "easeOutBounce(amplitude:100)"
+                easing.type: "OutBounce"
+                easing.amplitude: 100
                 duration: 2000
             }
             PauseAnimation { duration: 1000 }
@@ -239,11 +239,9 @@ void QDeclarativeSpringFollowPrivate::stop()
         x: rect1.width
         width: 20; height: 20
         color: "#ff0000"
-        SpringFollow on y { source: rect1.y; velocity: 200 }
+        SpringFollow on y { to: rect1.y; velocity: 200 }
     }
     \endcode
-
-    \sa EaseFollow
 */
 
 QDeclarativeSpringFollow::QDeclarativeSpringFollow(QObject *parent)
@@ -262,26 +260,26 @@ void QDeclarativeSpringFollow::setTarget(const QDeclarativeProperty &property)
     d->currentValue = property.read().toReal();
 }
 
-qreal QDeclarativeSpringFollow::sourceValue() const
+qreal QDeclarativeSpringFollow::to() const
 {
     Q_D(const QDeclarativeSpringFollow);
-    return d->sourceValue;
+    return d->to;
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::source
-    This property holds the source value which will be tracked.
+    \qmlproperty qreal SpringFollow::to
+    This property holds the target value which will be tracked.
 
     Bind to a property in order to track its changes.
 */
 
-void QDeclarativeSpringFollow::setSourceValue(qreal value)
+void QDeclarativeSpringFollow::setTo(qreal value)
 {
     Q_D(QDeclarativeSpringFollow);
-    if (d->clock.state() == QAbstractAnimation::Running && d->sourceValue == value)
+    if (d->clock.state() == QAbstractAnimation::Running && d->to == value)
         return;
 
-    d->sourceValue = value;
+    d->to = value;
     d->start();
 }
 
@@ -309,7 +307,7 @@ void QDeclarativeSpringFollow::setVelocity(qreal velocity)
     This property holds the spring constant
 
     The spring constant describes how strongly the target is pulled towards the
-    source.  Setting spring to 0 turns off spring tracking.  Useful values 0 - 5.0
+    source. Setting spring to 0 turns off spring tracking.  Useful values 0 - 5.0
 
     When a spring constant is set and the velocity property is greater than 0,
     velocity limits the maximum speed.
@@ -419,13 +417,10 @@ void QDeclarativeSpringFollow::setMass(qreal mass)
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::value
-    The current value.
-*/
-
-/*!
     \qmlproperty bool SpringFollow::enabled
     This property holds whether the target will track the source.
+
+    The default value of this property is 'true'.
 */
 bool QDeclarativeSpringFollow::enabled() const
 {
@@ -456,6 +451,10 @@ bool QDeclarativeSpringFollow::inSync() const
     return d->enabled && d->clock.state() != QAbstractAnimation::Running;
 }
 
+/*!
+    \qmlproperty qreal SpringFollow::value
+    The current value.
+*/
 qreal QDeclarativeSpringFollow::value() const
 {
     Q_D(const QDeclarativeSpringFollow);

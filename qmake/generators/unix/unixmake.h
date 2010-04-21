@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 class UnixMakefileGenerator : public MakefileGenerator
 {
     bool init_flag, include_deps;
-    bool writeMakefile(QTextStream &);
     QString libtoolFileName(bool fixify=true);
     void writeLibtoolFile();     // for libtool
     QString pkgConfigPrefix() const;
@@ -75,6 +74,7 @@ protected:
     virtual void init();
 
     void writeMakeParts(QTextStream &);
+    bool writeMakefile(QTextStream &);
 
 private:
     void init2();

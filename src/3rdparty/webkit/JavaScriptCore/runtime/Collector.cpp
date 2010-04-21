@@ -32,6 +32,7 @@
 #include "JSONObject.h"
 #include "JSString.h"
 #include "JSValue.h"
+#include "JSZombie.h"
 #include "MarkStack.h"
 #include "Nodes.h"
 #include "Tracing.h"
@@ -44,7 +45,7 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/VMTags.h>
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 
 #include <mach/mach_init.h>
 #include <mach/mach_port.h>
@@ -52,45 +53,24 @@
 #include <mach/thread_act.h>
 #include <mach/vm_map.h>
 
-#elif PLATFORM(SYMBIAN)
-#include <e32std.h>
-#include <e32cmn.h>
-#include <unistd.h>
-
-#elif PLATFORM(WIN_OS)
+#elif OS(WINDOWS)
 
 #include <windows.h>
 #include <malloc.h>
 
-#elif PLATFORM(HAIKU)
+#elif OS(HAIKU)
 
 #include <OS.h>
 
-#elif PLATFORM(UNIX)
+#elif OS(UNIX)
 
 #include <stdlib.h>
-#if !PLATFORM(HAIKU)
+#if !OS(HAIKU)
 #include <sys/mman.h>
 #endif
 #include <unistd.h>
 
-#if defined(QT_LINUXBASE)
-#include <dlfcn.h>
-#endif
-
-#if defined(__UCLIBC__)
-// versions of uClibc 0.9.28 and below do not have
-// pthread_getattr_np or pthread_attr_getstack.
-#if __UCLIBC_MAJOR__ == 0 && \
-    (__UCLIBC_MINOR__ < 9 || \
-    (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ <= 30))
-#define UCLIBC_USE_PROC_SELF_MAPS 1
-#include <stdio_ext.h>
-extern int *__libc_stack_end;
-#endif
-#endif
-
-#if PLATFORM(SOLARIS)
+#if OS(SOLARIS)
 #include <thread.h>
 #else
 #include <pthread.h>
@@ -100,7 +80,7 @@ extern int *__libc_stack_end;
 #include <pthread_np.h>
 #endif
 
-#if PLATFORM(QNX)
+#if OS(QNX)
 #include <fcntl.h>
 #include <sys/procfs.h>
 #include <stdio.h>
@@ -119,26 +99,17 @@ namespace JSC {
 
 const size_t GROWTH_FACTOR = 2;
 const size_t LOW_WATER_FACTOR = 4;
-const size_t ALLOCATIONS_PER_COLLECTION = 4000;
+const size_t ALLOCATIONS_PER_COLLECTION = 3600;
 // This value has to be a macro to be used in max() without introducing
 // a PIC branch in Mach-O binaries, see <rdar://problem/5971391>.
 #define MIN_ARRAY_SIZE (static_cast<size_t>(14))
 
-#if PLATFORM(SYMBIAN)
-const size_t MAX_NUM_BLOCKS = 256; // Max size of collector heap set to 16 MB
-static RHeap* userChunk = 0;
-#endif
-
 #if ENABLE(JSC_MULTIPLE_THREADS)
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 typedef mach_port_t PlatformThread;
-#elif PLATFORM(WIN_OS)
-struct PlatformThread {
-    PlatformThread(DWORD _id, HANDLE _handle) : id(_id), handle(_handle) {}
-    DWORD id;
-    HANDLE handle;
-};
+#elif OS(WINDOWS)
+typedef HANDLE PlatformThread;
 #endif
 
 class Heap::Thread {
@@ -165,31 +136,13 @@ Heap::Heap(JSGlobalData* globalData)
     , m_currentThreadRegistrar(0)
 #endif
     , m_globalData(globalData)
+#if OS(SYMBIAN)
+    , m_blockallocator(JSCCOLLECTOR_VIRTUALMEM_RESERVATION, BLOCK_SIZE)
+#endif
 {
     ASSERT(globalData);
-
-#if PLATFORM(SYMBIAN)
-    // Symbian OpenC supports mmap but currently not the MAP_ANON flag.
-    // Using fastMalloc() does not properly align blocks on 64k boundaries
-    // and previous implementation was flawed/incomplete.
-    // UserHeap::ChunkHeap allows allocation of continuous memory and specification
-    // of alignment value for (symbian) cells within that heap.
-    //
-    // Clarification and mapping of terminology:
-    // RHeap (created by UserHeap::ChunkHeap below) is continuos memory chunk,
-    // which can dynamically grow up to 8 MB,
-    // that holds all CollectorBlocks of this session (static).
-    // Each symbian cell within RHeap maps to a 64kb aligned CollectorBlock.
-    // JSCell objects are maintained as usual within CollectorBlocks.
-    if (!userChunk) {
-        userChunk = UserHeap::ChunkHeap(0, 0, MAX_NUM_BLOCKS * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        if (!userChunk)
-            CRASH();
-    }
-#endif // PLATFORM(SYMBIAN)
-    
-    memset(&primaryHeap, 0, sizeof(CollectorHeap));
-    memset(&numberHeap, 0, sizeof(CollectorHeap));
+    memset(&m_heap, 0, sizeof(CollectorHeap));
+    allocateBlock();
 }
 
 Heap::~Heap()
@@ -205,6 +158,9 @@ void Heap::destroy()
     if (!m_globalData)
         return;
 
+    ASSERT(!m_globalData->dynamicGlobalObject);
+    ASSERT(!isBusy());
+    
     // The global object is not GC protected at this point, so sweeping may delete it
     // (and thus the global data) before other objects that may use the global data.
     RefPtr<JSGlobalData> protect(m_globalData);
@@ -212,13 +168,7 @@ void Heap::destroy()
     delete m_markListSet;
     m_markListSet = 0;
 
-    sweep<PrimaryHeap>();
-    // No need to sweep number heap, because the JSNumber destructor doesn't do anything.
-
-    ASSERT(!primaryHeap.numLiveObjects);
-
-    freeBlocks(&primaryHeap);
-    freeBlocks(&numberHeap);
+    freeBlocks();
 
 #if ENABLE(JSC_MULTIPLE_THREADS)
     if (m_currentThreadRegistrar) {
@@ -233,31 +183,25 @@ void Heap::destroy()
         t = next;
     }
 #endif
-
+#if OS(SYMBIAN)
+    m_blockallocator.destroy();
+#endif
     m_globalData = 0;
 }
 
-template <HeapType heapType>
 NEVER_INLINE CollectorBlock* Heap::allocateBlock()
 {
-    // Disable the use of vm_map for the Qt build on Darwin, because when compiled on 10.4
-    // it crashes on 10.5
-#if PLATFORM(DARWIN) && !PLATFORM(QT)
+#if OS(DARWIN)
     vm_address_t address = 0;
-    // FIXME: tag the region as a JavaScriptCore heap when we get a registered VM tag: <rdar://problem/6054788>.
     vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
-#elif PLATFORM(SYMBIAN)
-    // Allocate a 64 kb aligned CollectorBlock
-    unsigned char* mask = reinterpret_cast<unsigned char*>(userChunk->Alloc(BLOCK_SIZE));
-    if (!mask)
+#elif OS(SYMBIAN)
+    void* address = m_blockallocator.alloc();  
+    if (!address)
         CRASH();
-    uintptr_t address = reinterpret_cast<uintptr_t>(mask);
-
-    memset(reinterpret_cast<void*>(address), 0, BLOCK_SIZE);
-#elif PLATFORM(WINCE)
+#elif OS(WINCE)
     void* address = VirtualAlloc(NULL, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-#elif PLATFORM(WIN_OS)
-#if COMPILER(MINGW)
+#elif OS(WINDOWS)
+#if COMPILER(MINGW) && !defined(__MINGW64_VERSION_MAJOR)
     void* address = __mingw_aligned_malloc(BLOCK_SIZE, BLOCK_SIZE);
 #else
     void* address = _aligned_malloc(BLOCK_SIZE, BLOCK_SIZE);
@@ -266,7 +210,6 @@ NEVER_INLINE CollectorBlock* Heap::allocateBlock()
 #elif HAVE(POSIX_MEMALIGN)
     void* address;
     posix_memalign(&address, BLOCK_SIZE, BLOCK_SIZE);
-    memset(address, 0, BLOCK_SIZE);
 #else
 
 #if ENABLE(JSC_MULTIPLE_THREADS)
@@ -292,58 +235,64 @@ NEVER_INLINE CollectorBlock* Heap::allocateBlock()
         munmap(reinterpret_cast<char*>(address + adjust + BLOCK_SIZE), extra - adjust);
 
     address += adjust;
-    memset(reinterpret_cast<void*>(address), 0, BLOCK_SIZE);
 #endif
 
-    CollectorBlock* block = reinterpret_cast<CollectorBlock*>(address);
-    block->freeList = block->cells;
-    block->heap = this;
-    block->type = heapType;
+    // Initialize block.
 
-    CollectorHeap& heap = heapType == PrimaryHeap ? primaryHeap : numberHeap;
-    size_t numBlocks = heap.numBlocks;
-    if (heap.usedBlocks == numBlocks) {
+    CollectorBlock* block = reinterpret_cast<CollectorBlock*>(address);
+    block->heap = this;
+    clearMarkBits(block);
+
+    Structure* dummyMarkableCellStructure = m_globalData->dummyMarkableCellStructure.get();
+    for (size_t i = 0; i < HeapConstants::cellsPerBlock; ++i)
+        new (block->cells + i) JSCell(dummyMarkableCellStructure);
+    
+    // Add block to blocks vector.
+
+    size_t numBlocks = m_heap.numBlocks;
+    if (m_heap.usedBlocks == numBlocks) {
         static const size_t maxNumBlocks = ULONG_MAX / sizeof(CollectorBlock*) / GROWTH_FACTOR;
         if (numBlocks > maxNumBlocks)
             CRASH();
         numBlocks = max(MIN_ARRAY_SIZE, numBlocks * GROWTH_FACTOR);
-        heap.numBlocks = numBlocks;
-        heap.blocks = static_cast<CollectorBlock**>(fastRealloc(heap.blocks, numBlocks * sizeof(CollectorBlock*)));
+        m_heap.numBlocks = numBlocks;
+        m_heap.blocks = static_cast<CollectorBlock**>(fastRealloc(m_heap.blocks, numBlocks * sizeof(CollectorBlock*)));
     }
-    heap.blocks[heap.usedBlocks++] = block;
+    m_heap.blocks[m_heap.usedBlocks++] = block;
 
     return block;
 }
 
-template <HeapType heapType>
 NEVER_INLINE void Heap::freeBlock(size_t block)
 {
-    CollectorHeap& heap = heapType == PrimaryHeap ? primaryHeap : numberHeap;
+    m_heap.didShrink = true;
 
-    freeBlock(heap.blocks[block]);
+    ObjectIterator it(m_heap, block);
+    ObjectIterator end(m_heap, block + 1);
+    for ( ; it != end; ++it)
+        (*it)->~JSCell();
+    freeBlockPtr(m_heap.blocks[block]);
 
     // swap with the last block so we compact as we go
-    heap.blocks[block] = heap.blocks[heap.usedBlocks - 1];
-    heap.usedBlocks--;
+    m_heap.blocks[block] = m_heap.blocks[m_heap.usedBlocks - 1];
+    m_heap.usedBlocks--;
 
-    if (heap.numBlocks > MIN_ARRAY_SIZE && heap.usedBlocks < heap.numBlocks / LOW_WATER_FACTOR) {
-        heap.numBlocks = heap.numBlocks / GROWTH_FACTOR; 
-        heap.blocks = static_cast<CollectorBlock**>(fastRealloc(heap.blocks, heap.numBlocks * sizeof(CollectorBlock*)));
+    if (m_heap.numBlocks > MIN_ARRAY_SIZE && m_heap.usedBlocks < m_heap.numBlocks / LOW_WATER_FACTOR) {
+        m_heap.numBlocks = m_heap.numBlocks / GROWTH_FACTOR; 
+        m_heap.blocks = static_cast<CollectorBlock**>(fastRealloc(m_heap.blocks, m_heap.numBlocks * sizeof(CollectorBlock*)));
     }
 }
 
-NEVER_INLINE void Heap::freeBlock(CollectorBlock* block)
+NEVER_INLINE void Heap::freeBlockPtr(CollectorBlock* block)
 {
-    // Disable the use of vm_deallocate for the Qt build on Darwin, because when compiled on 10.4
-    // it crashes on 10.5
-#if PLATFORM(DARWIN) && !PLATFORM(QT)
+#if OS(DARWIN)    
     vm_deallocate(current_task(), reinterpret_cast<vm_address_t>(block), BLOCK_SIZE);
-#elif PLATFORM(SYMBIAN)
-    userChunk->Free(reinterpret_cast<TAny*>(block));
-#elif PLATFORM(WINCE)
+#elif OS(SYMBIAN)
+    m_blockallocator.free(reinterpret_cast<void*>(block));
+#elif OS(WINCE)
     VirtualFree(block, 0, MEM_RELEASE);
-#elif PLATFORM(WIN_OS)
-#if COMPILER(MINGW)
+#elif OS(WINDOWS)
+#if COMPILER(MINGW) && !defined(__MINGW64_VERSION_MAJOR)
     __mingw_aligned_free(block);
 #else
     _aligned_free(block);
@@ -355,13 +304,34 @@ NEVER_INLINE void Heap::freeBlock(CollectorBlock* block)
 #endif
 }
 
-void Heap::freeBlocks(CollectorHeap* heap)
+void Heap::freeBlocks()
 {
-    for (size_t i = 0; i < heap->usedBlocks; ++i)
-        if (heap->blocks[i])
-            freeBlock(heap->blocks[i]);
-    fastFree(heap->blocks);
-    memset(heap, 0, sizeof(CollectorHeap));
+    ProtectCountSet protectedValuesCopy = m_protectedValues;
+
+    clearMarkBits();
+    ProtectCountSet::iterator protectedValuesEnd = protectedValuesCopy.end();
+    for (ProtectCountSet::iterator it = protectedValuesCopy.begin(); it != protectedValuesEnd; ++it)
+        markCell(it->first);
+
+    m_heap.nextCell = 0;
+    m_heap.nextBlock = 0;
+    DeadObjectIterator it(m_heap, m_heap.nextBlock, m_heap.nextCell);
+    DeadObjectIterator end(m_heap, m_heap.usedBlocks);
+    for ( ; it != end; ++it)
+        (*it)->~JSCell();
+
+    ASSERT(!protectedObjectCount());
+
+    protectedValuesEnd = protectedValuesCopy.end();
+    for (ProtectCountSet::iterator it = protectedValuesCopy.begin(); it != protectedValuesEnd; ++it)
+        it->first->~JSCell();
+
+    for (size_t block = 0; block < m_heap.usedBlocks; ++block)
+        freeBlockPtr(m_heap.blocks[block]);
+
+    fastFree(m_heap.blocks);
+
+    memset(&m_heap, 0, sizeof(CollectorHeap));
 }
 
 void Heap::recordExtraCost(size_t cost)
@@ -376,123 +346,109 @@ void Heap::recordExtraCost(size_t cost)
     // are either very short lived temporaries, or have extremely long lifetimes. So
     // if a large value survives one garbage collection, there is not much point to
     // collecting more frequently as long as it stays alive.
-    // NOTE: we target the primaryHeap unconditionally as JSNumber doesn't modify cost 
 
-    primaryHeap.extraCost += cost;
-}
-
-template <HeapType heapType> ALWAYS_INLINE void* Heap::heapAllocate(size_t s)
-{
-    typedef typename HeapConstants<heapType>::Block Block;
-    typedef typename HeapConstants<heapType>::Cell Cell;
-
-    CollectorHeap& heap = heapType == PrimaryHeap ? primaryHeap : numberHeap;
-    ASSERT(JSLock::lockCount() > 0);
-    ASSERT(JSLock::currentThreadIsHoldingLock());
-    ASSERT_UNUSED(s, s <= HeapConstants<heapType>::cellSize);
-
-    ASSERT(heap.operationInProgress == NoOperation);
-    ASSERT(heapType == PrimaryHeap || heap.extraCost == 0);
-    // FIXME: If another global variable access here doesn't hurt performance
-    // too much, we could CRASH() in NDEBUG builds, which could help ensure we
-    // don't spend any time debugging cases where we allocate inside an object's
-    // deallocation code.
-
-#if COLLECT_ON_EVERY_ALLOCATION
-    collect();
-#endif
-
-    size_t numLiveObjects = heap.numLiveObjects;
-    size_t usedBlocks = heap.usedBlocks;
-    size_t i = heap.firstBlockWithPossibleSpace;
-
-    // if we have a huge amount of extra cost, we'll try to collect even if we still have
-    // free cells left.
-    if (heapType == PrimaryHeap && heap.extraCost > ALLOCATIONS_PER_COLLECTION) {
-        size_t numLiveObjectsAtLastCollect = heap.numLiveObjectsAtLastCollect;
-        size_t numNewObjects = numLiveObjects - numLiveObjectsAtLastCollect;
-        const size_t newCost = numNewObjects + heap.extraCost;
-        if (newCost >= ALLOCATIONS_PER_COLLECTION && newCost >= numLiveObjectsAtLastCollect)
-            goto collect;
+    if (m_heap.extraCost > maxExtraCost && m_heap.extraCost > m_heap.usedBlocks * BLOCK_SIZE / 2) {
+        // If the last iteration through the heap deallocated blocks, we need
+        // to clean up remaining garbage before marking. Otherwise, the conservative
+        // marking mechanism might follow a pointer to unmapped memory.
+        if (m_heap.didShrink)
+            sweep();
+        reset();
     }
-
-    ASSERT(heap.operationInProgress == NoOperation);
-#ifndef NDEBUG
-    // FIXME: Consider doing this in NDEBUG builds too (see comment above).
-    heap.operationInProgress = Allocation;
-#endif
-
-scan:
-    Block* targetBlock;
-    size_t targetBlockUsedCells;
-    if (i != usedBlocks) {
-        targetBlock = reinterpret_cast<Block*>(heap.blocks[i]);
-        targetBlockUsedCells = targetBlock->usedCells;
-        ASSERT(targetBlockUsedCells <= HeapConstants<heapType>::cellsPerBlock);
-        while (targetBlockUsedCells == HeapConstants<heapType>::cellsPerBlock) {
-            if (++i == usedBlocks)
-                goto collect;
-            targetBlock = reinterpret_cast<Block*>(heap.blocks[i]);
-            targetBlockUsedCells = targetBlock->usedCells;
-            ASSERT(targetBlockUsedCells <= HeapConstants<heapType>::cellsPerBlock);
-        }
-        heap.firstBlockWithPossibleSpace = i;
-    } else {
-
-collect:
-        size_t numLiveObjectsAtLastCollect = heap.numLiveObjectsAtLastCollect;
-        size_t numNewObjects = numLiveObjects - numLiveObjectsAtLastCollect;
-        const size_t newCost = numNewObjects + heap.extraCost;
-
-        if (newCost >= ALLOCATIONS_PER_COLLECTION && newCost >= numLiveObjectsAtLastCollect) {
-#ifndef NDEBUG
-            heap.operationInProgress = NoOperation;
-#endif
-            bool foundGarbage = collect();
-            numLiveObjects = heap.numLiveObjects;
-            usedBlocks = heap.usedBlocks;
-            i = heap.firstBlockWithPossibleSpace;
-#ifndef NDEBUG
-            heap.operationInProgress = Allocation;
-#endif
-            if (foundGarbage)
-                goto scan;
-        }
-
-        // didn't find a block, and GC didn't reclaim anything, need to allocate a new block
-        targetBlock = reinterpret_cast<Block*>(allocateBlock<heapType>());
-        heap.firstBlockWithPossibleSpace = heap.usedBlocks - 1;
-        targetBlockUsedCells = 0;
-    }
-
-    // find a free spot in the block and detach it from the free list
-    Cell* newCell = targetBlock->freeList;
-
-    // "next" field is a cell offset -- 0 means next cell, so a zeroed block is already initialized
-    targetBlock->freeList = (newCell + 1) + newCell->u.freeCell.next;
-
-    targetBlock->usedCells = static_cast<uint32_t>(targetBlockUsedCells + 1);
-    heap.numLiveObjects = numLiveObjects + 1;
-
-#ifndef NDEBUG
-    // FIXME: Consider doing this in NDEBUG builds too (see comment above).
-    heap.operationInProgress = NoOperation;
-#endif
-
-    return newCell;
+    m_heap.extraCost += cost;
 }
 
 void* Heap::allocate(size_t s)
 {
-    return heapAllocate<PrimaryHeap>(s);
+    typedef HeapConstants::Block Block;
+    typedef HeapConstants::Cell Cell;
+    
+    ASSERT(JSLock::lockCount() > 0);
+    ASSERT(JSLock::currentThreadIsHoldingLock());
+    ASSERT_UNUSED(s, s <= HeapConstants::cellSize);
+
+    ASSERT(m_heap.operationInProgress == NoOperation);
+
+#if COLLECT_ON_EVERY_ALLOCATION
+    collectAllGarbage();
+    ASSERT(m_heap.operationInProgress == NoOperation);
+#endif
+
+allocate:
+
+    // Fast case: find the next garbage cell and recycle it.
+
+    do {
+        ASSERT(m_heap.nextBlock < m_heap.usedBlocks);
+        Block* block = reinterpret_cast<Block*>(m_heap.blocks[m_heap.nextBlock]);
+        do {
+            ASSERT(m_heap.nextCell < HeapConstants::cellsPerBlock);
+            if (!block->marked.get(m_heap.nextCell)) { // Always false for the last cell in the block
+                Cell* cell = block->cells + m_heap.nextCell;
+
+                m_heap.operationInProgress = Allocation;
+                JSCell* imp = reinterpret_cast<JSCell*>(cell);
+                imp->~JSCell();
+                m_heap.operationInProgress = NoOperation;
+
+                ++m_heap.nextCell;
+                return cell;
+            }
+        } while (++m_heap.nextCell != HeapConstants::cellsPerBlock);
+        m_heap.nextCell = 0;
+    } while (++m_heap.nextBlock != m_heap.usedBlocks);
+
+    // Slow case: reached the end of the heap. Mark live objects and start over.
+
+    reset();
+    goto allocate;
 }
 
-void* Heap::allocateNumber(size_t s)
+void Heap::resizeBlocks()
 {
-    return heapAllocate<NumberHeap>(s);
+    m_heap.didShrink = false;
+
+    size_t usedCellCount = markedCells();
+    size_t minCellCount = usedCellCount + max(ALLOCATIONS_PER_COLLECTION, usedCellCount);
+    size_t minBlockCount = (minCellCount + HeapConstants::cellsPerBlock - 1) / HeapConstants::cellsPerBlock;
+
+    size_t maxCellCount = 1.25f * minCellCount;
+    size_t maxBlockCount = (maxCellCount + HeapConstants::cellsPerBlock - 1) / HeapConstants::cellsPerBlock;
+
+    if (m_heap.usedBlocks < minBlockCount)
+        growBlocks(minBlockCount);
+    else if (m_heap.usedBlocks > maxBlockCount)
+        shrinkBlocks(maxBlockCount);
 }
 
-#if PLATFORM(WINCE)
+void Heap::growBlocks(size_t neededBlocks)
+{
+    ASSERT(m_heap.usedBlocks < neededBlocks);
+    while (m_heap.usedBlocks < neededBlocks)
+        allocateBlock();
+}
+
+void Heap::shrinkBlocks(size_t neededBlocks)
+{
+    ASSERT(m_heap.usedBlocks > neededBlocks);
+    
+    // Clear the always-on last bit, so isEmpty() isn't fooled by it.
+    for (size_t i = 0; i < m_heap.usedBlocks; ++i)
+        m_heap.blocks[i]->marked.clear(HeapConstants::cellsPerBlock - 1);
+
+    for (size_t i = 0; i != m_heap.usedBlocks && m_heap.usedBlocks != neededBlocks; ) {
+        if (m_heap.blocks[i]->marked.isEmpty()) {
+            freeBlock(i);
+        } else
+            ++i;
+    }
+
+    // Reset the always-on last bit.
+    for (size_t i = 0; i < m_heap.usedBlocks; ++i)
+        m_heap.blocks[i]->marked.set(HeapConstants::cellsPerBlock - 1);
+}
+
+#if OS(WINCE)
 void* g_stackBase = 0;
 
 inline bool isPageWritable(void* page)
@@ -549,7 +505,7 @@ static void* getStackBase(void* previousFrame)
 }
 #endif
 
-#if PLATFORM(QNX)
+#if OS(QNX)
 static inline void *currentThreadStackBaseQNX()
 {
     static void* stackBase = 0;
@@ -578,10 +534,10 @@ static inline void *currentThreadStackBaseQNX()
 
 static inline void* currentThreadStackBase()
 {
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
     pthread_t thread = pthread_self();
     return pthread_get_stackaddr_np(thread);
-#elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(MSVC)
+#elif OS(WINDOWS) && CPU(X86) && COMPILER(MSVC)
     // offset 0x18 from the FS segment register gives a pointer to
     // the thread information block for the current thread
     NT_TIB* pTib;
@@ -590,10 +546,7 @@ static inline void* currentThreadStackBase()
         MOV pTib, EAX
     }
     return static_cast<void*>(pTib->StackBase);
-#elif PLATFORM(WIN_OS) && PLATFORM(X86_64) && COMPILER(MSVC)
-    PNT_TIB64 pTib = reinterpret_cast<PNT_TIB64>(NtCurrentTeb());
-    return reinterpret_cast<void*>(pTib->StackBase);
-#elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(GCC)
+#elif OS(WINDOWS) && CPU(X86) && COMPILER(GCC)
     // offset 0x18 from the FS segment register gives a pointer to
     // the thread information block for the current thread
     NT_TIB* pTib;
@@ -601,18 +554,21 @@ static inline void* currentThreadStackBase()
           : "=r" (pTib)
         );
     return static_cast<void*>(pTib->StackBase);
-#elif PLATFORM(QNX)
+#elif OS(WINDOWS) && CPU(X86_64)
+    PNT_TIB64 pTib = reinterpret_cast<PNT_TIB64>(NtCurrentTeb());
+    return reinterpret_cast<void*>(pTib->StackBase);
+#elif OS(QNX)
     return currentThreadStackBaseQNX();
-#elif PLATFORM(SOLARIS)
+#elif OS(SOLARIS)
     stack_t s;
     thr_stksegment(&s);
     return s.ss_sp;
-#elif PLATFORM(OPENBSD)
+#elif OS(OPENBSD)
     pthread_t thread = pthread_self();
     stack_t stack;
     pthread_stackseg_np(thread, &stack);
     return stack.ss_sp;
-#elif PLATFORM(SYMBIAN)
+#elif OS(SYMBIAN)
     static void* stackBase = 0;
     if (stackBase == 0) {
         TThreadStackInfo info;
@@ -621,63 +577,21 @@ static inline void* currentThreadStackBase()
         stackBase = (void*)info.iBase;
     }
     return (void*)stackBase;
-#elif PLATFORM(HAIKU)
+#elif OS(HAIKU)
     thread_info threadInfo;
     get_thread_info(find_thread(NULL), &threadInfo);
     return threadInfo.stack_end;
-#elif PLATFORM(UNIX)
-#ifdef UCLIBC_USE_PROC_SELF_MAPS
-    // Read /proc/self/maps and locate the line whose address
-    // range contains __libc_stack_end.
-    FILE *file = fopen("/proc/self/maps", "r");
-    if (!file)
-        return 0;
-    __fsetlocking(file, FSETLOCKING_BYCALLER);
-    char *line = NULL;
-    size_t lineLen = 0;
-    while (!feof_unlocked(file)) {
-        if (getdelim(&line, &lineLen, '\n', file) <= 0)
-            break;
-
-        long from;
-        long to;
-        if (sscanf (line, "%lx-%lx", &from, &to) != 2)
-            continue;
-        if (from <= (long)__libc_stack_end && (long)__libc_stack_end < to) {
-            fclose(file);
-            free(line);
-#ifdef _STACK_GROWS_UP
-            return (void *)from;
-#else
-            return (void *)to;
-#endif
-        }
-    }
-    fclose(file);
-    free(line);
-    return 0;
-#else
+#elif OS(UNIX)
     static void* stackBase = 0;
     static size_t stackSize = 0;
     static pthread_t stackThread;
     pthread_t thread = pthread_self();
     if (stackBase == 0 || thread != stackThread) {
-#if defined(QT_LINUXBASE)
-        // LinuxBase is missing pthread_getattr_np - resolve it once at runtime instead
-        // see http://bugs.linuxbase.org/show_bug.cgi?id=2364
-        typedef int (*GetAttrPtr)(pthread_t, pthread_attr_t *);
-        static int (*pthread_getattr_np_ptr)(pthread_t, pthread_attr_t *) = 0;
-        if (!pthread_getattr_np_ptr)
-            *(void **)&pthread_getattr_np_ptr = dlsym(RTLD_DEFAULT, "pthread_getattr_np");
-#endif
         pthread_attr_t sattr;
         pthread_attr_init(&sattr);
-#if HAVE(PTHREAD_NP_H) || PLATFORM(NETBSD)
+#if HAVE(PTHREAD_NP_H) || OS(NETBSD)
         // e.g. on FreeBSD 5.4, neundorf@kde.org
         pthread_attr_get_np(thread, &sattr);
-#elif defined(QT_LINUXBASE)
-        if (pthread_getattr_np_ptr)
-            pthread_getattr_np_ptr(thread, &sattr);
 #else
         // FIXME: this function is non-portable; other POSIX systems may have different np alternatives
         pthread_getattr_np(thread, &sattr);
@@ -689,8 +603,7 @@ static inline void* currentThreadStackBase()
         stackThread = thread;
     }
     return static_cast<char*>(stackBase) + stackSize;
-#endif
-#elif PLATFORM(WINCE)
+#elif OS(WINCE)
     if (g_stackBase)
         return g_stackBase;
     else {
@@ -706,11 +619,10 @@ static inline void* currentThreadStackBase()
 
 static inline PlatformThread getCurrentPlatformThread()
 {
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
     return pthread_mach_thread_np(pthread_self());
-#elif PLATFORM(WIN_OS)
-    HANDLE threadHandle = pthread_getw32threadhandle_np(pthread_self());
-    return PlatformThread(GetCurrentThreadId(), threadHandle);
+#elif OS(WINDOWS)
+    return pthread_getw32threadhandle_np(pthread_self());
 #endif
 }
 
@@ -779,10 +691,37 @@ void Heap::registerThread()
 
 #endif
 
-#define IS_POINTER_ALIGNED(p) (((intptr_t)(p) & (sizeof(char*) - 1)) == 0)
+inline bool isPointerAligned(void* p)
+{
+    return (((intptr_t)(p) & (sizeof(char*) - 1)) == 0);
+}
 
-// cell size needs to be a power of two for this to be valid
-#define IS_HALF_CELL_ALIGNED(p) (((intptr_t)(p) & (CELL_MASK >> 1)) == 0)
+// Cell size needs to be a power of two for isPossibleCell to be valid.
+COMPILE_ASSERT(sizeof(CollectorCell) % 2 == 0, Collector_cell_size_is_power_of_two);
+
+#if USE(JSVALUE32)
+static bool isHalfCellAligned(void *p)
+{
+    return (((intptr_t)(p) & (CELL_MASK >> 1)) == 0);
+}
+
+static inline bool isPossibleCell(void* p)
+{
+    return isHalfCellAligned(p) && p;
+}
+
+#else
+
+static inline bool isCellAligned(void *p)
+{
+    return (((intptr_t)(p) & CELL_MASK) == 0);
+}
+
+static inline bool isPossibleCell(void* p)
+{
+    return isCellAligned(p) && p;
+}
+#endif // USE(JSVALUE32)
 
 void Heap::markConservatively(MarkStack& markStack, void* start, void* end)
 {
@@ -793,46 +732,33 @@ void Heap::markConservatively(MarkStack& markStack, void* start, void* end)
     }
 
     ASSERT((static_cast<char*>(end) - static_cast<char*>(start)) < 0x1000000);
-    ASSERT(IS_POINTER_ALIGNED(start));
-    ASSERT(IS_POINTER_ALIGNED(end));
+    ASSERT(isPointerAligned(start));
+    ASSERT(isPointerAligned(end));
 
     char** p = static_cast<char**>(start);
     char** e = static_cast<char**>(end);
 
-    size_t usedPrimaryBlocks = primaryHeap.usedBlocks;
-    size_t usedNumberBlocks = numberHeap.usedBlocks;
-    CollectorBlock** primaryBlocks = primaryHeap.blocks;
-    CollectorBlock** numberBlocks = numberHeap.blocks;
-
-    const size_t lastCellOffset = sizeof(CollectorCell) * (CELLS_PER_BLOCK - 1);
-
+    CollectorBlock** blocks = m_heap.blocks;
     while (p != e) {
         char* x = *p++;
-        if (IS_HALF_CELL_ALIGNED(x) && x) {
+        if (isPossibleCell(x)) {
+            size_t usedBlocks;
             uintptr_t xAsBits = reinterpret_cast<uintptr_t>(x);
             xAsBits &= CELL_ALIGN_MASK;
+
             uintptr_t offset = xAsBits & BLOCK_OFFSET_MASK;
+            const size_t lastCellOffset = sizeof(CollectorCell) * (CELLS_PER_BLOCK - 1);
+            if (offset > lastCellOffset)
+                continue;
+
             CollectorBlock* blockAddr = reinterpret_cast<CollectorBlock*>(xAsBits - offset);
-            // Mark the the number heap, we can mark these Cells directly to avoid the virtual call cost
-            for (size_t block = 0; block < usedNumberBlocks; block++) {
-                if ((numberBlocks[block] == blockAddr) & (offset <= lastCellOffset)) {
-                    Heap::markCell(reinterpret_cast<JSCell*>(xAsBits));
-                    goto endMarkLoop;
-                }
+            usedBlocks = m_heap.usedBlocks;
+            for (size_t block = 0; block < usedBlocks; block++) {
+                if (blocks[block] != blockAddr)
+                    continue;
+                markStack.append(reinterpret_cast<JSCell*>(xAsBits));
+                markStack.drain();
             }
-          
-            // Mark the primary heap
-            for (size_t block = 0; block < usedPrimaryBlocks; block++) {
-                if ((primaryBlocks[block] == blockAddr) & (offset <= lastCellOffset)) {
-                    if (reinterpret_cast<CollectorCell*>(xAsBits)->u.freeCell.zeroIfFree) {
-                        markStack.append(reinterpret_cast<JSCell*>(xAsBits));
-                        markStack.drain();
-                    }
-                    break;
-                }
-            }
-        endMarkLoop:
-            ;
         }
     }
 }
@@ -871,10 +797,10 @@ void Heap::markCurrentThreadConservatively(MarkStack& markStack)
 
 static inline void suspendThread(const PlatformThread& platformThread)
 {
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
     thread_suspend(platformThread);
-#elif PLATFORM(WIN_OS)
-    SuspendThread(platformThread.handle);
+#elif OS(WINDOWS)
+    SuspendThread(platformThread);
 #else
 #error Need a way to suspend threads on this platform
 #endif
@@ -882,10 +808,10 @@ static inline void suspendThread(const PlatformThread& platformThread)
 
 static inline void resumeThread(const PlatformThread& platformThread)
 {
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
     thread_resume(platformThread);
-#elif PLATFORM(WIN_OS)
-    ResumeThread(platformThread.handle);
+#elif OS(WINDOWS)
+    ResumeThread(platformThread);
 #else
 #error Need a way to resume threads on this platform
 #endif
@@ -893,23 +819,23 @@ static inline void resumeThread(const PlatformThread& platformThread)
 
 typedef unsigned long usword_t; // word size, assumed to be either 32 or 64 bit
 
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 
-#if PLATFORM(X86)
+#if CPU(X86)
 typedef i386_thread_state_t PlatformThreadRegisters;
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
 typedef x86_thread_state64_t PlatformThreadRegisters;
-#elif PLATFORM(PPC)
+#elif CPU(PPC)
 typedef ppc_thread_state_t PlatformThreadRegisters;
-#elif PLATFORM(PPC64)
+#elif CPU(PPC64)
 typedef ppc_thread_state64_t PlatformThreadRegisters;
-#elif PLATFORM(ARM)
+#elif CPU(ARM)
 typedef arm_thread_state_t PlatformThreadRegisters;
 #else
 #error Unknown Architecture
 #endif
 
-#elif PLATFORM(WIN_OS)&& PLATFORM(X86)
+#elif OS(WINDOWS) && CPU(X86)
 typedef CONTEXT PlatformThreadRegisters;
 #else
 #error Need a thread register struct for this platform
@@ -917,21 +843,21 @@ typedef CONTEXT PlatformThreadRegisters;
 
 static size_t getPlatformThreadRegisters(const PlatformThread& platformThread, PlatformThreadRegisters& regs)
 {
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 
-#if PLATFORM(X86)
+#if CPU(X86)
     unsigned user_count = sizeof(regs)/sizeof(int);
     thread_state_flavor_t flavor = i386_THREAD_STATE;
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
     unsigned user_count = x86_THREAD_STATE64_COUNT;
     thread_state_flavor_t flavor = x86_THREAD_STATE64;
-#elif PLATFORM(PPC) 
+#elif CPU(PPC) 
     unsigned user_count = PPC_THREAD_STATE_COUNT;
     thread_state_flavor_t flavor = PPC_THREAD_STATE;
-#elif PLATFORM(PPC64)
+#elif CPU(PPC64)
     unsigned user_count = PPC_THREAD_STATE64_COUNT;
     thread_state_flavor_t flavor = PPC_THREAD_STATE64;
-#elif PLATFORM(ARM)
+#elif CPU(ARM)
     unsigned user_count = ARM_THREAD_STATE_COUNT;
     thread_state_flavor_t flavor = ARM_THREAD_STATE;
 #else
@@ -945,11 +871,11 @@ static size_t getPlatformThreadRegisters(const PlatformThread& platformThread, P
         CRASH();
     }
     return user_count * sizeof(usword_t);
-// end PLATFORM(DARWIN)
+// end OS(DARWIN)
 
-#elif PLATFORM(WIN_OS) && PLATFORM(X86)
+#elif OS(WINDOWS) && CPU(X86)
     regs.ContextFlags = CONTEXT_INTEGER | CONTEXT_CONTROL | CONTEXT_SEGMENTS;
-    GetThreadContext(platformThread.handle, &regs);
+    GetThreadContext(platformThread, &regs);
     return sizeof(CONTEXT);
 #else
 #error Need a way to get thread registers on this platform
@@ -958,17 +884,17 @@ static size_t getPlatformThreadRegisters(const PlatformThread& platformThread, P
 
 static inline void* otherThreadStackPointer(const PlatformThreadRegisters& regs)
 {
-#if PLATFORM(DARWIN)
+#if OS(DARWIN)
 
 #if __DARWIN_UNIX03
 
-#if PLATFORM(X86)
+#if CPU(X86)
     return reinterpret_cast<void*>(regs.__esp);
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
     return reinterpret_cast<void*>(regs.__rsp);
-#elif PLATFORM(PPC) || PLATFORM(PPC64)
+#elif CPU(PPC) || CPU(PPC64)
     return reinterpret_cast<void*>(regs.__r1);
-#elif PLATFORM(ARM)
+#elif CPU(ARM)
     return reinterpret_cast<void*>(regs.__sp);
 #else
 #error Unknown Architecture
@@ -976,11 +902,11 @@ static inline void* otherThreadStackPointer(const PlatformThreadRegisters& regs)
 
 #else // !__DARWIN_UNIX03
 
-#if PLATFORM(X86)
+#if CPU(X86)
     return reinterpret_cast<void*>(regs.esp);
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
     return reinterpret_cast<void*>(regs.rsp);
-#elif (PLATFORM(PPC) || PLATFORM(PPC64))
+#elif CPU(PPC) || CPU(PPC64)
     return reinterpret_cast<void*>(regs.r1);
 #else
 #error Unknown Architecture
@@ -988,8 +914,8 @@ static inline void* otherThreadStackPointer(const PlatformThreadRegisters& regs)
 
 #endif // __DARWIN_UNIX03
 
-// end PLATFORM(DARWIN)
-#elif PLATFORM(X86) && PLATFORM(WIN_OS)
+// end OS(DARWIN)
+#elif CPU(X86) && OS(WINDOWS)
     return reinterpret_cast<void*>((uintptr_t) regs.Esp);
 #else
 #error Need a way to get the stack pointer for another thread on this platform
@@ -1054,15 +980,15 @@ void Heap::protect(JSValue k)
     m_protectedValues.add(k.asCell());
 }
 
-void Heap::unprotect(JSValue k)
+bool Heap::unprotect(JSValue k)
 {
     ASSERT(k);
     ASSERT(JSLock::currentThreadIsHoldingLock() || !m_globalData->isSharedInstance);
 
     if (!k.isCell())
-        return;
+        return false;
 
-    m_protectedValues.remove(k.asCell());
+    return m_protectedValues.remove(k.asCell());
 }
 
 void Heap::markProtectedObjects(MarkStack& markStack)
@@ -1074,109 +1000,68 @@ void Heap::markProtectedObjects(MarkStack& markStack)
     }
 }
 
-template <HeapType heapType> size_t Heap::sweep()
+void Heap::clearMarkBits()
 {
-    typedef typename HeapConstants<heapType>::Block Block;
-    typedef typename HeapConstants<heapType>::Cell Cell;
-
-    // SWEEP: delete everything with a zero refcount (garbage) and unmark everything else
-    CollectorHeap& heap = heapType == PrimaryHeap ? primaryHeap : numberHeap;
-    
-    size_t emptyBlocks = 0;
-    size_t numLiveObjects = heap.numLiveObjects;
-    
-    for (size_t block = 0; block < heap.usedBlocks; block++) {
-        Block* curBlock = reinterpret_cast<Block*>(heap.blocks[block]);
-        
-        size_t usedCells = curBlock->usedCells;
-        Cell* freeList = curBlock->freeList;
-        
-        if (usedCells == HeapConstants<heapType>::cellsPerBlock) {
-            // special case with a block where all cells are used -- testing indicates this happens often
-            for (size_t i = 0; i < HeapConstants<heapType>::cellsPerBlock; i++) {
-                if (!curBlock->marked.get(i >> HeapConstants<heapType>::bitmapShift)) {
-                    Cell* cell = curBlock->cells + i;
-                    
-                    if (heapType != NumberHeap) {
-                        JSCell* imp = reinterpret_cast<JSCell*>(cell);
-                        // special case for allocated but uninitialized object
-                        // (We don't need this check earlier because nothing prior this point 
-                        // assumes the object has a valid vptr.)
-                        if (cell->u.freeCell.zeroIfFree == 0)
-                            continue;
-                        
-                        imp->~JSCell();
-                    }
-                    
-                    --usedCells;
-                    --numLiveObjects;
-                    
-                    // put cell on the free list
-                    cell->u.freeCell.zeroIfFree = 0;
-                    cell->u.freeCell.next = freeList - (cell + 1);
-                    freeList = cell;
-                }
-            }
-        } else {
-            size_t minimumCellsToProcess = usedCells;
-            for (size_t i = 0; (i < minimumCellsToProcess) & (i < HeapConstants<heapType>::cellsPerBlock); i++) {
-                Cell* cell = curBlock->cells + i;
-                if (cell->u.freeCell.zeroIfFree == 0) {
-                    ++minimumCellsToProcess;
-                } else {
-                    if (!curBlock->marked.get(i >> HeapConstants<heapType>::bitmapShift)) {
-                        if (heapType != NumberHeap) {
-                            JSCell* imp = reinterpret_cast<JSCell*>(cell);
-                            imp->~JSCell();
-                        }
-                        --usedCells;
-                        --numLiveObjects;
-                        
-                        // put cell on the free list
-                        cell->u.freeCell.zeroIfFree = 0;
-                        cell->u.freeCell.next = freeList - (cell + 1); 
-                        freeList = cell;
-                    }
-                }
-            }
-        }
-        
-        curBlock->usedCells = static_cast<uint32_t>(usedCells);
-        curBlock->freeList = freeList;
-        curBlock->marked.clearAll();
-        
-        if (!usedCells)
-            ++emptyBlocks;
-    }
-    
-    if (heap.numLiveObjects != numLiveObjects)
-        heap.firstBlockWithPossibleSpace = 0;
-    
-    heap.numLiveObjects = numLiveObjects;
-    heap.numLiveObjectsAtLastCollect = numLiveObjects;
-    heap.extraCost = 0;
-    
-    if (!emptyBlocks)
-        return numLiveObjects;
-
-    size_t neededCells = 1.25f * (numLiveObjects + max(ALLOCATIONS_PER_COLLECTION, numLiveObjects));
-    size_t neededBlocks = (neededCells + HeapConstants<heapType>::cellsPerBlock - 1) / HeapConstants<heapType>::cellsPerBlock;
-    for (size_t block = 0; block < heap.usedBlocks; block++) {
-        if (heap.usedBlocks <= neededBlocks)
-            break;
-
-        Block* curBlock = reinterpret_cast<Block*>(heap.blocks[block]);
-        if (curBlock->usedCells)
-            continue;
-
-        freeBlock<heapType>(block);
-        block--; // Don't move forward a step in this case
-    }
-
-    return numLiveObjects;
+    for (size_t i = 0; i < m_heap.usedBlocks; ++i)
+        clearMarkBits(m_heap.blocks[i]);
 }
 
-bool Heap::collect()
+void Heap::clearMarkBits(CollectorBlock* block)
+{
+    // allocate assumes that the last cell in every block is marked.
+    block->marked.clearAll();
+    block->marked.set(HeapConstants::cellsPerBlock - 1);
+}
+
+size_t Heap::markedCells(size_t startBlock, size_t startCell) const
+{
+    ASSERT(startBlock <= m_heap.usedBlocks);
+    ASSERT(startCell < HeapConstants::cellsPerBlock);
+
+    if (startBlock >= m_heap.usedBlocks)
+        return 0;
+
+    size_t result = 0;
+    result += m_heap.blocks[startBlock]->marked.count(startCell);
+    for (size_t i = startBlock + 1; i < m_heap.usedBlocks; ++i)
+        result += m_heap.blocks[i]->marked.count();
+
+    return result;
+}
+
+void Heap::sweep()
+{
+    ASSERT(m_heap.operationInProgress == NoOperation);
+    if (m_heap.operationInProgress != NoOperation)
+        CRASH();
+    m_heap.operationInProgress = Collection;
+    
+#if !ENABLE(JSC_ZOMBIES)
+    Structure* dummyMarkableCellStructure = m_globalData->dummyMarkableCellStructure.get();
+#endif
+
+    DeadObjectIterator it(m_heap, m_heap.nextBlock, m_heap.nextCell);
+    DeadObjectIterator end(m_heap, m_heap.usedBlocks);
+    for ( ; it != end; ++it) {
+        JSCell* cell = *it;
+#if ENABLE(JSC_ZOMBIES)
+        if (!cell->isZombie()) {
+            const ClassInfo* info = cell->classInfo();
+            cell->~JSCell();
+            new (cell) JSZombie(info, JSZombie::leakedZombieStructure());
+            Heap::markCell(cell);
+        }
+#else
+        cell->~JSCell();
+        // Callers of sweep assume it's safe to mark any cell in the heap.
+        new (cell) JSCell(dummyMarkableCellStructure);
+#endif
+    }
+
+    m_heap.operationInProgress = NoOperation;
+}
+
+void Heap::markRoots()
 {
 #ifndef NDEBUG
     if (m_globalData->isSharedInstance) {
@@ -1185,66 +1070,62 @@ bool Heap::collect()
     }
 #endif
 
-    ASSERT((primaryHeap.operationInProgress == NoOperation) | (numberHeap.operationInProgress == NoOperation));
-    if ((primaryHeap.operationInProgress != NoOperation) | (numberHeap.operationInProgress != NoOperation))
+    ASSERT(m_heap.operationInProgress == NoOperation);
+    if (m_heap.operationInProgress != NoOperation)
         CRASH();
 
-    JAVASCRIPTCORE_GC_BEGIN();
-    primaryHeap.operationInProgress = Collection;
-    numberHeap.operationInProgress = Collection;
+    m_heap.operationInProgress = Collection;
 
-    // MARK: first mark all referenced objects recursively starting out from the set of root objects
     MarkStack& markStack = m_globalData->markStack;
+
+    // Reset mark bits.
+    clearMarkBits();
+
+    // Mark stack roots.
     markStackObjectsConservatively(markStack);
+    m_globalData->interpreter->registerFile().markCallFrames(markStack, this);
+
+    // Mark explicitly registered roots.
     markProtectedObjects(markStack);
+
+    // Mark misc. other roots.
     if (m_markListSet && m_markListSet->size())
         MarkedArgumentBuffer::markLists(markStack, *m_markListSet);
     if (m_globalData->exception)
         markStack.append(m_globalData->exception);
-    m_globalData->interpreter->registerFile().markCallFrames(markStack, this);
-    m_globalData->smallStrings.markChildren(markStack);
     if (m_globalData->functionCodeBlockBeingReparsed)
         m_globalData->functionCodeBlockBeingReparsed->markAggregate(markStack);
     if (m_globalData->firstStringifierToMark)
         JSONObject::markStringifiers(markStack, m_globalData->firstStringifierToMark);
 
+    // Mark the small strings cache last, since it will clear itself if nothing
+    // else has marked it.
+    m_globalData->smallStrings.markChildren(markStack);
+
     markStack.drain();
     markStack.compact();
-    JAVASCRIPTCORE_GC_MARKED();
 
-    size_t originalLiveObjects = primaryHeap.numLiveObjects + numberHeap.numLiveObjects;
-    size_t numLiveObjects = sweep<PrimaryHeap>();
-    numLiveObjects += sweep<NumberHeap>();
-
-    primaryHeap.operationInProgress = NoOperation;
-    numberHeap.operationInProgress = NoOperation;
-    JAVASCRIPTCORE_GC_END(originalLiveObjects, numLiveObjects);
-
-    return numLiveObjects < originalLiveObjects;
+    m_heap.operationInProgress = NoOperation;
 }
 
-size_t Heap::objectCount() 
+size_t Heap::objectCount() const
 {
-    return primaryHeap.numLiveObjects + numberHeap.numLiveObjects - m_globalData->smallStrings.count(); 
+    return m_heap.nextBlock * HeapConstants::cellsPerBlock // allocated full blocks
+           + m_heap.nextCell // allocated cells in current block
+           + markedCells(m_heap.nextBlock, m_heap.nextCell) // marked cells in remainder of m_heap
+           - m_heap.usedBlocks; // 1 cell per block is a dummy sentinel
 }
 
-template <HeapType heapType> 
-static void addToStatistics(Heap::Statistics& statistics, const CollectorHeap& heap)
+void Heap::addToStatistics(Heap::Statistics& statistics) const
 {
-    typedef HeapConstants<heapType> HC;
-    for (size_t i = 0; i < heap.usedBlocks; ++i) {
-        if (heap.blocks[i]) {
-            statistics.size += BLOCK_SIZE;
-            statistics.free += (HC::cellsPerBlock - heap.blocks[i]->usedCells) * HC::cellSize;
-        }
-    }
+    statistics.size += m_heap.usedBlocks * BLOCK_SIZE;
+    statistics.free += m_heap.usedBlocks * BLOCK_SIZE - (objectCount() * HeapConstants::cellSize);
 }
 
 Heap::Statistics Heap::statistics() const
 {
     Statistics statistics = { 0, 0 };
-    JSC::addToStatistics<PrimaryHeap>(statistics, primaryHeap);
-    JSC::addToStatistics<NumberHeap>(statistics, numberHeap);
+    addToStatistics(statistics);
     return statistics;
 }
 
@@ -1290,12 +1171,13 @@ static const char* typeName(JSCell* cell)
         return "number";
 #endif
     if (cell->isGetterSetter())
-        return "gettersetter";
+        return "Getter-Setter";
     if (cell->isAPIValueWrapper())
-        return "value wrapper";
+        return "API wrapper";
     if (cell->isPropertyNameIterator())
-        return "for-in iterator";
-    ASSERT(cell->isObject());
+        return "For-in iterator";
+    if (!cell->isObject())
+        return "[empty cell]";
     const ClassInfo* info = cell->classInfo();
     return info ? info->className : "Object";
 }
@@ -1311,19 +1193,75 @@ HashCountedSet<const char*>* Heap::protectedObjectTypeCounts()
     return counts;
 }
 
+HashCountedSet<const char*>* Heap::objectTypeCounts()
+{
+    HashCountedSet<const char*>* counts = new HashCountedSet<const char*>;
+
+    LiveObjectIterator it = primaryHeapBegin();
+    LiveObjectIterator heapEnd = primaryHeapEnd();
+    for ( ; it != heapEnd; ++it)
+        counts->add(typeName(*it));
+
+    return counts;
+}
+
 bool Heap::isBusy()
 {
-    return (primaryHeap.operationInProgress != NoOperation) | (numberHeap.operationInProgress != NoOperation);
+    return m_heap.operationInProgress != NoOperation;
 }
 
-Heap::iterator Heap::primaryHeapBegin()
+void Heap::reset()
 {
-    return iterator(primaryHeap.blocks, primaryHeap.blocks + primaryHeap.usedBlocks);
+    JAVASCRIPTCORE_GC_BEGIN();
+
+    markRoots();
+
+    JAVASCRIPTCORE_GC_MARKED();
+
+    m_heap.nextCell = 0;
+    m_heap.nextBlock = 0;
+    m_heap.nextNumber = 0;
+    m_heap.extraCost = 0;
+#if ENABLE(JSC_ZOMBIES)
+    sweep();
+#endif
+    resizeBlocks();
+
+    JAVASCRIPTCORE_GC_END();
 }
 
-Heap::iterator Heap::primaryHeapEnd()
+void Heap::collectAllGarbage()
 {
-    return iterator(primaryHeap.blocks + primaryHeap.usedBlocks, primaryHeap.blocks + primaryHeap.usedBlocks);
+    JAVASCRIPTCORE_GC_BEGIN();
+
+    // If the last iteration through the heap deallocated blocks, we need
+    // to clean up remaining garbage before marking. Otherwise, the conservative
+    // marking mechanism might follow a pointer to unmapped memory.
+    if (m_heap.didShrink)
+        sweep();
+
+    markRoots();
+
+    JAVASCRIPTCORE_GC_MARKED();
+
+    m_heap.nextCell = 0;
+    m_heap.nextBlock = 0;
+    m_heap.nextNumber = 0;
+    m_heap.extraCost = 0;
+    sweep();
+    resizeBlocks();
+
+    JAVASCRIPTCORE_GC_END();
+}
+
+LiveObjectIterator Heap::primaryHeapBegin()
+{
+    return LiveObjectIterator(m_heap, 0);
+}
+
+LiveObjectIterator Heap::primaryHeapEnd()
+{
+    return LiveObjectIterator(m_heap, m_heap.usedBlocks);
 }
 
 } // namespace JSC

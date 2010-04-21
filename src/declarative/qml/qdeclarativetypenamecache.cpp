@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -61,6 +61,21 @@ void QDeclarativeTypeNameCache::clear()
     stringCache.clear();
     identifierCache.clear();
     engine = 0;
+}
+
+void QDeclarativeTypeNameCache::add(const QString &name, int importedScriptIndex)
+{
+    if (stringCache.contains(name))
+        return;
+
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+
+    RData *data = new RData;
+    // ### Use typename class
+    data->identifier = ep->objectClass->createPersistentIdentifier(name);
+    data->importedScriptIndex = importedScriptIndex;
+    stringCache.insert(name, data);
+    identifierCache.insert(data->identifier.identifier, data);
 }
 
 void QDeclarativeTypeNameCache::add(const QString &name, QDeclarativeType *type)

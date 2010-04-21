@@ -23,7 +23,6 @@
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -46,7 +45,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -76,7 +75,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSDOMApplicationCachePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -92,31 +91,31 @@ JSC::JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionRemoveEventList
 JSC::JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsDOMApplicationCacheStatus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDOMApplicationCacheOnchecking(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheStatus(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMApplicationCacheOnchecking(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOnchecking(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOnerror(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOnnoupdate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOnnoupdate(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOnnoupdate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOndownloading(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOndownloading(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOndownloading(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOnprogress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOnprogress(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOnprogress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOnupdateready(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOnupdateready(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOnupdateready(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOncached(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOncached(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOncached(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsDOMApplicationCacheOnobsolete(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheOnobsolete(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMApplicationCacheOnobsolete(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 // Constants
 
-JSC::JSValue jsDOMApplicationCacheUNCACHED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDOMApplicationCacheIDLE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDOMApplicationCacheCHECKING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDOMApplicationCacheDOWNLOADING(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDOMApplicationCacheUPDATEREADY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsDOMApplicationCacheOBSOLETE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMApplicationCacheUNCACHED(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMApplicationCacheIDLE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMApplicationCacheCHECKING(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMApplicationCacheDOWNLOADING(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMApplicationCacheUPDATEREADY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMApplicationCacheOBSOLETE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

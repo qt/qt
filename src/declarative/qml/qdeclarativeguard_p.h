@@ -65,7 +65,7 @@ class QDeclarativeGuard
     QObject *o;
     QDeclarativeGuard<QObject> *next;
     QDeclarativeGuard<QObject> **prev;
-    friend class QDeclarativeDeclarativeData;
+    friend class QDeclarativeData;
 public:
     inline QDeclarativeGuard();
     inline QDeclarativeGuard(T *);
@@ -99,7 +99,7 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDeclarativeGuard<QObject>);
 
-#include "qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativedata_p.h"
 
 QT_BEGIN_NAMESPACE
 

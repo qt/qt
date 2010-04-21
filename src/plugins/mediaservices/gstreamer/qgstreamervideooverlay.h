@@ -73,8 +73,8 @@ public:
 
     QSize nativeSize() const;
 
-    QVideoWidget::AspectRatioMode aspectRatioMode() const;
-    void setAspectRatioMode(QVideoWidget::AspectRatioMode mode);
+    Qt::AspectRatioMode aspectRatioMode() const;
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
 
     void repaint();
 
@@ -102,7 +102,7 @@ private:
 
     QX11VideoSurface *m_surface;
     GstElement *m_videoSink;
-    QVideoWidget::AspectRatioMode m_aspectRatioMode;
+    Qt::AspectRatioMode m_aspectRatioMode;
     QRect m_displayRect;
     bool m_fullScreen;
 };

@@ -47,7 +47,6 @@
 #include "qeventloop.h"
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
-#include <qdatetime.h>
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfile.h>
@@ -59,6 +58,7 @@
 #include <qthreadpool.h>
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
+#include <qelapsedtimer.h>
 #include <qlibraryinfo.h>
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
@@ -67,6 +67,7 @@
 #ifdef Q_OS_SYMBIAN
 #  include <exception>
 #  include <f32file.h>
+#  include <e32ldr.h>
 #  include "qeventdispatcher_symbian_p.h"
 #  include "private/qcore_symbian_p.h"
 #elif defined(Q_OS_UNIX)
@@ -522,8 +523,6 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 
 }
 
-extern void set_winapp_name();
-
 // ### move to QCoreApplicationPrivate constructor?
 void QCoreApplication::init()
 {
@@ -532,11 +531,6 @@ void QCoreApplication::init()
 #ifdef Q_OS_UNIX
     setlocale(LC_ALL, "");                // use correct char set mapping
     qt_locale_initialized = true;
-#endif
-
-#ifdef Q_WS_WIN
-    // Get the application name/instance if qWinMain() was not invoked
-    set_winapp_name();
 #endif
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
@@ -577,6 +571,27 @@ void QCoreApplication::init()
 #ifdef QT_EVAL
     extern void qt_core_eval_init(uint);
     qt_core_eval_init(d->application_type);
+#endif
+
+#if    defined(Q_OS_SYMBIAN)  \
+    && defined(Q_CC_NOKIAX86) \
+    && defined(QT_DEBUG)
+    /**
+     * Prevent the executable from being locked in the Symbian emulator. The
+     * code dramatically simplifies debugging on Symbian, but beyond that has
+     * no impact.
+     *
+     * Force the ZLazyUnloadTimer to fire and therefore unload code segments
+     * immediately. The code affects Symbian's file server and on the other
+     * hand needs only to be run once in each emulator run.
+     */
+    {
+        RLoader loader;
+        CleanupClosePushL(loader);
+        User::LeaveIfError(loader.Connect());
+        User::LeaveIfError(loader.CancelLazyDllUnload());
+        CleanupStack::PopAndDestroy(&loader);
+    }
 #endif
 
     qt_startup_hook();
@@ -917,7 +932,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     QThreadData *data = QThreadData::current();
     if (!data->eventDispatcher)
         return;
-    QTime start;
+    QElapsedTimer start;
     start.start();
     if (flags & QEventLoop::DeferredDeletion)
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);

@@ -57,34 +57,37 @@ typedef enum
 } HB_CombiningClass;
 
 typedef enum {
-    CcmpProperty = 0x1,
-    InitProperty = 0x2,
-    IsolProperty = 0x4,
-    FinaProperty = 0x8,
-    MediProperty = 0x10,
-    RligProperty = 0x20,
-    CaltProperty = 0x40,
-    LigaProperty = 0x80,
-    DligProperty = 0x100,
-    CswhProperty = 0x200,
-    MsetProperty = 0x400,
+    LocaProperty = 0x1,
+    CcmpProperty = 0x2,
+    InitProperty = 0x4,
+    IsolProperty = 0x8,
+    FinaProperty = 0x10,
+    MediProperty = 0x20,
+    RligProperty = 0x40,
+    CaltProperty = 0x80,
+    LigaProperty = 0x100,
+    DligProperty = 0x200,
+    CswhProperty = 0x400,
+    MsetProperty = 0x800,
 
     /* used by indic and myanmar shaper */
-    NuktaProperty = 0x4,
-    AkhantProperty = 0x8,
-    RephProperty = 0x10,
-    PreFormProperty = 0x20,
-    BelowFormProperty = 0x40,
-    AboveFormProperty = 0x80,
-    HalfFormProperty = 0x100,
-    PostFormProperty = 0x200,
-    VattuProperty = 0x400,
-    PreSubstProperty = 0x800,
-    BelowSubstProperty = 0x1000,
-    AboveSubstProperty = 0x2000,
-    PostSubstProperty = 0x4000,
-    HalantProperty = 0x8000,
-    CligProperty = 0x10000
+    NuktaProperty = 0x8,
+    AkhantProperty = 0x10,
+    RephProperty = 0x20,
+    PreFormProperty = 0x40,
+    BelowFormProperty = 0x80,
+    AboveFormProperty = 0x100,
+    HalfFormProperty = 0x200,
+    PostFormProperty = 0x400,
+    ConjunctFormProperty = 0x800,
+    VattuProperty = 0x1000,
+    PreSubstProperty = 0x2000,
+    BelowSubstProperty = 0x4000,
+    AboveSubstProperty = 0x8000,
+    PostSubstProperty = 0x10000,
+    HalantProperty = 0x20000,
+    CligProperty = 0x40000,
+    IndicCaltProperty = 0x80000
 
 } HB_OpenTypeProperty;
 
@@ -100,6 +103,7 @@ typedef struct {
 extern const HB_ScriptEngine hb_scriptEngines[];
 
 extern HB_Bool HB_BasicShape(HB_ShaperItem *shaper_item);
+extern HB_Bool HB_GreekShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_TibetanShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_HebrewShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_ArabicShape(HB_ShaperItem *shaper_item);

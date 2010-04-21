@@ -73,7 +73,7 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection RESET unsetLayoutDirection)
-    Q_PROPERTY(QSizeF size READ size WRITE resize)
+    Q_PROPERTY(QSizeF size READ size WRITE resize NOTIFY geometryChanged)
     Q_PROPERTY(QSizeF minimumSize READ minimumSize WRITE setMinimumSize)
     Q_PROPERTY(QSizeF preferredSize READ preferredSize WRITE setPreferredSize)
     Q_PROPERTY(QSizeF maximumSize READ maximumSize WRITE setMaximumSize)
@@ -81,12 +81,12 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(Qt::FocusPolicy focusPolicy READ focusPolicy WRITE setFocusPolicy)
     Q_PROPERTY(Qt::WindowFlags windowFlags READ windowFlags WRITE setWindowFlags)
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
-    Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry)
+    Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry NOTIFY geometryChanged)
     Q_PROPERTY(bool autoFillBackground READ autoFillBackground WRITE setAutoFillBackground)
+    Q_PROPERTY(QGraphicsLayout* layout READ layout WRITE setLayout NOTIFY layoutChanged)
 public:
     QGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
     ~QGraphicsWidget();
-
     QGraphicsLayout *layout() const;
     void setLayout(QGraphicsLayout *layout);
     void adjustSize();
@@ -178,6 +178,10 @@ public:
 #else
     using QObject::children;
 #endif
+
+Q_SIGNALS:
+    void geometryChanged();
+    void layoutChanged();
 
 public Q_SLOTS:
     bool close();

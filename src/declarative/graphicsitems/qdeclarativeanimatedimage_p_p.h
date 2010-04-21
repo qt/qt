@@ -53,7 +53,9 @@
 // We mean it.
 //
 
-#include "qdeclarativeimage_p_p.h"
+#include "private/qdeclarativeimage_p_p.h"
+
+#ifndef QT_NO_MOVIE
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +68,7 @@ class QDeclarativeAnimatedImagePrivate : public QDeclarativeImagePrivate
 
 public:
     QDeclarativeAnimatedImagePrivate()
-      : playing(true), paused(false), preset_currentframe(0), _movie(0), reply(0)
+      : playing(true), paused(false), preset_currentframe(0), _movie(0), reply(0), redirectCount(0)
     {
     }
 
@@ -75,8 +77,11 @@ public:
     int preset_currentframe;
     QMovie *_movie;
     QNetworkReply *reply;
+    int redirectCount;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MOVIE
 
 #endif // QDECLARATIVEANIMATEDIMAGE_P_H

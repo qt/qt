@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestringconverters_p.h"
+#include "private/qdeclarativestringconverters_p.h"
 
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
@@ -82,10 +82,6 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s)
 {
     if (s.isEmpty())
         return QVariant(s);
-    if (s.startsWith(QLatin1Char('\'')) && s.endsWith(QLatin1Char('\''))) {
-        QString data = s.mid(1, s.length() - 2);
-        return QVariant(data);
-    } 
     bool ok = false;
     QRectF r = rectFFromString(s, &ok);
     if (ok) return QVariant(r);
@@ -104,6 +100,10 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s)
 QVariant QDeclarativeStringConverters::variantFromString(const QString &s, int preferredType, bool *ok)
 {
     switch (preferredType) {
+    case QMetaType::Int:
+        return QVariant(int(qRound(s.toDouble(ok))));
+    case QMetaType::UInt:
+        return QVariant(uint(qRound(s.toDouble(ok))));
     case QMetaType::QColor:
         return QVariant::fromValue(colorFromString(s, ok));
     case QMetaType::QDate:

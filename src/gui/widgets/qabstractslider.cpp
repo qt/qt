@@ -764,12 +764,12 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
     SliderAction action = SliderNoAction;
 #ifdef QT_KEYPAD_NAVIGATION
     if (ev->isAutoRepeat()) {
-        if (d->firstRepeat.isNull())
-            d->firstRepeat = QTime::currentTime();
+        if (!d->firstRepeat.isValid())
+            d->firstRepeat.start();
         else if (1 == d->repeatMultiplier) {
             // This is the interval in milli seconds which one key repetition
             // takes.
-            const int repeatMSecs = d->firstRepeat.msecsTo(QTime::currentTime());
+            const int repeatMSecs = d->firstRepeat.elapsed();
 
             /**
              * The time it takes to currently navigate the whole slider.
@@ -787,8 +787,8 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
         }
 
     }
-    else if (!d->firstRepeat.isNull()) {
-        d->firstRepeat = QTime();
+    else if (!d->firstRepeat.isValid()) {
+        d->firstRepeat.invalidate();
         d->repeatMultiplier = 1;
     }
 

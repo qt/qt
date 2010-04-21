@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -34,6 +35,8 @@ class HTMLFormElement;
 class HTMLImageElement : public HTMLElement {
     friend class HTMLFormElement;
 public:
+    static PassRefPtr<HTMLImageElement> createForJSConstructor(Document*, const int* optionalWidth, const int* optionalHeight);
+
     HTMLImageElement(const QualifiedName&, Document*, HTMLFormElement* = 0);
     ~HTMLImageElement();
 
@@ -45,8 +48,6 @@ public:
 
     virtual void attach();
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
-    virtual void insertedIntoDocument();
-    virtual void removedFromDocument();
 
     virtual bool canStartSelection() const { return false; }
 
@@ -55,7 +56,7 @@ public:
 
     int naturalWidth() const;
     int naturalHeight() const;
-    
+
     bool isServerMap() const { return ismap && usemap.isEmpty(); }
 
     String altText() const;
@@ -105,6 +106,11 @@ public:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
 private:
+    virtual void insertedIntoDocument();
+    virtual void removedFromDocument();
+    virtual void insertedIntoTree(bool deep);
+    virtual void removedFromTree(bool deep);
+
     HTMLImageLoader m_imageLoader;
     String usemap;
     bool ismap;

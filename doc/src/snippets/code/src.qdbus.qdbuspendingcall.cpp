@@ -61,5 +61,6 @@ void MyClass::callFinishedSlot(QDBusPendingCallWatcher *call)
         QByteArray data = reply.argumentAt<1>();
         showReply(text, data);
     }
+    call->deleteLater();
 }
 //! [1]

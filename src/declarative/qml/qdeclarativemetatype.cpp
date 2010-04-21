@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativemetatype_p.h"
 
-#include "qdeclarativeproxymetaobject_p.h"
-#include "qdeclarativecustomparser_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativeproxymetaobject_p.h"
+#include "private/qdeclarativecustomparser_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
@@ -98,6 +98,13 @@ struct QDeclarativeMetaTypeData
     typedef QHash<int, QDeclarativeMetaType::StringConverter> StringConverters;
     StringConverters stringConverters;
 
+    struct ModuleInfo {
+        ModuleInfo(int maj, int min) : vmajor(maj), vminor(min) {}
+        int vmajor, vminor;
+    };
+    typedef QHash<QByteArray, ModuleInfo> ModuleInfoHash;
+    ModuleInfoHash modules;
+
     QBitArray objects;
     QBitArray interfaces;
     QBitArray lists;
@@ -124,7 +131,10 @@ public:
     int m_version_maj;
     int m_version_min;
     int m_typeId; int m_listId; 
-    QObject *(*m_newFunc)();
+
+    int m_allocationSize;
+    void (*m_newFunc)(void *);
+
     const QMetaObject *m_baseMetaObject;
     QDeclarativeAttachedPropertiesFunc m_attachedPropertiesFunc;
     const QMetaObject *m_attachedPropertiesType;
@@ -141,7 +151,7 @@ public:
 
 QDeclarativeTypePrivate::QDeclarativeTypePrivate()
 : m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), 
-  m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
+  m_allocationSize(0), m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
   m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_propertyValueInterceptorCast(-1),
   m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), m_isSetup(false)
 {
@@ -174,6 +184,7 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     d->m_version_min = type.versionMinor;
     d->m_typeId = type.typeId;
     d->m_listId = type.listId;
+    d->m_allocationSize = type.objectSize;
     d->m_newFunc = type.create;
     d->m_baseMetaObject = type.metaObject;
     d->m_attachedPropertiesFunc = type.attachedPropertiesFunction;
@@ -274,11 +285,27 @@ QObject *QDeclarativeType::create() const
 {
     d->init();
 
-    QObject *rv = d->m_newFunc();
+    QObject *rv = (QObject *)operator new(d->m_allocationSize);
+    d->m_newFunc(rv);
+
     if (rv && !d->m_metaObjects.isEmpty())
         (void *)new QDeclarativeProxyMetaObject(rv, &d->m_metaObjects);
 
     return rv;
+}
+
+void QDeclarativeType::create(QObject **out, void **memory, size_t additionalMemory) const
+{
+    d->init();
+
+    QObject *rv = (QObject *)operator new(d->m_allocationSize + additionalMemory);
+    d->m_newFunc(rv);
+
+    if (rv && !d->m_metaObjects.isEmpty())
+        (void *)new QDeclarativeProxyMetaObject(rv, &d->m_metaObjects);
+
+    *out = rv;
+    *memory = ((char *)rv) + d->m_allocationSize;
 }
 
 QDeclarativeCustomParser *QDeclarativeType::customParser() const
@@ -286,9 +313,26 @@ QDeclarativeCustomParser *QDeclarativeType::customParser() const
     return d->m_customParser;
 }
 
+QDeclarativeType::CreateFunc QDeclarativeType::createFunction() const
+{
+    return d->m_newFunc;
+}
+
+int QDeclarativeType::createSize() const
+{
+    return d->m_allocationSize;
+}
+
 bool QDeclarativeType::isCreatable() const
 {
     return d->m_newFunc != 0;
+}
+
+bool QDeclarativeType::isExtendedType() const
+{
+    d->init();
+
+    return !d->m_metaObjects.isEmpty();
 }
 
 bool QDeclarativeType::isInterface() const
@@ -421,7 +465,28 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     data->objects.setBit(type.typeId, true);
     if (type.listId) data->lists.setBit(type.listId, true);
 
+    if (type.uri) {
+        QByteArray mod(type.uri);
+        QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(mod);
+        if (it == data->modules.end()
+                || ((*it).vmajor < type.versionMajor || ((*it).vmajor == type.versionMajor && (*it).vminor < type.versionMinor))) {
+            data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo(type.versionMajor,type.versionMinor));
+        }
+    }
+
     return index;
+}
+
+/*
+    Have any types been registered for \a module with at least versionMajor.versionMinor.
+*/
+bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
+{
+    QDeclarativeMetaTypeData *data = metaTypeData();
+    QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
+    return it != data->modules.end()
+        && ((*it).vmajor > versionMajor ||
+                ((*it).vmajor == versionMajor && (*it).vminor >= versionMinor));
 }
 
 QObject *QDeclarativeMetaType::toQObject(const QVariant &v, bool *ok)

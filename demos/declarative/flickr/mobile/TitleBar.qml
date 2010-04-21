@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: titleBar
@@ -11,12 +11,10 @@ Item {
         id: container
         width: (parent.width * 2) - 55 ; height: parent.height
 
-        Script {
-            function accept() {
-                titleBar.state = ""
-                background.state = ""
-                rssModel.tags = editor.text
-            }
+        function accept() {
+            titleBar.state = ""
+            background.state = ""
+            rssModel.tags = editor.text
         }
 
         Text {
@@ -32,7 +30,7 @@ Item {
 
         Button {
             id: tagButton; x: titleBar.width - 50; width: 45; height: 32; text: "..."
-            onClicked: if (titleBar.state == "Tags") accept(); else titleBar.state = "Tags"
+            onClicked: if (titleBar.state == "Tags") container.accept(); else titleBar.state = "Tags"
             anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -57,7 +55,7 @@ Item {
 
             Item {
                 id: returnKey
-                Keys.onReturnPressed: accept()
+                Keys.onReturnPressed: container.accept()
                 Keys.onEscapePressed: titleBar.state = ""
             }
         }

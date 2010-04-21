@@ -134,6 +134,9 @@ void AnimationControllerPrivate::updateAnimationTimer(bool callSetChanged/* = fa
 
 void AnimationControllerPrivate::updateStyleIfNeededDispatcherFired(Timer<AnimationControllerPrivate>*)
 {
+    // Protect the frame from getting destroyed in the event handler
+    RefPtr<Frame> protector = m_frame;
+
     // fire all the events
     Vector<EventToDispatch>::const_iterator eventsToDispatchEnd = m_eventsToDispatch.end();
     for (Vector<EventToDispatch>::const_iterator it = m_eventsToDispatch.begin(); it != eventsToDispatchEnd; ++it) {
@@ -484,7 +487,7 @@ PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject* rend
     m_data->updateAnimationTimer();
 
     if (blendedStyle != newStyle) {
-        // If the animations/transitions change opacity or transform, we neeed to update
+        // If the animations/transitions change opacity or transform, we need to update
         // the style to impose the stacking rules. Note that this is also
         // done in CSSStyleSelector::adjustRenderStyle().
         if (blendedStyle->hasAutoZIndex() && (blendedStyle->opacity() < 1.0f || blendedStyle->hasTransform()))

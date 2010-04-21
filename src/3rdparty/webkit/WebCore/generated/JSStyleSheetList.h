@@ -21,7 +21,6 @@
 #ifndef JSStyleSheetList_h
 #define JSStyleSheetList_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -44,12 +43,12 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
 
-    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     StyleSheetList* impl() const { return m_impl.get(); }
 
@@ -57,10 +56,10 @@ private:
     RefPtr<StyleSheetList> m_impl;
 protected:
     static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetPropertyNames | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
-    static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+    static JSC::JSValue indexGetter(JSC::ExecState*, JSC::JSValue, unsigned);
 private:
     static bool canGetItemsForName(JSC::ExecState*, StyleSheetList*, const JSC::Identifier&);
-    static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+    static JSC::JSValue nameGetter(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, StyleSheetList*);
@@ -76,7 +75,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSStyleSheetListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -88,8 +87,8 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsStyleSheetListPrototypeFunctionItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsStyleSheetListLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsStyleSheetListConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetListLength(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsStyleSheetListConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

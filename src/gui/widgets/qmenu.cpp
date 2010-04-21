@@ -167,8 +167,8 @@ void QMenuPrivate::init()
 #ifdef QT_SOFTKEYS_ENABLED
     selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);
     cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Back, q);
-    selectAction->setVisible(false); // Don't show these in the menu
-    cancelAction->setVisible(false);
+    selectAction->setPriority(QAction::HighPriority);
+    cancelAction->setPriority(QAction::HighPriority);
     q->addAction(selectAction);
     q->addAction(cancelAction);
 #endif
@@ -1398,12 +1398,14 @@ QMenu::QMenu(QMenuPrivate &dd, QWidget *parent)
 QMenu::~QMenu()
 {
     Q_D(QMenu);
-    QHash<QAction *, QWidget *>::iterator it = d->widgetItems.begin();
-    for (; it != d->widgetItems.end(); ++it) {
-        if (QWidget *widget = it.value()) {
-            QWidgetAction *action = static_cast<QWidgetAction *>(it.key());
-            action->releaseWidget(widget);
-            *it = 0;
+    if (!d->widgetItems.isEmpty()) {  // avoid detach on shared null hash
+        QHash<QAction *, QWidget *>::iterator it = d->widgetItems.begin();
+        for (; it != d->widgetItems.end(); ++it) {
+            if (QWidget *widget = it.value()) {
+                QWidgetAction *action = static_cast<QWidgetAction *>(it.key());
+                action->releaseWidget(widget);
+                *it = 0;
+            }
         }
     }
 
@@ -1803,7 +1805,7 @@ QSize QMenu::sizeHint() const
 void QMenu::popup(const QPoint &p, QAction *atAction)
 {
     Q_D(QMenu);
-    if (d->scroll) { //reset scroll state from last popup
+    if (d->scroll) { // reset scroll state from last popup
         d->scroll->scrollOffset = 0;
         d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
@@ -1858,9 +1860,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
 #endif
     if (d->ncols > 1) {
-        pos.setY(screen.top()+desktopFrame);
+        pos.setY(screen.top() + desktopFrame);
     } else if (atAction) {
-        for(int i = 0, above_height = 0; i < d->actions.count(); i++) {
+        for (int i = 0, above_height = 0; i < d->actions.count(); i++) {
             QAction *action = d->actions.at(i);
             if (action == atAction) {
                 int newY = pos.y() - above_height;
@@ -1875,7 +1877,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 if (d->scroll && d->scroll->scrollFlags != QMenuPrivate::QMenuScroller::ScrollNone
                     && !style()->styleHint(QStyle::SH_Menu_FillScreenWithScroll, 0, this)) {
                     int below_height = above_height + d->scroll->scrollOffset;
-                    for(int i2 = i; i2 < d->actionRects.count(); i2++)
+                    for (int i2 = i; i2 < d->actionRects.count(); i2++)
                         below_height += d->actionRects.at(i2).height();
                     size.setHeight(below_height);
                 }
@@ -1888,28 +1890,28 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     QPoint mouse = QCursor::pos();
     d->mousePopupPos = mouse;
-    const bool snapToMouse = (QRect(p.x()-3, p.y()-3, 6, 6).contains(mouse));
+    const bool snapToMouse = (QRect(p.x() - 3, p.y() - 3, 6, 6).contains(mouse));
 
     if (adjustToDesktop) {
-        //handle popup falling "off screen"
+        // handle popup falling "off screen"
         if (isRightToLeft()) {
-            if(snapToMouse) //position flowing left from the mouse
-                pos.setX(mouse.x()-size.width());
+            if (snapToMouse) // position flowing left from the mouse
+                pos.setX(mouse.x() - size.width());
 
 #ifndef QT_NO_MENUBAR
-            //if in a menubar, it should be right-aligned
+            // if in a menubar, it should be right-aligned
             if (qobject_cast<QMenuBar*>(d->causedPopup.widget))
                 pos.rx() -= size.width();
 #endif //QT_NO_MENUBAR
 
-            if (pos.x() < screen.left()+desktopFrame)
-                pos.setX(qMax(p.x(), screen.left()+desktopFrame));
-            if (pos.x()+size.width()-1 > screen.right()-desktopFrame)
-                pos.setX(qMax(p.x()-size.width(), screen.right()-desktopFrame-size.width()+1));
+            if (pos.x() < screen.left() + desktopFrame)
+                pos.setX(qMax(p.x(), screen.left() + desktopFrame));
+            if (pos.x() + size.width() - 1 > screen.right() - desktopFrame)
+                pos.setX(qMax(p.x() - size.width(), screen.right() - desktopFrame - size.width() + 1));
         } else {
-            if (pos.x()+size.width()-1 > screen.right()-desktopFrame)
-                pos.setX(screen.right()-desktopFrame-size.width()+1);
-            if (pos.x() < screen.left()+desktopFrame)
+            if (pos.x() + size.width() - 1 > screen.right() - desktopFrame)
+                pos.setX(screen.right() - desktopFrame - size.width() + 1);
+            if (pos.x() < screen.left() + desktopFrame)
                 pos.setX(screen.left() + desktopFrame);
         }
         if (pos.y() + size.height() - 1 > screen.bottom() - desktopFrame) {
@@ -1923,14 +1925,14 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
         if (pos.y() < screen.top() + desktopFrame)
             pos.setY(screen.top() + desktopFrame);
-        if (pos.y()+size.height()-1 > screen.bottom() - desktopFrame) {
+        if (pos.y() + size.height() - 1 > screen.bottom() - desktopFrame) {
             if (d->scroll) {
                 d->scroll->scrollFlags |= uint(QMenuPrivate::QMenuScroller::ScrollDown);
                 int y = qMax(screen.y(),pos.y());
-                size.setHeight(screen.bottom()-(desktopFrame*2)-y);
+                size.setHeight(screen.bottom() - (desktopFrame * 2) - y);
             } else {
                 // Too big for screen, bias to see bottom of menu (for some reason)
-                pos.setY(screen.bottom()-size.height()+1);
+                pos.setY(screen.bottom() - size.height() + 1);
             }
         }
     }
@@ -1939,19 +1941,19 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     int hGuess = isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
     int vGuess = QEffects::DownScroll;
     if (isRightToLeft()) {
-        if ((snapToMouse && (pos.x() + size.width()/2 > mouse.x())) ||
-           (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width()/2 > d->causedPopup.widget->x()))
+        if ((snapToMouse && (pos.x() + size.width() / 2 > mouse.x())) ||
+           (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width() / 2 > d->causedPopup.widget->x()))
             hGuess = QEffects::RightScroll;
     } else {
-        if ((snapToMouse && (pos.x() + size.width()/2 < mouse.x())) ||
-           (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width()/2 < d->causedPopup.widget->x()))
+        if ((snapToMouse && (pos.x() + size.width() / 2 < mouse.x())) ||
+           (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width() / 2 < d->causedPopup.widget->x()))
             hGuess = QEffects::LeftScroll;
     }
 
 #ifndef QT_NO_MENUBAR
-    if ((snapToMouse && (pos.y() + size.height()/2 < mouse.y())) ||
+    if ((snapToMouse && (pos.y() + size.height() / 2 < mouse.y())) ||
        (qobject_cast<QMenuBar*>(d->causedPopup.widget) &&
-        pos.y() + size.width()/2 < d->causedPopup.widget->mapToGlobal(d->causedPopup.widget->pos()).y()))
+        pos.y() + size.width() / 2 < d->causedPopup.widget->mapToGlobal(d->causedPopup.widget->pos()).y()))
        vGuess = QEffects::UpScroll;
 #endif
     if (QApplication::isEffectEnabled(Qt::UI_AnimateMenu)) {

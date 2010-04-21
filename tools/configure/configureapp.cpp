@@ -973,6 +973,10 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
+            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                dictionary[ "QT_INSTALL_PLUGINS" ] =
+                    QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
+            }
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -1523,7 +1527,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
-        dictionary[ "QMAKEADDITIONALARGS" ] = "-unix";
     }
 }
 
@@ -1882,7 +1885,7 @@ bool Configure::findFile( const QString &fileName )
     const QString file = fileName.toLower();
     const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
     const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
-        findFileInPaths("mingw32-g++.exe", pathEnvVar) : QString();
+        findFileInPaths("g++.exe", pathEnvVar) : QString();
 
     QString paths;
     if (file.endsWith(".h")) {
@@ -1974,7 +1977,7 @@ bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
     if (part == "STYLE_WINDOWSXP")
-        available = (findFile("uxtheme.h"));
+        available = findFile("uxtheme.h");
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -3037,6 +3040,10 @@ void Configure::generateConfigfiles()
         if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
         if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
+        if(dictionary["OPENGL_ES_CM"] == "no" &&
+           dictionary["OPENGL_ES_2"]  == "no" &&
+           dictionary["OPENVG"]       == "no")      qconfigList += "QT_NO_EGL";
+
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
@@ -3063,6 +3070,8 @@ void Configure::generateConfigfiles()
             qconfigList += "QT_NO_CRASHHANDLER";
             qconfigList += "QT_NO_PRINTER";
             qconfigList += "QT_NO_SYSTEMTRAYICON";
+            if (dictionary.contains("QT_LIBINFIX"))
+                tmpStream << QString("#define QT_LIBINFIX \"%1\"").arg(dictionary["QT_LIBINFIX"]) << endl;
         }
 
         qconfigList.sort();
@@ -3502,14 +3511,15 @@ void Configure::buildQmake()
         args += makefile;
 
         cout << "Creating qmake..." << endl;
-        int exitCode = 0;
-        if( exitCode = Environment::execute(args, QStringList(), QStringList()) ) {
+        int exitCode = Environment::execute(args, QStringList(), QStringList());
+        if( exitCode ) {
             args.clear();
             args += dictionary[ "MAKE" ];
             args += "-f";
             args += makefile;
             args += "clean";
-            if( exitCode = Environment::execute(args, QStringList(), QStringList())) {
+            exitCode = Environment::execute(args, QStringList(), QStringList());
+            if(exitCode) {
                 cout << "Cleaning qmake failed, return code " << exitCode << endl << endl;
                 dictionary[ "DONE" ] = "error";
             } else {
@@ -3517,7 +3527,8 @@ void Configure::buildQmake()
                 args += dictionary[ "MAKE" ];
                 args += "-f";
                 args += makefile;
-                if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                exitCode = Environment::execute(args, QStringList(), QStringList());
+                if (exitCode) {
                     cout << "Building qmake failed, return code " << exitCode << endl << endl;
                     dictionary[ "DONE" ] = "error";
                 }
@@ -3561,8 +3572,8 @@ void Configure::buildHostTools()
 
         QDir().mkpath(toolBuildPath);
         QDir::setCurrent(toolSourcePath);
-        int exitCode = 0;
-        if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+        int exitCode = Environment::execute(args, QStringList(), QStringList());
+        if (exitCode) {
             cout << "qmake failed, return code " << exitCode << endl << endl;
             dictionary["DONE"] = "error";
             break;
@@ -3572,18 +3583,21 @@ void Configure::buildHostTools()
         args.clear();
         args += dictionary["MAKE"];
         QDir::setCurrent(toolBuildPath);
-        if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+        exitCode = Environment::execute(args, QStringList(), QStringList());
+        if (exitCode) {
             args.clear();
             args += dictionary["MAKE"];
             args += "clean";
-            if(exitCode = Environment::execute(args, QStringList(), QStringList())) {
+            exitCode = Environment::execute(args, QStringList(), QStringList());
+            if(exitCode) {
                 cout << "Cleaning " << hostToolsDirs.at(i) << " failed, return code " << exitCode << endl << endl;
                 dictionary["DONE"] = "error";
                 break;
             } else {
                 args.clear();
                 args += dictionary["MAKE"];
-                if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                exitCode = Environment::execute(args, QStringList(), QStringList());
+                if (exitCode) {
                     cout << "Building " << hostToolsDirs.at(i) << " failed, return code " << exitCode << endl << endl;
                     dictionary["DONE"] = "error";
                     break;

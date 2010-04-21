@@ -1,4 +1,6 @@
 TEMPLATE    = subdirs
+
+!contains(QT_CONFIG, no-gui) {
 SUBDIRS     = \
             demos_shared \
             demos_deform \
@@ -43,7 +45,7 @@ SUBDIRS += demos_boxes
 }
 
 mac*: SUBDIRS += demos_macmainwindow
-wince*|symbian|embedded|x11: SUBDIRS += embedded
+wince*|symbian|embedded|x11: SUBDIRS += demos_embedded
 
 !contains(QT_EDITION, Console):!cross_compile:!embedded:!wince*:SUBDIRS += demos_arthurplugin
 
@@ -67,6 +69,9 @@ symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
 demos_chip.subdir = chip
 demos_embeddeddialogs.subdir = embeddeddialogs
+demos_embedded.subdir = embedded
+# Because of fluidlauncher
+demos_embedded.depends = demos_deform demos_pathstroke
 demos_shared.subdir = shared
 demos_deform.subdir = deform
 demos_gradients.subdir = gradients
@@ -100,4 +105,5 @@ demos_sub-attaq.subdir = sub-attaq
      demos_composition.depends = demos_shared
      demos_arthurplugin.depends = demos_shared
      demos_pathstroke.depends = demos_shared
+}
 }

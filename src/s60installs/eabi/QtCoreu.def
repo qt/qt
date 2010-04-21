@@ -803,9 +803,9 @@ EXPORTS
 	_ZN16QCoreApplicationD0Ev @ 802 NONAME
 	_ZN16QCoreApplicationD1Ev @ 803 NONAME
 	_ZN16QCoreApplicationD2Ev @ 804 NONAME
-	_ZN16QDeclarativeDataD0Ev @ 805 NONAME
-	_ZN16QDeclarativeDataD1Ev @ 806 NONAME
-	_ZN16QDeclarativeDataD2Ev @ 807 NONAME
+	_ZN16QDeclarativeDataD0Ev @ 805 NONAME ABSENT
+	_ZN16QDeclarativeDataD1Ev @ 806 NONAME ABSENT
+	_ZN16QDeclarativeDataD2Ev @ 807 NONAME ABSENT
 	_ZN16QEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 808 NONAME
 	_ZN16QEventTransition11qt_metacastEPKc @ 809 NONAME
 	_ZN16QEventTransition12onTransitionEP6QEvent @ 810 NONAME
@@ -3332,7 +3332,7 @@ EXPORTS
 	_ZTI15QPauseAnimation @ 3331 NONAME
 	_ZTI15QSocketNotifier @ 3332 NONAME
 	_ZTI16QCoreApplication @ 3333 NONAME
-	_ZTI16QDeclarativeData @ 3334 NONAME
+	_ZTI16QDeclarativeData @ 3334 NONAME ABSENT
 	_ZTI16QEventTransition @ 3335 NONAME
 	_ZTI16QIODevicePrivate @ 3336 NONAME
 	_ZTI16QTextCodecPlugin @ 3337 NONAME
@@ -3407,7 +3407,7 @@ EXPORTS
 	_ZTV15QPauseAnimation @ 3406 NONAME
 	_ZTV15QSocketNotifier @ 3407 NONAME
 	_ZTV16QCoreApplication @ 3408 NONAME
-	_ZTV16QDeclarativeData @ 3409 NONAME
+	_ZTV16QDeclarativeData @ 3409 NONAME ABSENT
 	_ZTV16QEventTransition @ 3410 NONAME
 	_ZTV16QIODevicePrivate @ 3411 NONAME
 	_ZTV16QTextCodecPlugin @ 3412 NONAME
@@ -3652,4 +3652,49 @@ EXPORTS
 	_Z40QBasicAtomicPointer_fetchAndStoreAcquirePVPvS_ @ 3651 NONAME
 	_Z40QBasicAtomicPointer_fetchAndStoreRelaxedPVPvS_ @ 3652 NONAME
 	_Z40QBasicAtomicPointer_fetchAndStoreReleasePVPvS_ @ 3653 NONAME
+	_Z14qDecodeDataUrlRK4QUrl @ 3654 NONAME
+	_Z18qDetectCPUFeaturesv @ 3655 NONAME
+	_ZN10QByteArray7replaceEiiPKci @ 3656 NONAME
+	_ZN12QTextDecoderC1EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3657 NONAME
+	_ZN12QTextDecoderC2EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3658 NONAME
+	_ZN12QTextEncoderC1EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3659 NONAME
+	_ZN12QTextEncoderC2EPK10QTextCodec6QFlagsINS0_14ConversionFlagEE @ 3660 NONAME
+	_ZN13QElapsedTimer10invalidateEv @ 3661 NONAME
+	_ZN13QElapsedTimer11isMonotonicEv @ 3662 NONAME
+	_ZN13QElapsedTimer5startEv @ 3663 NONAME
+	_ZN13QElapsedTimer7restartEv @ 3664 NONAME
+	_ZN13QElapsedTimer9clockTypeEv @ 3665 NONAME
+	_ZN20QStateMachinePrivate12clearHistoryEv @ 3666 NONAME
+	_ZN7QStringC1EPK5QChar @ 3667 NONAME
+	_ZN7QStringC2EPK5QChar @ 3668 NONAME
+	_ZN8QVariantC1ERK12QEasingCurve @ 3669 NONAME
+	_ZN8QVariantC2ERK12QEasingCurve @ 3670 NONAME
+	_ZN9QDateTime18currentDateTimeUtcEv @ 3671 NONAME
+	_ZN9QDateTime22currentMSecsSinceEpochEv @ 3672 NONAME
+	_ZN9QListData11detach_growEPii @ 3673 NONAME
+	_ZN9QListData6appendEi @ 3674 NONAME
+	_ZN9QListData6detachEi @ 3675 NONAME
+	_ZN9QMetaType15registerTypedefEPKci @ 3676 NONAME
+	_ZN9QMetaType23registerStreamOperatorsEiPFvR11QDataStreamPKvEPFvS1_PvE @ 3677 NONAME
+	_ZNK10QTextCodec11makeDecoderE6QFlagsINS_14ConversionFlagEE @ 3678 NONAME
+	_ZNK10QTextCodec11makeEncoderE6QFlagsINS_14ConversionFlagEE @ 3679 NONAME
+	_ZNK13QElapsedTimer10hasExpiredEx @ 3680 NONAME
+	_ZNK13QElapsedTimer19msecsSinceReferenceEv @ 3681 NONAME
+	_ZNK13QElapsedTimer6secsToERKS_ @ 3682 NONAME
+	_ZNK13QElapsedTimer7elapsedEv @ 3683 NONAME
+	_ZNK13QElapsedTimer7isValidEv @ 3684 NONAME
+	_ZNK13QElapsedTimer7msecsToERKS_ @ 3685 NONAME
+	_ZNK6QState11transitionsEv @ 3686 NONAME
+	_ZNK8QVariant13toEasingCurveEv @ 3687 NONAME
+	_ZlsR11QDataStreamRK12QEasingCurve @ 3688 NONAME
+	_ZltRK13QElapsedTimerS1_ @ 3689 NONAME
+	_ZrsR11QDataStreamR12QEasingCurve @ 3690 NONAME
+	_ZN9QDateTime18setMSecsSinceEpochEx @ 3691 NONAME
+	_ZN9QDateTime19fromMSecsSinceEpochEx @ 3692 NONAME
+	_ZNK9QDateTime17toMSecsSinceEpochEv @ 3693 NONAME
+	_ZN10QTextCodec11validCodecsEv @ 3694 NONAME
+	_ZN16QDeclarativeData13parentChangedE @ 3695 NONAME DATA 4 ABSENT
+	_ZN16QDeclarativeData9destroyedE @ 3696 NONAME DATA 4 ABSENT
+	_ZN24QAbstractDeclarativeData13parentChangedE @ 3697 NONAME DATA 4
+	_ZN24QAbstractDeclarativeData9destroyedE @ 3698 NONAME DATA 4
 

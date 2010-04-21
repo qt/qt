@@ -71,18 +71,13 @@ VGImageFormat qt_vg_config_to_vg_format(QEglContext *context)
 
 QImage::Format qt_vg_config_to_image_format(QEglContext *context)
 {
-    EGLint red = 0;
-    EGLint green = 0;
-    EGLint blue = 0;
-    EGLint alpha = 0;
-    context->configAttrib(EGL_RED_SIZE, &red);
-    context->configAttrib(EGL_GREEN_SIZE, &green);
-    context->configAttrib(EGL_BLUE_SIZE, &blue);
-    context->configAttrib(EGL_ALPHA_SIZE, &alpha);
+    EGLint red = context->configAttrib(EGL_RED_SIZE);
+    EGLint green = context->configAttrib(EGL_GREEN_SIZE);
+    EGLint blue = context->configAttrib(EGL_BLUE_SIZE);
+    EGLint alpha = context->configAttrib(EGL_ALPHA_SIZE);
     QImage::Format argbFormat;
 #ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
-    EGLint type = 0;
-    context->configAttrib(EGL_SURFACE_TYPE, &type);
+    EGLint type = context->configAttrib(EGL_SURFACE_TYPE);
     if ((type & EGL_VG_ALPHA_FORMAT_PRE_BIT) != 0)
         argbFormat = QImage::Format_ARGB32_Premultiplied;
     else
@@ -210,11 +205,7 @@ void qt_vg_unregister_pixmap(QVGPixmapData *pd)
 
 static bool isPremultipliedContext(const QEglContext *context)
 {
-    EGLint value = 0;
-    if (context->configAttrib(EGL_SURFACE_TYPE, &value))
-        return (value & EGL_VG_ALPHA_FORMAT_PRE_BIT) != 0;
-    else
-        return false;
+    return context->configAttrib(EGL_SURFACE_TYPE) & EGL_VG_ALPHA_FORMAT_PRE_BIT;
 }
 
 #endif
@@ -230,9 +221,9 @@ static QEglContext *createContext(QPaintDevice *device)
     // Set the swap interval for the display.
     QByteArray interval = qgetenv("QT_VG_SWAP_INTERVAL");
     if (!interval.isEmpty())
-        eglSwapInterval(context->display(), interval.toInt());
+        eglSwapInterval(QEgl::display(), interval.toInt());
     else
-        eglSwapInterval(context->display(), 1);
+        eglSwapInterval(QEgl::display(), 1);
 
 #ifdef EGL_RENDERABLE_TYPE
     // Has the user specified an explicit EGL configuration to use?
@@ -246,16 +237,16 @@ static QEglContext *createContext(QPaintDevice *device)
         EGLint matching = 0;
         EGLConfig cfg;
         if (eglChooseConfig
-                    (context->display(), properties, &cfg, 1, &matching) &&
+                    (QEgl::display(), properties, &cfg, 1, &matching) &&
                 matching > 0) {
             // Check that the selected configuration actually supports OpenVG
             // and then create the context with it.
             EGLint id = 0;
             EGLint type = 0;
             eglGetConfigAttrib
-                (context->display(), cfg, EGL_CONFIG_ID, &id);
+                (QEgl::display(), cfg, EGL_CONFIG_ID, &id);
             eglGetConfigAttrib
-                (context->display(), cfg, EGL_RENDERABLE_TYPE, &type);
+                (QEgl::display(), cfg, EGL_RENDERABLE_TYPE, &type);
             if (cfgId == id && (type & EGL_OPENVG_BIT) != 0) {
                 context->setConfig(cfg);
                 if (!context->createContext()) {
@@ -334,7 +325,7 @@ static void qt_vg_destroy_shared_context(QVGSharedContext *shared)
     shared->engine = 0;
     shared->context->doneCurrent();
     if (shared->surface != EGL_NO_SURFACE) {
-        eglDestroySurface(shared->context->display(), shared->surface);
+        eglDestroySurface(QEgl::display(), shared->surface);
         shared->surface = EGL_NO_SURFACE;
     }
     delete shared->context;
@@ -412,7 +403,7 @@ EGLSurface qt_vg_shared_surface(void)
             attribs[4] = EGL_NONE;
         }
         shared->surface = eglCreatePbufferSurface
-            (shared->context->display(), shared->context->config(), attribs);
+            (QEgl::display(), shared->context->config(), attribs);
     }
     return shared->surface;
 }
@@ -555,7 +546,7 @@ void QVGEGLWindowSurfaceVGImage::beginPaint(QWidget *widget)
             context->makeCurrent(mainSurface());
             recreateBackBuffer = false;
             if (backBufferSurface != EGL_NO_SURFACE) {
-                eglDestroySurface(context->display(), backBufferSurface);
+                eglDestroySurface(QEgl::display(), backBufferSurface);
                 backBufferSurface = EGL_NO_SURFACE;
             }
             if (backBuffer != VG_INVALID_HANDLE) {
@@ -568,7 +559,7 @@ void QVGEGLWindowSurfaceVGImage::beginPaint(QWidget *widget)
             if (backBuffer != VG_INVALID_HANDLE) {
                 // Create an EGL surface for rendering into the VGImage.
                 backBufferSurface = eglCreatePbufferFromClientBuffer
-                    (context->display(), EGL_OPENVG_IMAGE,
+                    (QEgl::display(), EGL_OPENVG_IMAGE,
                      (EGLClientBuffer)(backBuffer),
                      context->config(), NULL);
                 if (backBufferSurface == EGL_NO_SURFACE) {
@@ -659,6 +650,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
 #endif
         windowSurface = context->createSurface(widget, &surfaceProps);
         isPaintingActive = false;
+        needToSwap = true;
     }
 #else
     if (context && size != newSize) {
@@ -704,26 +696,27 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
 #if defined(QVG_DIRECT_TO_WINDOW)
         // Did we get a direct to window rendering surface?
         EGLint buffer = 0;
-        if (eglQueryContext(context->display(), context->context(),
+        if (eglQueryContext(QEgl::display(), context->context(),
                             EGL_RENDER_BUFFER, &buffer) &&
                 buffer == EGL_SINGLE_BUFFER) {
             needToSwap = false;
         }
 #endif
-#if !defined(QVG_NO_PRESERVED_SWAP)
-        // Try to force the surface back buffer to preserve its contents.
-        if (needToSwap) {
-            eglGetError();  // Clear error state first.
-            eglSurfaceAttrib(context->display(), surface,
-                             EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-            if (eglGetError() != EGL_SUCCESS) {
-                qWarning("QVG: could not enable preserved swap");
-            }
-        }
-#endif
         windowSurface = surface;
         isPaintingActive = false;
     }
+
+#if !defined(QVG_NO_PRESERVED_SWAP)
+    // Try to force the surface back buffer to preserve its contents.
+    if (needToSwap) {
+        eglGetError();  // Clear error state first.
+        eglSurfaceAttrib(QEgl::display(), windowSurface,
+                EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+        if (eglGetError() != EGL_SUCCESS) {
+            qWarning("QVG: could not enable preserved swap");
+        }
+    }
+#endif
     return context;
 }
 
@@ -754,6 +747,33 @@ void QVGEGLWindowSurfaceDirect::endPaint
         }
         isPaintingActive = false;
     }
+}
+
+bool QVGEGLWindowSurfaceDirect::supportsStaticContents() const
+{
+#if defined(QVG_BUFFER_SCROLLING) && !defined(QVG_NO_PRESERVED_SWAP)
+    return true;
+#else
+    return QVGEGLWindowSurfacePrivate::supportsStaticContents();
+#endif
+}
+
+bool QVGEGLWindowSurfaceDirect::scroll(QWidget *widget, const QRegion& area, int dx, int dy)
+{
+#ifdef QVG_BUFFER_SCROLLING
+    QEglContext *context = ensureContext(widget);
+    if (context) {
+        context->makeCurrent(windowSurface);
+        QRect scrollRect = area.boundingRect();
+        int sx = scrollRect.x();
+        int sy = size.height() - scrollRect.y() - scrollRect.height();
+        vgSeti(VG_SCISSORING, VG_FALSE);
+        vgCopyPixels(sx + dx, sy - dy, sx, sy, scrollRect.width(), scrollRect.height());
+        context->lazyDoneCurrent();
+        return true;
+    }
+#endif
+    return false;
 }
 
 QT_END_NAMESPACE

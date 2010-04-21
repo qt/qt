@@ -70,6 +70,8 @@ private slots:
     void testLanguageChange();
     void plural();
     void translate_qm_file_generated_with_msgfmt();
+    void loadFromResource();
+    void loadDirectory();
 
 private:
     int languageChangeEventCounter;
@@ -235,6 +237,23 @@ void tst_QTranslator::translate_qm_file_generated_with_msgfmt()
     QCOMPARE(QCoreApplication::translate("", "Intro\0x"), QLatin1String("Einleitung"));
 
     qApp->removeTranslator(&translator);
+}
+
+void tst_QTranslator::loadFromResource()
+{
+    QTranslator tor;
+    tor.load(":/tst_qtranslator/hellotr_la.qm");
+    QVERIFY(!tor.isEmpty());
+    QCOMPARE(tor.translate("QPushButton", "Hello world!"), QString::fromLatin1("Hallo Welt!"));
+}
+
+void tst_QTranslator::loadDirectory()
+{
+    QVERIFY(QFileInfo("../qtranslator").isDir());
+
+    QTranslator tor;
+    tor.load("qtranslator", "..");
+    QVERIFY(tor.isEmpty());
 }
 
 QTEST_MAIN(tst_QTranslator)

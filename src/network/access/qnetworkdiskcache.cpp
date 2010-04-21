@@ -41,7 +41,6 @@
 
 //#define QNETWORKDISKCACHE_DEBUG
 
-#ifndef QT_NO_NETWORKDISKCACHE
 
 #include "qnetworkdiskcache.h"
 #include "qnetworkdiskcache_p.h"
@@ -59,6 +58,8 @@
 #define CACHE_PREFIX  QLatin1String("cache_")
 #define CACHE_POSTFIX QLatin1String(".cache")
 #define MAX_COMPRESSION_SIZE (1024 * 1024 * 3)
+
+#ifndef QT_NO_NETWORKDISKCACHE
 
 QT_BEGIN_NAMESPACE
 

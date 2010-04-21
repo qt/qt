@@ -1,5 +1,5 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: toggleswitch
@@ -31,14 +31,17 @@ Item {
 
 //![4]
     Image {
-        id: background; source: "background.svg"
+        id: background
+        source: "background.svg"
         MouseArea { anchors.fill: parent; onClicked: toggle() }
     }
 //![4]
 
 //![5]
     Image {
-        id: knob; source: "knob.svg"; x: 1; y: 2
+        id: knob
+        x: 1; y: 2
+        source: "knob.svg"
 
         MouseArea {
             anchors.fill: parent

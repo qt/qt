@@ -41,12 +41,13 @@
 
 #include "qdeclarative.h"
 #include "qmlruntime.h"
+#include "qdeclarativeengine.h"
 #include <QWidget>
 #include <QDir>
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
-#include "qfxtester.h"
+#include "qdeclarativetester.h"
 #include "qdeclarativefolderlistmodel.h"
 
 QT_USE_NAMESPACE
@@ -100,7 +101,9 @@ void usage()
     qWarning("  -dragthreshold <size> .................... set mouse drag threshold size");
     qWarning("  -netcache <size> ......................... set disk cache to size bytes");
     qWarning("  -translation <translationfile> ........... set the language to run in");
-    qWarning("  -L <directory> ........................... prepend to the library search path");
+    qWarning("  -I <directory> ........................... prepend to the module import search path,");
+    qWarning("                                             display path if <directory> is empty");
+    qWarning("  -P <directory> ........................... prepend to the plugin search path");
     qWarning("  -opengl .................................. use a QGLWidget for the viewport");
     qWarning("  -script <path> ........................... set the script to use");
     qWarning("  -scriptopts <options>|help ............... set the script options to use");
@@ -118,6 +121,8 @@ void scriptOptsUsage()
     qWarning("  play ..................................... playback an existing script");
     qWarning("  testimages ............................... record images or compare images on playback");
     qWarning("  testerror ................................ test 'error' property of root item on playback");
+    qWarning("  snapshot ................................. file being recorded is static,");
+    qWarning("                                             only one frame will be recorded or tested");
     qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
     qWarning("  exitonfailure ............................ immediately exit the viewer on script failure");
     qWarning("  saveonexit ............................... save recording on viewer exit");
@@ -165,7 +170,8 @@ int main(int argc, char ** argv)
     QString dither = "none";
     QString recordfile;
     QStringList recordargs;
-    QStringList libraries;
+    QStringList imports;
+    QStringList plugins;
     QString skin;
     QString script;
     QString scriptopts;
@@ -237,9 +243,19 @@ int main(int argc, char ** argv)
             useGL = true;
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
-        } else if (arg == "-L") {
+        } else if (arg == "-I" || arg == "-L") {
+            if (arg == "-L")
+                fprintf(stderr, "-L option provided for compatibility only, use -I instead\n");
+            if (lastArg) {
+                QDeclarativeEngine tmpEngine;
+                QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
+                fprintf(stderr, "Current search path: %s\n", paths.toLocal8Bit().constData());
+                return 0;
+            }
+            imports << QString(argv[++i]);
+        } else if (arg == "-P") {
             if (lastArg) usage();
-            libraries << QString(argv[++i]);
+            plugins << QString(argv[++i]);
         } else if (arg == "-script") {
             if (lastArg) usage();
             script = QString(argv[++i]);
@@ -295,6 +311,8 @@ int main(int argc, char ** argv)
                 scriptOptions |= QDeclarativeViewer::ExitOnFailure;
             } else if (option == QLatin1String("saveonexit")) {
                 scriptOptions |= QDeclarativeViewer::SaveOnExit;
+            } else if (option == QLatin1String("snapshot")) {
+                scriptOptions |= QDeclarativeViewer::Snapshot;
             } else {
                 scriptOptsUsage();
             }
@@ -313,8 +331,11 @@ int main(int argc, char ** argv)
 
     viewer.addLibraryPath(QCoreApplication::applicationDirPath());
 
-    foreach (QString lib, libraries)
+    foreach (QString lib, imports)
         viewer.addLibraryPath(lib);
+
+    foreach (QString plugin, plugins)
+        viewer.addPluginPath(plugin);
 
     viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
@@ -342,6 +363,21 @@ int main(int argc, char ** argv)
     viewer.setUseNativeFileBrowser(useNativeFileBrowser);
     if (fullScreen && maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
+
+    if (fileName.isEmpty()) {
+        QFile qmlapp(QLatin1String("qmlapp"));
+        if (qmlapp.exists() && qmlapp.open(QFile::ReadOnly)) {
+                QString content = QString::fromUtf8(qmlapp.readAll());
+                qmlapp.close();
+
+                int newline = content.indexOf(QLatin1Char('\n'));
+                if (newline >= 0)
+                    fileName = content.left(newline);
+                else
+                    fileName = content;
+            }
+    }
+
     if (!fileName.isEmpty()) {
         viewer.open(fileName);
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();

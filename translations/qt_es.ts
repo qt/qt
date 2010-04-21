@@ -23,6 +23,21 @@
         <source>Show All</source>
         <translation>Mostrar todo</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Preferences...</source>
+        <translation>Preferencias…</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quit %1</source>
+        <translation>Salir de %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About %1</source>
+        <translation>Acerca de %1</translation>
+    </message>
 </context>
 <context>
     <name>AudioOutput</name>

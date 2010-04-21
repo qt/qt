@@ -66,6 +66,10 @@ QStringList Generator::imageFiles;
 QStringList Generator::imageDirs;
 QStringList Generator::exampleDirs;
 QStringList Generator::exampleImgExts;
+QStringList Generator::scriptFiles;
+QStringList Generator::scriptDirs;
+QStringList Generator::styleFiles;
+QStringList Generator::styleDirs;
 QString Generator::outDir;
 QString Generator::project;
 
@@ -124,10 +128,20 @@ void Generator::initialize(const Config &config)
         if (!dirInfo.mkdir(outDir + "/images/used-in-examples"))
             config.lastLocation().fatal(tr("Cannot create output directory '%1'")
                                         .arg(outDir + "/images/used-in-examples"));
+        if (!dirInfo.mkdir(outDir + "/scripts"))
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
+                                        .arg(outDir + "/scripts"));
+        if (!dirInfo.mkdir(outDir + "/style"))
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
+                                        .arg(outDir + "/style"));
     }
 
     imageFiles = config.getStringList(CONFIG_IMAGES);
     imageDirs = config.getStringList(CONFIG_IMAGEDIRS);
+    scriptFiles = config.getStringList(CONFIG_SCRIPTS);
+    scriptDirs = config.getStringList(CONFIG_SCRIPTDIRS);
+    styleFiles = config.getStringList(CONFIG_STYLES);
+    styleDirs = config.getStringList(CONFIG_STYLEDIRS);
     exampleDirs = config.getStringList(CONFIG_EXAMPLEDIRS);
     exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot +
                                           CONFIG_IMAGEEXTENSIONS);
@@ -163,6 +177,47 @@ void Generator::initialize(const Config &config)
                                      userFriendlyFilePath,
                                      (*g)->outputDir() +
                                      "/images");
+                ++e;
+            }
+
+            QStringList noExts;
+            QStringList scripts =
+                config.getStringList(CONFIG_SCRIPTS+Config::dot+(*g)->format());
+            e = scripts.begin();
+            while (e != scripts.end()) {
+                QString userFriendlyFilePath;
+                QString filePath = Config::findFile(config.lastLocation(),
+                                                    scriptFiles,
+                                                    scriptDirs,
+                                                    *e,
+                                                    noExts,
+                                                    userFriendlyFilePath);
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(),
+                                     filePath,
+                                     userFriendlyFilePath,
+                                     (*g)->outputDir() +
+                                     "/scripts");
+                ++e;
+            }
+
+            QStringList styles =
+                config.getStringList(CONFIG_STYLES+Config::dot+(*g)->format());
+            e = styles.begin();
+            while (e != styles.end()) {
+                QString userFriendlyFilePath;
+                QString filePath = Config::findFile(config.lastLocation(),
+                                                    styleFiles,
+                                                    styleDirs,
+                                                    *e,
+                                                    noExts,
+                                                    userFriendlyFilePath);
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(),
+                                     filePath,
+                                     userFriendlyFilePath,
+                                     (*g)->outputDir() +
+                                     "/style");
                 ++e;
             }
         }
@@ -322,11 +377,11 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     bool quiet = false;
 
     if (node->type() == Node::Function) {
-#if 0        
+#if 0
         const FunctionNode *func = (const FunctionNode *) node;
         if (func->isOverload() && func->metaness() != FunctionNode::Ctor)
             generateOverload(node, marker);
-#endif        
+#endif
     }
     else if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
@@ -347,7 +402,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             if (func->reimplementedFrom() != 0)
                 generateReimplementedFrom(func, marker);
         }
-        
+
         if (!generateText(node->doc().body(), node, marker))
             if (node->isReimp())
                 return;
@@ -452,7 +507,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             // Now we put this at the top, before the other text.
             if (func->reimplementedFrom() != 0)
                 generateReimplementedFrom(func, marker);
-#endif            
+#endif
         }
     }
 
@@ -544,7 +599,7 @@ void Generator::generateInheritedBy(const ClassNode *classe,
   example is being formatted. It outputs the list of source
   files comprising the example, and the list of images used
   by the example. The images are copied into a subtree of
-  \c{...doc/html/images/used-in-examples/...} 
+  \c{...doc/html/images/used-in-examples/...}
  */
 void Generator::generateFileList(const FakeNode* fake,
                                  CodeMarker* marker,
@@ -946,7 +1001,7 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
                 }
                 ++c;
             }
-            if (!exceptions) 
+            if (!exceptions)
                 text << ".";
             else if (threadSafeness == Node::Reentrant) {
                 if (nonreentrant.isEmpty()) {
@@ -1033,7 +1088,7 @@ void Generator::generateOverload(const Node *node, CodeMarker *marker)
     text << Atom::ParaLeft
          << "This function overloads ";
     QString t = node->name() + "()";
-    text << Atom::AutoLink << t 
+    text << Atom::AutoLink << t
          << Atom::ParaRight;
     generateText(text, node, marker);
 }
@@ -1194,14 +1249,14 @@ void Generator::appendSortedQmlNames(Text& text,
     QMap<QString,Text> classMap;
     int index = 0;
 
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
     qDebug() << "Generator::appendSortedQmlNames():" << base->name() << "is inherited by...";
-#endif    
+#endif
     for (int i = 0; i < subs.size(); ++i) {
         Text t;
-#ifdef DEBUG_MULTIPLE QDOCCONF_FILES
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
         qDebug() << "    " << subs[i]->name();
-#endif        
+#endif
         appendFullName(t, subs[i], base, marker);
         classMap[t.toString().toLower()] = t;
     }

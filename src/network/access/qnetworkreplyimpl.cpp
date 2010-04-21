@@ -67,8 +67,6 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
-    Q_Q(QNetworkReplyImpl);
-
     // ensure this function is only being called once
     if (state == Working) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
@@ -86,6 +84,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
     if (!backend->start()) {
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
@@ -95,6 +94,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         QNetworkSession *session = manager->d_func()->networkSession;
 
         if (session) {
+            Q_Q(QNetworkReplyImpl);
+
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
@@ -106,6 +107,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
         return;
     }
+#endif
 
     if (state != Finished) {
         if (operation == QNetworkAccessManager::GetOperation)
@@ -232,9 +234,20 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
-void QNetworkReplyImplPrivate::_q_networkSessionOnline()
+#ifndef QT_NO_BEARERMANAGEMENT
+void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyImpl);
+
+    if (manager.isNull())
+        return;
+
+    QNetworkSession *session = manager->d_func()->networkSession;
+    if (!session)
+        return;
+
+    if (session->state() != QNetworkSession::Connected)
+        return;
 
     switch (state) {
     case QNetworkReplyImplPrivate::Buffering:
@@ -262,6 +275,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
         finished();
     }
 }
+#endif
 
 void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
@@ -308,11 +322,15 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
 
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
+#ifndef QT_NO_HTTP
         if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
             _q_startOperation();
         } else {
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         }
+#else
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+#endif // QT_NO_HTTP
     }
 
     q->QIODevice::open(QIODevice::ReadOnly);
@@ -567,6 +585,7 @@ void QNetworkReplyImplPrivate::finished()
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     if (!manager.isNull()) {
+#ifndef QT_NO_BEARERMANAGEMENT
         QNetworkSession *session = manager->d_func()->networkSession;
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
@@ -586,6 +605,7 @@ void QNetworkReplyImplPrivate::finished()
                 }
             }
         }
+#endif
     }
     resumeNotificationHandling();
 
@@ -862,15 +882,20 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         backend->setResumeOffset(bytesDownloaded);
     }
 
+#ifndef QT_NO_HTTP
     if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
         _q_startOperation();
     } else {
         QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
     }
+#else
+    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+#endif // QT_NO_HTTP
 
     return true;
 }
 
+#ifndef QT_NO_BEARERMANAGEMENT
 QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
                                              const QNetworkRequest &req,
                                              QNetworkAccessManager::Operation op)
@@ -894,6 +919,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
 QDisabledNetworkReply::~QDisabledNetworkReply()
 {
 }
+#endif
 
 QT_END_NAMESPACE
 

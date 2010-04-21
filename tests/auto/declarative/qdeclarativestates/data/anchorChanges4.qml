@@ -15,8 +15,8 @@ Rectangle {
         name: "reanchored"
         AnchorChanges {
             target: myRect;
-            horizontalCenter: bottomGuideline.horizontalCenter
-            verticalCenter: leftGuideline.verticalCenter
+            anchors.horizontalCenter: bottomGuideline.horizontalCenter
+            anchors.verticalCenter: leftGuideline.verticalCenter
         }
     }
 }

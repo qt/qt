@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 // returns the highest number closest to v, which is a power of 2
 // NB! assumes 32 bit ints
-int qt_next_power_of_two(int v)
+static inline int qt_next_power_of_two(int v)
 {
     v--;
     v |= v >> 1;
@@ -79,6 +79,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
     m_current_fontengine = fontEngine;
     const int margin = glyphMargin();
+    const int paddingDoubled = glyphPadding() * 2;
 
     QHash<glyph_t, Coord> listItemCoordinates;
     int rowHeight = 0;
@@ -124,7 +125,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     if (listItemCoordinates.isEmpty())
         return;
 
-    rowHeight += margin * 2;
+    rowHeight += margin * 2 + paddingDoubled;
     if (isNull())
         createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, qt_next_power_of_two(rowHeight));
 
@@ -133,10 +134,13 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     while (iter != listItemCoordinates.end()) {
         Coord c = iter.value();
 
+        m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
+
         if (m_cx + c.w > m_w) {
             // no room on the current line, start new glyph strip
             m_cx = 0;
-            m_cy += rowHeight;
+            m_cy += m_currentRowHeight + paddingDoubled;
+            m_currentRowHeight = 0; // New row
         }
         if (m_cy + c.h > m_h) {
             int new_height = m_h*2;
@@ -153,14 +157,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         fillTexture(c, iter.key());
         coords.insert(iter.key(), c);
 
-        if (m_cx + c.w > m_w) {
-            m_cx = 0;
-            m_cy += rowHeight;
-        } else {
-            // for the Mono case, glyph_width is 8-bit aligned,
-            // and therefore so will m_cx
-            m_cx += c.w;
-        }
+        m_cx += c.w + paddingDoubled;
         ++iter;
     }
 

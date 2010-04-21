@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativesystempalette_p.h"
+#include "private/qdeclarativesystempalette_p.h"
 
 #include <QApplication>
 

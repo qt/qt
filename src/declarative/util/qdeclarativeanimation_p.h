@@ -42,8 +42,8 @@
 #ifndef QDECLARATIVEANIMATION_H
 #define QDECLARATIVEANIMATION_H
 
-#include "qdeclarativetransition_p.h"
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativetransition_p.h"
+#include "private/qdeclarativestate_p.h"
 #include <QtGui/qvector3d.h>
 
 #include <qdeclarativepropertyvaluesource.h>
@@ -70,15 +70,18 @@ class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public Q
 
     Q_INTERFACES(QDeclarativeParserStatus)
     Q_INTERFACES(QDeclarativePropertyValueSource)
+    Q_ENUMS(Loops)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
-    Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
-    Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
+    Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged)
+    Q_PROPERTY(int loops READ loops WRITE setLoops NOTIFY loopsChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
 
 public:
     QDeclarativeAbstractAnimation(QObject *parent=0);
     virtual ~QDeclarativeAbstractAnimation();
+
+    enum Loops { Infinite = -2 };
 
     bool isRunning() const;
     void setRunning(bool);
@@ -86,8 +89,9 @@ public:
     void setPaused(bool);
     bool alwaysRunToEnd() const;
     void setAlwaysRunToEnd(bool);
-    bool repeat() const;
-    void setRepeat(bool);
+
+    int loops() const;
+    void setLoops(int);
 
     int currentTime();
     void setCurrentTime(int);
@@ -106,8 +110,8 @@ Q_SIGNALS:
     void completed();
     void runningChanged(bool);
     void pausedChanged(bool);
-    void repeatChanged(bool);
     void alwaysRunToEndChanged(bool);
+    void loopCountChanged(int);
 
 public Q_SLOTS:
     void restart();
@@ -163,7 +167,7 @@ class QDeclarativeScriptAction : public QDeclarativeAbstractAnimation
     Q_DECLARE_PRIVATE(QDeclarativeScriptAction)
 
     Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript)
-    Q_PROPERTY(QString stateChangeScriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
+    Q_PROPERTY(QString scriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
 
 public:
     QDeclarativeScriptAction(QObject *parent=0);
@@ -227,32 +231,6 @@ protected:
 };
 
 class QDeclarativeItem;
-class QDeclarativeParentActionPrivate;
-class QDeclarativeParentAction : public QDeclarativeAbstractAnimation
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeParentAction)
-
-    Q_PROPERTY(QDeclarativeItem *target READ object WRITE setObject)
-    Q_PROPERTY(QDeclarativeItem *parent READ parent WRITE setParent) //### newParent
-
-public:
-    QDeclarativeParentAction(QObject *parent=0);
-    virtual ~QDeclarativeParentAction();
-
-    QDeclarativeItem *object() const;
-    void setObject(QDeclarativeItem *);
-
-    QDeclarativeItem *parent() const;
-    void setParent(QDeclarativeItem *);
-
-protected:
-    virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeProperties &modified,
-                            TransitionDirection direction);
-    virtual QAbstractAnimation *qtAnimation();
-};
-
 class QDeclarativePropertyAnimationPrivate;
 class Q_AUTOTEST_EXPORT QDeclarativePropertyAnimation : public QDeclarativeAbstractAnimation
 {
@@ -273,8 +251,8 @@ public:
     QDeclarativePropertyAnimation(QObject *parent=0);
     virtual ~QDeclarativePropertyAnimation();
 
-    int duration() const;
-    void setDuration(int);
+    virtual int duration() const;
+    virtual void setDuration(int);
 
     QVariant from() const;
     void setFrom(const QVariant &);
@@ -348,6 +326,12 @@ public:
 
     qreal to() const;
     void setTo(qreal);
+
+protected:
+    QDeclarativeNumberAnimation(QDeclarativePropertyAnimationPrivate &dd, QObject *parent);
+
+private:
+    void init();
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativeVector3dAnimation : public QDeclarativePropertyAnimation
@@ -456,9 +440,9 @@ class QDeclarativeParentAnimation : public QDeclarativeAnimationGroup
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeParentAnimation)
 
-    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget)
-    Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent)
-    Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia)
+    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent NOTIFY newParentChanged)
+    Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia NOTIFY viaChanged)
 
 public:
     QDeclarativeParentAnimation(QObject *parent=0);
@@ -473,6 +457,31 @@ public:
     QDeclarativeItem *via() const;
     void setVia(QDeclarativeItem *);
 
+Q_SIGNALS:
+    void targetChanged();
+    void newParentChanged();
+    void viaChanged();
+
+protected:
+    virtual void transition(QDeclarativeStateActions &actions,
+                            QDeclarativeProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+};
+
+class QDeclarativeAnchorAnimationPrivate;
+class QDeclarativeAnchorAnimation : public QDeclarativeAbstractAnimation
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QDeclarativeAnchorAnimation)
+    Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> targets READ targets)
+
+public:
+    QDeclarativeAnchorAnimation(QObject *parent=0);
+    virtual ~QDeclarativeAnchorAnimation();
+
+    QDeclarativeListProperty<QDeclarativeItem> targets();
+
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
                             QDeclarativeProperties &modified,
@@ -486,7 +495,6 @@ QML_DECLARE_TYPE(QDeclarativeAbstractAnimation)
 QML_DECLARE_TYPE(QDeclarativePauseAnimation)
 QML_DECLARE_TYPE(QDeclarativeScriptAction)
 QML_DECLARE_TYPE(QDeclarativePropertyAction)
-QML_DECLARE_TYPE(QDeclarativeParentAction)
 QML_DECLARE_TYPE(QDeclarativePropertyAnimation)
 QML_DECLARE_TYPE(QDeclarativeColorAnimation)
 QML_DECLARE_TYPE(QDeclarativeNumberAnimation)
@@ -495,6 +503,7 @@ QML_DECLARE_TYPE(QDeclarativeParallelAnimation)
 QML_DECLARE_TYPE(QDeclarativeVector3dAnimation)
 QML_DECLARE_TYPE(QDeclarativeRotationAnimation)
 QML_DECLARE_TYPE(QDeclarativeParentAnimation)
+QML_DECLARE_TYPE(QDeclarativeAnchorAnimation)
 
 QT_END_HEADER
 

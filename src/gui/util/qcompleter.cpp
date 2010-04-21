@@ -1110,7 +1110,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         delete d->popup;
     if (popup->model() != d->proxy)
         popup->setModel(d->proxy);
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
      popup->show();
 #else
      popup->hide();
@@ -1689,8 +1689,10 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
         QString t;
         if (isDirModel)
             t = sourceModel->data(idx, Qt::EditRole).toString();
+#ifndef QT_NO_FILESYSTEMMODEL
         else
             t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
+#endif
         list.prepend(t);
         QModelIndex parent = idx.parent();
         idx = parent.sibling(parent.row(), index.column());

@@ -46,6 +46,7 @@
 #include "qt7playercontrol.h"
 #include "qt7movieviewrenderer.h"
 #include "qt7playersession.h"
+#include "qt7ciimagevideobuffer.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
@@ -53,6 +54,9 @@
 #include <QtMultimedia/qabstractvideobuffer.h>
 #include <QtMultimedia/qabstractvideosurface.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
+
+#include <QuartzCore/CIFilter.h>
+#include <QuartzCore/CIVector.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -113,6 +117,7 @@ QT_END_NAMESPACE
 - (HiddenQTMovieView *) initWithRenderer:(QT7MovieViewRenderer *)renderer;
 - (void) setRenderer:(QT7MovieViewRenderer *)renderer;
 - (void) setDrawRect:(const QRect &)rect;
+- (CIImage *) view:(QTMovieView *)view willDisplayImage:(CIImage *)img;
 @end
 
 @implementation HiddenQTMovieView
@@ -163,33 +168,37 @@ QT_END_NAMESPACE
     // before the image will be drawn.
     Q_UNUSED(view);
     if (m_renderer) {
-        NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithCIImage:img];
         CGRect bounds = [img extent];
         int w = bounds.size.width;
         int h = bounds.size.height;
 
-        // Swap red and blue (same as QImage::rgbSwapped, but without copy)
-        uchar *data = [bitmap bitmapData];
-        //qDebug() << data << w << h;
-        int bytesPerLine = [bitmap bytesPerRow];
-        for (int i=0; i<h; ++i) {
-            quint32 *p = (quint32*)data;
-            data += bytesPerLine;
-            quint32 *end = p + w;
-            while (p < end) {
-                *p = ((*p << 16) & 0xff0000) | ((*p >> 16) & 0xff) | (*p & 0xff00ff00);
-                p++;
-            }
+        QVideoFrame frame;
+
+        QAbstractVideoSurface *surface = m_renderer->surface();
+        if (!surface || !surface->isActive())
+            return img;
+
+        if (surface->surfaceFormat().handleType() == QAbstractVideoBuffer::CoreImageHandle) {
+            //surface supports rendering of opengl based CIImage
+            frame = QVideoFrame(new QT7CIImageVideoBuffer(img), QSize(w,h), QVideoFrame::Format_RGB32 );
+        } else {
+            //Swap R and B colors
+            CIFilter *colorSwapFilter = [CIFilter filterWithName: @"CIColorMatrix"  keysAndValues:
+                                         @"inputImage", img,
+                                         @"inputRVector", [CIVector vectorWithX: 0  Y: 0  Z: 1  W: 0],
+                                         @"inputGVector", [CIVector vectorWithX: 0  Y: 1  Z: 0  W: 0],
+                                         @"inputBVector", [CIVector vectorWithX: 1  Y: 0  Z: 0  W: 0],
+                                         @"inputAVector", [CIVector vectorWithX: 0  Y: 0  Z: 0  W: 1],
+                                         @"inputBiasVector", [CIVector vectorWithX: 0  Y: 0  Z: 0  W: 0],
+                                         nil];
+            CIImage *img = [colorSwapFilter valueForKey: @"outputImage"];
+            NSBitmapImageRep *bitmap =[[NSBitmapImageRep alloc] initWithCIImage:img];
+            //requesting the bitmap data is slow,
+            //but it's better to do it here to avoid blocking the main thread for a long.
+            [bitmap bitmapData];
+            frame = QVideoFrame(new NSBitmapVideoBuffer(bitmap), QSize(w,h), QVideoFrame::Format_RGB32 );
+            [bitmap release];
         }
-
-        QVideoFrame frame( new NSBitmapVideoBuffer(bitmap), QSize(w,h), QVideoFrame::Format_RGB32 );
-
-        //static int i=0;
-        //i++;
-        //QImage img([bitmap bitmapData], w, h, QImage::Format_RGB32);
-        //img.save(QString("img%1.jpg").arg(i));
-
-        [bitmap release];
 
         if (m_renderer)
             m_renderer->renderFrame(frame);
@@ -230,7 +239,8 @@ QT7MovieViewRenderer::QT7MovieViewRenderer(QObject *parent)
    :QT7VideoRendererControl(parent),
     m_movie(0),
     m_movieView(0),
-    m_surface(0)
+    m_surface(0),
+    m_pendingRenderEvent(false)
 {    
 }
 
@@ -267,11 +277,15 @@ void QT7MovieViewRenderer::setupVideoOutput()
         }
 
         [movieView setMovie:(QTMovie*)m_movie];
-        //[movieView setDrawRect:QRect(QPoint(0,0), m_nativeSize)];
+        [movieView setDrawRect:QRect(QPoint(0,0), m_nativeSize)];
     }
 
     if (m_surface && !m_nativeSize.isEmpty()) {
-        QVideoSurfaceFormat format(m_nativeSize, QVideoFrame::Format_RGB32);
+        bool coreImageFrameSupported = !m_surface->supportedPixelFormats(QAbstractVideoBuffer::CoreImageHandle).isEmpty() &&
+                                       !m_surface->supportedPixelFormats(QAbstractVideoBuffer::GLTextureHandle).isEmpty();
+
+        QVideoSurfaceFormat format(m_nativeSize, QVideoFrame::Format_RGB32,
+                                   coreImageFrameSupported ? QAbstractVideoBuffer::CoreImageHandle : QAbstractVideoBuffer::NoHandle);
 
         if (m_surface->isActive() && m_surface->surfaceFormat() != format) {
 //            qDebug() << "Surface format was changed, stop the surface.";
@@ -279,16 +293,13 @@ void QT7MovieViewRenderer::setupVideoOutput()
         }
 
         if (!m_surface->isActive()) {
-//            qDebug() << "Starting the surface with format" << format;
-            m_surface->start(format);
-//            if (!m_surface->start(format))
-//                qDebug() << "failed to start video surface" << m_surface->error();
+            //qDebug() << "Starting the surface with format" << format;
+            if (!m_surface->start(format)) {
+                qWarning() << "Failed to start video surface" << m_surface->error();
+                qWarning() << "Surface format:" << format;
+            }
         }
     }
-}
-
-void QT7MovieViewRenderer::setEnabled(bool)
-{
 }
 
 void QT7MovieViewRenderer::setMovie(void *movie)
@@ -330,18 +341,21 @@ void QT7MovieViewRenderer::setSurface(QAbstractVideoSurface *surface)
 
 void QT7MovieViewRenderer::renderFrame(const QVideoFrame &frame)
 {
-    {
-        QMutexLocker locker(&m_mutex);
-        m_currentFrame = frame;
-    }
 
-    qApp->postEvent(this, new QEvent(QEvent::User), Qt::HighEventPriority);
+    QMutexLocker locker(&m_mutex);
+    m_currentFrame = frame;
+
+    if (!m_pendingRenderEvent)
+        qApp->postEvent(this, new QEvent(QEvent::User), Qt::HighEventPriority);
+
+    m_pendingRenderEvent = true;
 }
 
 bool QT7MovieViewRenderer::event(QEvent *event)
 {
     if (event->type() == QEvent::User) {
         QMutexLocker locker(&m_mutex);
+        m_pendingRenderEvent = false;
         if (m_surface->isActive())
             m_surface->present(m_currentFrame);
     }

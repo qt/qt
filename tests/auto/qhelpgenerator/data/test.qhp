@@ -3,7 +3,7 @@
     <metaData name="author" value="Nokia Corporation and/or its subsidiary(-ies)" />
     <metaData name="language" value="en" />
 	<virtualFolder>testFolder</virtualFolder>
-	<namespace>trolltech.com.1_0_0.test</namespace>
+	<namespace>trolltech.com.1.0.0.test</namespace>
 	<customFilter name="Custom Filter 1">
 		<filterAttribute>test</filterAttribute>
 		<filterAttribute>filter1</filterAttribute>		

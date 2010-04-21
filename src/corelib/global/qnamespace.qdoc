@@ -185,6 +185,7 @@
     left-handed mice.)
     \value RightButton     The right button.
     \value MidButton       The middle button.
+    \value MiddleButton    The middle button.
     \value XButton1        The first X button.
     \value XButton2        The second X button.
 
@@ -1255,6 +1256,10 @@
     window boundary (widget without parent or dialog) is found.
     This attribute currently has effect only on Symbian platforms
 
+    \value WA_X11DoNotAcceptFocus Asks the window manager to not give focus
+    to this top level window. This attribute has no effect on non-X11
+    platforms.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1737,6 +1742,8 @@
     \value Key_unknown
 
     \value Key_Call
+    \value Key_Camera
+    \value Key_CameraFocus
     \value Key_Context1
     \value Key_Context2
     \value Key_Context3

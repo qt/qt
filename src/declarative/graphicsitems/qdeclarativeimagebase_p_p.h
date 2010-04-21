@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <QtCore/QPointer>
 
@@ -78,6 +78,7 @@ public:
     QDeclarativeImageBase::Status status;
     QUrl url;
     qreal progress;
+    QSize sourcesize;
     bool pendingPixmapCache : 1;
     bool async : 1;
 };

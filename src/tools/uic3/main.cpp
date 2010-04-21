@@ -149,6 +149,8 @@ int runUic3(int argc, char * argv[])
                 readerOptions &= ~Ui3Reader::CustomWidgetForwardDeclarations;
             } else if (opt == "layout-names") {
                 readerOptions |= Ui3Reader::PreserveLayoutNames;
+            } else if (opt == "limit-xpm-linelength") {
+                readerOptions |= Ui3Reader::LimitXPM_LineLength;
             } else if (opt == "nounload") {
                 // skip
             } else if (opt == "convert") {
@@ -251,6 +253,7 @@ int runUic3(int argc, char * argv[])
                  "Options:\n"
                  "\t-o file            Write output to file rather than stdout\n"
                  "\t-extract qrcFile   Create resource file and extract embedded images into \"image\" dir\n"
+                 "\t-limit-xpm-linelength Limit the line length of XPM files for -extract.\n"
                  "\t-pch file          Add #include \"file\" as the first statement in implementation\n"
                  "\t-nofwd             Omit forward declarations of custom classes\n"
                  "\t-layout-names      Preserve layout names of Qt Designer 3\n"

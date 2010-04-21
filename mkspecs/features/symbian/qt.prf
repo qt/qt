@@ -22,134 +22,30 @@ load(qt)
 INCLUDEPATH = $$PREPEND_INCLUDEPATH $$INCLUDEPATH
 
 # Add dependency to Qt package to all other projects besides Qt libs.
-# Note: Qt libs with full capabilities has UID3 of 0x2001E61C,
+# Note: Qt libs package with full capabilities has UID3 of 0x2001E61C,
 #       while self-signed version typically has temporary UID3 of 0xE001E61C.
-contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C) {
-    default_deployment.pkg_prerules += \
+contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C):isEmpty(QT_LIBINFIX) {
+    pkg_depends_qt += \
         "; Default dependency to Qt libraries" \
         "(0x2001E61C), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"Qt\"}"
 
     # Projects linking to webkit need dependency to webkit
     contains(QT, webkit): {
-        default_deployment.pkg_prerules += \
+        pkg_depends_webkit += \
             "; Dependency to Qt Webkit" \
             "(0x200267C2), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtWebKit\"}"
+    } else {
+        default_deployment.pkg_prerules -= pkg_depends_webkit
     }
+} else {
+    default_deployment.pkg_prerules -= pkg_depends_webkit pkg_depends_qt
 }
 
 isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
 isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
 
-# Sis file creation
-make_cache_name = .make.cache
-!symbian-abld:!symbian-sbsv2 {
-    fixedDestdir = $$DESTDIR
-    !isEmpty(fixedDestdir):!contains(fixedDestdir, "[/\\]$"):fixedDestdir = $${fixedDestdir}/
-    contains(QMAKE_HOST.os, "Windows"):fixedDestdir = $$replace(fixedDestdir, "/", "\\")
-} else {
-    fixedDestdir =
-}
-
-sis_target.target = sis
-sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
-                          $(if $(wildcard $$make_cache_name), \
-                              $(MAKE) -f $(MAKEFILE) ok_sis MAKEFILES=$$make_cache_name \
-                          , \
-                              $(if $(QT_SIS_TARGET), \
-                                  $(MAKE) -f $(MAKEFILE) ok_sis \
-                              , \
-                                  $(MAKE) -f $(MAKEFILE) fail_sis_nocache \
-                              ) \
-                          ) \
-                      , \
-                          $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
-                      )
-
-ok_sis_target.target = ok_sis
-ok_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
-                             $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-
-target_sis_target.target = $${fixedDestdir}$${TARGET}.sis
-target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
-
-installer_sis_target.target = installer_sis
-installer_sis_target.commands = $(if $(wildcard $$basename(TARGET)_installer.pkg), \
-                                    $(MAKE) -f $(MAKEFILE) ok_installer_sis \
-                                , \
-                                    $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
-                                )
-installer_sis_target.depends = $${fixedDestdir}$${TARGET}.sis
-
-ok_installer_sis_target.target = ok_installer_sis
-ok_installer_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_installer.pkg - \
-                                       $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-
-fail_sis_nopkg_target.target = fail_sis_nopkg
-fail_sis_nopkg_target.commands = "$(error PKG file does not exist, 'sis' and 'installer_sis' target are only supported for executables or projects with DEPLOYMENT statement)"
-
-fail_sis_nocache_target.target = fail_sis_nocache
-fail_sis_nocache_target.commands = "$(error Project has to be built or QT_SIS_TARGET environment variable has to be set before calling 'SIS' target)"
-
-symbian-abld|symbian-sbsv2 {
-    # Only enable stub_sis files for the abld/sbsv2 build systems for now, since we don't
-    # support ROM builds for any other Symbian build system.
-    stub_sis_target.target = stub_sis
-    stub_sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
-                                   $(if $(wildcard $$make_cache_name), \
-                                       $(MAKE) -f $(MAKEFILE) ok_stub_sis MAKEFILES=$$make_cache_name \
-                                   , \
-                                       $(if $(QT_SIS_TARGET), \
-                                           $(MAKE) -f $(MAKEFILE) ok_stub_sis \
-                                       , \
-                                           $(MAKE) -f $(MAKEFILE) fail_sis_nocache \
-                                       ) \
-                                   ) \
-                               , \
-                                   $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
-                               )
-
-    ok_stub_sis_target.target = ok_stub_sis
-    ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
-                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-
-    QMAKE_EXTRA_TARGETS += stub_sis_target \
-                           ok_stub_sis_target
-} else {
-    # DESTDIR is not honored on abld and sbsv2
-    !isEmpty(DESTDIR) {
-        ok_sis_target.commands += && $$QMAKE_MOVE $$basename(TARGET).sis $$DESTDIR
-        ok_installer_sis_target.commands += && $$QMAKE_MOVE $$basename(TARGET).sis $$DESTDIR
-    }
-}
-
-QMAKE_EXTRA_TARGETS += sis_target \
-                       ok_sis_target \
-                       target_sis_target \
-                       installer_sis_target \
-                       ok_installer_sis_target \
-                       fail_sis_nopkg_target \
-                       fail_sis_nocache_target
-
-# Sbsv2 has its own store_build target which is using flms.
-!symbian-sbsv2 {
-    contains(QMAKE_HOST.os, "Windows") {
-        shellFixedHash = $${LITERAL_HASH}
-    } else {
-        shellFixedHash = \\$${LITERAL_HASH}
-    }
-    store_build_target.target = store_build
-    store_build_target.commands = \
-          @echo $${shellFixedHash} ============================================================================== > $$make_cache_name \
-        && echo $${shellFixedHash}   This file is generated by make and should not be modified by the user >> $$make_cache_name \
-        && echo $${shellFixedHash}  Name        : $$make_cache_name >> $$make_cache_name \
-        && echo $${shellFixedHash}  Part of     : lineedits >> $$make_cache_name \
-        && echo $${shellFixedHash}  Description : This file is used to cache last build target for >> $$make_cache_name \
-        && echo $${shellFixedHash}                make sis target. >> $$make_cache_name \
-        && echo $${shellFixedHash}  Version     :  >> $$make_cache_name \
-        && echo $${shellFixedHash} >> $$make_cache_name \
-        && echo $${shellFixedHash} ============================================================================== >> $$make_cache_name \
-        && echo. >> $$make_cache_name \
-        && echo QT_SIS_TARGET ?= $(QT_SIS_TARGET) >> $$make_cache_name
-
-    QMAKE_EXTRA_TARGETS += store_build_target
+# Workaround for the fact that Gnupoc and Symbian chose different approaches to
+# the letter casing of headers.
+contains(CONFIG, is_using_gnupoc) {
+    INCLUDEPATH += $${PWD}/../../common/symbian/header-wrappers
 }

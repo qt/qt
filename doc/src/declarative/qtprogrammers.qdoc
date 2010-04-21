@@ -65,7 +65,7 @@ QML provides direct access to the following concepts from Qt:
  \o Qt models - used directly in data binding (QAbstractItemModel and next generation QListModelInterface)
 \endlist
 
-Qt knowledge is \e required for \l {Extending QML}, and also for \l{Integrating QML with existing Qt UI code}.
+Qt knowledge is \e required for \l {Extending QML in C++}, and also for \l{Integrating QML with existing Qt UI code}.
 
 \section1 QML Items compared with QWidgets
 

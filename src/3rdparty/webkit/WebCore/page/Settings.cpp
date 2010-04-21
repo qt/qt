@@ -26,6 +26,8 @@
 #include "config.h"
 #include "Settings.h"
 
+#include "BackForwardList.h"
+#include "Database.h"
 #include "Frame.h"
 #include "FrameTree.h"
 #include "FrameView.h"
@@ -48,7 +50,7 @@ static void setNeedsReapplyStylesInAllFrames(Page* page)
 bool Settings::gShouldPaintNativeControls = true;
 #endif
 
-#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
+#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
 bool Settings::gShouldUseHighResolutionTimers = true;
 #endif
 
@@ -63,17 +65,19 @@ Settings::Settings(Page* page)
     , m_maximumDecodedImageSize(numeric_limits<size_t>::max())
     , m_localStorageQuota(5 * 1024 * 1024)  // Suggested by the HTML5 spec.
     , m_pluginAllowedRunTime(numeric_limits<unsigned>::max())
+    , m_zoomMode(ZoomPage)
+    , m_isSpatialNavigationEnabled(false)
     , m_isJavaEnabled(false)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
     , m_caretBrowsingEnabled(false)
+    , m_areImagesEnabled(true)
     , m_arePluginsEnabled(false)
-    , m_databasesEnabled(false)
     , m_localStorageEnabled(false)
-    , m_sessionStorageEnabled(true)
     , m_isJavaScriptEnabled(false)
     , m_isWebSecurityEnabled(true)
     , m_allowUniversalAccessFromFileURLs(true)
+    , m_allowFileAccessFromFileURLs(true)
     , m_javaScriptCanOpenWindowsAutomatically(false)
     , m_shouldPrintBackgrounds(false)
     , m_textAreasAreResizable(false)
@@ -94,17 +98,17 @@ Settings::Settings(Page* page)
     , m_authorAndUserStylesEnabled(true)
     , m_needsSiteSpecificQuirks(false)
     , m_fontRenderingMode(0)
+    , m_frameFlatteningEnabled(false)
     , m_webArchiveDebugModeEnabled(false)
     , m_localFileContentSniffingEnabled(false)
     , m_inApplicationChromeMode(false)
     , m_offlineWebApplicationCacheEnabled(false)
     , m_shouldPaintCustomScrollbars(false)
-    , m_zoomsTextOnly(false)
     , m_enforceCSSMIMETypeInStrictMode(true)
     , m_usesEncodingDetector(false)
     , m_allowScriptsToCloseWindows(false)
     , m_editingBehavior(
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
         // (PLATFORM(MAC) is always false in Chromium, hence the extra condition.)
         EditingMacBehavior
 #else
@@ -116,8 +120,12 @@ Settings::Settings(Page* page)
     , m_downloadableBinaryFontsEnabled(true)
     , m_xssAuditorEnabled(false)
     , m_acceleratedCompositingEnabled(true)
+    , m_showDebugBorders(false)
+    , m_showRepaintCounter(false)
     , m_experimentalNotificationsEnabled(false)
     , m_webGLEnabled(false)
+    , m_loadDeferringEnabled(true)
+    , m_tiledBackingStoreEnabled(false)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -234,9 +242,24 @@ void Settings::setAllowUniversalAccessFromFileURLs(bool allowUniversalAccessFrom
     m_allowUniversalAccessFromFileURLs = allowUniversalAccessFromFileURLs;
 }
 
+void Settings::setAllowFileAccessFromFileURLs(bool allowFileAccessFromFileURLs)
+{
+    m_allowFileAccessFromFileURLs = allowFileAccessFromFileURLs;
+}
+
+void Settings::setSpatialNavigationEnabled(bool isSpatialNavigationEnabled)
+{
+    m_isSpatialNavigationEnabled = isSpatialNavigationEnabled;
+}
+
 void Settings::setJavaEnabled(bool isJavaEnabled)
 {
     m_isJavaEnabled = isJavaEnabled;
+}
+
+void Settings::setImagesEnabled(bool areImagesEnabled)
+{
+    m_areImagesEnabled = areImagesEnabled;
 }
 
 void Settings::setPluginsEnabled(bool arePluginsEnabled)
@@ -244,19 +267,9 @@ void Settings::setPluginsEnabled(bool arePluginsEnabled)
     m_arePluginsEnabled = arePluginsEnabled;
 }
 
-void Settings::setDatabasesEnabled(bool databasesEnabled)
-{
-    m_databasesEnabled = databasesEnabled;
-}
-
 void Settings::setLocalStorageEnabled(bool localStorageEnabled)
 {
     m_localStorageEnabled = localStorageEnabled;
-}
-
-void Settings::setSessionStorageEnabled(bool sessionStorageEnabled)
-{
-    m_sessionStorageEnabled = sessionStorageEnabled;
 }
 
 void Settings::setLocalStorageQuota(unsigned localStorageQuota)
@@ -266,7 +279,11 @@ void Settings::setLocalStorageQuota(unsigned localStorageQuota)
 
 void Settings::setPrivateBrowsingEnabled(bool privateBrowsingEnabled)
 {
+    if (m_privateBrowsingEnabled == privateBrowsingEnabled)
+        return;
+
     m_privateBrowsingEnabled = privateBrowsingEnabled;
+    m_page->privateBrowsingStateChanged();
 }
 
 void Settings::setJavaScriptCanOpenWindowsAutomatically(bool javaScriptCanOpenWindowsAutomatically)
@@ -421,6 +438,11 @@ void Settings::setNeedsSiteSpecificQuirks(bool needsQuirks)
     m_needsSiteSpecificQuirks = needsQuirks;
 }
 
+void Settings::setFrameFlatteningEnabled(bool frameFlatteningEnabled)
+{
+    m_frameFlatteningEnabled = frameFlatteningEnabled;
+}
+
 void Settings::setWebArchiveDebugModeEnabled(bool enabled)
 {
     m_webArchiveDebugModeEnabled = enabled;
@@ -451,12 +473,12 @@ void Settings::setShouldPaintCustomScrollbars(bool shouldPaintCustomScrollbars)
     m_shouldPaintCustomScrollbars = shouldPaintCustomScrollbars;
 }
 
-void Settings::setZoomsTextOnly(bool zoomsTextOnly)
+void Settings::setZoomMode(ZoomMode mode)
 {
-    if (zoomsTextOnly == m_zoomsTextOnly)
+    if (mode == m_zoomMode)
         return;
     
-    m_zoomsTextOnly = zoomsTextOnly;
+    m_zoomMode = mode;
     setNeedsReapplyStylesInAllFrames(m_page);
 }
 
@@ -506,6 +528,24 @@ void Settings::setAcceleratedCompositingEnabled(bool enabled)
     setNeedsReapplyStylesInAllFrames(m_page);
 }
 
+void Settings::setShowDebugBorders(bool enabled)
+{
+    if (m_showDebugBorders == enabled)
+        return;
+        
+    m_showDebugBorders = enabled;
+    setNeedsReapplyStylesInAllFrames(m_page);
+}
+
+void Settings::setShowRepaintCounter(bool enabled)
+{
+    if (m_showRepaintCounter == enabled)
+        return;
+        
+    m_showRepaintCounter = enabled;
+    setNeedsReapplyStylesInAllFrames(m_page);
+}
+
 void Settings::setExperimentalNotificationsEnabled(bool enabled)
 {
     m_experimentalNotificationsEnabled = enabled;
@@ -517,7 +557,7 @@ void Settings::setPluginAllowedRunTime(unsigned runTime)
     m_page->pluginAllowedRunTimeChanged();
 }
 
-#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
+#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
 void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTimers)
 {
     gShouldUseHighResolutionTimers = shouldUseHighResolutionTimers;
@@ -527,6 +567,20 @@ void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTime
 void Settings::setWebGLEnabled(bool enabled)
 {
     m_webGLEnabled = enabled;
+}
+
+void Settings::setLoadDeferringEnabled(bool enabled)
+{
+    m_loadDeferringEnabled = enabled;
+}
+
+void Settings::setTiledBackingStoreEnabled(bool enabled)
+{
+    m_tiledBackingStoreEnabled = enabled;
+#if ENABLE(TILED_BACKING_STORE)
+    if (m_page->mainFrame())
+        m_page->mainFrame()->setTiledBackingStoreEnabled(enabled);
+#endif
 }
 
 } // namespace WebCore

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qglobal.h>
 
@@ -103,7 +103,16 @@ public:
         QDeclarativeCompositeTypeData *unit;
     };
 
+    struct ScriptReference 
+    {
+        ScriptReference();
+
+        QString qualifier;
+        QDeclarativeCompositeTypeResource *resource;
+    };
+
     QList<TypeReference> types;
+    QList<ScriptReference> scripts;
     QList<QDeclarativeCompositeTypeResource *> resources;
 
     // Add or remove p as a waiter.  When the QDeclarativeCompositeTypeData becomes

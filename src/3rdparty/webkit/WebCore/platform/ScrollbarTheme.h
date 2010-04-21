@@ -36,7 +36,7 @@ class PlatformMouseEvent;
 class Scrollbar;
 class ScrollView;
 
-class ScrollbarTheme {
+class ScrollbarTheme : public Noncopyable {
 public:
     virtual ~ScrollbarTheme() {};
 
@@ -73,7 +73,7 @@ public:
 
     virtual void invalidatePart(Scrollbar*, ScrollbarPart) {}
 
-    virtual void paintScrollCorner(ScrollView*, GraphicsContext* context, const IntRect& cornerRect) { context->fillRect(cornerRect, Color::white); }
+    virtual void paintScrollCorner(ScrollView*, GraphicsContext* context, const IntRect& cornerRect) { context->fillRect(cornerRect, Color::white, DeviceColorSpace); }
 
     virtual bool shouldCenterOnThumb(Scrollbar*, const PlatformMouseEvent&) { return false; }
     virtual bool shouldSnapBackToDragOrigin(Scrollbar*, const PlatformMouseEvent&) { return false; }
@@ -81,7 +81,9 @@ public:
     virtual int thumbLength(Scrollbar*) { return 0; } // The length of the thumb along the axis of the scrollbar.
     virtual int trackPosition(Scrollbar*) { return 0; } // The position of the track relative to the scrollbar.
     virtual int trackLength(Scrollbar*) { return 0; } // The length of the track along the axis of the scrollbar.
-    
+
+    virtual int maxOverlapBetweenPages() { return std::numeric_limits<int>::max(); }
+
     virtual double initialAutoscrollTimerDelay() { return 0.25; }
     virtual double autoscrollTimerDelay() { return 0.05; }
 

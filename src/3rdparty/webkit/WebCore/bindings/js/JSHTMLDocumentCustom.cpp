@@ -55,9 +55,9 @@ bool JSHTMLDocument::canGetItemsForName(ExecState*, HTMLDocument* document, cons
     return atomicPropertyName && (document->hasNamedItem(atomicPropertyName) || document->hasExtraNamedItem(atomicPropertyName));
 }
 
-JSValue JSHTMLDocument::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSHTMLDocument::nameGetter(ExecState* exec, JSValue slotBase, const Identifier& propertyName)
 {
-    JSHTMLDocument* thisObj = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
+    JSHTMLDocument* thisObj = static_cast<JSHTMLDocument*>(asObject(slotBase));
     HTMLDocument* document = static_cast<HTMLDocument*>(thisObj->impl());
 
     String name = propertyName;
@@ -113,7 +113,7 @@ JSValue JSHTMLDocument::open(ExecState* exec, const ArgList& args)
                 CallType callType = function.getCallData(callData);
                 if (callType == CallTypeNone)
                     return throwError(exec, TypeError);
-                return callInWorld(exec, function, callType, callData, wrapper, args, currentWorld(exec));
+                return JSC::call(exec, function, callType, callData, wrapper, args);
             }
         }
         return jsUndefined();

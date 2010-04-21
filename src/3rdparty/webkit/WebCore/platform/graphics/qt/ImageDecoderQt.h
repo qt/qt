@@ -33,6 +33,7 @@
 #include <QtCore/QList>
 #include <QtCore/QHash>
 #include <QtCore/QBuffer>
+#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 
@@ -60,14 +61,14 @@ private:
 private:
     void internalDecodeSize();
     void internalReadImage(size_t);
-    void internalHandleCurrentImage(size_t);
+    bool internalHandleCurrentImage(size_t);
     void forceLoadEverything();
-    void failRead();
+    void clearPointers();
 
 private:
     QByteArray m_format;
-    QBuffer* m_buffer;
-    QImageReader* m_reader;
+    OwnPtr<QBuffer> m_buffer;
+    OwnPtr<QImageReader> m_reader;
     mutable int m_repetitionCount;
 };
 

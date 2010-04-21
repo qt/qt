@@ -405,7 +405,7 @@ EXPORTS
 	?addPropertyWatch@QMediaObject@@IAEXABVQByteArray@@@Z @ 404 NONAME ; void QMediaObject::addPropertyWatch(class QByteArray const &)
 	?addTimeRange@QMediaTimeRange@@QAEXABV1@@Z @ 405 NONAME ; void QMediaTimeRange::addTimeRange(class QMediaTimeRange const &)
 	?aspectRatioMode@QGraphicsVideoItem@@QBE?AW4AspectRatioMode@Qt@@XZ @ 406 NONAME ; enum Qt::AspectRatioMode QGraphicsVideoItem::aspectRatioMode(void) const
-	?aspectRatioMode@QVideoWidget@@QBE?AW4AspectRatioMode@1@XZ @ 407 NONAME ; enum QVideoWidget::AspectRatioMode QVideoWidget::aspectRatioMode(void) const
+	?aspectRatioMode@QVideoWidget@@QBE?AW4AspectRatioMode@1@XZ @ 407 NONAME ABSENT ; enum QVideoWidget::AspectRatioMode QVideoWidget::aspectRatioMode(void) const
 	?audioAvailableChanged@QMediaPlayer@@IAEX_N@Z @ 408 NONAME ; void QMediaPlayer::audioAvailableChanged(bool)
 	?audioAvailableChanged@QMediaPlayerControl@@IAEX_N@Z @ 409 NONAME ; void QMediaPlayerControl::audioAvailableChanged(bool)
 	?audioBitRate@QMediaResource@@QBEHXZ @ 410 NONAME ; int QMediaResource::audioBitRate(void) const
@@ -660,7 +660,7 @@ EXPORTS
 	?previousIndex@QMediaPlaylist@@QBEHH@Z @ 659 NONAME ; int QMediaPlaylist::previousIndex(int) const
 	?previousIndex@QMediaPlaylistNavigator@@QBEHH@Z @ 660 NONAME ; int QMediaPlaylistNavigator::previousIndex(int) const
 	?previousItem@QMediaPlaylistNavigator@@QBE?AVQMediaContent@@H@Z @ 661 NONAME ; class QMediaContent QMediaPlaylistNavigator::previousItem(int) const
-	?qRegisterDeclarativeElements@QtMultimedia@@YAXPBD@Z @ 662 NONAME ; void QtMultimedia::qRegisterDeclarativeElements(char const *)
+	?qRegisterDeclarativeElements@QtMultimedia@@YAXPBD@Z @ 662 NONAME ABSENT ; void QtMultimedia::qRegisterDeclarativeElements(char const *)
 	?qt_metacall@QGraphicsVideoItem@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 663 NONAME ; int QGraphicsVideoItem::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?qt_metacall@QLocalMediaPlaylistProvider@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 664 NONAME ; int QLocalMediaPlaylistProvider::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?qt_metacall@QMediaControl@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 665 NONAME ; int QMediaControl::qt_metacall(enum QMetaObject::Call, int, void * *)
@@ -736,7 +736,7 @@ EXPORTS
 	?selectedDeviceChanged@QVideoDeviceControl@@IAEXH@Z @ 735 NONAME ; void QVideoDeviceControl::selectedDeviceChanged(int)
 	?service@QMediaObject@@UBEPAVQMediaService@@XZ @ 736 NONAME ; class QMediaService * QMediaObject::service(void) const
 	?setAspectRatioMode@QGraphicsVideoItem@@QAEXW4AspectRatioMode@Qt@@@Z @ 737 NONAME ; void QGraphicsVideoItem::setAspectRatioMode(enum Qt::AspectRatioMode)
-	?setAspectRatioMode@QVideoWidget@@QAEXW4AspectRatioMode@1@@Z @ 738 NONAME ; void QVideoWidget::setAspectRatioMode(enum QVideoWidget::AspectRatioMode)
+	?setAspectRatioMode@QVideoWidget@@QAEXW4AspectRatioMode@1@@Z @ 738 NONAME ABSENT ; void QVideoWidget::setAspectRatioMode(enum QVideoWidget::AspectRatioMode)
 	?setAudioBitRate@QMediaResource@@QAEXH@Z @ 739 NONAME ; void QMediaResource::setAudioBitRate(int)
 	?setAudioCodec@QMediaResource@@QAEXABVQString@@@Z @ 740 NONAME ; void QMediaResource::setAudioCodec(class QString const &)
 	?setBrightness@QPainterVideoSurface@@QAEXH@Z @ 741 NONAME ; void QPainterVideoSurface::setBrightness(int)
@@ -919,4 +919,33 @@ EXPORTS
 	?staticMetaObject@QPainterVideoSurface@@2UQMetaObject@@B @ 918 NONAME ; struct QMetaObject const QPainterVideoSurface::staticMetaObject
 	?staticMetaObject@QMediaPlaylistIOPlugin@@2UQMetaObject@@B @ 919 NONAME ; struct QMetaObject const QMediaPlaylistIOPlugin::staticMetaObject
 	?staticMetaObject@QGraphicsVideoItem@@2UQMetaObject@@B @ 920 NONAME ; struct QMetaObject const QGraphicsVideoItem::staticMetaObject
+	??0QSoundEffect@@QAE@PAVQObject@@@Z @ 921 NONAME ; QSoundEffect::QSoundEffect(class QObject *)
+	??1QSoundEffect@@UAE@XZ @ 922 NONAME ; QSoundEffect::~QSoundEffect(void)
+	??_EQSoundEffect@@UAE@I@Z @ 923 NONAME ; QSoundEffect::~QSoundEffect(unsigned int)
+	?aspectRatioMode@QVideoWidget@@QBE?AW4AspectRatioMode@Qt@@XZ @ 924 NONAME ; enum Qt::AspectRatioMode QVideoWidget::aspectRatioMode(void) const
+	?getStaticMetaObject@QSoundEffect@@SAABUQMetaObject@@XZ @ 925 NONAME ; struct QMetaObject const & QSoundEffect::getStaticMetaObject(void)
+	?isMuted@QSoundEffect@@QBE_NXZ @ 926 NONAME ; bool QSoundEffect::isMuted(void) const
+	?loops@QSoundEffect@@QBEHXZ @ 927 NONAME ; int QSoundEffect::loops(void) const
+	?loopsChanged@QSoundEffect@@IAEXXZ @ 928 NONAME ; void QSoundEffect::loopsChanged(void)
+	?metaObject@QSoundEffect@@UBEPBUQMetaObject@@XZ @ 929 NONAME ; struct QMetaObject const * QSoundEffect::metaObject(void) const
+	?mutedChanged@QSoundEffect@@IAEXXZ @ 930 NONAME ; void QSoundEffect::mutedChanged(void)
+	?play@QSoundEffect@@QAEXXZ @ 931 NONAME ; void QSoundEffect::play(void)
+	?qt_metacall@QSoundEffect@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 932 NONAME ; int QSoundEffect::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QSoundEffect@@UAEPAXPBD@Z @ 933 NONAME ; void * QSoundEffect::qt_metacast(char const *)
+	?setAspectRatioMode@QVideoWidget@@QAEXW4AspectRatioMode@Qt@@@Z @ 934 NONAME ; void QVideoWidget::setAspectRatioMode(enum Qt::AspectRatioMode)
+	?setLoops@QSoundEffect@@QAEXH@Z @ 935 NONAME ; void QSoundEffect::setLoops(int)
+	?setMuted@QSoundEffect@@QAEX_N@Z @ 936 NONAME ; void QSoundEffect::setMuted(bool)
+	?setSource@QSoundEffect@@QAEXABVQUrl@@@Z @ 937 NONAME ; void QSoundEffect::setSource(class QUrl const &)
+	?setVolume@QSoundEffect@@QAEXH@Z @ 938 NONAME ; void QSoundEffect::setVolume(int)
+	?source@QSoundEffect@@QBE?AVQUrl@@XZ @ 939 NONAME ; class QUrl QSoundEffect::source(void) const
+	?sourceChanged@QSoundEffect@@IAEXXZ @ 940 NONAME ; void QSoundEffect::sourceChanged(void)
+	?tr@QSoundEffect@@SA?AVQString@@PBD0@Z @ 941 NONAME ; class QString QSoundEffect::tr(char const *, char const *)
+	?tr@QSoundEffect@@SA?AVQString@@PBD0H@Z @ 942 NONAME ; class QString QSoundEffect::tr(char const *, char const *, int)
+	?trUtf8@QSoundEffect@@SA?AVQString@@PBD0@Z @ 943 NONAME ; class QString QSoundEffect::trUtf8(char const *, char const *)
+	?trUtf8@QSoundEffect@@SA?AVQString@@PBD0H@Z @ 944 NONAME ; class QString QSoundEffect::trUtf8(char const *, char const *, int)
+	?volume@QSoundEffect@@QBEHXZ @ 945 NONAME ; int QSoundEffect::volume(void) const
+	?volumeChanged@QSoundEffect@@IAEXXZ @ 946 NONAME ; void QSoundEffect::volumeChanged(void)
+	?staticMetaObject@QSoundEffect@@2UQMetaObject@@B @ 947 NONAME ; struct QMetaObject const QSoundEffect::staticMetaObject
+	?event@QGraphicsVideoItem@@MAE_NPAVQEvent@@@Z @ 948 NONAME ; bool QGraphicsVideoItem::event(class QEvent *)
+	?sceneEvent@QGraphicsVideoItem@@MAE_NPAVQEvent@@@Z @ 949 NONAME ; bool QGraphicsVideoItem::sceneEvent(class QEvent *)
 

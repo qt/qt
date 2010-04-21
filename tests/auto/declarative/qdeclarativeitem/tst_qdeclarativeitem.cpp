@@ -60,6 +60,12 @@ private slots:
     void clip();
     void mapCoordinates();
     void mapCoordinates_data();
+    void propertyChanges();
+    void transforms();
+    void transforms_data();
+
+    void childrenProperty();
+    void resourcesProperty();
 
 private:
     template<typename T>
@@ -119,7 +125,7 @@ void tst_QDeclarativeItem::keys()
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keystest.qml"));
     canvas->show();
     qApp->processEvents();
 
@@ -214,7 +220,7 @@ void tst_QDeclarativeItem::keyNavigation()
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigationtest.qml"));
     canvas->show();
     qApp->processEvents();
 
@@ -287,9 +293,9 @@ void tst_QDeclarativeItem::keyNavigation()
 void tst_QDeclarativeItem::smooth()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Item { smooth: false; }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
-    QSignalSpy spy(item, SIGNAL(smoothChanged()));
+    QSignalSpy spy(item, SIGNAL(smoothChanged(bool)));
 
     QVERIFY(item);
     QVERIFY(!item->smooth());
@@ -297,6 +303,10 @@ void tst_QDeclarativeItem::smooth()
     item->setSmooth(true);
     QVERIFY(item->smooth());
     QCOMPARE(spy.count(),1);
+    QList<QVariant> arguments = spy.first();
+    QVERIFY(arguments.count() == 1);
+    QVERIFY(arguments.at(0).toBool() == true);
+
     item->setSmooth(true);
     QCOMPARE(spy.count(),1);
 
@@ -312,15 +322,20 @@ void tst_QDeclarativeItem::smooth()
 void tst_QDeclarativeItem::clip()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\nItem { clip: false\n }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
-    QSignalSpy spy(item, SIGNAL(clipChanged()));
+    QSignalSpy spy(item, SIGNAL(clipChanged(bool)));
 
     QVERIFY(item);
     QVERIFY(!item->clip());
 
     item->setClip(true);
     QVERIFY(item->clip());
+
+    QList<QVariant> arguments = spy.first();
+    QVERIFY(arguments.count() == 1);
+    QVERIFY(arguments.at(0).toBool() == true);
+
     QCOMPARE(spy.count(),1);
     item->setClip(true);
     QCOMPARE(spy.count(),1);
@@ -390,6 +405,133 @@ void tst_QDeclarativeItem::mapCoordinates_data()
 
     for (int i=-20; i<=20; i+=10)
         QTest::newRow(QTest::toString(i)) << i << i;
+}
+
+void tst_QDeclarativeItem::transforms_data()
+{
+    QTest::addColumn<QByteArray>("qml");
+    QTest::addColumn<QMatrix>("matrix");
+    QTest::newRow("translate") << QByteArray("Translate { x: 10; y: 20 }")
+        << QMatrix(1,0,0,1,10,20);
+    QTest::newRow("rotation") << QByteArray("Rotation { angle: 90 }")
+        << QMatrix(0,1,-1,0,0,0);
+    QTest::newRow("scale") << QByteArray("Scale { xScale: 1.5; yScale: -2  }")
+        << QMatrix(1.5,0,0,-2,0,0);
+    QTest::newRow("sequence") << QByteArray("[ Translate { x: 10; y: 20 }, Scale { xScale: 1.5; yScale: -2  } ]")
+        << QMatrix(1,0,0,1,10,20) * QMatrix(1.5,0,0,-2,0,0);
+}
+
+void tst_QDeclarativeItem::transforms()
+{
+    QFETCH(QByteArray, qml);
+    QFETCH(QMatrix, matrix);
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.7\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(item->sceneMatrix(), matrix);
+}
+
+void tst_QDeclarativeItem::childrenProperty()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/childrenProperty.qml");
+    
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    delete o;
+}
+
+void tst_QDeclarativeItem::resourcesProperty()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/resourcesProperty.qml");
+    
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    delete o;
+}
+
+void tst_QDeclarativeItem::propertyChanges()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    canvas->show();
+
+    QEvent wa(QEvent::WindowActivate);
+    QApplication::sendEvent(canvas, &wa);
+    QFocusEvent fe(QEvent::FocusIn);
+    QApplication::sendEvent(canvas, &fe);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "item");
+    QDeclarativeItem *parentItem = findItem<QDeclarativeItem>(canvas->rootObject(), "parentItem");
+
+    QVERIFY(item);
+    QVERIFY(parentItem);
+
+    QSignalSpy parentSpy(item, SIGNAL(parentChanged(QDeclarativeItem *)));
+    QSignalSpy widthSpy(item, SIGNAL(widthChanged()));
+    QSignalSpy heightSpy(item, SIGNAL(heightChanged()));
+    QSignalSpy baselineOffsetSpy(item, SIGNAL(baselineOffsetChanged(qreal)));
+    QSignalSpy childrenRectSpy(parentItem, SIGNAL(childrenRectChanged(QRectF)));
+    QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
+    QSignalSpy wantsFocusSpy(parentItem, SIGNAL(wantsFocusChanged(bool)));
+
+    item->setParentItem(parentItem);
+    item->setWidth(100.0);
+    item->setHeight(200.0);
+    item->setFocus(true);
+    item->setBaselineOffset(10.0);
+
+    QCOMPARE(item->parentItem(), parentItem);
+    QCOMPARE(parentSpy.count(),1);
+    QList<QVariant> parentArguments = parentSpy.first();
+    QVERIFY(parentArguments.count() == 1);
+    QCOMPARE(item->parentItem(), qvariant_cast<QDeclarativeItem *>(parentArguments.at(0)));
+
+    QCOMPARE(item->width(), 100.0);
+    QCOMPARE(widthSpy.count(),1);
+
+    QCOMPARE(item->height(), 200.0);
+    QCOMPARE(heightSpy.count(),1);
+
+    QCOMPARE(item->baselineOffset(), 10.0);
+    QCOMPARE(baselineOffsetSpy.count(),1);
+    QList<QVariant> baselineOffsetArguments = baselineOffsetSpy.first();
+    QVERIFY(baselineOffsetArguments.count() == 1);
+    QCOMPARE(item->baselineOffset(), baselineOffsetArguments.at(0).toReal());
+
+    QCOMPARE(parentItem->childrenRect(), QRectF(0.0,0.0,100.0,200.0));
+    QCOMPARE(childrenRectSpy.count(),2);
+    QList<QVariant> childrenRectArguments = childrenRectSpy.at(1);
+    QVERIFY(childrenRectArguments.count() == 1);
+    QCOMPARE(parentItem->childrenRect(), childrenRectArguments.at(0).toRectF());
+
+    QCOMPARE(item->hasFocus(), true);
+    QCOMPARE(focusSpy.count(),1);
+    QList<QVariant> focusArguments = focusSpy.first();
+    QVERIFY(focusArguments.count() == 1);
+    QCOMPARE(focusArguments.at(0).toBool(), true);
+
+    QCOMPARE(parentItem->hasFocus(), false);
+    QCOMPARE(parentItem->wantsFocus(), true);
+    QCOMPARE(wantsFocusSpy.count(),1);
+    QList<QVariant> wantsFocusArguments = wantsFocusSpy.first();
+    QVERIFY(wantsFocusArguments.count() == 1);
+    QCOMPARE(wantsFocusArguments.at(0).toBool(), true);
+
+    delete canvas;
 }
 
 template<typename T>

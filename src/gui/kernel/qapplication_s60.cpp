@@ -52,6 +52,7 @@
 #include "qstring.h"
 #include "qdebug.h"
 #include "qimage.h"
+#include "qcombobox.h"
 #include "private/qkeymapper_p.h"
 #include "private/qfont_p.h"
 #ifndef QT_NO_STYLE_S60
@@ -371,8 +372,13 @@ QSymbianControl::~QSymbianControl()
 {
     if (S60->curWin == this)
         S60->curWin = 0;
-    if (!QApplicationPrivate::is_app_closing)
-        setFocusSafely(false);
+    if (!QApplicationPrivate::is_app_closing) {
+        QT_TRY {
+            setFocusSafely(false);
+        } QT_CATCH(const std::exception&) {
+            // ignore exceptions, nothing can be done
+        }
+    }
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -988,7 +994,7 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
-        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
+        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
             QWidget *fw = QApplication::focusWidget();
             if (fw) {
                 QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
@@ -1003,16 +1009,32 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
+void QSymbianControl::handleClientAreaChange()
+{
+    const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+    if (qwidget->isFullScreen() && !cbaVisibilityHint) {
+        SetExtentToWholeScreen();
+    } else if (qwidget->isMaximized() || (qwidget->isFullScreen() && cbaVisibilityHint)) {
+        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        SetExtent(r.iTl, r.Size());
+    } else if (!qwidget->isMinimized()) { // Normal geometry
+        if (!qwidget->testAttribute(Qt::WA_Resized)) {
+            qwidget->adjustSize();
+            qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
+        }
+        if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
+            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            SetPosition(r.iTl);
+            qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
+        }
+    }
+}
+
 void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
-        if (qwidget->isFullScreen()) {
-            SetExtentToWholeScreen();
-        } else if (qwidget->isMaximized()) {
-            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-            SetExtent(r.iTl, r.Size());
-        }
+        handleClientAreaChange();
         if (IsFocused() && IsVisible()) {
             qwidget->d_func()->setWindowIcon_sys(true);
             qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
@@ -1024,22 +1046,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
     {
-        if (qwidget->isFullScreen()) {
-            SetExtentToWholeScreen();
-        } else if (qwidget->isMaximized()) {
-            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-            SetExtent(r.iTl, r.Size());
-        } else if (!qwidget->isMinimized()){ // Normal geometry
-            if (!qwidget->testAttribute(Qt::WA_Resized)) {
-                qwidget->adjustSize();
-                qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
-            }
-            if (!qwidget->testAttribute(Qt::WA_Moved) && qwidget->windowType() != Qt::Dialog) {
-                TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-                SetPosition(r.iTl);
-                qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
-            }
-        }
+        handleClientAreaChange();
         break;
     }
 #endif
@@ -1237,6 +1244,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     }
 
     S60->avkonComponentsSupportTransparency = false;
+    S60->menuBeingConstructed = false;
 
 #ifdef Q_WS_S60
     TUid KCRUidAvkon = { 0x101F876E };
@@ -1254,11 +1262,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     }
 #endif
 
+#ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
     } else {
         QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
     }
+#endif
 
 #ifndef QT_NO_CURSOR
     //Check if window server pointer cursors are supported or not
@@ -1407,10 +1417,12 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 
 void QApplicationPrivate::openPopup(QWidget *popup)
 {
+    if (popup && qobject_cast<QComboBox *>(popup->parentWidget()))
+        static_cast<QSymbianControl *>(popup->effectiveWinId())->FadeBehindPopup(ETrue);
+
     if (!QApplicationPrivate::popupWidgets)
         QApplicationPrivate::popupWidgets = new QWidgetList;
     QApplicationPrivate::popupWidgets->append(popup);
-
 
     // Cancel focus widget pointer capture and long tap timer
     if (QApplication::focusWidget()) {
@@ -1450,6 +1462,9 @@ void QApplicationPrivate::openPopup(QWidget *popup)
 
 void QApplicationPrivate::closePopup(QWidget *popup)
 {
+    if (popup && qobject_cast<QComboBox *>(popup->parentWidget()))
+        static_cast<QSymbianControl *>(popup->effectiveWinId())->FadeBehindPopup(EFalse);
+
     if (!QApplicationPrivate::popupWidgets)
         return;
     QApplicationPrivate::popupWidgets->removeAll(popup);

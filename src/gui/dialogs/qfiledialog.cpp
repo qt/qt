@@ -723,9 +723,19 @@ void QFileDialog::setVisible(bool visible)
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
             setAttribute(Qt::WA_DontShowOnScreen);
+#ifndef QT_NO_FSCOMPLETER
+            //So the completer don't try to complete and therefore to show a popup
+            d->completer->setModel(0);
+#endif
         } else {
             d->nativeDialogInUse = false;
             setAttribute(Qt::WA_DontShowOnScreen, false);
+#ifndef QT_NO_FSCOMPLETER
+            if (d->proxyModel != 0)
+                d->completer->setModel(d->proxyModel);
+            else
+                d->completer->setModel(d->model);
+#endif
         }
     }
 

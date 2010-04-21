@@ -52,6 +52,16 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_STYLE_S60)
 
+//Public custom pixel metrics values.
+//These can be used to fetch custom pixel metric value from outside QS60Style.
+enum {
+    PM_FrameCornerWidth = QStyle::PM_CustomBase + 1,
+    PM_FrameCornerHeight,
+    PM_BoldLineWidth,
+    PM_ThinLineWidth,
+    PM_MessageBoxHeight
+    };
+
 class QS60StylePrivate;
 
 class Q_GUI_EXPORT QS60Style : public QCommonStyle

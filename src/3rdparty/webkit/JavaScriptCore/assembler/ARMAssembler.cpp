@@ -26,46 +26,13 @@
 
 #include "config.h"
 
-#if ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
+#if ENABLE(ASSEMBLER) && CPU(ARM_TRADITIONAL)
 
 #include "ARMAssembler.h"
 
 namespace JSC {
 
 // Patching helpers
-
-ARMWord* ARMAssembler::getLdrImmAddress(ARMWord* insn, uint32_t* constPool)
-{
-    // Must be an ldr ..., [pc +/- imm]
-    ASSERT((*insn & 0x0f7f0000) == 0x051f0000);
-
-    if (constPool && (*insn & 0x1))
-        return reinterpret_cast<ARMWord*>(constPool + ((*insn & SDT_OFFSET_MASK) >> 1));
-
-    ARMWord addr = reinterpret_cast<ARMWord>(insn) + 2 * sizeof(ARMWord);
-    if (*insn & DT_UP)
-        return reinterpret_cast<ARMWord*>(addr + (*insn & SDT_OFFSET_MASK));
-    else
-        return reinterpret_cast<ARMWord*>(addr - (*insn & SDT_OFFSET_MASK));
-}
-
-void ARMAssembler::linkBranch(void* code, JmpSrc from, void* to, int useConstantPool)
-{
-    ARMWord* insn = reinterpret_cast<ARMWord*>(code) + (from.m_offset / sizeof(ARMWord));
-
-    if (!useConstantPool) {
-        int diff = reinterpret_cast<ARMWord*>(to) - reinterpret_cast<ARMWord*>(insn + 2);
-
-        if ((diff <= BOFFSET_MAX && diff >= BOFFSET_MIN)) {
-            *insn = B | getConditionalField(*insn) | (diff & BRANCH_MASK);
-            ExecutableAllocator::cacheFlush(insn, sizeof(ARMWord));
-            return;
-        }
-    }
-    ARMWord* addr = getLdrImmAddress(insn);
-    *addr = reinterpret_cast<ARMWord>(to);
-    ExecutableAllocator::cacheFlush(addr, sizeof(ARMWord));
-}
 
 void ARMAssembler::patchConstantPoolLoad(void* loadAddr, void* constPoolAddr)
 {
@@ -118,7 +85,7 @@ ARMWord ARMAssembler::getOp2(ARMWord imm)
     if ((imm & 0x00ffffff) == 0)
         return OP2_IMM | (imm >> 24) | (rol << 8);
 
-    return 0;
+    return INVALID_IMM;
 }
 
 int ARMAssembler::genInt(int reg, ARMWord imm, bool positive)
@@ -236,25 +203,18 @@ ARMWord ARMAssembler::getImm(ARMWord imm, int tmpReg, bool invert)
 
     // Do it by 1 instruction
     tmp = getOp2(imm);
-    if (tmp)
+    if (tmp != INVALID_IMM)
         return tmp;
 
     tmp = getOp2(~imm);
-    if (tmp) {
+    if (tmp != INVALID_IMM) {
         if (invert)
             return tmp | OP2_INV_IMM;
         mvn_r(tmpReg, tmp);
         return tmpReg;
     }
 
-    // Do it by 2 instruction
-    if (genInt(tmpReg, imm, true))
-        return tmpReg;
-    if (genInt(tmpReg, ~imm, false))
-        return tmpReg;
-
-    ldr_imm(tmpReg, imm);
-    return tmpReg;
+    return encodeComplexImm(imm, tmpReg);
 }
 
 void ARMAssembler::moveImm(ARMWord imm, int dest)
@@ -263,50 +223,68 @@ void ARMAssembler::moveImm(ARMWord imm, int dest)
 
     // Do it by 1 instruction
     tmp = getOp2(imm);
-    if (tmp) {
+    if (tmp != INVALID_IMM) {
         mov_r(dest, tmp);
         return;
     }
 
     tmp = getOp2(~imm);
-    if (tmp) {
+    if (tmp != INVALID_IMM) {
         mvn_r(dest, tmp);
         return;
     }
 
+    encodeComplexImm(imm, dest);
+}
+
+ARMWord ARMAssembler::encodeComplexImm(ARMWord imm, int dest)
+{
+#if WTF_ARM_ARCH_AT_LEAST(7)
+    ARMWord tmp = getImm16Op2(imm);
+    if (tmp != INVALID_IMM) {
+        movw_r(dest, tmp);
+        return dest;
+    }
+    movw_r(dest, getImm16Op2(imm & 0xffff));
+    movt_r(dest, getImm16Op2(imm >> 16));
+    return dest;
+#else
     // Do it by 2 instruction
     if (genInt(dest, imm, true))
-        return;
+        return dest;
     if (genInt(dest, ~imm, false))
-        return;
+        return dest;
 
     ldr_imm(dest, imm);
+    return dest;
+#endif
 }
 
 // Memory load/store helpers
 
-void ARMAssembler::dataTransfer32(bool isLoad, RegisterID srcDst, RegisterID base, int32_t offset)
+void ARMAssembler::dataTransfer32(bool isLoad, RegisterID srcDst, RegisterID base, int32_t offset, bool bytes)
 {
+    ARMWord transferFlag = bytes ? DT_BYTE : 0;
     if (offset >= 0) {
         if (offset <= 0xfff)
-            dtr_u(isLoad, srcDst, base, offset);
+            dtr_u(isLoad, srcDst, base, offset | transferFlag);
         else if (offset <= 0xfffff) {
             add_r(ARMRegisters::S0, base, OP2_IMM | (offset >> 12) | (10 << 8));
-            dtr_u(isLoad, srcDst, ARMRegisters::S0, offset & 0xfff);
+            dtr_u(isLoad, srcDst, ARMRegisters::S0, (offset & 0xfff) | transferFlag);
         } else {
             ARMWord reg = getImm(offset, ARMRegisters::S0);
-            dtr_ur(isLoad, srcDst, base, reg);
+            dtr_ur(isLoad, srcDst, base, reg | transferFlag);
         }
     } else {
         offset = -offset;
         if (offset <= 0xfff)
-            dtr_d(isLoad, srcDst, base, offset);
+            dtr_d(isLoad, srcDst, base, offset | transferFlag);
         else if (offset <= 0xfffff) {
             sub_r(ARMRegisters::S0, base, OP2_IMM | (offset >> 12) | (10 << 8));
-            dtr_d(isLoad, srcDst, ARMRegisters::S0, offset & 0xfff);
+            dtr_d(isLoad, srcDst, ARMRegisters::S0, (offset & 0xfff) | transferFlag);
         } else {
             ARMWord reg = getImm(offset, ARMRegisters::S0);
-            dtr_dr(isLoad, srcDst, base, reg);
+            dtr_dr(isLoad, srcDst, base, reg | transferFlag);
         }
     }
 }
@@ -378,10 +356,17 @@ void* ARMAssembler::executableCopy(ExecutablePool* allocator)
         // The last bit is set if the constant must be placed on constant pool.
         int pos = (*iter) & (~0x1);
         ARMWord* ldrAddr = reinterpret_cast<ARMWord*>(data + pos);
-        ARMWord offset = *getLdrImmAddress(ldrAddr);
-        if (offset != 0xffffffff) {
-            JmpSrc jmpSrc(pos);
-            linkBranch(data, jmpSrc, data + offset, ((*iter) & 1));
+        ARMWord* addr = getLdrImmAddress(ldrAddr);
+        if (*addr != 0xffffffff) {
+            if (!(*iter & 1)) {
+                int diff = reinterpret_cast<ARMWord*>(data + *addr) - (ldrAddr + DefaultPrefetching);
+
+                if ((diff <= BOFFSET_MAX && diff >= BOFFSET_MIN)) {
+                    *ldrAddr = B | getConditionalField(*ldrAddr) | (diff & BRANCH_MASK);
+                    continue;
+                }
+            }
+            *addr = reinterpret_cast<ARMWord>(data + *addr);
         }
     }
 
@@ -390,4 +375,4 @@ void* ARMAssembler::executableCopy(ExecutablePool* allocator)
 
 } // namespace JSC
 
-#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
+#endif // ENABLE(ASSEMBLER) && CPU(ARM_TRADITIONAL)

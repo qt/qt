@@ -96,6 +96,7 @@ public:
     inline QRect rect(const QWidget *widget) const;
 
     bool hasStaticContentsSupport() const;
+    bool hasPartialUpdateSupport() const;
 
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;
@@ -103,6 +104,7 @@ public:
 protected:
     bool hasStaticContents() const;
     void setStaticContentsSupport(bool enable);
+    void setPartialUpdateSupport(bool enable);
 
 private:
     QWindowSurfacePrivate *d_ptr;

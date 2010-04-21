@@ -44,7 +44,7 @@
 #include <private/qapplication_p.h>
 #include <coecntrl.h>
 #include <qcursor.h>
-#include <qt_s60_p.h>
+#include <private/qt_s60_p.h>
 #include <qbitmap.h>
 #include <w32std.h>
 #include <qapplication.h>

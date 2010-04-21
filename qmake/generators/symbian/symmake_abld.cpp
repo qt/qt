@@ -71,7 +71,7 @@ SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
     QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-    removeSpecialCharacters(gnuMakefileName);
+    removeEpocSpecialCharacters(gnuMakefileName);
     gnuMakefileName.append(".mk");
 
     QFile ft(gnuMakefileName);
@@ -204,6 +204,8 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
     t << "MOVE              = " << var("QMAKE_MOVE") << endl;
+    t << "CHK_DIR_EXISTS    = " << var("QMAKE_CHK_DIR_EXISTS") << endl;
+    t << "MKDIR             = " << var("QMAKE_MKDIR") << endl;
 #ifdef Q_OS_WIN32
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
@@ -430,7 +432,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
         + privateDirUid;
     DeploymentList depList;
 
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(isRom ? ROM_DEPLOYMENT_PLATFORM : EMULATOR_DEPLOYMENT_PLATFORM),
         QString(), generatedDirs, generatedFiles);
 
@@ -472,7 +474,7 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
     // do not get that, special deployment only makefile is generated for them if needed.
     if (targetType != TypeSubdirs || addDeploymentExtension) {
         QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-        removeSpecialCharacters(gnuMakefileName);
+        removeEpocSpecialCharacters(gnuMakefileName);
         gnuMakefileName.append(".mk");
         t << "gnumakefile " << gnuMakefileName << endl;
     }

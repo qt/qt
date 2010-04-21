@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: fieldText
@@ -10,30 +10,26 @@ Item {
     signal cancelled
     signal startEdit
 
-    Script {
-
-        function edit() {
-            if (!mouseGrabbed) {
-                fieldText.startEdit();
-                fieldText.state='editing';
-                mouseGrabbed=true;
-            }
+    function edit() {
+        if (!mouseGrabbed) {
+            fieldText.startEdit();
+            fieldText.state='editing';
+            mouseGrabbed=true;
         }
+    }
 
-        function confirm() {
-            fieldText.state='';
-            fieldText.text = textEdit.text;
-            mouseGrabbed=false;
-            fieldText.confirmed();
-        }
+    function confirm() {
+        fieldText.state='';
+        fieldText.text = textEdit.text;
+        mouseGrabbed=false;
+        fieldText.confirmed();
+    }
 
-        function reset() {
-            textEdit.text = fieldText.text;
-            fieldText.state='';
-            mouseGrabbed=false;
-            fieldText.cancelled();
-        }
-
+    function reset() {
+        textEdit.text = fieldText.text;
+        fieldText.state='';
+        mouseGrabbed=false;
+        fieldText.cancelled();
     }
 
     Image {

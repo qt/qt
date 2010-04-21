@@ -41,6 +41,7 @@
 
 // INCLUDE FILES
 #include <exception>
+#include <private/qcore_symbian_p.h>
 #include "qs60maindocument.h"
 #include "qs60mainapplication_p.h"
 #include "qs60mainapplication.h"
@@ -57,17 +58,17 @@ CApaApplication *newS60Application()
     return new QS60MainApplication;
 }
 
-_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
+_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main" QT_LIBINFIX_UNICODE L".rsc");
 
 /*!
   \class QS60MainApplication
   \since 4.6
   \brief The QS60MainApplication class provides support for migration from S60.
- 
+
   \warning This class is provided only to get access to S60 specific
   functionality in the application framework classes. It is not
   portable. We strongly recommend against using it in new applications.
- 
+
   The QS60MainApplication provides a helper class for use in migrating
   from existing S60 based applications to Qt based applications. It is
   used in the exact same way as the \c CAknApplication class from

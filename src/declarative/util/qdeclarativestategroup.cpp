@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestategroup_p.h"
+#include "private/qdeclarativestategroup_p.h"
 
-#include "qdeclarativetransition_p.h"
-#include "qdeclarativestate_p_p.h"
+#include "private/qdeclarativetransition_p.h"
+#include "private/qdeclarativestate_p_p.h"
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
@@ -69,6 +69,7 @@ public:
     static void append_state(QDeclarativeListProperty<QDeclarativeState> *list, QDeclarativeState *state);
     static int count_state(QDeclarativeListProperty<QDeclarativeState> *list);
     static QDeclarativeState *at_state(QDeclarativeListProperty<QDeclarativeState> *list, int index);
+    static void clear_states(QDeclarativeListProperty<QDeclarativeState> *list);
 
     QList<QDeclarativeState *> states;
     QList<QDeclarativeTransition *> transitions;
@@ -150,7 +151,8 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeStateGroup::statesProper
     Q_D(QDeclarativeStateGroup);
     return QDeclarativeListProperty<QDeclarativeState>(this, &d->states, &QDeclarativeStateGroupPrivate::append_state,
                                                        &QDeclarativeStateGroupPrivate::count_state,
-                                                       &QDeclarativeStateGroupPrivate::at_state);
+                                                       &QDeclarativeStateGroupPrivate::at_state,
+                                                       &QDeclarativeStateGroupPrivate::clear_states);
 }
 
 void QDeclarativeStateGroupPrivate::append_state(QDeclarativeListProperty<QDeclarativeState> *list, QDeclarativeState *state)
@@ -173,6 +175,16 @@ QDeclarativeState *QDeclarativeStateGroupPrivate::at_state(QDeclarativeListPrope
 {
     QDeclarativeStateGroup *_this = static_cast<QDeclarativeStateGroup *>(list->object);
     return _this->d_func()->states.at(index);
+}
+
+void QDeclarativeStateGroupPrivate::clear_states(QDeclarativeListProperty<QDeclarativeState> *list)
+{
+    QDeclarativeStateGroup *_this = static_cast<QDeclarativeStateGroup *>(list->object);
+    _this->d_func()->setCurrentStateInternal(QString(), true);
+    for (int i = 0; i < _this->d_func()->states.count(); ++i) {
+        _this->d_func()->states.at(i)->setStateGroup(0);
+    }
+    _this->d_func()->states.clear();
 }
 
 /*!
@@ -206,13 +218,11 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transit
   example:
 
   \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
+    function toggle() {
+        if (button.state == 'On')
+            button.state = 'Off';
+        else
+            button.state = 'On';
     }
   \endqml
 

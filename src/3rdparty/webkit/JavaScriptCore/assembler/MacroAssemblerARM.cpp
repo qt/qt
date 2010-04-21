@@ -26,11 +26,11 @@
 
 #include "config.h"
 
-#if ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
+#if ENABLE(ASSEMBLER) && CPU(ARM_TRADITIONAL)
 
 #include "MacroAssemblerARM.h"
 
-#if PLATFORM(LINUX)
+#if OS(LINUX)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -43,7 +43,7 @@ namespace JSC {
 
 static bool isVFPPresent()
 {
-#if PLATFORM(LINUX)
+#if OS(LINUX)
     int fd = open("/proc/self/auxv", O_RDONLY);
     if (fd > 0) {
         Elf32_auxv_t aux;
@@ -62,7 +62,8 @@ static bool isVFPPresent()
 
 const bool MacroAssemblerARM::s_isVFPPresent = isVFPPresent();
 
-#if defined(ARM_REQUIRE_NATURAL_ALIGNMENT) && ARM_REQUIRE_NATURAL_ALIGNMENT
+#if CPU(ARMV5_OR_LOWER)
+/* On ARMv5 and below, natural alignment is required. */
 void MacroAssemblerARM::load32WithUnalignedHalfWords(BaseIndex address, RegisterID dest)
 {
     ARMWord op2;
@@ -91,4 +92,4 @@ void MacroAssemblerARM::load32WithUnalignedHalfWords(BaseIndex address, Register
 
 }
 
-#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
+#endif // ENABLE(ASSEMBLER) && CPU(ARM_TRADITIONAL)

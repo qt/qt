@@ -153,7 +153,7 @@ QDeclarativeDebugPropertyReference tst_QDeclarativeDebug::findProperty(const QLi
 void tst_QDeclarativeDebug::waitForQuery(QDeclarativeDebugQuery *query)
 {
     QVERIFY(query);
-    QCOMPARE(query->parent(), this);
+    QCOMPARE(query->parent(), qobject_cast<QObject*>(this));
     QVERIFY(query->state() == QDeclarativeDebugQuery::Waiting);
     if (!QDeclarativeDebugTest::waitForSignal(query, SIGNAL(stateChanged(QDeclarativeDebugQuery::State))))
         QFAIL("query timed out");
@@ -822,7 +822,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QList<QByteArray> qml;
-    qml << "import Qt 4.6\n"
+    qml << "import Qt 4.7\n"
             "Item {"
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
@@ -832,7 +832,7 @@ int main(int argc, char *argv[])
                 "}"
             "}";
     // add second component to test multiple root contexts
-    qml << "import Qt 4.6\n"
+    qml << "import Qt 4.7\n"
             "Item {}";
     tst_QDeclarativeDebug_Factory factory;
     return QDeclarativeDebugTest::runTests(&factory, qml);

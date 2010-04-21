@@ -50,6 +50,7 @@
 #include "qcalendarwidget.h"
 #include "qdial.h"
 #include "qdialog.h"
+#include "qmessagebox.h"
 #include "qgroupbox.h"
 #include "qheaderview.h"
 #include "qlist.h"
@@ -61,7 +62,6 @@
 #include "qscrollarea.h"
 #include "qscrollbar.h"
 #include "qtabbar.h"
-#include "qtablewidget.h"
 #include "qtableview.h"
 #include "qtextedit.h"
 #include "qtoolbar.h"
@@ -92,10 +92,10 @@ static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,16,"QVGA Landscape"},
-{320,240,1,16,"QVGA Portrait"},
-{360,640,1,16,"NHD Landscape"},
-{640,360,1,16,"NHD Portrait"},
+{240,320,1,17,"QVGA Landscape"},
+{320,240,1,17,"QVGA Portrait"},
+{360,640,1,17,"NHD Landscape"},
+{640,360,1,17,"NHD Portrait"},
 {352,800,1,12,"E90 Landscape"}
 // *** End of generated data ***
 };
@@ -104,11 +104,11 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,-909,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,13,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,12,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
+{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,0,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1, 106},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,0,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1, 106},
+{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,0,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,13,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1, 135},
+{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,0,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,12,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1, 135},
+{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,0,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1, 106}
 // *** End of generated data ***
 };
 
@@ -122,12 +122,14 @@ QPalette *QS60StylePrivate::m_themePalette = 0;
 
 qint64 QS60StylePrivate::m_webPaletteKey = 0;
 
+QPointer<QWidget> QS60StylePrivate::m_pressedWidget = 0;
+
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
     {SE_ButtonNormal,           QS60StyleEnums::SP_QsnFrButtonTbCenter},
     {SE_ButtonPressed,          QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
     {SE_FrameLineEdit,          QS60StyleEnums::SP_QsnFrInputCenter},
     {SE_ListHighlight,          QS60StyleEnums::SP_QsnFrListCenter},
-    {SE_OptionsMenu,            QS60StyleEnums::SP_QsnFrPopupCenter},
+    {SE_PopupBackground,        QS60StyleEnums::SP_QsnFrPopupCenter},
     {SE_SettingsList,           QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_TableItem,              QS60StyleEnums::SP_QsnFrCaleCenter},
     {SE_TableHeaderItem,        QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
@@ -138,6 +140,8 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
     {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
+    {SE_TableItemPressed,       QS60StyleEnums::SP_QsnFrGridCenterPressed},
+    {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListPressed},
 };
 
 static const int frameElementsCount =
@@ -250,8 +254,8 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_ListHighlight:
         drawFrame(SF_ListHighlight, painter, rect, flags | SF_PointNorth);
         break;
-    case SE_OptionsMenu:
-        drawFrame(SF_OptionsMenu, painter, rect, flags | SF_PointNorth);
+    case SE_PopupBackground:
+        drawFrame(SF_PopupBackground, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SettingsList:
         drawFrame(SF_SettingsList, painter, rect, flags | SF_PointNorth);
@@ -294,6 +298,12 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_DropArea:
         drawPart(QS60StyleEnums::SP_QgnGrafOrgBgGrid, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_TableItemPressed:
+        drawFrame(SF_TableItemPressed, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_ListItemPressed:
+        drawFrame(SF_ListItemPressed, painter, rect, flags | SF_PointNorth);
+        break;
     default:
         break;
     }
@@ -307,6 +317,13 @@ void QS60StylePrivate::drawSkinPart(QS60StyleEnums::SkinParts part,
 
 short QS60StylePrivate::pixelMetric(int metric)
 {
+    //If it is a custom value, need to strip away the base to map to internal
+    //pixel metric value table
+    if (metric & QStyle::PM_CustomBase) {
+        metric -= QStyle::PM_CustomBase;
+        metric += MAX_NON_CUSTOM_PIXELMETRICS - 1;
+    }
+
     Q_ASSERT(metric < MAX_PIXELMETRICS);
     const short returnValue = m_pmPointer[metric];
     return returnValue;
@@ -407,8 +424,8 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
 {
     const bool cachedColorExists = m_colorCache.contains(frame);
     if (!cachedColorExists) {
-        const int frameCornerWidth = pixelMetric(PM_Custom_FrameCornerWidth);
-        const int frameCornerHeight = pixelMetric(PM_Custom_FrameCornerHeight);
+        const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
+        const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
         Q_ASSERT(2 * frameCornerWidth < 32);
         Q_ASSERT(2 * frameCornerHeight < 32);
 
@@ -535,6 +552,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
     QRect endRect;
 
     if (orientation == Qt::Horizontal) {
+        startRect.setHeight(rect.height());
         startRect.setWidth(qMin((rect.width() >> 1) - 1, startRect.width()));
         endRect = startRect.translated(rect.width() - startRect.width(), 0);
         middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
@@ -544,6 +562,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
             endRect.adjust(overlap, 0, 0, 0);
         }
     } else {
+        startRect.setWidth(rect.width());
         startRect.setHeight(qMin((rect.height() >> 1) - 1, startRect.height()));
         endRect = startRect.translated(0, rect.height() - startRect.height());
         middleRect.adjust(0, startRect.height(), 0, -startRect.height());
@@ -630,6 +649,8 @@ void QS60StylePrivate::setFont(QWidget *widget) const
         fontCategory = QS60StyleEnums::FC_Secondary;
     } else if (qobject_cast<QGroupBox *>(widget)){
         fontCategory = QS60StyleEnums::FC_Title;
+    } else if (qobject_cast<QMessageBox *>(widget)){
+        fontCategory = QS60StyleEnums::FC_Primary;
     }
     if (fontCategory != QS60StyleEnums::FC_Undefined) {
         const bool resolveFontSize = widget->testAttribute(Qt::WA_SetFont)
@@ -868,7 +889,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
 
         case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
-            result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+            result.setWidth(pixelMetric(PM_FrameCornerWidth));
             break;
 
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
@@ -895,15 +916,15 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
                     case 7: /* CornerTr */
                     case 6: /* CornerBl */
                     case 5: /* CornerBr */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        result.setWidth(pixelMetric(PM_FrameCornerWidth));
                         // Falltrough intended...
                     case 4: /* SideT */
                     case 3: /* SideB */
-                        result.setHeight(pixelMetric(PM_Custom_FrameCornerHeight));
+                        result.setHeight(pixelMetric(PM_FrameCornerHeight));
                         break;
                     case 2: /* SideL */
                     case 1: /* SideR */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        result.setWidth(pixelMetric(PM_FrameCornerWidth));
                         break;
                     case 0: /* center */
                     default:
@@ -928,6 +949,11 @@ bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush, con
     //If brush is not changed from style's default values, draw theme graphics.
     return (backgroundBrush.color() == Qt::transparent ||
             backgroundBrush.style() == Qt::NoBrush) ? true : false;
+}
+
+bool QS60StylePrivate::isWidgetPressed(const QWidget *widget)
+{
+    return (widget && widget == m_pressedWidget);
 }
 
 /*!
@@ -1002,7 +1028,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QS60StylePrivate::SE_SliderGrooveVertical;
                 QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
             } else {
-                const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
                 const QPoint sliderGrooveCenter = sliderGroove.center();
                 const bool horizontal = optionSlider->orientation == Qt::Horizontal;
                 painter->save();
@@ -1129,7 +1154,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 drawPrimitive(pe, &toolButton, painter, widget);
             }
 
-            if (toolBtn->text.length()>0 ||
+            if (toolBtn->text.length() > 0 ||
                 !toolBtn->icon.isNull()) {
                 const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
                 toolButton.rect = button.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
@@ -1349,14 +1374,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             optionComboBox.palette.setColor(QPalette::Inactive, QPalette::WindowText,
                 optionComboBox.palette.text().color() );
             QRect editRect = subControlRect(CC_ComboBox, comboBox, SC_ComboBoxEditField, widget);
-            painter->save();
-            painter->setClipRect(editRect);
+            const int frameW = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
 
             if (!comboBox->currentIcon.isNull()) {
-                QIcon::Mode mode = comboBox->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
+                const QIcon::Mode mode = comboBox->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                const QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
                 QRect iconRect(editRect);
-                iconRect.setWidth(comboBox->iconSize.width() + 4);
+                iconRect.setWidth(comboBox->iconSize.width() + frameW);
                 iconRect = alignedRect(comboBox->direction,
                                        Qt::AlignLeft | Qt::AlignVCenter,
                                        iconRect.size(), editRect);
@@ -1365,17 +1389,19 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
 
                 if (comboBox->direction == Qt::RightToLeft)
-                    editRect.translate(-4 - comboBox->iconSize.width(), 0);
+                    editRect.setRight(editRect.right() - frameW - comboBox->iconSize.width());
                 else
-                    editRect.translate(comboBox->iconSize.width() + 4, 0);
+                    editRect.setLeft(comboBox->iconSize.width() + frameW);
             }
             if (!comboBox->currentText.isEmpty() && !comboBox->editable) {
+                const Qt::TextElideMode elideMode = (comboBox->direction == Qt::LeftToRight) ? Qt::ElideRight : Qt::ElideLeft;
+                const QString text = comboBox->fontMetrics.elidedText(comboBox->currentText, elideMode, editRect.width());
+
                 QCommonStyle::drawItemText(painter,
-                            editRect.adjusted(QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth), 0, -1, 0),
+                            editRect.adjusted(QS60StylePrivate::pixelMetric(PM_FrameCornerWidth), 0, -1, 0),
                             visualAlignment(comboBox->direction, Qt::AlignLeft | Qt::AlignVCenter),
-                            comboBox->palette, comboBox->state & State_Enabled, comboBox->currentText);
+                            comboBox->palette, comboBox->state & State_Enabled, text);
             }
-            painter->restore();
         }
         break;
 #endif //QT_NO_COMBOBOX
@@ -1416,73 +1442,37 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             // draw themed background for table unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
                 if (itemView) {
-                    const QModelIndex index = vopt->index;
-                    //todo: Draw cell background only once - for the first cell.
-                    QStyleOptionViewItemV4 voptAdj2 = voptAdj;
-                    const QModelIndex indexFirst = itemView->model()->index(0, 0);
-                    const QModelIndex indexLast = itemView->model()->index(
-                            itemView->model()->rowCount() - 1, itemView->model()->columnCount() -1);
-                    if (itemView->viewport())
-                        voptAdj2.rect = QRect( itemView->visualRect(indexFirst).topLeft(),
-                                itemView->visualRect(indexLast).bottomRight()).intersect(itemView->viewport()->rect());
                     drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);
                 }
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
-            // draw the focus rect
-            if (isSelected || hasFocus ) {
-                QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
-                QAbstractItemView::SelectionBehavior selectionBehavior =
-                    itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
-                if (selectionBehavior != QAbstractItemView::SelectItems) {
-                    // set highlight rect so that it is continuous from cell to cell, yet sligthly
-                    // smaller than cell rect
-                    int xBeginning = 0, yBeginning = 0, xEnd = 0, yEnd = 0;
-                    if (selectionBehavior == QAbstractItemView::SelectRows) {
-                        yBeginning = 1; yEnd = -1;
-                        if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
-                            xBeginning = 1;
-                        else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
-                            xEnd = -1;
-                    } else if (selectionBehavior == QAbstractItemView::SelectColumns) {
-                        xBeginning = 1; xEnd = -1;
-                        if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
-                            yBeginning = 1;
-                        else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
-                            yEnd = -1;
-                    }
-                    highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, yEnd);
-                }
-                if (vopt->showDecorationSelected &&
-                    (vopt->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()))
-                    QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
-                else
-                    painter->fillRect(highlightRect, vopt->palette.highlight());
-            }
-
              // draw the icon
              const QIcon::Mode mode = (voptAdj.state & State_Enabled) ? QIcon::Normal : QIcon::Disabled;
-             const QIcon::State state = voptAdj.state & State_Open ? QIcon::On : QIcon::Off;
+             const QIcon::State state = (voptAdj.state & State_Open) ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
              // Draw selection check mark. Show check mark only in multi selection modes.
              if (itemView) {
                  const bool singleSelection =
                      (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
-                      itemView->selectionMode() == QAbstractItemView::NoSelection);
+                      itemView->selectionMode() == QAbstractItemView::NoSelection)||
+                     (itemView->selectionModel()->selectedIndexes().count() < 2 );
+
+                 const bool selectItemsOnly = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
+
                  const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
 
                  QStyleOptionViewItemV4 checkMarkOption(voptAdj);
-                 // Draw selection mark.
-                 if (voptAdj.state & State_Selected && !singleSelection) {
+                 if (selectionRect.isValid())
                      checkMarkOption.rect = selectionRect;
-                     drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
-                     if ( textRect.right() > selectionRect.left() )
+                 // Draw selection mark.
+                 if (isSelected && !singleSelection && selectItemsOnly) {
+                     proxy()->drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
+                     // @todo: this should happen in the rect retrievel i.e. subElementRect()
+                     if (textRect.right() > selectionRect.left())
                          textRect.setRight(selectionRect.left());
                  } else if (singleSelection &&
-                     voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator &&
-                     selectionRect.isValid()) {
-                     checkMarkOption.rect = selectionRect;
+                     voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
                      checkMarkOption.state = checkMarkOption.state & ~State_HasFocus;
 
                      switch (vopt->checkState) {
@@ -1554,7 +1544,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
-                //todo: draw navi wipe behind tabbar - must be drawn with first draw
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
                         skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
@@ -1658,7 +1647,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     painter->drawPixmap(tr.left() + tabOverlap,
                                         tr.center().y() - (tabIcon.height() >> 1),
                                         tabIcon);
-                tr.setLeft(tr.left() + iconSize.width() + 4);
+                tr.setLeft(tr.left() + iconSize.width() + 4); //todo: magic four
             }
 
             QCommonStyle::drawItemText(painter, tr, alignment, optionTab.palette, tab->state & State_Enabled, tab->text, QPalette::WindowText);
@@ -1836,8 +1825,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->save();
             QPen linePen = QPen(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 1, header));
             const int penWidth = (header->orientation == Qt::Horizontal) ?
-                linePen.width() + QS60StylePrivate::pixelMetric(PM_Custom_BoldLineWidth)
-                : linePen.width() + QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth);
+                linePen.width() + QS60StylePrivate::pixelMetric(PM_BoldLineWidth)
+                : linePen.width() + QS60StylePrivate::pixelMetric(PM_ThinLineWidth);
             linePen.setWidth(penWidth);
             painter->setPen(linePen);
             if (header->orientation == Qt::Horizontal){
@@ -1856,7 +1845,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //Make cornerButton slightly smaller so that it is not on top of table border graphic.
                 QStyleOptionHeader subopt = *header;
                 const int borderTweak =
-                    QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                    QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 if (subopt.direction == Qt::LeftToRight)
                     subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
                 else
@@ -1964,40 +1953,37 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_MenuScroller:
         break;
     case CE_FocusFrame: {
-            // The pen width should nearly fill the layoutspacings around the widget
-            const int penWidth =
-                qMin(pixelMetric(QS60Style::PM_LayoutVerticalSpacing), pixelMetric(QS60Style::PM_LayoutHorizontalSpacing))
-                - 2; // But keep 1 pixel distance to the focus widget and 1 pixel to the adjacent widgets
-
 #ifdef QT_KEYPAD_NAVIGATION
             bool editFocus = false;
             if (const QFocusFrame *focusFrame = qobject_cast<const QFocusFrame*>(widget)) {
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 1 : 0.75; // Trial and error factors. Feel free to improve.
 #else
-            const qreal opacity = 0.5;
+            const qreal opacity = 0.85;
 #endif
-            // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
-            const qreal rectAdjustment = (penWidth % 2) ? -.5 : 0;
-
-            // Make sure that the pen stroke is inside the rect
-            const QRectF adjustedRect =
-                QRectF(option->rect).adjusted(
-                    rectAdjustment + penWidth,
-                    rectAdjustment + penWidth,
-                    -rectAdjustment - penWidth,
-                    -rectAdjustment - penWidth
-                );
-
-            const qreal roundRectRadius = penWidth * goldenRatio;
+            // We need to reduce the focus frame size if LayoutSpacing is smaller than FocusFrameMargin
+            // Otherwise, we would overlay adjacent widgets.
+            const int frameHeightReduction =
+                    qMin(0, pixelMetric(PM_LayoutVerticalSpacing)
+                            - pixelMetric(PM_FocusFrameVMargin));
+            const int frameWidthReduction =
+                    qMin(0, pixelMetric(PM_LayoutHorizontalSpacing)
+                            - pixelMetric(PM_FocusFrameHMargin));
+            const int rounding =
+                    qMin(pixelMetric(PM_FocusFrameVMargin),
+                            pixelMetric(PM_LayoutVerticalSpacing));
+            const QRect frameRect =
+                    option->rect.adjusted(-frameWidthReduction, -frameHeightReduction,
+                            frameWidthReduction, frameHeightReduction);
+            QPainterPath framePath;
+            framePath.addRoundedRect(frameRect, rounding, rounding);
 
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing);
             painter->setOpacity(opacity);
-            painter->setPen(QPen(option->palette.color(QPalette::Text), penWidth));
-            painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
+            painter->fillPath(framePath, option->palette.color(QPalette::Text));
             painter->restore();
         }
         break;
@@ -2032,7 +2018,10 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color())
                 if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
                     (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
-                        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
+                        QS60StylePrivate::drawSkinElement(
+                            QS60StylePrivate::isWidgetPressed(widget) ? 
+                                QS60StylePrivate::SE_ListItemPressed : 
+                                QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
             }
@@ -2069,18 +2058,18 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
     case PE_IndicatorViewItemCheck:
 #ifndef QT_NO_ITEMVIEWS
-        if (const QListView *listItem = (qobject_cast<const QListView *>(widget))) {
+        if (const QAbstractItemView *itemView = (qobject_cast<const QAbstractItemView *>(widget))) {
             if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
                 const bool checkBoxVisible = vopt->features & QStyleOptionViewItemV2::HasCheckIndicator;
-                const bool singleSelection = listItem->selectionMode() ==
-                    QAbstractItemView::SingleSelection || listItem->selectionMode() == QAbstractItemView::NoSelection;
+                const bool singleSelection = itemView->selectionMode() ==
+                    QAbstractItemView::SingleSelection || itemView->selectionMode() == QAbstractItemView::NoSelection;
                 // draw either checkbox at the beginning
                 if (checkBoxVisible && singleSelection) {
                     drawPrimitive(PE_IndicatorCheckBox, option, painter, widget);
                 // ... or normal "tick" selection at the end.
                 } else if (option->state & State_Selected) {
                     QRect tickRect = option->rect;
-                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
                     // adjust tickmark rect to exclude frame border
                     tickRect.adjust(0, -frameBorderWidth, 0, -frameBorderWidth);
                     QS60StyleEnums::SkinParts skinPart = QS60StyleEnums::SP_QgnIndiMarkedAdd;
@@ -2161,7 +2150,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
                     QS60StyleEnums::SP_QgnGrafScrollArrowUp :
                     QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
                 QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect, flags);
             } else {
@@ -2175,7 +2164,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 // We want to draw down arrow here for comboboxes as well.
                 QStyleOptionFrame optionsComboBox = *cmb;
                 const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) >> 1;
                 optionsComboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
                 QS60StylePrivate::drawSkinPart(part, painter, optionsComboBox.rect, flags);
             } else {
@@ -2213,7 +2202,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
                 option->palette.window().texture().cacheKey() ==
                     QS60StylePrivate::m_themePalette->window().texture().cacheKey())
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_OptionsMenu, painter, option->rect, flags);
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
         }
@@ -2252,6 +2241,57 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewItem:
+        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+            const bool isSelected = (vopt->state & State_Selected);
+            const bool hasFocus = (vopt->state & State_HasFocus);
+            const bool isPressed = QS60StylePrivate::isWidgetPressed(widget);
+
+            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()) {
+                QRect highlightRect = vopt->rect.adjusted(1,1,-1,-1);
+                const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
+                QAbstractItemView::SelectionBehavior selectionBehavior =
+                    itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
+                // Set the draw area for highlights (focus, select rect or pressed rect)
+                if (hasFocus || isSelected || isPressed) {
+                    if (selectionBehavior != QAbstractItemView::SelectItems) {
+                        // set highlight rect so that it is continuous from cell to cell, yet sligthly
+                        // smaller than cell rect
+                        int xBeginning = 0, yBeginning = 0, xEnd = 0, yEnd = 0;
+                        if (selectionBehavior == QAbstractItemView::SelectRows) {
+                            yBeginning = 1; yEnd = -1;
+                            if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
+                                xBeginning = 1;
+                            else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
+                                xEnd = -1;
+                        } else if (selectionBehavior == QAbstractItemView::SelectColumns) {
+                            xBeginning = 1; xEnd = -1;
+                            if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
+                                yBeginning = 1;
+                            else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
+                                yEnd = -1;
+                        }
+                        highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, yEnd);
+                    }
+                }
+                bool tableView = false;
+                if (itemView && qobject_cast<const QTableView *>(widget))
+                    tableView = true;
+
+                QS60StylePrivate::SkinElements element;
+                QRect elementRect = option->rect;
+
+                //draw item is drawn as pressed, if it already has focus.
+                if (isPressed && (hasFocus || isSelected)) {
+                    element = tableView ? QS60StylePrivate::SE_TableItemPressed : QS60StylePrivate::SE_ListItemPressed;
+                } else if (hasFocus || (isSelected && selectionBehavior != QAbstractItemView::SelectItems)) {
+                    element = QS60StylePrivate::SE_ListHighlight;
+                    elementRect = highlightRect;
+                }
+                QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
+            } else {
+                QCommonStyle::drawPrimitive(element, option, painter, widget);
+            }
+        }
         break;
 #endif //QT_NO_ITEMVIEWS
 
@@ -2309,7 +2349,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                         (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
                 int minDimension = qMin(option->rect.width(), option->rect.height());
                 QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-				const int magicTweak = 3;
+                const int magicTweak = 3;
                 int resizeValue = minDimension >> 1;
                 if (!QS60StylePrivate::isTouchSupported()) {
                     minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
@@ -2384,13 +2424,6 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
     if (metricValue == KNotFound)
         metricValue = QCommonStyle::pixelMetric(metric, option, widget);
 
-    if (metric == PM_SubMenuOverlap && widget) {
-        const QMenu *menu = qobject_cast<const QMenu *>(widget);
-        if (menu && menu->activeAction() && menu->activeAction()->menu()) {
-            const int menuWidth = menu->activeAction()->menu()->sizeHint().width();
-            metricValue = -menuWidth;
-        }
-    }
     //if layout direction is mirrored, switch left and right border margins
     if (option && option->direction == Qt::RightToLeft) {
         if (metric == PM_LayoutLeftMargin)
@@ -2398,6 +2431,12 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
         else if (metric == PM_LayoutRightMargin)
             metricValue = QS60StylePrivate::pixelMetric(PM_LayoutLeftMargin);
     }
+
+    if (widget && (metric == PM_LayoutTopMargin))
+        if (widget->windowType() == Qt::Dialog)
+            //double the top layout margin for dialogs, it is very close to real value
+            //without having to define custom pixel metric
+            metricValue *= 2;
     return metricValue;
 }
 
@@ -2429,7 +2468,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 const int contentHeight =
                         qMax(qMax(iconHeight, decoratorHeight) + pixelMetric(PM_ButtonMargin),
                              textHeight + 2*pixelMetric(PM_ButtonMargin));
-                sz.setHeight(contentHeight);
+                sz.setHeight(qMax(sz.height(), contentHeight));
                 sz += QSize(2 * pixelMetric(PM_ButtonMargin), 0);
             }
             break;
@@ -2454,9 +2493,9 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
                 // Fixing Ui design issues with too wide QComboBoxes and greedy SizeHints
-                // Make sure, that the combobox says within the screen.
+                // Make sure, that the combobox stays within the screen.
                 const QSize desktopContentSize = QApplication::desktop()->availableGeometry().size()
-                        -QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
+                        - QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
                         boundedTo(desktopContentSize);
             }
@@ -2475,6 +2514,15 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
 {
     int retValue = -1;
     switch (sh) {
+        case SH_RequestSoftwareInputPanel:
+            if (QS60StylePrivate::isSingleClickUi())
+                retValue = RSIP_OnMouseClick;
+            else
+                retValue = RSIP_OnMouseClickAndAlreadyFocused;
+            break;
+        case SH_ComboBox_Popup:
+            retValue = true;
+            break;
         case SH_Table_GridLineColor:
             retValue = int(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 2, 0).rgba());
             break;
@@ -2527,9 +2575,6 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_UnderlineShortcut:
             retValue = 0;
-            break;
-        case SH_RequestSoftwareInputPanel:
-            retValue = RSIP_OnMouseClickAndAlreadyFocused;
             break;
         case SH_FormLayoutWrapPolicy:
             retValue = QFormLayout::WrapLongRows;
@@ -2616,14 +2661,22 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             const int frameThickness = spinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
             const int buttonMargin = spinbox->frame ? 2 : 0;
             const int buttonContentWidth = QS60StylePrivate::pixelMetric(PM_ButtonIconSize) + 2 * buttonMargin;
+            // Spinbox buttons should be no larger than one fourth of total width.
+            // Thus, side-by-side buttons would take half of the total width.
+            const int maxSize = qMax(spinbox->rect.width() / 4, buttonContentWidth);
             QSize buttonSize;
-            buttonSize.setHeight(qMax(8, spinbox->rect.height() - frameThickness));
+            buttonSize.setHeight(qMin(maxSize, qMax(8, spinbox->rect.height() - frameThickness)));
             //width should at least be equal to height
             buttonSize.setWidth(qMax(buttonSize.height(), buttonContentWidth));
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
 
-            const int y = frameThickness + spinbox->rect.y();
-            const int x = spinbox->rect.x() + spinbox->rect.width() - frameThickness - 2 * buttonSize.width();
+            // Normally spinbuttons should be side-by-side, but if spinbox grows very big
+            // and spinbuttons reach their maximum size, they can be deployed one top of the other.
+            const bool sideBySide = (buttonSize.height() * 2 < spinbox->rect.height()) ? false : true;
+            const int y = frameThickness + spinbox->rect.y() +  
+                          (spinbox->rect.height() - (sideBySide ? 1 : 2) * buttonSize.height()) / 2;
+            const int x = spinbox->rect.x() + 
+                          spinbox->rect.width() - frameThickness - (sideBySide ? 2 : 1) * buttonSize.width();
 
             switch (scontrol) {
                 case SC_SpinBoxUp:
@@ -2634,7 +2687,9 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_SpinBoxDown:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                         return QRect();
-                    ret = QRect(x + buttonSize.width(), y, buttonSize.width(), buttonSize.height());
+                    ret = QRect(x + (sideBySide ? buttonSize.width() : 0), 
+                                y + (sideBySide ? 0 : buttonSize.height()), 
+                                buttonSize.width(), buttonSize.height());
                     break;
                 case SC_SpinBoxEditField:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
@@ -2688,6 +2743,19 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                         frameThickness,
                         withFrameX - frameThickness,
                         height - 2 * frameThickness);
+                    }
+                break;
+                case SC_ComboBoxListBoxPopup: {
+                    const QRect desktopContent = QApplication::desktop()->availableGeometry();
+
+                    // take the size of this and position bottom above available area
+                    QRect popupRect;
+                    const int width = desktopContent.width() - pixelMetric(PM_LayoutRightMargin) - pixelMetric(PM_LayoutLeftMargin);
+                    popupRect.setWidth(width);
+                    popupRect.setHeight(desktopContent.height()); //combobox resets height anyway based on content
+                    popupRect.setBottom(desktopContent.bottom());
+                    popupRect.translate(pixelMetric(PM_LayoutLeftMargin), 0);
+                    ret = popupRect;
                     }
                 break;
             default:
@@ -2764,11 +2832,10 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             break;
         case SE_LineEditContents: {
                 // in S60 the input text box doesn't start from line Edit's TL, but
-                // a bit indented.
-                QRect lineEditRect = opt->rect;
-                const int adjustment = opt->rect.height() >> 2;
-                lineEditRect.adjust(adjustment, 0, 0, 0);
-                ret = lineEditRect;
+                // a bit indented (8 pixels).
+                const int KLineEditDefaultIndention = 8;
+                ret = visualRect(
+                    opt->direction, opt->rect, opt->rect.adjusted(KLineEditDefaultIndention, 0, 0, 0));
             }
             break;
         case SE_TabBarTearIndicator:
@@ -2782,7 +2849,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     const int tabOverlapNoBorder =
                         QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap);
                     const int tabOverlap =
-                        tabOverlapNoBorder-QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                        tabOverlapNoBorder - QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                     const QTabWidget *tab = qobject_cast<const QTabWidget *>(widget);
                     int gain = (tab) ? tabOverlap * tab->count() : 0;
                     switch (twf->shape) {
@@ -2844,9 +2911,13 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 ret = menuItem->rect;
 
                 if (element == SE_ItemViewItemDecoration) {
-                    if (menuItem->direction == Qt::RightToLeft)
-                        ret.translate(ret.width()-indicatorWidth, 0);
-                    ret.setWidth(indicatorWidth);
+                    if (menuItem->icon.isNull()) {
+                        ret = QRect();
+                    } else {
+                        if (menuItem->direction == Qt::RightToLeft)
+                            ret.translate(ret.width() - indicatorWidth, 0);
+                        ret.setWidth(indicatorWidth);
+                    }
                 } else {
                     ret = menuItem->rect;
                     if (!menuItem->icon.isNull())
@@ -2906,9 +2977,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
                 // Subtract area needed for line
                 if (opt->state & State_Horizontal)
-                    ret.setHeight(ret.height() - QS60StylePrivate::pixelMetric(PM_Custom_BoldLineWidth));
+                    ret.setHeight(ret.height() - QS60StylePrivate::pixelMetric(PM_BoldLineWidth));
                 else
-                    ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth));
+                    ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_ThinLineWidth));
                 }
             ret = visualRect(opt->direction, opt->rect, ret);
             break;
@@ -3031,8 +3102,11 @@ void QS60Style::unpolish(QWidget *widget)
 void QS60Style::polish(QApplication *application)
 {
     Q_D(QS60Style);
+    QCommonStyle::polish(qApp);
     d->m_originalPalette = application->palette();
     d->setThemePalette(application);
+    if (QS60StylePrivate::isTouchSupported())
+        qApp->installEventFilter(this);
 }
 
 /*!
@@ -3041,10 +3115,14 @@ void QS60Style::polish(QApplication *application)
 void QS60Style::unpolish(QApplication *application)
 {
     Q_UNUSED(application)
+
     Q_D(QS60Style);
+    QCommonStyle::unpolish(qApp);
     const QPalette newPalette = QApplication::style()->standardPalette();
     QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
+    if (QS60StylePrivate::isTouchSupported())
+        qApp->removeEventFilter(this);
 }
 
 /*!
@@ -3191,9 +3269,40 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 */
 bool QS60Style::eventFilter(QObject *object, QEvent *event)
 {
+    Q_D(QS60Style);
+    switch(event->type()) {
+        case QEvent::MouseButtonPress: {
+            QWidget *w = QApplication::widgetAt(QCursor::pos());
+            if (w) {
+                QWidget *focusW = w->focusProxy();
+                if (qobject_cast<QAbstractItemView *>(focusW) ||
+                    qobject_cast<QRadioButton *>(focusW) ||
+                    qobject_cast<QCheckBox *>(focusW))
+                    d->m_pressedWidget = focusW;
+                else if (qobject_cast<QAbstractItemView *>(w)||
+                        qobject_cast<QRadioButton *>(w) ||
+                        qobject_cast<QCheckBox *>(w))
+                    d->m_pressedWidget = w;
+
+                if ( d->m_pressedWidget)
+                    d->m_pressedWidget->update();
+            }
+            break;
+        }
+        case QEvent::MouseButtonRelease: {
+            const QWidget *w = QApplication::widgetAt(QCursor::pos());
+            if (w && d->m_pressedWidget) {
+                d->m_pressedWidget->update();
+                d->m_pressedWidget = 0;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
 #ifdef Q_WS_S60
 #ifndef QT_NO_PROGRESSBAR
-    Q_D(QS60Style);
     switch(event->type()) {
     case QEvent::StyleChange:
     case QEvent::Show:
@@ -3206,20 +3315,22 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
         break;
     case QEvent::Destroy:
     case QEvent::Hide:
-        d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
-        d->m_bars.removeAll(reinterpret_cast<QProgressBar *>(object));
+        if (QProgressBar *bar = reinterpret_cast<QProgressBar *>(object)) {
+            d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
+            d->m_bars.removeAll(bar);
+        }
         break;
     default:
         break;
     }
 #endif // QT_NO_PROGRESSBAR
 #endif // Q_WS_S60
-    return QStyle::eventFilter(object, event);
+    return QCommonStyle::eventFilter(object, event);
 }
 
 /*!
     \internal
-    Handle the timer \a event. 
+    Handle the timer \a event.
 */
 void QS60Style::timerEvent(QTimerEvent *event)
 {

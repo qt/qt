@@ -43,6 +43,9 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativefontloader_p.h>
 #include "../../../shared/util.h"
+#include "../shared/testhttpserver.h"
+
+#define SERVER_PORT 14448
 
 class tst_qdeclarativefontloader : public QObject
 
@@ -57,21 +60,26 @@ private slots:
     void localFont();
     void failLocalFont();
     void webFont();
+    void redirWebFont();
     void failWebFont();
 
 private slots:
 
 private:
     QDeclarativeEngine engine;
+    TestHTTPServer server;
 };
 
-tst_qdeclarativefontloader::tst_qdeclarativefontloader()
+tst_qdeclarativefontloader::tst_qdeclarativefontloader() :
+    server(SERVER_PORT)
 {
+    server.serveDirectory(SRCDIR "/data");
+    Q_ASSERT(server.isValid());
 }
 
 void tst_qdeclarativefontloader::noFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { }";
+    QString componentStr = "import Qt 4.7\nFontLoader { }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
@@ -86,7 +94,7 @@ void tst_qdeclarativefontloader::noFont()
 
 void tst_qdeclarativefontloader::namedFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { name: \"Helvetica\" }";
+    QString componentStr = "import Qt 4.7\nFontLoader { name: \"Helvetica\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
@@ -99,7 +107,7 @@ void tst_qdeclarativefontloader::namedFont()
 
 void tst_qdeclarativefontloader::localFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/tarzeau_ocr_a.ttf\" }";
+    QString componentStr = "import Qt 4.7\nFontLoader { source: \"" SRCDIR  "/data/tarzeau_ocr_a.ttf\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
@@ -112,7 +120,7 @@ void tst_qdeclarativefontloader::localFont()
 
 void tst_qdeclarativefontloader::failLocalFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\" }";
+    QString componentStr = "import Qt 4.7\nFontLoader { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\" }";
     QTest::ignoreMessage(QtWarningMsg, QString("Cannot load font:  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\" )  ").toUtf8().constData());
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -126,21 +134,38 @@ void tst_qdeclarativefontloader::failLocalFont()
 
 void tst_qdeclarativefontloader::webFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://www.princexml.com/fonts/steffmann/Starburst.ttf\" }";
+    QString componentStr = "import Qt 4.7\nFontLoader { source: \"http://localhost:14448/tarzeau_ocr_a.ttf\" }";
     QDeclarativeComponent component(&engine);
+
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
     QVERIFY(fontObject->source() != QUrl(""));
-    QTRY_COMPARE(fontObject->name(), QString("Starburst"));
+    QTRY_COMPARE(fontObject->name(), QString("OCRA"));
+    QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Ready);
+}
+
+void tst_qdeclarativefontloader::redirWebFont()
+{
+    server.addRedirect("olddir/oldname.ttf","../tarzeau_ocr_a.ttf");
+
+    QString componentStr = "import Qt 4.7\nFontLoader { source: \"http://localhost:14448/olddir/oldname.ttf\" }";
+    QDeclarativeComponent component(&engine);
+
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
+
+    QVERIFY(fontObject != 0);
+    QVERIFY(fontObject->source() != QUrl(""));
+    QTRY_COMPARE(fontObject->name(), QString("OCRA"));
     QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Ready);
 }
 
 void tst_qdeclarativefontloader::failWebFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://wrong.address.com/Starburst.ttf\" }";
-    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://wrong.address.com/Starburst.ttf\" )  ");
+    QString componentStr = "import Qt 4.7\nFontLoader { source: \"http://localhost:14448/nonexist.ttf\" }";
+    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://localhost:14448/nonexist.ttf\" )  ");
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());

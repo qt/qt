@@ -128,6 +128,7 @@ private slots:
     void isSignalConnected();
     void qMetaObjectConnect();
     void qMetaObjectDisconnectOne();
+    void sameName();
 protected:
 };
 
@@ -162,7 +163,7 @@ class SenderObject : public QObject
     Q_OBJECT
 
 public:
-    SenderObject() : recursionCount(0) {}
+    SenderObject() : aPublicSlotCalled(0), recursionCount(0) {}
 
     void emitSignal1AfterRecursion()
     {
@@ -185,11 +186,12 @@ signals:
     QT_MOC_COMPAT void signal5();
 
 public slots:
-    void aPublicSlot(){}
+    void aPublicSlot() { aPublicSlotCalled++; }
 
 public:
     Q_INVOKABLE void invoke1(){}
     Q_SCRIPTABLE void sinvoke1(){}
+    int aPublicSlotCalled;
 protected:
     Q_INVOKABLE QT_MOC_COMPAT void invoke2(){}
     Q_INVOKABLE QT_MOC_COMPAT void invoke2(int){}
@@ -429,12 +431,14 @@ public:
 
 public slots:
     void on_Sender_signalNoParams() { ++called_slot1; }
-    void on_Sender_signalWithParams(int i = 0) { ++called_slot2; }
-    void on_Sender_signalWithParams(int i, QString string) { ++called_slot3; }
+    void on_Sender_signalWithParams(int i = 0) { ++called_slot2; Q_UNUSED(i); }
+    void on_Sender_signalWithParams(int i, QString string) { ++called_slot3; Q_UNUSED(i);Q_UNUSED(string); }
     void on_Sender_signalManyParams() { ++called_slot4; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot5; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy) { ++called_slot6; }
-    void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot7; }
+    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy)
+    { ++called_slot6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
+    void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff)
+    { ++called_slot7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
     void slotLoopBack() { ++called_slot8; }
 
 protected slots:
@@ -2084,27 +2088,30 @@ signals:
 
     void typePointerConstRefSignal(Class * const &);
 
+    void constTemplateSignal1( Template<int > );
+    void constTemplateSignal2( Template< const int >);
+
 public slots:
     void uintPointerSlot(uint *) { }
     void ulongPointerSlot(ulong *) { }
     void constUintPointerSlot(const uint *) { }
     void constUlongPointerSlot(const ulong *) { }
 
-    void structSlot(Struct s) { }
-    void classSlot(Class c) { }
-    void enumSlot(Enum e) { }
+    void structSlot(Struct s) { Q_UNUSED(s); }
+    void classSlot(Class c) { Q_UNUSED(c); }
+    void enumSlot(Enum e) { Q_UNUSED(e); }
 
-    void structPointerSlot(Struct *s) { }
-    void classPointerSlot(Class *c) { }
-    void enumPointerSlot(Enum *e) { }
+    void structPointerSlot(Struct *s) { Q_UNUSED(s); }
+    void classPointerSlot(Class *c) { Q_UNUSED(c); }
+    void enumPointerSlot(Enum *e) { Q_UNUSED(e); }
 
-    void constStructPointerSlot(const Struct *s) { }
-    void constClassPointerSlot(const Class *c) { }
-    void constEnumPointerSlot(const Enum *e) { }
+    void constStructPointerSlot(const Struct *s) { Q_UNUSED(s); }
+    void constClassPointerSlot(const Class *c) { Q_UNUSED(c); }
+    void constEnumPointerSlot(const Enum *e) { Q_UNUSED(e); }
 
-    void constStructPointerConstPointerSlot(const Struct * const *s) { }
-    void constClassPointerConstPointerSlot(const Class * const *c) { }
-    void constEnumPointerConstPointerSlot(const Enum * const *e) { }
+    void constStructPointerConstPointerSlot(const Struct * const *s) { Q_UNUSED(s); }
+    void constClassPointerConstPointerSlot(const Class * const *c) { Q_UNUSED(c); }
+    void constEnumPointerConstPointerSlot(const Enum * const *e) { Q_UNUSED(e); }
 
     void uintSlot(uint) {};
     void unsignedintSlot(unsigned int) {};
@@ -2120,6 +2127,10 @@ public slots:
     void typeConstRefSlot(Template<Class const &> const &) {}
 
     void typePointerConstRefSlot(Class * const &) {}
+
+    void constTemplateSlot1(Template<int > const) {}
+    void constTemplateSlot2(const Template<int > ) {}
+    void constTemplateSlot3(const Template< const int >) {}
 };
 
 #include "oldnormalizeobject.h"
@@ -2522,6 +2533,19 @@ void tst_QObject::normalize()
     QVERIFY(object.connect(&object,
                            SIGNAL(typePointerConstRefSignal(Class*)),
                            SLOT(typePointerConstRefSlot(Class*))));
+
+    QVERIFY( connect(&object, SIGNAL(constTemplateSignal1(Template <int>)),
+                     &object , SLOT(constTemplateSlot1 (Template<int > )  ) ));
+    QVERIFY( connect(&object, SIGNAL(constTemplateSignal1(Template <int>)),
+                     &object , SLOT(constTemplateSlot2 (Template<int > )  ) ));
+    QVERIFY( connect(&object, SIGNAL(constTemplateSignal2(Template <const int>)),
+                     &object , SLOT(constTemplateSlot3(Template<int const > ) ) ));
+
+    //type does not match
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: Incompatible sender/receiver arguments\n"
+                    "        NormalizeObject::constTemplateSignal1(Template<int>) --> NormalizeObject::constTemplateSlot3(Template<const int>)");
+    QVERIFY(!connect(&object, SIGNAL(constTemplateSignal1(Template <int>)),
+                     &object , SLOT(constTemplateSlot3(Template<int const> ) ) ));
 }
 
 class SiblingDeleter : public QObject
@@ -3548,6 +3572,42 @@ void tst_QObject::qMetaObjectDisconnectOne()
 
     delete s;
     delete r1;
+}
+
+class ConfusingObject : public SenderObject
+{ Q_OBJECT
+public slots:
+    void signal1() { s++; }
+signals:
+    void aPublicSlot();
+public:
+    int s;
+    ConfusingObject() : s(0) {}
+    friend class tst_QObject;
+};
+
+void tst_QObject::sameName()
+{
+    ConfusingObject c1, c2;
+    QVERIFY(connect(&c1, SIGNAL(signal1()), &c1, SLOT(signal1())));
+    c1.emitSignal1();
+    QCOMPARE(c1.s, 1);
+
+    QVERIFY(connect(&c2, SIGNAL(signal1()), &c1, SIGNAL(signal1())));
+    c2.emitSignal1();
+    QCOMPARE(c1.s, 2);
+
+    QVERIFY(connect(&c2, SIGNAL(aPublicSlot()), &c1, SLOT(signal1())));
+    c2.aPublicSlot();
+    QCOMPARE(c2.aPublicSlotCalled, 0);
+    QCOMPARE(c1.aPublicSlotCalled, 0);
+    QCOMPARE(c1.s, 3);
+
+    QVERIFY(connect(&c2, SIGNAL(aPublicSlot()), &c1, SLOT(aPublicSlot())));
+    c2.aPublicSlot();
+    QCOMPARE(c2.aPublicSlotCalled, 0);
+    QCOMPARE(c1.aPublicSlotCalled, 1);
+    QCOMPARE(c1.s, 4);
 }
 
 QTEST_MAIN(tst_QObject)

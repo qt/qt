@@ -85,6 +85,17 @@ public:
         : initialized(false)
     {}
 
+    ~QScriptValueIteratorPrivate()
+    {
+        if (!initialized)
+            return;
+        QScriptEnginePrivate *eng_p = engine();
+        if (!eng_p)
+            return;
+        QScript::APIShim shim(eng_p);
+        propertyNames.clear(); //destroying the identifiers need to be done under the APIShim guard
+    }
+
     QScriptValuePrivate *object() const
     {
         return QScriptValuePrivate::get(objectValue);
@@ -100,6 +111,7 @@ public:
         if (initialized)
             return;
         QScriptEnginePrivate *eng_p = engine();
+        QScript::APIShim shim(eng_p);
         JSC::ExecState *exec = eng_p->globalExec();
         JSC::PropertyNameArray propertyNamesArray(exec);
         JSC::asObject(object()->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, JSC::IncludeDontEnumProperties);
@@ -280,6 +292,7 @@ QScriptValue QScriptValueIterator::value() const
     Q_D(const QScriptValueIterator);
     if (!d || !d->initialized || !d->engine())
         return QScriptValue();
+    QScript::APIShim shim(d->engine());
     JSC::JSValue jsValue = d->object()->property(*d->current);
     return d->engine()->scriptValueFromJSCValue(jsValue);
 }
@@ -295,6 +308,7 @@ void QScriptValueIterator::setValue(const QScriptValue &value)
     Q_D(QScriptValueIterator);
     if (!d || !d->initialized || !d->engine())
         return;
+    QScript::APIShim shim(d->engine());
     JSC::JSValue jsValue = d->engine()->scriptValueToJSCValue(value);
     d->object()->setProperty(*d->current, jsValue);
 }
@@ -310,6 +324,7 @@ QScriptValue::PropertyFlags QScriptValueIterator::flags() const
     Q_D(const QScriptValueIterator);
     if (!d || !d->initialized || !d->engine())
         return 0;
+    QScript::APIShim shim(d->engine());
     return d->object()->propertyFlags(*d->current);
 }
 
@@ -324,6 +339,7 @@ void QScriptValueIterator::remove()
     Q_D(QScriptValueIterator);
     if (!d || !d->initialized || !d->engine())
         return;
+    QScript::APIShim shim(d->engine());
     d->object()->setProperty(*d->current, JSC::JSValue());
     d->propertyNames.erase(d->current);
 }

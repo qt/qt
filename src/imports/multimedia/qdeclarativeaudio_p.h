@@ -69,6 +69,7 @@ class QDeclarativeAudio : public QObject, public QDeclarativeMediaBase, public Q
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(bool autoLoad READ isAutoLoad WRITE setAutoLoad NOTIFY autoLoadChanged)
     Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -114,6 +115,8 @@ public:
     Status status() const;
     Error error() const;
 
+    void componentComplete();
+
 public Q_SLOTS:
     void play();
     void pause();
@@ -121,7 +124,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void sourceChanged();
-
+    void autoLoadChanged();
     void playingChanged();
     void pausedChanged();
 

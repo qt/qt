@@ -54,6 +54,8 @@
 #include <QtDeclarative/qdeclarativescriptstring.h>
 #include <QtDeclarative/qdeclarativeproperty.h>
 
+#include <private/qdeclarativecustomparser_p.h>
+
 QVariant myCustomVariantTypeConverter(const QString &data);
 
 class MyInterface 
@@ -106,8 +108,8 @@ class MyQmlObject : public QObject, public MyInterface, public QDeclarativeParse
     Q_PROPERTY(QRect rect READ rect WRITE setRect)
     Q_PROPERTY(QMatrix matrix READ matrix WRITE setMatrix)  //assumed to be unsupported by QML
     Q_PROPERTY(MyInterface *interfaceProperty READ interface WRITE setInterface)
-    Q_PROPERTY(int onLiteralSignal READ onLiteralSignal WRITE setOnLiteralSignal);
-    Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType);
+    Q_PROPERTY(int onLiteralSignal READ onLiteralSignal WRITE setOnLiteralSignal)
+    Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType)
     Q_PROPERTY(MyQmlObject *qmlobjectProperty READ qmlobject WRITE setQmlobject)
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
 
@@ -135,7 +137,7 @@ public:
     static MyAttachedObject *qmlAttachedProperties(QObject *other) {
         return new MyAttachedObject(other);
     }
-    Q_CLASSINFO("DefaultMethod", "basicSlot()");
+    Q_CLASSINFO("DefaultMethod", "basicSlot()")
 
     int onLiteralSignal() const { return m_value; }
     void setOnLiteralSignal(int v) { m_value = v; }
@@ -171,8 +173,8 @@ QML_DECLARE_TYPE(MyQmlObject);
 class MyGroupedObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript);
-    Q_PROPERTY(int value READ value WRITE setValue);
+    Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript)
+    Q_PROPERTY(int value READ value WRITE setValue)
 public:
     QDeclarativeScriptString script() const { return m_script; }
     void setScript(const QDeclarativeScriptString &s) { m_script = s; }
@@ -194,36 +196,36 @@ class MyTypeObject : public QObject
     Q_ENUMS(MyEnum)
     Q_FLAGS(MyFlags)
 
-    Q_PROPERTY(QString id READ id WRITE setId);
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
-    Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty);
-    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty);
-    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty);
-    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty);
-    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty);
-    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty);
-    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty);
-    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty);
-    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty);
-    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty);
-    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty);
-    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty);
-    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty);
-    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty);
-    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
-    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
-    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
-    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged);
-    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2);
-    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
-    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
-    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
-    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty);
-    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty);
+    Q_PROPERTY(QString id READ id WRITE setId)
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty)
+    Q_PROPERTY(QDeclarativeComponent *componentProperty READ componentProperty WRITE setComponentProperty)
+    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty)
+    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty)
+    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty)
+    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty)
+    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty)
+    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty)
+    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty)
+    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty)
+    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty)
+    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty)
+    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty)
+    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty)
+    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty)
+    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty)
+    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty)
+    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty)
+    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged)
+    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2)
+    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty)
+    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty)
+    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty)
+    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty)
+    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty)
 
-    Q_PROPERTY(QDeclarativeScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
-    Q_PROPERTY(MyGroupedObject *grouped READ grouped CONSTANT);
-    Q_PROPERTY(MyGroupedObject *nullGrouped READ nullGrouped CONSTANT);
+    Q_PROPERTY(QDeclarativeScriptString scriptProperty READ scriptProperty WRITE setScriptProperty)
+    Q_PROPERTY(MyGroupedObject *grouped READ grouped CONSTANT)
+    Q_PROPERTY(MyGroupedObject *nullGrouped READ nullGrouped CONSTANT)
 
 public:
     MyTypeObject()
@@ -467,7 +469,7 @@ class MyContainer : public QObject
     Q_OBJECT
     Q_PROPERTY(QDeclarativeListProperty<QObject> children READ children)
     Q_PROPERTY(QDeclarativeListProperty<MyInterface> qlistInterfaces READ qlistInterfaces)
-    Q_CLASSINFO("DefaultProperty", "children");
+    Q_CLASSINFO("DefaultProperty", "children")
 public:
     MyContainer() {}
 
@@ -549,7 +551,7 @@ namespace MyNamespace {
     class MySecondNamespacedType : public QObject
     {
         Q_OBJECT
-        Q_PROPERTY(QDeclarativeListProperty<MyNamespace::MyNamespacedType> list READ list);
+        Q_PROPERTY(QDeclarativeListProperty<MyNamespace::MyNamespacedType> list READ list)
     public:
         QDeclarativeListProperty<MyNamespacedType> list() { return QDeclarativeListProperty<MyNamespacedType>(this, m_list); }
 
@@ -559,6 +561,20 @@ namespace MyNamespace {
 }
 QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
 QML_DECLARE_TYPE(MyNamespace::MySecondNamespacedType);
+
+class MyCustomParserType : public QObject
+{
+    Q_OBJECT
+};
+
+class MyCustomParserTypeParser : public QDeclarativeCustomParser
+{
+public:
+    QByteArray compile(const QList<QDeclarativeCustomParserProperty> &) { return QByteArray(); }
+    void setCustomData(QObject *, const QByteArray &) {}
+};
+
+QML_DECLARE_TYPE(MyCustomParserType);
 
 void registerTypes();
 

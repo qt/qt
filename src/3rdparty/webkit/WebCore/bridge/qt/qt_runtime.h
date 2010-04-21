@@ -20,9 +20,9 @@
 #ifndef BINDINGS_QT_RUNTIME_H_
 #define BINDINGS_QT_RUNTIME_H_
 
+#include "Bridge.h"
 #include "Completion.h"
 #include "Protect.h"
-#include "runtime.h"
 #include "runtime_method.h"
 
 #include <qbytearray.h>
@@ -40,7 +40,9 @@ public:
 
     typedef enum {
         MetaProperty,
+#ifndef QT_NO_PROPERTIES
         DynamicProperty,
+#endif
         ChildObject
     } QtFieldType;
 
@@ -48,9 +50,11 @@ public:
         : m_type(MetaProperty), m_property(p)
         {}
 
+#ifndef QT_NO_PROPERTIES
     QtField(const QByteArray &b)
         : m_type(DynamicProperty), m_dynamicProperty(b)
         {}
+#endif
 
     QtField(QObject *child)
         : m_type(ChildObject), m_childObject(child)
@@ -151,10 +155,12 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
-        return Structure::create(prototype, TypeInfo(ObjectType,  OverridesGetOwnPropertySlot | OverridesMarkChildren));
+        return Structure::create(prototype, TypeInfo(ObjectType,  StructureFlags), AnonymousSlotCount);
     }
 
 protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesGetPropertyNames | InternalFunction::StructureFlags | OverridesMarkChildren;
+
     QtRuntimeMethodData *d_func() const {return d_ptr;}
     QtRuntimeMethod(QtRuntimeMethodData *dd, ExecState *exec, const Identifier &n, PassRefPtr<QtInstance> inst);
     QtRuntimeMethodData *d_ptr;
@@ -166,6 +172,8 @@ public:
     QtRuntimeMetaMethod(ExecState *exec, const Identifier &n, PassRefPtr<QtInstance> inst, int index, const QByteArray& signature, bool allowPrivate);
 
     virtual bool getOwnPropertySlot(ExecState *, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
     virtual void markChildren(MarkStack& markStack);
 
@@ -175,9 +183,9 @@ protected:
 private:
     virtual CallType getCallData(CallData&);
     static JSValue JSC_HOST_CALL call(ExecState* exec, JSObject* functionObject, JSValue thisValue, const ArgList& args);
-    static JSValue lengthGetter(ExecState*, const Identifier&, const PropertySlot&);
-    static JSValue connectGetter(ExecState*, const Identifier&, const PropertySlot&);
-    static JSValue disconnectGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue lengthGetter(ExecState*, JSValue, const Identifier&);
+    static JSValue connectGetter(ExecState*, JSValue, const Identifier&);
+    static JSValue disconnectGetter(ExecState*, JSValue, const Identifier&);
 };
 
 class QtConnectionObject;
@@ -187,6 +195,8 @@ public:
     QtRuntimeConnectionMethod(ExecState *exec, const Identifier &n, bool isConnect, PassRefPtr<QtInstance> inst, int index, const QByteArray& signature );
 
     virtual bool getOwnPropertySlot(ExecState *, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
 protected:
     QtRuntimeConnectionMethodData* d_func() const {return reinterpret_cast<QtRuntimeConnectionMethodData*>(d_ptr);}
@@ -194,7 +204,7 @@ protected:
 private:
     virtual CallType getCallData(CallData&);
     static JSValue JSC_HOST_CALL call(ExecState* exec, JSObject* functionObject, JSValue thisValue, const ArgList& args);
-    static JSValue lengthGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue lengthGetter(ExecState*, JSValue, const Identifier&);
     static QMultiMap<QObject *, QtConnectionObject *> connections;
     friend class QtConnectionObject;
 };

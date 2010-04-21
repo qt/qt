@@ -370,7 +370,7 @@ EXPORTS
 	_ZN12QVideoWidget17brightnessChangedEi @ 369 NONAME
 	_ZN12QVideoWidget17fullScreenChangedEb @ 370 NONAME
 	_ZN12QVideoWidget17saturationChangedEi @ 371 NONAME
-	_ZN12QVideoWidget18setAspectRatioModeENS_15AspectRatioModeE @ 372 NONAME
+	_ZN12QVideoWidget18setAspectRatioModeENS_15AspectRatioModeE @ 372 NONAME ABSENT
 	_ZN12QVideoWidget19getStaticMetaObjectEv @ 373 NONAME
 	_ZN12QVideoWidget5eventEP6QEvent @ 374 NONAME
 	_ZN12QVideoWidget6setHueEi @ 375 NONAME
@@ -382,7 +382,7 @@ EXPORTS
 	_ZN12QVideoWidgetD0Ev @ 381 NONAME
 	_ZN12QVideoWidgetD1Ev @ 382 NONAME
 	_ZN12QVideoWidgetD2Ev @ 383 NONAME
-	_ZN12QtMultimedia28qRegisterDeclarativeElementsEPKc @ 384 NONAME
+	_ZN12QtMultimedia28qRegisterDeclarativeElementsEPKc @ 384 NONAME ABSENT
 	_ZN13QMediaContentC1ERK14QMediaResource @ 385 NONAME
 	_ZN13QMediaContentC1ERK15QNetworkRequest @ 386 NONAME
 	_ZN13QMediaContentC1ERK4QUrl @ 387 NONAME
@@ -946,4 +946,33 @@ EXPORTS
 	_ZneRK15QMediaTimeRangeS1_ @ 945 NONAME
 	_ZneRK18QMediaTimeIntervalS1_ @ 946 NONAME
 	_ZplRK15QMediaTimeRangeS1_ @ 947 NONAME
+	_ZN12QSoundEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 948 NONAME
+	_ZN12QSoundEffect11qt_metacastEPKc @ 949 NONAME
+	_ZN12QSoundEffect12loopsChangedEv @ 950 NONAME
+	_ZN12QSoundEffect12mutedChangedEv @ 951 NONAME
+	_ZN12QSoundEffect13sourceChangedEv @ 952 NONAME
+	_ZN12QSoundEffect13volumeChangedEv @ 953 NONAME
+	_ZN12QSoundEffect16staticMetaObjectE @ 954 NONAME DATA 16
+	_ZN12QSoundEffect19getStaticMetaObjectEv @ 955 NONAME
+	_ZN12QSoundEffect4playEv @ 956 NONAME
+	_ZN12QSoundEffect8setLoopsEi @ 957 NONAME
+	_ZN12QSoundEffect8setMutedEb @ 958 NONAME
+	_ZN12QSoundEffect9setSourceERK4QUrl @ 959 NONAME
+	_ZN12QSoundEffect9setVolumeEi @ 960 NONAME
+	_ZN12QSoundEffectC1EP7QObject @ 961 NONAME
+	_ZN12QSoundEffectC2EP7QObject @ 962 NONAME
+	_ZN12QSoundEffectD0Ev @ 963 NONAME
+	_ZN12QSoundEffectD1Ev @ 964 NONAME
+	_ZN12QSoundEffectD2Ev @ 965 NONAME
+	_ZN12QVideoWidget18setAspectRatioModeEN2Qt15AspectRatioModeE @ 966 NONAME
+	_ZNK12QSoundEffect10metaObjectEv @ 967 NONAME
+	_ZNK12QSoundEffect5loopsEv @ 968 NONAME
+	_ZNK12QSoundEffect6sourceEv @ 969 NONAME
+	_ZNK12QSoundEffect6volumeEv @ 970 NONAME
+	_ZNK12QSoundEffect7isMutedEv @ 971 NONAME
+	_ZTI12QSoundEffect @ 972 NONAME
+	_ZTV12QSoundEffect @ 973 NONAME
+	_ZN18QGraphicsVideoItem10sceneEventEP6QEvent @ 974 NONAME
+	_ZN18QGraphicsVideoItem5eventEP6QEvent @ 975 NONAME
+	_ZThn8_N18QGraphicsVideoItem10sceneEventEP6QEvent @ 976 NONAME
 

@@ -39,16 +39,17 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeenginedebug_p.h"
+#include "private/qdeclarativeenginedebug_p.h"
 
-#include "qdeclarativeboundsignal_p.h"
+#include "private/qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativemetatype_p.h"
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativewatcher_p.h"
+#include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativewatcher_p.h"
+#include "private/qdeclarativevaluetype_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
@@ -67,16 +68,16 @@ QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
 QDataStream &operator<<(QDataStream &ds, 
                         const QDeclarativeEngineDebugServer::QDeclarativeObjectData &data)
 {
-    ds << data.url << data.lineNumber << data.columnNumber << data.objectName
-       << data.objectType << data.objectId << data.contextId;
+    ds << data.url << data.lineNumber << data.columnNumber << data.idString
+       << data.objectName << data.objectType << data.objectId << data.contextId;
     return ds;
 }
 
 QDataStream &operator>>(QDataStream &ds, 
                         QDeclarativeEngineDebugServer::QDeclarativeObjectData &data)
 {
-    ds >> data.url >> data.lineNumber >> data.columnNumber >> data.objectName
-       >> data.objectType >> data.objectId >> data.contextId;
+    ds >> data.url >> data.lineNumber >> data.columnNumber >> data.idString
+       >> data.objectName >> data.objectType >> data.objectId >> data.contextId;
     return ds;
 }
 
@@ -218,10 +219,9 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
         message << fakeProperties[ii];
 }
 
-void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, 
-                                           QDeclarativeContext *ctxt)
+void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDeclarativeContext *ctxt)
 {
-    QDeclarativeContextPrivate *p = (QDeclarativeContextPrivate *)QObjectPrivate::get(ctxt);
+    QDeclarativeContextData *p = QDeclarativeContextData::get(ctxt);
 
     QString ctxtName = ctxt->objectName();
     int ctxtId = QDeclarativeDebugService::idForObject(ctxt);
@@ -230,50 +230,56 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message,
 
     int count = 0;
 
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = p->childContexts.begin();
-            iter != p->childContexts.end(); ++iter) {
-        QDeclarativeContextPrivate *p = (QDeclarativeContextPrivate *)QObjectPrivate::get(*iter);
-        if (p->isInternal)
-            continue;
-        ++count;
+    QDeclarativeContextData *child = p->childContexts;
+    while (child) {
+        if (!child->isInternal)
+            ++count;
+        child = child->nextChild;
     }
 
     message << count;
 
-    for (QSet<QDeclarativeContext *>::ConstIterator iter = p->childContexts.begin();
-            iter != p->childContexts.end(); ++iter) {
-        QDeclarativeContextPrivate *p = (QDeclarativeContextPrivate *)QObjectPrivate::get(*iter);
-        if (p->isInternal)
-            continue;
-        buildObjectList(message, *iter);
+    child = p->childContexts;
+    while (child) {
+        if (!child->isInternal) 
+            buildObjectList(message, child->asQDeclarativeContext());
+        child = child->nextChild;
     }
 
     // Clean deleted objects
-    for (int ii = 0; ii < p->instances.count(); ++ii) {
-        if (!p->instances.at(ii)) {
-            p->instances.removeAt(ii);
+    QDeclarativeContextPrivate *ctxtPriv = QDeclarativeContextPrivate::get(ctxt);
+    for (int ii = 0; ii < ctxtPriv->instances.count(); ++ii) {
+        if (!ctxtPriv->instances.at(ii)) {
+            ctxtPriv->instances.removeAt(ii);
             --ii;
         }
     }
 
-    message << p->instances.count();
-    for (int ii = 0; ii < p->instances.count(); ++ii) {
-        message << objectData(p->instances.at(ii));
+    message << ctxtPriv->instances.count();
+    for (int ii = 0; ii < ctxtPriv->instances.count(); ++ii) {
+        message << objectData(ctxtPriv->instances.at(ii));
     }
 }
 
 QDeclarativeEngineDebugServer::QDeclarativeObjectData 
 QDeclarativeEngineDebugServer::objectData(QObject *object)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *ddata = QDeclarativeData::get(object);
     QDeclarativeObjectData rv;
-    if (ddata) {
-        rv.url = ddata->outerContext->baseUrl();
+    if (ddata && ddata->outerContext) {
+        rv.url = ddata->outerContext->url;
         rv.lineNumber = ddata->lineNumber;
         rv.columnNumber = ddata->columnNumber;
     } else {
         rv.lineNumber = -1;
         rv.columnNumber = -1;
+    }
+
+    QDeclarativeContext *context = qmlContext(object);
+    if (context) {
+        QDeclarativeContextData *cdata = QDeclarativeContextData::get(context);
+        if (cdata)
+            rv.idString = cdata->findObjectId(object);
     }
 
     rv.objectName = object->objectName();

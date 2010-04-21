@@ -40,9 +40,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSSQLResultSet);
 
 static const HashTableValue JSSQLResultSetTableValues[4] =
 {
-    { "rows", DontDelete|ReadOnly, (intptr_t)jsSQLResultSetRows, (intptr_t)0 },
-    { "insertId", DontDelete|ReadOnly, (intptr_t)jsSQLResultSetInsertId, (intptr_t)0 },
-    { "rowsAffected", DontDelete|ReadOnly, (intptr_t)jsSQLResultSetRowsAffected, (intptr_t)0 },
+    { "rows", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSQLResultSetRows), (intptr_t)0 },
+    { "insertId", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSQLResultSetInsertId), (intptr_t)0 },
+    { "rowsAffected", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSQLResultSetRowsAffected), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -102,17 +102,18 @@ bool JSSQLResultSet::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSSQLResultSet, Base>(exec, &JSSQLResultSetTable, this, propertyName, descriptor);
 }
 
-JSValue jsSQLResultSetRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetRows(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
+    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
+    return result;
 }
 
-JSValue jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetInsertId(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
+    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slotBase));
     ExceptionCode ec = 0;
     SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
     JSC::JSValue result = jsNumber(exec, imp->insertId(ec));
@@ -120,12 +121,13 @@ JSValue jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const Propert
     return result;
 }
 
-JSValue jsSQLResultSetRowsAffected(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLResultSetRowsAffected(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
+    JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
-    return jsNumber(exec, imp->rowsAffected());
+    JSValue result = jsNumber(exec, imp->rowsAffected());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLResultSet* object)

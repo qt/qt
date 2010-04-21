@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetextedit_p.h"
-#include "qdeclarativetextedit_p_p.h"
+#include "private/qdeclarativetextedit_p.h"
+#include "private/qdeclarativetextedit_p_p.h"
 
-#include "qdeclarativeevents_p_p.h"
-
-#include <qfxperf_p_p.h>
+#include "private/qdeclarativeevents_p_p.h"
+#include <private/qdeclarativeglobal_p.h>
+#include <qdeclarativeinfo.h>
 
 #include <QTextLayout>
 #include <QTextLine>
@@ -118,13 +118,114 @@ QString QDeclarativeTextEdit::text() const
 
 /*!
     \qmlproperty string TextEdit::font.family
+
+    Sets the family name of the font.
+
+    The family name is case insensitive and may optionally include a foundry name, e.g. "Helvetica [Cronyx]".
+    If the family is available from more than one foundry and the foundry isn't specified, an arbitrary foundry is chosen.
+    If the family isn't available a family will be set using the font matching algorithm.
+*/
+
+/*!
     \qmlproperty bool TextEdit::font.bold
+
+    Sets the font's weight to bold.
+*/
+
+/*!
+    \qmlproperty enumeration TextEdit::font.weight
+
+    Sets the font's weight.
+
+    The weight can be one of:
+    \list
+    \o Light
+    \o Normal - the default
+    \o DemiBold
+    \o Bold
+    \o Black
+    \endlist
+
+    \qml
+    TextEdit { text: "Hello"; font.weight: Font.DemiBold }
+    \endqml
+*/
+
+/*!
     \qmlproperty bool TextEdit::font.italic
+
+    Sets the style of the text to italic.
+*/
+
+/*!
     \qmlproperty bool TextEdit::font.underline
+
+    Set the style of the text to underline.
+*/
+
+/*!
+    \qmlproperty bool TextEdit::font.outline
+
+    Set the style of the text to outline.
+*/
+
+/*!
+    \qmlproperty bool TextEdit::font.strikeout
+
+    Set the style of the text to strikeout.
+*/
+
+/*!
     \qmlproperty real TextEdit::font.pointSize
+
+    Sets the font size in points. The point size must be greater than zero.
+*/
+
+/*!
     \qmlproperty int TextEdit::font.pixelSize
 
-    Set the TextEdit's font attributes.
+    Sets the font size in pixels.
+
+    Using this function makes the font device dependent.
+    Use \c pointSize to set the size of the font in a device independent manner.
+*/
+
+/*!
+    \qmlproperty real TextEdit::font.letterSpacing
+
+    Sets the letter spacing for the font.
+
+    Letter spacing changes the default spacing between individual letters in the font.
+    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
+    the width of the character itself.
+*/
+
+/*!
+    \qmlproperty real TextEdit::font.wordSpacing
+
+    Sets the word spacing for the font.
+
+    Word spacing changes the default spacing between individual words.
+    A positive value increases the word spacing by a corresponding amount of pixels,
+    while a negative value decreases the inter-word spacing accordingly.
+*/
+
+/*!
+    \qmlproperty enumeration TextEdit::font.capitalization
+
+    Sets the capitalization for the text.
+
+    \list
+    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \endlist
+
+    \qml
+    TextEdit { text: "Hello"; font.capitalization: Font.AllLowercase }
+    \endqml
 */
 
 /*!
@@ -171,12 +272,12 @@ Column {
     }
     TextEdit {
         font.pointSize: 24
-        textFormat: "RichText"
+        textFormat: TextEdit.RichText
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
         font.pointSize: 24
-        textFormat: "PlainText"
+        textFormat: TextEdit.PlainText
         text: "<b>Hello</b> <i>World!</i>"
     }
 }
@@ -361,29 +462,50 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     emit verticalAlignmentChanged(d->vAlign);
 }
 
-bool QDeclarativeTextEdit::wrap() const
-{
-    Q_D(const QDeclarativeTextEdit);
-    return d->wrap;
-}
-
 /*!
-    \qmlproperty bool TextEdit::wrap
+    \qmlproperty enumeration TextEdit::wrapMode
 
     Set this property to wrap the text to the TextEdit item's width.
     The text will only wrap if an explicit width has been set.
 
-    Wrapping is done on word boundaries (i.e. it is a "word-wrap"). Wrapping is off by default.
+    \list
+    \o NoWrap - no wrapping will be performed.
+    \o WordWrap - wrapping is done on word boundaries.
+    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+       will occur at the appropriate point on the line, even in the middle of a word.
+    \endlist
+
+    The default is NoWrap.
 */
-void QDeclarativeTextEdit::setWrap(bool w)
+QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->wrapMode;
+}
+
+void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 {
     Q_D(QDeclarativeTextEdit);
-    if (w == d->wrap)
+    if (mode == d->wrapMode)
         return;
-    d->wrap = w;
+    d->wrapMode = mode;
     d->updateDefaultTextOption();
     updateSize();
-    emit wrapChanged(d->wrap);
+    emit wrapModeChanged();
+}
+
+bool QDeclarativeTextEdit::wrap() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->wrapMode != QDeclarativeTextEdit::NoWrap;
+}
+
+void QDeclarativeTextEdit::setWrap(bool w)
+{
+
+    qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
+    setWrapMode(w ? WordWrap : NoWrap);
 }
 
 /*!
@@ -487,6 +609,7 @@ void QDeclarativeTextEdit::loadCursorDelegate()
                 this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
         dirtyCache(cursorRect());
+        QDeclarative_setParent_noEvent(d->cursor, this);
         d->cursor->setParentItem(this);
         d->cursor->setHeight(QFontMetrics(d->font).height());
         moveCursorDelegate();
@@ -666,7 +789,7 @@ void QDeclarativeTextEdit::componentComplete()
 */
 void QDeclarativeTextEdit::setReadOnly(bool r)
 {
-    Q_D(QDeclarativeTextEdit);    
+    Q_D(QDeclarativeTextEdit);
     if (r == isReadOnly())
         return;
 
@@ -760,17 +883,11 @@ void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
 
-/*!
-    \overload
-    Handles changing of the focus property.  Focus is applied to the control
-    even if the edit does not have active focus.  This is because things
-    like KeyProxy can give the behavior of focus even when hasFocus() isn't
-    true.
-*/
-void QDeclarativeTextEdit::focusChanged(bool hasFocus)
+void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 {
-    setCursorVisible(hasFocus);
-    QDeclarativeItem::focusChanged(hasFocus);
+    Q_Q(QDeclarativeTextEdit);
+    q->setCursorVisible(hasFocus);
+    QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
 /*!
@@ -1026,11 +1143,7 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     opt.setAlignment((Qt::Alignment)(int)(hAlign | vAlign));
 
     QTextOption::WrapMode oldWrapMode = opt.wrapMode();
-
-    if (wrap)
-        opt.setWrapMode(QTextOption::WordWrap);
-    else
-        opt.setWrapMode(QTextOption::NoWrap);
+    opt.setWrapMode(QTextOption::WrapMode(wrapMode));
 
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;

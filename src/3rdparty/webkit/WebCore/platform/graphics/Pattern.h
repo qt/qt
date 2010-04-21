@@ -28,10 +28,11 @@
 #ifndef Pattern_h
 #define Pattern_h
 
+#include "AffineTransform.h"
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include "TransformationMatrix.h"
 
 #if PLATFORM(CG)
 typedef struct CGPattern* CGPatternRef;
@@ -56,36 +57,48 @@ typedef wxBrush* PlatformPatternPtr;
 #elif PLATFORM(HAIKU)
 #include <interface/GraphicsDefs.h>
 typedef pattern* PlatformPatternPtr;
-#elif PLATFORM(WINCE)
+#elif OS(WINCE)
 typedef void* PlatformPatternPtr;
 #endif
 
 namespace WebCore {
-    class TransformationMatrix;
-    class Image;
 
-    class Pattern : public RefCounted<Pattern> {
-    public:
-        static PassRefPtr<Pattern> create(Image* tileImage, bool repeatX, bool repeatY)
-        {
-            return adoptRef(new Pattern(tileImage, repeatX, repeatY));
-        }
-        virtual ~Pattern();
+class AffineTransform;
+class Image;
 
-        Image* tileImage() const { return m_tileImage.get(); }
+class Pattern : public RefCounted<Pattern> {
+public:
+    static PassRefPtr<Pattern> create(Image* tileImage, bool repeatX, bool repeatY)
+    {
+        return adoptRef(new Pattern(tileImage, repeatX, repeatY));
+    }
+    virtual ~Pattern();
 
-        // Pattern space is an abstract space that maps to the default user space by the transformation 'userSpaceTransformation' 
-        PlatformPatternPtr createPlatformPattern(const TransformationMatrix& userSpaceTransformation) const;
-        void setPatternSpaceTransform(const TransformationMatrix& patternSpaceTransformation) { m_patternSpaceTransformation = patternSpaceTransformation; }
+    Image* tileImage() const { return m_tileImage.get(); }
 
-    private:
-        Pattern(Image*, bool repeatX, bool repeatY);
+    void platformDestroy();
 
-        RefPtr<Image> m_tileImage;
-        bool m_repeatX;
-        bool m_repeatY;
-        TransformationMatrix m_patternSpaceTransformation;
-    };
+    // Pattern space is an abstract space that maps to the default user space by the transformation 'userSpaceTransformation' 
+#if PLATFORM(SKIA)
+    PlatformPatternPtr platformPattern(const AffineTransform& userSpaceTransformation);
+#else
+    PlatformPatternPtr createPlatformPattern(const AffineTransform& userSpaceTransformation) const;
+#endif
+    void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
+    void setPlatformPatternSpaceTransform();
+
+    bool repeatX() const { return m_repeatX; }
+    bool repeatY() const { return m_repeatY; }
+
+private:
+    Pattern(Image*, bool repeatX, bool repeatY);
+
+    RefPtr<Image> m_tileImage;
+    bool m_repeatX;
+    bool m_repeatY;
+    AffineTransform m_patternSpaceTransformation;
+    PlatformPatternPtr m_pattern;
+};
 
 } //namespace
 

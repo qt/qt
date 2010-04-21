@@ -8,7 +8,7 @@ Rectangle {
         width: 100; height: 100; color: "green"
         Behavior on x {
             objectName: "MyBehavior";
-            NumberAnimation { duration: 500; }
+            NumberAnimation {id: na; duration: 500; }
         }
     }
     MouseArea {

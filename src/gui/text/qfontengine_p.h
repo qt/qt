@@ -206,6 +206,8 @@ public:
     virtual qreal minLeftBearing() const { return qreal(); }
     virtual qreal minRightBearing() const { return qreal(); }
 
+    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
+
     virtual const char *name() const = 0;
 
     virtual bool canRender(const QChar *string, int len) = 0;
@@ -374,6 +376,7 @@ public:
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
     virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
     virtual void addOutlineToPath(qreal, qreal, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags flags);
+    virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 
     virtual QFixed ascent() const;
     virtual QFixed descent() const;

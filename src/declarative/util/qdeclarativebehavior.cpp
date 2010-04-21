@@ -39,22 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebehavior_p.h"
+#include "private/qdeclarativebehavior_p.h"
 
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativetransition_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativetransition_p.h"
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeinfo.h>
 #include <qdeclarativeproperty_p.h>
-
-#include <QtCore/qparallelanimationgroup.h>
+#include <qdeclarativeguard_p.h>
 
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
-
-
 
 class QDeclarativeBehaviorPrivate : public QObjectPrivate
 {
@@ -64,7 +61,7 @@ public:
 
     QDeclarativeProperty property;
     QVariant currentValue;
-    QDeclarativeAbstractAnimation *animation;
+    QDeclarativeGuard<QDeclarativeAbstractAnimation> animation;
     bool enabled;
 };
 
@@ -83,7 +80,8 @@ public:
         y: 200  // initial value
         Behavior on y {
             NumberAnimation {
-                easing: "easeOutBounce(amplitude:100)"
+                easing.type: "OutBounce"
+                easing.amplitude: 100
                 duration: 200
             }
         }
@@ -165,7 +163,8 @@ void QDeclarativeBehavior::write(const QVariant &value)
 
     d->currentValue = d->property.read();
 
-    d->animation->qtAnimation()->stop();
+    if (d->animation->qtAnimation()->duration() != -1)
+        d->animation->qtAnimation()->stop();
 
     QDeclarativeStateOperation::ActionList actions;
     QDeclarativeAction action;
@@ -175,11 +174,10 @@ void QDeclarativeBehavior::write(const QVariant &value)
     actions << action;
 
     QList<QDeclarativeProperty> after;
-    if (d->animation)
-        d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
+    d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
     d->animation->qtAnimation()->start();
     if (!after.contains(d->property))
-        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);    
 }
 
 void QDeclarativeBehavior::setTarget(const QDeclarativeProperty &property)

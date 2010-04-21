@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativesqldatabase_p.h"
+#include "private/qdeclarativesqldatabase_p.h"
 
 #include "qdeclarativeengine.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativerefcount_p.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativerefcount_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
@@ -279,7 +279,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
 
     QString foundvers = context->thisObject().property(QLatin1String("version")).toString();
     if (from_version!=foundvers) {
-        THROW_SQL(2,QDeclarativeEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
+        THROW_SQL(VERSION_ERR,QDeclarativeEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
         return engine->undefinedValue();
     }
 
@@ -293,7 +293,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
         } else {
             if (!db.commit()) {
                 db.rollback();
-                THROW_SQL(0,QDeclarativeEngine::tr("SQL transaction failed"));
+                THROW_SQL(UNKNOWN_ERR,QDeclarativeEngine::tr("SQL transaction failed"));
             } else {
                 ok = true;
             }

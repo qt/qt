@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativerectangle_p.h"
-#include "qdeclarativerectangle_p_p.h"
+#include "private/qdeclarativerectangle_p.h"
+#include "private/qdeclarativerectangle_p_p.h"
 
 #include <QPainter>
 #include <QtCore/qmath.h>
@@ -228,13 +228,12 @@ QDeclarativePen *QDeclarativeRectangle::border()
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    Rectangle { rotation: 90; x: 80; y: 200; width: 80; height: 80
+    Rectangle { rotation: 90; y: 200; width: 80; height: 80
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    // The x offset is needed because the rotation is from the top left corner
     \endqml
     \endtable
 
@@ -465,12 +464,13 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
     filtering at the beginning of the animation and reenable it at the conclusion.
 
     \image rect-smooth.png
+    On this image, smooth is turned off on the top half and on on the bottom half.
 */
 
 QRectF QDeclarativeRectangle::boundingRect() const
 {
     Q_D(const QDeclarativeRectangle);
-    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width()+d->paintmargin*2, d->height()+d->paintmargin*2);
 }
 
 QT_END_NAMESPACE

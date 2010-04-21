@@ -75,8 +75,8 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_DECL_IMPORT extern int qt_defaultDpiX();
+Q_DECL_IMPORT extern int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
 
@@ -182,6 +182,7 @@ public:
     qreal penScale;         // Pen scaling factor from "transform".
 
     QTransform pathTransform;  // Calculated VG path transformation.
+    QTransform glyphTransform; // Calculated VG glyph transformation.
     QTransform imageTransform; // Calculated VG image transformation.
     bool pathTransformSet;  // True if path transform set in the VG context.
 
@@ -495,28 +496,35 @@ void QVGPaintEnginePrivate::setTransform
     vgLoadMatrix(mat);
 }
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_DECL_IMPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
 {
-    VGfloat devh = pdev->height() - 1;
+    VGfloat devh = pdev->height();
 
     // Construct the VG transform by combining the Qt transform with
     // the following viewport transformation:
-    //        | 1  0  0   |   | 1 0  0.5 |   | 1  0     0.5      |
-    //        | 0 -1 devh | * | 0 1 -0.5 | = | 0 -1 (0.5 + devh) |
-    //        | 0  0  1   |   | 0 0   1  |   | 0  0      1       |
+    //        | 1  0  0   |
+    //        | 0 -1 devh |
+    //        | 0  0  1   |
+    // The glyph transform uses a slightly different transformation:
+    //        | 1  0  0       |   | 1 0  0.5 |   | 1  0     0.5      |
+    //        | 0 -1 devh - 1 | * | 0 1 -0.5 | = | 0 -1 (devh - 0.5) |
+    //        | 0  0  1       |   | 0 0   1  |   | 0  0      1       |
     // The full VG transform is effectively:
     //      1. Apply the user's transformation matrix.
-    //      2. Translate by (0.5, -0.5) to correct for Qt and VG putting
-    //         the centre of the pixel at different positions.
+    //      2. Translate glyphs by an extra (0.5, -0.5).
     //      3. Flip the co-ordinate system upside down.
     QTransform viewport(1.0f, 0.0f, 0.0f,
                         0.0f, -1.0f, 0.0f,
-                        0.5f, devh + 0.5f, 1.0f);
+                        0.0f, devh, 1.0f);
+    QTransform gviewport(1.0f, 0.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f,
+                        0.5f, devh - 0.5f, 1.0f);
 
     // Compute the path transform and determine if it is projective.
     pathTransform = transform * viewport;
+    glyphTransform = transform * gviewport;
     bool projective = (pathTransform.m13() != 0.0f ||
                        pathTransform.m23() != 0.0f ||
                        pathTransform.m33() != 1.0f);
@@ -525,6 +533,7 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
         // so we will have to convert the co-ordinates ourselves.
         // Change the matrix to just the viewport transformation.
         pathTransform = viewport;
+        glyphTransform = gviewport;
         simpleTransform = false;
     } else {
         simpleTransform = true;
@@ -532,13 +541,7 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
     pathTransformSet = false;
 
     // The image transform is always the full transformation,
-    // because it can be projective.  It also does not need the
-    // (0.5, -0.5) translation because vgDrawImage() implicitly
-    // adds 0.5 to each co-ordinate.
-    QTransform viewport2(1.0f, 0.0f, 0.0f,
-                         0.0f, -1.0f, 0.0f,
-                         0.0f, devh, 1.0f);
-    imageTransform = transform * viewport2;
+    imageTransform = transform * viewport;
 
     // Calculate the scaling factor to use for turning cosmetic pens
     // into ordinary non-cosmetic pens.
@@ -971,7 +974,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
     return vgpath;
 }
 
-extern QImage qt_imageForBrush(int style, bool invert);
+Q_DECL_IMPORT extern QImage qt_imageForBrush(int style, bool invert);
 
 static QImage colorizeBitmap(const QImage &image, const QColor &color)
 {
@@ -3331,7 +3334,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     }
 
     // Set the transformation to use for drawing the current glyphs.
-    QTransform glyphTransform(d->pathTransform);
+    QTransform glyphTransform(d->glyphTransform);
     glyphTransform.translate(p.x(), p.y());
 #if defined(QVG_NO_IMAGE_GLYPHS)
     glyphTransform.scale(glyphCache->scaleX, glyphCache->scaleY);
@@ -3669,10 +3672,10 @@ void QVGCompositionHelper::fillBackground
 
     } else {
         // Set the path transform to the default viewport transformation.
-        VGfloat devh = screenSize.height() - 1;
+        VGfloat devh = screenSize.height();
         QTransform viewport(1.0f, 0.0f, 0.0f,
                             0.0f, -1.0f, 0.0f,
-                            -0.5f, devh + 0.5f, 1.0f);
+                            0.0f, devh, 1.0f);
         d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
 
         // Set the brush to use to fill the background.
@@ -3708,10 +3711,10 @@ void QVGCompositionHelper::drawCursorPixmap
     }
 
     // Set the image transformation and modes.
-    VGfloat devh = screenSize.height() - 1;
+    VGfloat devh = screenSize.height();
     QTransform transform(1.0f, 0.0f, 0.0f,
                          0.0f, -1.0f, 0.0f,
-                         -0.5f, devh + 0.5f, 1.0f);
+                         0.0f, devh, 1.0f);
     transform.translate(offset.x(), offset.y());
     d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
     d->setImageMode(VG_DRAW_IMAGE_NORMAL);

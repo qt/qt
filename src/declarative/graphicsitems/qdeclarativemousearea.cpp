@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativemousearea_p.h"
-#include "qdeclarativemousearea_p_p.h"
+#include "private/qdeclarativemousearea_p.h"
+#include "private/qdeclarativemousearea_p_p.h"
 
-#include "qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeevents_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 
@@ -58,16 +58,24 @@ QDeclarativeDrag::~QDeclarativeDrag()
 {
 }
 
-QDeclarativeItem *QDeclarativeDrag::target() const
+QGraphicsObject *QDeclarativeDrag::target() const
 {
     return _target;
 }
 
-void QDeclarativeDrag::setTarget(QDeclarativeItem *t)
+void QDeclarativeDrag::setTarget(QGraphicsObject *t)
 {
     if (_target == t)
         return;
     _target = t;
+    emit targetChanged();
+}
+
+void QDeclarativeDrag::resetTarget()
+{
+    if (!_target)
+        return;
+    _target = 0;
     emit targetChanged();
 }
 
@@ -383,7 +391,6 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         d->dragged = false;
         setHovered(true);
-        d->start = event->pos();
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
         if (d->isConnected("pressAndHold(QDeclarativeMouseEvent*)"))
@@ -413,8 +420,8 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (d->drag && d->drag->target()) {
         if (!d->moved) {
-            if (d->dragX) d->startX = drag()->target()->x();
-            if (d->dragY) d->startY = drag()->target()->y();
+            d->startX = drag()->target()->x();
+            d->startY = drag()->target()->y();
         }
 
         QPointF startLocalPos;
@@ -440,7 +447,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
         }
 
-        if (d->dragX) {
+        if (d->dragX && d->dragged) {
             qreal x = (curLocalPos.x() - startLocalPos.x()) + d->startX;
             if (x < drag()->xmin())
                 x = drag()->xmin();
@@ -448,7 +455,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 x = drag()->xmax();
             drag()->target()->setX(x);
         }
-        if (d->dragY) {
+        if (d->dragY && d->dragged) {
             qreal y = (curLocalPos.y() - startLocalPos.y()) + d->startY;
             if (y < drag()->ymin())
                 y = drag()->ymin();
@@ -456,8 +463,8 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 y = drag()->ymax();
             drag()->target()->setY(y);
         }
+        d->moved = true;
     }
-    d->moved = true;
     QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
     emit positionChanged(&me);
 }
@@ -640,11 +647,11 @@ bool QDeclarativeMouseArea::setPressed(bool p)
         d->pressed = p;
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
         if (d->pressed) {
-            emit positionChanged(&me);
             emit pressed(&me);
+            emit positionChanged(&me);
         } else {
             emit released(&me);
-            if (isclick)
+            if (isclick && !d->longPress)
                 emit clicked(&me);
         }
 

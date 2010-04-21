@@ -2,8 +2,10 @@ import Qt 4.6
 
 PathView {
     id: photoPathView
-    y: 100; width: 800; height: 330; pathItemCount: 4; offset: 10
-    dragMargin: 24; snapPosition: 0.50
+    y: 100; width: 800; height: 330; pathItemCount: 4; offset: 1
+    dragMargin: 24
+    preferredHighlightBegin: 0.50
+    preferredHighlightEnd: 0.50
 
     path: Path {
         startX: -50; startY: 40;

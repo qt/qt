@@ -47,6 +47,8 @@
 #include "qnetworkconfigmanager_p.h"
 #include "qnetworksession_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -58,7 +60,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
 
     \inmodule QtNetwork
-    \ingroup bearer
+    \ingroup network
 
     A QNetworkSession enables control over the system's network interfaces. The session's configuration
     parameter are determined via the QNetworkConfiguration object to which it is bound. Depending on the 
@@ -225,6 +227,10 @@ QT_BEGIN_NAMESPACE
 QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
 :   QObject(parent), d(0)
 {
+    // invalid configuration
+    if (connectionConfig.identifier().isNull())
+        return;
+
     foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->engines()) {
         if (engine->hasIdentifier(connectionConfig.identifier())) {
             d = engine->createSessionBackend();
@@ -370,6 +376,7 @@ QNetworkConfiguration QNetworkSession::configuration() const
     return d ? d->publicConfig : QNetworkConfiguration();
 }
 
+#ifndef QT_NO_NETWORKINTERFACE
 /*!
     Returns the network interface that is used by this session.
 
@@ -386,6 +393,7 @@ QNetworkInterface QNetworkSession::interface() const
 {
     return d ? d->currentInterface() : QNetworkInterface();
 }
+#endif
 
 /*!
     Returns true if this session is open. If the number of all open sessions is greater than
@@ -700,3 +708,5 @@ void QNetworkSession::disconnectNotify(const char *signal)
 #include "moc_qnetworksession.cpp"
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

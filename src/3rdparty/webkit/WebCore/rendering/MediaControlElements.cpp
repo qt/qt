@@ -38,6 +38,7 @@
 #include "HTMLNames.h"
 #include "LocalizedStrings.h"
 #include "MouseEvent.h"
+#include "Page.h"
 #include "RenderMedia.h"
 #include "RenderSlider.h"
 #include "RenderTheme.h"
@@ -347,6 +348,9 @@ MediaControlInputElement::MediaControlInputElement(Document* document, PseudoId 
     case MEDIA_CONTROLS_VOLUME_SLIDER:
         m_displayType = MediaVolumeSlider;
         break;
+    case MEDIA_CONTROLS_TOGGLE_CLOSED_CAPTIONS_BUTTON:
+        m_displayType = MediaShowClosedCaptionsButton;
+        break;
     default:
         ASSERT_NOT_REACHED();
         break;
@@ -500,7 +504,7 @@ void MediaControlSeekButtonElement::defaultEventHandler(Event* event)
             m_capturing = true;
             frame->eventHandler()->setCapturingMouseEventsNode(this);
         }
-        m_mediaElement->pause();
+        m_mediaElement->pause(event->fromUserGesture());
         m_seekTimer.startRepeating(cSeekRepeatDelay);
         event->setDefaultHandled();
     } else if (event->type() == eventNames().mouseupEvent) {
@@ -577,6 +581,29 @@ void MediaControlReturnToRealtimeButtonElement::defaultEventHandler(Event* event
 
 // ----------------------------
 
+MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement(Document* doc, HTMLMediaElement* element)
+    : MediaControlInputElement(doc, MEDIA_CONTROLS_TOGGLE_CLOSED_CAPTIONS_BUTTON, "button", element)
+{
+}
+
+void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == eventNames().clickEvent) {
+        m_mediaElement->setClosedCaptionsVisible(!m_mediaElement->closedCaptionsVisible());
+        setChecked(m_mediaElement->closedCaptionsVisible());
+        event->setDefaultHandled();
+    }
+    HTMLInputElement::defaultEventHandler(event);
+}
+
+void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
+{
+    setDisplayType(m_mediaElement->closedCaptionsVisible() ? MediaHideClosedCaptionsButton : MediaShowClosedCaptionsButton);
+}
+
+
+// ----------------------------
+
 MediaControlTimelineElement::MediaControlTimelineElement(Document* document, HTMLMediaElement* element)
     : MediaControlInputElement(document, MEDIA_CONTROLS_TIMELINE, "range", element)
 {
@@ -586,6 +613,9 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
 {
     // Left button is 0. Rejects mouse events not from left button.
     if (event->isMouseEvent() && static_cast<MouseEvent*>(event)->button())
+        return;
+
+    if (!attached())
         return;
 
     if (event->type() == eventNames().mousedownEvent)
@@ -633,6 +663,9 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
     if (event->isMouseEvent() && static_cast<MouseEvent*>(event)->button())
         return;
 
+    if (!attached())
+        return;
+
     MediaControlInputElement::defaultEventHandler(event);
 
     if (event->type() == eventNames().mouseoverEvent || event->type() == eventNames().mouseoutEvent || event->type() == eventNames().mousemoveEvent)
@@ -649,10 +682,9 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
 void MediaControlVolumeSliderElement::update()
 {
     float volume = m_mediaElement->volume();
-    if (value().toFloat() != volume) {
+    if (value().toFloat() != volume)
         setValue(String::number(volume));
-        MediaControlInputElement::update();
-    }
+    MediaControlInputElement::update();
 }
 
 // ----------------------------
@@ -705,30 +737,9 @@ void MediaControlTimeDisplayElement::setVisible(bool visible)
     renderer()->setStyle(style.get());
 }
 
-String MediaControlTimeDisplayElement::formatTime(float time)
-{
-    if (!isfinite(time))
-        time = 0;
-    int seconds = (int)fabsf(time);
-    int hours = seconds / (60 * 60);
-    int minutes = (seconds / 60) % 60;
-    seconds %= 60;
-    if (hours) {
-        if (hours > 9)
-            return String::format("%s%02d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
-
-        return String::format("%s%01d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
-    }
-
-    return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
-}
-
 void MediaControlTimeDisplayElement::setCurrentValue(float time)
 {
     m_currentValue = time;
-
-    ExceptionCode ec;
-    setInnerText(formatTime(m_currentValue), ec);
 }
 
 

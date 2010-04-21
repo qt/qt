@@ -2541,7 +2541,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
         int state;
         QPalette::ColorGroup group;
     } map[3] = {
-        { PseudoClass_Active | PseudoClass_Enabled, QPalette::Active },
+        { int(PseudoClass_Active | PseudoClass_Enabled), QPalette::Active },
         { PseudoClass_Disabled, QPalette::Disabled },
         { PseudoClass_Enabled, QPalette::Inactive }
     };
@@ -3169,8 +3169,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 if (subRule1.hasDrawable()) {
                     QRect r(gr.topLeft(),
                             slider->orientation == Qt::Horizontal
-                                ? QPoint(hr.x()+hr.width()/2, gr.y()+gr.height())
-                                : QPoint(gr.x()+gr.width(), hr.y()+hr.height()/2));
+                                ? QPoint(hr.x()+hr.width()/2, gr.y()+gr.height() - 1)
+                                : QPoint(gr.x()+gr.width() - 1, hr.y()+hr.height()/2));
                     subRule1.drawRule(p, r);
                 }
 
@@ -4255,8 +4255,15 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
             const QAbstractScrollAreaPrivate *sap = sa->d_func();
             rule.drawBackground(p, opt->rect, sap->contentsOffset());
-            if (rule.hasBorder())
-                rule.drawBorder(p, rule.borderRect(opt->rect));
+            if (rule.hasBorder()) {
+                QRect brect = rule.borderRect(opt->rect);
+                if (styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, opt, w)) {
+                    QRect r = brect.adjusted(0, 0, sa->verticalScrollBar()->isVisible() ? -sa->verticalScrollBar()->width() : 0,
+                                             sa->horizontalScrollBar()->isVisible() ? -sa->horizontalScrollBar()->height() : 0);
+                    brect = QStyle::visualRect(opt->direction, brect, r);
+                }
+                rule.drawBorder(p, brect);
+            }
             break;
         }
 #endif
@@ -4640,6 +4647,11 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
                 return sb->orientation == Qt::Horizontal ? msz.width() : msz.height();
             return msz.width() == -1 ? msz.height() : msz.width();
         }
+        break;
+
+    case PM_ScrollView_ScrollBarSpacing:
+        if(!rule.hasNativeBorder() || rule.hasBox())
+            return 0;
         break;
 #endif // QT_NO_SCROLLBAR
 

@@ -1,12 +1,11 @@
-import Qt 4.6
-import "content"
+import Qt 4.7
+import "content" as Content
+import "content/snake.js" as Logic
 
 Rectangle {
     id: screen;
     SystemPalette { id: activePalette }
     color: activePalette.window
-
-    Script { source: "content/snake.js" }
 
     property int gridSize : 34
     property int margin: 4
@@ -25,9 +24,9 @@ Rectangle {
     property int direction
     property int headDirection
 
-    property var head;
+    property variant head;
 
-    HighScoreModel {
+    Content.HighScoreModel {
         id: highScores
         game: "Snake"
     }
@@ -36,19 +35,19 @@ Rectangle {
         id: heartbeat;
         interval: heartbeatInterval;
         repeat: true
-        onTriggered: { move() }
+        onTriggered: { Logic.move() }
     }
     Timer {
         id: halfbeat;
         interval: halfbeatInterval;
         repeat: true
         running: heartbeat.running
-        onTriggered: { moveSkull() }
+        onTriggered: { Logic.moveSkull() }
     }
     Timer {
-        id: startNewGameTimer;
+
         interval: 700;
-        onTriggered: {startNewGame(); }
+        onTriggered: { Logic.startNewGame(); }
     }
 
     Timer {
@@ -97,7 +96,7 @@ Rectangle {
             height: numRowsAvailable * gridSize + 2*margin
 
 
-            Skull {
+            Content.Skull {
                 id: skull
             }
 
@@ -105,13 +104,13 @@ Rectangle {
                 anchors.fill: parent
                 onPressed: {
                     if (!head || !heartbeat.running) {
-                        startNewGame();
+                        Logic.startNewGame();
                         return;
                     }
                     if (direction == 0 || direction == 2)
-                        scheduleDirection((mouseX > (head.x + head.width/2)) ? 1 : 3);
+                        Logic.scheduleDirection((mouseX > (head.x + head.width/2)) ? 1 : 3);
                     else
-                        scheduleDirection((mouseY > (head.y + head.height/2)) ? 2 : 0);
+                        Logic.scheduleDirection((mouseY > (head.y + head.height/2)) ? 2 : 0);
                 }
             }
         }
@@ -148,8 +147,8 @@ Rectangle {
         height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
-        Button {
-            id: btnA; text: "New Game"; onClicked: {startNewGame();}
+        Content.Button {
+            id: btnA; text: "New Game"; onClicked: Logic.startNewGame();
             anchors.left: parent.left; anchors.leftMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -163,11 +162,11 @@ Rectangle {
     }
 
     focus: true
-    Keys.onSpacePressed: startNewGame();
-    Keys.onLeftPressed: if (state == "starting" || direction != 1) scheduleDirection(3);
-    Keys.onRightPressed: if (state == "starting" || direction != 3) scheduleDirection(1);
-    Keys.onUpPressed: if (state == "starting" || direction != 2) scheduleDirection(0);
-    Keys.onDownPressed: if (state == "starting" || direction != 0) scheduleDirection(2);
+    Keys.onSpacePressed: Logic.startNewGame();
+    Keys.onLeftPressed: if (state == "starting" || direction != 1) Logic.scheduleDirection(3);
+    Keys.onRightPressed: if (state == "starting" || direction != 3) Logic.scheduleDirection(1);
+    Keys.onUpPressed: if (state == "starting" || direction != 2) Logic.scheduleDirection(0);
+    Keys.onDownPressed: if (state == "starting" || direction != 0) Logic.scheduleDirection(2);
 
     states: [
         State {

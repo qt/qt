@@ -46,17 +46,17 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEBlendElement);
 
 static const HashTableValue JSSVGFEBlendElementTableValues[12] =
 {
-    { "in1", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementIn1, (intptr_t)0 },
-    { "in2", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementIn2, (intptr_t)0 },
-    { "mode", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementMode, (intptr_t)0 },
-    { "x", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementX, (intptr_t)0 },
-    { "y", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementY, (intptr_t)0 },
-    { "width", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementWidth, (intptr_t)0 },
-    { "height", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementHeight, (intptr_t)0 },
-    { "result", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementResult, (intptr_t)0 },
-    { "className", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementClassName, (intptr_t)0 },
-    { "style", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementStyle, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGFEBlendElementConstructor, (intptr_t)0 },
+    { "in1", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementIn1), (intptr_t)0 },
+    { "in2", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementIn2), (intptr_t)0 },
+    { "mode", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementMode), (intptr_t)0 },
+    { "x", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementX), (intptr_t)0 },
+    { "y", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementY), (intptr_t)0 },
+    { "width", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementWidth), (intptr_t)0 },
+    { "height", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementHeight), (intptr_t)0 },
+    { "result", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementResult), (intptr_t)0 },
+    { "className", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementClassName), (intptr_t)0 },
+    { "style", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementStyle), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -71,12 +71,12 @@ static JSC_CONST_HASHTABLE HashTable JSSVGFEBlendElementTable =
 
 static const HashTableValue JSSVGFEBlendElementConstructorTableValues[7] =
 {
-    { "SVG_FEBLEND_MODE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_UNKNOWN, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_NORMAL", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_NORMAL, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_MULTIPLY", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_MULTIPLY, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_SCREEN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_SCREEN, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_DARKEN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_DARKEN, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_LIGHTEN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_LIGHTEN, (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_UNKNOWN), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_NORMAL", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_NORMAL), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_MULTIPLY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_MULTIPLY), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_SCREEN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_SCREEN), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_DARKEN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_DARKEN), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_LIGHTEN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_LIGHTEN), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -101,7 +101,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -124,13 +124,13 @@ bool JSSVGFEBlendElementConstructor::getOwnPropertyDescriptor(ExecState* exec, c
 
 static const HashTableValue JSSVGFEBlendElementPrototypeTableValues[8] =
 {
-    { "SVG_FEBLEND_MODE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_UNKNOWN, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_NORMAL", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_NORMAL, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_MULTIPLY", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_MULTIPLY, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_SCREEN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_SCREEN, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_DARKEN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_DARKEN, (intptr_t)0 },
-    { "SVG_FEBLEND_MODE_LIGHTEN", DontDelete|ReadOnly, (intptr_t)jsSVGFEBlendElementSVG_FEBLEND_MODE_LIGHTEN, (intptr_t)0 },
-    { "getPresentationAttribute", DontDelete|Function, (intptr_t)jsSVGFEBlendElementPrototypeFunctionGetPresentationAttribute, (intptr_t)1 },
+    { "SVG_FEBLEND_MODE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_UNKNOWN), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_NORMAL", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_NORMAL), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_MULTIPLY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_MULTIPLY), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_SCREEN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_SCREEN), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_DARKEN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_DARKEN), (intptr_t)0 },
+    { "SVG_FEBLEND_MODE_LIGHTEN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGFEBlendElementSVG_FEBLEND_MODE_LIGHTEN), (intptr_t)0 },
+    { "getPresentationAttribute", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGFEBlendElementPrototypeFunctionGetPresentationAttribute), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -180,98 +180,108 @@ bool JSSVGFEBlendElement::getOwnPropertyDescriptor(ExecState* exec, const Identi
     return getStaticValueDescriptor<JSSVGFEBlendElement, Base>(exec, &JSSVGFEBlendElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGFEBlendElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementIn1(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementIn2(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementIn2(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in2Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementMode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->modeAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementHeight(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementResult(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementClassName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
-JSValue jsSVGFEBlendElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
-JSValue jsSVGFEBlendElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEBlendElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGFEBlendElement* domObject = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
+    JSSVGFEBlendElement* domObject = static_cast<JSSVGFEBlendElement*>(asObject(slotBase));
     return JSSVGFEBlendElement::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGFEBlendElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -295,32 +305,32 @@ JSValue JSC_HOST_CALL jsSVGFEBlendElementPrototypeFunctionGetPresentationAttribu
 
 // Constant getters
 
-JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_NORMAL(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_NORMAL(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_MULTIPLY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_MULTIPLY(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_SCREEN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_SCREEN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_DARKEN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_DARKEN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_LIGHTEN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGFEBlendElementSVG_FEBLEND_MODE_LIGHTEN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }

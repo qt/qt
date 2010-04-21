@@ -1,35 +1,40 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
+import "samegame.js" as SameGame
 
 Rectangle {
     id: screen
+
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
-    Script { source: "samegame.js" }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: toolbar.top
+        width: parent.width
+        anchors { top: parent.top; bottom: toolBar.top }
 
         Image {
             id: background
-            anchors.fill: parent; source: "../shared/pics/background.jpg"
+            anchors.fill: parent
+            source: "../shared/pics/background.jpg"
             fillMode: Image.PreserveAspectCrop
         }
 
 //![1]
         Item {
             id: gameCanvas
-            property int score: 0
-            property int tileSize: 40
 
-            z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % tileSize);
-            height: parent.height - (parent.height % tileSize);
+            property int score: 0
+            property int blockSize: 40
+
+            width: parent.width - (parent.width % blockSize)
+            height: parent.height - (parent.height % blockSize)
+            anchors.centerIn: parent
+            z: 20
 
             MouseArea {
-                id: gameMR
-                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+                anchors.fill: parent
+                onClicked: SameGame.handleClick(mouse.x, mouse.y)
             }
         }
 //![1]
@@ -40,22 +45,22 @@ Rectangle {
 //![2]
 
     Rectangle {
-        id: toolbar
+        id: toolBar
+        width: parent.width; height: 32
         color: activePalette.window
-        height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: initBoard();
-            anchors.left: parent.left; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "New Game" 
+            onClicked: SameGame.startNewGame()
         }
 
         Text {
             id: score
-            text: "Score: " + gameCanvas.score; font.bold: true
-            anchors.right: parent.right; anchors.rightMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "Score: Who knows?"
+            font.bold: true
         }
     }
 }

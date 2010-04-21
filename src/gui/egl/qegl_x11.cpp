@@ -147,9 +147,6 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
     EGLint configAlphaSize = 0;
     eglGetConfigAttrib(display(), config, EGL_ALPHA_SIZE, &configAlphaSize);
 
-    eglGetConfigAttrib(display(), config, EGL_BUFFER_SIZE, &eglValue);
-    int configBitDepth = eglValue;
-
     eglGetConfigAttrib(display(), config, EGL_CONFIG_ID, &eglValue);
     int configId = eglValue;
 
@@ -166,27 +163,57 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
         int matchingCount = 0;
         chosenVisualInfo = XGetVisualInfo(X11->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
         if (chosenVisualInfo) {
-            if (configBitDepth == chosenVisualInfo->depth) {
+            int visualRedSize = countBits(chosenVisualInfo->red_mask);
+            int visualGreenSize = countBits(chosenVisualInfo->green_mask);
+            int visualBlueSize = countBits(chosenVisualInfo->blue_mask);
+            int visualAlphaSize = -1; // Need XRender to tell us the alpha channel size
+
 #if !defined(QT_NO_XRENDER)
+            if (X11->use_xrender) {
                 // If we have XRender, actually check the visual supplied by EGL is ARGB
-                if (configAlphaSize > 0) {
-                    XRenderPictFormat *format;
-                    format = XRenderFindVisualFormat(X11->display, chosenVisualInfo->visual);
-                    if (!format || (format->type != PictTypeDirect) || (!format->direct.alphaMask)) {
-                        qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
-                                 (int)visualId, configId);
-                        visualId = 0;
-                    }
-                }
+                XRenderPictFormat *format;
+                format = XRenderFindVisualFormat(X11->display, chosenVisualInfo->visual);
+                if (format && (format->type == PictTypeDirect))
+                    visualAlphaSize = countBits(format->direct.alphaMask);
+            }
 #endif
-            } else {
-                qWarning("Warning: EGL suggested using X visual ID %d (%d bpp) for config %d (%d bpp), but the depths do not match!",
-                         (int)visualId, chosenVisualInfo->depth, configId, configBitDepth);
+
+            bool visualMatchesConfig = false;
+            if ( visualRedSize == configRedSize &&
+                 visualGreenSize == configGreenSize &&
+                 visualBlueSize == configBlueSize )
+            {
+                // We need XRender to check the alpha channel size of the visual. If we don't have
+                // the alpha size, we don't check it against the EGL config's alpha size.
+                if (visualAlphaSize >= 0)
+                    visualMatchesConfig = visualAlphaSize == configAlphaSize;
+                else
+                    visualMatchesConfig = true;
+            }
+
+            if (!visualMatchesConfig) {
+                if (visualAlphaSize >= 0) {
+                    qWarning("Warning: EGL suggested using X Visual ID %d (ARGB%d%d%d%d) for EGL config %d (ARGB%d%d%d%d), but this is incompatable",
+                             (int)visualId, visualAlphaSize, visualRedSize, visualGreenSize, visualBlueSize,
+                             configId, configAlphaSize, configRedSize, configGreenSize, configBlueSize);
+                } else {
+                    qWarning("Warning: EGL suggested using X Visual ID %d (RGB%d%d%d) for EGL config %d (RGB%d%d%d), but this is incompatable",
+                             (int)visualId, visualRedSize, visualGreenSize, visualBlueSize,
+                             configId, configRedSize, configGreenSize, configBlueSize);
+                }
                 visualId = 0;
             }
+        } else {
+            qWarning("Warning: EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
+                     (int)visualId, configId);
+            visualId = 0;
         }
         XFree(chosenVisualInfo);
     }
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+    else
+        qDebug("EGL did not suggest a VisualID (EGL_NATIVE_VISUAL_ID was zero) for EGLConfig %d", configId);
+#endif
 
     if (visualId) {
 #ifdef QT_DEBUG_X11_VISUAL_SELECTION
@@ -201,17 +228,16 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
 
     // If EGL didn't give us a valid visual ID, try XRender
 #if !defined(QT_NO_XRENDER)
-    if (!visualId) {
+    if (!visualId && X11->use_xrender) {
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
 
-        visualInfoTemplate.depth = configBitDepth;
         visualInfoTemplate.c_class = TrueColor;
 
         XVisualInfo *matchingVisuals;
         int matchingCount = 0;
         matchingVisuals = XGetVisualInfo(X11->display,
-                                         VisualDepthMask|VisualClassMask,
+                                         VisualClassMask,
                                          &visualInfoTemplate,
                                          &matchingCount);
 
@@ -242,23 +268,36 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
 # endif // QT_DEBUG_X11_VISUAL_SELECTION
         return visualId;
     }
+# ifdef QT_DEBUG_X11_VISUAL_SELECTION
+    else
+        qDebug("Failed to find an XVisual which matches EGL config %d using XRender", configId);
+# endif // QT_DEBUG_X11_VISUAL_SELECTION
+
 #endif //!defined(QT_NO_XRENDER)
 
 
     // Finally, if XRender also failed to find a visual (or isn't present), try to
-    // use XGetVisualInfo and only use the bit depth to match on:
+    // use XGetVisualInfo and only use the bit depths to match on:
     if (!visualId) {
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
-
-        visualInfoTemplate.depth = configBitDepth;
-
         XVisualInfo *matchingVisuals;
         int matchingCount = 0;
+
+        visualInfoTemplate.depth = configRedSize + configGreenSize + configBlueSize + configAlphaSize;
         matchingVisuals = XGetVisualInfo(X11->display,
                                          VisualDepthMask,
                                          &visualInfoTemplate,
                                          &matchingCount);
+        if (!matchingVisuals) {
+            // Try again without taking the alpha channel into account:
+            visualInfoTemplate.depth = configRedSize + configGreenSize + configBlueSize;
+            matchingVisuals = XGetVisualInfo(X11->display,
+                                             VisualDepthMask,
+                                             &visualInfoTemplate,
+                                             &matchingCount);
+        }
+
         if (matchingVisuals) {
             visualId = matchingVisuals[0].visualid;
             XFree(matchingVisuals);

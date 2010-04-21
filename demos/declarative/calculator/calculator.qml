@@ -1,124 +1,106 @@
-import Qt 4.6
+import Qt 4.7
+import "Core"
+import "Core/calculator.js" as CalcEngine
 
 Rectangle {
-    width: 320; height: 270; color: palette.window
+    id: window
 
-    SystemPalette { id: palette }
-    Script { source: "calculator.js" }
+    width: 480; height: 360
+    color: "#282828"
 
-    Column {
-        x: 2; spacing: 10;
+    property string rotateLeft: "\u2939"
+    property string rotateRight: "\u2935"
+    property string leftArrow: "\u2190"
+    property string division : "\u00f7"
+    property string multiplication : "\u00d7"
+    property string squareRoot : "\u221a"
+    property string plusminus : "\u00b1"
 
-        Rectangle {
-            id: container
-            width: 316; height: 50
-            border.color: palette.dark; color: palette.base
+    function doOp(operation) { CalcEngine.doOperation(operation) }
 
-            Text {
-                id: curNum
-                font.bold: true; font.pointSize: 16
-                color: palette.text
-                anchors.right: container.right
-                anchors.rightMargin: 5
-                anchors.verticalCenter: container.verticalCenter
+    Item {
+        id: main
+        state: (runtime.orientation == Orientation.Portrait) ? '' : 'rotated'
+        width: parent.width; height: parent.height; anchors.centerIn: parent
+
+        Column {
+            id: box; spacing: 8
+
+            anchors { fill: parent; topMargin: 6; bottomMargin: 6; leftMargin: 6; rightMargin: 6 }
+
+            Row {
+                Display { id: display; width: box.width; height: 64 }
             }
 
-            Text {
-                id: currentOperation
-                color: palette.text
-                font.bold: true; font.pointSize: 16
-                anchors.left: container.left
-                anchors.leftMargin: 5
-                anchors.verticalCenter: container.verticalCenter
-            }
-        }
+            Column {
+                id: column; spacing: 6
 
-        Item {
-            width: 320; height: 30
+                property real h: ((box.height - 72) / 6) - ((spacing * (6 - 1)) / 6)
+                property real w: (box.width / 4) - ((spacing * (4 - 1)) / 4)
 
-            CalcButton {
-                id: advancedCheckBox
-                x: 55; width: 206
-                operation: "Advanced Mode"
-                toggable: true
-            }
-        }
+                Row {
+                    spacing: 6
 
-        Item {
-            width: 320; height: 160
-
-            Item {
-                id: basicButtons
-                x: 55; width: 160; height: 160
-
-                CalcButton { operation: "Bksp"; id: bksp; width: 67; opacity: 0 }
-                CalcButton { operation: "C"; id: c; width: 76 }
-                CalcButton { operation: "AC"; id: ac; x: 78; width: 76 }
-
-                Grid {
-                    id: numKeypad; y: 32; spacing: 2; columns: 3
-
-                    CalcButton { operation: "7" }
-                    CalcButton { operation: "8" }
-                    CalcButton { operation: "9" }
-                    CalcButton { operation: "4" }
-                    CalcButton { operation: "5" }
-                    CalcButton { operation: "6" }
-                    CalcButton { operation: "1" }
-                    CalcButton { operation: "2" }
-                    CalcButton { operation: "3" }
+                    Button {
+                        id: rotateButton
+                        width: column.w; height: column.h; color: 'purple'; operation: rotateLeft
+                    }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: leftArrow }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: "C" }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: "AC" }
                 }
 
                 Row {
-                    y: 128; spacing: 2
+                    spacing: 6
+                    property real w: (box.width / 4) - ((spacing * (4 - 1)) / 4)
 
-                    CalcButton { operation: "0"; width: 50 }
-                    CalcButton { operation: "."; x: 77; width: 50 }
-                    CalcButton { operation: "="; id: equals; x: 77;  width: 102 }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "mc" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "m+" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "m-" }
+                    Button { width: column.w; height: column.h; color: 'green'; operation: "mr" }
                 }
 
-                Column {
-                    id: simpleOperations
-                    x: 156; y: 0; spacing: 2
+                Grid {
+                    id: grid; rows: 4; columns: 5; spacing: 6
 
-                    CalcButton { operation: "x" }
-                    CalcButton { operation: "/" }
-                    CalcButton { operation: "-" }
-                    CalcButton { operation: "+" }
+                    property real w: (box.width / columns) - ((spacing * (columns - 1)) / columns)
+
+                    Button { width: grid.w; height: column.h; operation: "7"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "8"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "9"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: division }
+                    Button { width: grid.w; height: column.h; operation: squareRoot }
+                    Button { width: grid.w; height: column.h; operation: "4"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "5"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "6"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: multiplication }
+                    Button { width: grid.w; height: column.h; operation: "x^2" }
+                    Button { width: grid.w; height: column.h; operation: "1"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "2"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "3"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "-" }
+                    Button { width: grid.w; height: column.h; operation: "1/x" }
+                    Button { width: grid.w; height: column.h; operation: "0"; color: 'blue' }
+                    Button { width: grid.w; height: column.h; operation: "." }
+                    Button { width: grid.w; height: column.h; operation: plusminus }
+                    Button { width: grid.w; height: column.h; operation: "+" }
+                    Button { width: grid.w; height: column.h; operation: "="; color: 'red' }
                 }
-            }
-
-            Grid {
-                id: advancedButtons
-                x: 350; spacing: 2; columns: 2; opacity: 0
-
-                CalcButton { operation: "Abs" }
-                CalcButton { operation: "Int" }
-                CalcButton { operation: "MC" }
-                CalcButton { operation: "Sqrt" }
-                CalcButton { operation: "MR" }
-                CalcButton { operation: "^2" }
-                CalcButton { operation: "MS" }
-                CalcButton { operation: "1/x" }
-                CalcButton { operation: "M+" }
-                CalcButton { operation: "+/-" }
             }
         }
-    }
 
-    states: State {
-        name: "Advanced"; when: advancedCheckBox.toggled == true
-        PropertyChanges { target: basicButtons; x: 0 }
-        PropertyChanges { target: simpleOperations; y: 32 }
-        PropertyChanges { target: bksp; opacity: 1 }
-        PropertyChanges { target: c; x: 69; width: 67 }
-        PropertyChanges { target: ac; x: 138; width: 67 }
-        PropertyChanges { target: equals; width: 50 }
-        PropertyChanges { target: advancedButtons; x: 210; opacity: 1 }
-    }
+        states: State {
+            name: 'rotated'
+            PropertyChanges { target: main; rotation: -90; width: window.height; height: window.width }
+            PropertyChanges { target: rotateButton; operation: rotateRight }
+        }
 
-    transitions: Transition {
-        NumberAnimation { properties: "x,y,width"; easing.type: "OutBounce"; duration: 500 }
-        NumberAnimation { properties: "opacity"; easing.type: "InOutQuad"; duration: 500 }
+        transitions: Transition {
+            SequentialAnimation {
+                PropertyAction { target: rotateButton; property: "operation" }
+                NumberAnimation { properties: "rotation"; duration: 300; easing.type: "InOutQuint" }
+                NumberAnimation { properties: "x,y,width,height"; duration: 300; easing.type: "InOutQuint" }
+            }
+        }
     }
 }

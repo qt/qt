@@ -675,6 +675,7 @@ QMakeProject::init(QMakeProperty *p, const QMap<QString, QStringList> *vars)
         prop = p;
         own_prop = false;
     }
+    recursive = false;
     reset();
 }
 
@@ -699,7 +700,6 @@ QMakeProject::reset()
     scope_blocks.push(ScopeBlock());
     iterator = 0;
     function = 0;
-    recursive = false;
 }
 
 bool
@@ -1245,8 +1245,7 @@ QMakeProject::read(const QString &file, QMap<QString, QStringList> &place)
     reset();
 
     const QString oldpwd = qmake_getpwd();
-    QString filename = Option::fixPathToLocalOS(file);
-    doVariableReplace(filename, place);
+    QString filename = Option::fixPathToLocalOS(file, false);
     bool ret = false, using_stdin = false;
     QFile qfile;
     if(!strcmp(filename.toLatin1(), "-")) {
@@ -2516,8 +2515,6 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
     case T_BREAK:
         if(iterator)
             iterator->cause_break = true;
-        else if(!scope_blocks.isEmpty())
-            scope_blocks.top().ignore = true;
         else
             fprintf(stderr, "%s:%d unexpected break()\n",
                     parser.file.toLatin1().constData(), parser.line_no);
@@ -3146,6 +3143,21 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         if (place[var].isEmpty())
             place[var] = QStringList(epocRoot());
     }
+#if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
+      else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {
+            QString ret, type = var.mid(13);
+            if(type == "arch") {
+                QString paths = qgetenv("PATH");
+                QString vcBin64 = qgetenv("VCINSTALLDIR").append("\\bin\\amd64");
+                QString vcBinX86_64 = qgetenv("VCINSTALLDIR").append("\\bin\\x86_amd64");
+                if(paths.contains(vcBin64,Qt::CaseInsensitive) || paths.contains(vcBinX86_64,Qt::CaseInsensitive))
+                    ret = "x86_64";
+                else
+                    ret = "x86";
+            }
+            place[var] = QStringList(ret);
+    }
+#endif
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
 }

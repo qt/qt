@@ -59,6 +59,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class FlatListModel;
+class NestedListModel;
+class QDeclarativeListModelWorkerAgent;
 struct ModelNode;
 class Q_DECLARATIVE_EXPORT QDeclarativeListModel : public QListModelInterface
 {
@@ -83,20 +86,26 @@ public:
     Q_INVOKABLE void set(int index, const QScriptValue&);
     Q_INVOKABLE void setProperty(int index, const QString& property, const QVariant& value);
     Q_INVOKABLE void move(int from, int to, int count);
+    Q_INVOKABLE void sync();
+
+    QDeclarativeListModelWorkerAgent *agent();
 
 Q_SIGNALS:
-    void countChanged(int);
+    void countChanged();
 
 private:
-    QVariant valueForNode(ModelNode *) const;
-    mutable QStringList roleStrings;
     friend class QDeclarativeListModelParser;
+    friend class QDeclarativeListModelWorkerAgent;
     friend struct ModelNode;
 
-    void checkRoles() const;
-    void addRole(const QString &) const;
-    mutable bool _rolesOk;
-    ModelNode *_root;
+    QDeclarativeListModel(bool workerCopy, QObject *parent=0);
+    bool flatten();
+    bool modifyCheck();
+
+    QDeclarativeListModelWorkerAgent *m_agent;
+    NestedListModel *m_nested;
+    FlatListModel *m_flat;
+    bool m_isWorkerCopy;
 };
 
 // ### FIXME

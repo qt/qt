@@ -51,7 +51,7 @@
 #include "NotImplemented.h"
 
 QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT bool qt_tab_all_widgets; // from qapplication.cpp
+Q_DECL_IMPORT extern bool qt_tab_all_widgets; // from qapplication.cpp
 QT_END_NAMESPACE
 
 namespace WebCore {
@@ -132,7 +132,11 @@ bool EventHandler::passMouseReleaseEventToSubframe(MouseEventWithHitTestResults&
 
 unsigned EventHandler::accessKeyModifiers()
 {
-    return PlatformKeyboardEvent::CtrlKey;
+#if OS(DARWIN)
+    return PlatformKeyboardEvent::CtrlKey | PlatformKeyboardEvent::AltKey;
+#else
+    return PlatformKeyboardEvent::AltKey;
+#endif
 }
 
 }

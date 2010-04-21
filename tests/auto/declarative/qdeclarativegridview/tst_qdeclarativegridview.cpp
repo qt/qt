@@ -50,6 +50,7 @@
 #include <QtDeclarative/private/qdeclarativegridview_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
+#include "../../../shared/util.h"
 
 class tst_QDeclarativeGridView : public QObject
 {
@@ -165,25 +166,25 @@ void tst_QDeclarativeGridView::items()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
-    QCOMPARE(gridview->count(), model.count());
-    QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
+    QTRY_COMPARE(gridview->count(), model.count());
+    QTRY_COMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     for (int i = 0; i < model.count(); ++i) {
         QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", i);
-        QVERIFY(name != 0);
-        QCOMPARE(name->text(), model.name(i));
+        QTRY_VERIFY(name != 0);
+        QTRY_COMPARE(name->text(), model.name(i));
         QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", i);
-        QVERIFY(number != 0);
-        QCOMPARE(number->text(), model.number(i));
+        QTRY_VERIFY(number != 0);
+        QTRY_COMPARE(number->text(), model.number(i));
     }
 
     // set an empty model and confirm that items are destroyed
@@ -191,7 +192,7 @@ void tst_QDeclarativeGridView::items()
     ctxt->setContextProperty("testModel", &model2);
 
     int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
-    QVERIFY(itemCount == 0);
+    QTRY_VERIFY(itemCount == 0);
 
     delete canvas;
 }
@@ -213,22 +214,22 @@ void tst_QDeclarativeGridView::changed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeFlickable *gridview = findItem<QDeclarativeFlickable>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     model.modifyItem(1, "Will", "9876");
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 1);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(1));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(1));
     QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 1);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(1));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(1));
 
     delete canvas;
 }
@@ -246,75 +247,66 @@ void tst_QDeclarativeGridView::inserted()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     model.insertItem(1, "Will", "9876");
 
-    // let transitions settle.
-    QTest::qWait(100);
-
-    QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
+    QTRY_COMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 1);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(1));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(1));
     QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 1);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(1));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(1));
 
     // Checks that onAdd is called
     int added = canvas->rootObject()->property("added").toInt();
-    QCOMPARE(added, 1);
+    QTRY_COMPARE(added, 1);
 
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
-        QCOMPARE(item->x(), (i%3)*80.0);
-        QCOMPARE(item->y(), (i/3)*60.0);
+        QTRY_COMPARE(item->x(), (i%3)*80.0);
+        QTRY_COMPARE(item->y(), (i/3)*60.0);
     }
 
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
 
-    // let transitions settle.
-    QTest::qWait(100);
-
-    QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
+    QTRY_COMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     name = findItem<QDeclarativeText>(viewport, "textName", 0);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(0));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(0));
     number = findItem<QDeclarativeText>(viewport, "textNumber", 0);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(0));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(0));
 
-    QCOMPARE(gridview->currentIndex(), 1);
+    QTRY_COMPARE(gridview->currentIndex(), 1);
 
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     for (int i = model.count(); i < 30; ++i)
         model.insertItem(i, "Hello", QString::number(i));
-    QTest::qWait(100);
 
     gridview->setContentY(120);
-    QTest::qWait(100);
 
     // Insert item outside visible area
     model.insertItem(1, "Hello", "1324");
-    QTest::qWait(100);
 
-    QVERIFY(gridview->contentY() == 120);
+    QTRY_VERIFY(gridview->contentY() == 120);
 
     delete canvas;
 }
@@ -331,111 +323,95 @@ void tst_QDeclarativeGridView::removed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     model.removeItem(1);
 
-    // let transitions settle.
-    QTest::qWait(100);
-
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 1);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(1));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(1));
     QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 1);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(1));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(1));
 
     // Checks that onRemove is called
     QString removed = canvas->rootObject()->property("removed").toString();
-    QCOMPARE(removed, QString("Item1"));
+    QTRY_COMPARE(removed, QString("Item1"));
 
     // Confirm items positioned correctly
     int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     // Remove first item (which is the current item);
     model.removeItem(0);
 
-    // let transitions settle.
-    QTest::qWait(100);
-
     name = findItem<QDeclarativeText>(viewport, "textName", 0);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(0));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(0));
     number = findItem<QDeclarativeText>(viewport, "textNumber", 0);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(0));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(0));
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     // Remove items not visible
     model.removeItem(25);
-    // let transitions settle.
-    QTest::qWait(100);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     // Remove items before visible
     gridview->setContentY(120);
-    QTest::qWait(100);
     gridview->setCurrentIndex(10);
 
-    // let transitions settle.
-    QTest::qWait(100);
-
     // Setting currentIndex above shouldn't cause view to scroll
-    QCOMPARE(gridview->contentY(), 120.0);
+    QTRY_COMPARE(gridview->contentY(), 120.0);
 
     model.removeItem(1);
-
-    // let transitions settle.
-    QTest::qWait(100);
 
     // Confirm items positioned correctly
     for (int i = 6; i < 18; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     // Remove currentIndex
     QDeclarativeItem *oldCurrent = gridview->currentItem();
     model.removeItem(9);
-    QTest::qWait(100);
 
-    QCOMPARE(gridview->currentIndex(), 9);
-    QVERIFY(gridview->currentItem() != oldCurrent);
+    QTRY_COMPARE(gridview->currentIndex(), 9);
+    QTRY_VERIFY(gridview->currentItem() != oldCurrent);
 
     gridview->setContentY(0);
     // let transitions settle.
@@ -446,39 +422,34 @@ void tst_QDeclarativeGridView::removed()
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     // remove item outside current view.
     gridview->setCurrentIndex(32);
-    QTest::qWait(100);
     gridview->setContentY(240);
 
     model.removeItem(30);
-    QVERIFY(gridview->currentIndex() == 31);
+    QTRY_VERIFY(gridview->currentIndex() == 31);
 
     // remove current item beyond visible items.
     gridview->setCurrentIndex(20);
-    QTest::qWait(100);
     gridview->setContentY(0);
     model.removeItem(20);
-    QTest::qWait(100);
 
-    QCOMPARE(gridview->currentIndex(), 20);
-    QVERIFY(gridview->currentItem() != 0);
+    QTRY_COMPARE(gridview->currentIndex(), 20);
+    QTRY_VERIFY(gridview->currentItem() != 0);
 
     // remove item before current, but visible
     gridview->setCurrentIndex(8);
-    QTest::qWait(100);
     gridview->setContentY(240);
     oldCurrent = gridview->currentItem();
     model.removeItem(6);
-    QTest::qWait(100);
 
-    QCOMPARE(gridview->currentIndex(), 7);
-    QVERIFY(gridview->currentItem() == oldCurrent);
+    QTRY_COMPARE(gridview->currentIndex(), 7);
+    QTRY_VERIFY(gridview->currentItem() == oldCurrent);
 
     delete canvas;
 }
@@ -495,42 +466,39 @@ void tst_QDeclarativeGridView::moved()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     model.moveItem(1, 8);
 
-    // let transitions settle.
-    QTest::qWait(100);
-
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 1);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(1));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(1));
     QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 1);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(1));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(1));
 
     name = findItem<QDeclarativeText>(viewport, "textName", 8);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(8));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(8));
     number = findItem<QDeclarativeText>(viewport, "textNumber", 8);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(8));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(8));
 
     // Confirm items positioned correctly
     int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
     }
 
     gridview->setContentY(120);
@@ -538,45 +506,44 @@ void tst_QDeclarativeGridView::moved()
     // move outside visible area
     model.moveItem(1, 25);
 
-    // let transitions settle.
-    QTest::qWait(100);
-
     // Confirm items positioned correctly and indexes correct
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count()-1;
     for (int i = 6; i < model.count()-6 && i < itemCount+6; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), qreal((i%3)*80));
-        QCOMPARE(item->y(), qreal((i/3)*60));
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), qreal((i%3)*80));
+        QTRY_COMPARE(item->y(), qreal((i/3)*60));
         name = findItem<QDeclarativeText>(viewport, "textName", i);
-        QVERIFY(name != 0);
-        QCOMPARE(name->text(), model.name(i));
+        QTRY_VERIFY(name != 0);
+        QTRY_COMPARE(name->text(), model.name(i));
         number = findItem<QDeclarativeText>(viewport, "textNumber", i);
-        QVERIFY(number != 0);
-        QCOMPARE(number->text(), model.number(i));
+        QTRY_VERIFY(number != 0);
+        QTRY_COMPARE(number->text(), model.number(i));
     }
 
     // move from outside visible into visible
     model.moveItem(28, 8);
 
-    // let transitions settle.
-    QTest::qWait(100);
-
     // Confirm items positioned correctly and indexes correct
     for (int i = 6; i < model.count()-6 && i < itemCount+6; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->x() == (i%3)*80);
+        QTRY_VERIFY(item->y() == (i/3)*60);
         name = findItem<QDeclarativeText>(viewport, "textName", i);
-        QVERIFY(name != 0);
-        QCOMPARE(name->text(), model.name(i));
+        QTRY_VERIFY(name != 0);
+        QTRY_COMPARE(name->text(), model.name(i));
         number = findItem<QDeclarativeText>(viewport, "textNumber", i);
-        QVERIFY(number != 0);
-        QCOMPARE(number->text(), model.number(i));
+        QTRY_VERIFY(number != 0);
+        QTRY_COMPARE(number->text(), model.number(i));
     }
+
+    // ensure content position is stable
+    gridview->setContentY(0);
+    model.moveItem(10, 0);
+    QTRY_VERIFY(gridview->contentY() == 0);
 
     delete canvas;
 }
@@ -599,65 +566,59 @@ void tst_QDeclarativeGridView::currentIndex()
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
-
-    QTest::qWait(300);
+    QTRY_VERIFY(viewport != 0);
 
     // current item should be third item
-    QCOMPARE(gridview->currentIndex(), 5);
-    QCOMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 5));
-    QCOMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
+    QTRY_COMPARE(gridview->currentIndex(), 5);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 5));
+    QTRY_COMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
 
     gridview->moveCurrentIndexRight();
-    QCOMPARE(gridview->currentIndex(), 6);
+    QTRY_COMPARE(gridview->currentIndex(), 6);
     gridview->moveCurrentIndexDown();
-    QCOMPARE(gridview->currentIndex(), 9);
+    QTRY_COMPARE(gridview->currentIndex(), 9);
     gridview->moveCurrentIndexUp();
-    QCOMPARE(gridview->currentIndex(), 6);
+    QTRY_COMPARE(gridview->currentIndex(), 6);
     gridview->moveCurrentIndexLeft();
-    QCOMPARE(gridview->currentIndex(), 5);
+    QTRY_COMPARE(gridview->currentIndex(), 5);
 
     // no wrap
     gridview->setCurrentIndex(0);
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
     gridview->moveCurrentIndexUp();
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
     gridview->moveCurrentIndexLeft();
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
     gridview->setCurrentIndex(model.count()-1);
-    QTest::qWait(100);
-    QCOMPARE(gridview->currentIndex(), model.count()-1);
+    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
 
     gridview->moveCurrentIndexRight();
-    QCOMPARE(gridview->currentIndex(), model.count()-1);
+    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
 
     gridview->moveCurrentIndexDown();
-    QCOMPARE(gridview->currentIndex(), model.count()-1);
+    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
 
     // with wrap
     gridview->setWrapEnabled(true);
 
     gridview->setCurrentIndex(0);
-    QCOMPARE(gridview->currentIndex(), 0);
-    QTest::qWait(500);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
     gridview->moveCurrentIndexLeft();
-    QCOMPARE(gridview->currentIndex(), model.count()-1);
+    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
 
-    QTest::qWait(500);
-    QCOMPARE(gridview->contentY(), 279.0);
+    QTRY_COMPARE(gridview->contentY(), 279.0);
 
     gridview->moveCurrentIndexRight();
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
-    QTest::qWait(500);
-    QCOMPARE(gridview->contentY(), 0.0);
+    QTRY_COMPARE(gridview->contentY(), 0.0);
 
     // Test keys
     canvas->show();
@@ -666,42 +627,46 @@ void tst_QDeclarativeGridView::currentIndex()
     // to be safe and avoid failing setFocus with window managers
     qt_x11_wait_for_window_manager(canvas);
 #endif
-    QVERIFY(canvas->hasFocus());
-    QVERIFY(canvas->scene()->hasFocus());
+    QTRY_VERIFY(canvas->hasFocus());
+    QTRY_VERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
-    QCOMPARE(gridview->currentIndex(), 3);
+    QTRY_COMPARE(gridview->currentIndex(), 3);
 
     QTest::keyClick(canvas, Qt::Key_Up);
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
     gridview->setFlow(QDeclarativeGridView::TopToBottom);
 
     QTest::keyClick(canvas, Qt::Key_Right);
-    QCOMPARE(gridview->currentIndex(), 5);
+    QTRY_COMPARE(gridview->currentIndex(), 5);
 
     QTest::keyClick(canvas, Qt::Key_Left);
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
     QTest::keyClick(canvas, Qt::Key_Down);
-    QCOMPARE(gridview->currentIndex(), 1);
+    QTRY_COMPARE(gridview->currentIndex(), 1);
 
     QTest::keyClick(canvas, Qt::Key_Up);
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 
 
     // turn off auto highlight
     gridview->setHighlightFollowsCurrentItem(false);
-    QVERIFY(gridview->highlightFollowsCurrentItem() == false);
-    QVERIFY(gridview->highlightItem());
+    QTRY_VERIFY(gridview->highlightFollowsCurrentItem() == false);
+    QTRY_VERIFY(gridview->highlightItem());
     qreal hlPosX = gridview->highlightItem()->x();
     qreal hlPosY = gridview->highlightItem()->y();
 
     gridview->setCurrentIndex(5);
-    QTest::qWait(500);
-    QCOMPARE(gridview->highlightItem()->x(), hlPosX);
-    QCOMPARE(gridview->highlightItem()->y(), hlPosY);
+    QTRY_COMPARE(gridview->highlightItem()->x(), hlPosX);
+    QTRY_COMPARE(gridview->highlightItem()->y(), hlPosY);
+
+    // insert item before currentIndex
+    gridview->setCurrentIndex(28);
+    model.insertItem(0, "Foo", "1111");
+    QTRY_COMPARE(canvas->rootObject()->property("current").toInt(), 29);
 
     delete canvas;
 }
@@ -718,48 +683,47 @@ void tst_QDeclarativeGridView::changeFlow()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     // Confirm items positioned correctly and indexes correct
     int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), qreal((i%3)*80));
-        QCOMPARE(item->y(), qreal((i/3)*60));
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), qreal((i%3)*80));
+        QTRY_COMPARE(item->y(), qreal((i/3)*60));
         QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", i);
-        QVERIFY(name != 0);
-        QCOMPARE(name->text(), model.name(i));
+        QTRY_VERIFY(name != 0);
+        QTRY_COMPARE(name->text(), model.name(i));
         QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", i);
-        QVERIFY(number != 0);
-        QCOMPARE(number->text(), model.number(i));
+        QTRY_VERIFY(number != 0);
+        QTRY_COMPARE(number->text(), model.number(i));
     }
 
     ctxt->setContextProperty("testTopToBottom", QVariant(true));
-    QTest::qWait(100);
 
     // Confirm items positioned correctly and indexes correct
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), qreal((i/5)*80));
-        QCOMPARE(item->y(), qreal((i%5)*60));
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), qreal((i/5)*80));
+        QTRY_COMPARE(item->y(), qreal((i%5)*60));
         QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", i);
-        QVERIFY(name != 0);
-        QCOMPARE(name->text(), model.name(i));
+        QTRY_VERIFY(name != 0);
+        QTRY_COMPARE(name->text(), model.name(i));
         QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", i);
-        QVERIFY(number != 0);
-        QCOMPARE(number->text(), model.number(i));
+        QTRY_VERIFY(number != 0);
+        QTRY_COMPARE(number->text(), model.number(i));
     }
 
     delete canvas;
@@ -771,20 +735,20 @@ void tst_QDeclarativeGridView::defaultValues()
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview3.qml"));
     QDeclarativeGridView *obj = qobject_cast<QDeclarativeGridView*>(c.create());
 
-    QVERIFY(obj != 0);
-    QVERIFY(obj->model() == QVariant());
-    QVERIFY(obj->delegate() == 0);
-    QCOMPARE(obj->currentIndex(), -1);
-    QVERIFY(obj->currentItem() == 0);
-    QCOMPARE(obj->count(), 0);
-    QVERIFY(obj->highlight() == 0);
-    QVERIFY(obj->highlightItem() == 0);
-    QCOMPARE(obj->highlightFollowsCurrentItem(), true);
-    QVERIFY(obj->flow() == 0);
-    QCOMPARE(obj->isWrapEnabled(), false);
-    QCOMPARE(obj->cacheBuffer(), 0);
-    QCOMPARE(obj->cellWidth(), 100); //### Should 100 be the default?
-    QCOMPARE(obj->cellHeight(), 100);
+    QTRY_VERIFY(obj != 0);
+    QTRY_VERIFY(obj->model() == QVariant());
+    QTRY_VERIFY(obj->delegate() == 0);
+    QTRY_COMPARE(obj->currentIndex(), -1);
+    QTRY_VERIFY(obj->currentItem() == 0);
+    QTRY_COMPARE(obj->count(), 0);
+    QTRY_VERIFY(obj->highlight() == 0);
+    QTRY_VERIFY(obj->highlightItem() == 0);
+    QTRY_COMPARE(obj->highlightFollowsCurrentItem(), true);
+    QTRY_VERIFY(obj->flow() == 0);
+    QTRY_COMPARE(obj->isWrapEnabled(), false);
+    QTRY_COMPARE(obj->cacheBuffer(), 0);
+    QTRY_COMPARE(obj->cellWidth(), 100); //### Should 100 be the default?
+    QTRY_COMPARE(obj->cellHeight(), 100);
     delete obj;
 }
 
@@ -794,59 +758,59 @@ void tst_QDeclarativeGridView::properties()
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview2.qml"));
     QDeclarativeGridView *obj = qobject_cast<QDeclarativeGridView*>(c.create());
 
-    QVERIFY(obj != 0);
-    QVERIFY(obj->model() != QVariant());
-    QVERIFY(obj->delegate() != 0);
-    QCOMPARE(obj->currentIndex(), 0);
-    QVERIFY(obj->currentItem() != 0);
-    QCOMPARE(obj->count(), 4);
-    QVERIFY(obj->highlight() != 0);
-    QVERIFY(obj->highlightItem() != 0);
-    QCOMPARE(obj->highlightFollowsCurrentItem(), false);
-    QVERIFY(obj->flow() == 0);
-    QCOMPARE(obj->isWrapEnabled(), true);
-    QCOMPARE(obj->cacheBuffer(), 200);
-    QCOMPARE(obj->cellWidth(), 100);
-    QCOMPARE(obj->cellHeight(), 100);
+    QTRY_VERIFY(obj != 0);
+    QTRY_VERIFY(obj->model() != QVariant());
+    QTRY_VERIFY(obj->delegate() != 0);
+    QTRY_COMPARE(obj->currentIndex(), 0);
+    QTRY_VERIFY(obj->currentItem() != 0);
+    QTRY_COMPARE(obj->count(), 4);
+    QTRY_VERIFY(obj->highlight() != 0);
+    QTRY_VERIFY(obj->highlightItem() != 0);
+    QTRY_COMPARE(obj->highlightFollowsCurrentItem(), false);
+    QTRY_VERIFY(obj->flow() == 0);
+    QTRY_COMPARE(obj->isWrapEnabled(), true);
+    QTRY_COMPARE(obj->cacheBuffer(), 200);
+    QTRY_COMPARE(obj->cellWidth(), 100);
+    QTRY_COMPARE(obj->cellHeight(), 100);
     delete obj;
 }
 
 void tst_QDeclarativeGridView::propertyChanges()
 {
     QDeclarativeView *canvas = createView();
-    QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    QTRY_VERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
-    QVERIFY(gridView);
+    QTRY_VERIFY(gridView);
 
     QSignalSpy keyNavigationWrapsSpy(gridView, SIGNAL(keyNavigationWrapsChanged()));
     QSignalSpy cacheBufferSpy(gridView, SIGNAL(cacheBufferChanged()));
     QSignalSpy flowSpy(gridView, SIGNAL(flowChanged()));
 
-    QCOMPARE(gridView->isWrapEnabled(), true);
-    QCOMPARE(gridView->cacheBuffer(), 10);
-    QCOMPARE(gridView->flow(), QDeclarativeGridView::LeftToRight);
+    QTRY_COMPARE(gridView->isWrapEnabled(), true);
+    QTRY_COMPARE(gridView->cacheBuffer(), 10);
+    QTRY_COMPARE(gridView->flow(), QDeclarativeGridView::LeftToRight);
 
     gridView->setWrapEnabled(false);
     gridView->setCacheBuffer(3);
     gridView->setFlow(QDeclarativeGridView::TopToBottom);
 
-    QCOMPARE(gridView->isWrapEnabled(), false);
-    QCOMPARE(gridView->cacheBuffer(), 3);
-    QCOMPARE(gridView->flow(), QDeclarativeGridView::TopToBottom);
+    QTRY_COMPARE(gridView->isWrapEnabled(), false);
+    QTRY_COMPARE(gridView->cacheBuffer(), 3);
+    QTRY_COMPARE(gridView->flow(), QDeclarativeGridView::TopToBottom);
 
-    QCOMPARE(keyNavigationWrapsSpy.count(),1);
-    QCOMPARE(cacheBufferSpy.count(),1);
-    QCOMPARE(flowSpy.count(),1);
+    QTRY_COMPARE(keyNavigationWrapsSpy.count(),1);
+    QTRY_COMPARE(cacheBufferSpy.count(),1);
+    QTRY_COMPARE(flowSpy.count(),1);
 
     gridView->setWrapEnabled(false);
     gridView->setCacheBuffer(3);
     gridView->setFlow(QDeclarativeGridView::TopToBottom);
 
-    QCOMPARE(keyNavigationWrapsSpy.count(),1);
-    QCOMPARE(cacheBufferSpy.count(),1);
-    QCOMPARE(flowSpy.count(),1);
+    QTRY_COMPARE(keyNavigationWrapsSpy.count(),1);
+    QTRY_COMPARE(cacheBufferSpy.count(),1);
+    QTRY_COMPARE(flowSpy.count(),1);
 
     delete canvas;
 }
@@ -854,17 +818,17 @@ void tst_QDeclarativeGridView::propertyChanges()
 void tst_QDeclarativeGridView::componentChanges()
 {
     QDeclarativeView *canvas = createView();
-    QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    QTRY_VERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
-    QVERIFY(gridView);
+    QTRY_VERIFY(gridView);
 
     QDeclarativeComponent component(canvas->engine());
-    component.setData("import Qt 4.6; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import Qt 4.6; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import Qt 4.7; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy highlightSpy(gridView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(gridView, SIGNAL(delegateChanged()));
@@ -872,43 +836,43 @@ void tst_QDeclarativeGridView::componentChanges()
     gridView->setHighlight(&component);
     gridView->setDelegate(&delegateComponent);
 
-    QCOMPARE(gridView->highlight(), &component);
-    QCOMPARE(gridView->delegate(), &delegateComponent);
+    QTRY_COMPARE(gridView->highlight(), &component);
+    QTRY_COMPARE(gridView->delegate(), &delegateComponent);
 
-    QCOMPARE(highlightSpy.count(),1);
-    QCOMPARE(delegateSpy.count(),1);
+    QTRY_COMPARE(highlightSpy.count(),1);
+    QTRY_COMPARE(delegateSpy.count(),1);
 
     gridView->setHighlight(&component);
     gridView->setDelegate(&delegateComponent);
 
-    QCOMPARE(highlightSpy.count(),1);
-    QCOMPARE(delegateSpy.count(),1);
+    QTRY_COMPARE(highlightSpy.count(),1);
+    QTRY_COMPARE(delegateSpy.count(),1);
     delete canvas;
 }
 
 void tst_QDeclarativeGridView::modelChanges()
 {
     QDeclarativeView *canvas = createView();
-    QVERIFY(canvas);
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    QTRY_VERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychangestest.qml"));
 
     QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
-    QVERIFY(gridView);
+    QTRY_VERIFY(gridView);
 
     QDeclarativeListModel *alternateModel = canvas->rootObject()->findChild<QDeclarativeListModel*>("alternateModel");
-    QVERIFY(alternateModel);
+    QTRY_VERIFY(alternateModel);
     QVariant modelVariant = QVariant::fromValue(alternateModel);
     QSignalSpy modelSpy(gridView, SIGNAL(modelChanged()));
 
     gridView->setModel(modelVariant);
-    QCOMPARE(gridView->model(), modelVariant);
-    QCOMPARE(modelSpy.count(),1);
+    QTRY_COMPARE(gridView->model(), modelVariant);
+    QTRY_COMPARE(modelSpy.count(),1);
 
     gridView->setModel(modelVariant);
-    QCOMPARE(modelSpy.count(),1);
+    QTRY_COMPARE(modelSpy.count(),1);
 
     gridView->setModel(QVariant());
-    QCOMPARE(modelSpy.count(),2);
+    QTRY_COMPARE(modelSpy.count(),2);
     delete canvas;
 }
 
@@ -924,80 +888,121 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     // Confirm items positioned correctly
     int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), (i%3)*80.);
-        QCOMPARE(item->y(), (i/3)*60.);
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), (i%3)*80.);
+        QTRY_COMPARE(item->y(), (i/3)*60.);
     }
 
     // Position on a currently visible item
-    gridview->positionViewAtIndex(4);
-    QCOMPARE(gridview->contentY(), 60.);
+    gridview->positionViewAtIndex(4, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->contentY(), 60.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 3; i < model.count() && i < itemCount-3-1; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), (i%3)*80.);
-        QCOMPARE(item->y(), (i/3)*60.);
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), (i%3)*80.);
+        QTRY_COMPARE(item->y(), (i/3)*60.);
     }
 
     // Position on an item beyond the visible items
-    gridview->positionViewAtIndex(21);
-    QCOMPARE(gridview->contentY(), 420.);
+    gridview->positionViewAtIndex(21, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->contentY(), 420.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 22; i < model.count() && i < itemCount-22-1; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), (i%3)*80.);
-        QCOMPARE(item->y(), (i/3)*60.);
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), (i%3)*80.);
+        QTRY_COMPARE(item->y(), (i/3)*60.);
     }
 
     // Position on an item that would leave empty space if positioned at the top
-    gridview->positionViewAtIndex(31);
-    QCOMPARE(gridview->contentY(), 520.);
+    gridview->positionViewAtIndex(31, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->contentY(), 520.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 24; i < model.count() && i < itemCount-24-1; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), (i%3)*80.);
-        QCOMPARE(item->y(), (i/3)*60.);
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), (i%3)*80.);
+        QTRY_COMPARE(item->y(), (i/3)*60.);
     }
 
     // Position at the beginning again
-    gridview->positionViewAtIndex(0);
-    QCOMPARE(gridview->contentY(), 0.);
+    gridview->positionViewAtIndex(0, QDeclarativeGridView::Beginning);
+    QTRY_COMPARE(gridview->contentY(), 0.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QCOMPARE(item->x(), (i%3)*80.);
-        QCOMPARE(item->y(), (i/3)*60.);
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->x(), (i%3)*80.);
+        QTRY_COMPARE(item->y(), (i/3)*60.);
     }
+
+    // Position at End
+    gridview->positionViewAtIndex(30, QDeclarativeGridView::End);
+    QTRY_COMPARE(gridview->contentY(), 340.);
+
+    // Position in Center
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Center);
+    QTRY_COMPARE(gridview->contentY(), 170.);
+
+    // Ensure at least partially visible
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentY(), 170.);
+
+    gridview->setContentY(302);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentY(), 302.);
+
+    gridview->setContentY(360);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentY(), 300.);
+
+    gridview->setContentY(60);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentY(), 60.);
+
+    gridview->setContentY(20);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Visible);
+    QTRY_COMPARE(gridview->contentY(), 100.);
+
+    // Ensure completely visible
+    gridview->setContentY(120);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
+    QTRY_COMPARE(gridview->contentY(), 120.);
+
+    gridview->setContentY(302);
+    gridview->positionViewAtIndex(15, QDeclarativeGridView::Contain);
+    QTRY_COMPARE(gridview->contentY(), 300.);
+
+    gridview->setContentY(60);
+    gridview->positionViewAtIndex(20, QDeclarativeGridView::Contain);
+    QTRY_COMPARE(gridview->contentY(), 100.);
 
     delete canvas;
 }
@@ -1017,29 +1022,29 @@ void tst_QDeclarativeGridView::resetModel()
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
-    QCOMPARE(gridview->count(), model.rowCount());
+    QTRY_COMPARE(gridview->count(), model.rowCount());
 
     for (int i = 0; i < model.rowCount(); ++i) {
         QDeclarativeText *display = findItem<QDeclarativeText>(viewport, "displayText", i);
-        QVERIFY(display != 0);
-        QCOMPARE(display->text(), strings.at(i));
+        QTRY_VERIFY(display != 0);
+        QTRY_COMPARE(display->text(), strings.at(i));
     }
 
     strings.clear();
     strings << "four" << "five" << "six" << "seven";
     model.setStringList(strings);
 
-    QCOMPARE(gridview->count(), model.rowCount());
+    QTRY_COMPARE(gridview->count(), model.rowCount());
 
     for (int i = 0; i < model.rowCount(); ++i) {
         QDeclarativeText *display = findItem<QDeclarativeText>(viewport, "displayText", i);
-        QVERIFY(display != 0);
-        QCOMPARE(display->text(), strings.at(i));
+        QTRY_VERIFY(display != 0);
+        QTRY_COMPARE(display->text(), strings.at(i));
     }
 }
 
@@ -1058,34 +1063,33 @@ void tst_QDeclarativeGridView::enforceRange()
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
-    QCOMPARE(gridview->preferredHighlightBegin(), 100.0);
-    QCOMPARE(gridview->preferredHighlightEnd(), 100.0);
-    QCOMPARE(gridview->highlightRangeMode(), QDeclarativeGridView::StrictlyEnforceRange);
+    QTRY_COMPARE(gridview->preferredHighlightBegin(), 100.0);
+    QTRY_COMPARE(gridview->preferredHighlightEnd(), 100.0);
+    QTRY_COMPARE(gridview->highlightRangeMode(), QDeclarativeGridView::StrictlyEnforceRange);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QVERIFY(viewport != 0);
+    QTRY_VERIFY(viewport != 0);
 
     // view should be positioned at the top of the range.
     QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", 0);
-    QVERIFY(item);
-    QCOMPARE(gridview->contentY(), -100.0);
+    QTRY_VERIFY(item);
+    QTRY_COMPARE(gridview->contentY(), -100.0);
 
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 0);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(0));
+    QTRY_VERIFY(name != 0);
+    QTRY_COMPARE(name->text(), model.name(0));
     QDeclarativeText *number = findItem<QDeclarativeText>(viewport, "textNumber", 0);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(0));
+    QTRY_VERIFY(number != 0);
+    QTRY_COMPARE(number->text(), model.number(0));
 
     // Check currentIndex is updated when viewport moves
     gridview->setContentY(0);
-    QCOMPARE(gridview->currentIndex(), 2);
+    QTRY_COMPARE(gridview->currentIndex(), 2);
 
     gridview->setCurrentIndex(5);
-    QTest::qWait(500);
-    QCOMPARE(gridview->contentY(), 100.);
+    QTRY_COMPARE(gridview->contentY(), 100.);
 
     delete canvas;
 }
@@ -1098,9 +1102,9 @@ void tst_QDeclarativeGridView::QTBUG_8456()
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QVERIFY(gridview != 0);
+    QTRY_VERIFY(gridview != 0);
 
-    QCOMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentIndex(), 0);
 }
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()

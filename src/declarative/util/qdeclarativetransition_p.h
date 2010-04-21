@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVETRANSITION_H
 #define QDECLARATIVETRANSITION_H
 
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p.h"
 
 #include <qdeclarative.h>
 
@@ -62,9 +62,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTransition : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeTransition)
 
-    Q_PROPERTY(QString from READ fromState WRITE setFromState)
-    Q_PROPERTY(QString to READ toState WRITE setToState)
-    Q_PROPERTY(bool reversible READ reversible WRITE setReversible)
+    Q_PROPERTY(QString from READ fromState WRITE setFromState NOTIFY fromChanged)
+    Q_PROPERTY(QString to READ toState WRITE setToState NOTIFY toChanged)
+    Q_PROPERTY(bool reversible READ reversible WRITE setReversible NOTIFY reversibleChanged)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeAbstractAnimation> animations READ animations)
     Q_CLASSINFO("DefaultProperty", "animations")
     Q_CLASSINFO("DeferredPropertyNames", "animations")
@@ -90,6 +90,11 @@ public:
 
     void setReversed(bool r);
     void stop();
+
+Q_SIGNALS:
+    void fromChanged();
+    void toChanged();
+    void reversibleChanged();
 };
 
 QT_END_NAMESPACE

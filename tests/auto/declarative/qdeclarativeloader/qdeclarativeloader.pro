@@ -9,3 +9,5 @@ SOURCES += tst_qdeclarativeloader.cpp \
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
+CONFIG += parallel_test
+

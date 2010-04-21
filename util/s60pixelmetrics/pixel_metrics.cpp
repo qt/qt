@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 16;
+const TInt KPMMinorVersion = 17;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -869,7 +869,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             // The difference of center piece from border tell the frame width.
             if ( value == QStyle::PM_FocusFrameHMargin)
                 {
-				//use topleft for horizontal as S60 uses different values for right and left borders
+                 //use topleft for horizontal as S60 uses different values for right and left borders
                  value = listSinglePaneText.TextRect().iTl.iX - highlightRect.Rect().iTl.iX;
                 }
             else
@@ -1003,6 +1003,13 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_Custom_ThinLineWidth:
             value = 1;
             break;
+        case QStyle::PM_Custom_MessageBoxHeight:
+            {
+            TAknLayoutRect popupRect;
+            popupRect.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::popup_window_general(0));
+            value = popupRect.Rect().Height();
+            }
+            break;
         case QStyle::PM_ButtonShiftHorizontal:
         case QStyle::PM_ButtonShiftVertical:
             value = 0;
@@ -1012,12 +1019,15 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = PixelMetricTabValue(QStyle::PM_TabBarScrollButtonWidth, appWindow.Rect(), landscape);
             break;
 
+        case QStyle::PM_MenuScrollerHeight:
+            value = 0;
+            break;
+
 // todo: re-check if these really are not available in s60
         case QStyle::PM_MenuDesktopFrameWidth:    // not needed in S60 - dislocates Menu both horizontally and vertically
         case QStyle::PM_HeaderMarkSize:           // The size of the sort indicator in a header. Not in S60
         case QStyle::PM_SpinBoxSliderHeight:       // The height of the optional spin box slider. Not in S60
         case QStyle::PM_HeaderMargin: // not in S60
-        case QStyle::PM_MenuScrollerHeight: // not in S60
         case QStyle::PM_MenuTearoffHeight: // not in S60
         case QStyle::PM_DockWidgetFrameWidth: // not in S60
         case QStyle::PM_DockWidgetSeparatorExtent: // not in S60

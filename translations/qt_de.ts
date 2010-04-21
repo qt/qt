@@ -2,29 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de">
 <context>
-    <name>MAC_APPLICATION_MENU</name>
-    <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2316"/>
-        <source>Services</source>
-        <translation>Dienste</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hide %1</source>
-        <translation>%1 ausblenden</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hide Others</source>
-        <translation>Andere ausblenden</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show All</source>
-        <translation>Alle anzeigen</translation>
-    </message>
-</context>
-<context>
     <name>CloseButton</name>
     <message>
         <location filename="../src/gui/widgets/qtabbar.cpp" line="+2266"/>
@@ -46,11 +23,34 @@
     </message>
 </context>
 <context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2314"/>
+        <source>Services</source>
+        <translation>Dienste</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide %1</source>
+        <translation>%1 ausblenden</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide Others</source>
+        <translation>Andere ausblenden</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>Alle anzeigen</translation>
+    </message>
+</context>
+<context>
     <name>Phonon::</name>
     <message>
         <location filename="../src/3rdparty/phonon/phonon/phononnamespace.cpp" line="+55"/>
         <source>Notifications</source>
-        <translation>Benachrichtungen</translation>
+        <translation>Benachrichtigungen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -176,7 +176,7 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
         <translation>Audio-Ausgabegerät</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/utils.cpp" line="+87"/>
+        <location filename="../src/3rdparty/phonon/mmf/utils.cpp" line="+89"/>
         <source>No error</source>
         <translation>Kein Fehler</translation>
     </message>
@@ -1209,7 +1209,7 @@ nach
 <context>
     <name>QAbstractSocket</name>
     <message>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+903"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+916"/>
         <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+629"/>
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+661"/>
         <location line="+26"/>
@@ -1231,13 +1231,13 @@ nach
     <message>
         <location line="-559"/>
         <location line="+809"/>
-        <location line="+208"/>
+        <location line="+220"/>
         <source>Operation on socket is not supported</source>
         <translation>Diese Socket-Operation wird nicht unterstützt</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+586"/>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+200"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+598"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+203"/>
         <source>Socket operation timed out</source>
         <translation>Das Zeitlimit für die Operation wurde überschritten</translation>
     </message>
@@ -1255,7 +1255,7 @@ nach
 <context>
     <name>QAbstractSpinBox</name>
     <message>
-        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1260"/>
+        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1263"/>
         <source>&amp;Step up</source>
         <translation>&amp;Inkrementieren</translation>
     </message>
@@ -1281,7 +1281,7 @@ nach
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2309"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="-10"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -1351,7 +1351,7 @@ nach
 <context>
     <name>QColorDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1355"/>
+        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1378"/>
         <source>Hu&amp;e:</source>
         <translation>Farb&amp;ton:</translation>
     </message>
@@ -1556,6 +1556,960 @@ nach
     </message>
 </context>
 <context>
+    <name>QDeclarativeAbstractAnimation</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+164"/>
+        <source>Cannot animate non-existent property &quot;%1&quot;</source>
+        <translation>Die Eigenschaft &apos;%1&quot; existiert nicht und kann daher nicht animiert werden</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot animate read-only property &quot;%1&quot;</source>
+        <translation>Die Eigenschaft &apos;%1&quot; ist schreibgeschützt und kann daher nicht animiert werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnchors</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeanchors.cpp" line="+176"/>
+        <source>Possible anchor loop detected on fill.</source>
+        <translation>Bei der Fülloperation wurde eine potentielle Endlosschleife der Anker festgestellt.</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Possible anchor loop detected on centerIn.</source>
+        <translation>Bei der Operation &apos;centerIn&apos; wurde eine potentielle Endlosschleife der Anker festgestellt.</translation>
+    </message>
+    <message>
+        <location line="+170"/>
+        <location line="+34"/>
+        <location line="+607"/>
+        <location line="+37"/>
+        <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
+        <translation>Das Ziel eines Anker muss ein Elternelement oder Element der gleichen Ebene sein.</translation>
+    </message>
+    <message>
+        <location line="-534"/>
+        <source>Possible anchor loop detected on vertical anchor.</source>
+        <translation>Bei einem vertikalen Anker wurde eine potentielle Endlosschleife der Anker festgestellt.</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Possible anchor loop detected on horizontal anchor.</source>
+        <translation>Bei einem horizontalen Anker wurde eine potentielle Endlosschleife der Anker festgestellt.</translation>
+    </message>
+    <message>
+        <location line="+422"/>
+        <source>Cannot specify left, right, and hcenter anchors.</source>
+        <translation>Ankerangaben für links, rechts und horizontal zentriert dürfen nicht zusammen auftreten.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+37"/>
+        <source>Cannot anchor to a null item.</source>
+        <translation>Es kann kein Anker zu einem Null-Element angegeben werden.</translation>
+    </message>
+    <message>
+        <location line="-34"/>
+        <source>Cannot anchor a horizontal edge to a vertical edge.</source>
+        <translation>Es kann kein Anker zu einer horizontalen oder vertikalen Kante angegeben werden.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+37"/>
+        <source>Cannot anchor item to self.</source>
+        <translation>Ein Element kann keinen Anker zu sich selbst haben.</translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <source>Cannot specify top, bottom, and vcenter anchors.</source>
+        <translation>Ankerangaben für oben, unten und vertikal zentriert dürfen nicht zusammen auftreten.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
+        <translation>Ein Baseline-Anker darf nicht mit zusammen mit weiteren Ankerangaben für oben, unten und vertikal zentriert verwendet werden.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cannot anchor a vertical edge to a horizontal edge.</source>
+        <translation>Vertikale und horizontale Kanten können nicht mit Ankern verbunden werden.</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeBehavior</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativebehavior.cpp" line="+124"/>
+        <source>Cannot change the animation assigned to a Behavior.</source>
+        <translation>Die zu einem Behavior-Element gehörende Animation kann nicht geändert werden.</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeBinding</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativebinding.cpp" line="+195"/>
+        <source>Binding loop detected for property &quot;%1&quot;</source>
+        <translation>Bei der für die Eigenschaft &quot;%1&quot; angegebenen Bindung  wurde eine Endlosschleife festgestellt</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompiler</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativecompiler.cpp" line="+188"/>
+        <location line="+1807"/>
+        <location line="+82"/>
+        <location line="+75"/>
+        <location line="+459"/>
+        <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: &quot;%1&quot; ist schreibgeschützt</translation>
+    </message>
+    <message>
+        <location line="-2414"/>
+        <source>Invalid property assignment: unknown enumeration</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Ungültiger Aufzählungswert</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Invalid property assignment: string expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Zeichenkette erwartet</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Invalid property assignment: url expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine URL erwartet</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Invalid property assignment: unsigned int expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine vorzeichenloser Ganzzahlwert erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: int expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein Ganzzahlwert erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: float expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Gleitkommazahl erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: double expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Gleitkommazahl (double) erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: color expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Farbspezifikation erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: date expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Datumsangabe erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: time expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Zeitangabe erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: datetime expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Datumsangabe erwartet</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Invalid property assignment: point expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Koordinatenangabe für einen Punkt erwartet</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Invalid property assignment: size expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Größenangabe erwartet</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Invalid property assignment: rect expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es werden Parameter für ein Rechteck erwartet</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Invalid property assignment: boolean expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein Boolescher Wert erwartet</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid property assignment: 3D vector expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein dreidimensionaler Vektor erwartet</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Der Typ &quot;%1&quot; ist nicht unterstützt</translation>
+    </message>
+    <message>
+        <location line="+259"/>
+        <source>Element is not creatable.</source>
+        <translation>Das Element kann nicht erzeugt werden.</translation>
+    </message>
+    <message>
+        <location line="+548"/>
+        <source>Component elements may not contain properties other than id</source>
+        <translation>Komponenten dürfen außer id keine weiteren Eigenschaften enthalten.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Component elements may not contain script blocks</source>
+        <translation>Komponenten dürfen keine Skripte enthalten</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid component id specification</source>
+        <translation>Ungültige Komponentenspezifikation</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+594"/>
+        <source>id is not unique</source>
+        <translation>ID-Wert nicht eindeutig</translation>
+    </message>
+    <message>
+        <location line="-584"/>
+        <source>Invalid component body specification</source>
+        <translation>Inhalt der Komponente ungültig</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Cannot create empty component specification</source>
+        <translation>Es kann keine leere Komponentenangabe erzeugt werden</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Invalid Script block.  Specify either the source property or inline script</source>
+        <translation>Ungültiges Skript. Es muss die Eigenschaft oder ein eingebettetes Skript angegeben werden</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Invalid Script source value</source>
+        <translation>Ungültige Angabe für Skript</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Properties cannot be set on Script block</source>
+        <translation>Für ein Skript können keine Eigenschaften angegeben werden</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Invalid Script block</source>
+        <translation>Ungültiges Skript</translation>
+    </message>
+    <message>
+        <location line="+144"/>
+        <source>Incorrectly specified signal</source>
+        <translation>Ungültige Signalspezifikation</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Empty signal assignment</source>
+        <translation>Leere Signalzuweisung</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Empty property assignment</source>
+        <translation>Leere Eigenschaftszuweisung</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Attached properties cannot be used here</source>
+        <translation>An dieser Stelle können keine Eigenschaften des Typs &apos;attached&apos; verwendet werden</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <location line="+104"/>
+        <source>Non-existent attached object</source>
+        <translation>Es existiert kein Bezugselement für die Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="-100"/>
+        <location line="+103"/>
+        <source>Invalid attached object assignment</source>
+        <translation>Ungültige Zuweisung des Bezugselements</translation>
+    </message>
+    <message>
+        <location line="-50"/>
+        <source>Cannot assign to non-existent default property</source>
+        <translation>Es kann keine Zuweisung erfolgen, da keine Vorgabe-Eigenschaft existiert</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+361"/>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation>Es kann keine Zuweisung erfolgen, da keine Eigenschaft des Namens &apos;%1&quot; existiert</translation>
+    </message>
+    <message>
+        <location line="-330"/>
+        <source>Invalid use of namespace</source>
+        <translation>Ungültige Verwendung eines Namensraums</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Not an attached property name</source>
+        <translation>Kein gültiger Name einer Eigenschaft des Typs &apos;attached&apos;</translation>
+    </message>
+    <message>
+        <location line="+183"/>
+        <source>Invalid use of id property</source>
+        <translation>Ungültige Verwendung einer Eigenschaft des Typs &apos;Id&apos;</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>id conflicts with type name</source>
+        <translation>Der Wert der Id ist ungültig, da er bereits als Typnamen vergeben ist</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>id conflicts with namespace prefix</source>
+        <translation>Der Wert der Id ist ungültig, da er bereits als Namensraum vergeben ist</translation>
+    </message>
+    <message>
+        <location line="+84"/>
+        <location line="+2"/>
+        <source>Property has already been assigned a value</source>
+        <translation>Der Eigenschaft wurde bereits ein Wert zugewiesen</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+8"/>
+        <source>Invalid grouped property access</source>
+        <translation>Falsche Gruppierung bei Zugriff auf Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot assign a value directly to a grouped property</source>
+        <translation>Bei einer Eigenschaft, die Teil einer Gruppierung ist, ist keine direkte Wertzuweisung zulässig</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Invalid property use</source>
+        <translation>Ungültige Verwendung von Eigenschaften</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Property assignment expected</source>
+        <translation>Zuweisung an Eigenschaft erwartet</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Single property assignment expected</source>
+        <translation>Einzelne Zuweisung an Eigenschaft erwartet</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Unexpected object assignment</source>
+        <translation>Zuweisung des Objekts nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>Cannot assign object to list</source>
+        <translation>Zuweisung eines Objekts an eine Liste nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Can only assign one binding to lists</source>
+        <translation>Listen kann nur eine einzige Bindung zugewiesen werden</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Cannot assign primitives to lists</source>
+        <translation>Zuweisung eines einfachen Werts (primitive) an eine Liste nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cannot assign multiple values to a script property</source>
+        <translation>Eine Zuweisung mehrerer Werte an eine Skript-Eigenschaft ist nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Invalid property assignment: script expected</source>
+        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein Skript erwartet</translation>
+    </message>
+    <message>
+        <location line="+106"/>
+        <source>Cannot assign object to property</source>
+        <translation>Zuweisung eines Objekts an eine Eigenschaft nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
+        <translation>&quot;%1&quot; kann nicht auf  &quot;%2&quot; angewandt werden</translation>
+    </message>
+    <message>
+        <location line="+96"/>
+        <source>Duplicate default property</source>
+        <translation>Mehrfaches Auftreten der Vorgabe-Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Duplicate property name</source>
+        <translation>Mehrfaches Auftreten eines Eigenschaftsnamens</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Property names cannot begin with an upper case letter</source>
+        <translation>Eigenschaftsnamen dürfen nicht mit einem Großbuchstaben beginnen</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Duplicate signal name</source>
+        <translation>Mehrfaches Auftreten eines Signalnamens</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Signal names cannot begin with an upper case letter</source>
+        <translation>Signalnamen dürfen nicht mit einem Großbuchstaben beginnen</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Duplicate method name</source>
+        <translation>Mehrfaches Auftreten eines Methodennamens</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Method names cannot begin with an upper case letter</source>
+        <translation>Methodennamen dürfen nicht mit einem Großbuchstaben beginnen</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Property value set multiple times</source>
+        <translation>Mehrfache Zuweisung eines Wertes an eine Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Invalid property nesting</source>
+        <translation>Ungültige Schachtelung von Eigenschaften</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Cannot override FINAL property</source>
+        <translation>Eine als &apos;FINAL&apos; ausgewiesene Eigenschaft kann nicht überschrieben werden</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Invalid property type</source>
+        <translation>Ungültiger Typ der Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="+151"/>
+        <source>Invalid empty ID</source>
+        <translation>Ungültiger (leerer) Id-Wert</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>IDs cannot start with an uppercase letter</source>
+        <translation>Id-Werte dürfen nicht mit einem Großbuchstaben beginnen</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>IDs must start with a letter or underscore</source>
+        <translation>Id-Werte müssen mit einem Buchstaben oder dem Zeichen &apos;_&apos; beginnen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>IDs must contain only letters, numbers, and underscores</source>
+        <translation>Id-Werte dürfen nur Buchstaben oder Unterstriche enthalten</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>ID illegally masks global JavaScript property</source>
+        <translation>Der Id-Wert überdeckt eine globale Eigenschaft aus JavaScript</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <location line="+9"/>
+        <source>No property alias location</source>
+        <translation>Alias-Eigenschaft ohne Quellangabe</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <location line="+25"/>
+        <source>Invalid alias location</source>
+        <translation>Ungültige Quellangabe bei Alias-Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="-16"/>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
+        <translation>Ungültige Referenzierung einer Alias-Eigenschaft. Die Referenz muss in der Form &lt;id&gt; oder &lt;id&gt;.&lt;property&gt; angegeben werden</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
+        <translation>Ungültige Referenzierung einer Alias-Eigenschaft. Der Id-Wert &quot;%1&quot; konnte nicht gefunden werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeComponent</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativecomponent.cpp" line="+442"/>
+        <source>Invalid empty URL</source>
+        <translation>Ungültige (leere) URL</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompositeTypeManager</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativecompositetypemanager.cpp" line="+415"/>
+        <location line="+220"/>
+        <source>Resource %1 unavailable</source>
+        <translation>Auf die Ressource %1 konnte nicht zugegriffen werden</translation>
+    </message>
+    <message>
+        <location line="-141"/>
+        <source>Import %1 unavailable</source>
+        <translation>Import %1 nicht verfügbar</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 is not a type</source>
+        <translation>%1 ist keine Typangabe</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Type %1 unavailable</source>
+        <translation>Der Typ  %1 ist nicht verfügbar</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeConnections</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeconnections.cpp" line="+172"/>
+        <location line="+54"/>
+        <location line="+7"/>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation>Es kann keine Zuweisung erfolgen, da keine Eigenschaft des Namens &apos;%1&quot; existiert</translation>
+    </message>
+    <message>
+        <location line="-51"/>
+        <source>Connections: nested objects not allowed</source>
+        <translation>Verbindungen: Verschachtelte Objekte sind nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Connections: syntax error</source>
+        <translation>Verbindungen: Syntaxfehler</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Connections: script expected</source>
+        <translation>Verbindungen: Skript erwartet</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeEngine</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativesqldatabase.cpp" line="+204"/>
+        <source>executeSql called outside transaction()</source>
+        <translation>&apos;executeSql&apos; wurde außerhalb von &apos;transaction()&apos; aufgerufen</translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>Read-only Transaction</source>
+        <translation>Schreibgeschützte Transaktion</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Version mismatch: expected %1, found %2</source>
+        <translation>Die Version %2 kann nicht verwendet werden; es wird %1 benötigt</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>SQL transaction failed</source>
+        <translation>Die SQL-Transaktion schlug fehl</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>transaction: missing callback</source>
+        <translation>callback fehlt bei Transaktion</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <location line="+16"/>
+        <source>SQL: database version mismatch</source>
+        <translation>SQL: Die Version der Datenbank entspricht nicht der erwarteten Version</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeFlipable</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeflipable.cpp" line="+124"/>
+        <source>front is a write-once property</source>
+        <translation>&apos;front&apos; kann nur einmal zugewiesen werden</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>back is a write-once property</source>
+        <translation>&apos;back&apos; kann nur einmal zugewiesen werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeInfo</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativeinfo.cpp" line="+112"/>
+        <location line="+3"/>
+        <source>unknown location</source>
+        <translation>Unbekannter Ort</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeListModel</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativelistmodel.cpp" line="+483"/>
+        <source>remove: index %1 out of range</source>
+        <translation>remove: Der Index %1 ist außerhalb des gültigen Bereichs</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>insert: value is not an object</source>
+        <translation>insert: Der Wert ist kein Objekt</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>insert: index %1 out of range</source>
+        <translation>insert: Der Index %1 ist außerhalb des gültigen Bereichs</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>move: out of range</source>
+        <translation>move: Außerhalb des gültigen Bereichs</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>append: value is not an object</source>
+        <translation>append: Der Wert ist kein Objekt</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>get: index %1 out of range</source>
+        <translation>get: Der Index %1 ist außerhalb des gültigen Bereichs</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>set: value is not an object</source>
+        <translation>set: Der Wert ist kein Objekt</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+39"/>
+        <source>set: index %1 out of range</source>
+        <translation>set: Der Index %1 ist außerhalb des gültigen Bereichs</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>ListElement: cannot use default property</source>
+        <translation>ListElement: Die Vorgabe-Eigenschaft kann nicht verwendet werden</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>ListElement: cannot use reserved &quot;id&quot; property</source>
+        <translation>ListElement: Die &quot;id&quot;-Eigenschaft kann nicht verwendet werden</translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>ListElement: cannot use script for property value</source>
+        <translation>ListElement: Es kann kein Skript für den Wert der Eigenschaft verwendet werden</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>ListModel: undefined property &apos;%1&apos;</source>
+        <translation>ListModel: Die Eigenschaft &apos;%1&apos; ist nicht definiert</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentAnimation</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+2486"/>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation>Das Erscheinungsbild kann bei einer komplexen Transformation nicht beibehalten werden</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+7"/>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation>Das Erscheinungsbild kann bei einer nicht-uniformen Skalierung nicht beibehalten werden</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation>Das Erscheinungsbild kann bei einer Skalierung mit 0 nicht beibehalten werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentChange</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativestateoperations.cpp" line="+93"/>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation>Das Erscheinungsbild kann bei einer komplexen Transformation nicht beibehalten werden</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+7"/>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation>Das Erscheinungsbild kann bei einer nicht-uniformen Skalierung nicht beibehalten werden</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation>Das Erscheinungsbild kann bei einer Skalierung mit 0 nicht beibehalten werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParser</name>
+    <message>
+        <location filename="../src/declarative/qml/parser/qdeclarativejslexer.cpp" line="+556"/>
+        <source>Illegal character</source>
+        <translation>Ungültiges Zeichen</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Unclosed string at end of line</source>
+        <translation>Zeichenkette am Zeilenende nicht abgeschlossen</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Illegal escape squence</source>
+        <translation>Ungültiges Escape-Sequenz</translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Illegal unicode escape sequence</source>
+        <translation>Ungültige Unicode-Escape-Sequenz</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Unclosed comment at end of file</source>
+        <translation>Kommentar am Dateiende nicht abgeschlossen</translation>
+    </message>
+    <message>
+        <location line="+87"/>
+        <source>Illegal syntax for exponential number</source>
+        <translation>Ungültige Syntax des Exponenten</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Identifier cannot start with numeric literal</source>
+        <translation>Ein Bezeichner darf nicht mit einem numerischen Literal beginnen</translation>
+    </message>
+    <message>
+        <location line="+331"/>
+        <source>Unterminated regular expression literal</source>
+        <translation>Regulärer Ausdruck nicht abgeschlossen</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Invalid regular expression flag &apos;%0&apos;</source>
+        <translation>Ungültiger Modifikator &apos;%0&apos; bei regulärem Ausdruck</translation>
+    </message>
+    <message>
+        <location filename="../src/declarative/qml/parser/qdeclarativejsparser.cpp" line="+1781"/>
+        <location line="+67"/>
+        <source>Syntax error</source>
+        <translation>Syntaxfehler</translation>
+    </message>
+    <message>
+        <location line="-65"/>
+        <source>Unexpected token `%1&apos;</source>
+        <translation>Unerwartetes Element &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <location line="+24"/>
+        <source>Expected token `%1&apos;</source>
+        <translation>Es wird das Element &apos;%1&apos; erwartet</translation>
+    </message>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativescriptparser.cpp" line="+266"/>
+        <location line="+434"/>
+        <location line="+59"/>
+        <source>Property value set multiple times</source>
+        <translation>Mehrfache Zuweisung eines Wertes an eine Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="-482"/>
+        <source>Expected type name</source>
+        <translation>Es wird ein Typname erwartet</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Invalid use of Script block</source>
+        <translation>Ungültige Verwendung von Skript-Blöcken</translation>
+    </message>
+    <message>
+        <location line="+154"/>
+        <source>Invalid import qualifier ID</source>
+        <translation>Ungültige Id-Angabe bei Import</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Library import requires a version</source>
+        <translation>Der Import einer Bibliothek erfordert eine Versionsangabe</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Expected parameter type</source>
+        <translation>Es wird eine Typangabe für den Parameter erwartet</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Invalid property type modifier</source>
+        <translation>Ungültiger Modifikator für den Typ der Eigenschaft</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Unexpected property type modifier</source>
+        <translation>Modifikator für den Typ der Eigenschaft an dieser Stelle nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Expected property type</source>
+        <translation>Typangabe für Eigenschaft erwartet</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Readonly not yet supported</source>
+        <translation>&apos;read-only&apos; wird an dieser Stelle noch nicht unterstützt</translation>
+    </message>
+    <message>
+        <location line="+213"/>
+        <source>JavaScript declaration outside Script element</source>
+        <translation>Eine JavaScript-Deklaration ist außerhalb eines Skriptelementes nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Variable declarations not allow in inline Script blocks</source>
+        <translation>Variablendeklarationen sind in eingebetteten Script-Blöcken nicht zulässig</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePauseAnimation</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="-2103"/>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>Es kann keine Zeitdauer &lt;0 gesetzt werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePropertyAnimation</name>
+    <message>
+        <location line="+1252"/>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>Es kann keine Zeitdauer &lt;0 gesetzt werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePropertyChanges</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativepropertychanges.cpp" line="+380"/>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation>Es kann keine Zuweisung erfolgen, da keine Eigenschaft des Namens &apos;%1&quot; existiert</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot assign to read-only property &quot;%1&quot;</source>
+        <translation>Die Eigenschaft &apos;%1&quot; ist schreibgeschützt und kann daher nicht zugewiesen werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTextInput</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativetextinput.cpp" line="+594"/>
+        <location line="+9"/>
+        <source>Could not load cursor delegate</source>
+        <translation>Cursor-Delegate konnte nicht geladen werden</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Could not instantiate cursor delegate</source>
+        <translation>Cursor-Delegate konnte angelegt werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeVME</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativevme.cpp" line="+195"/>
+        <source>Unable to create object of type %1</source>
+        <translation>Es konnte kein Objekt des Typs %1 erzeugt werden</translation>
+    </message>
+    <message>
+        <location line="+306"/>
+        <source>Cannot assign value %1 to property %2</source>
+        <translation>Der Wert &apos;%1&apos; kann nicht der Eigenschaft %2 zugewiesen werden</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Cannot assign object type %1 with no default method</source>
+        <translation>Der Objekttyp %1 kann nicht zugewiesen werden, da keine Vorgabe-Methode existiert</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
+        <translation>Es kann keine Verbindung zwischen dem Signal %1 und dem Slot %2 hergestellt werden, da sie nicht zusammenpassen</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cannot assign an object to signal property %1</source>
+        <translation>Der Signal-Eigenschaft %1 kann kein Objekt zugewiesen werden</translation>
+    </message>
+    <message>
+        <location line="+147"/>
+        <source>Cannot assign object to list</source>
+        <translation>Zuweisung eines Objekts an eine Liste nicht zulässig</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Cannot assign object to interface property</source>
+        <translation>Der Eigenschaft der Schnittstelle kann kein Objekt zugewiesen werden</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Unable to create attached object</source>
+        <translation>Es konnte kein &apos;attached&apos;-Objekt erzeugt werden</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Cannot set properties on %1 as it is null</source>
+        <translation>Es können keine Eigenschaften auf %1 gesetzt werden, da es &apos;null&apos; ist</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeVisualDataModel</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativevisualitemmodel.cpp" line="+1022"/>
+        <source>Delegate component must be Item type.</source>
+        <translation>Delegate-Komponente muss vom Typ &apos;Item&apos; sein</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModelRole</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel_p.h" line="+158"/>
+        <source>An XmlRole query must not start with &apos;/&apos;</source>
+        <translation>Eine XmlRole-Abfrage darf nicht mit &apos;/&apos; beginnen</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlRoleList</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="+623"/>
+        <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
+        <translation>Eine XmlListModel-Abfrage muss mit &apos;/&apos; oder &quot;//&quot; beginnen</translation>
+    </message>
+</context>
+<context>
     <name>QDial</name>
     <message>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+951"/>
@@ -1576,7 +2530,7 @@ nach
 <context>
     <name>QDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qdialog.cpp" line="+652"/>
+        <location filename="../src/gui/dialogs/qdialog.cpp" line="+659"/>
         <source>What&apos;s This?</source>
         <translation>Direkthilfe</translation>
     </message>
@@ -1589,7 +2543,7 @@ nach
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1876"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1906"/>
         <location line="+464"/>
         <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+648"/>
         <source>OK</source>
@@ -1842,7 +2796,7 @@ nach
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+557"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+558"/>
         <location line="+471"/>
         <source>All Files (*)</source>
         <translation>Alle Dateien (*)</translation>
@@ -2389,7 +3343,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QFontDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+776"/>
+        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+768"/>
         <source>&amp;Font</source>
         <translation>&amp;Schriftart</translation>
     </message>
@@ -2424,13 +3378,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Beispiel</translation>
     </message>
     <message>
-        <location line="-608"/>
-        <location line="+257"/>
+        <location line="-595"/>
         <source>Select Font</source>
         <translation>Schriftart auswählen</translation>
     </message>
     <message>
-        <location line="+352"/>
+        <location line="+596"/>
         <source>Wr&amp;iting System</source>
         <translation>&amp;Schriftsystem</translation>
     </message>
@@ -2584,7 +3537,8 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QGstreamerPlayerSession</name>
     <message>
-        <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+270"/>
+        <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+423"/>
+        <location line="+16"/>
         <source>Unable to play %1</source>
         <translation>%1 kann nicht abgespielt werden</translation>
     </message>
@@ -2592,12 +3546,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QHostInfo</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_p.h" line="+101"/>
+        <location filename="../src/network/kernel/qhostinfo_p.h" line="+103"/>
         <source>Unknown error</source>
         <translation>Unbekannter Fehler</translation>
     </message>
     <message>
-        <location filename="../src/network/kernel/qhostinfo.cpp" line="+168"/>
+        <location filename="../src/network/kernel/qhostinfo.cpp" line="+175"/>
         <source>No host name given</source>
         <translation>Es wurde kein Hostname angegeben</translation>
     </message>
@@ -2921,7 +3875,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+5"/>
         <source>Could not prepare statement</source>
-        <translation>Der Befehl konnte nicht initalisiert werden</translation>
+        <translation>Der Befehl konnte nicht initialisiert werden</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -2978,7 +3932,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Kein freier Speicherplatz auf dem Gerät vorhanden</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1565"/>
+        <location filename="../src/corelib/io/qiodevice.cpp" line="+1564"/>
         <source>Unknown error</source>
         <translation>Unbekannter Fehler</translation>
     </message>
@@ -3094,7 +4048,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QLineEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2104"/>
+        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2107"/>
         <source>Select All</source>
         <translation>Alles auswählen</translation>
     </message>
@@ -3227,7 +4181,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1270"/>
+        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1287"/>
         <source>Unable to open database &apos;</source>
         <translation>Die Datenbankverbindung kann nicht geöffnet werden &apos;</translation>
     </message>
@@ -3417,7 +4371,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMediaPlayer</name>
     <message>
-        <location filename="../src/multimedia/playback/qmediaplayer.cpp" line="+471"/>
+        <location filename="../src/multimedia/playback/qmediaplayer.cpp" line="+494"/>
         <source>The QMediaPlayer object does not have a valid service</source>
         <translation>Das QMediaPlayer-Objekt verfügt über keinen gültigen Dienst</translation>
     </message>
@@ -3425,7 +4379,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMediaPlaylist</name>
     <message>
-        <location filename="../src/multimedia/base/qmediaplaylist.cpp" line="+454"/>
+        <location filename="../src/multimedia/base/qmediaplaylist.cpp" line="+455"/>
         <location line="+46"/>
         <source>Could not add items to read only playlist.</source>
         <translation>Es konnten keine Einträge zur Wiedergabeliste hinzugefügt werden, da sie schreibgeschützt ist.</translation>
@@ -3472,7 +4426,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMenuBar</name>
     <message>
-        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+436"/>
+        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+452"/>
         <source>Actions</source>
         <translation>Optionen</translation>
     </message>
@@ -3508,12 +4462,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <location line="-1102"/>
+        <location line="-1119"/>
         <source>Show Details...</source>
         <translation>Details einblenden...</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Hide Details...</source>
         <translation>Details ausblenden...</translation>
     </message>
@@ -3559,7 +4513,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+3"/>
         <source>Unsupported socket operation</source>
-        <translation>Nichtunterstütztes Socket-Kommando</translation>
+        <translation> Socket-Kommando nicht unterstützt</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -3781,7 +4735,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkAccessManager</name>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+862"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+885"/>
         <source>Network access is disabled.</source>
         <translation>Der Zugriff auf das Netzwerk ist nicht gestattet.</translation>
     </message>
@@ -3794,12 +4748,17 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Beim Herunterladen von %1 trat ein Fehler auf - Die Antwort des Servers ist: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="-780"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="-801"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>Das Protokoll &quot;%1&quot; ist unbekannt</translation>
     </message>
     <message>
-        <location line="+486"/>
+        <location line="+177"/>
+        <source>Network session error.</source>
+        <translation>Fehler bei Netzwerkverbindung.</translation>
+    </message>
+    <message>
+        <location line="+323"/>
         <source>Temporary network failure.</source>
         <translation>Das Netzwerk ist zur Zeit ausgefallen.</translation>
     </message>
@@ -3816,7 +4775,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkSession</name>
     <message>
-        <location filename="../src/network/bearer/qnetworksession.cpp" line="+437"/>
+        <location filename="../src/network/bearer/qnetworksession.cpp" line="+441"/>
         <source>Invalid configuration.</source>
         <translation>Ungültige Konfiguration.</translation>
     </message>
@@ -3824,8 +4783,8 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkSessionPrivateImpl</name>
     <message>
-        <location filename="../src/plugins/bearer/qnetworksession_impl.cpp" line="+247"/>
-        <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+213"/>
+        <location filename="../src/plugins/bearer/qnetworksession_impl.cpp" line="+270"/>
+        <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+215"/>
         <source>Unknown session error.</source>
         <translation>Unbekannter Fehler bei Netzwerkverbindung.</translation>
     </message>
@@ -3854,7 +4813,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Das Roaming wurde abgebrochen oder ist hier nicht möglich.</translation>
     </message>
     <message>
-        <location filename="../src/plugins/bearer/icd/qnetworksession_impl.cpp" line="+1083"/>
+        <location filename="../src/plugins/bearer/icd/qnetworksession_impl.cpp" line="+1159"/>
         <source>Roaming error</source>
         <translation>Fehler beim Roaming</translation>
     </message>
@@ -3872,7 +4831,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QOCIDriver</name>
     <message>
-        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2082"/>
+        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2088"/>
         <source>Unable to logon</source>
         <translation>Logon-Vorgang fehlgeschlagen</translation>
     </message>
@@ -3946,12 +4905,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1791"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1842"/>
         <source>Unable to connect</source>
         <translation>Es kann keine Verbindung aufgebaut werden</translation>
     </message>
     <message>
-        <location line="+233"/>
+        <location line="+234"/>
         <source>Unable to disable autocommit</source>
         <translation>&apos;autocommit&apos; konnte nicht deaktiviert werden</translation>
     </message>
@@ -3971,7 +4930,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>&apos;autocommit&apos; konnte nicht aktiviert werden</translation>
     </message>
     <message>
-        <location line="-276"/>
+        <location line="-277"/>
         <source>Unable to connect - Driver doesn&apos;t support all functionality required</source>
         <translation>Es kann keine Verbindung aufgebaut werden weil der Treiber die benötigte Funktionalität nicht vollständig unterstützt</translation>
     </message>
@@ -3979,19 +4938,19 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-935"/>
+        <location line="-940"/>
         <location line="+351"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: &apos;SQL_CURSOR_STATIC&apos; konnte nicht als Attribut des Befehls gesetzt werden. Bitte prüfen Sie die Konfiguration Ihres ODBC-Treibers</translation>
     </message>
     <message>
         <location line="-334"/>
-        <location line="+626"/>
+        <location line="+627"/>
         <source>Unable to execute statement</source>
         <translation>Der Befehl konnte nicht ausgeführt werden</translation>
     </message>
     <message>
-        <location line="-545"/>
+        <location line="-546"/>
         <source>Unable to fetch next</source>
         <translation>Der nächste Datensatz konnte nicht abgeholt werden</translation>
     </message>
@@ -4001,19 +4960,19 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Der Befehl konnte nicht initialisiert werden</translation>
     </message>
     <message>
-        <location line="+266"/>
+        <location line="+267"/>
         <source>Unable to bind variable</source>
         <translation>Die Variable konnte nicht gebunden werden</translation>
     </message>
     <message>
         <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+189"/>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-465"/>
-        <location line="+574"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-466"/>
+        <location line="+578"/>
         <source>Unable to fetch last</source>
         <translation>Der letzte Datensatz konnte nicht abgeholt werden</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-668"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-672"/>
         <source>Unable to fetch</source>
         <translation>Es konnten keine Daten abgeholt werden</translation>
     </message>
@@ -4031,7 +4990,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/declarative/util/qmlxmllistmodel.cpp" line="+370"/>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="-193"/>
         <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
         <translation>&quot;%1&quot; ist bereits als Name einer Rolle vergeben und wird daher deaktiviert.</translation>
     </message>
@@ -4039,7 +4998,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QPPDOptionsModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1195"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1238"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -4231,12 +5190,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+266"/>
+        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+272"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+375"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+379"/>
         <source>Print all</source>
         <translation>Alles drucken</translation>
     </message>
@@ -4371,7 +5330,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>US Common #10 Envelope (105 x 241 mm)</translation>
     </message>
     <message>
-        <location line="-25"/>
+        <location line="+20"/>
+        <source>Print current page</source>
+        <translation>Diese Seite drucken</translation>
+    </message>
+    <message>
+        <location line="-45"/>
         <source>A4 (210 x 297 mm, 8.26 x 11.7 inches)</source>
         <translation>A4 (210 x 297 mm)</translation>
     </message>
@@ -4401,14 +5365,14 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Auswahl drucken</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+112"/>
+        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+113"/>
         <location line="+13"/>
         <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="-2"/>
         <source>Print</source>
         <translation>Drucken</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-359"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-392"/>
         <source>Print To File ...</source>
         <translation>In Datei drucken ...</translation>
     </message>
@@ -4427,7 +5391,7 @@ Do you want to overwrite it?</source>
 Soll sie überschrieben werden?</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-228"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-232"/>
         <source>File exists</source>
         <translation>Die Datei existiert bereits</translation>
     </message>
@@ -4604,7 +5568,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Benutzerdefiniert</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-523"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-530"/>
         <location line="+68"/>
         <source>&amp;Options &gt;&gt;</source>
         <translation>&amp;Einstellungen &gt;&gt;</translation>
@@ -4615,7 +5579,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>&amp;Einstellungen &lt;&lt; </translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+260"/>
         <source>Print to File (PDF)</source>
         <translation>In PDF-Datei drucken</translation>
     </message>
@@ -4635,7 +5599,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Schreiben der Datei %1</translation>
     </message>
     <message>
-        <location line="-369"/>
+        <location line="-376"/>
         <source>&amp;Print</source>
         <translation>&amp;Drucken</translation>
     </message>
@@ -4648,7 +5612,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>%1%</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+84"/>
         <source>Print Preview</source>
         <translation>Druckvorschau</translation>
     </message>
@@ -4863,6 +5827,11 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <location/>
         <source>Short side</source>
         <translation>Kurze Seite</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Current Page</source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -6566,7 +7535,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Umdrehen</translation>
     </message>
     <message>
-        <location line="+602"/>
+        <location line="+603"/>
         <location line="+135"/>
         <source>Ctrl</source>
         <translation>Strg</translation>
@@ -6600,7 +7569,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>F%1</translation>
     </message>
     <message>
-        <location line="-898"/>
+        <location line="-899"/>
         <source>Home Page</source>
         <translation>Startseite</translation>
     </message>
@@ -6734,7 +7703,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+312"/>
+        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+331"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -6812,7 +7781,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QSslSocket</name>
     <message>
-        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+546"/>
+        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+550"/>
         <source>Unable to write data: %1</source>
         <translation>Die Daten konnten nicht geschrieben werden: %1</translation>
     </message>
@@ -6832,7 +7801,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Im Ablauf des SSL-Protokolls ist ein Fehler aufgetreten: %1</translation>
     </message>
     <message>
-        <location line="-521"/>
+        <location line="-524"/>
         <source>Error creating SSL context (%1)</source>
         <translation>Es konnte keine SSL-Kontextstruktur erzeugt werden (%1)</translation>
     </message>
@@ -6842,7 +7811,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Ungültige oder leere Schlüsselliste (%1)</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+45"/>
         <source>Private key does not certify public key, %1</source>
         <translation>Der private Schlüssel passt nicht zum öffentlichen Schlüssel, %1</translation>
     </message>
@@ -6857,7 +7826,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Es konnte keine SSL-Sitzung erzeugt werden: %1</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-64"/>
         <source>Cannot provide a certificate with no key, %1</source>
         <translation>Ohne Schlüssel kann kein Zertifikat zur Verfügung gestellt werden, %1</translation>
     </message>
@@ -6867,7 +7836,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Das lokale Zertifikat konnte nicht geladen werden, %1</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+15"/>
         <source>Error loading private key, %1</source>
         <translation>Der private Schlüssel konnte nicht geladen werden, %1</translation>
     </message>
@@ -7078,7 +8047,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2029"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2034"/>
         <source>&amp;Undo</source>
         <translation>&amp;Rückgängig</translation>
     </message>
@@ -8127,7 +9096,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5761"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5805"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -8589,866 +9558,6 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <location filename="../src/corelib/xml/qxmlstream_p.h" line="+562"/>
         <source>%1 is an invalid PUBLIC identifier.</source>
         <translation>%1 ist keine gültige Angabe für eine PUBLIC-Id.</translation>
-    </message>
-</context>
-<context>
-    <name>QmlAbstractAnimation</name>
-    <message>
-        <location filename="../src/declarative/util/qmlanimation.cpp" line="+235"/>
-        <source>Cannot animate non-existent property &quot;%1&quot;</source>
-        <translation>Die Eigenschaft &apos;%1&quot; existiert nicht und kann daher nicht animiert werden</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Cannot animate read-only property &quot;%1&quot;</source>
-        <translation>Die Eigenschaft &apos;%1&quot; ist schreibgeschützt und kann daher nicht animiert werden</translation>
-    </message>
-</context>
-<context>
-    <name>QmlBehavior</name>
-    <message>
-        <location filename="../src/declarative/util/qmlbehavior.cpp" line="+122"/>
-        <source>Cannot change the animation assigned to a Behavior.</source>
-        <translation>Die zu einem Behavior-Element gehörende Animation kann nicht geändert werden.</translation>
-    </message>
-</context>
-<context>
-    <name>QmlBinding</name>
-    <message>
-        <location filename="../src/declarative/qml/qmlbinding.cpp" line="+195"/>
-        <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation>Bei der für die Eigenschaft &quot;%1&quot; angegebenen Bindung  wurde eine Schleife festgestellt</translation>
-    </message>
-</context>
-<context>
-    <name>QmlCompiler</name>
-    <message>
-        <location filename="../src/declarative/qml/qmlcompiler.cpp" line="+214"/>
-        <location line="+1772"/>
-        <location line="+124"/>
-        <location line="+427"/>
-        <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: &quot;%1&quot; ist schreibgeschützt</translation>
-    </message>
-    <message>
-        <location line="-2314"/>
-        <source>Invalid property assignment: unknown enumeration</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Ungültiger Aufzählungswert</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Invalid property assignment: string expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Zeichenkette erwartet</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Invalid property assignment: url expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine URL erwartet</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Invalid property assignment: unsigned int expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine vorzeichenloser Ganzzahlwert erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: int expected</source>
-        <translation type="unfinished">Ungültige Zuweisung bei Eigenschaft: Es wird ein Ganzzahlwert erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: float expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Gleitkommazahl erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: double expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Gleitkommazahl (double) erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: color expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Farbspezifikation erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: date expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Datumsangabe erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: time expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Zeitangabe erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: datetime expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Datumsangabe erwartet</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Invalid property assignment: point expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Koordinatenangabe für einen Punkt erwartet</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Invalid property assignment: size expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird eine Größenangabe erwartet</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Invalid property assignment: rect expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es werden Parameter für ein Rechteck erwartet</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Invalid property assignment: boolean expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein Boolescher Wert erwartet</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid property assignment: 3D vector expected</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Es wird ein dreidimensionaler Vektor erwartet</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
-        <translation>Ungültige Zuweisung bei Eigenschaft: Der Typ &quot;%1&quot; ist nicht unterstützt</translation>
-    </message>
-    <message>
-        <location line="+801"/>
-        <location line="+3"/>
-        <source>Invalid component specification</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Invalid component id specification</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+565"/>
-        <source>id is not unique</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-555"/>
-        <source>Invalid component body specification</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Cannot create empty component specification</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Invalid Script block.  Specify either the source property or inline script</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Invalid Script source value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Properties cannot be set on Script block</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Invalid Script block</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+130"/>
-        <source>Incorrectly specified signal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Empty signal assignment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>Empty property assignment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Attached properties cannot be used here</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <location line="+104"/>
-        <source>Non-existent attached object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-100"/>
-        <location line="+103"/>
-        <source>Invalid attached object assignment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-50"/>
-        <source>Cannot assign to non-existent default property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+339"/>
-        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-308"/>
-        <source>Invalid use of namespace</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Not an attached property name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+169"/>
-        <source>Invalid use of id property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>&quot;%1&quot; is not a valid object id</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>id conflicts with type name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>id conflicts with namespace prefix</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+78"/>
-        <source>Invalid value in grouped property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+8"/>
-        <source>Invalid grouped property access</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Invalid property use</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Property assignment expected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Single property assignment expected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Unexpected object assignment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+57"/>
-        <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Cannot assign primitives to lists</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-6"/>
-        <source>Can only assign one binding to lists</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Cannot assign multiple values to a script property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Invalid property assignment: script expected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+129"/>
-        <source>Cannot assign object to property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+97"/>
-        <source>Duplicate default property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Duplicate property name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Duplicate signal name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Duplicate method name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Invalid property nesting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+55"/>
-        <source>Cannot override FINAL property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Invalid property type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+174"/>
-        <location line="+9"/>
-        <source>No property alias location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-4"/>
-        <location line="+25"/>
-        <source>Invalid alias location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-16"/>
-        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlCompositeTypeManager</name>
-    <message>
-        <location filename="../src/declarative/qml/qmlcompositetypemanager.cpp" line="+415"/>
-        <location line="+220"/>
-        <source>Resource %1 unavailable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-141"/>
-        <source>Import %1 unavailable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 is not a type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+42"/>
-        <source>Type %1 unavailable</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlEngine</name>
-    <message>
-        <location filename="../src/declarative/qml/qmlsqldatabase.cpp" line="+204"/>
-        <source>executeSql called outside transaction()</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+52"/>
-        <source>Read-only Transaction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Version mismatch: expected %1, found %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>SQL transaction failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>transaction: missing callback</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+57"/>
-        <location line="+16"/>
-        <source>SQL: database version mismatch</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlGraphicsAnchors</name>
-    <message>
-        <location filename="../src/declarative/graphicsitems/qmlgraphicsanchors.cpp" line="+177"/>
-        <source>Possible anchor loop detected on fill.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>Possible anchor loop detected on centerIn.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+163"/>
-        <location line="+34"/>
-        <location line="+607"/>
-        <location line="+37"/>
-        <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-534"/>
-        <source>Possible anchor loop detected on vertical anchor.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+59"/>
-        <source>Possible anchor loop detected on horizontal anchor.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+422"/>
-        <source>Cannot specify left, right, and hcenter anchors.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+37"/>
-        <source>Cannot anchor to a null item.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-34"/>
-        <source>Cannot anchor a horizontal edge to a vertical edge.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+37"/>
-        <source>Cannot anchor item to self.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-25"/>
-        <source>Cannot specify top, bottom, and vcenter anchors.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Cannot anchor a vertical edge to a horizontal edge.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlGraphicsFlipable</name>
-    <message>
-        <location filename="../src/declarative/graphicsitems/qmlgraphicsflipable.cpp" line="+149"/>
-        <source>front is a write-once property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>back is a write-once property</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlGraphicsTextInput</name>
-    <message>
-        <location filename="../src/declarative/graphicsitems/qmlgraphicstextinput.cpp" line="+594"/>
-        <location line="+9"/>
-        <source>Could not load cursor delegate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Could not instantiate cursor delegate</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlGraphicsVisualDataModel</name>
-    <message>
-        <location filename="../src/declarative/graphicsitems/qmlgraphicsvisualitemmodel.cpp" line="+826"/>
-        <source>Delegate component must be Item type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlInfo</name>
-    <message>
-        <location filename="../src/declarative/qml/qmlinfo.cpp" line="+112"/>
-        <location line="+3"/>
-        <source>unknown location</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlListModel</name>
-    <message>
-        <location filename="../src/declarative/util/qmllistmodel.cpp" line="+491"/>
-        <source>remove: index %1 out of range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>insert: value is not an object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>insert: index %1 out of range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>move: out of range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+49"/>
-        <source>append: value is not an object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <source>get: index %1 out of range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>set: value is not an object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <location line="+39"/>
-        <source>set: index %1 out of range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+49"/>
-        <source>ListElement: cannot use default property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>ListElement: cannot use reserved &quot;id&quot; property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>ListElement: cannot use script for property value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>ListModel: undefined property &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlParentChange</name>
-    <message>
-        <location filename="../src/declarative/util/qmlstateoperations.cpp" line="+85"/>
-        <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+7"/>
-        <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlParser</name>
-    <message>
-        <location filename="../src/declarative/qml/parser/qmljslexer.cpp" line="+554"/>
-        <source>Illegal character</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Unclosed string at end of line</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Illegal escape squence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>Illegal unicode escape sequence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Unclosed comment at end of file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+87"/>
-        <source>Illegal syntax for exponential number</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Identifier cannot start with numeric literal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+331"/>
-        <source>Unterminated regular expression literal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Invalid regular expression flag &apos;%0&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/declarative/qml/parser/qmljsparser.cpp" line="+1767"/>
-        <location line="+67"/>
-        <source>Syntax error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-65"/>
-        <source>Unexpected token `%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <location line="+24"/>
-        <source>Expected token `%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/declarative/qml/qmlscriptparser.cpp" line="+267"/>
-        <source>Expected type name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Invalid use of Script block</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+151"/>
-        <source>Invalid import qualifier ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Library import requires a version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+53"/>
-        <source>Expected parameter type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+42"/>
-        <source>Invalid property type modifier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Unexpected property type modifier</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Expected property type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Readonly not yet supported</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+194"/>
-        <source>QmlJS declaration outside Script element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Variable declarations not allow in inline Script blocks</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlPauseAnimation</name>
-    <message>
-        <location filename="../src/declarative/util/qmlanimation.cpp" line="+410"/>
-        <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlPropertyAnimation</name>
-    <message>
-        <location line="-568"/>
-        <source>Unmatched parenthesis in easing function &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Easing function &quot;%1&quot; must start with &quot;ease&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Unknown easing curve &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+9"/>
-        <source>Improperly specified parameter in easing function &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Unknown easing parameter &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1754"/>
-        <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlPropertyChanges</name>
-    <message>
-        <location filename="../src/declarative/util/qmlpropertychanges.cpp" line="+361"/>
-        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlVME</name>
-    <message>
-        <location filename="../src/declarative/qml/qmlvme.cpp" line="+195"/>
-        <source>Unable to create object of type %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+306"/>
-        <source>Cannot assign value %1 to property %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Cannot assign object type %1 with no default method</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Cannot assign an object to signal property %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+147"/>
-        <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Cannot assign object to interface property</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Unable to create attached object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Cannot set properties on %1 as it is null</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlXmlListModelRole</name>
-    <message>
-        <location filename="../src/declarative/util/qmlxmllistmodel.cpp" line="-255"/>
-        <source>An XmlRole query must not start with &apos;/&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QmlXmlRoleList</name>
-    <message>
-        <location line="+430"/>
-        <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9916,7 +10025,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+130"/>
         <source>%1 is an invalid flag for regular expressions. Valid flags are:</source>
-        <translation>%1 ist kein gültiger Modifizierer für reguläre Ausdrücke. Gültige Modifizierer sind:</translation>
+        <translation>%1 ist kein gültiger Modifikator für reguläre Ausdrücke. Gültige Modifikatoren sind:</translation>
     </message>
     <message>
         <location filename="../src/xmlpatterns/functions/qqnamefns.cpp" line="+17"/>
@@ -11098,7 +11207,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Das Unterelement fehlt im Bereich; mögliche Unterelemente wären: %1.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+143"/>
         <source>Document is not a XML schema.</source>
         <translation>Das Dokument ist kein XML-Schema.</translation>
     </message>
@@ -11124,7 +11233,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Der Zielnamensraum %1 des importierten Schemas unterscheidet sich vom dem von ihm definierten Zielnamensraum %2.</translation>
     </message>
     <message>
-        <location line="+237"/>
+        <location line="+243"/>
         <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3.</source>
         <translation>Das Element %1 kann nicht den Zielnamensraum %3 als Wert des Attributs &apos;%2&apos; spezifizieren.</translation>
     </message>
@@ -11134,7 +11243,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>In einem Schema ohne Namensraum muss das Element %1 ein Attribut %2 haben.</translation>
     </message>
     <message>
-        <location line="+833"/>
+        <location line="+851"/>
         <location line="+158"/>
         <source>%1 element is not allowed inside %2 element if %3 attribute is present.</source>
         <translation>Wenn das Attribut %3 vorhanden ist, darf das Element %1 nicht im Element %2 vorkommen.</translation>

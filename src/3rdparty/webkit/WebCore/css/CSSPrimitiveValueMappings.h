@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007 Alexey Proskuryakov <ap@nypop.com>.
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #ifndef CSSPrimitiveValueMappings_h
 #define CSSPrimitiveValueMappings_h
 
+#include "ColorSpace.h"
 #include "CSSPrimitiveValue.h"
 #include "CSSValueKeywords.h"
 #include "FontSmoothingMode.h"
@@ -197,6 +198,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case DefaultButtonPart:
             m_value.ident = CSSValueDefaultButton;
             break;
+        case InnerSpinButtonPart:
+            m_value.ident = CSSValueInnerSpinButton;
+            break;
         case ListboxPart:
             m_value.ident = CSSValueListbox;
             break;
@@ -228,6 +232,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
             break;
         case MediaReturnToRealtimeButtonPart:
             m_value.ident = CSSValueMediaReturnToRealtimeButton;
+            break;
+        case MediaToggleClosedCaptionsButtonPart:
+            m_value.ident = CSSValueMediaToggleClosedCaptionsButton;
             break;
         case MediaSliderPart:
             m_value.ident = CSSValueMediaSlider;
@@ -264,6 +271,14 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
             break;
         case MenulistTextFieldPart:
             m_value.ident = CSSValueMenulistTextfield;
+            break;
+        case OuterSpinButtonPart:
+            m_value.ident = CSSValueOuterSpinButton;
+            break;
+        case ProgressBarPart:
+#if ENABLE(PROGRESS_BAR)
+            m_value.ident = CSSValueProgressBar;
+#endif
             break;
         case SliderHorizontalPart:
             m_value.ident = CSSValueSliderHorizontal;
@@ -926,69 +941,237 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     : m_type(CSS_IDENT)
 {
     switch (e) {
-        case LNONE:
-            m_value.ident = CSSValueNone;
-            break;
-        case DISC:
-            m_value.ident = CSSValueDisc;
-            break;
-        case CIRCLE:
-            m_value.ident = CSSValueCircle;
-            break;
-        case SQUARE:
-            m_value.ident = CSSValueSquare;
-            break;
-        case LDECIMAL:
-            m_value.ident = CSSValueDecimal;
-            break;
-        case DECIMAL_LEADING_ZERO:
-            m_value.ident = CSSValueDecimalLeadingZero;
-            break;
-        case LOWER_ROMAN:
-            m_value.ident = CSSValueLowerRoman;
-            break;
-        case UPPER_ROMAN:
-            m_value.ident = CSSValueUpperRoman;
-            break;
-        case LOWER_GREEK:
-            m_value.ident = CSSValueLowerGreek;
-            break;
-        case LOWER_ALPHA:
-            m_value.ident = CSSValueLowerAlpha;
-            break;
-        case LOWER_LATIN:
-            m_value.ident = CSSValueLowerLatin;
-            break;
-        case UPPER_ALPHA:
-            m_value.ident = CSSValueUpperAlpha;
-            break;
-        case UPPER_LATIN:
-            m_value.ident = CSSValueUpperLatin;
-            break;
-        case HEBREW:
-            m_value.ident = CSSValueHebrew;
-            break;
-        case ARMENIAN:
-            m_value.ident = CSSValueArmenian;
-            break;
-        case GEORGIAN:
-            m_value.ident = CSSValueGeorgian;
-            break;
-        case CJK_IDEOGRAPHIC:
-            m_value.ident = CSSValueCjkIdeographic;
-            break;
-        case HIRAGANA:
-            m_value.ident = CSSValueHiragana;
-            break;
-        case KATAKANA:
-            m_value.ident = CSSValueKatakana;
-            break;
-        case HIRAGANA_IROHA:
-            m_value.ident = CSSValueHiraganaIroha;
-            break;
-        case KATAKANA_IROHA:
-            m_value.ident = CSSValueKatakanaIroha;
-            break;
+    case Afar:
+        m_value.ident = CSSValueAfar;
+        break;
+    case Amharic:
+        m_value.ident = CSSValueAmharic;
+        break;
+    case AmharicAbegede:
+        m_value.ident = CSSValueAmharicAbegede;
+        break;
+    case ArabicIndic:
+        m_value.ident = CSSValueArabicIndic;
+        break;
+    case Armenian:
+        m_value.ident = CSSValueArmenian;
+        break;
+    case BinaryListStyle:
+        m_value.ident = CSSValueBinary;
+        break;
+    case Bengali:
+        m_value.ident = CSSValueBengali;
+        break;
+    case Cambodian:
+        m_value.ident = CSSValueCambodian;
+        break;
+    case Circle:
+        m_value.ident = CSSValueCircle;
+        break;
+    case CjkEarthlyBranch:
+        m_value.ident = CSSValueCjkEarthlyBranch;
+        break;
+    case CjkHeavenlyStem:
+        m_value.ident = CSSValueCjkHeavenlyStem;
+        break;
+    case CJKIdeographic:
+        m_value.ident = CSSValueCjkIdeographic;
+        break;
+    case DecimalLeadingZero:
+        m_value.ident = CSSValueDecimalLeadingZero;
+        break;
+    case DecimalListStyle:
+        m_value.ident = CSSValueDecimal;
+        break;
+    case Devanagari:
+        m_value.ident = CSSValueDevanagari;
+        break;
+    case Disc:
+        m_value.ident = CSSValueDisc;
+        break;
+    case Ethiopic:
+        m_value.ident = CSSValueEthiopic;
+        break;
+    case EthiopicAbegede:
+        m_value.ident = CSSValueEthiopicAbegede;
+        break;
+    case EthiopicAbegedeAmEt:
+        m_value.ident = CSSValueEthiopicAbegedeAmEt;
+        break;
+    case EthiopicAbegedeGez:
+        m_value.ident = CSSValueEthiopicAbegedeGez;
+        break;
+    case EthiopicAbegedeTiEr:
+        m_value.ident = CSSValueEthiopicAbegedeTiEr;
+        break;
+    case EthiopicAbegedeTiEt:
+        m_value.ident = CSSValueEthiopicAbegedeTiEt;
+        break;
+    case EthiopicHalehameAaEr:
+        m_value.ident = CSSValueEthiopicHalehameAaEr;
+        break;
+    case EthiopicHalehameAaEt:
+        m_value.ident = CSSValueEthiopicHalehameAaEt;
+        break;
+    case EthiopicHalehameAmEt:
+        m_value.ident = CSSValueEthiopicHalehameAmEt;
+        break;
+    case EthiopicHalehameGez:
+        m_value.ident = CSSValueEthiopicHalehameGez;
+        break;
+    case EthiopicHalehameOmEt:
+        m_value.ident = CSSValueEthiopicHalehameOmEt;
+        break;
+    case EthiopicHalehameSidEt:
+        m_value.ident = CSSValueEthiopicHalehameSidEt;
+        break;
+    case EthiopicHalehameSoEt:
+        m_value.ident = CSSValueEthiopicHalehameSoEt;
+        break;
+    case EthiopicHalehameTiEr:
+        m_value.ident = CSSValueEthiopicHalehameTiEr;
+        break;
+    case EthiopicHalehameTiEt:
+        m_value.ident = CSSValueEthiopicHalehameTiEt;
+        break;
+    case EthiopicHalehameTig:
+        m_value.ident = CSSValueEthiopicHalehameTig;
+        break;
+    case Georgian:
+        m_value.ident = CSSValueGeorgian;
+        break;
+    case Gujarati:
+        m_value.ident = CSSValueGujarati;
+        break;
+    case Gurmukhi:
+        m_value.ident = CSSValueGurmukhi;
+        break;
+    case Hangul:
+        m_value.ident = CSSValueHangul;
+        break;
+    case HangulConsonant:
+        m_value.ident = CSSValueHangulConsonant;
+        break;
+    case Hebrew:
+        m_value.ident = CSSValueHebrew;
+        break;
+    case Hiragana:
+        m_value.ident = CSSValueHiragana;
+        break;
+    case HiraganaIroha:
+        m_value.ident = CSSValueHiraganaIroha;
+        break;
+    case Kannada:
+        m_value.ident = CSSValueKannada;
+        break;
+    case Katakana:
+        m_value.ident = CSSValueKatakana;
+        break;
+    case KatakanaIroha:
+        m_value.ident = CSSValueKatakanaIroha;
+        break;
+    case Khmer:
+        m_value.ident = CSSValueKhmer;
+        break;
+    case Lao:
+        m_value.ident = CSSValueLao;
+        break;
+    case LowerAlpha:
+        m_value.ident = CSSValueLowerAlpha;
+        break;
+    case LowerGreek:
+        m_value.ident = CSSValueLowerGreek;
+        break;
+    case LowerHexadecimal:
+        m_value.ident = CSSValueLowerHexadecimal;
+        break;
+    case LowerLatin:
+        m_value.ident = CSSValueLowerLatin;
+        break;
+    case LowerNorwegian:
+        m_value.ident = CSSValueLowerNorwegian;
+        break;
+    case LowerRoman:
+        m_value.ident = CSSValueLowerRoman;
+        break;
+    case Malayalam:
+        m_value.ident = CSSValueMalayalam;
+        break;
+    case Mongolian:
+        m_value.ident = CSSValueMongolian;
+        break;
+    case Myanmar:
+        m_value.ident = CSSValueMyanmar;
+        break;
+    case NoneListStyle:
+        m_value.ident = CSSValueNone;
+        break;
+    case Octal:
+        m_value.ident = CSSValueOctal;
+        break;
+    case Oriya:
+        m_value.ident = CSSValueOriya;
+        break;
+    case Oromo:
+        m_value.ident = CSSValueOromo;
+        break;
+    case Persian:
+        m_value.ident = CSSValuePersian;
+        break;
+    case Sidama:
+        m_value.ident = CSSValueSidama;
+        break;
+    case Somali:
+        m_value.ident = CSSValueSomali;
+        break;
+    case Square:
+        m_value.ident = CSSValueSquare;
+        break;
+    case Telugu:
+        m_value.ident = CSSValueTelugu;
+        break;
+    case Thai:
+        m_value.ident = CSSValueThai;
+        break;
+    case Tibetan:
+        m_value.ident = CSSValueTibetan;
+        break;
+    case Tigre:
+        m_value.ident = CSSValueTigre;
+        break;
+    case TigrinyaEr:
+        m_value.ident = CSSValueTigrinyaEr;
+        break;
+    case TigrinyaErAbegede:
+        m_value.ident = CSSValueTigrinyaErAbegede;
+        break;
+    case TigrinyaEt:
+        m_value.ident = CSSValueTigrinyaEt;
+        break;
+    case TigrinyaEtAbegede:
+        m_value.ident = CSSValueTigrinyaEtAbegede;
+        break;
+    case UpperAlpha:
+        m_value.ident = CSSValueUpperAlpha;
+        break;
+    case UpperGreek:
+        m_value.ident = CSSValueUpperGreek;
+        break;
+    case UpperHexadecimal:
+        m_value.ident = CSSValueUpperHexadecimal;
+        break;
+    case UpperLatin:
+        m_value.ident = CSSValueUpperLatin;
+        break;
+    case UpperNorwegian:
+        m_value.ident = CSSValueUpperNorwegian;
+        break;
+    case UpperRoman:
+        m_value.ident = CSSValueUpperRoman;
+        break;
+    case Urdu:
+        m_value.ident = CSSValueUrdu;
+        break;
     }
 }
 
@@ -996,7 +1179,7 @@ template<> inline CSSPrimitiveValue::operator EListStyleType() const
 {
     switch (m_value.ident) {
         case CSSValueNone:
-            return LNONE;
+            return NoneListStyle;
         default:
             return static_cast<EListStyleType>(m_value.ident - CSSValueDisc);
     }
@@ -1878,6 +2061,32 @@ template<> inline CSSPrimitiveValue::operator TextRenderingMode() const
         default:
             ASSERT_NOT_REACHED();
             return AutoTextRendering;
+    }
+}
+
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ColorSpace space)
+    : m_type(CSS_IDENT)
+{
+    switch (space) {
+        case DeviceColorSpace:
+            m_value.ident = CSSValueDefault;
+            break;
+        case sRGBColorSpace:
+            m_value.ident = CSSValueSrgb;
+            break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator ColorSpace() const
+{
+    switch (m_value.ident) {
+        case CSSValueDefault:
+            return DeviceColorSpace;
+        case CSSValueSrgb:
+            return sRGBColorSpace;
+        default:
+            ASSERT_NOT_REACHED();
+            return DeviceColorSpace;
     }
 }
 

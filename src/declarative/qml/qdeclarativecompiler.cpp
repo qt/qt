@@ -39,37 +39,34 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
-#include "qdeclarativeparser_p.h"
-#include "qdeclarativescriptparser_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativeparser_p.h"
+#include "private/qdeclarativescriptparser_p.h"
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativecomponent.h"
-#include "qmetaobjectbuilder_p.h"
-#include "qdeclarativestringconverters_p.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qmetaobjectbuilder_p.h"
+#include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativemetatype_p.h"
-#include "qdeclarativecustomparser_p_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativecomponent_p.h"
+#include "private/qdeclarativemetatype_p.h"
+#include "private/qdeclarativecustomparser_p_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativecomponent_p.h"
 #include "parser/qdeclarativejsast_p.h"
-#include "qdeclarativevmemetaobject_p.h"
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativeproperty_p.h"
-#include "qdeclarativerewrite_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativerewrite_p.h"
 #include "qdeclarativescriptstring.h"
-#include "qdeclarativeglobal_p.h"
-#include "qdeclarativescriptparser_p.h"
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativecompiledbindings_p.h"
-#include "qdeclarativeglobalscriptclass_p.h"
+#include "private/qdeclarativeglobal_p.h"
+#include "private/qdeclarativescriptparser_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativeglobalscriptclass_p.h"
 
-#include <qfxperf_p_p.h>
-
-#include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
@@ -77,12 +74,13 @@
 #include <QRectF>
 #include <QAtomicInt>
 #include <QtCore/qdebug.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
-DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
+DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATS);
+DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 using namespace QDeclarativeParser;
 
@@ -147,7 +145,7 @@ bool QDeclarativeCompiler::isSignalPropertyName(const QByteArray &name)
     For example:
 
     \code
-    COMPILE_EXCEPTION(property, QCoreApplication::translate("QDeclarativeCompiler","Error for property \"%1\"").arg(QString::fromUtf8(property->name)));
+    COMPILE_EXCEPTION(property, tr("Error for property \"%1\"").arg(QString::fromUtf8(property->name)));
     \endcode
 */
 #define COMPILE_EXCEPTION(token, desc) \
@@ -185,7 +183,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop.name())));
+        COMPILE_EXCEPTION(v, tr("Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop.name())));
 
     if (prop.isEnumType()) {
         int value;
@@ -194,7 +192,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         } else
             value = prop.enumerator().keyToValue(string.toUtf8().constData());
         if (value == -1)
-            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: unknown enumeration"));
+            COMPILE_EXCEPTION(v, tr("Invalid property assignment: unknown enumeration"));
         return true;
     }
     int type = prop.userType();
@@ -202,65 +200,65 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case -1:
             break;
         case QVariant::String:
-            if (!v->value.isString()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: string expected"));
+            if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: string expected"));
             break;
         case QVariant::Url:
-            if (!v->value.isString()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: url expected"));
+            if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: url expected"));
             break;
         case QVariant::UInt:
             {
             bool ok;
             string.toUInt(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: unsigned int expected"));
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: unsigned int expected"));
             }
             break;
         case QVariant::Int:
             {
             bool ok;
             string.toInt(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: int expected"));
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: int expected"));
             }
             break;
         case QMetaType::Float:
             {
             bool ok;
             string.toFloat(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: float expected"));
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: float expected"));
             }
             break;
         case QVariant::Double:
             {
             bool ok;
             string.toDouble(&ok);
-            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: double expected"));
+            if (!v->value.isNumber() || !ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: double expected"));
             }
             break;
         case QVariant::Color:
             {
             bool ok;
             QDeclarativeStringConverters::colorFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: color expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: color expected"));
             }
             break;
         case QVariant::Date:
             {
             bool ok;
             QDeclarativeStringConverters::dateFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: date expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: date expected"));
             }
             break;
         case QVariant::Time:
             {
             bool ok;
             QDeclarativeStringConverters::timeFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: time expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: time expected"));
             }
             break;
         case QVariant::DateTime:
             {
             bool ok;
             QDeclarativeStringConverters::dateTimeFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: datetime expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: datetime expected"));
             }
             break;
         case QVariant::Point:
@@ -268,7 +266,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QPointF point = QDeclarativeStringConverters::pointFFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: point expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: point expected"));
             }
             break;
         case QVariant::Size:
@@ -276,7 +274,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QSizeF size = QDeclarativeStringConverters::sizeFFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: size expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: size expected"));
             }
             break;
         case QVariant::Rect:
@@ -284,19 +282,19 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QRectF rect = QDeclarativeStringConverters::rectFFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: rect expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: rect expected"));
             }
             break;
         case QVariant::Bool:
             {
-            if (!v->value.isBoolean()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: boolean expected"));
+            if (!v->value.isBoolean()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: boolean expected"));
             }
             break;
         case QVariant::Vector3D:
             {
             bool ok;
             QDeclarativeStringConverters::vector3DFromString(string, &ok);
-            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: 3D vector expected"));
+            if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: 3D vector expected"));
             }
             break;
         default:
@@ -305,7 +303,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             QDeclarativeMetaType::StringConverter converter =
                 QDeclarativeMetaType::customStringConverter(t);
             if (!converter)
-                COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: unsupported type \"%1\"").arg(QString::fromLatin1(QVariant::typeToName(prop.type()))));
+                COMPILE_EXCEPTION(v, tr("Invalid property assignment: unsupported type \"%1\"").arg(QString::fromLatin1(QVariant::typeToName(prop.type()))));
             }
             break;
     }
@@ -343,9 +341,22 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
     switch(type) {
         case -1:
             {
-            instr.type = QDeclarativeInstruction::StoreVariant;
-            instr.storeString.propertyIndex = prop.propertyIndex();
-            instr.storeString.value = output->indexForString(string);
+            if (v->value.isNumber()) {
+                double n = v->value.asNumber();
+                if (double(int(n)) == n) {
+                    instr.type = QDeclarativeInstruction::StoreVariantInteger;
+                    instr.storeInteger.propertyIndex = prop.propertyIndex();
+                    instr.storeInteger.value = int(n);
+                } else {
+                    instr.type = QDeclarativeInstruction::StoreVariantDouble;
+                    instr.storeDouble.propertyIndex = prop.propertyIndex();
+                    instr.storeDouble.value = n;
+                }
+            } else {
+                instr.type = QDeclarativeInstruction::StoreVariant;
+                instr.storeString.propertyIndex = prop.propertyIndex();
+                instr.storeString.value = output->indexForString(string);
+            }
             }
             break;
         case QVariant::String:
@@ -438,7 +449,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             bool ok;
             QPointF point =
                 QDeclarativeStringConverters::pointFFromString(string, &ok);
-            float data[] = { point.x(), point.y() };
+            float data[] = { float(point.x()), float(point.y()) };
             int index = output->indexForFloat(data, 2);
             if (type == QVariant::PointF)
                 instr.type = QDeclarativeInstruction::StorePointF;
@@ -453,7 +464,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QSizeF size = QDeclarativeStringConverters::sizeFFromString(string, &ok);
-            float data[] = { size.width(), size.height() };
+            float data[] = { float(size.width()), float(size.height()) };
             int index = output->indexForFloat(data, 2);
             if (type == QVariant::SizeF)
                 instr.type = QDeclarativeInstruction::StoreSizeF;
@@ -468,8 +479,8 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             {
             bool ok;
             QRectF rect = QDeclarativeStringConverters::rectFFromString(string, &ok);
-            float data[] = { rect.x(), rect.y(),
-                             rect.width(), rect.height() };
+            float data[] = { float(rect.x()), float(rect.y()),
+                             float(rect.width()), float(rect.height()) };
             int index = output->indexForFloat(data, 4);
             if (type == QVariant::RectF)
                 instr.type = QDeclarativeInstruction::StoreRectF;
@@ -492,7 +503,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             bool ok;
             QVector3D vector =
                 QDeclarativeStringConverters::vector3DFromString(string, &ok);
-            float data[] = { vector.x(), vector.y(), vector.z() };
+            float data[] = { float(vector.x()), float(vector.y()), float(vector.z()) };
             int index = output->indexForFloat(data, 3);
             instr.type = QDeclarativeInstruction::StoreVector3D;
             instr.storeRealPair.propertyIndex = prop.propertyIndex();
@@ -543,12 +554,9 @@ void QDeclarativeCompiler::reset(QDeclarativeCompiledData *data)
     on a successful compiler.
 */
 bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
-                          QDeclarativeCompositeTypeData *unit,
-                          QDeclarativeCompiledData *out)
+                                   QDeclarativeCompositeTypeData *unit,
+                                   QDeclarativeCompiledData *out)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::Compilation> pc;
-#endif
     exceptions.clear();
 
     Q_ASSERT(out);
@@ -564,7 +572,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         if (tref.type) {
             ref.type = tref.type;
             if (!ref.type->isCreatable()) 
-                COMPILE_EXCEPTION(parserRef->refObjects.first(), QCoreApplication::translate("QDeclarativeCompiler", "Element is not creatable."));
+                COMPILE_EXCEPTION(parserRef->refObjects.first(), tr( "Element is not creatable."));
         } else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
 
@@ -621,6 +629,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
 void QDeclarativeCompiler::compileTree(Object *tree)
 {
     compileState.root = tree;
+    componentStat.lineNumber = tree->location.start.line;
 
     if (!buildObject(tree, BindingContext()) || !completeComponentBuild())
         return;
@@ -637,6 +646,37 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     output->bytecode << init;
 
+    // Build global import scripts
+    QHash<QString, Object::ScriptBlock> importedScripts;
+    QStringList importedScriptIndexes;
+
+    for (int ii = 0; ii < unit->scripts.count(); ++ii) {
+        QString scriptCode = QString::fromUtf8(unit->scripts.at(ii).resource->data);
+        Object::ScriptBlock::Pragmas pragmas = QDeclarativeScriptParser::extractPragmas(scriptCode);
+
+        if (!scriptCode.isEmpty()) {
+            Object::ScriptBlock &scriptBlock = importedScripts[unit->scripts.at(ii).qualifier];
+
+            scriptBlock.codes.append(scriptCode);
+            scriptBlock.lineNumbers.append(1);
+            scriptBlock.files.append(unit->scripts.at(ii).resource->url);
+            scriptBlock.pragmas.append(pragmas);
+        }
+    }
+
+    for (QHash<QString, Object::ScriptBlock>::Iterator iter = importedScripts.begin(); 
+         iter != importedScripts.end(); ++iter) {
+
+        importedScriptIndexes.append(iter.key());
+
+        QDeclarativeInstruction import;
+        import.type = QDeclarativeInstruction::StoreImportedScript;
+        import.line = 0;
+        import.storeScript.value = output->scripts.count();
+        output->scripts << *iter;
+        output->bytecode << import;
+    }
+
     genObject(tree);
 
     QDeclarativeInstruction def;
@@ -645,7 +685,13 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     output->bytecode << def;
 
     output->imports = unit->imports;
-    output->importCache = output->imports.cache(engine);
+
+    output->importCache = new QDeclarativeTypeNameCache(engine);
+
+    for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
+        output->importCache->add(importedScriptIndexes.at(ii), ii);
+
+    output->imports.cache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -825,7 +871,9 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     if (isCustomParser && !customProps.isEmpty()) {
         QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
         cp->clearErrors();
+        cp->compiler = this;
         obj->custom = cp->compile(customProps);
+        cp->compiler = 0;
         foreach (QDeclarativeError err, cp->errors()) {
             err.setUrl(output->url);
             exceptions << err;
@@ -845,23 +893,38 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
     }
 
     // Create the object
-    QDeclarativeInstruction create;
-    create.type = QDeclarativeInstruction::CreateObject;
-    create.line = obj->location.start.line;
-    create.create.column = obj->location.start.column;
-    create.create.data = -1;
-    if (!obj->custom.isEmpty())
-        create.create.data = output->indexForByteArray(obj->custom);
-    create.create.type = obj->type;
-    if (!output->types.at(create.create.type).type && 
-        !obj->bindingBitmask.isEmpty()) {
-        Q_ASSERT(obj->bindingBitmask.size() % 4 == 0);
-        create.create.bindingBits = 
-            output->indexForByteArray(obj->bindingBitmask);
+    if (obj->custom.isEmpty() && output->types.at(obj->type).type &&
+        !output->types.at(obj->type).type->isExtendedType() && obj != compileState.root) {
+
+        QDeclarativeInstruction create;
+        create.type = QDeclarativeInstruction::CreateSimpleObject;
+        create.line = obj->location.start.line;
+        create.createSimple.create = output->types.at(obj->type).type->createFunction();
+        create.createSimple.typeSize = output->types.at(obj->type).type->createSize();
+        create.createSimple.column = obj->location.start.column;
+        output->bytecode << create;
+
     } else {
-        create.create.bindingBits = -1;
+
+        QDeclarativeInstruction create;
+        create.type = QDeclarativeInstruction::CreateObject;
+        create.line = obj->location.start.line;
+        create.create.column = obj->location.start.column;
+        create.create.data = -1;
+        if (!obj->custom.isEmpty())
+            create.create.data = output->indexForByteArray(obj->custom);
+        create.create.type = obj->type;
+        if (!output->types.at(create.create.type).type && 
+            !obj->bindingBitmask.isEmpty()) {
+            Q_ASSERT(obj->bindingBitmask.size() % 4 == 0);
+            create.create.bindingBits = 
+                output->indexForByteArray(obj->bindingBitmask);
+        } else {
+            create.create.bindingBits = -1;
+        }
+        output->bytecode << create;
+
     }
-    output->bytecode << create;
 
     // Setup the synthesized meta object if necessary
     if (!obj->metadata.isEmpty()) {
@@ -1112,23 +1175,23 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
        (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
-        COMPILE_EXCEPTION(*obj->properties.begin(), QCoreApplication::translate("QDeclarativeCompiler","Component elements may not contain properties other than id"));
+        COMPILE_EXCEPTION(*obj->properties.begin(), tr("Component elements may not contain properties other than id"));
        
     if (!obj->scriptBlockObjects.isEmpty())
-        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), QCoreApplication::translate("QDeclarativeCompiler","Component elements may not contain script blocks"));
+        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), tr("Component elements may not contain script blocks"));
 
     if (obj->properties.count())
         idProp = *obj->properties.begin();
 
     if (idProp) {
        if (idProp->value || idProp->values.count() > 1 || idProp->values.at(0)->object) 
-           COMPILE_EXCEPTION(idProp, QCoreApplication::translate("QDeclarativeCompiler","Invalid component id specification"));
+           COMPILE_EXCEPTION(idProp, tr("Invalid component id specification"));
        COMPILE_CHECK(checkValidId(idProp->values.first(), idProp->values.first()->primitive()));
 
         QString idVal = idProp->values.first()->primitive();
 
         if (compileState.ids.contains(idVal))
-            COMPILE_EXCEPTION(idProp, QCoreApplication::translate("QDeclarativeCompiler","id is not unique"));
+            COMPILE_EXCEPTION(idProp, tr("id is not unique"));
 
         obj->id = idVal;
         addId(idVal, obj);
@@ -1138,14 +1201,14 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
     if (obj->defaultProperty &&
        (obj->defaultProperty->value || obj->defaultProperty->values.count() > 1 ||
         (obj->defaultProperty->values.count() == 1 && !obj->defaultProperty->values.first()->object)))
-        COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Invalid component body specification"));
+        COMPILE_EXCEPTION(obj, tr("Invalid component body specification"));
 
     Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count())
         root = obj->defaultProperty->values.first()->object;
 
     if (!root)
-        COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Cannot create empty component specification"));
+        COMPILE_EXCEPTION(obj, tr("Cannot create empty component specification"));
 
     // Build the component tree
     COMPILE_CHECK(buildComponentFromRoot(root, ctxt));
@@ -1155,6 +1218,8 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
 
 bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script)
 {
+    qWarning().nospace() << qPrintable(output->url.toString()) << ":" << obj->location.start.line << ":" << obj->location.start.column << ": Script blocks have been deprecated.  Support will be removed entirely shortly.";
+
     Object::ScriptBlock scriptBlock;
 
     if (script->properties.count() == 1 && 
@@ -1162,11 +1227,11 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
 
         Property *source = *script->properties.begin();
         if (script->defaultProperty)
-            COMPILE_EXCEPTION(source, QCoreApplication::translate("QDeclarativeCompiler","Invalid Script block.  Specify either the source property or inline script"));
+            COMPILE_EXCEPTION(source, tr("Invalid Script block.  Specify either the source property or inline script"));
 
         if (source->value || source->values.count() != 1 ||
             source->values.at(0)->object || !source->values.at(0)->value.isStringList())
-            COMPILE_EXCEPTION(source, QCoreApplication::translate("QDeclarativeCompiler","Invalid Script source value"));
+            COMPILE_EXCEPTION(source, tr("Invalid Script source value"));
 
         QStringList sources = source->values.at(0)->value.asStringList();
 
@@ -1186,11 +1251,12 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
                 scriptBlock.codes.append(scriptCode);
                 scriptBlock.files.append(sourceUrl);
                 scriptBlock.lineNumbers.append(lineNumber);
+                scriptBlock.pragmas.append(Object::ScriptBlock::None);
             }
         }
 
     } else if (!script->properties.isEmpty()) {
-        COMPILE_EXCEPTION(*script->properties.begin(), QCoreApplication::translate("QDeclarativeCompiler","Properties cannot be set on Script block"));
+        COMPILE_EXCEPTION(*script->properties.begin(), tr("Properties cannot be set on Script block"));
     } else if (script->defaultProperty) {
 
         QString scriptCode;
@@ -1204,7 +1270,7 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
             if (lineNumber == 1)
                 lineNumber = v->location.start.line;
             if (v->object || !v->value.isString())
-                COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid Script block"));
+                COMPILE_EXCEPTION(v, tr("Invalid Script block"));
 
             if (ii == 0) {
                 currentLocation = v->location.start;
@@ -1228,6 +1294,7 @@ bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclara
             scriptBlock.codes.append(scriptCode);
             scriptBlock.files.append(sourceUrl);
             scriptBlock.lineNumbers.append(lineNumber);
+            scriptBlock.pragmas.append(Object::ScriptBlock::None);
         }
     }
 
@@ -1296,40 +1363,10 @@ int QDeclarativeCompiler::componentTypeRef()
     return output->types.count() - 1;
 }
 
-QMetaMethod QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArray &name)
-{
-    Q_ASSERT(mo);
-    int methods = mo->methodCount();
-    for (int ii = methods - 1; ii >= 0; --ii) {
-        QMetaMethod method = mo->method(ii);
-        QByteArray methodName = method.signature();
-        int idx = methodName.indexOf('(');
-        methodName = methodName.left(idx);
-
-        if (methodName == name)
-            return method;
-    }
-
-    // If no signal is found, but the signal is of the form "onBlahChanged",
-    // return the notify signal for the property "Blah"
-    if (name.endsWith("Changed")) {
-        QByteArray propName = name.mid(0, name.length() - 7);
-        int propIdx = mo->indexOfProperty(propName.constData());
-        if (propIdx >= 0) {
-            QMetaProperty prop = mo->property(propIdx);
-            if (prop.hasNotifySignal())
-                return prop.notifySignal();
-        }
-    }
-
-    return QMetaMethod();
-}
-
 bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj,
                                        const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metaObject());
-    Q_ASSERT(!prop->isEmpty());
 
     QByteArray name = prop->name;
     Q_ASSERT(name.startsWith("on"));
@@ -1337,7 +1374,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     if(name[0] >= 'A' && name[0] <= 'Z')
         name[0] = name[0] - 'A' + 'a';
 
-    int sigIdx = findSignalByName(obj->metaObject(), name).methodIndex();
+    int sigIdx = QDeclarativePropertyPrivate::findSignalByName(obj->metaObject(), name).methodIndex();
 
     if (sigIdx == -1) {
 
@@ -1348,7 +1385,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     }  else {
 
         if (prop->value || prop->values.count() != 1)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal"));
+            COMPILE_EXCEPTION(prop, tr("Incorrectly specified signal assignment"));
 
         prop->index = sigIdx;
         obj->addSignalProperty(prop);
@@ -1361,7 +1398,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
 
             QString script = prop->values.at(0)->value.asScript().trimmed();
             if (script.isEmpty())
-                COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Empty signal assignment"));
+                COMPILE_EXCEPTION(prop, tr("Empty signal assignment"));
 
             compileState.signalExpressions.insert(prop->values.at(0), ctxt);
         }
@@ -1399,7 +1436,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
                                 const BindingContext &ctxt)
 {
     if (prop->isEmpty())
-        COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Empty property assignment"));
+        COMPILE_EXCEPTION(prop, tr("Empty property assignment"));
 
     const QMetaObject *metaObject = obj->metaObject();
     Q_ASSERT(metaObject);
@@ -1411,7 +1448,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             // Attached properties cannot be used on sub-objects.  Sub-objects
             // always exist in a binding sub-context, which is what we test
             // for here.
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Attached properties cannot be used here"));
+            COMPILE_EXCEPTION(prop, tr("Attached properties cannot be used here"));
         }
 
         QDeclarativeType *type = 0;
@@ -1426,11 +1463,11 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
                                                    ctxt));
             return true;
         } else if (!type || !type->attachedPropertiesType())  {
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Non-existent attached object"));
+            COMPILE_EXCEPTION(prop, tr("Non-existent attached object"));
         }
 
         if (!prop->value)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid attached object assignment"));
+            COMPILE_EXCEPTION(prop, tr("Invalid attached object assignment"));
 
         Q_ASSERT(type->attachedPropertiesFunction());
         prop->index = type->index();
@@ -1483,9 +1520,9 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
     } else if (prop->index == -1) {
 
         if (prop->isDefault) {
-            COMPILE_EXCEPTION(prop->values.first(), QCoreApplication::translate("QDeclarativeCompiler","Cannot assign to non-existent default property"));
+            COMPILE_EXCEPTION(prop->values.first(), tr("Cannot assign to non-existent default property"));
         } else {
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
+            COMPILE_EXCEPTION(prop, tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         }
 
     } else if (prop->value) {
@@ -1516,12 +1553,12 @@ QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeEnginePrivate::Import
                                       const BindingContext &ctxt)
 {
     if (!nsProp->value)
-        COMPILE_EXCEPTION(nsProp, QCoreApplication::translate("QDeclarativeCompiler","Invalid use of namespace"));
+        COMPILE_EXCEPTION(nsProp, tr("Invalid use of namespace"));
 
     foreach (Property *prop, nsProp->value->properties) {
 
         if (!isAttachedPropertyName(prop->name))
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Not an attached property name"));
+            COMPILE_EXCEPTION(prop, tr("Not an attached property name"));
 
         // Setup attached property data
 
@@ -1530,10 +1567,10 @@ QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeEnginePrivate::Import
                                                               &type, 0, 0, 0);
 
         if (!type || !type->attachedPropertiesType()) 
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Non-existent attached object"));
+            COMPILE_EXCEPTION(prop, tr("Non-existent attached object"));
 
         if (!prop->value)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid attached object assignment"));
+            COMPILE_EXCEPTION(prop, tr("Invalid attached object assignment"));
 
         Q_ASSERT(type->attachedPropertiesFunction());
         prop->index = type->index();
@@ -1704,25 +1741,15 @@ bool QDeclarativeCompiler::buildIdProperty(QDeclarativeParser::Property *prop,
     if (prop->value ||
         prop->values.count() > 1 ||
         prop->values.at(0)->object)
-        COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid use of id property"));
+        COMPILE_EXCEPTION(prop, tr("Invalid use of id property"));
 
     QDeclarativeParser::Value *idValue = prop->values.at(0);
     QString val = idValue->primitive();
 
     COMPILE_CHECK(checkValidId(idValue, val));
 
-    // We disallow id's that conflict with import prefixes and types
-    QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
-    QDeclarativeType *type = 0;
-    QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, val.toUtf8(), 
-                                               &type, 0, 0, 0, &ns);
-    if (type)
-        COMPILE_EXCEPTION(idValue, QCoreApplication::translate("QDeclarativeCompiler","id conflicts with type name"));
-    if (ns)
-        COMPILE_EXCEPTION(idValue, QCoreApplication::translate("QDeclarativeCompiler","id conflicts with namespace prefix"));
-
     if (compileState.ids.contains(val))
-        COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","id is not unique"));
+        COMPILE_EXCEPTION(prop, tr("id is not unique"));
 
     prop->values.at(0)->type = Value::Id;
 
@@ -1803,17 +1830,21 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
 
             if (prop->values.count()) {
                 if (prop->values.at(0)->location < prop->value->location) {
-                    COMPILE_EXCEPTION(prop->value, QCoreApplication::translate("QDeclarativeCompiler", "Property has already been assigned a value"));
+                    COMPILE_EXCEPTION(prop->value, tr( "Property has already been assigned a value"));
                 } else {
-                    COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Property has already been assigned a value"));
+                    COMPILE_EXCEPTION(prop->values.at(0), tr( "Property has already been assigned a value"));
                 }
+            }
+
+            if (!obj->metaObject()->property(prop->index).isWritable()) {
+                COMPILE_EXCEPTION(prop, tr( "Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
             }
 
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid grouped property access"));
+            COMPILE_EXCEPTION(prop, tr("Invalid grouped property access"));
         }
 
     } else {
@@ -1821,10 +1852,10 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
         prop->value->metatype = 
             QDeclarativeEnginePrivate::get(engine)->metaObjectForType(prop->type);
         if (!prop->value->metatype)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid grouped property access"));
+            COMPILE_EXCEPTION(prop, tr("Invalid grouped property access"));
 
         if (prop->values.count()) 
-            COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Cannot assign a value directly to a grouped property"));
+            COMPILE_EXCEPTION(prop->values.at(0), tr( "Cannot assign a value directly to a grouped property"));
 
         obj->addGroupedProperty(prop);
 
@@ -1840,27 +1871,28 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
                                                   const BindingContext &ctxt)
 {
     if (obj->defaultProperty)
-        COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Invalid property use"));
+        COMPILE_EXCEPTION(obj, tr("Invalid property use"));
     obj->metatype = type->metaObject();
 
     foreach (Property *prop, obj->properties) {
         int idx = type->metaObject()->indexOfProperty(prop->name.constData());
         if (idx == -1)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
+            COMPILE_EXCEPTION(prop, tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         QMetaProperty p = type->metaObject()->property(idx);
         prop->index = idx;
         prop->type = p.userType();
+        prop->isValueTypeSubProperty = true;
 
         if (prop->value)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Property assignment expected"));
+            COMPILE_EXCEPTION(prop, tr("Property assignment expected"));
 
         if (prop->values.count() > 1) {
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Single property assignment expected"));
+            COMPILE_EXCEPTION(prop, tr("Single property assignment expected"));
         } else if (prop->values.count()) {
             Value *value = prop->values.at(0);
 
             if (value->object) {
-                COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Unexpected object assignment"));
+                COMPILE_EXCEPTION(prop, tr("Unexpected object assignment"));
             } else if (value->value.isScript()) {
                 // ### Check for writability
                 BindingReference reference;
@@ -1917,19 +1949,19 @@ bool QDeclarativeCompiler::buildListProperty(QDeclarativeParser::Property *prop,
             // at runtime.
             if (!listTypeIsInterface) {
                 if (!canCoerce(listType, v->object)) {
-                    COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Cannot assign object to list"));
+                    COMPILE_EXCEPTION(v, tr("Cannot assign object to list"));
                 }
             }
 
         } else if (v->value.isScript()) {
             if (assignedBinding)
-                COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Can only assign one binding to lists"));
+                COMPILE_EXCEPTION(v, tr("Can only assign one binding to lists"));
 
             assignedBinding = true;
             COMPILE_CHECK(buildBinding(v, prop, ctxt));
             v->type = Value::PropertyBinding;
         } else {
-            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Cannot assign primitives to lists"));
+            COMPILE_EXCEPTION(v, tr("Cannot assign primitives to lists"));
         }
     }
 
@@ -1942,10 +1974,10 @@ bool QDeclarativeCompiler::buildScriptStringProperty(QDeclarativeParser::Propert
                                             const BindingContext &ctxt)
 {
     if (prop->values.count() > 1) 
-        COMPILE_EXCEPTION(prop->values.at(1), QCoreApplication::translate("QDeclarativeCompiler", "Cannot assign multiple values to a script property"));
+        COMPILE_EXCEPTION(prop->values.at(1), tr( "Cannot assign multiple values to a script property"));
 
     if (prop->values.at(0)->object || !prop->values.at(0)->value.isScript())
-        COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Invalid property assignment: script expected"));
+        COMPILE_EXCEPTION(prop->values.at(0), tr( "Invalid property assignment: script expected"));
 
     obj->addScriptStringProperty(prop, ctxt.stack);
 
@@ -1992,7 +2024,7 @@ bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Pro
     Q_ASSERT(v->object->type != -1);
 
     if (!obj->metaObject()->property(prop->index).isWritable())
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+        COMPILE_EXCEPTION(v, tr("Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
 
     if (QDeclarativeMetaType::isInterface(prop->type)) {
 
@@ -2051,7 +2083,7 @@ bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Pro
             v->object = component;
             COMPILE_CHECK(buildPropertyObjectAssignment(prop, obj, v, ctxt));
         } else {
-            COMPILE_EXCEPTION(v->object, QCoreApplication::translate("QDeclarativeCompiler","Cannot assign object to property"));
+            COMPILE_EXCEPTION(v->object, tr("Cannot assign object to property"));
         }
     }
 
@@ -2074,7 +2106,7 @@ bool QDeclarativeCompiler::buildPropertyOnAssignment(QDeclarativeParser::Propert
     Q_ASSERT(v->object->type != -1);
 
     if (!obj->metaObject()->property(prop->index).isWritable())
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+        COMPILE_EXCEPTION(v, tr("Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
 
 
     // Normally buildObject() will set this up, but we need the static
@@ -2101,7 +2133,7 @@ bool QDeclarativeCompiler::buildPropertyOnAssignment(QDeclarativeParser::Propert
             buildDynamicMeta(baseObj, ForceCreation);
         v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
     } else {
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(v->object->typeName.constData()).arg(prop->name.constData()));
+        COMPILE_EXCEPTION(v, tr("\"%1\" cannot operate on \"%2\"").arg(QString::fromUtf8(v->object->typeName)).arg(QString::fromUtf8(prop->name.constData())));
     }
 
     return true;
@@ -2149,7 +2181,7 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
         return true;
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop.name())));
+        COMPILE_EXCEPTION(v, tr("Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop.name())));
 
     QString string = v->value.asString();
     if (!string.at(0).isUpper())
@@ -2183,6 +2215,27 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
     return true;
 }
 
+// Similar logic to above, but not knowing target property.
+int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
+{
+    int dot = script.indexOf('.');
+    if (dot > 0) {
+        QDeclarativeType *type = 0;
+        QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
+        if (!type)
+            return -1;
+        const QMetaObject *mo = type->metaObject();
+        const char *key = script.constData() + dot+1;
+        int i = mo->enumeratorCount();
+        while (i--) {
+            int v = mo->enumerator(i).keyToValue(key);
+            if (v >= 0)
+                return v;
+        }
+    }
+    return -1;
+}
+
 // Ensures that the dynamic meta specification on obj is valid
 bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
 {
@@ -2197,32 +2250,32 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
 
         if (prop.isDefaultProperty) {
             if (seenDefaultProperty)
-                COMPILE_EXCEPTION(&prop, QCoreApplication::translate("QDeclarativeCompiler","Duplicate default property"));
+                COMPILE_EXCEPTION(&prop, tr("Duplicate default property"));
             seenDefaultProperty = true;
         }
 
         if (propNames.contains(prop.name))
-            COMPILE_EXCEPTION(&prop, QCoreApplication::translate("QDeclarativeCompiler","Duplicate property name"));
+            COMPILE_EXCEPTION(&prop, tr("Duplicate property name"));
 
         if (QString::fromUtf8(prop.name).at(0).isUpper()) 
-            COMPILE_EXCEPTION(&prop, QCoreApplication::translate("QDeclarativeCompiler","Property names cannot begin with an upper case letter"));
+            COMPILE_EXCEPTION(&prop, tr("Property names cannot begin with an upper case letter"));
         propNames.insert(prop.name);
     }
 
     for (int ii = 0; ii < obj->dynamicSignals.count(); ++ii) {
         QByteArray name = obj->dynamicSignals.at(ii).name;
         if (methodNames.contains(name))
-            COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Duplicate signal name"));
+            COMPILE_EXCEPTION(obj, tr("Duplicate signal name"));
         if (QString::fromUtf8(name).at(0).isUpper()) 
-            COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Signal names cannot begin with an upper case letter"));
+            COMPILE_EXCEPTION(obj, tr("Signal names cannot begin with an upper case letter"));
         methodNames.insert(name);
     }
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
         QByteArray name = obj->dynamicSlots.at(ii).name;
         if (methodNames.contains(name))
-            COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Duplicate method name"));
+            COMPILE_EXCEPTION(obj, tr("Duplicate method name"));
         if (QString::fromUtf8(name).at(0).isUpper()) 
-            COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Method names cannot begin with an upper case letter"));
+            COMPILE_EXCEPTION(obj, tr("Method names cannot begin with an upper case letter"));
         methodNames.insert(name);
     }
 
@@ -2243,11 +2296,11 @@ bool QDeclarativeCompiler::mergeDynamicMetaProperties(QDeclarativeParser::Object
         } else {
             property = obj->getProperty(p.name);
             if (!property->values.isEmpty()) 
-                COMPILE_EXCEPTION(property, QCoreApplication::translate("QDeclarativeCompiler","Property value set multiple times"));
+                COMPILE_EXCEPTION(property, tr("Property value set multiple times"));
         }
 
         if (property->value)
-            COMPILE_EXCEPTION(property, QCoreApplication::translate("QDeclarativeCompiler","Invalid property nesting"));
+            COMPILE_EXCEPTION(property, tr("Invalid property nesting"));
 
         for (int ii = 0; ii < p.defaultValue->values.count(); ++ii) {
             Value *v = p.defaultValue->values.at(ii);
@@ -2300,7 +2353,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         if (-1 != propIdx) {
             QMetaProperty prop = obj->metaObject()->property(propIdx);
             if (prop.isFinal())
-                COMPILE_EXCEPTION(&p, QCoreApplication::translate("QDeclarativeCompiler","Cannot override FINAL property"));
+                COMPILE_EXCEPTION(&p, tr("Cannot override FINAL property"));
         }
 
         if (p.isDefaultProperty &&
@@ -2325,7 +2378,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
                 QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(engine);
                 if (!priv->resolveType(unit->imports, p.customType, &qmltype, 
                                        &url, 0, 0, 0)) 
-                    COMPILE_EXCEPTION(&p, QCoreApplication::translate("QDeclarativeCompiler","Invalid property type"));
+                    COMPILE_EXCEPTION(&p, tr("Invalid property type"));
 
                 if (!qmltype) {
                     QDeclarativeCompositeTypeData *tdata = priv->typeManager.get(url);
@@ -2378,9 +2431,17 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
             propertyType = QVariant::Color;
             type = "QColor";
             break;
+        case Object::DynamicProperty::Time:
+            propertyType = QVariant::Time;
+            type = "QTime";
+            break;
         case Object::DynamicProperty::Date:
             propertyType = QVariant::Date;
             type = "QDate";
+            break;
+        case Object::DynamicProperty::DateTime:
+            propertyType = QVariant::DateTime;
+            type = "QDateTime";
             break;
         }
 
@@ -2446,7 +2507,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
 
         ((QDeclarativeVMEMetaData *)dynamicData.data())->methodCount++;
         QDeclarativeVMEMetaData::MethodData methodData =
-             { s.parameterNames.count(), 0, funcScript.length(), 0 };
+             { s.parameterNames.count(), 0, funcScript.length(), s.location.start.line };
 
         dynamicData.append((char *)&methodData, sizeof(methodData));
     }
@@ -2476,24 +2537,24 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
 bool QDeclarativeCompiler::checkValidId(QDeclarativeParser::Value *v, const QString &val)
 {
     if (val.isEmpty()) 
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "Invalid empty ID"));
+        COMPILE_EXCEPTION(v, tr( "Invalid empty ID"));
 
     if (val.at(0).isLetter() && !val.at(0).isLower()) 
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs cannot start with an uppercase letter"));
+        COMPILE_EXCEPTION(v, tr( "IDs cannot start with an uppercase letter"));
 
     QChar u(QLatin1Char('_'));
     for (int ii = 0; ii < val.count(); ++ii) {
 
         if (ii == 0 && !val.at(ii).isLetter() && val.at(ii) != u) {
-            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs must start with a letter or underscore"));
+            COMPILE_EXCEPTION(v, tr( "IDs must start with a letter or underscore"));
         } else if (ii != 0 && !val.at(ii).isLetterOrNumber() && val.at(ii) != u)  {
-            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs must contain only letters, numbers, and underscores"));
+            COMPILE_EXCEPTION(v, tr( "IDs must contain only letters, numbers, and underscores"));
         }
 
     }
 
     if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(val))
-        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "ID illegally masks global JavaScript property"));
+        COMPILE_EXCEPTION(v, tr( "ID illegally masks global JavaScript property"));
 
     return true;
 }
@@ -2524,24 +2585,24 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
                                const Object::DynamicProperty &prop)
 {
     if (!prop.defaultValue)
-        COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","No property alias location"));
+        COMPILE_EXCEPTION(obj, tr("No property alias location"));
 
     if (prop.defaultValue->values.count() != 1 ||
         prop.defaultValue->values.at(0)->object ||
         !prop.defaultValue->values.at(0)->value.isScript())
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QDeclarativeCompiler","Invalid alias location"));
+        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
 
     QDeclarativeJS::AST::Node *node = prop.defaultValue->values.at(0)->value.asAST();
     if (!node)
-        COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","No property alias location")); // ### Can this happen?
+        COMPILE_EXCEPTION(obj, tr("No property alias location")); // ### Can this happen?
 
     QStringList alias = astNodeToStringList(node);
 
     if (alias.count() != 1 && alias.count() != 2)
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QDeclarativeCompiler","Invalid alias reference. An alias reference must be specified as <id> or <id>.<property>"));
+        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. An alias reference must be specified as <id> or <id>.<property>"));
 
     if (!compileState.ids.contains(alias.at(0)))
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QDeclarativeCompiler","Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
+        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
 
     Object *idObject = compileState.ids[alias.at(0)];
 
@@ -2554,7 +2615,7 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
         propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
 
         if (-1 == propIdx)
-            COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QDeclarativeCompiler","Invalid alias location"));
+            COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
 
         QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
         writable = aliasProperty.isWritable();
@@ -2608,7 +2669,7 @@ bool QDeclarativeCompiler::buildBinding(QDeclarativeParser::Value *value,
 
     QMetaProperty mp = prop->parent->metaObject()->property(prop->index);
     if (!mp.isWritable() && !QDeclarativeMetaType::isList(prop->type))
-        COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+        COMPILE_EXCEPTION(prop, tr("Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
 
     BindingReference reference;
     reference.expression = value->value;
@@ -2712,7 +2773,9 @@ bool QDeclarativeCompiler::completeComponentBuild()
 
     QDeclarativeBindingCompiler bindingCompiler;
 
-    for (QHash<QDeclarativeParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
+    for (QHash<QDeclarativeParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); 
+         iter != compileState.bindings.end(); ++iter) {
+
         BindingReference &binding = *iter;
 
         expr.context = binding.bindingContext.object;
@@ -2720,18 +2783,13 @@ bool QDeclarativeCompiler::completeComponentBuild()
         expr.expression = binding.expression;
         expr.imports = unit->imports;
 
-        if (qmlExperimental()) {
-            int index = bindingCompiler.compile(expr, QDeclarativeEnginePrivate::get(engine));
-            if (index != -1) {
-                qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());
-                binding.dataType = BindingReference::Experimental;
-                binding.compiledIndex = index;
-                componentStat.optimizedBindings++;
-                continue;
-            } else {
-                qWarning() << "Rejected for optimization:" << qPrintable(expr.expression.asScript());
-            }
-        }
+        int index = bindingCompiler.compile(expr, QDeclarativeEnginePrivate::get(engine));
+        if (index != -1) {
+            binding.dataType = BindingReference::Experimental;
+            binding.compiledIndex = index;
+            componentStat.optimizedBindings.append(iter.key()->location);
+            continue;
+        } 
 
         binding.dataType = BindingReference::QtScript;
 
@@ -2763,12 +2821,13 @@ bool QDeclarativeCompiler::completeComponentBuild()
             QByteArray((const char *)expression.constData(), 
                        expression.length() * sizeof(QChar));
 
-        componentStat.scriptBindings++;
+        componentStat.scriptBindings.append(iter.key()->location);
     }
 
     if (bindingCompiler.isValid()) {
         compileState.compiledBindingData = bindingCompiler.program();
-        QDeclarativeBindingCompiler::dump(compileState.compiledBindingData);
+        if (bindingsDump()) 
+            QDeclarativeBindingCompiler::dump(compileState.compiledBindingData);
     }
 
     saveComponentState();
@@ -2784,8 +2843,44 @@ void QDeclarativeCompiler::dumpStats()
         qWarning().nospace() << "    Component Line " << stat.lineNumber;
         qWarning().nospace() << "        Total Objects:      " << stat.objects;
         qWarning().nospace() << "        IDs Used:           " << stat.ids;
-        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings;
-        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings;
+        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings.count();
+
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.optimizedBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.optimizedBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
+
+        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings.count();
+        {
+        QByteArray output;
+        for (int ii = 0; ii < stat.scriptBindings.count(); ++ii) {
+            if (0 == (ii % 10)) {
+                if (ii) output.append("\n");
+                output.append("            ");
+            }
+
+            output.append("(");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.line));
+            output.append(":");
+            output.append(QByteArray::number(stat.scriptBindings.at(ii).start.column));
+            output.append(") ");
+        }
+        if (!output.isEmpty())
+            qWarning().nospace() << output.constData();
+        }
     }
 }
 

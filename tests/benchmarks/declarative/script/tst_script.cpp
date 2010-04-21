@@ -144,7 +144,7 @@ int TestObject::x()
 
 void tst_script::initTestCase()
 {
-    QML_REGISTER_TYPE(Qt.test, 1, 0, TestObject, TestObject);
+    qmlRegisterType<TestObject>("Qt.test", 1, 0, "TestObject");
 }
 
 

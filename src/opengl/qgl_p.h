@@ -64,7 +64,7 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#if defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2)
+#ifndef QT_NO_EGL
 #include <QtGui/private/qegl_p.h>
 #endif
 
@@ -100,7 +100,7 @@ class QMacWindowChangeEvent;
 class QWSGLWindowSurface;
 #endif
 
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
 class QEglContext;
 #endif
 
@@ -168,7 +168,7 @@ public:
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
                        , eglSurfaceWindowId(0)
 #endif
     {
@@ -198,7 +198,7 @@ public:
     QGLContext *olcx;
 #elif defined(Q_WS_X11)
     QGLOverlayWidget *olw;
-#if defined(QT_OPENGL_ES)
+#ifndef QT_NO_EGL
     void recreateEglSurface(bool force);
     WId eglSurfaceWindowId;
 #endif
@@ -350,7 +350,7 @@ public:
 #endif
 #if defined(Q_WS_LITE)
     QPlatformGLContext *platformContext;
-#elif defined(QT_OPENGL_ES)
+#elif !defined(QT_NO_EGL)
     bool ownsEglContext;
     QEglContext *eglContext;
     EGLSurface eglSurface;
@@ -367,7 +367,7 @@ public:
     quint32 gpm;
     int screen;
     QHash<QPixmapData*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key,
+    QGLTexture *bindTextureFromNativePixmap(QPixmap*, const qint64 key,
                                             QGLContext::BindOptions options);
     static void destroyGlSurfaceForPixmap(QPixmapData*);
     static void unbindPixmapFromTexture(QPixmapData*);
@@ -599,7 +599,7 @@ inline GLenum qt_gl_preferredTextureTarget()
 }
 
 // One resource per group of shared contexts.
-class Q_AUTOTEST_EXPORT QGLContextResource
+class Q_OPENGL_EXPORT QGLContextResource
 {
 public:
     typedef void (*FreeFunc)(void *);

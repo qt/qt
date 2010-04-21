@@ -39,9 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeflipable_p.h"
+#include "private/qdeclarativeflipable_p.h"
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <qdeclarativeinfo.h>
 
@@ -58,8 +59,8 @@ public:
     void updateSceneTransformFromParent();
 
     QDeclarativeFlipable::Side current;
-    QDeclarativeItem *front;
-    QDeclarativeItem *back;
+    QDeclarativeGuard<QGraphicsObject> front;
+    QDeclarativeGuard<QGraphicsObject> back;
 };
 
 /*!
@@ -74,7 +75,7 @@ public:
 
     Here is a Flipable that flips whenever it is clicked:
 
-    \snippet examples/declarative/flipable/flipable.qml 0
+    \snippet doc/src/snippets/declarative/flipable.qml 0
 
     \image flipable.gif
 
@@ -111,13 +112,13 @@ QDeclarativeFlipable::~QDeclarativeFlipable()
   The front and back sides of the flipable.
 */
 
-QDeclarativeItem *QDeclarativeFlipable::front()
+QGraphicsObject *QDeclarativeFlipable::front()
 {
     Q_D(const QDeclarativeFlipable);
     return d->front;
 }
 
-void QDeclarativeFlipable::setFront(QDeclarativeItem *front)
+void QDeclarativeFlipable::setFront(QGraphicsObject *front)
 {
     Q_D(QDeclarativeFlipable);
     if (d->front) {
@@ -130,13 +131,13 @@ void QDeclarativeFlipable::setFront(QDeclarativeItem *front)
         d->front->setOpacity(0.);
 }
 
-QDeclarativeItem *QDeclarativeFlipable::back()
+QGraphicsObject *QDeclarativeFlipable::back()
 {
     Q_D(const QDeclarativeFlipable);
     return d->back;
 }
 
-void QDeclarativeFlipable::setBack(QDeclarativeItem *back)
+void QDeclarativeFlipable::setBack(QGraphicsObject *back)
 {
     Q_D(QDeclarativeFlipable);
     if (d->back) {
@@ -159,7 +160,7 @@ QDeclarativeFlipable::Side QDeclarativeFlipable::side() const
 {
     Q_D(const QDeclarativeFlipable);
     if (d->dirtySceneTransform)
-        const_cast<QDeclarativeFlipablePrivate *>(d)->updateSceneTransformFromParent();
+        const_cast<QDeclarativeFlipablePrivate *>(d)->ensureSceneTransform();
 
     return d->current;
 }
@@ -192,14 +193,15 @@ void QDeclarativeFlipablePrivate::updateSceneTransformFromParent()
 
     if (newSide != current) {
         current = newSide;
-        if (current == QDeclarativeFlipable::Back) {
+        if (current == QDeclarativeFlipable::Back && back) {
             QTransform mat;
-            mat.translate(back->width()/2,back->height()/2);
-            if (back->width() && p1.x() >= p2.x())
+            QGraphicsItemPrivate *dBack = QGraphicsItemPrivate::get(back);
+            mat.translate(dBack->width()/2,dBack->height()/2);
+            if (dBack->width() && p1.x() >= p2.x())
                 mat.rotate(180, Qt::YAxis);
-            if (back->height() && p2.y() >= p3.y())
+            if (dBack->height() && p2.y() >= p3.y())
                 mat.rotate(180, Qt::XAxis);
-            mat.translate(-back->width()/2,-back->height()/2);
+            mat.translate(-dBack->width()/2,-dBack->height()/2);
             back->setTransform(mat);
         }
         if (front)

@@ -55,8 +55,8 @@
 #include "../shared/testhttpserver.h"
 
 
-#define SERVER_PORT 14445
-#define SERVER_ADDR "http://127.0.0.1:14445"
+#define SERVER_PORT 14446
+#define SERVER_ADDR "http://127.0.0.1:14446"
 
 #define TRY_WAIT(expr) \
     do { \
@@ -99,7 +99,7 @@ tst_qdeclarativeborderimage::tst_qdeclarativeborderimage()
 
 void tst_qdeclarativeborderimage::noSource()
 {
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"\" }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -121,10 +121,10 @@ void tst_qdeclarativeborderimage::imageSource_data()
 
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << false
-        << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
+        << "QML BorderImage (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
-        << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+        << "QML BorderImage (file::2:1) Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
 }
 
 void tst_qdeclarativeborderimage::imageSource()
@@ -143,12 +143,12 @@ void tst_qdeclarativeborderimage::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"" + source + "\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    
+
     if (remote)
         TRY_WAIT(obj->status() == QDeclarativeBorderImage::Loading);
 
@@ -170,7 +170,7 @@ void tst_qdeclarativeborderimage::imageSource()
 
 void tst_qdeclarativeborderimage::clearSource()
 {
-    QString componentStr = "import Qt 4.6\nBorderImage { source: srcImage }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: srcImage }";
     QDeclarativeContext *ctxt = engine.rootContext();
     ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
     QDeclarativeComponent component(&engine);
@@ -190,7 +190,7 @@ void tst_qdeclarativeborderimage::clearSource()
 
 void tst_qdeclarativeborderimage::resized()
 {
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() + "\"; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() + "\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -205,7 +205,7 @@ void tst_qdeclarativeborderimage::resized()
 
 void tst_qdeclarativeborderimage::smooth()
 {
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -222,7 +222,7 @@ void tst_qdeclarativeborderimage::smooth()
 void tst_qdeclarativeborderimage::tileModes()
 {
     {
-        QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 100; height: 300; horizontalTileMode: BorderImage.Repeat; verticalTileMode: BorderImage.Repeat }";
+        QString componentStr = "import Qt 4.7\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 100; height: 300; horizontalTileMode: BorderImage.Repeat; verticalTileMode: BorderImage.Repeat }";
         QDeclarativeComponent component(&engine);
         component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -235,7 +235,7 @@ void tst_qdeclarativeborderimage::tileModes()
         delete obj;
     }
     {
-        QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 150; horizontalTileMode: BorderImage.Round; verticalTileMode: BorderImage.Round }";
+        QString componentStr = "import Qt 4.7\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 150; horizontalTileMode: BorderImage.Round; verticalTileMode: BorderImage.Round }";
         QDeclarativeComponent component(&engine);
         component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -262,19 +262,19 @@ void tst_qdeclarativeborderimage::sciSource()
         server->serveDirectory(SRCDIR "/data");
     }
 
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\"; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"" + source + "\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    
+
     if (remote)
         TRY_WAIT(obj->status() == QDeclarativeBorderImage::Loading);
-    
+
     QCOMPARE(obj->source(), remote ? source : QUrl(source));
     QCOMPARE(obj->width(), 300.);
     QCOMPARE(obj->height(), 300.);
-    
+
     if (valid) {
         TRY_WAIT(obj->status() == QDeclarativeBorderImage::Ready);
         QCOMPARE(obj->border()->left(), 10);
@@ -307,7 +307,7 @@ void tst_qdeclarativeborderimage::invalidSciFile()
     QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Roun"
     QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Repea"
 
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/invalid.sci").toString() +"\"; width: 300; height: 300 }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/invalid.sci").toString() +"\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -325,7 +325,7 @@ void tst_qdeclarativeborderimage::pendingRemoteRequest()
 {
     QFETCH(QString, source);
 
-    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
+    QString componentStr = "import Qt 4.7\nBorderImage { source: \"" + source + "\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
@@ -342,8 +342,8 @@ void tst_qdeclarativeborderimage::pendingRemoteRequest_data()
 {
     QTest::addColumn<QString>("source");
 
-    QTest::newRow("png file") << "http://no-such-qt-server-like-this/none.png";
-    QTest::newRow("sci file") << "http://no-such-qt-server-like-this/none.sci";
+    QTest::newRow("png file") << "http://localhost/none.png";
+    QTest::newRow("sci file") << "http://localhost/none.sci";
 }
 
 QTEST_MAIN(tst_qdeclarativeborderimage)

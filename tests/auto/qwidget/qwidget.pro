@@ -14,6 +14,10 @@ mac {
     OBJECTIVE_SOURCES += tst_qwidget_mac_helpers.mm
 }
 
+x11 {
+    LIBS += $$QMAKE_LIBS_X11
+}
+
 symbian  {
     INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
     LIBS += -leikcore -lcone -leikcoctl

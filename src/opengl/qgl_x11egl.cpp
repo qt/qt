@@ -199,6 +199,10 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         configProps.setRenderableType(QEgl::OpenGL);
         qt_eglproperties_set_glformat(configProps, d->glFormat);
 
+        // Set buffer preserved for regular QWidgets, QGLWidgets are ok with either preserved or destroyed:
+        if ((devType == QInternal::Widget) && qobject_cast<QGLWidget*>(static_cast<QWidget*>(device())) == 0)
+            configProps.setValue(EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
         if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete d->eglContext;
             d->eglContext = 0;
@@ -354,7 +358,7 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 }
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key,
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, const qint64 key,
                                                            QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
@@ -363,10 +367,31 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     if (!(options & QGLContext::CanFlipNativePixmapBindOption))
         return 0;
 
-    Q_ASSERT(pd->classId() == QPixmapData::X11Class);
 
     static bool checkedForTFP = false;
     static bool haveTFP = false;
+    static bool checkedForEglImageTFP = false;
+    static bool haveEglImageTFP = false;
+
+
+    if (!checkedForEglImageTFP) {
+        checkedForEglImageTFP = true;
+
+        // We need to be able to create an EGLImage from a native pixmap, which was split
+        // into a seperate EGL extension, EGL_KHR_image_pixmap. It is possible to have
+        // eglCreateImageKHR & eglDestroyImageKHR without support for pixmaps, so we must
+        // check we have the EGLImage from pixmap functionality.
+        if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) {
+
+            // Being able to create an EGLImage from a native pixmap is also pretty useless
+            // without the ability to bind that EGLImage as a texture, which is provided by
+            // the GL_OES_EGL_image extension, which we try to resolve here:
+            haveEglImageTFP = qt_resolve_eglimage_gl_extensions(q);
+
+            if (haveEglImageTFP)
+                qDebug("Found EGL_KHR_image_pixmap & GL_OES_EGL_image extensions (preferred method)!");
+        }
+    }
 
     if (!checkedForTFP) {
         // Check for texture_from_pixmap egl extension
@@ -379,60 +404,108 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         }
     }
 
-    if (!haveTFP)
+    if (!haveTFP && !haveEglImageTFP)
         return 0;
 
-    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pd);
 
+    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());
+    Q_ASSERT(pixmapData->classId() == QPixmapData::X11Class);
     bool hasAlpha = pixmapData->hasAlphaChannel();
-
-    // Check to see if the surface is still valid
-    if (pixmapData->gl_surface &&
-        hasAlpha != (pixmapData->flags & QX11PixmapData::GlSurfaceCreatedWithAlpha))
-    {
-        // Surface is invalid!
-        destroyGlSurfaceForPixmap(pixmapData);
-    }
-
-    if (pixmapData->gl_surface == 0) {
-        EGLConfig config = QEgl::defaultConfig(QInternal::Pixmap,
-                                               QEgl::OpenGL,
-                                               hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
-
-        QPixmap tmpPixmap(pixmapData); //###
-        pixmapData->gl_surface = (void*)QEgl::createSurface(&tmpPixmap, config);
-        if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE) {
-            haveTFP = false;
-            return 0;
-        }
-    }
-
-    Q_ASSERT(pixmapData->gl_surface);
-
+    bool pixmapHasValidSurface = false;
+    bool textureIsBound = false;
     GLuint textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    // bind the egl pixmap surface to a texture
-    EGLBoolean success;
-    success = eglBindTexImage(eglContext->display(), (EGLSurface)pixmapData->gl_surface, EGL_BACK_BUFFER);
-    if (success == EGL_FALSE) {
-        qWarning() << "eglBindTexImage() failed:" << QEgl::errorString();
-        eglDestroySurface(eglContext->display(), (EGLSurface)pixmapData->gl_surface);
-        pixmapData->gl_surface = (void*)EGL_NO_SURFACE;
-        haveTFP = false;
-        return 0;
+    if (haveTFP && pixmapData->gl_surface &&
+        hasAlpha == (pixmapData->flags & QX11PixmapData::GlSurfaceCreatedWithAlpha))
+    {
+        pixmapHasValidSurface = true;
     }
 
-    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
-    pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
+    // If we already have a valid EGL surface for the pixmap, we should use it
+    if (pixmapHasValidSurface) {
+        EGLBoolean success;
+        success = eglBindTexImage(QEgl::display(), (EGLSurface)pixmapData->gl_surface, EGL_BACK_BUFFER);
+        if (success == EGL_FALSE) {
+            qWarning() << "eglBindTexImage() failed:" << QEgl::errorString();
+            eglDestroySurface(QEgl::display(), (EGLSurface)pixmapData->gl_surface);
+            pixmapData->gl_surface = (void*)EGL_NO_SURFACE;
+        } else
+            textureIsBound = true;
+    }
 
-    // We assume the cost of bound pixmaps is zero
-    QGLTextureCache::instance()->insert(q, key, texture, 0);
+    // If the pixmap doesn't already have a valid surface, try binding it via EGLImage
+    // first, as going through EGLImage should be faster and better supported:
+    if (!textureIsBound && haveEglImageTFP) {
+        EGLImageKHR eglImage;
 
-    glBindTexture(GL_TEXTURE_2D, textureId);
+        EGLint attribs[] = {
+            EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
+            EGL_NONE
+        };
+        eglImage = QEgl::eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+                                     (EGLClientBuffer)QEgl::nativePixmap(pixmap), attribs);
+
+        QGLContext* ctx = q;
+        glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, eglImage);
+
+        GLint err = glGetError();
+        if (err == GL_NO_ERROR)
+            textureIsBound = true;
+
+        // Once the egl image is bound, the texture becomes a new sibling image and we can safely
+        // destroy the EGLImage we created for the pixmap:
+        if (eglImage != EGL_NO_IMAGE_KHR)
+            QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
+    }
+
+    if (!textureIsBound && haveTFP) {
+        // Check to see if the surface is still valid
+        if (pixmapData->gl_surface &&
+            hasAlpha != (pixmapData->flags & QX11PixmapData::GlSurfaceCreatedWithAlpha))
+        {
+            // Surface is invalid!
+            destroyGlSurfaceForPixmap(pixmapData);
+        }
+
+        if (pixmapData->gl_surface == 0) {
+            EGLConfig config = QEgl::defaultConfig(QInternal::Pixmap,
+                                                   QEgl::OpenGL,
+                                                   hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
+
+            pixmapData->gl_surface = (void*)QEgl::createSurface(pixmap, config);
+            if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE)
+                return false;
+        }
+
+        EGLBoolean success;
+        success = eglBindTexImage(QEgl::display(), (EGLSurface)pixmapData->gl_surface, EGL_BACK_BUFFER);
+        if (success == EGL_FALSE) {
+            qWarning() << "eglBindTexImage() failed:" << QEgl::errorString();
+            eglDestroySurface(QEgl::display(), (EGLSurface)pixmapData->gl_surface);
+            pixmapData->gl_surface = (void*)EGL_NO_SURFACE;
+            haveTFP = false; // If TFP isn't working, disable it's use
+        } else
+            textureIsBound = true;
+    }
+
+    QGLTexture *texture = 0;
+
+    if (textureIsBound) {
+        texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
+        pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
+
+        // We assume the cost of bound pixmaps is zero
+        QGLTextureCache::instance()->insert(q, key, texture, 0);
+
+        glBindTexture(GL_TEXTURE_2D, textureId);
+    } else
+        glDeleteTextures(1, &textureId);
+
     return texture;
 }
+
 
 void QGLContextPrivate::destroyGlSurfaceForPixmap(QPixmapData* pmd)
 {

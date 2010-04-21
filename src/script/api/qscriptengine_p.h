@@ -63,6 +63,7 @@
 #include "RegExpObject.h"
 #include "SourceProvider.h"
 #include "Structure.h"
+#include "UString.h"
 #include "JSGlobalObject.h"
 #include "JSValue.h"
 
@@ -73,7 +74,6 @@ namespace JSC
     typedef ExecState CallFrame;
     class JSCell;
     class JSGlobalObject;
-    class UString;
 }
 
 
@@ -244,6 +244,7 @@ public:
     void mark(JSC::MarkStack& markStack);
     bool isCollecting() const;
     void collectGarbage();
+    void reportAdditionalMemoryCost(int size);
 
     //flags that we set on the return value register for native function. (ie when codeBlock is 0)
     enum ContextFlags {
@@ -296,6 +297,8 @@ public:
 
     static inline QScriptDeclarativeClass *declarativeClass(JSC::JSValue);
     static inline QScriptDeclarativeClass::Object *declarativeObject(JSC::JSValue);
+
+    JSC::UString translationContextFromUrl(const JSC::UString &);
 
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
@@ -365,6 +368,9 @@ public:
     int processEventsInterval;
     QScriptValue abortResult;
     bool inEval;
+
+    JSC::UString cachedTranslationUrl;
+    JSC::UString cachedTranslationContext;
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
@@ -797,7 +803,6 @@ inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *v
         registeredScriptStrings = value->next;
     value->prev = 0;
     value->next = 0;
-    JSC::setCurrentIdentifierTable(globalData->identifierTable);
 }
 
 inline QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)

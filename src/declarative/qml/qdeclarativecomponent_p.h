@@ -55,9 +55,9 @@
 
 #include "qdeclarativecomponent.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativecompositetypemanager_p.h"
-#include "qbitfield_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qbitfield_p.h"
 #include "qdeclarativeerror.h"
 #include "qdeclarative.h"
 
@@ -81,8 +81,8 @@ class QDeclarativeComponentPrivate : public QObjectPrivate
 public:
     QDeclarativeComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), engine(0), creationContext(0) {}
 
-    QObject *create(QDeclarativeContext *context, const QBitField &);
-    QObject *beginCreate(QDeclarativeContext *, const QBitField &);
+    QObject *create(QDeclarativeContextData *, const QBitField &);
+    QObject *beginCreate(QDeclarativeContextData *, const QBitField &);
     void completeCreate();
 
     QDeclarativeCompositeTypeData *typeData;
@@ -99,24 +99,24 @@ public:
     QDeclarativeCompiledData *cc;
 
     struct ConstructionState {
-        ConstructionState() : componentAttacheds(0), completePending(false) {}
+        ConstructionState() : componentAttached(0), completePending(false) {}
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> > bindValues;
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> > parserStatus;
-        QDeclarativeComponentAttached *componentAttacheds;
+        QDeclarativeComponentAttached *componentAttached;
         QList<QDeclarativeError> errors;
         bool completePending;
     };
     ConstructionState state;
 
-    static QObject *begin(QDeclarativeContext *ctxt, QDeclarativeEnginePrivate *enginePriv,
+    static QObject *begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
                           QDeclarativeCompiledData *component, int start, int count,
                           ConstructionState *state, const QBitField &bindings = QBitField());
-    static void beginDeferred(QDeclarativeContext *ctxt, QDeclarativeEnginePrivate *enginePriv,
-                              QObject *object, ConstructionState *state);
+    static void beginDeferred(QDeclarativeEnginePrivate *enginePriv, QObject *object, 
+                              ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);
 
     QDeclarativeEngine *engine;
-    QDeclarativeContext *creationContext;
+    QDeclarativeGuardedContextData creationContext;
 
     void clear();
 
@@ -132,13 +132,24 @@ public:
     QDeclarativeComponentAttached(QObject *parent = 0);
     ~QDeclarativeComponentAttached();
 
+    void add(QDeclarativeComponentAttached **a) {
+        prev = a; next = *a; *a = this;
+        if (next) next->prev = &next;
+    }
+    void rem() {
+        if (next) next->prev = prev;
+        *prev = next;
+        next = 0; prev = 0;
+    }
     QDeclarativeComponentAttached **prev;
     QDeclarativeComponentAttached *next;
 
 Q_SIGNALS:
     void completed();
+    void destruction();
 
 private:
+    friend class QDeclarativeContextData;;
     friend class QDeclarativeComponentPrivate;
 };
 

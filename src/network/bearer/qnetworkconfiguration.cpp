@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
 
     \inmodule QtNetwork
-    \ingroup bearer
+    \ingroup network
 
     QNetworkConfiguration encapsulates a single access point or service network.
     In most cases a single access point configuration can be mapped to one network

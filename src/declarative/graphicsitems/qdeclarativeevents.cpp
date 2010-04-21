@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeevents_p_p.h"
 
 QT_BEGIN_NAMESPACE
 /*!
@@ -131,6 +131,17 @@ Item {
     \qmlproperty int MouseEvent::y
 
     These properties hold the position of the mouse event.
+*/
+
+
+/*!
+    \qmlproperty bool MouseEvent::accepted
+
+    Setting \a accepted to true prevents the mouse event from being
+    propagated to items below this item.
+
+    Generally, if the item acts on the mouse event then it should be accepted
+    so that items lower in the stacking order do not also respond to the same event.
 */
 
 /*!

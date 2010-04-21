@@ -19,7 +19,7 @@ include(ConfigureChecks.cmake)
 if (BUILD_PHONON_GSTREAMER)
    include_directories(
 	  ${CMAKE_CURRENT_BINARY_DIR}
-	  ${GSTREAMER_INCLUDE_DIR} 
+	  ${GSTREAMER_INCLUDE_DIR}
 	  ${GLIB2_INCLUDE_DIR}
       ${LIBXML2_INCLUDE_DIR}
 	  ${X11_X11_INCLUDE_PATH})
@@ -34,7 +34,6 @@ if (BUILD_PHONON_GSTREAMER)
 
    set(phonon_gstreamer_SRCS
       audiooutput.cpp
-      artssink.cpp
       backend.cpp
       devicemanager.cpp
       effectmanager.cpp
@@ -50,14 +49,20 @@ if (BUILD_PHONON_GSTREAMER)
       message.cpp
       audioeffect.cpp
       abstractrenderer.cpp
-      x11renderer.cpp
       widgetrenderer.cpp
       glrenderer.cpp
       volumefadereffect.cpp
+      audiodataoutput.cpp
       )
 
-   find_package(Alsa)
-   macro_ensure_version("0.10.22" ${GSTREAMER_VERSION} GSTREAMER_HAS_NONBLOCKING_ALSASINK)
+   if(NOT WIN32)
+      set(phonon_gstreamer_SRCS
+          ${phonon_gstreamer_SRCS}
+          artssink.cpp
+          x11renderer.cpp)
+      macro_optional_find_package(Alsa)
+      macro_ensure_version("0.10.22" ${GSTREAMER_VERSION} GSTREAMER_HAS_NONBLOCKING_ALSASINK)
+   endif(NOT WIN32)
    if(ALSA_FOUND AND NOT GSTREAMER_HAS_NONBLOCKING_ALSASINK)
       add_definitions(-DUSE_ALSASINK2)
       include_directories(${ALSA_INCLUDES})
@@ -78,6 +83,9 @@ if (BUILD_PHONON_GSTREAMER)
    if(ALSA_FOUND)
       target_link_libraries(phonon_gstreamer ${ASOUND_LIBRARY})
    endif(ALSA_FOUND)
+   if(USE_INSTALL_PLUGIN)
+       target_link_libraries(phonon_gstreamer ${GSTREAMER_PLUGIN_PBUTILS_LIBRARIES})
+   endif(USE_INSTALL_PLUGIN)
 
    install(TARGETS phonon_gstreamer DESTINATION ${PLUGIN_INSTALL_DIR}/plugins/phonon_backend)
    install(FILES gstreamer.desktop DESTINATION ${SERVICES_INSTALL_DIR}/phononbackends)

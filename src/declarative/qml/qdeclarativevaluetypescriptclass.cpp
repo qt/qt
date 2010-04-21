@@ -39,21 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativevaluetypescriptclass_p.h"
+#include "private/qdeclarativevaluetypescriptclass_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
-struct QDeclarativeValueTypeReference : public QScriptDeclarativeClass::Object {
+struct QDeclarativeValueTypeObject : public QScriptDeclarativeClass::Object {
+    enum Type { Reference, Copy };
+    QDeclarativeValueTypeObject(Type t) : objectType(t) {}
+    Type objectType;
     QDeclarativeValueType *type;
+};
+
+struct QDeclarativeValueTypeReference : public QDeclarativeValueTypeObject {
+    QDeclarativeValueTypeReference() : QDeclarativeValueTypeObject(Reference) {}
     QDeclarativeGuard<QObject> object;
     int property;
 };
 
+struct QDeclarativeValueTypeCopy : public QDeclarativeValueTypeObject {
+    QDeclarativeValueTypeCopy() : QDeclarativeValueTypeObject(Copy) {}
+    QVariant value;
+};
+
 QDeclarativeValueTypeScriptClass::QDeclarativeValueTypeScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
 {
 }
 
@@ -71,70 +85,122 @@ QScriptValue QDeclarativeValueTypeScriptClass::newObject(QObject *object, int co
     return QScriptDeclarativeClass::newObject(scriptEngine, this, ref);
 }
 
+QScriptValue QDeclarativeValueTypeScriptClass::newObject(const QVariant &v, QDeclarativeValueType *type)
+{
+    QDeclarativeValueTypeCopy *copy = new QDeclarativeValueTypeCopy;
+    copy->type = type;
+    copy->value = v;
+    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
+    return QScriptDeclarativeClass::newObject(scriptEngine, this, copy);
+}
+
 QScriptClass::QueryFlags 
 QDeclarativeValueTypeScriptClass::queryProperty(Object *obj, const Identifier &name, 
-                                       QScriptClass::QueryFlags)
+                                                QScriptClass::QueryFlags)
 {
-    QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+    QDeclarativeValueTypeObject *o = static_cast<QDeclarativeValueTypeObject *>(obj);
 
     m_lastIndex = -1;
 
-    if (!ref->object)
-        return 0;
-
     QByteArray propName = toString(name).toUtf8();
 
-    m_lastIndex = ref->type->metaObject()->indexOfProperty(propName.constData());
+    m_lastIndex = o->type->metaObject()->indexOfProperty(propName.constData());
     if (m_lastIndex == -1)
         return 0;
 
-    QMetaProperty prop = ref->object->metaObject()->property(m_lastIndex);
+    QScriptClass::QueryFlags rv = 0;
 
-    QScriptClass::QueryFlags rv =
-        QScriptClass::HandlesReadAccess;
-    if (prop.isWritable())
-        rv |= QScriptClass::HandlesWriteAccess;
+    if (o->objectType == QDeclarativeValueTypeObject::Reference) {
+        QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(o);
+
+        if (!ref->object)
+            return 0;
+
+        QMetaProperty prop = ref->object->metaObject()->property(m_lastIndex);
+
+        rv = QScriptClass::HandlesReadAccess;
+        if (prop.isWritable())
+            rv |= QScriptClass::HandlesWriteAccess;
+    } else {
+        rv = QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
+    }
 
     return rv;
 }
 
-QDeclarativeValueTypeScriptClass::ScriptValue QDeclarativeValueTypeScriptClass::property(Object *obj, const Identifier &)
+QDeclarativeValueTypeScriptClass::Value QDeclarativeValueTypeScriptClass::property(Object *obj, const Identifier &)
 {
-    QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+    QDeclarativeValueTypeObject *o = static_cast<QDeclarativeValueTypeObject *>(obj);
 
-    QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
-    ref->type->read(ref->object, ref->property);
-    QVariant rv = p.read(ref->type);
+    QVariant rv;
+    if (o->objectType == QDeclarativeValueTypeObject::Reference) {
+        QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+
+        QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
+        ref->type->read(ref->object, ref->property);
+        rv = p.read(ref->type);
+    } else {
+        QDeclarativeValueTypeCopy *copy = static_cast<QDeclarativeValueTypeCopy *>(obj);
+
+        QMetaProperty p = copy->type->metaObject()->property(m_lastIndex);
+        copy->type->setValue(copy->value);
+        rv = p.read(copy->type);
+    }
 
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
     return Value(scriptEngine, static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine))->scriptValueFromVariant(rv));
 }
 
 void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier &, 
-                                          const QScriptValue &value)
+                                                   const QScriptValue &value)
 {
-    QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+    QDeclarativeValueTypeObject *o = static_cast<QDeclarativeValueTypeObject *>(obj);
 
-    QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
+    QVariant v = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
 
-    ref->type->read(ref->object, ref->property);
-    QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
-    p.write(ref->type, v);
-    ref->type->write(ref->object, ref->property, 0);
+    if (o->objectType == QDeclarativeValueTypeObject::Reference) {
+        QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+
+        QDeclarativeAbstractBinding *delBinding = 
+            QDeclarativePropertyPrivate::setBinding(ref->object, ref->property, m_lastIndex, 0);
+        if (delBinding) 
+            delBinding->destroy();
+
+        ref->type->read(ref->object, ref->property);
+        QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
+        p.write(ref->type, v);
+        ref->type->write(ref->object, ref->property, 0);
+    } else {
+        QDeclarativeValueTypeCopy *copy = static_cast<QDeclarativeValueTypeCopy *>(obj);
+        copy->type->setValue(copy->value);
+        QMetaProperty p = copy->type->metaObject()->property(m_lastIndex);
+        p.write(copy->type, v);
+        copy->value = copy->type->value();
+    }
 }
 
 QVariant QDeclarativeValueTypeScriptClass::toVariant(Object *obj, bool *ok)
 {
-    QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
+    QDeclarativeValueTypeObject *o = static_cast<QDeclarativeValueTypeObject *>(obj);
 
-    if (ok) *ok = true;
+    if (o->objectType == QDeclarativeValueTypeObject::Reference) {
+        QDeclarativeValueTypeReference *ref = static_cast<QDeclarativeValueTypeReference *>(obj);
 
-    if (ref->object) {
-        ref->type->read(ref->object, ref->property);
-        return ref->type->value();
+        if (ok) *ok = true;
+
+        if (ref->object) {
+            ref->type->read(ref->object, ref->property);
+            return ref->type->value();
+        }
     } else {
-        return QVariant();
+        QDeclarativeValueTypeCopy *copy = static_cast<QDeclarativeValueTypeCopy *>(obj);
+        
+        if (ok) *ok = true;
+
+        return copy->value;
     }
+
+    return QVariant();
 }
 
 QVariant QDeclarativeValueTypeScriptClass::toVariant(const QScriptValue &value)

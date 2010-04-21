@@ -55,19 +55,21 @@
 
 #include "qdeclarativeengine.h"
 
-#include "qdeclarativeclassfactory_p.h"
-#include "qdeclarativecompositetypemanager_p.h"
-#include "qpodvector_p.h"
+#include "private/qdeclarativeclassfactory_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qpodvector_p.h"
 #include "qdeclarative.h"
-#include "qdeclarativevaluetype_p.h"
+#include "private/qdeclarativevaluetype_p.h"
 #include "qdeclarativecontext.h"
+#include "private/qdeclarativecontext_p.h"
 #include "qdeclarativeexpression.h"
-#include "qdeclarativeproperty_p.h"
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativeobjectscriptclass_p.h"
-#include "qdeclarativecontextscriptclass_p.h"
-#include "qdeclarativevaluetypescriptclass_p.h"
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativeobjectscriptclass_p.h"
+#include "private/qdeclarativecontextscriptclass_p.h"
+#include "private/qdeclarativevaluetypescriptclass_p.h"
+#include "private/qdeclarativemetatype_p.h"
+#include "private/qdeclarativedirparser_p.h"
 
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptValue>
@@ -144,10 +146,13 @@ public:
 
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
-            : object(o), coreIndex(c), notifyIndex(n) {}
+            : object(o), coreIndex(c), notifier(0), notifyIndex(n) {}
+        CapturedProperty(QDeclarativeNotifier *n)
+            : object(0), coreIndex(-1), notifier(n), notifyIndex(-1) {}
 
         QObject *object;
         int coreIndex;
+        QDeclarativeNotifier *notifier;
         int notifyIndex;
     };
     bool captureProperties;
@@ -159,7 +164,7 @@ public:
 
     struct ImportedNamespace;
     QDeclarativeContextScriptClass *contextClass;
-    QDeclarativeContext *sharedContext;
+    QDeclarativeContextData *sharedContext;
     QObject *sharedScope;
     QDeclarativeObjectScriptClass *objectClass;
     QDeclarativeValueTypeScriptClass *valueTypeClass;
@@ -210,7 +215,7 @@ public:
 
     QList<SimpleList<QDeclarativeAbstractBinding> > bindValues;
     QList<SimpleList<QDeclarativeParserStatus> > parserStatus;
-    QDeclarativeComponentAttached *componentAttacheds;
+    QDeclarativeComponentAttached *componentAttached;
 
     bool inBeginCreate;
 
@@ -220,12 +225,13 @@ public:
     mutable QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory;
 
     QHash<QString,QDeclarativeImageProvider*> imageProviders;
-    QImage getImageFromProvider(const QUrl &url);
+    QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
 
     mutable QMutex mutex;
 
     QDeclarativeCompositeTypeManager typeManager;
     QStringList fileImportPath;
+    QStringList filePluginPath;
     QString offlineStoragePath;
 
     mutable quint32 uniqueId;
@@ -259,7 +265,7 @@ public:
         void setBaseUrl(const QUrl& url);
         QUrl baseUrl() const;
 
-        QDeclarativeTypeNameCache *cache(QDeclarativeEngine *) const;
+        void cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
 
     private:
         friend class QDeclarativeEnginePrivate;
@@ -267,16 +273,18 @@ public:
     };
 
 
-    QStringList environmentImportPath;
     QSet<QString> initializedPlugins;
 
-    QString resolvePlugin(const QDir &dir, const QString &baseName,
+    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
                           const QStringList &suffixes,
                           const QString &prefix = QString());
-    QString resolvePlugin(const QDir &dir, const QString &baseName);
+    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName);
 
 
-    bool addToImport(Imports*, const QString& qmlDirContent,const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType) const;
+    bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
+                     const QString& uri, const QString& prefix, int vmaj, int vmin, 
+                     QDeclarativeScriptParser::Import::Type importType,
+                     QString *errorString) const;
     bool resolveType(const Imports&, const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
@@ -298,8 +306,10 @@ public:
     QHash<int, int> m_qmlLists;
     QHash<int, QDeclarativeCompiledData *> m_compositeTypes;
 
+    QHash<QString, QScriptValue> m_sharedScriptImports;
+
     QScriptValue scriptValueFromVariant(const QVariant &);
-    QVariant scriptValueToVariant(const QScriptValue &);
+    QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
 
     void sendQuit ();
 
@@ -307,6 +317,7 @@ public:
 
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
+    static QScriptValue isQtObject(QScriptContext*, QScriptEngine*);
     static QScriptValue vector(QScriptContext*, QScriptEngine*);
     static QScriptValue rgba(QScriptContext*, QScriptEngine*);
     static QScriptValue hsla(QScriptContext*, QScriptEngine*);
@@ -318,7 +329,6 @@ public:
     static QScriptValue darker(QScriptContext*, QScriptEngine*);
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
-    static QScriptValue closestAngle(QScriptContext*, QScriptEngine*);
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
     static QScriptValue md5(QScriptContext*, QScriptEngine*);
     static QScriptValue btoa(QScriptContext*, QScriptEngine*);
@@ -334,9 +344,10 @@ public:
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeEngine *e) { return e->d_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeContext *c) { return (c && c->engine()) ? QDeclarativeEnginePrivate::get(c->engine()) : 0; }
+    static QDeclarativeEnginePrivate *get(QDeclarativeContextData *c) { return (c && c->engine) ? QDeclarativeEnginePrivate::get(c->engine) : 0; }
     static QDeclarativeEnginePrivate *get(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p; }
     static QDeclarativeEngine *get(QDeclarativeEnginePrivate *p) { return p->q_func(); }
-    QDeclarativeContext *getContext(QScriptContext *);
+    QDeclarativeContextData *getContext(QScriptContext *);
 
     static void defineModule();
 };

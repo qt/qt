@@ -55,8 +55,8 @@
 
 #include "qdeclarativeproperty.h"
 
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativeguard_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 #include <private/qobject_p.h>
 
@@ -82,7 +82,7 @@ public:
           valueType(other.valueType) {}
 
     QDeclarativeProperty *q;
-    QDeclarativeContext *context;
+    QDeclarativeContextData *context;
     QDeclarativeEngine *engine;
     QDeclarativeGuard<QObject> object;
 
@@ -96,8 +96,6 @@ public:
     void initProperty(QObject *obj, const QString &name);
     void initDefault(QObject *obj);
 
-    QMetaMethod findSignal(QObject *, const QString &);
-
     bool isValueType() const;
     int propertyType() const;
     QDeclarativeProperty::PropertyTypeCategory propertyTypeCategory() const;
@@ -109,15 +107,15 @@ public:
     static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, 
                                   const QVariant &value, int flags);
     static bool write(QObject *, const QDeclarativePropertyCache::Data &, const QVariant &, 
-                      QDeclarativeContext *, WriteFlags flags = 0);
-    static QDeclarativeAbstractBinding *setBinding(QObject *, const QDeclarativePropertyCache::Data &, 
+                      QDeclarativeContextData *, WriteFlags flags = 0);
+    static QDeclarativeAbstractBinding *setBinding(QObject *, int coreIndex, int valueTypeIndex /* -1 */,
                                                    QDeclarativeAbstractBinding *,
                                                    WriteFlags flags = DontRemoveBinding);
 
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
-    static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContext *);
+    static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContextData *);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);
@@ -133,6 +131,8 @@ public:
                                                        QDeclarativeExpression *) ;
     static bool write(const QDeclarativeProperty &that, const QVariant &, WriteFlags);
     static int valueTypeCoreIndex(const QDeclarativeProperty &that);
+    static int bindingIndex(const QDeclarativeProperty &that);
+    static QMetaMethod findSignalByName(const QMetaObject *mo, const QByteArray &);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyPrivate::WriteFlags)

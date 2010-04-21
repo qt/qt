@@ -21,7 +21,6 @@
 #ifndef JSXMLHttpRequestUpload_h
 #define JSXMLHttpRequestUpload_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -44,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -75,7 +74,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSXMLHttpRequestUploadPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -89,17 +88,17 @@ JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionRemoveEventLis
 JSC::JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsXMLHttpRequestUploadOnabort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUploadOnabort(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSXMLHttpRequestUploadOnabort(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsXMLHttpRequestUploadOnerror(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUploadOnerror(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSXMLHttpRequestUploadOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsXMLHttpRequestUploadOnload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUploadOnload(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSXMLHttpRequestUploadOnload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsXMLHttpRequestUploadOnloadstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUploadOnloadstart(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSXMLHttpRequestUploadOnloadstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsXMLHttpRequestUploadOnprogress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUploadOnprogress(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSXMLHttpRequestUploadOnprogress(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsXMLHttpRequestUploadConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXMLHttpRequestUploadConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

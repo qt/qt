@@ -72,6 +72,8 @@ public:
     void resetScale();
     qreal scale() const { return zoomCount; }
 
+    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
+
     void setSource(const QUrl &url);
 
     inline bool hasSelection() const
@@ -91,6 +93,7 @@ private:
     void contextMenuEvent(QContextMenuEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     void keyPressEvent(QKeyEvent *e);
+    void mousePressEvent(QMouseEvent *e);
 
 private slots:
     void openLinkInNewTab();

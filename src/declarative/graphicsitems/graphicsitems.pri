@@ -39,6 +39,7 @@ HEADERS += \
     $$PWD/qdeclarativerepeater_p.h \
     $$PWD/qdeclarativerepeater_p_p.h \
     $$PWD/qdeclarativescalegrid_p_p.h \
+    $$PWD/qdeclarativetranslate_p.h \
     $$PWD/qdeclarativetextinput_p.h \
     $$PWD/qdeclarativetextinput_p_p.h \
     $$PWD/qdeclarativetextedit_p.h \
@@ -47,11 +48,10 @@ HEADERS += \
     $$PWD/qdeclarativetext_p_p.h \
     $$PWD/qdeclarativevisualitemmodel_p.h \
     $$PWD/qdeclarativelistview_p.h \
-    $$PWD/qdeclarativegraphicsobjectcontainer_p.h \
-    $$PWD/qdeclarativeparticles_p.h \
     $$PWD/qdeclarativelayoutitem_p.h \
     $$PWD/qdeclarativeitemchangelistener_p.h \
-    $$PWD/qdeclarativeeffects.cpp
+    $$PWD/qdeclarativeeffects.cpp \
+    $$PWD/qdeclarativegraphicswidget_p.h
 
 SOURCES += \
     $$PWD/qdeclarativeitemsmodule.cpp \
@@ -76,11 +76,11 @@ SOURCES += \
     $$PWD/qdeclarativerectangle.cpp \
     $$PWD/qdeclarativerepeater.cpp \
     $$PWD/qdeclarativescalegrid.cpp \
+    $$PWD/qdeclarativetranslate.cpp \
     $$PWD/qdeclarativetextinput.cpp \
     $$PWD/qdeclarativetext.cpp \
     $$PWD/qdeclarativetextedit.cpp \
     $$PWD/qdeclarativevisualitemmodel.cpp \
     $$PWD/qdeclarativelistview.cpp \
-    $$PWD/qdeclarativegraphicsobjectcontainer.cpp \
-    $$PWD/qdeclarativeparticles.cpp \
     $$PWD/qdeclarativelayoutitem.cpp \
+    $$PWD/qdeclarativegraphicswidget.cpp

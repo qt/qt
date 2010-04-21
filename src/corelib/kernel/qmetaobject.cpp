@@ -483,38 +483,37 @@ int QMetaObject::classInfoCount() const
 }
 
 /** \internal
-* helper class for indexOf{Method,Slot,Signal}, returns the relative index of the method within
+* helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
 * the baseObject
 * \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
+* \a normalizeStringData set to true if we should do a second pass for old moc generated files normalizing all the symbols.
 */
 template<int MethodType>
 static inline int indexOfMethodRelative(const QMetaObject **baseObject,
                                         const char *method,
                                         bool normalizeStringData)
 {
-    const QMetaObject *m;
-    for (m = *baseObject; m; m = *baseObject = m->d.superdata) {
-        const QMetaObject *const m = *baseObject;
+    for (const QMetaObject *m = *baseObject; m; m = m->d.superdata) {
         int i = (MethodType == MethodSignal && priv(m->d.data)->revision >= 4)
                 ? (priv(m->d.data)->signalCount - 1) : (priv(m->d.data)->methodCount - 1);
-        if (i < 0)
-            continue;
-
         const int end = (MethodType == MethodSlot && priv(m->d.data)->revision >= 4)
                         ? (priv(m->d.data)->signalCount) : 0;
         if (!normalizeStringData) {
             for (; i >= end; --i) {
-                if ((MethodType == 0 || (m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodType)
-                    && strcmp(method, m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0)
+                const char *stringdata = m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5*i];
+                if (method[0] == stringdata[0] && strcmp(method + 1, stringdata + 1) == 0) {
+                    *baseObject = m;
                     return i;
+                }
             }
         } else if (priv(m->d.data)->revision < 5) {
-            const char *stringdata = (m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5 * i]);
-            const QByteArray normalizedSignature = QMetaObject::normalizedSignature(stringdata);
             for (; i >= end; --i) {
-                if ((MethodType == 0|| (m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodType)
-                    && normalizedSignature == method)
+                const char *stringdata = (m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5 * i]);
+                const QByteArray normalizedSignature = QMetaObject::normalizedSignature(stringdata);
+                if (normalizedSignature == method) {
+                    *baseObject = m;
                     return i;
+                }
             }
         }
     }
@@ -537,8 +536,8 @@ int QMetaObject::indexOfConstructor(const char *constructor) const
     if (priv(d.data)->revision < 2)
         return -1;
     for (int i = priv(d.data)->constructorCount-1; i >= 0; --i) {
-        if (strcmp(constructor, d.stringdata
-                   + d.data[priv(d.data)->constructorData + 5*i]) == 0) {
+        const char *data = d.stringdata + d.data[priv(d.data)->constructorData + 5*i];
+        if (data[0] == constructor[0] && strcmp(constructor + 1, data + 1) == 0) {
             return i;
         }
     }
@@ -682,18 +681,19 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
 */
 int QMetaObject::indexOfEnumerator(const char *name) const
 {
-    int i = -1;
     const QMetaObject *m = this;
-    while (m && i < 0) {
-        for (i = priv(m->d.data)->enumeratorCount-1; i >= 0; --i)
-            if (strcmp(name, m->d.stringdata
-                       + m->d.data[priv(m->d.data)->enumeratorData + 4*i]) == 0) {
+    while (m) {
+        const QMetaObjectPrivate *d = priv(m->d.data);
+        for (int i = d->enumeratorCount - 1; i >= 0; --i) {
+            const char *prop = m->d.stringdata + m->d.data[d->enumeratorData + 4*i];
+            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
-                break;
+                return i;
             }
+        }
         m = m->d.superdata;
     }
-    return i;
+    return -1;
 }
 
 /*!
@@ -704,26 +704,27 @@ int QMetaObject::indexOfEnumerator(const char *name) const
 */
 int QMetaObject::indexOfProperty(const char *name) const
 {
-    int i = -1;
     const QMetaObject *m = this;
-    while (m && i < 0) {
-        for (i = priv(m->d.data)->propertyCount-1; i >= 0; --i)
-            if (strcmp(name, m->d.stringdata
-                       + m->d.data[priv(m->d.data)->propertyData + 3*i]) == 0) {
+    while (m) {
+        const QMetaObjectPrivate *d = priv(m->d.data);
+        for (int i = d->propertyCount-1; i >= 0; --i) {
+            const char *prop = m->d.stringdata + m->d.data[d->propertyData + 3*i];
+            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->propertyOffset();
-                break;
+                return i;
             }
+        }
         m = m->d.superdata;
     }
 
-    if (i == -1 && priv(this->d.data)->revision >= 3 && (priv(this->d.data)->flags & DynamicMetaObject)){
+    if (priv(this->d.data)->revision >= 3 && (priv(this->d.data)->flags & DynamicMetaObject)) {
         QAbstractDynamicMetaObject *me = 
             const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(this));
 
-        i = me->createProperty(name, 0);
+        return me->createProperty(name, 0);
     }
 
-    return i;
+    return -1;
 }
 
 /*!

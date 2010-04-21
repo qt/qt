@@ -39,19 +39,20 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeobjectscriptclass_p.h"
+#include "private/qdeclarativeobjectscriptclass_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativetypenamescriptclass_p.h"
-#include "qdeclarativelistscriptclass_p.h"
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativeguard_p.h"
-#include "qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativedata_p.h"
+#include "private/qdeclarativetypenamescriptclass_p.h"
+#include "private/qdeclarativelistscriptclass_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativeguard_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
 
 #include <QtCore/qtimer.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtScript/qscriptcontextinfo.h>
 
 Q_DECLARE_METATYPE(QScriptValue);
 
@@ -59,6 +60,15 @@ QT_BEGIN_NAMESPACE
 
 struct ObjectData : public QScriptDeclarativeClass::Object {
     ObjectData(QObject *o, int t) : object(o), type(t) {}
+
+    virtual ~ObjectData() {
+        if (object && !object->parent()) {
+            QDeclarativeData *ddata = QDeclarativeData::get(object, false);
+            if (ddata && !ddata->indestructible)
+                object->deleteLater();
+        }
+    }
+
     QDeclarativeGuard<QObject> object;
     int type;
 };
@@ -69,11 +79,8 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
     QtScript for QML.
  */
 QDeclarativeObjectScriptClass::QDeclarativeObjectScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
-  methods(bindEngine),
-#endif
-  lastData(0), engine(bindEngine)
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)),
+  methods(bindEngine), lastData(0), engine(bindEngine)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
@@ -87,20 +94,27 @@ QDeclarativeObjectScriptClass::~QDeclarativeObjectScriptClass()
 {
 }
 
-QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type) 
+QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     if (!object)
         return newObject(scriptEngine, this, new ObjectData(object, type));
 
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
+    if (QObjectPrivate::get(object)->wasDeleted)
+       return scriptEngine->undefinedValue();
 
-    if (!ddata->scriptValue.isValid()) {
-        ddata->scriptValue = newObject(scriptEngine, this, new ObjectData(object, type));
-        return ddata->scriptValue;
-    } else if (ddata->scriptValue.engine() == QDeclarativeEnginePrivate::getScriptEngine(engine)) {
-        return ddata->scriptValue;
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
+
+    if (!ddata) {
+       return scriptEngine->undefinedValue();
+    } else if (!ddata->indestructible && !object->parent()) {
+        return newObject(scriptEngine, this, new ObjectData(object, type));
+    } else if (!ddata->scriptValue) {
+        ddata->scriptValue = new QScriptValue(newObject(scriptEngine, this, new ObjectData(object, type)));
+        return *ddata->scriptValue;
+    } else if (ddata->scriptValue->engine() == QDeclarativeEnginePrivate::getScriptEngine(engine)) {
+        return *ddata->scriptValue;
     } else {
         return newObject(scriptEngine, this, new ObjectData(object, type));
     }
@@ -120,16 +134,16 @@ int QDeclarativeObjectScriptClass::objectType(const QScriptValue &value) const
     return ((ObjectData*)(o))->type;
 }
 
-QScriptClass::QueryFlags 
-QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &name, 
+QScriptClass::QueryFlags
+QDeclarativeObjectScriptClass::queryProperty(Object *object, const Identifier &name,
                                     QScriptClass::QueryFlags flags)
 {
     return queryProperty(toQObject(object), name, flags, 0);
 }
 
-QScriptClass::QueryFlags 
-QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name, 
-                                    QScriptClass::QueryFlags flags, QDeclarativeContext *evalContext,
+QScriptClass::QueryFlags
+QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
+                                    QScriptClass::QueryFlags flags, QDeclarativeContextData *evalContext,
                                     QueryHints hints)
 {
     Q_UNUSED(flags);
@@ -147,12 +161,12 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     lastData = QDeclarativePropertyCache::property(engine, obj, name, local);
 
     if (lastData)
-        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 
+        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
 
     if (!(hints & SkipAttachedProperties)) {
         if (!evalContext && context()) {
             // Global object, QScriptContext activation object, QDeclarativeContext object
-            QScriptValue scopeNode = scopeChainValue(context(), -3);         
+            QScriptValue scopeNode = scopeChainValue(context(), -3);
             if (scopeNode.isValid()) {
                 Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
 
@@ -160,15 +174,11 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
             }
         }
 
-        if (evalContext) {
-            QDeclarativeContextPrivate *cp = QDeclarativeContextPrivate::get(evalContext);
-
-            if (cp->imports) {
-                QDeclarativeTypeNameCache::Data *data = cp->imports->data(name);
-                if (data) {
-                    lastTNData = data;
-                    return QScriptClass::HandlesReadAccess;
-                }
+        if (evalContext && evalContext->imports) {
+            QDeclarativeTypeNameCache::Data *data = evalContext->imports->data(name);
+            if (data) {
+                lastTNData = data;
+                return QScriptClass::HandlesReadAccess;
             }
         }
     }
@@ -182,13 +192,13 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     return 0;
 }
 
-QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectScriptClass::Value
 QDeclarativeObjectScriptClass::property(Object *object, const Identifier &name)
 {
     return property(toQObject(object), name);
 }
 
-QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectScriptClass::Value
 QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
@@ -216,19 +226,14 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
         if (lastData->flags & QDeclarativePropertyCache::Data::IsVMEFunction) {
             return Value(scriptEngine, ((QDeclarativeVMEMetaObject *)(obj->metaObject()))->vmeMethod(lastData->coreIndex));
         } else {
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
             // Uncomment to use QtScript method call logic
             // QScriptValue sobj = scriptEngine->newQObject(obj);
             // return Value(scriptEngine, sobj.property(toString(name)));
             return Value(scriptEngine, methods.newMethod(obj, lastData));
-#else
-            QScriptValue sobj = scriptEngine->newQObject(obj);
-            return Value(scriptEngine, sobj.property(toString(name)));
-#endif
         }
     } else {
         if (enginePriv->captureProperties && !(lastData->flags & QDeclarativePropertyCache::Data::IsConstant)) {
-            enginePriv->capturedProperties << 
+            enginePriv->capturedProperties <<
                 QDeclarativeEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
         }
 
@@ -289,48 +294,48 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
             QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
             return Value(scriptEngine, enginePriv->scriptValueFromVariant(var));
         }
-
     }
 }
 
-void QDeclarativeObjectScriptClass::setProperty(Object *object, 
-                                       const Identifier &name, 
+void QDeclarativeObjectScriptClass::setProperty(Object *object,
+                                       const Identifier &name,
                                        const QScriptValue &value)
 {
-    return setProperty(toQObject(object), name, value);
+    return setProperty(toQObject(object), name, value, context());
 }
 
-void QDeclarativeObjectScriptClass::setProperty(QObject *obj, 
-                                       const Identifier &name, 
-                                       const QScriptValue &value,
-                                       QDeclarativeContext *evalContext)
+void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
+                                                const Identifier &name,
+                                                const QScriptValue &value,
+                                                QScriptContext *context,
+                                                QDeclarativeContextData *evalContext)
 {
     Q_UNUSED(name);
 
     Q_ASSERT(obj);
     Q_ASSERT(lastData);
+    Q_ASSERT(context);
 
     if (!lastData->isValid()) {
         QString error = QLatin1String("Cannot assign to non-existent property \"") +
                         toString(name) + QLatin1Char('\"');
-        if (context())
-            context()->throwError(error);
+        context->throwError(error);
         return;
     }
 
-    if (!(lastData->flags & QDeclarativePropertyCache::Data::IsWritable)) {
+    if (!(lastData->flags & QDeclarativePropertyCache::Data::IsWritable) && 
+        !(lastData->flags & QDeclarativePropertyCache::Data::IsQList)) {
         QString error = QLatin1String("Cannot assign to read-only property \"") +
                         toString(name) + QLatin1Char('\"');
-        if (context())
-            context()->throwError(error);
+        context->throwError(error);
         return;
     }
 
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
 
-    if (!evalContext && context()) {
+    if (!evalContext) {
         // Global object, QScriptContext activation object, QDeclarativeContext object
-        QScriptValue scopeNode = scopeChainValue(context(), -3);         
+        QScriptValue scopeNode = scopeChainValue(context, -3);
         if (scopeNode.isValid()) {
             Q_ASSERT(scriptClass(scopeNode) == enginePriv->contextClass);
 
@@ -338,17 +343,38 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         }
     }
 
-    QDeclarativeAbstractBinding *delBinding = QDeclarativePropertyPrivate::setBinding(obj, *lastData, 0);
+    QDeclarativeAbstractBinding *delBinding =
+        QDeclarativePropertyPrivate::setBinding(obj, lastData->coreIndex, -1, 0);
     if (delBinding)
         delBinding->destroy();
 
     if (value.isUndefined() && lastData->flags & QDeclarativePropertyCache::Data::IsResettable) {
         void *a[] = { 0 };
         QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
+    } else if (value.isUndefined() && lastData->propType == qMetaTypeId<QVariant>()) {
+        QDeclarativePropertyPrivate::write(obj, *lastData, QVariant(), evalContext);
+    } else if (value.isUndefined()) {
+        QString error = QLatin1String("Cannot assign [undefined] to ") +
+                        QLatin1String(QMetaType::typeName(lastData->propType));
+        context->throwError(error);
     } else {
-        // ### Can well known types be optimized?
-        QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
-        QDeclarativePropertyPrivate::write(obj, *lastData, v, evalContext);
+        QVariant v;
+        if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
+            v = enginePriv->scriptValueToVariant(value, qMetaTypeId<QList<QObject *> >());
+        else
+            v = enginePriv->scriptValueToVariant(value, lastData->propType);
+
+        if (!QDeclarativePropertyPrivate::write(obj, *lastData, v, evalContext)) {
+            const char *valueType = 0;
+            if (v.userType() == QVariant::Invalid) valueType = "null";
+            else valueType = QMetaType::typeName(v.userType());
+
+            QString error = QLatin1String("Cannot assign ") +
+                            QLatin1String(valueType) +
+                            QLatin1String(" to ") +
+                            QLatin1String(QMetaType::typeName(lastData->propType));
+            context->throwError(error);
+        }
     }
 }
 
@@ -392,17 +418,30 @@ QScriptValue QDeclarativeObjectScriptClass::tostring(QScriptContext *context, QS
 
 QScriptValue QDeclarativeObjectScriptClass::destroy(QScriptContext *context, QScriptEngine *engine)
 {
-    QObject* obj = context->thisObject().toQObject();
-    if(obj){
-        int delay = 0;
-        if(context->argumentCount() > 0)
-            delay = context->argument(0).toInt32();
-        if (delay > 0)
-            QTimer::singleShot(delay, obj, SLOT(deleteLater()));
-        else
-            obj->deleteLater();
-    }
-    return engine->nullValue();
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
+    QScriptValue that = context->thisObject();
+
+    if (scriptClass(that) != p->objectClass)
+        return engine->undefinedValue();
+
+    ObjectData *data = (ObjectData *)p->objectClass->object(that);
+    if (!data->object)
+        return engine->undefinedValue();
+
+    QDeclarativeData *ddata = QDeclarativeData::get(data->object, false);
+    if (!ddata || ddata->indestructible)
+        return engine->currentContext()->throwError(QLatin1String("Invalid attempt  to destroy() an indestructible object"));
+
+    QObject *obj = data->object;
+    int delay = 0;
+    if (context->argumentCount() > 0)
+        delay = context->argument(0).toInt32();
+    if (delay > 0)
+        QTimer::singleShot(delay, obj, SLOT(deleteLater()));
+    else
+        obj->deleteLater();
+
+    return engine->undefinedValue();
 }
 
 QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
@@ -414,7 +453,7 @@ QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
 
     QDeclarativePropertyCache *cache = 0;
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(obj);
+    QDeclarativeData *ddata = QDeclarativeData::get(obj);
     if (ddata)
         cache = ddata->propertyCache;
     if (!cache) {
@@ -428,7 +467,13 @@ QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
     return cache->propertyNames();
 }
 
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
+bool QDeclarativeObjectScriptClass::compare(Object *o1, Object *o2)
+{
+    ObjectData *d1 = (ObjectData *)o1;
+    ObjectData *d2 = (ObjectData *)o2;
+
+    return d1 == d2 || d1->object == d2->object;
+}
 
 struct MethodData : public QScriptDeclarativeClass::Object {
     MethodData(QObject *o, const QDeclarativePropertyCache::Data &d) : object(o), data(d) {}
@@ -438,9 +483,11 @@ struct MethodData : public QScriptDeclarativeClass::Object {
 };
 
 QDeclarativeObjectMethodScriptClass::QDeclarativeObjectMethodScriptClass(QDeclarativeEngine *bindEngine)
-: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)),
   engine(bindEngine)
 {
+    qRegisterMetaType<QList<QObject *> >("QList<QObject *>");
+
     setSupportsCall(true);
 
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
@@ -483,7 +530,7 @@ QScriptValue QDeclarativeObjectMethodScriptClass::connect(QScriptContext *contex
     } else {
         qScriptConnect(data->object, signal.constData(), context->argument(0), context->argument(1));
     }
-    
+
     return engine->undefinedValue();
 }
 
@@ -508,14 +555,15 @@ QScriptValue QDeclarativeObjectMethodScriptClass::disconnect(QScriptContext *con
     } else {
         qScriptDisconnect(data->object, signal.constData(), context->argument(0), context->argument(1));
     }
-    
+
     return engine->undefinedValue();
 }
 
-QScriptClass::QueryFlags 
-QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &name, 
+QScriptClass::QueryFlags
+QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &name,
                                                    QScriptClass::QueryFlags flags)
 {
+    Q_UNUSED(flags);
     if (name == m_connectId.identifier || name == m_disconnectId.identifier)
         return QScriptClass::HandlesReadAccess;
     else
@@ -523,7 +571,7 @@ QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &n
 
 }
 
-QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectMethodScriptClass::Value
 QDeclarativeObjectMethodScriptClass::property(Object *, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
@@ -548,10 +596,10 @@ struct MetaCallArgument {
 
 private:
     MetaCallArgument(const MetaCallArgument &);
-    
+
     inline void cleanup();
 
-    char *data[16];
+    void *data[4];
     int type;
 };
 }
@@ -566,23 +614,25 @@ MetaCallArgument::~MetaCallArgument()
     cleanup();
 }
 
-void MetaCallArgument::cleanup() 
+void MetaCallArgument::cleanup()
 {
     if (type == QMetaType::QString) {
-        ((QString *)data)->~QString();
+        ((QString *)&data)->~QString();
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
-        ((QVariant *)data)->~QVariant();
+        ((QVariant *)&data)->~QVariant();
     } else if (type == qMetaTypeId<QScriptValue>()) {
-        ((QScriptValue *)data)->~QScriptValue();
+        ((QScriptValue *)&data)->~QScriptValue();
+    } else if (type == qMetaTypeId<QList<QObject *> >()) {
+        ((QList<QObject *> *)&data)->~QList<QObject *>();
     }
 }
 
 void *MetaCallArgument::dataPtr()
 {
-    if (type == -1) 
+    if (type == -1)
         return ((QVariant *)data)->data();
     else
-        return (void *)data;
+        return (void *)&data;
 }
 
 void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
@@ -591,9 +641,9 @@ void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
     if (callType == 0) return;
 
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(e);
-    
+
     if (callType == qMetaTypeId<QScriptValue>()) {
-        new (data) QScriptValue(engine->undefinedValue());
+        new (&data) QScriptValue(engine->undefinedValue());
         type = callType;
     } else if (callType == QMetaType::Int ||
                callType == QMetaType::UInt ||
@@ -602,17 +652,20 @@ void MetaCallArgument::initAsType(int callType, QDeclarativeEngine *e)
                callType == QMetaType::Float) {
         type = callType;
     } else if (callType == QMetaType::QObjectStar) {
-        *((QObject **)data) = 0;
+        *((QObject **)&data) = 0;
         type = callType;
     } else if (callType == QMetaType::QString) {
-        new (data) QString();
+        new (&data) QString();
         type = callType;
     } else if (callType == qMetaTypeId<QVariant>()) {
-        type = qMetaTypeId<QVariant>();
-        new (data) QVariant();
+        type = callType;
+        new (&data) QVariant();
+    } else if (callType == qMetaTypeId<QList<QObject *> >()) {
+        type = callType;
+        new (&data) QList<QObject *>();
     } else {
         type = -1;
-        new (data) QVariant(callType, (void *)0);
+        new (&data) QVariant(callType, (void *)0);
     }
 }
 
@@ -621,47 +674,60 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
     if (type != 0) { cleanup(); type = 0; }
 
     if (callType == qMetaTypeId<QScriptValue>()) {
-        new (data) QScriptValue(value);
+        new (&data) QScriptValue(value);
         type = qMetaTypeId<QScriptValue>();
     } else if (callType == QMetaType::Int) {
-        *((int *)data) = int(value.toInt32());
+        *((int *)&data) = int(value.toInt32());
         type = callType;
     } else if (callType == QMetaType::UInt) {
-        *((uint *)data) = uint(value.toUInt32());
+        *((uint *)&data) = uint(value.toUInt32());
         type = callType;
     } else if (callType == QMetaType::Bool) {
-        *((bool *)data) = value.toBool();
+        *((bool *)&data) = value.toBool();
         type = callType;
     } else if (callType == QMetaType::Double) {
-        *((double *)data) = double(value.toNumber());
+        *((double *)&data) = double(value.toNumber());
         type = callType;
     } else if (callType == QMetaType::Float) {
-        *((float *)data) = float(value.toNumber());
+        *((float *)&data) = float(value.toNumber());
         type = callType;
     } else if (callType == QMetaType::QString) {
         if (value.isNull() || value.isUndefined())
-            new (data) QString();
+            new (&data) QString();
         else
-            new (data) QString(value.toString());
+            new (&data) QString(value.toString());
         type = callType;
     } else if (callType == QMetaType::QObjectStar) {
-        *((QObject **)data) = value.toQObject();
+        *((QObject **)&data) = value.toQObject();
         type = callType;
     } else if (callType == qMetaTypeId<QVariant>()) {
-        new (data) QVariant(QDeclarativeScriptClass::toVariant(engine, value));
+        new (&data) QVariant(QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value));
+        type = callType;
+    } else if (callType == qMetaTypeId<QList<QObject*> >()) {
+        QList<QObject *> *list = new (&data) QList<QObject *>(); 
+        if (value.isArray()) {
+            int length = value.property(QLatin1String("length")).toInt32();
+            for (int ii = 0; ii < length; ++ii) {
+                QScriptValue arrayItem = value.property(ii);
+                QObject *d = arrayItem.toQObject();
+                list->append(d);
+            }
+        } else if (QObject *d = value.toQObject()) {
+            list->append(d);
+        }
         type = callType;
     } else {
-        new (data) QVariant();
+        new (&data) QVariant();
         type = -1;
 
-        QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
+        QVariant v = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
         if (v.userType() == callType) {
-            *((QVariant *)data) = v;
+            *((QVariant *)&data) = v;
         } else if (v.canConvert((QVariant::Type)callType)) {
-            *((QVariant *)data) = v;
-            ((QVariant *)data)->convert((QVariant::Type)callType);
+            *((QVariant *)&data) = v;
+            ((QVariant *)&data)->convert((QVariant::Type)callType);
         } else {
-            *((QVariant *)data) = QVariant(callType, (void *)0);
+            *((QVariant *)&data) = QVariant(callType, (void *)0);
         }
     }
 }
@@ -669,25 +735,38 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
 QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
 {
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(e);
-    
+
     if (type == qMetaTypeId<QScriptValue>()) {
-        return QScriptDeclarativeClass::Value(engine, *((QScriptValue *)data));
+        return QScriptDeclarativeClass::Value(engine, *((QScriptValue *)&data));
     } else if (type == QMetaType::Int) {
-        return QScriptDeclarativeClass::Value(engine, *((int *)data));
+        return QScriptDeclarativeClass::Value(engine, *((int *)&data));
     } else if (type == QMetaType::UInt) {
-        return QScriptDeclarativeClass::Value(engine, *((uint *)data));
+        return QScriptDeclarativeClass::Value(engine, *((uint *)&data));
     } else if (type == QMetaType::Bool) {
-        return QScriptDeclarativeClass::Value(engine, *((bool *)data));
+        return QScriptDeclarativeClass::Value(engine, *((bool *)&data));
     } else if (type == QMetaType::Double) {
-        return QScriptDeclarativeClass::Value(engine, *((double *)data));
+        return QScriptDeclarativeClass::Value(engine, *((double *)&data));
     } else if (type == QMetaType::Float) {
-        return QScriptDeclarativeClass::Value(engine, *((float *)data));
+        return QScriptDeclarativeClass::Value(engine, *((float *)&data));
     } else if (type == QMetaType::QString) {
-        return QScriptDeclarativeClass::Value(engine, *((QString *)data));
+        return QScriptDeclarativeClass::Value(engine, *((QString *)&data));
     } else if (type == QMetaType::QObjectStar) {
-        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->objectClass->newQObject(*((QObject **)data)));
+        QObject *object = *((QObject **)&data);
+        QDeclarativeData::get(object, true)->setImplicitDestructible();
+        QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
+        return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(object));
+    } else if (type == qMetaTypeId<QList<QObject *> >()) {
+        QList<QObject *> &list = *(QList<QObject *>*)&data;
+        QScriptValue rv = engine->newArray(list.count());
+        QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
+        for (int ii = 0; ii < list.count(); ++ii) {
+            QObject *object = list.at(ii);
+            QDeclarativeData::get(object, true)->setImplicitDestructible();
+            rv.setProperty(ii, priv->objectClass->newQObject(object));
+        }
+        return QScriptDeclarativeClass::Value(engine, rv);
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
-        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->scriptValueFromVariant(*((QVariant *)data)));
+        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->scriptValueFromVariant(*((QVariant *)&data)));
     } else {
         return QScriptDeclarativeClass::Value();
     }
@@ -706,21 +785,21 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         // ### Cache
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
-            if (argTypes[ii] == QVariant::Invalid) 
+            if (argTypes[ii] == QVariant::Invalid)
                 return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
 
-        if (argTypes.count() > ctxt->argumentCount()) 
+        if (argTypes.count() > ctxt->argumentCount())
             return Value(ctxt, ctxt->throwError(QLatin1String("Insufficient arguments")));
 
         QVarLengthArray<MetaCallArgument, 9> args(argTypes.count() + 1);
         args[0].initAsType(method->data.propType, engine);
 
-        for (int ii = 0; ii < argTypes.count(); ++ii) 
+        for (int ii = 0; ii < argTypes.count(); ++ii)
             args[ii + 1].fromScriptValue(argTypes[ii], engine, ctxt->argument(ii));
 
         QVarLengthArray<void *, 9> argData(args.count());
-        for (int ii = 0; ii < args.count(); ++ii) 
+        for (int ii = 0; ii < args.count(); ++ii)
             argData[ii] = args[ii].dataPtr();
 
         QMetaObject::metacall(method->object, QMetaObject::InvokeMetaMethod, method->data.coreIndex, argData.data());
@@ -747,8 +826,6 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
     }
     return Value();
 }
-
-#endif
 
 QT_END_NAMESPACE
 

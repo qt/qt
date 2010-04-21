@@ -269,19 +269,22 @@ void tst_QScriptEngine::nativeCall()
 void tst_QScriptEngine::translation_data()
 {
     QTest::addColumn<QString>("text");
-    QTest::newRow("no translation") << "\"hello world\"";
-    QTest::newRow("qsTr") << "qsTr(\"hello world\")";
-    QTest::newRow("qsTranslate") << "qsTranslate(\"\", \"hello world\")";
+    QTest::addColumn<QString>("fileName");
+    QTest::newRow("no translation") << "\"hello world\"" << "";
+    QTest::newRow("qsTr") << "qsTr(\"hello world\")" << "";
+    QTest::newRow("qsTranslate") << "qsTranslate(\"\", \"hello world\")" << "";
+    QTest::newRow("qsTr:script.js") << "qsTr(\"hello world\")" << "script.js";
 }
 
 void tst_QScriptEngine::translation()
 {
     QFETCH(QString, text);
+    QFETCH(QString, fileName);
     QScriptEngine engine;
     engine.installTranslatorFunctions();
 
     QBENCHMARK {
-        (void)engine.evaluate(text);
+        (void)engine.evaluate(text, fileName);
     }
 }
 

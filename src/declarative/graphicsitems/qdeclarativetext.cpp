@@ -39,12 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetext_p.h"
-#include "qdeclarativetext_p_p.h"
+#include "private/qdeclarativetext_p.h"
+#include "private/qdeclarativetext_p_p.h"
 #include <qdeclarativestyledtext_p.h>
+#include <qdeclarativeinfo.h>
+#include <qdeclarativepixmapcache_p.h>
 
-#include <qfxperf_p_p.h>
-
+#include <QSet>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -55,6 +56,59 @@
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
+
+class QTextDocumentWithImageResources : public QTextDocument {
+    Q_OBJECT
+
+public:
+    QTextDocumentWithImageResources(QDeclarativeText *parent) :
+        QTextDocument(parent),
+        outstanding(0)
+    {
+    }
+
+    int resourcesLoading() const { return outstanding; }
+
+protected:
+    QVariant loadResource(int type, const QUrl &name)
+    {
+        QUrl url = qmlContext(parent())->resolvedUrl(name);
+
+        if (type == QTextDocument::ImageResource) {
+            QPixmap pm;
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, false, 0, 0);
+            if (status == QDeclarativePixmapReply::Ready)
+                return pm;
+            if (status == QDeclarativePixmapReply::Error) {
+                if (!errors.contains(url)) {
+                    errors.insert(url);
+                    qmlInfo(parent()) << errorString;
+                }
+            } else {
+                QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
+                connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+                outstanding++;
+            }
+        }
+
+        return QTextDocument::loadResource(type,url); // The *resolved* URL
+    }
+
+private slots:
+    void requestFinished()
+    {
+        outstanding--;
+        if (outstanding == 0)
+            static_cast<QDeclarativeText*>(parent())->reloadWithResources();
+    }
+
+private:
+    int outstanding;
+    static QSet<QUrl> errors;
+};
+
+QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
@@ -72,11 +126,14 @@ QT_BEGIN_NAMESPACE
     \image declarative-text.png
 
     If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrap is set, it will always
+    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
     prefer width to height (all text will be placed on a single line).
 
     The \c elide property can alternatively be used to fit a single line of
     plain text to a set width.
+
+    Note that the \l{Supported HTML Subset} is limited, and that if IMG tags
+    load remote images, the text reloads (see resourcesLoading).
 
     Text provides read-only text. For editable text, see \l TextEdit.
 */
@@ -100,7 +157,7 @@ QT_BEGIN_NAMESPACE
     \image text.png
 
     If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrap is set, it will always
+    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
     prefer width to height (all text will be placed on a single line).
 
     The \c elide property can alternatively be used to fit a line of plain text to a set width.
@@ -123,14 +180,116 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 
 /*!
     \qmlproperty string Text::font.family
+
+    Sets the family name of the font.
+
+    The family name is case insensitive and may optionally include a foundry name, e.g. "Helvetica [Cronyx]".
+    If the family is available from more than one foundry and the foundry isn't specified, an arbitrary foundry is chosen.
+    If the family isn't available a family will be set using the font matching algorithm.
+*/
+
+/*!
     \qmlproperty bool Text::font.bold
+
+    Sets the font's weight to bold.
+*/
+
+/*!
+    \qmlproperty enumeration Text::font.weight
+
+    Sets the font's weight.
+
+    The weight can be one of:
+    \list
+    \o Light
+    \o Normal - the default
+    \o DemiBold
+    \o Bold
+    \o Black
+    \endlist
+
+    \qml
+    Text { text: "Hello"; font.weight: Font.DemiBold }
+    \endqml
+*/
+
+/*!
     \qmlproperty bool Text::font.italic
+
+    Sets the style of the text to italic.
+*/
+
+/*!
     \qmlproperty bool Text::font.underline
+
+    Set the style of the text to underline.
+*/
+
+/*!
+    \qmlproperty bool Text::font.outline
+
+    Set the style of the text to outline.
+*/
+
+/*!
+    \qmlproperty bool Text::font.strikeout
+
+    Set the style of the text to strikeout.
+*/
+
+/*!
     \qmlproperty real Text::font.pointSize
+
+    Sets the font size in points. The point size must be greater than zero.
+*/
+
+/*!
     \qmlproperty int Text::font.pixelSize
 
-    Set the Text's font attributes.
+    Sets the font size in pixels.
+
+    Using this function makes the font device dependent.
+    Use \c pointSize to set the size of the font in a device independent manner.
 */
+
+/*!
+    \qmlproperty real Text::font.letterSpacing
+
+    Sets the letter spacing for the font.
+
+    Letter spacing changes the default spacing between individual letters in the font.
+    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
+    the width of the character itself.
+*/
+
+/*!
+    \qmlproperty real Text::font.wordSpacing
+
+    Sets the word spacing for the font.
+
+    Word spacing changes the default spacing between individual words.
+    A positive value increases the word spacing by a corresponding amount of pixels,
+    while a negative value decreases the inter-word spacing accordingly.
+*/
+
+/*!
+    \qmlproperty enumeration Text::font.capitalization
+
+    Sets the capitalization for the text.
+
+    \list
+    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \endlist
+
+    \qml
+    Text { text: "Hello"; font.capitalization: Font.AllLowercase }
+    \endqml
+*/
+
 QFont QDeclarativeText::font() const
 {
     Q_D(const QDeclarativeText);
@@ -152,20 +311,16 @@ void QDeclarativeText::setFont(const QFont &font)
 
 void QDeclarativeText::setText(const QString &n)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::QDeclarativeText_setText> st;
-#endif
     Q_D(QDeclarativeText);
     if (d->text == n)
         return;
 
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
     if (d->richText) {
-        if (!d->doc) {
-            d->doc = new QTextDocument(this);
-            d->doc->setDocumentMargin(0);
+        if (isComponentComplete()) {
+            d->ensureDoc();
+            d->doc->setHtml(n);
         }
-        d->doc->setHtml(n);
     }
 
     d->text = n;
@@ -177,7 +332,7 @@ void QDeclarativeText::setText(const QString &n)
 /*!
     \qmlproperty string Text::text
 
-    The text to display.  Text supports both plain and rich text strings.
+    The text to display. Text supports both plain and rich text strings.
 
     The item will try to automatically determine whether the text should
     be treated as rich text. This determination is made using Qt::mightBeRichText().
@@ -224,14 +379,20 @@ QColor QDeclarativeText::color() const
 
     Set an additional text style.
 
-    Supported text styles are \c Normal, \c Outline, \c Raised and \c Sunken.
+    Supported text styles are:
+    \list
+    \o Normal - the default
+    \o Outline
+    \o Raised
+    \o Sunken
+    \endlist
 
     \qml
     Row {
         Text { font.pointSize: 24; text: "Normal" }
-        Text { font.pointSize: 24; text: "Raised";  style: Text.Raised;  styleColor: "#AAAAAA" }
-        Text { font.pointSize: 24; text: "Outline"; style: Text.Outline; styleColor: "red" }
-        Text { font.pointSize: 24; text: "Sunken";  style: Text.Sunken;  styleColor: "#AAAAAA" }
+        Text { font.pointSize: 24; text: "Raised"; style: Text.Raised; styleColor: "#AAAAAA" }
+        Text { font.pointSize: 24; text: "Outline";style: Text.Outline; styleColor: "red" }
+        Text { font.pointSize: 24; text: "Sunken"; style: Text.Sunken; styleColor: "#AAAAAA" }
     }
     \endqml
 
@@ -273,6 +434,10 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \c styleColor is used as the outline color for outlined text, and as the
     shadow color for raised or sunken text. If no style has been set, it is not
     used at all.
+
+    \qml
+    Text { font.pointSize: 18; text: "hello"; style: Text.Raised; styleColor: "gray" }
+    \endqml
  */
 QColor QDeclarativeText::styleColor() const
 {
@@ -324,36 +489,54 @@ void QDeclarativeText::setVAlign(VAlignment align)
 }
 
 /*!
-    \qmlproperty bool Text::wrap
+    \qmlproperty enumeration Text::wrapMode
 
     Set this property to wrap the text to the Text item's width.  The text will only
-    wrap if an explicit width has been set.
+    wrap if an explicit width has been set.  wrapMode can be one of:
 
-    Wrapping is done on word boundaries (i.e. it is a "word-wrap"). If the text cannot be
+    \list
+    \o NoWrap - no wrapping will be performed.
+    \o WordWrap - wrapping is done on word boundaries. If the text cannot be
     word-wrapped to the specified width it will be partially drawn outside of the item's bounds.
     If this is undesirable then enable clipping on the item (Item::clip).
+    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+       will occur at the appropriate point on the line, even in the middle of a word.
+    \endlist
 
-    Wrapping is off by default.
+    The default is NoWrap.
 */
-//### Future may provide choice of wrap modes, such as QTextOption::WrapAtWordBoundaryOrAnywhere
+QDeclarativeText::WrapMode QDeclarativeText::wrapMode() const
+{
+    Q_D(const QDeclarativeText);
+    return d->wrapMode;
+}
+
+void QDeclarativeText::setWrapMode(WrapMode mode)
+{
+    Q_D(QDeclarativeText);
+    if (mode == d->wrapMode)
+        return;
+
+    d->wrapMode = mode;
+
+    d->updateLayout();
+    d->markImgDirty();
+    emit wrapModeChanged();
+}
+
 bool QDeclarativeText::wrap() const
 {
     Q_D(const QDeclarativeText);
-    return d->wrap;
+    return d->wrapMode != NoWrap;
 }
 
 void QDeclarativeText::setWrap(bool w)
 {
-    Q_D(QDeclarativeText);
-    if (w == d->wrap)
-        return;
-
-    d->wrap = w;
-
-    d->updateLayout();
-    d->markImgDirty();
-    emit wrapChanged(d->wrap);
+    qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
+    setWrapMode(w ? WordWrap : NoWrap);
 }
+
 
 /*!
     \qmlproperty enumeration Text::textFormat
@@ -384,18 +567,18 @@ void QDeclarativeText::setWrap(bool w)
     \o
     \qml
 Column {
-    TextEdit {
+    Text {
         font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"
     }
-    TextEdit {
+    Text {
         font.pointSize: 24
-        textFormat: "RichText"
+        textFormat: Text.RichText
         text: "<b>Hello</b> <i>World!</i>"
     }
-    TextEdit {
+    Text {
         font.pointSize: 24
-        textFormat: "PlainText"
+        textFormat: Text.PlainText
         text: "<b>Hello</b> <i>World!</i>"
     }
 }
@@ -424,11 +607,10 @@ void QDeclarativeText::setTextFormat(TextFormat format)
         d->updateLayout();
         d->markImgDirty();
     } else if (!wasRich && d->richText) {
-        if (!d->doc) {
-            d->doc = new QTextDocument(this);
-            d->doc->setDocumentMargin(0);
+        if (isComponentComplete()) {
+            d->ensureDoc();
+            d->doc->setHtml(d->text);
         }
-        d->doc->setHtml(d->text);
         d->updateLayout();
         d->markImgDirty();
     }
@@ -442,9 +624,15 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
-    This property cannot be used with wrap enabled or with rich text.
+    This property cannot be used with wrapping enabled or with rich text.
 
-    Eliding can be \c ElideNone (the default), \c ElideLeft, \c ElideMiddle, or \c ElideRight.
+    Eliding can be:
+    \list
+    \o ElideNone  - the default
+    \o ElideLeft
+    \o ElideMiddle
+    \o ElideRight
+    \endlist
 
     If the text is a multi-length string, and the mode is not \c ElideNone,
     the first string that fits will be used, otherwise the last will be elided.
@@ -476,7 +664,7 @@ void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
 {
     Q_D(QDeclarativeText);
     if (newGeometry.width() != oldGeometry.width()) {
-        if (d->wrap || d->elideMode != QDeclarativeText::ElideNone) {
+        if (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone) {
             //re-elide if needed
             if (d->singleline && d->elideMode != QDeclarativeText::ElideNone &&
                 isComponentComplete() && widthValid()) {
@@ -543,12 +731,9 @@ void QDeclarativeTextPrivate::updateSize()
             singleline = false; // richtext can't elide or be optimized for single-line case
             doc->setDefaultFont(font);
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
-            if (wrap)
-                option.setWrapMode(QTextOption::WordWrap);
-            else
-                option.setWrapMode(QTextOption::NoWrap);
+            option.setWrapMode(QTextOption::WrapMode(wrapMode));
             doc->setDefaultTextOption(option);
-            if (wrap && !q->heightValid() && q->widthValid())
+            if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
                 doc->setTextWidth(q->width());
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
@@ -628,8 +813,12 @@ QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
     qreal lineWidth = 0;
 
     //set manual width
-    if ((wrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
         lineWidth = q->width();
+
+    QTextOption textOption = layout->textOption();
+    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    layout->setTextOption(textOption);
 
     layout->beginLayout();
 
@@ -638,7 +827,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
         if (!line.isValid())
             break;
 
-        if ((wrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+        if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
     layout->endLayout();
@@ -765,6 +954,34 @@ void QDeclarativeTextPrivate::checkImgCache()
     imgDirty = false;
 }
 
+void QDeclarativeTextPrivate::ensureDoc()
+{
+    if (!doc) {
+        Q_Q(QDeclarativeText);
+        doc = new QTextDocumentWithImageResources(q);
+        doc->setDocumentMargin(0);
+    }
+}
+
+void QDeclarativeText::reloadWithResources()
+{
+    Q_D(QDeclarativeText);
+    if (!d->richText)
+        return;
+    d->doc->setHtml(d->text);
+    d->updateLayout();
+    d->markImgDirty();
+}
+
+/*!
+    Returns the number of resources (images) that are being loaded asynchronously.
+*/
+int QDeclarativeText::resourcesLoading() const
+{
+    Q_D(const QDeclarativeText);
+    return d->doc ? d->doc->resourcesLoading() : 0;
+}
+
 void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeText);
@@ -876,11 +1093,12 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
 void QDeclarativeText::componentComplete()
 {
     Q_D(QDeclarativeText);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::TextComponentComplete> cc;
-#endif
     QDeclarativeItem::componentComplete();
     if (d->dirty) {
+        if (d->richText) {
+            d->ensureDoc();
+            d->doc->setHtml(d->text);
+        }
         d->updateLayout();
         d->dirty = false;
     }
@@ -931,4 +1149,7 @@ void QDeclarativeText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (!event->isAccepted())
         QDeclarativeItem::mouseReleaseEvent(event);
 }
+
 QT_END_NAMESPACE
+
+#include "qdeclarativetext.moc"

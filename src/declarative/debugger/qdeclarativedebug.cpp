@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativedebug_p.h"
+#include "private/qdeclarativedebug_p.h"
 
-#include "qdeclarativedebugclient_p.h"
+#include "private/qdeclarativedebugclient_p.h"
 
 #include <qdeclarativeenginedebug_p.h>
 
@@ -151,6 +151,7 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
     ds >> data;
     o.m_debugId = data.objectId;
     o.m_class = data.objectType;
+    o.m_idString = data.idString;
     o.m_name = data.objectName;
     o.m_source.m_url = data.url;
     o.m_source.m_lineNumber = data.lineNumber;
@@ -750,8 +751,8 @@ QDeclarativeDebugObjectReference::QDeclarativeDebugObjectReference(int debugId)
 }
 
 QDeclarativeDebugObjectReference::QDeclarativeDebugObjectReference(const QDeclarativeDebugObjectReference &o)
-: m_debugId(o.m_debugId), m_class(o.m_class), m_name(o.m_name),
-  m_source(o.m_source), m_contextDebugId(o.m_contextDebugId),
+: m_debugId(o.m_debugId), m_class(o.m_class), m_idString(o.m_idString),
+  m_name(o.m_name), m_source(o.m_source), m_contextDebugId(o.m_contextDebugId),
   m_properties(o.m_properties), m_children(o.m_children)
 {
 }
@@ -759,8 +760,8 @@ QDeclarativeDebugObjectReference::QDeclarativeDebugObjectReference(const QDeclar
 QDeclarativeDebugObjectReference &
 QDeclarativeDebugObjectReference::operator=(const QDeclarativeDebugObjectReference &o)
 {
-    m_debugId = o.m_debugId; m_class = o.m_class; m_name = o.m_name; 
-    m_source = o.m_source; m_contextDebugId = o.m_contextDebugId;
+    m_debugId = o.m_debugId; m_class = o.m_class; m_idString = o.m_idString;
+    m_name = o.m_name; m_source = o.m_source; m_contextDebugId = o.m_contextDebugId;
     m_properties = o.m_properties; m_children = o.m_children;
     return *this;
 }
@@ -773,6 +774,11 @@ int QDeclarativeDebugObjectReference::debugId() const
 QString QDeclarativeDebugObjectReference::className() const
 {
     return m_class;
+}
+
+QString QDeclarativeDebugObjectReference::idString() const
+{
+    return m_idString;
 }
 
 QString QDeclarativeDebugObjectReference::name() const

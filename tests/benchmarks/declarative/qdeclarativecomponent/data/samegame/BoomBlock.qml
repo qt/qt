@@ -1,4 +1,5 @@
 import Qt 4.6
+import Qt.labs.particles 1.0
 
 Item { id:block
     property bool dying: false
@@ -7,8 +8,8 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    SpringFollow on x { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
-    SpringFollow on y { source: targetY; spring: 2; damping: 0.2 }
+    SpringFollow on x { enabled: spawned; to: targetX; spring: 2; damping: 0.2 }
+    SpringFollow on y { to: targetY; spring: 2; damping: 0.2 }
 
     Image { id: img
         source: {

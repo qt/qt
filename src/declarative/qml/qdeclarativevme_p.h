@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeerror.h"
-#include "qbitfield_p.h"
+#include "private/qbitfield_p.h"
 
 #include <QtCore/QString>
 #include <QtCore/QStack>
@@ -65,13 +65,13 @@ class QObject;
 class QDeclarativeInstruction;
 class QDeclarativeCompiledData;
 class QDeclarativeCompiledData;
-class QDeclarativeContext;
+class QDeclarativeContextData;
 
 template<typename T, int N = 128>
 class QDeclarativeVMEStack {
 public:
-    QDeclarativeVMEStack() : index(-1), maxSize(N), data(fixedData) {}
-    ~QDeclarativeVMEStack() { if (data != fixedData) qFree(fixedData); }
+    QDeclarativeVMEStack() : index(-1), maxSize(N), data((T *)fixedData) {}
+    ~QDeclarativeVMEStack() { if (data != (T *)fixedData) qFree(data); }
 
     bool isEmpty() const { return index == -1; }
     const T &top() const { return data[index]; }
@@ -83,7 +83,7 @@ public:
 private:
     void realloc() {
         maxSize += N;
-        if (data != fixedData) {
+        if (data != (T *)fixedData) {
             data = (T*)qRealloc(data, maxSize * sizeof(T));
         } else {
             data = (T*)qMalloc(maxSize * sizeof(T));
@@ -92,7 +92,7 @@ private:
     int index;
     int maxSize;
     T *data;
-    T fixedData[N];
+    char fixedData[N * sizeof(T)];
 };
 
 class QDeclarativeVME
@@ -100,7 +100,7 @@ class QDeclarativeVME
 public:
     QDeclarativeVME();
 
-    QObject *run(QDeclarativeContext *, QDeclarativeCompiledData *, 
+    QObject *run(QDeclarativeContextData *, QDeclarativeCompiledData *, 
                  int start = -1, int count = -1, 
                  const QBitField & = QBitField());
     void runDeferred(QObject *);
@@ -109,8 +109,10 @@ public:
     QList<QDeclarativeError> errors() const;
 
 private:
-    QObject *run(QDeclarativeVMEStack<QObject *> &, QDeclarativeContext *, QDeclarativeCompiledData *, 
-                 int start, int count, const QBitField &);
+    QObject *run(QDeclarativeVMEStack<QObject *> &, 
+                 QDeclarativeContextData *, QDeclarativeCompiledData *, 
+                 int start, int count, 
+                 const QBitField &);
     QList<QDeclarativeError> vmeErrors;
 };
 

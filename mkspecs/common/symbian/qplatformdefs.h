@@ -85,6 +85,8 @@
 #include <arpa/inet.h>
 
 #define QT_USE_XOPEN_LFS_EXTENSIONS
+// unset large file as symbian doesn't support it
+#undef QT_LARGEFILE_SUPPORT
 #include "../posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE

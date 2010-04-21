@@ -71,6 +71,63 @@ QT_BEGIN_NAMESPACE
 
 class QGraphicsItemPrivate;
 
+#ifndef QDECLARATIVELISTPROPERTY
+#define QDECLARATIVELISTPROPERTY
+template<typename T>
+class QDeclarativeListProperty {
+public:
+    typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);
+    typedef int (*CountFunction)(QDeclarativeListProperty<T> *);
+    typedef T *(*AtFunction)(QDeclarativeListProperty<T> *, int);
+    typedef void (*ClearFunction)(QDeclarativeListProperty<T> *);
+
+    QDeclarativeListProperty()
+        : object(0), data(0), append(0), count(0), at(0), clear(0), dummy1(0), dummy2(0) {}
+    QDeclarativeListProperty(QObject *o, QList<T *> &list)
+        : object(o), data(&list), append(qlist_append), count(qlist_count), at(qlist_at),
+          clear(qlist_clear), dummy1(0), dummy2(0) {}
+    QDeclarativeListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = 0, AtFunction t = 0,
+                    ClearFunction r = 0)
+        : object(o), data(d), append(a), count(c), at(t), clear(r), dummy1(0), dummy2(0) {}
+
+    bool operator==(const QDeclarativeListProperty &o) const {
+        return object == o.object &&
+               data == o.data &&
+               append == o.append &&
+               count == o.count &&
+               at == o.at &&
+               clear == o.clear;
+    }
+
+    QObject *object;
+    void *data;
+
+    AppendFunction append;
+
+    CountFunction count;
+    AtFunction at;
+
+    ClearFunction clear;
+
+    void *dummy1;
+    void *dummy2;
+
+private:
+    static void qlist_append(QDeclarativeListProperty *p, T *v) {
+        ((QList<T *> *)p->data)->append(v);
+    }
+    static int qlist_count(QDeclarativeListProperty *p) {
+        return ((QList<T *> *)p->data)->count();
+    }
+    static T *qlist_at(QDeclarativeListProperty *p, int idx) {
+        return ((QList<T *> *)p->data)->at(idx);
+    }
+    static void qlist_clear(QDeclarativeListProperty *p) {
+        return ((QList<T *> *)p->data)->clear();
+    }
+};
+#endif
+
 class QGraphicsItemCache
 {
 public:
@@ -180,6 +237,7 @@ public:
         scenePosDescendants(0),
         pendingPolish(0),
         mayHaveChildWithGraphicsEffect(0),
+        isDeclarativeItem(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -220,6 +278,7 @@ public:
 
     virtual void setPosHelper(const QPointF &pos);
     void setTransformHelper(const QTransform &transform);
+    void prependGraphicsTransform(QGraphicsTransform *t);
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
@@ -237,6 +296,7 @@ public:
     void resolveDepth();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
+    QDeclarativeListProperty<QGraphicsObject> childrenList();
     void setParentItemHelper(QGraphicsItem *parent, const QVariant *newParentVariant,
                              const QVariant *thisPointerVariant);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
@@ -421,12 +481,25 @@ public:
     void resetFocusProxy();
     virtual void subFocusItemChange();
 
+    static void children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
+    static int children_count(QDeclarativeListProperty<QGraphicsObject> *list);
+    static QGraphicsObject *children_at(QDeclarativeListProperty<QGraphicsObject> *list, int);
+
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
     inline void sendScenePosChange();
     virtual void siblingOrderChange();
+
+    // Private Properties
+    virtual qreal width() const;
+    virtual void setWidth(qreal);
+    virtual void resetWidth();
+
+    virtual qreal height() const;
+    virtual void setHeight(qreal);
+    virtual void resetHeight();
 
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
@@ -504,7 +577,8 @@ public:
     quint32 scenePosDescendants : 1;
     quint32 pendingPolish : 1;
     quint32 mayHaveChildWithGraphicsEffect : 1;
-    quint32 padding : 25;
+    quint32 isDeclarativeItem : 1;
+    quint32 padding : 24;
 
     // Optional stacking order
     int globalStackingOrder;

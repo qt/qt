@@ -1,6 +1,7 @@
 import Qt 4.6
 
 Rectangle {
+    property int current: grid.currentIndex
     width: 240
     height: 320
     color: "#ffffff"

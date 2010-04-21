@@ -41,7 +41,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
         }
 
         static void markStringifiers(MarkStack&, Stringifier*);
@@ -56,6 +56,8 @@ namespace JSC {
         virtual const ClassInfo* classInfo() const { return &info; }
         static const ClassInfo info;
     };
+
+    UString JSONStringify(ExecState* exec, JSValue value, unsigned indent);
 
 } // namespace JSC
 

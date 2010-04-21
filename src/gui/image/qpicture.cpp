@@ -108,8 +108,8 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 const char  *qt_mfhdr_tag = "QPIC"; // header tag
 static const quint16 mfhdr_maj = 11; // major version #
 static const quint16 mfhdr_min = 0; // minor version #
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 /*!
     Constructs an empty picture.
@@ -651,7 +651,12 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
                 s >> dbl;
                 QFont fnt(font, painter->device());
 
-                qreal scale = painter->device()->logicalDpiY() / (dbl*qt_defaultDpiY());
+                // Fonts that specify a pixel size should not be scaled - QPicture already
+                // have a matrix set to compensate for the DPI differences between the
+                // default Qt DPI and the actual target device DPI, and we have to take that
+                // into consideration in the case where the font has a pixel size set.
+
+                qreal scale = fnt.pointSize() == -1 ? 1 : painter->device()->logicalDpiY() / (dbl*qt_defaultDpiY());
                 painter->save();
                 painter->scale(1/scale, 1/scale);
 
@@ -660,7 +665,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 
                 int flags = Qt::TextSingleLine | Qt::TextDontClip | Qt::TextForceLeftToRight;
 
-                QSizeF size(scale, scale);
+                QSizeF size(1, 1);
                 if (justificationWidth > 0) {
                     size.setWidth(justificationWidth*scale);
                     flags |= Qt::TextJustificationForced;

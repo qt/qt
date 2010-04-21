@@ -1,57 +1,59 @@
 //![0]
-//Note that X/Y referred to here are in game coordinates
-var maxX = 10;//Nums are for tileSize 40
-var maxY = 15;
-var tileSize = 40;
-var maxIndex = maxX*maxY;
+var blockSize = 40;
+var maxColumn = 10;
+var maxRow = 15;
+var maxIndex = maxColumn * maxRow;
 var board = new Array(maxIndex);
-var tileSrc = "Block.qml";
 var component;
 
 //Index function used instead of a 2D array
-function index(xIdx,yIdx) {
-    return xIdx + (yIdx * maxX);
+function index(column, row) {
+    return column + (row * maxColumn);
 }
 
-function initBoard()
-{
+function startNewGame() {
+    //Delete blocks from previous game
+    for (var i = 0; i < maxIndex; i++) {
+        if (board[i] != null)
+            board[i].destroy();
+    }
+
     //Calculate board size
-    maxX = Math.floor(background.width/tileSize);
-    maxY = Math.floor(background.height/tileSize);
-    maxIndex = maxY*maxX;
+    maxColumn = Math.floor(background.width / blockSize);
+    maxRow = Math.floor(background.height / blockSize);
+    maxIndex = maxRow * maxColumn;
 
     //Initialize Board
     board = new Array(maxIndex);
-    for(var xIdx=0; xIdx<maxX; xIdx++){
-        for(var yIdx=0; yIdx<maxY; yIdx++){
-            board[index(xIdx,yIdx)] = null;
-            createBlock(xIdx,yIdx);
+    for (var column = 0; column < maxColumn; column++) {
+        for (var row = 0; row < maxRow; row++) {
+            board[index(column, row)] = null;
+            createBlock(column, row);
         }
     }
 }
 
-function createBlock(xIdx,yIdx){
-    if(component==null)
-        component = createComponent(tileSrc);
+function createBlock(column, row) {
+    if (component == null)
+        component = createComponent("Block.qml");
 
-    // Note that we don't wait for the component to become ready. This will
-    // only work if the block QML is a local file. Otherwise the component will
-    // not be ready immediately. There is a statusChanged signal on the
-    // component you could use if you want to wait to load remote files.
-    if(component.isReady){
+    // Note that if Block.qml was not a local file, component.isReady would be
+    // false and we should wait for the component's statusChanged() signal to
+    // know when the file is downloaded and fully loaded before calling createObject().
+    if (component.isReady) {
         var dynamicObject = component.createObject();
-        if(dynamicObject == null){
+        if (dynamicObject == null) {
             print("error creating block");
             print(component.errorsString());
             return false;
         }
         dynamicObject.parent = background;
-        dynamicObject.x = xIdx*tileSize;
-        dynamicObject.y = yIdx*tileSize;
-        dynamicObject.width = tileSize;
-        dynamicObject.height = tileSize;
-        board[index(xIdx,yIdx)] = dynamicObject;
-    }else{//isError or isLoading
+        dynamicObject.x = column * blockSize;
+        dynamicObject.y = row * blockSize;
+        dynamicObject.width = blockSize;
+        dynamicObject.height = blockSize;
+        board[index(column, row)] = dynamicObject;
+    } else {
         print("error loading block component");
         print(component.errorsString());
         return false;
@@ -59,3 +61,4 @@ function createBlock(xIdx,yIdx){
     return true;
 }
 //![0]
+

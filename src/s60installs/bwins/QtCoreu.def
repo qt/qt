@@ -382,7 +382,7 @@ EXPORTS
 	??1QDateTime@@QAE@XZ @ 381 NONAME ; QDateTime::~QDateTime(void)
 	??1QDateTimeParser@@UAE@XZ @ 382 NONAME ; QDateTimeParser::~QDateTimeParser(void)
 	??1QDebug@@QAE@XZ @ 383 NONAME ; QDebug::~QDebug(void)
-	??1QDeclarativeData@@UAE@XZ @ 384 NONAME ; QDeclarativeData::~QDeclarativeData(void)
+	??1QDeclarativeData@@UAE@XZ @ 384 NONAME ABSENT ; QDeclarativeData::~QDeclarativeData(void)
 	??1QDir@@QAE@XZ @ 385 NONAME ; QDir::~QDir(void)
 	??1QDirIterator@@UAE@XZ @ 386 NONAME ; QDirIterator::~QDirIterator(void)
 	??1QDynamicPropertyChangeEvent@@UAE@XZ @ 387 NONAME ; QDynamicPropertyChangeEvent::~QDynamicPropertyChangeEvent(void)
@@ -885,7 +885,7 @@ EXPORTS
 	??_EQCoreApplicationPrivate@@UAE@I@Z @ 884 NONAME ; QCoreApplicationPrivate::~QCoreApplicationPrivate(unsigned int)
 	??_EQDataStream@@UAE@I@Z @ 885 NONAME ; QDataStream::~QDataStream(unsigned int)
 	??_EQDateTimeParser@@UAE@I@Z @ 886 NONAME ; QDateTimeParser::~QDateTimeParser(unsigned int)
-	??_EQDeclarativeData@@UAE@I@Z @ 887 NONAME ; QDeclarativeData::~QDeclarativeData(unsigned int)
+	??_EQDeclarativeData@@UAE@I@Z @ 887 NONAME ABSENT ; QDeclarativeData::~QDeclarativeData(unsigned int)
 	??_EQDirIterator@@UAE@I@Z @ 888 NONAME ; QDirIterator::~QDirIterator(unsigned int)
 	??_EQDynamicPropertyChangeEvent@@UAE@I@Z @ 889 NONAME ; QDynamicPropertyChangeEvent::~QDynamicPropertyChangeEvent(unsigned int)
 	??_EQEvent@@UAE@I@Z @ 890 NONAME ; QEvent::~QEvent(unsigned int)
@@ -4417,4 +4417,49 @@ EXPORTS
 	?QBasicAtomicInt_testAndSetRelease@@YA_NPCHHH@Z @ 4416 NONAME ; bool QBasicAtomicInt_testAndSetRelease(int volatile *, int, int)
 	?QBasicAtomicInt_fetchAndStoreAcquire@@YAHPCHH@Z @ 4417 NONAME ; int QBasicAtomicInt_fetchAndStoreAcquire(int volatile *, int)
 	?QBasicAtomicInt_fetchAndAddAcquire@@YAHPCHH@Z @ 4418 NONAME ; int QBasicAtomicInt_fetchAndAddAcquire(int volatile *, int)
+	??0QString@@QAE@PBVQChar@@@Z @ 4419 NONAME ; QString::QString(class QChar const *)
+	??0QTextDecoder@@QAE@PBVQTextCodec@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4420 NONAME ; QTextDecoder::QTextDecoder(class QTextCodec const *, class QFlags<enum QTextCodec::ConversionFlag>)
+	??0QTextEncoder@@QAE@PBVQTextCodec@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4421 NONAME ; QTextEncoder::QTextEncoder(class QTextCodec const *, class QFlags<enum QTextCodec::ConversionFlag>)
+	??0QVariant@@QAE@ABVQEasingCurve@@@Z @ 4422 NONAME ; QVariant::QVariant(class QEasingCurve const &)
+	??5@YAAAVQDataStream@@AAV0@AAVQEasingCurve@@@Z @ 4423 NONAME ; class QDataStream & operator>>(class QDataStream &, class QEasingCurve &)
+	??6@YAAAVQDataStream@@AAV0@ABVQEasingCurve@@@Z @ 4424 NONAME ; class QDataStream & operator<<(class QDataStream &, class QEasingCurve const &)
+	??8QElapsedTimer@@QBE_NABV0@@Z @ 4425 NONAME ; bool QElapsedTimer::operator==(class QElapsedTimer const &) const
+	??9QElapsedTimer@@QBE_NABV0@@Z @ 4426 NONAME ; bool QElapsedTimer::operator!=(class QElapsedTimer const &) const
+	??M@YA_NABVQElapsedTimer@@0@Z @ 4427 NONAME ; bool operator<(class QElapsedTimer const &, class QElapsedTimer const &)
+	?append@QListData@@QAEPAPAXH@Z @ 4428 NONAME ; void * * QListData::append(int)
+	?clearHistory@QStateMachinePrivate@@QAEXXZ @ 4429 NONAME ; void QStateMachinePrivate::clearHistory(void)
+	?clockType@QElapsedTimer@@SA?AW4ClockType@1@XZ @ 4430 NONAME ; enum QElapsedTimer::ClockType QElapsedTimer::clockType(void)
+	?currentDateTimeUtc@QDateTime@@SA?AV1@XZ @ 4431 NONAME ; class QDateTime QDateTime::currentDateTimeUtc(void)
+	?currentMSecsSinceEpoch@QDateTime@@SA_JXZ @ 4432 NONAME ; long long QDateTime::currentMSecsSinceEpoch(void)
+	?detach@QListData@@QAEPAUData@1@H@Z @ 4433 NONAME ; struct QListData::Data * QListData::detach(int)
+	?detach_grow@QListData@@QAEPAUData@1@PAHH@Z @ 4434 NONAME ; struct QListData::Data * QListData::detach_grow(int *, int)
+	?elapsed@QElapsedTimer@@QBE_JXZ @ 4435 NONAME ; long long QElapsedTimer::elapsed(void) const
+	?fromMSecsSinceEpoch@QDateTime@@SA?AV1@_J@Z @ 4436 NONAME ; class QDateTime QDateTime::fromMSecsSinceEpoch(long long)
+	?hasExpired@QElapsedTimer@@QBE_N_J@Z @ 4437 NONAME ; bool QElapsedTimer::hasExpired(long long) const
+	?invalidate@QElapsedTimer@@QAEXXZ @ 4438 NONAME ; void QElapsedTimer::invalidate(void)
+	?isMonotonic@QElapsedTimer@@SA_NXZ @ 4439 NONAME ; bool QElapsedTimer::isMonotonic(void)
+	?isSharedWith@QByteArray@@QBE_NABV1@@Z @ 4440 NONAME ; bool QByteArray::isSharedWith(class QByteArray const &) const
+	?isSharedWith@QString@@QBE_NABV1@@Z @ 4441 NONAME ; bool QString::isSharedWith(class QString const &) const
+	?isValid@QElapsedTimer@@QBE_NXZ @ 4442 NONAME ; bool QElapsedTimer::isValid(void) const
+	?makeDecoder@QTextCodec@@QBEPAVQTextDecoder@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4443 NONAME ; class QTextDecoder * QTextCodec::makeDecoder(class QFlags<enum QTextCodec::ConversionFlag>) const
+	?makeEncoder@QTextCodec@@QBEPAVQTextEncoder@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4444 NONAME ; class QTextEncoder * QTextCodec::makeEncoder(class QFlags<enum QTextCodec::ConversionFlag>) const
+	?msecsSinceReference@QElapsedTimer@@QBE_JXZ @ 4445 NONAME ; long long QElapsedTimer::msecsSinceReference(void) const
+	?msecsTo@QElapsedTimer@@QBE_JABV1@@Z @ 4446 NONAME ; long long QElapsedTimer::msecsTo(class QElapsedTimer const &) const
+	?qDecodeDataUrl@@YA?AU?$QPair@VQString@@VQByteArray@@@@ABVQUrl@@@Z @ 4447 NONAME ; struct QPair<class QString, class QByteArray> qDecodeDataUrl(class QUrl const &)
+	?qDetectCPUFeatures@@YAIXZ @ 4448 NONAME ; unsigned int qDetectCPUFeatures(void)
+	?registerStreamOperators@QMetaType@@SAXHP6AXAAVQDataStream@@PBX@ZP6AX0PAX@Z@Z @ 4449 NONAME ; void QMetaType::registerStreamOperators(int, void (*)(class QDataStream &, void const *), void (*)(class QDataStream &, void *))
+	?registerTypedef@QMetaType@@SAHPBDH@Z @ 4450 NONAME ; int QMetaType::registerTypedef(char const *, int)
+	?replace@QByteArray@@QAEAAV1@HHPBDH@Z @ 4451 NONAME ; class QByteArray & QByteArray::replace(int, int, char const *, int)
+	?restart@QElapsedTimer@@QAE_JXZ @ 4452 NONAME ; long long QElapsedTimer::restart(void)
+	?secsTo@QElapsedTimer@@QBE_JABV1@@Z @ 4453 NONAME ; long long QElapsedTimer::secsTo(class QElapsedTimer const &) const
+	?setMSecsSinceEpoch@QDateTime@@QAEX_J@Z @ 4454 NONAME ; void QDateTime::setMSecsSinceEpoch(long long)
+	?start@QElapsedTimer@@QAEXXZ @ 4455 NONAME ; void QElapsedTimer::start(void)
+	?toEasingCurve@QVariant@@QBE?AVQEasingCurve@@XZ @ 4456 NONAME ; class QEasingCurve QVariant::toEasingCurve(void) const
+	?toMSecsSinceEpoch@QDateTime@@QBE_JXZ @ 4457 NONAME ; long long QDateTime::toMSecsSinceEpoch(void) const
+	?transitions@QState@@QBE?AV?$QList@PAVQAbstractTransition@@@@XZ @ 4458 NONAME ; class QList<class QAbstractTransition *> QState::transitions(void) const
+	?validCodecs@QTextCodec@@CA_NXZ @ 4459 NONAME ; bool QTextCodec::validCodecs(void)
+	?destroyed@QDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4460 NONAME ABSENT ; void (*QDeclarativeData::destroyed)(class QDeclarativeData *, class QObject *)
+	?parentChanged@QDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4461 NONAME ABSENT ; void (*QDeclarativeData::parentChanged)(class QDeclarativeData *, class QObject *, class QObject *)
+	?parentChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4462 NONAME ; void (*QAbstractDeclarativeData::parentChanged)(class QAbstractDeclarativeData *, class QObject *, class QObject *)
+	?destroyed@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4463 NONAME ; void (*QAbstractDeclarativeData::destroyed)(class QAbstractDeclarativeData *, class QObject *)
 

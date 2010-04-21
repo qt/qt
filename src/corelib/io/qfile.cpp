@@ -62,21 +62,25 @@ static const int QFILE_WRITEBUFFER_SIZE = 16384;
 
 static QByteArray locale_encode(const QString &f)
 {
-#ifndef Q_OS_DARWIN
-    return f.toLocal8Bit();
-#else
+#if defined(Q_OS_DARWIN)
     // Mac always expects UTF-8... and decomposed...
     return f.normalized(QString::NormalizationForm_D).toUtf8();
+#elif defined(Q_OS_SYMBIAN)
+    return f.toUtf8();
+#else
+    return f.toLocal8Bit();
 #endif
 }
 
 static QString locale_decode(const QByteArray &f)
 {
-#ifndef Q_OS_DARWIN
-    return QString::fromLocal8Bit(f);
-#else
+#if defined(Q_OS_DARWIN)
     // Mac always gives us UTF-8 and decomposed, we want that composed...
     return QString::fromUtf8(f).normalized(QString::NormalizationForm_C);
+#elif defined(Q_OS_SYMBIAN)
+    return QString::fromUtf8(f);
+#else
+    return QString::fromLocal8Bit(f);
 #endif
 }
 
@@ -86,7 +90,8 @@ QFile::DecoderFn QFilePrivate::decoder = locale_decode;
 
 QFilePrivate::QFilePrivate()
     : fileEngine(0), lastWasWrite(false),
-      writeBuffer(QFILE_WRITEBUFFER_SIZE), error(QFile::NoError)
+      writeBuffer(QFILE_WRITEBUFFER_SIZE), error(QFile::NoError),
+      cachedSize(0)
 {
 }
 
@@ -1253,8 +1258,10 @@ QFile::resize(qint64 sz)
         seek(sz);
     if(d->fileEngine->setSize(sz)) {
         unsetError();
+        d->cachedSize = sz;
         return true;
     }
+    d->cachedSize = 0;
     d->setError(QFile::ResizeError, d->fileEngine->errorString());
     return false;
 }
@@ -1416,7 +1423,8 @@ qint64 QFile::size() const
     Q_D(const QFile);
     if (!d->ensureFlushed())
         return 0;
-    return fileEngine()->size();
+    d->cachedSize = fileEngine()->size();
+    return d->cachedSize;
 }
 
 /*!
@@ -1442,14 +1450,14 @@ bool QFile::atEnd() const
 {
     Q_D(const QFile);
 
+    // If there's buffered data left, we're not at the end.
+    if (!d->buffer.isEmpty())
+        return false;
+
     if (!isOpen())
         return true;
 
     if (!d->ensureFlushed())
-        return false;
-
-    // If there's buffered data left, we're not at the end.
-    if (!d->buffer.isEmpty())
         return false;
 
     // If the file engine knows best, say what it says.
@@ -1458,6 +1466,11 @@ bool QFile::atEnd() const
         // check if the file engine claims to be at the end.
         return d->fileEngine->atEnd();
     }
+
+    // if it looks like we are at the end, or if size is not cached,
+    // fall through to bytesAvailable() to make sure.
+    if (pos() < d->cachedSize)
+        return false;
 
     // Fall back to checking how much is available (will stat files).
     return bytesAvailable() == 0;
@@ -1498,12 +1511,21 @@ qint64 QFile::readLineData(char *data, qint64 maxlen)
     if (!d->ensureFlushed())
         return -1;
 
-    if (d->fileEngine->supportsExtension(QAbstractFileEngine::FastReadLineExtension))
-        return d->fileEngine->readLine(data, maxlen);
+    qint64 read;
+    if (d->fileEngine->supportsExtension(QAbstractFileEngine::FastReadLineExtension)) {
+        read = d->fileEngine->readLine(data, maxlen);
+    } else {
+        // Fall back to QIODevice's readLine implementation if the engine
+        // cannot do it faster.
+        read = QIODevice::readLineData(data, maxlen);
+    }
 
-    // Fall back to QIODevice's readLine implementation if the engine
-    // cannot do it faster.
-    return QIODevice::readLineData(data, maxlen);
+    if (read < maxlen) {
+        // failed to read all requested, may be at the end of file, stop caching size so that it's rechecked
+        d->cachedSize = 0;
+    }
+
+    return read;
 }
 
 /*!
@@ -1524,6 +1546,12 @@ qint64 QFile::readData(char *data, qint64 len)
             err = QFile::ReadError;
         d->setError(err, d->fileEngine->errorString());
     }
+
+    if (read < len) {
+        // failed to read all requested, may be at the end of file, stop caching size so that it's rechecked
+        d->cachedSize = 0;
+    }
+
     return read;
 }
 

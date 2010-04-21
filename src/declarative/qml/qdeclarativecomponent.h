@@ -42,8 +42,8 @@
 #ifndef QDECLARATIVECOMPONENT_H
 #define QDECLARATIVECOMPONENT_H
 
-#include "qdeclarative.h"
-#include "qdeclarativeerror.h"
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/qdeclarativeerror.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
@@ -104,7 +104,6 @@ public:
     void loadUrl(const QUrl &url);
     void setData(const QByteArray &, const QUrl &baseUrl);
 
-    void setCreationContext(QDeclarativeContext*);
     QDeclarativeContext *creationContext() const;
 
     static QDeclarativeComponentAttached *qmlAttachedProperties(QObject *);

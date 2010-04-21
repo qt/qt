@@ -69,17 +69,23 @@ void tst_qdeclarativebinding::binding()
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-binding.qml"));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-
     QVERIFY(rect != 0);
+
+    QDeclarativeBind *binding3 = qobject_cast<QDeclarativeBind*>(rect->findChild<QDeclarativeBind*>("binding3"));
+    QVERIFY(binding3 != 0);
+
     QCOMPARE(rect->color(), QColor("yellow"));
     QCOMPARE(rect->property("text").toString(), QString("Hello"));
+    QCOMPARE(binding3->when(), false);
 
     rect->setProperty("changeColor", true);
     QCOMPARE(rect->color(), QColor("red"));
 
+    QCOMPARE(binding3->when(), true);
+
     QDeclarativeBind *binding = qobject_cast<QDeclarativeBind*>(rect->findChild<QDeclarativeBind*>("binding1"));
     QVERIFY(binding != 0);
-    QCOMPARE(binding->object(), rect);
+    QCOMPARE(binding->object(), qobject_cast<QObject*>(rect));
     QCOMPARE(binding->property(), QLatin1String("text"));
     QCOMPARE(binding->value().toString(), QLatin1String("Hello"));
 

@@ -546,9 +546,11 @@ public:
 
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
     QPixmap *move_cursor;
     QPixmap *copy_cursor;
     QPixmap *link_cursor;
+#endif
 #if defined(Q_WS_WIN)
     QPixmap *ignore_cursor;
 #endif

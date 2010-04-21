@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 import "fieldtext"
 
@@ -18,7 +18,7 @@ Image {
 
         anchors.top: header.top
         anchors.topMargin: 4
-        anchors.horizontalCenter: parent.horizontalCenter
+        x: parent.width > headerIcon.width+headerText.width+6 ? (parent.width-headerIcon.width-headerText.width-6)/2 : 0
         spacing: 6
 
         Image {
@@ -30,8 +30,6 @@ Image {
             id: headerText
 
             text: webView.title!='' || webView.progress == 1.0 ? webView.title : 'Loading...'
-            elide: Text.ElideRight
-            //width: parent.width - headerIcon.width-4
 
             color: "white"
             styleColor: "black"

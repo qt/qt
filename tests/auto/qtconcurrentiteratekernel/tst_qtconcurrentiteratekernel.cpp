@@ -90,7 +90,7 @@ int distance(TestIterator &a, TestIterator &b)
 
 using namespace QtConcurrent;
 
-class tst_iteratekernel: public QObject
+class tst_QtConcurrentIterateKernel: public QObject
 {
     Q_OBJECT
 private slots:
@@ -149,13 +149,13 @@ public:
 };
 
 
-void tst_iteratekernel::instantiate()
+void tst_QtConcurrentIterateKernel::instantiate()
 {
     startThreadEngine(new PrintFor(0, 40)).startBlocking();
     QCOMPARE((int)iterations, 40);
 }
 
-void tst_iteratekernel::cancel()
+void tst_QtConcurrentIterateKernel::cancel()
 {
     {
         QFuture<void> f = startThreadEngine(new SleepPrintFor(0, 40)).startAsynchronously();
@@ -182,7 +182,7 @@ public:
     }
 };
 
-void tst_iteratekernel::stresstest()
+void tst_QtConcurrentIterateKernel::stresstest()
 {
     const int iterations = 1000;
     const int times = 50;
@@ -194,7 +194,7 @@ void tst_iteratekernel::stresstest()
     }
 }
 
-void tst_iteratekernel::noIterations()
+void tst_QtConcurrentIterateKernel::noIterations()
 {
     const int times = 20000;
     for (int i = 0; i < times; ++i)
@@ -242,7 +242,7 @@ public:
     bool throttling;
 };
 
-void tst_iteratekernel::throttling()
+void tst_QtConcurrentIterateKernel::throttling()
 {
     const int totalIterations = 400;
     iterations = 0;
@@ -271,7 +271,7 @@ public:
     }
 };
 
-void tst_iteratekernel::blockSize()
+void tst_QtConcurrentIterateKernel::blockSize()
 {
 #ifdef QT_NO_STL
     QSKIP("Missing stl iterators prevent correct block size calculation", SkipAll);
@@ -296,7 +296,7 @@ public:
 };
 
 
-void tst_iteratekernel::multipleResults()
+void tst_QtConcurrentIterateKernel::multipleResults()
 {
 #ifdef QT_NO_STL
     QSKIP("Missing stl iterators prevent correct summation", SkipAll);
@@ -320,7 +320,7 @@ public:
     }
 };
 
-void tst_iteratekernel::instantiateWhile()
+void tst_QtConcurrentIterateKernel::instantiateWhile()
 {
     PrintWhile w;
     w.startBlocking();
@@ -339,7 +339,7 @@ public:
     }
 };
 
-void tst_iteratekernel::stresstestWhile()
+void tst_QtConcurrentIterateKernel::stresstestWhile()
 {
     int iterations = 100000;
     StressWhile w(iterations);
@@ -348,7 +348,7 @@ void tst_iteratekernel::stresstestWhile()
 }
 #endif
 
-QTEST_MAIN(tst_iteratekernel)
+QTEST_MAIN(tst_QtConcurrentIterateKernel)
 
 #include "tst_qtconcurrentiteratekernel.moc"
 

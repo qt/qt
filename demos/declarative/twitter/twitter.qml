@@ -1,10 +1,10 @@
-import Qt 4.6
-import TwitterCore 1.0 as Twitter
+import Qt 4.7
+import "TwitterCore" 1.0 as Twitter
 
 Item {
     id: screen; width: 320; height: 480
     property bool userView : false
-    property var tmpStr
+    property variant tmpStr
     function setMode(m){
         screen.userView = m;
         if(m == false){
@@ -15,12 +15,11 @@ Item {
             toolBar.button2Label = "Return home";
         }
     }
+    function setUser(str){hack.running = true; tmpStr = str}
+    function reallySetUser(){rssModel.tags = tmpStr;}
+
     //Workaround for bug 260266
-    Timer{ interval: 1; running: false; repeat: false; onTriggered: reallySetUser(); id:hack }
-    Script {
-        function setUser(str){hack.running = true; tmpStr = str}
-        function reallySetUser(){rssModel.tags = tmpStr;}
-    }
+    Timer{ interval: 1; running: false; repeat: false; onTriggered: screen.reallySetUser(); id:hack }
 
     //TODO: better way to return to the auth screen
     Keys.onEscapePressed: rssModel.authName=''
@@ -35,7 +34,7 @@ Item {
         Text {
             width: 180
             text: "Could not access twitter using this screen name and password pair.";
-            color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
+            color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrapMode: Text.WordWrap
             visible: rssModel.status==XmlListModel.Error; anchors.centerIn: parent
         }
 

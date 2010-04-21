@@ -1,4 +1,5 @@
-import Qt 4.6
+import Qt 4.7
+import Qt.labs.particles 1.0
 
 Item {
     property bool explode : false
@@ -16,11 +17,9 @@ Item {
         velocity: 100
         velocityDeviation: 20
         z: 100
-        opacity: 1
     }
-    states: [ State { name: "exploding"; when: explode == true
-            StateChangeScript {script: particles.burst(200); }
-        }
-    ]
+    states: State { name: "exploding"; when: explode
+        StateChangeScript {script: particles.burst(200); }
+    }
 
 }

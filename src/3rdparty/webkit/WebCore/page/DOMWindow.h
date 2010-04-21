@@ -45,6 +45,7 @@ namespace WebCore {
     class Console;
     class DOMSelection;
     class Database;
+    class DatabaseCallback;
     class Document;
     class Element;
     class Event;
@@ -52,6 +53,8 @@ namespace WebCore {
     class FloatRect;
     class Frame;
     class History;
+    class IndexedDatabaseRequest;
+    class InspectorTimelineAgent;
     class Location;
     class Media;
     class Navigator;
@@ -137,6 +140,8 @@ namespace WebCore {
         void alert(const String& message);
         bool confirm(const String& message);
         String prompt(const String& message, const String& defaultValue);
+        String btoa(const String& stringToEncode, ExceptionCode&);
+        String atob(const String& encodedString, ExceptionCode&);
 
         bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const;
 
@@ -196,13 +201,13 @@ namespace WebCore {
 
 #if ENABLE(DATABASE)
         // HTML 5 client-side database
-        PassRefPtr<Database> openDatabase(const String& name, const String& version, const String& displayName, unsigned long estimatedSize, ExceptionCode&);
+        PassRefPtr<Database> openDatabase(const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionCode&);
 #endif
 
 #if ENABLE(DOM_STORAGE)
         // HTML 5 key/value storage
         Storage* sessionStorage() const;
-        Storage* localStorage() const;
+        Storage* localStorage(ExceptionCode&) const;
 #endif
 
         Console* console() const;
@@ -213,6 +218,10 @@ namespace WebCore {
 
 #if ENABLE(NOTIFICATIONS)
         NotificationCenter* webkitNotifications() const;
+#endif
+
+#if ENABLE(INDEXED_DATABASE)
+        IndexedDatabaseRequest* indexedDB() const;
 #endif
 
         void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, DOMWindow* source, ExceptionCode&);
@@ -231,9 +240,9 @@ namespace WebCore {
         void resizeTo(float width, float height) const;
 
         // Timers
-        int setTimeout(ScheduledAction*, int timeout);
+        int setTimeout(PassOwnPtr<ScheduledAction>, int timeout, ExceptionCode&);
         void clearTimeout(int timeoutId);
-        int setInterval(ScheduledAction*, int timeout);
+        int setInterval(PassOwnPtr<ScheduledAction>, int timeout, ExceptionCode&);
         void clearInterval(int timeoutId);
 
         // Events
@@ -247,9 +256,13 @@ namespace WebCore {
         void dispatchLoadEvent();
 
         DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(beforeunload);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(blur);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(canplay);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(canplaythrough);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(contextmenu);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(dblclick);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(drag);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(dragend);
@@ -258,13 +271,22 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(dragover);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(dragstart);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(drop);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(durationchange);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(emptied);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(focus);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(hashchange);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(input);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(invalid);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(keydown);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(keypress);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(keyup);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(load);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(loadeddata);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(loadedmetadata);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(mousedown);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(mousemove);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(mouseout);
@@ -275,39 +297,30 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(online);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(pagehide);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(pageshow);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(play);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(playing);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(popstate);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(ratechange);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(reset);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(resize);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(select);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(storage);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(submit);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(unload);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(beforeunload);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(canplay);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(canplaythrough);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(durationchange);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(emptied);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(loadeddata);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(loadedmetadata);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(play);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(playing);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(ratechange);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(seeked);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(seeking);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(select);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(stalled);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(storage);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(submit);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(suspend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(timeupdate);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(unload);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(volumechange);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(waiting);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(stalled);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(suspend);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(input);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(contextmenu);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(invalid);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitbeginfullscreen);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitendfullscreen);
+
 #if ENABLE(ORIENTATION_EVENTS)
         DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
 #endif
@@ -317,6 +330,12 @@ namespace WebCore {
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, webkitAnimationEnd);
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, webkitTransitionEnd);
 
+#if ENABLE(TOUCH_EVENTS)
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
+#endif
         void captureEvents();
         void releaseEvents();
 
@@ -334,6 +353,7 @@ namespace WebCore {
         Console* optionalConsole() const { return m_console.get(); }
         Navigator* optionalNavigator() const { return m_navigator.get(); }
         Location* optionalLocation() const { return m_location.get(); }
+        Media* optionalMedia() const { return m_media.get(); }
 #if ENABLE(DOM_STORAGE)
         Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
         Storage* optionalLocalStorage() const { return m_localStorage.get(); }
@@ -352,6 +372,7 @@ namespace WebCore {
         virtual void derefEventTarget() { deref(); }
         virtual EventTargetData* eventTargetData();
         virtual EventTargetData* ensureEventTargetData();
+        InspectorTimelineAgent* inspectorTimelineAgent();
 
         RefPtr<SecurityOrigin> m_securityOrigin;
         KURL m_url;
@@ -369,6 +390,7 @@ namespace WebCore {
         mutable RefPtr<Console> m_console;
         mutable RefPtr<Navigator> m_navigator;
         mutable RefPtr<Location> m_location;
+        mutable RefPtr<Media> m_media;
 #if ENABLE(DOM_STORAGE)
         mutable RefPtr<Storage> m_sessionStorage;
         mutable RefPtr<Storage> m_localStorage;

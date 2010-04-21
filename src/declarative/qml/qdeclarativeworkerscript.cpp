@@ -39,9 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeworkerscript_p.h"
-
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeworkerscript_p.h"
+#include "private/qdeclarativelistmodel_p.h"
+#include "private/qdeclarativelistmodelworkeragent_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
@@ -104,17 +105,22 @@ private:
 
 class QDeclarativeWorkerScriptEnginePrivate : public QObject
 {
+    Q_OBJECT
 public:
+    enum WorkerEventTypes {
+        WorkerDestroyEvent = QEvent::User + 100
+    };
+
     QDeclarativeWorkerScriptEnginePrivate(QDeclarativeEngine *eng);
 
-    struct ScriptEngine : public QDeclarativeScriptEngine 
+    struct ScriptEngine : public QDeclarativeScriptEngine
     {
         ScriptEngine(QDeclarativeWorkerScriptEnginePrivate *parent) : QDeclarativeScriptEngine(0), p(parent), accessManager(0) {}
         ~ScriptEngine() { delete accessManager; }
         QDeclarativeWorkerScriptEnginePrivate *p;
         QNetworkAccessManager *accessManager;
 
-        virtual QNetworkAccessManager *networkAccessManager() { 
+        virtual QNetworkAccessManager *networkAccessManager() {
             if (!accessManager) {
                 if (p->qmlengine && p->qmlengine->networkAccessManagerFactory()) {
                     accessManager = p->qmlengine->networkAccessManagerFactory()->create(this);
@@ -157,6 +163,9 @@ public:
     static QScriptValue onMessage(QScriptContext *ctxt, QScriptEngine *engine);
     static QScriptValue sendMessage(QScriptContext *ctxt, QScriptEngine *engine);
 
+signals:
+    void stopThread();
+
 protected:
     virtual bool event(QEvent *);
 
@@ -164,87 +173,6 @@ private:
     void processMessage(int, const QVariant &);
     void processLoad(int, const QUrl &);
 };
-
-// Currently this will leak as no-one releases it in the worker thread 
-class QDeclarativeWorkerListModelAgent : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int count READ count)
-
-public:
-    QDeclarativeWorkerListModelAgent(QDeclarativeWorkerListModel *);
-    ~QDeclarativeWorkerListModelAgent();
-
-    void addref();
-    void release();
-
-    int count() const;
-
-    Q_INVOKABLE void clear();
-    Q_INVOKABLE void remove(int index);
-    Q_INVOKABLE void append(const QScriptValue &);
-    Q_INVOKABLE void insert(int index, const QScriptValue&);
-    Q_INVOKABLE QScriptValue get(int index) const;
-    Q_INVOKABLE void set(int index, const QScriptValue &);
-    Q_INVOKABLE void sync();
-
-    struct VariantRef
-    {
-        VariantRef() : a(0) {}
-        VariantRef(const VariantRef &r) : a(r.a) { if (a) a->addref(); }
-        VariantRef(QDeclarativeWorkerListModelAgent *_a) : a(_a) { if (a) a->addref(); }
-        ~VariantRef() { if (a) a->release(); }
-
-        VariantRef &operator=(const VariantRef &o) { 
-            if (o.a) o.a->addref(); 
-            if (a) a->release(); a = o.a; 
-            return *this; 
-        }
-
-        QDeclarativeWorkerListModelAgent *a;
-    };
-protected:
-    virtual bool event(QEvent *);
-
-private:
-    friend class QDeclarativeWorkerScriptEnginePrivate;
-    friend class QDeclarativeWorkerListModel;
-    QScriptEngine *m_engine;
-
-    struct Change {
-        enum { Inserted, Removed, Moved, Changed } type;
-        int index; // Inserted/Removed/Moved/Changed
-        int count; // Inserted/Removed/Moved/Changed
-        int to;    // Moved
-    };
-
-    struct Data {
-        QHash<int, QString> roles;
-        QHash<QString, int> strings;
-        QList<QHash<int, QVariant> > values;
-        QList<Change> changes;
-
-        void clearChange();
-        void insertChange(int index, int count);
-        void removeChange(int index, int count);
-        void changedChange(int index, int count);
-    };
-    Data data;
-
-    struct Sync : public QEvent {
-        Sync() : QEvent(QEvent::User) {}
-        Data data;
-    };
-
-    QAtomicInt m_ref;
-    QDeclarativeWorkerListModel *m_model;
-};
-
-QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QDeclarativeWorkerListModelAgent::VariantRef);
-
-QT_BEGIN_NAMESPACE
 
 QDeclarativeWorkerScriptEnginePrivate::QDeclarativeWorkerScriptEnginePrivate(QDeclarativeEngine *engine)
 : workerEngine(0), qmlengine(engine), m_nextId(0)
@@ -261,7 +189,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::onMessage(QScriptContext *ct
     if (!script)
         return engine->undefinedValue();
 
-    if (ctxt->argumentCount() >= 1) 
+    if (ctxt->argumentCount() >= 1)
         script->callback = ctxt->argument(0);
 
     return script->callback;
@@ -277,14 +205,14 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::sendMessage(QScriptContext *
     int id = ctxt->thisObject().data().toVariant().toInt();
 
     WorkerScript *script = p->workers.value(id);
-    if (!script) 
+    if (!script)
         return engine->undefinedValue();
 
-    p->m_lock.lock();
-    if (script->owner) 
-        QCoreApplication::postEvent(script->owner, 
+    QMutexLocker(&p->m_lock);
+
+    if (script->owner)
+        QCoreApplication::postEvent(script->owner,
                                     new WorkerDataEvent(0, scriptValueToVariant(ctxt->argument(0))));
-    p->m_lock.unlock();
 
     return engine->undefinedValue();
 }
@@ -305,7 +233,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::getWorker(int id)
         QScriptValue api = workerEngine->newObject();
         api.setData(script->id);
 
-        api.setProperty(QLatin1String("onMessage"), workerEngine->newFunction(onMessage), 
+        api.setProperty(QLatin1String("onMessage"), workerEngine->newFunction(onMessage),
                         QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
         api.setProperty(QLatin1String("sendMessage"), workerEngine->newFunction(sendMessage));
 
@@ -324,6 +252,9 @@ bool QDeclarativeWorkerScriptEnginePrivate::event(QEvent *event)
     } else if (event->type() == (QEvent::Type)WorkerLoadEvent::WorkerLoad) {
         WorkerLoadEvent *workerEvent = static_cast<WorkerLoadEvent *>(event);
         processLoad(workerEvent->workerId(), workerEvent->url());
+        return true;
+    } else if (event->type() == (QEvent::Type)WorkerDestroyEvent) {
+        emit stopThread();
         return true;
     } else {
         return QObject::event(event);
@@ -390,10 +321,15 @@ QVariant QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(const QScri
 
         return QVariant(list);
     } else if (value.isQObject()) {
-        QDeclarativeWorkerListModel *lm = qobject_cast<QDeclarativeWorkerListModel *>(value.toQObject());
+        QDeclarativeListModel *lm = qobject_cast<QDeclarativeListModel *>(value.toQObject());
         if (lm) {
-            QDeclarativeWorkerListModelAgent::VariantRef v(lm->agent());
-            return qVariantFromValue(v);
+            QDeclarativeListModelWorkerAgent *agent = lm->agent();
+            if (agent) {
+                QDeclarativeListModelWorkerAgent::VariantRef v(agent);
+                return qVariantFromValue(v);
+            } else {
+                return QVariant();
+            }
         } else {
             // No other QObject's are allowed to be sent
             return QVariant();
@@ -423,11 +359,11 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(const Q
         return QScriptValue(value.toString());
     } else if (value.userType() == QMetaType::QReal) {
         return QScriptValue(value.toReal());
-    } else if (value.userType() == qMetaTypeId<QDeclarativeWorkerListModelAgent::VariantRef>()) {
-        QDeclarativeWorkerListModelAgent::VariantRef vr = qvariant_cast<QDeclarativeWorkerListModelAgent::VariantRef>(value);
-        if (vr.a->m_engine == 0)
-            vr.a->m_engine = engine;
-        else if (vr.a->m_engine != engine)
+    } else if (value.userType() == qMetaTypeId<QDeclarativeListModelWorkerAgent::VariantRef>()) {
+        QDeclarativeListModelWorkerAgent::VariantRef vr = qvariant_cast<QDeclarativeListModelWorkerAgent::VariantRef>(value);
+        if (vr.a->scriptEngine() == 0)
+            vr.a->setScriptEngine(engine);
+        else if (vr.a->scriptEngine() != engine)
             return engine->nullValue();
         QScriptValue o = engine->newQObject(vr.a);
         o.setData(engine->newVariant(value)); // Keeps the agent ref so that it is cleaned up on gc
@@ -436,7 +372,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(const Q
         QVariantList list = qvariant_cast<QVariantList>(value);
         QScriptValue rv = engine->newArray(list.count());
 
-        for (quint32 ii = 0; ii < quint32(list.count()); ++ii) 
+        for (quint32 ii = 0; ii < quint32(list.count()); ++ii)
             rv.setProperty(ii, variantToScriptValue(list.at(ii), engine));
 
         return rv;
@@ -446,7 +382,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(const Q
 
         QScriptValue rv = engine->newObject();
 
-        for (QVariantHash::ConstIterator iter = hash.begin(); iter != hash.end(); ++iter) 
+        for (QVariantHash::ConstIterator iter = hash.begin(); iter != hash.end(); ++iter)
             rv.setProperty(iter.key(), variantToScriptValue(iter.value(), engine));
 
         return rv;
@@ -503,6 +439,7 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 : QThread(parent), d(new QDeclarativeWorkerScriptEnginePrivate(parent))
 {
     d->m_lock.lock();
+    connect(d, SIGNAL(stopThread()), this, SLOT(quit()), Qt::DirectConnection);
     start(QThread::LowPriority);
     d->m_wait.wait(&d->m_lock);
     d->moveToThread(this);
@@ -511,8 +448,14 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 
 QDeclarativeWorkerScriptEngine::~QDeclarativeWorkerScriptEngine()
 {
+    d->m_lock.lock();
     qDeleteAll(d->workers);
-    delete d; d = 0;
+    d->workers.clear();
+    QCoreApplication::postEvent(d, new QEvent((QEvent::Type)QDeclarativeWorkerScriptEnginePrivate::WorkerDestroyEvent));
+    d->m_lock.unlock();
+
+    wait();
+    d->deleteLater();
 }
 
 QDeclarativeWorkerScriptEnginePrivate::WorkerScript::WorkerScript()
@@ -574,36 +517,10 @@ void QDeclarativeWorkerScriptEngine::run()
 
     Messages can be passed between the new thread and the parent thread
     using sendMessage() and the onMessage() handler.
-    
+
     Here is an example:
 
-    \qml
-    import Qt 4.6
-
-    Rectangle {
-        width: 300
-        height: 300
-
-        Text {
-            id: myText
-            text: 'Click anywhere'
-        }
-
-        WorkerScript {
-            id: myWorker
-            source: "script.js"
-
-            onMessage: {
-                myText.text = messageObject.reply
-            }
-        }
-
-        MouseArea { 
-            anchors.fill: parent
-            onClicked: myWorker.sendMessage( {'x': mouse.x, 'y': mouse.y} );
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/workerscript.qml 0
 
     The above worker script specifies a javascript file, "script.js", that handles
     the operations to be performed in the new thread:
@@ -611,16 +528,14 @@ void QDeclarativeWorkerScriptEngine::run()
     \qml
     WorkerScript.onMessage = function(message) {
         // ... long-running operations and calculations are done here
-        WorkerScript.sendMessage( {'reply': 'Mouse is at ' + message.x + ',' + message.y} );
+        WorkerScript.sendMessage({ 'reply': 'Mouse is at ' + message.x + ',' + message.y })
     }
     \endqml
-    
+
     When the user clicks anywhere within the rectangle, \c sendMessage() is
     called, triggering the \tt WorkerScript.onMessage() handler in
     \tt source.js. This in turn sends a reply message that is then received
     by the \tt onMessage() handler of \tt myWorker.
-
-    \sa WorkerListModel
 */
 QDeclarativeWorkerScript::QDeclarativeWorkerScript(QObject *parent)
 : QObject(parent), m_engine(0), m_scriptId(-1)
@@ -650,7 +565,7 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
 
     m_source = source;
 
-    if (m_engine) 
+    if (m_engine)
         m_engine->executeUrl(m_scriptId, m_source);
 
     emit sourceChanged();
@@ -704,7 +619,7 @@ bool QDeclarativeWorkerScript::event(QEvent *event)
         if (engine) {
             QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
             WorkerDataEvent *workerEvent = static_cast<WorkerDataEvent *>(event);
-            QScriptValue value = 
+            QScriptValue value =
                 QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(workerEvent->data(), scriptEngine);
             emit message(value);
         }
@@ -714,544 +629,7 @@ bool QDeclarativeWorkerScript::event(QEvent *event)
     }
 }
 
-void QDeclarativeWorkerListModelAgent::Data::clearChange() 
-{ 
-    changes.clear(); 
-}
-
-void QDeclarativeWorkerListModelAgent::Data::insertChange(int index, int count) 
-{
-    Change c = { Change::Inserted, index, count, 0 };
-    changes << c;
-}
-
-void QDeclarativeWorkerListModelAgent::Data::removeChange(int index, int count) 
-{
-    Change c = { Change::Removed, index, count, 0 };
-    changes << c;
-}
-
-void QDeclarativeWorkerListModelAgent::Data::changedChange(int index, int count)
-{
-    Change c = { Change::Changed, index, count, 0 };
-    changes << c;
-}
-
-QDeclarativeWorkerListModelAgent::QDeclarativeWorkerListModelAgent(QDeclarativeWorkerListModel *m)
-: m_engine(0), m_ref(1), m_model(m)
-{
-    data.roles = m_model->m_roles;
-    data.strings = m_model->m_strings;
-    data.values = m_model->m_values;
-}
-
-QDeclarativeWorkerListModelAgent::~QDeclarativeWorkerListModelAgent()
-{
-}
-
-void QDeclarativeWorkerListModelAgent::addref()
-{
-    m_ref.ref();
-}
-
-void QDeclarativeWorkerListModelAgent::release()
-{
-    bool del = !m_ref.deref();
-
-    if (del)
-        delete this;
-}
-
-int QDeclarativeWorkerListModelAgent::count() const
-{
-    return data.values.count();
-}
-
-void QDeclarativeWorkerListModelAgent::clear()
-{
-    data.clearChange();
-    data.removeChange(0, data.values.count());
-    data.values.clear();
-}
-
-void QDeclarativeWorkerListModelAgent::remove(int index)
-{
-    if (data.values.count() <= index)
-        return;
-
-    data.values.removeAt(index);
-    data.removeChange(index, 1);
-}
-
-void QDeclarativeWorkerListModelAgent::append(const QScriptValue &value)
-{
-    QHash<int, QVariant> row;
-
-    QScriptValueIterator it(value);
-    while (it.hasNext()) {
-        it.next();
-        QString name = it.name();
-        QVariant v = it.value().toVariant();
-
-        QHash<QString, int>::Iterator iter = data.strings.find(name);
-        if (iter == data.strings.end()) {
-            int role = data.roles.count();
-            data.roles.insert(role, name);
-            iter = data.strings.insert(name, role);
-        }
-        row.insert(*iter, v);
-    }
-
-    data.values.append(row);
-    data.insertChange(data.values.count() - 1, 1);
-}
-
-void QDeclarativeWorkerListModelAgent::insert(int index, const QScriptValue &value)
-{
-    if (index > data.values.count())
-        return;
-
-    QHash<int, QVariant> row;
-
-    QScriptValueIterator it(value);
-    while (it.hasNext()) {
-        it.next();
-        QString name = it.name();
-        QVariant v = it.value().toVariant();
-
-        QHash<QString, int>::Iterator iter = data.strings.find(name);
-        if (iter == data.strings.end()) {
-            int role = data.roles.count();
-            data.roles.insert(role, name);
-            iter = data.strings.insert(name, role);
-        }
-        row.insert(*iter, v);
-    }
-
-    data.values.insert(index, row);
-    data.insertChange(index, 1);
-}
-
-void QDeclarativeWorkerListModelAgent::set(int index, const QScriptValue &value)
-{
-    if (data.values.count() <= index)
-        return;
-
-    QHash<int, QVariant> row;
-
-    QScriptValueIterator it(value);
-    while (it.hasNext()) {
-        it.next();
-        QString name = it.name();
-        QVariant v = it.value().toVariant();
-
-        QHash<QString, int>::Iterator iter = data.strings.find(name);
-        if (iter == data.strings.end()) {
-            int role = data.roles.count();
-            data.roles.insert(role, name);
-            iter = data.strings.insert(name, role);
-        }
-        row.insert(*iter, v);
-    }
-
-    if (data.values.at(index) != row) {
-        data.values[index] = row;
-        data.changedChange(index, 1);
-    }
-}
-
-QScriptValue QDeclarativeWorkerListModelAgent::get(int index) const
-{
-    if (data.values.count() <= index)
-        return m_engine->undefinedValue();
-
-    QScriptValue rv = m_engine->newObject();
-
-    QHash<int, QVariant> row = data.values.at(index);
-    for (QHash<int, QVariant>::ConstIterator iter = row.begin(); iter != row.end(); ++iter) 
-        rv.setProperty(data.roles.value(iter.key()), qScriptValueFromValue(m_engine, iter.value()));
-
-    return rv;
-}
-
-void QDeclarativeWorkerListModelAgent::sync()
-{
-    Sync *s = new Sync;
-    s->data = data;
-    data.changes.clear();
-    QCoreApplication::postEvent(this, s);
-}
-
-bool QDeclarativeWorkerListModelAgent::event(QEvent *e)
-{
-    if (e->type() == QEvent::User) {
-        Sync *s = static_cast<Sync *>(e);
-
-        const QList<Change> &changes = s->data.changes;
-
-        if (m_model) {
-            bool cc = m_model->m_values.count() != s->data.values.count();
-
-            m_model->m_roles = s->data.roles;
-            m_model->m_strings = s->data.strings;
-            m_model->m_values = s->data.values;
-
-            for (int ii = 0; ii < changes.count(); ++ii) {
-                const Change &change = changes.at(ii);
-                switch (change.type) {
-                case Change::Inserted:
-                    emit m_model->itemsInserted(change.index, change.count);
-                    break;
-                case Change::Removed:
-                    emit m_model->itemsRemoved(change.index, change.count);
-                    break;
-                case Change::Moved:
-                    emit m_model->itemsMoved(change.index, change.to, change.count);
-                    break;
-                case Change::Changed:
-                    emit m_model->itemsMoved(change.index, change.to, change.count);
-                    break;
-                }
-            }
-
-            if (cc)
-                emit m_model->countChanged();
-        }
-    }
-
-    return QObject::event(e);
-}
-
-/*!
-    \qmlclass WorkerListModel QDeclarativeWorkerListModel
-    \brief The WorkerListModel element provides a threaded list model.
-
-    Use WorkerListModel together with WorkerScript to define a list model 
-    that is controlled by a separate thread. This is useful if list modification 
-    operations are synchronous and take some time: using WorkerListModel
-    moves these operations to a different thread and avoids blocking of the
-    main GUI thread.
-
-    The thread that creates the WorkerListModel can modify the model for any
-    initial set-up requirements. However, once the model has been modified by
-    the associated WorkerScript, the model can only be modified by that worker
-    script and becomes read-only to all other threads.
-    
-    Here is an example application that uses WorkerScript to append the
-    current time to a WorkerListModel:
-
-    \snippet examples/declarative/workerlistmodel/timedisplay.qml 0
-
-    The included file, \tt dataloader.js, looks like this:
-
-    \snippet examples/declarative/workerlistmodel/dataloader.js 0
-
-    The application's \tt Timer object periodically sends a message to the
-    worker script by calling \tt WorkerScript::sendMessage(). When this message
-    is received, \tt WorkerScript.onMessage() is invoked in
-    \tt dataloader.js, which appends the current time to the worker list
-    model.
-
-    Note that unlike ListModel, WorkerListModel does not have \tt move() and
-    \tt setProperty() methods.
-
-    \sa WorkerScript, ListModel
-*/
-QDeclarativeWorkerListModel::QDeclarativeWorkerListModel(QObject *parent)
-: QListModelInterface(parent), m_agent(0)
-{
-}
-
-QDeclarativeWorkerListModel::~QDeclarativeWorkerListModel()
-{
-    if (m_agent) {
-        m_agent->m_model = 0;
-        m_agent->release();
-    }
-}
-
-/*!
-    \qmlmethod WorkerListModel::clear()
-
-    Deletes all content from the model. The properties are cleared such that
-    different properties may be set on subsequent additions.
-
-    \sa append() remove()
-*/
-void QDeclarativeWorkerListModel::clear()
-{
-    if (m_agent) {
-        qmlInfo(this) << "List can only be modified from a WorkerScript";
-        return;
-    }
-
-    int count = m_values.count();
-    m_values.clear();
-    if (count) {
-        emit itemsRemoved(0, count);
-        emit countChanged();
-    }
-}
-
-/*!
-    \qmlmethod WorkerListModel::remove(int index)
-
-    Deletes the content at \a index from the model.
-
-    \sa clear()
-*/
-void QDeclarativeWorkerListModel::remove(int index)
-{
-    if (m_agent) {
-        qmlInfo(this) << "List can only be modified from a WorkerScript";
-        return;
-    }
-
-    if (m_values.count() <= index)
-        return;
-
-    m_values.removeAt(index);
-    emit itemsRemoved(index, 1);
-    emit countChanged();
-}
-
-/*!
-    \qmlmethod WorkerListModel::append(jsobject dict)
-
-    Adds a new item to the end of the list model, with the
-    values in \a dict.
-
-    \code
-        FruitModel.append({"cost": 5.95, "name":"Pizza"})
-    \endcode
-
-    \sa set() remove()
-*/
-void QDeclarativeWorkerListModel::append(const QScriptValue &value)
-{
-    if (m_agent) {
-        qmlInfo(this) << "List can only be modified from a WorkerScript";
-        return;
-    }
-
-    QHash<int, QVariant> data;
-
-    QScriptValueIterator it(value);
-    while (it.hasNext()) {
-        it.next();
-        QString name = it.name();
-        QVariant v = it.value().toVariant();
-
-        QHash<QString, int>::Iterator iter = m_strings.find(name);
-        if (iter == m_strings.end()) {
-            int role = m_roles.count();
-            m_roles.insert(role, name);
-            iter = m_strings.insert(name, role);
-        }
-        data.insert(*iter, v);
-    }
-
-    m_values.append(data);
-
-    emit itemsInserted(m_values.count() - 1, 1);
-    emit countChanged();
-}
-
-/*!
-    \qmlmethod WorkerListModel::insert(int index, jsobject dict)
-
-    Adds a new item to the list model at position \a index, with the
-    values in \a dict.
-
-    \code
-        FruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
-    \endcode
-
-    The \a index must be to an existing item in the list, or one past
-    the end of the list (equivalent to append).
-
-    \sa set() append()
-*/
-void QDeclarativeWorkerListModel::insert(int index, const QScriptValue &value)
-{
-    if (m_agent) {
-        qmlInfo(this) << "List can only be modified from a WorkerScript";
-        return;
-    }
-
-    if (index > m_values.count())
-        return;
-
-    QHash<int, QVariant> data;
-
-    QScriptValueIterator it(value);
-    while (it.hasNext()) {
-        it.next();
-        QString name = it.name();
-        QVariant v = it.value().toVariant();
-
-        QHash<QString, int>::Iterator iter = m_strings.find(name);
-        if (iter == m_strings.end()) {
-            int role = m_roles.count();
-            m_roles.insert(role, name);
-            iter = m_strings.insert(name, role);
-        }
-        data.insert(*iter, v);
-    }
-
-    m_values.insert(index, data);
-    emit itemsInserted(index, 1);
-    emit countChanged();
-}
-
-/*!
-    \qmlmethod object ListModel::get(int index)
-
-    Returns the item at \a index in the list model.
-
-    \code
-        FruitModel.append({"cost": 5.95, "name":"Jackfruit"})
-        FruitModel.get(0).cost
-    \endcode
-
-    The \a index must be an element in the list.
-
-    Note that properties of the returned object that are themselves objects
-    will also be models, and this get() method is used to access elements:
-
-    \code
-        FruitModel.append(..., "attributes":
-            [{"name":"spikes","value":"7mm"},
-             {"name":"color","value":"green"}]);
-        FruitModel.get(0).attributes.get(1).value; // == "green"
-    \endcode
-
-    \sa append()
-*/
-QScriptValue QDeclarativeWorkerListModel::get(int index) const
-{
-    QDeclarativeEngine *engine = qmlEngine(this);
-    if (!engine || m_values.count() <= index)
-        return QScriptValue();
-
-    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
-    QScriptValue rv = scriptEngine->newObject();
-
-    QHash<int, QVariant> data = m_values.at(index);
-    for (QHash<int, QVariant>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) 
-        rv.setProperty(m_roles.value(iter.key()), qScriptValueFromValue(scriptEngine, iter.value()));
-
-    return rv;
-}
-
-/*!
-    \qmlmethod WorkerListModel::set(int index, jsobject dict)
-
-    Changes the item at \a index in the list model with the
-    values in \a dict. Properties not appearing in \a valuemap
-    are left unchanged.
-
-    \code
-        FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
-    \endcode
-
-    The \a index must be an element in the list.
-
-    \sa append()
-*/
-void QDeclarativeWorkerListModel::set(int index, const QScriptValue &value)
-{
-    if (m_agent) {
-        qmlInfo(this) << "List can only be modified from a WorkerScript";
-        return;
-    }
-
-    if (m_values.count() <= index)
-        return;
-
-    QHash<int, QVariant> data;
-
-    QScriptValueIterator it(value);
-    while (it.hasNext()) {
-        it.next();
-        QString name = it.name();
-        QVariant v = it.value().toVariant();
-
-        QHash<QString, int>::Iterator iter = m_strings.find(name);
-        if (iter == m_strings.end()) {
-            int role = m_roles.count();
-            m_roles.insert(role, name);
-            iter = m_strings.insert(name, role);
-        }
-        data.insert(*iter, v);
-    }
-
-    if (m_values.at(index) != data) {
-        m_values[index] = data;
-        emit itemsChanged(index, 1, m_roles.keys());
-    }
-}
-
-/*!
-    \qmlmethod WorkerListModel::sync()
-
-    Writes any unsaved changes to the list model. This must be called after
-    changes have been made to the list model in the worker script.
-
-    Note that this method can only be called from the associated worker script.
-*/
-void QDeclarativeWorkerListModel::sync()
-{
-    // This is really a dummy method to make it look like sync() exists in
-    // WorkerListModel (and not QDeclarativeWorkerListModelAgent) and to let
-    // us document sync().
-    qmlInfo(this) << "sync() can only be called from a WorkerScript";
-}
-
-QDeclarativeWorkerListModelAgent *QDeclarativeWorkerListModel::agent()
-{
-    if (!m_agent) 
-        m_agent = new QDeclarativeWorkerListModelAgent(this);
-
-    return m_agent;
-}
-
-QList<int> QDeclarativeWorkerListModel::roles() const
-{
-    return m_roles.keys();
-}
-
-QString QDeclarativeWorkerListModel::toString(int role) const
-{
-    return m_roles.value(role);
-}
-
-/*!
-    \qmlproperty int ListModel::count
-    The number of data entries in the model.
-*/
-int QDeclarativeWorkerListModel::count() const
-{
-    return m_values.count();
-}
-
-QHash<int,QVariant> QDeclarativeWorkerListModel::data(int index, const QList<int> &) const
-{
-    if (m_values.count() <= index)
-        return QHash<int, QVariant>();
-    else
-        return m_values.at(index);
-}
-
-QVariant QDeclarativeWorkerListModel::data(int index, int role) const
-{
-    if (m_values.count() <= index)
-        return QVariant();
-    else
-        return m_values.at(index).value(role);
-}
-
 QT_END_NAMESPACE
 
-#include "qdeclarativeworkerscript.moc"
+#include <qdeclarativeworkerscript.moc>
 

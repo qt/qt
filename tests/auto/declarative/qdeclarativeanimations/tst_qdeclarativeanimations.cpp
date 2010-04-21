@@ -180,7 +180,7 @@ void tst_qdeclarativeanimations::simpleRotation()
     QVERIFY(animation.target() == &rect);
     QVERIFY(animation.property() == "rotation");
     QVERIFY(animation.to() == 270);
-    QVERIFY(animation.direction() == QDeclarativeRotationAnimation::Shortest);
+    QVERIFY(animation.direction() == QDeclarativeRotationAnimation::Numerical);
     animation.start();
     QVERIFY(animation.isRunning());
     QTest::qWait(animation.duration());
@@ -193,7 +193,7 @@ void tst_qdeclarativeanimations::simpleRotation()
     QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
     QVERIFY(animation.currentTime() == 125);
-    QCOMPARE(rect.rotation(), qreal(-45));
+    QCOMPARE(rect.rotation(), qreal(135));
 }
 
 void tst_qdeclarativeanimations::alwaysRunToEnd()
@@ -204,9 +204,9 @@ void tst_qdeclarativeanimations::alwaysRunToEnd()
     animation.setProperty("x");
     animation.setTo(200);
     animation.setDuration(1000);
-    animation.setRepeat(true);
+    animation.setLoops(-1);
     animation.setAlwaysRunToEnd(true);
-    QVERIFY(animation.repeat() == true);
+    QVERIFY(animation.loops() == -1);
     QVERIFY(animation.alwaysRunToEnd() == true);
     animation.start();
     QTest::qWait(1500);
@@ -648,7 +648,7 @@ void tst_qdeclarativeanimations::easingProperties()
 {
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nNumberAnimation { easing.type: \"InOutQuad\" }";
+        QString componentStr = "import Qt 4.7\nNumberAnimation { easing.type: \"InOutQuad\" }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -659,7 +659,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
+        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -671,7 +671,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
+        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -684,7 +684,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
+        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());

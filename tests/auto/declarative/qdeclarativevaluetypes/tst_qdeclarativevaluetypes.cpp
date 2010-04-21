@@ -59,6 +59,7 @@ private slots:
     void pointf();
     void size();
     void sizef();
+    void sizereadonly();
     void rect();
     void rectf();
     void vector3d();
@@ -77,6 +78,8 @@ private slots:
     void scriptVariantCopy();
     void cppClasses();
     void enums();
+    void conflictingBindings();
+    void returnValues();
 
 private:
     QDeclarativeEngine engine;
@@ -187,6 +190,50 @@ void tst_qdeclarativevaluetypes::sizef()
         QVERIFY(object != 0);
 
         QCOMPARE(object->sizef(), QSizeF(44.3, 92.8));
+
+        delete object;
+    }
+}
+
+void tst_qdeclarativevaluetypes::sizereadonly()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("s_width").toInt(), 1912);
+        QCOMPARE(object->property("s_height").toInt(), 1913);
+        QCOMPARE(object->property("copy"), QVariant(QSize(1912, 1913)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror2.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror3.qml"));
+        QVERIFY(component.isError());
+        QCOMPARE(component.errors().at(0).description(), QLatin1String("Invalid property assignment: \"sizereadonly\" is a read-only property"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("sizereadonly_writeerror4.qml"));
+
+        QObject *object = component.create();
+        QVERIFY(object);
+
+        QCOMPARE(object->property("sizereadonly").toSize(), QSize(1912, 1913));
 
         delete object;
     }
@@ -314,8 +361,17 @@ void tst_qdeclarativevaluetypes::font()
         font.setLetterSpacing(QFont::AbsoluteSpacing, 9.7);
         font.setWordSpacing(11.2);
 
-        QEXPECT_FAIL("", "QT-2920", Continue);
-        QCOMPARE(object->font(), font);
+        QFont f = object->font();
+        QCOMPARE(f.family(), font.family());
+        QCOMPARE(f.bold(), font.bold());
+        QCOMPARE(f.weight(), font.weight());
+        QCOMPARE(f.italic(), font.italic());
+        QCOMPARE(f.underline(), font.underline());
+        QCOMPARE(f.strikeOut(), font.strikeOut());
+        QCOMPARE(f.pointSize(), font.pointSize());
+        QCOMPARE(f.capitalization(), font.capitalization());
+        QCOMPARE(f.letterSpacing(), font.letterSpacing());
+        QCOMPARE(f.wordSpacing(), font.wordSpacing());
 
         delete object;
     }
@@ -339,6 +395,30 @@ void tst_qdeclarativevaluetypes::font()
         QVERIFY(object != 0);
 
         QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("font_write.4.qml"));
+        QTest::ignoreMessage(QtWarningMsg, "Both point size and pixel size set. Using pixel size. ");
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("font_write.5.qml"));
+        QObject *object = qobject_cast<QObject *>(component.create());
+        QVERIFY(object != 0);
+        MyTypeObject *object1 = object->findChild<MyTypeObject *>("object1");
+        QVERIFY(object1 != 0);
+        MyTypeObject *object2 = object->findChild<MyTypeObject *>("object2");
+        QVERIFY(object2 != 0);
+
+        QCOMPARE(object1->font().pixelSize(), 19);
+        QCOMPARE(object2->font().pointSize(), 14);
 
         delete object;
     }
@@ -422,12 +502,12 @@ void tst_qdeclarativevaluetypes::autoBindingRemoval()
 
         object->setProperty("value", QVariant(92));
 
-        QEXPECT_FAIL("", "QT-2920", Continue);
         QCOMPARE(object->rect().x(), 42);
 
         delete object;
     }
 
+    /*
     {
         QDeclarativeComponent component(&engine, TEST_FILE("autoBindingRemoval.2.qml"));
         MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -465,12 +545,11 @@ void tst_qdeclarativevaluetypes::autoBindingRemoval()
 
         object->setProperty("value", QVariant(QRect(19, 3, 4, 8)));
 
-        QEXPECT_FAIL("", "QT-2920", Continue);
         QCOMPARE(object->rect(), QRect(44, 22, 33, 44));
 
         delete object;
     }
-
+*/
 }
 
 // Test that property value sources assign to value types
@@ -624,6 +703,78 @@ void tst_qdeclarativevaluetypes::enums()
     QVERIFY(object->font().capitalization() == QFont::AllUppercase);
     delete object;
     }
+}
+
+// Tests switching between "conflicting" bindings (eg. a binding on the core
+// property, to a binding on the value-type sub-property)
+void tst_qdeclarativevaluetypes::conflictingBindings()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("conflicting.1.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 6);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("conflicting.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 6);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 6);
+
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("conflicting.3.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 24);
+
+    QMetaObject::invokeMethod(object, "toggle");
+
+    QCOMPARE(qvariant_cast<QFont>(object->property("font")).pixelSize(), 12);
+
+    delete object;
+    }
+}
+
+void tst_qdeclarativevaluetypes::returnValues()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("returnValues.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("size").toSize(), QSize(13, 14));
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativevaluetypes)

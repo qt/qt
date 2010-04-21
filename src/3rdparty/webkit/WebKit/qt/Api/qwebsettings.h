@@ -67,13 +67,21 @@ public:
         LocalStorageDatabaseEnabled = LocalStorageEnabled,
 #endif
         LocalContentCanAccessRemoteUrls,
-        DnsPrefetchEnabled
+        DnsPrefetchEnabled,
+        XSSAuditorEnabled,
+        AcceleratedCompositingEnabled,
+        WebGLEnabled,
+        SpatialNavigationEnabled,
+        LocalContentCanAccessFileUrls,
+        TiledBackingStoreEnabled,
+        FrameFlatteningEnabled
     };
     enum WebGraphic {
         MissingImageGraphic,
         MissingPluginGraphic,
         DefaultFrameIconGraphic,
-        TextAreaSizeGripCornerGraphic
+        TextAreaSizeGripCornerGraphic,
+        DeleteButtonGraphic
     };
     enum FontSize {
         MinimumFontSize,
@@ -128,6 +136,9 @@ public:
     
     void setLocalStoragePath(const QString& path);
     QString localStoragePath() const; 
+
+    void setInspectorUrl(const QUrl &location);
+    QUrl inspectorUrl() const;
 
     static void clearMemoryCaches();
 

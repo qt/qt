@@ -73,9 +73,9 @@ QML component instances can then be created by calling the QDeclarativeComponent
 an example of loading a QML document, and creating an object from it.
 
 \code
-QDeclarativeEngine *engine = new QDeclarativeEngine(parent);
-QDeclarativeComponent component(engine, QUrl("main.qml"));
-QObject *myObject = component.create();
+    QDeclarativeEngine *engine = new QDeclarativeEngine(parent);
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile("main.qml"));
+    QObject *myObject = component.create();
 \endcode
 
 \section1 Exposing Data
@@ -90,42 +90,29 @@ the root context is available to all object instances.
 \section1 Simple Data
 
 To expose data to a QML component instance, applications set \l {QDeclarativeContext::setContextProperty()}
-{context properties} which are then accessible by name from QML  \l {Property Binding}s and 
-\l {JavaScript Blocks}.  The following example shows how to expose a background color to a QML
-file.
+{context properties} which are then accessible by name from QML  \l {Property Binding}s and JavaScript.
+The following example shows how to expose a background color to a QML file through QDeclarativeView:
 
 \table
 \row
 \o
-\code
-// main.cpp
-QDeclarativeContext *windowContext = new QDeclarativeContext(engine->rootContext());
-windowContext->setContextProperty("backgroundColor", 
-                                  QColor(Qt::lightsteelblue));
+\c {// main.cpp}
+\snippet doc/src/declarative/snippets/qtbinding/contextproperties/main.cpp 0
 
-QDeclarativeComponent component(&engine, "main.qml");
-QObject *window = component.create(windowContext);
-\endcode
 \o
-\code
-// main.qml
-import Qt 4.6
+\c {// main.qml}
+\snippet doc/src/declarative/snippets/qtbinding/contextproperties/main.qml 0
 
-Rectangle {
-    color: backgroundColor
-
-    Text {
-        anchors.centerIn: parent
-        text: "Hello Light Steel Blue World!"
-    }
-}
-\endcode
 \endtable
 
+Or, if you want \c main.cpp to create the component without showing it in a QDeclarativeView, you could create an instance of QDeclarativeContext using QDeclarativeEngine::rootContext() instead:
+
+\snippet doc/src/declarative/snippets/qtbinding/contextproperties/main.cpp 1
+
 Context properties work just like normal properties in QML bindings - if the \c backgroundColor
-context property in the previous example was changed to red, the component object instances would
+context property in this example was changed to red, the component object instances would
 all be automatically updated.  Note that it is the responsibility of the creator to delete any
-QDeclarativeContext it constructs.  If the \c windowContext in the example above is no longer needed when
+QDeclarativeContext it constructs.  If the \c windowContext is no longer needed when
 the \c window component instantiation is destroyed, the \c windowContext must be destroyed
 explicitly.  The simplest way to ensure this is to set \c window as \c windowContext's parent.
 
@@ -148,78 +135,15 @@ allow QML to set values.
 The following example creates a \c CustomPalette object, and sets it as the \c palette context
 property.
 
-\code
-class CustomPalette : public QObject
-{
-Q_OBJECT
-Q_PROPERTY(QColor background READ background WRITE setBackground NOTIFY backgroundChanged)
-Q_PROPERTY(QColor text READ text WRITE setText NOTIFY textChanged)
-public:
-    CustomPalette() : m_background(Qt::white), m_text(Qt::black) {}
+\snippet doc/src/declarative/snippets/qtbinding/custompalette/custompalette.h 0
 
-    QColor background() const { return m_background; }
-    void setBackground(const QColor &c) { 
-        if (c != m_background) {
-            m_background = c;
-            emit backgroundChanged();
-        }
-    }
-
-    QColor text() const { return m_text; }
-    void setText(const QColor &c) { 
-        if (c != m_text) {
-            m_text = c;
-            emit textChanged();
-        }
-    }
-signals:
-    void textChanged();
-    void backgroundChanged():
-
-private:
-    QColor m_background;
-    QColor m_text;
-};
-
-int main(int argc, char **argv) 
-{
-    // ...
-
-    QDeclarativeContext *windowContext = new QDeclarativeContext(engine->rootContext());
-    windowContext->setContextProperty("palette", new CustomPalette);
-
-    QDeclarativeComponent component(&engine, "main.qml");
-    QObject *window = component.create(windowContext);
-}
-\endcode
+\snippet doc/src/declarative/snippets/qtbinding/custompalette/main.cpp 0
 
 The QML that follows references the palette object, and its properties, to set the appropriate
 background and text colors.  When the window is clicked, the palette's text color is changed, and
 the window text will update accordingly.
 
-\code
-// main.qml
-import Qt 4.6
-
-Rectangle {
-    width: 240
-    height: 320
-    color: palette.background
-
-    Text {
-        anchors.centerIn: parent
-        color: palette.text
-        text: "Hello Colorful World!"
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            palette.text = "blue";
-        }
-    }
-}
-\endcode
+\snippet doc/src/declarative/snippets/qtbinding/custompalette/main.qml 0
 
 To detect when a C++ property value - in this case the \c CustomPalette's \c text property - 
 changes, the property must have a corresponding NOTIFY signal.  The NOTIFY signal specifies a signal
@@ -255,74 +179,39 @@ the following types:
 \o QVariant
 \endlist
 
-This example toggles the "LED Blinker" when the MouseArea is clicked:
+This example toggles the "Stopwatch" object on/off when the MouseArea is clicked:
 
 \table
 \row
 \o
-\code
-// main.cpp
-class LEDBlinker : public QObject
-{
-    Q_OBJECT
-public:
-    LEDBlinker();
+\c {// main.cpp}
+\snippet doc/src/declarative/snippets/qtbinding/stopwatch/stopwatch.h 0
+\snippet doc/src/declarative/snippets/qtbinding/stopwatch/main.cpp 0
 
-    Q_INVOKABLE bool isRunning();
-
-public slots:
-    void start();
-    void stop();
-};
-
-int main(int argc, char **argv)
-{
-    // ...
-
-    QDeclarativeContext *context = engine->rootContext();
-    context->setContextProperty("ledBlinker", new LEDBlinker);
-
-    // ...
-}
-\endcode
 \o
-\code
-// main.qml
-import Qt 4.6
+\c {// main.qml}
+\snippet doc/src/declarative/snippets/qtbinding/stopwatch/main.qml 0
 
-Rectangle {
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            if (ledBlinker.isRunning())
-                ledBlinker.stop()
-            else
-                ledBlicker.start();
-        }
-    }
-}
-\endcode
 \endtable
 
 Note that in this particular example a better way to achieve the same result
-is to have a "running" property.  This leads to much nicer QML code:
+is to have a "running" property in \c main.qml.  This leads to much nicer QML code:
 
 \table
 \row
 \o
 \code
 // main.qml
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     MouseArea {
         anchors.fill: parent
-        onClicked: ledBlinker.running = !ledBlinker.running
+        onClicked: stopwatch.running = !stopwatch.running
     }
 }
 \endcode
 \endtable
-
 
 Of course, it is also possible to call \l {Adding new methods}{functions declared in QML from C++}.
 
@@ -368,35 +257,17 @@ void MyApplication::continueLoading()
 QML content can be loaded from \l {The Qt Resource System} using the \e qrc: URL scheme.
 For example:
 
-\code
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>main.qml</file>
-    <file>images/background.png</file>
-</qresource>
-</RCC>
-\endcode
-\code
-// main.cpp
-MyApplication::MyApplication()
-{
-    // ...
-    component = new QDeclarativeComponent(engine, QUrl("qrc:/main.qml"));
-    if (component->isError()) {
-        qWarning() << component->errors();
-    } else {
-        QObject *myObject = component->create();
-    }
-}
-\endcode
-\code
-// main.qml
-import Qt 4.6
+\c [project/example.qrc]
+\quotefile doc/src/declarative/snippets/qtbinding/resources/example.qrc 
 
-Image {
-    source: "images/background.png"
-}
-\endcode
+\c [project/project.pro]
+\quotefile doc/src/declarative/snippets/qtbinding/resources/resources.pro 
+
+\c [project/main.cpp]
+\snippet doc/src/declarative/snippets/qtbinding/resources/main.cpp 0
+
+\c [project/main.qml]
+\snippet doc/src/declarative/snippets/qtbinding/resources/main.qml 0
 
 */
 

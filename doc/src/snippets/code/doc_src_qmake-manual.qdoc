@@ -886,7 +886,7 @@ TARGET.CAPABILITY += AllFiles
 //! [133]
 
 //! [134]
-TARGET.CAPABILITY = ALL -TCB
+TARGET.CAPABILITY = ALL -TCB -DRM -AllFiles
 //! [134]
 
 //! [135]
@@ -933,7 +933,9 @@ DEPLOYMENT += somelib justdep
 //! [140]
 
 //! [141]
-default_deployment.pkg_prerules = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
+default_deployment.pkg_prerules -= pkg_platform_dependencies
+my_deployment.pkg_prerules = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
+DEPLOYMENT += my_deployment
 //! [141]
 
 //! [142]

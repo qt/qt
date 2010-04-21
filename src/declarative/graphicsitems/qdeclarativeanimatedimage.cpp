@@ -39,8 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeanimatedimage_p.h"
-#include "qdeclarativeanimatedimage_p_p.h"
+#include "private/qdeclarativeanimatedimage_p.h"
+#include "private/qdeclarativeanimatedimage_p_p.h"
+
+#ifndef QT_NO_MOVIE
 
 #include <qdeclarativeengine.h>
 
@@ -247,9 +249,25 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
     emit statusChanged(d->status);
 }
 
+#define ANIMATEDIMAGE_MAXIMUM_REDIRECT_RECURSION 16
+
 void QDeclarativeAnimatedImage::movieRequestFinished()
 {
     Q_D(QDeclarativeAnimatedImage);
+
+    d->redirectCount++;
+    if (d->redirectCount < ANIMATEDIMAGE_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = d->reply->url().resolved(redirect.toUrl());
+            d->reply->deleteLater();
+            d->reply = 0;
+            setSource(url);
+            return;
+        }
+    }
+    d->redirectCount=0;
+
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
         qWarning() << "Error Reading Animated Image File " << d->url;
@@ -296,7 +314,7 @@ void QDeclarativeAnimatedImage::playingStatusChanged()
 void QDeclarativeAnimatedImage::componentComplete()
 {
     Q_D(QDeclarativeAnimatedImage);
-    QDeclarativeImage::componentComplete();
+    QDeclarativeItem::componentComplete(); // NOT QDeclarativeImage
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;
@@ -304,3 +322,5 @@ void QDeclarativeAnimatedImage::componentComplete()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_MOVIE

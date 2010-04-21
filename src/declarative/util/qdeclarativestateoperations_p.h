@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVESTATEOPERATIONS_H
 #define QDECLARATIVESTATEOPERATIONS_H
 
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p.h"
 
 #include <qdeclarativeitem.h>
 #include <private/qdeclarativeanchors_p.h>
@@ -107,6 +107,7 @@ public:
     virtual ActionList actions();
 
     virtual void saveOriginals();
+    virtual void copyOriginals(QDeclarativeActionEvent*);
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
@@ -142,6 +143,113 @@ public:
     virtual void execute();
 };
 
+class QDeclarativeAnchorChanges;
+class QDeclarativeAnchorSetPrivate;
+class Q_AUTOTEST_EXPORT QDeclarativeAnchorSet : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QDeclarativeAnchorLine left READ left WRITE setLeft RESET resetLeft)
+    Q_PROPERTY(QDeclarativeAnchorLine right READ right WRITE setRight RESET resetRight)
+    Q_PROPERTY(QDeclarativeAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
+    Q_PROPERTY(QDeclarativeAnchorLine top READ top WRITE setTop RESET resetTop)
+    Q_PROPERTY(QDeclarativeAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
+    Q_PROPERTY(QDeclarativeAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
+    Q_PROPERTY(QDeclarativeAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
+    //Q_PROPERTY(QDeclarativeItem *fill READ fill WRITE setFill RESET resetFill)
+    //Q_PROPERTY(QDeclarativeItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn)
+
+    /*Q_PROPERTY(qreal margins READ margins WRITE setMargins NOTIFY marginsChanged)
+    Q_PROPERTY(qreal leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
+    Q_PROPERTY(qreal rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
+    Q_PROPERTY(qreal horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
+    Q_PROPERTY(qreal topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged)
+    Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
+    Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
+    Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())*/
+
+public:
+    QDeclarativeAnchorSet(QObject *parent=0);
+    virtual ~QDeclarativeAnchorSet();
+
+    QDeclarativeAnchorLine left() const;
+    void setLeft(const QDeclarativeAnchorLine &edge);
+    void resetLeft();
+
+    QDeclarativeAnchorLine right() const;
+    void setRight(const QDeclarativeAnchorLine &edge);
+    void resetRight();
+
+    QDeclarativeAnchorLine horizontalCenter() const;
+    void setHorizontalCenter(const QDeclarativeAnchorLine &edge);
+    void resetHorizontalCenter();
+
+    QDeclarativeAnchorLine top() const;
+    void setTop(const QDeclarativeAnchorLine &edge);
+    void resetTop();
+
+    QDeclarativeAnchorLine bottom() const;
+    void setBottom(const QDeclarativeAnchorLine &edge);
+    void resetBottom();
+
+    QDeclarativeAnchorLine verticalCenter() const;
+    void setVerticalCenter(const QDeclarativeAnchorLine &edge);
+    void resetVerticalCenter();
+
+    QDeclarativeAnchorLine baseline() const;
+    void setBaseline(const QDeclarativeAnchorLine &edge);
+    void resetBaseline();
+
+    QDeclarativeItem *fill() const;
+    void setFill(QDeclarativeItem *);
+    void resetFill();
+
+    QDeclarativeItem *centerIn() const;
+    void setCenterIn(QDeclarativeItem *);
+    void resetCenterIn();
+
+    /*qreal leftMargin() const;
+    void setLeftMargin(qreal);
+
+    qreal rightMargin() const;
+    void setRightMargin(qreal);
+
+    qreal horizontalCenterOffset() const;
+    void setHorizontalCenterOffset(qreal);
+
+    qreal topMargin() const;
+    void setTopMargin(qreal);
+
+    qreal bottomMargin() const;
+    void setBottomMargin(qreal);
+
+    qreal margins() const;
+    void setMargins(qreal);
+
+    qreal verticalCenterOffset() const;
+    void setVerticalCenterOffset(qreal);
+
+    qreal baselineOffset() const;
+    void setBaselineOffset(qreal);*/
+
+    QDeclarativeAnchors::UsedAnchors usedAnchors() const;
+
+/*Q_SIGNALS:
+    void leftMarginChanged();
+    void rightMarginChanged();
+    void topMarginChanged();
+    void bottomMarginChanged();
+    void marginsChanged();
+    void verticalCenterOffsetChanged();
+    void horizontalCenterOffsetChanged();
+    void baselineOffsetChanged();*/
+
+private:
+    friend class QDeclarativeAnchorChanges;
+    Q_DISABLE_COPY(QDeclarativeAnchorSet)
+    Q_DECLARE_PRIVATE(QDeclarativeAnchorSet)
+};
+
 class QDeclarativeAnchorChangesPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeAnchorChanges : public QDeclarativeStateOperation, public QDeclarativeActionEvent
 {
@@ -149,14 +257,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeAnchorChanges : public QDeclarativeStateO
     Q_DECLARE_PRIVATE(QDeclarativeAnchorChanges)
 
     Q_PROPERTY(QDeclarativeItem *target READ object WRITE setObject)
-    Q_PROPERTY(QString reset READ reset WRITE setReset)
-    Q_PROPERTY(QDeclarativeAnchorLine left READ left WRITE setLeft)
-    Q_PROPERTY(QDeclarativeAnchorLine right READ right WRITE setRight)
-    Q_PROPERTY(QDeclarativeAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter)
-    Q_PROPERTY(QDeclarativeAnchorLine top READ top WRITE setTop)
-    Q_PROPERTY(QDeclarativeAnchorLine bottom READ bottom WRITE setBottom)
-    Q_PROPERTY(QDeclarativeAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter)
-    Q_PROPERTY(QDeclarativeAnchorLine baseline READ baseline WRITE setBaseline)
+    Q_PROPERTY(QDeclarativeAnchorSet *anchors READ anchors CONSTANT)
 
 public:
     QDeclarativeAnchorChanges(QObject *parent=0);
@@ -164,51 +265,32 @@ public:
 
     virtual ActionList actions();
 
+    QDeclarativeAnchorSet *anchors();
+
     QDeclarativeItem *object() const;
     void setObject(QDeclarativeItem *);
-
-    QString reset() const;
-    void setReset(const QString &);
-
-    QDeclarativeAnchorLine left() const;
-    void setLeft(const QDeclarativeAnchorLine &edge);
-
-    QDeclarativeAnchorLine right() const;
-    void setRight(const QDeclarativeAnchorLine &edge);
-
-    QDeclarativeAnchorLine horizontalCenter() const;
-    void setHorizontalCenter(const QDeclarativeAnchorLine &edge);
-
-    QDeclarativeAnchorLine top() const;
-    void setTop(const QDeclarativeAnchorLine &edge);
-
-    QDeclarativeAnchorLine bottom() const;
-    void setBottom(const QDeclarativeAnchorLine &edge);
-
-    QDeclarativeAnchorLine verticalCenter() const;
-    void setVerticalCenter(const QDeclarativeAnchorLine &edge);
-
-    QDeclarativeAnchorLine baseline() const;
-    void setBaseline(const QDeclarativeAnchorLine &edge);
 
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
     virtual QString typeName() const;
     virtual bool override(QDeclarativeActionEvent*other);
-    virtual QList<QDeclarativeAction> extraActions();
     virtual bool changesBindings();
     virtual void saveOriginals();
-    virtual void clearForwardBindings();
-    virtual void clearReverseBindings();
+    virtual void copyOriginals(QDeclarativeActionEvent*);
+    virtual void clearBindings();
     virtual void rewind();
     virtual void saveCurrentValues();
+
+    QList<QDeclarativeAction> additionalActions();
+    virtual void saveTargetValues();
 };
 
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeParentChange)
 QML_DECLARE_TYPE(QDeclarativeStateChangeScript)
+QML_DECLARE_TYPE(QDeclarativeAnchorSet)
 QML_DECLARE_TYPE(QDeclarativeAnchorChanges)
 
 QT_END_HEADER

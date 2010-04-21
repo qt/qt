@@ -50,6 +50,7 @@ class DeviceOrientationPrivate;
 class DeviceOrientation : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Orientation)
 public:
     enum Orientation { UnknownOrientation, Portrait, Landscape };
     virtual Orientation orientation() const = 0;

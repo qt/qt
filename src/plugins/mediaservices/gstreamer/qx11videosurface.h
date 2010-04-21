@@ -67,6 +67,9 @@ public:
     QRect displayRect() const;
     void setDisplayRect(const QRect &rect);
 
+    QRect viewport() const;
+    void setViewport(const QRect &rect);
+
     int brightness() const;
     void setBrightness(int brightness);
 

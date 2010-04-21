@@ -95,6 +95,8 @@ public:
     virtual bool hasInstance(QScriptObject*, JSC::ExecState*,
                              JSC::JSValue value, JSC::JSValue proto);
 
+    bool compareToObject(QScriptObject *, JSC::ExecState *, JSC::JSObject *);
+
 private:
     QScriptDeclarativeClass *m_class;
     QScriptDeclarativeClass::Object *m_object;

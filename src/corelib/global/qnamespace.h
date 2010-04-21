@@ -146,7 +146,8 @@ public:
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
-        MidButton        = 0x00000004,
+        MidButton        = 0x00000004, // ### Qt 5: remove me
+        MiddleButton     = MidButton,
         XButton1         = 0x00000008,
         XButton2         = 0x00000010,
         MouseButtonMask  = 0x000000ff
@@ -510,6 +511,9 @@ public:
         WA_Maemo5AutoOrientation = 130,
         WA_Maemo5ShowProgressIndicator = 131,
 #endif
+
+        WA_X11DoNotAcceptFocus = 132,
+
         // Add new attributes before this line
         WA_AttributeCount
     };
@@ -1088,6 +1092,8 @@ public:
         Key_Call = 0x01100004,
         Key_Hangup = 0x01100005,
         Key_Flip = 0x01100006,
+        Key_Camera = 0x01100007,
+        Key_CameraFocus = 0x01100008,
 
         Key_unknown = 0x01ffffff
     };

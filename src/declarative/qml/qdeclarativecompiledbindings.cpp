@@ -41,18 +41,28 @@
 
 // #define COMPILEDBINDINGS_DEBUG
 
-#include "qdeclarativecompiledbindings_p.h"
+#include "private/qdeclarativecompiledbindings_p.h"
 
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include <private/qdeclarativecontext_p.h>
 #include <private/qdeclarativejsast_p.h>
 #include <private/qdeclarativejsengine_p.h>
 #include <private/qdeclarativeexpression_p.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qnumeric.h>
 #include <private/qdeclarativeanchors_p_p.h>
+#include <private/qdeclarativeglobal_p.h>
+#include <private/qdeclarativefastproperties_p.h>
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
+DEFINE_BOOL_CONFIG_OPTION(qmlDisableOptimizer, QML_DISABLE_OPTIMIZER);
+DEFINE_BOOL_CONFIG_OPTION(qmlDisableFastProperties, QML_DISABLE_FAST_PROPERTIES);
+DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
+
+Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties);
 
 using namespace QDeclarativeJS;
 
@@ -124,28 +134,11 @@ public:
         QDeclarativeCompiledBindingsPrivate *parent;
     };
 
-    struct Subscription {
-        struct Signal {
-            QDeclarativeGuard<QObject> source;
-            int notifyIndex;
-        };
-
-        enum { InvalidType, SignalType, IdType } type;
-        inline Subscription();
-        inline ~Subscription();
-        bool isSignal() const { return type == SignalType; }
-        bool isId() const { return type == IdType; }
-        inline Signal *signal();
-        inline QDeclarativeContextPrivate::IdNotifier *id();
-        union {
-            char signalData[sizeof(Signal)];
-            char idData[sizeof(QDeclarativeContextPrivate::IdNotifier)];
-        };
-    };
+    typedef QDeclarativeNotifierEndpoint Subscription;
     Subscription *subscriptions;
     QScriptDeclarativeClass::PersistentIdentifier *identifiers;
 
-    void run(Binding *);
+    void run(Binding *, QDeclarativePropertyPrivate::WriteFlags flags);
 
     const char *programData;
     Binding *m_bindings;
@@ -154,18 +147,18 @@ public:
     static int methodCount;
 
     void init();
-    void run(int instr, QDeclarativeContextPrivate *context, 
-             QDeclarativeDelayedError *error, QObject *scope, QObject *output);
+    void run(int instr, QDeclarativeContextData *context, 
+             QDeclarativeDelayedError *error, QObject *scope, QObject *output, QDeclarativePropertyPrivate::WriteFlags storeFlags);
 
 
     inline void unsubscribe(int subIndex);
-    inline void subscribeId(QDeclarativeContextPrivate *p, int idIndex, int subIndex);
+    inline void subscribeId(QDeclarativeContextData *p, int idIndex, int subIndex);
     inline void subscribe(QObject *o, int notifyIndex, int subIndex);
 
     QDeclarativePropertyCache::Data *findproperty(QObject *obj, 
-                                         const QScriptDeclarativeClass::Identifier &name,
-                                         QDeclarativeEnginePrivate *enginePriv, 
-                                         QDeclarativePropertyCache::Data &local);
+                                                  const QScriptDeclarativeClass::Identifier &name,
+                                                  QDeclarativeEnginePrivate *enginePriv, 
+                                                  QDeclarativePropertyCache::Data &local);
     bool findproperty(QObject *obj, 
                       Register *output, 
                       QDeclarativeEnginePrivate *enginePriv,
@@ -174,7 +167,7 @@ public:
                       bool isTerminal);
     void findgeneric(Register *output,                                 // value output
                      int subIdx,                                       // Subscription index in config
-                     QDeclarativeContextPrivate *context,                       // Context to search in
+                     QDeclarativeContextData *context,                 // Context to search in
                      const QScriptDeclarativeClass::Identifier &name, 
                      bool isTerminal);
 };
@@ -190,21 +183,9 @@ QDeclarativeCompiledBindingsPrivate::~QDeclarativeCompiledBindingsPrivate()
     delete [] identifiers; identifiers = 0;
 }
 
-QDeclarativeCompiledBindingsPrivate::Subscription::Subscription()
-: type(InvalidType)
-{
-}
-
-QDeclarativeCompiledBindingsPrivate::Subscription::~Subscription()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    else if (type == IdType) ((QDeclarativeContextPrivate::IdNotifier *)idData)->~IdNotifier();
-}
-
-
 int QDeclarativeCompiledBindingsPrivate::methodCount = -1;
 
-QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, QDeclarativeContext *context)
+QDeclarativeCompiledBindings::QDeclarativeCompiledBindings(const char *program, QDeclarativeContextData *context)
 : QObject(*(new QDeclarativeCompiledBindingsPrivate))
 {
     Q_D(QDeclarativeCompiledBindings);
@@ -248,7 +229,6 @@ void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarati
 {
     if (e) {
         addToObject(target);
-        update(flags);
     } else {
         removeFromObject();
     }
@@ -267,17 +247,17 @@ int QDeclarativeCompiledBindingsPrivate::Binding::propertyIndex()
     return property & 0xFFFF;
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags)
+void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
-    parent->run(this);
+    parent->run(this, flags);
 }
 
 void QDeclarativeCompiledBindingsPrivate::Binding::destroy()
 {
     enabled = false;
     removeFromObject();
-    parent->q_func()->release();
     clear();
+    parent->q_func()->release();
 }
 
 int QDeclarativeCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void **)
@@ -291,59 +271,57 @@ int QDeclarativeCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void 
         quint32 count = *reeval;
         ++reeval;
         for (quint32 ii = 0; ii < count; ++ii) {
-            d->run(d->m_bindings + reeval[ii]);
+            d->run(d->m_bindings + reeval[ii], QDeclarativePropertyPrivate::DontRemoveBinding);
         }
     }
     return -1;
 }
 
-void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
+void QDeclarativeCompiledBindingsPrivate::run(Binding *binding, QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_Q(QDeclarativeCompiledBindings);
 
     if (!binding->enabled)
         return;
-    if (binding->updating)
-        qWarning("ERROR: Circular binding");
 
-    QDeclarativeContext *context = q->QDeclarativeAbstractExpression::context();
-    if (!context) {
-        qWarning("QDeclarativeCompiledBindings: Attempted to evaluate an expression in an invalid context");
+    QDeclarativeContextData *context = q->QDeclarativeAbstractExpression::context();
+    if (!context || !context->isValid()) 
+        return;
+
+    if (binding->updating) {
+        QString name;
+        if (binding->property & 0xFFFF0000) {
+            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
+
+            QDeclarativeValueType *vt = ep->valueTypes[(binding->property >> 16) & 0xFF];
+            Q_ASSERT(vt);
+
+            name = QLatin1String(binding->target->metaObject()->property(binding->property & 0xFFFF).name());
+            name.append(QLatin1String("."));
+            name.append(QLatin1String(vt->metaObject()->property(binding->property >> 24).name()));
+        } else {
+            name = QLatin1String(binding->target->metaObject()->property(binding->property).name());
+        }
+        qmlInfo(binding->target) << QCoreApplication::translate("QDeclarativeCompiledBindings", "Binding loop detected for property \"%1\"").arg(name);
         return;
     }
-    QDeclarativeContextPrivate *cp = QDeclarativeContextPrivate::get(context);
 
+    binding->updating = true;
     if (binding->property & 0xFFFF0000) {
-        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(cp->engine);
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine);
 
         QDeclarativeValueType *vt = ep->valueTypes[(binding->property >> 16) & 0xFF];
         Q_ASSERT(vt);
         vt->read(binding->target, binding->property & 0xFFFF);
 
         QObject *target = vt;
-        run(binding->index, cp, binding, binding->scope, target);
+        run(binding->index, context, binding, binding->scope, target, flags);
 
-        vt->write(binding->target, binding->property & 0xFFFF, 
-                  QDeclarativePropertyPrivate::DontRemoveBinding);
+        vt->write(binding->target, binding->property & 0xFFFF, flags);
     } else {
-        run(binding->index, cp, binding, binding->scope, binding->target);
+        run(binding->index, context, binding, binding->scope, binding->target, flags);
     }
-}
-
-QDeclarativeCompiledBindingsPrivate::Subscription::Signal *QDeclarativeCompiledBindingsPrivate::Subscription::signal() 
-{
-    if (type == IdType) ((QDeclarativeContextPrivate::IdNotifier *)idData)->~IdNotifier();
-    if (type != SignalType) new (signalData) Signal;
-    type = SignalType;
-    return (Signal *)signalData;
-}
-
-QDeclarativeContextPrivate::IdNotifier *QDeclarativeCompiledBindingsPrivate::Subscription::id()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    if (type != IdType) new (idData) QDeclarativeContextPrivate::IdNotifier;
-    type = IdType;
-    return (QDeclarativeContextPrivate::IdNotifier *)idData;
+    binding->updating = false;
 }
 
 namespace {
@@ -351,9 +329,12 @@ namespace {
 struct Instr {
     enum {
         Noop,
+        BindingId,               // id
 
         Subscribe,               // subscribe
         SubscribeId,             // subscribe
+
+        FetchAndSubscribe,       // fetchAndSubscribe
 
         LoadId,                  // load
         LoadScope,               // load
@@ -419,6 +400,12 @@ struct Instr {
         } common;
         struct {
             quint8 type;
+            quint8 packing;
+            quint16 column;
+            quint32 line;
+        } id;
+        struct {
+            quint8 type;
             quint8 packing[3];
             quint16 subscriptions;
             quint16 identifiers;
@@ -449,6 +436,14 @@ struct Instr {
             quint8 exceptionId;
             quint32 index;
         } store;
+        struct {
+            quint8 type;
+            qint8 output;
+            qint8 objectReg;
+            quint8 exceptionId;
+            quint16 subscription;
+            quint16 function;
+        } fetchAndSubscribe;
         struct {
             quint8 type;
             qint8 output;
@@ -653,26 +648,11 @@ struct QDeclarativeBindingCompilerPrivate
 
 void QDeclarativeCompiledBindingsPrivate::unsubscribe(int subIndex)
 {
-    Q_Q(QDeclarativeCompiledBindings);
-
     QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    if (sub->isSignal()) {
-        QDeclarativeCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
-        if (s->source)
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       q, methodCount + subIndex);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    q, methodCount + subIndex);
-#endif
-    } else if (sub->isId()) {
-        sub->id()->clear();
-    }
+    sub->disconnect();
 }
 
-void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextPrivate *p, int idIndex, int subIndex)
+void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextData *p, int idIndex, int subIndex)
 {
     Q_Q(QDeclarativeCompiledBindings);
 
@@ -680,15 +660,9 @@ void QDeclarativeCompiledBindingsPrivate::subscribeId(QDeclarativeContextPrivate
 
     if (p->idValues[idIndex]) {
         QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-        QDeclarativeContextPrivate::IdNotifier *i = sub->id();
-
-        i->next = p->idValues[idIndex].bindings;
-        i->prev = &p->idValues[idIndex].bindings;
-        p->idValues[idIndex].bindings = i;
-        if (i->next) i->next->prev = &i->next;
-
-        i->target = q;
-        i->methodIndex = methodCount + subIndex;
+        sub->target = q;
+        sub->targetMethod = methodCount + subIndex;
+        sub->connect(&p->idValues[idIndex].bindings);
     }
 }
  
@@ -697,27 +671,12 @@ void QDeclarativeCompiledBindingsPrivate::subscribe(QObject *o, int notifyIndex,
     Q_Q(QDeclarativeCompiledBindings);
 
     QDeclarativeCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
-    
-    if (sub->isId())
-        unsubscribe(subIndex);
-
-    QDeclarativeCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
-    if (o != s->source || notifyIndex != s->notifyIndex)  {
-        if (s->source)
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
-            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       q, methodCount + subIndex);
-#else
-            // QTBUG-6781
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    q, methodCount + subIndex);
-#endif
-        s->source = o;
-        s->notifyIndex = notifyIndex;
-        if (s->source && s->notifyIndex != -1) 
-            QMetaObject::connect(s->source, s->notifyIndex, q,
-                                 methodCount + subIndex, Qt::DirectConnection);
-    } 
+    sub->target = q;
+    sub->targetMethod = methodCount + subIndex; 
+    if (o)
+        sub->connect(o, notifyIndex);
+    else
+        sub->disconnect();
 }
 
 // Conversion functions - these MUST match the QtScript expression path
@@ -767,7 +726,7 @@ inline static bool toBool(Register *reg, int type, bool *ok = 0)
     }
 }
 
-inline static QUrl toUrl(Register *reg, int type, QDeclarativeContextPrivate *context, bool *ok = 0)
+inline static QUrl toUrl(Register *reg, int type, QDeclarativeContextData *context, bool *ok = 0)
 {
     if (ok) *ok = true;
 
@@ -811,9 +770,9 @@ static QObject *variantToQObject(const QVariant &value, bool *ok)
 }
 
 bool QDeclarativeCompiledBindingsPrivate::findproperty(QObject *obj, Register *output, 
-                                              QDeclarativeEnginePrivate *enginePriv,
-                                              int subIdx, const QScriptDeclarativeClass::Identifier &name,
-                                              bool isTerminal)
+                                                       QDeclarativeEnginePrivate *enginePriv,
+                                                       int subIdx, const QScriptDeclarativeClass::Identifier &name,
+                                                       bool isTerminal)
 {
     if (!obj) {
         output->setUndefined();
@@ -884,10 +843,10 @@ bool QDeclarativeCompiledBindingsPrivate::findproperty(QObject *obj, Register *o
 }
 
 void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output, 
-                                             int subIdx,      
-                                             QDeclarativeContextPrivate *context,
-                                             const QScriptDeclarativeClass::Identifier &name, 
-                                             bool isTerminal)
+                                                      int subIdx,      
+                                                      QDeclarativeContextData *context,
+                                                      const QScriptDeclarativeClass::Identifier &name, 
+                                                      bool isTerminal)
 {
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(context->engine);
 
@@ -898,14 +857,17 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
 
         if (contextPropertyIndex != -1) {
 
-            if (subIdx != -1) 
-                subscribe(QDeclarativeContextPrivate::get(context), contextPropertyIndex + context->notifyIndex, subIdx);
-
             if (contextPropertyIndex < context->idValueCount) {
                 output->setQObject(context->idValues[contextPropertyIndex]);
                 output->settype(QMetaType::QObjectStar);
+
+                if (subIdx != -1) 
+                    subscribeId(context, contextPropertyIndex, subIdx);
+
             } else {
-                const QVariant &value = context->propertyValues.at(contextPropertyIndex);
+                QDeclarativeContextPrivate *cp = context->asQDeclarativeContextPrivate();
+                const QVariant &value = cp->propertyValues.at(contextPropertyIndex);
+
                 if (isTerminal) {
                     new (output->typeDataPtr()) QVariant(value);
                     output->settype(qMetaTypeId<QVariant>());
@@ -916,6 +878,11 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
                     else { output->settype(QMetaType::QObjectStar); }
                     return;
                 }
+
+                if (subIdx != -1) 
+                    subscribe(context->asQDeclarativeContext(), contextPropertyIndex + cp->notifyIndex, subIdx);
+
+
             }
 
             return;
@@ -928,18 +895,14 @@ void QDeclarativeCompiledBindingsPrivate::findgeneric(Register *output,
             }
         }
 
-        if (QObject *root = context->defaultObjects.isEmpty()?0:context->defaultObjects.first()) {
+        if (QObject *root = context->contextObject) {
 
             if (findproperty(root, output, enginePriv, subIdx, name, isTerminal))
                 return;
 
         }
 
-        if (context->parent) {
-            context = QDeclarativeContextPrivate::get(context->parent);
-        } else {
-            context = 0;
-        }
+        context = context->parent;
     }
 
     output->setUndefined();
@@ -958,7 +921,7 @@ void QDeclarativeCompiledBindingsPrivate::init()
 }
 
 static void throwException(int id, QDeclarativeDelayedError *error, 
-                           Program *program, QDeclarativeContextPrivate *context,
+                           Program *program, QDeclarativeContextData *context,
                            const QString &description = QString())
 {
     error->error.setUrl(context->url);
@@ -982,151 +945,158 @@ static void dumpInstruction(const Instr *instr)
 {
     switch (instr->common.type) {
     case Instr::Noop:
-        qWarning().nospace() << "Noop";
+        qWarning().nospace() << "\t" << "Noop";
+        break;
+    case Instr::BindingId:
+        qWarning().nospace() << instr->id.line << ":" << instr->id.column << ":";
         break;
     case Instr::Subscribe:
-        qWarning().nospace() << "Subscribe" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
+        qWarning().nospace() << "\t" << "Subscribe" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
         break;
     case Instr::SubscribeId:
-        qWarning().nospace() << "SubscribeId" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
+        qWarning().nospace() << "\t" << "SubscribeId" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
+        break;
+    case Instr::FetchAndSubscribe:
+        qWarning().nospace() << "\t" << "FetchAndSubscribe" << "\t" << instr->fetchAndSubscribe.output << "\t" << instr->fetchAndSubscribe.objectReg << "\t" << instr->fetchAndSubscribe.subscription;
         break;
     case Instr::LoadId:
-        qWarning().nospace() << "LoadId" << "\t\t\t" << instr->load.index << "\t" << instr->load.reg;
+        qWarning().nospace() << "\t" << "LoadId" << "\t\t\t" << instr->load.index << "\t" << instr->load.reg;
         break;
     case Instr::LoadScope:
-        qWarning().nospace() << "LoadScope" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
+        qWarning().nospace() << "\t" << "LoadScope" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
         break;
     case Instr::LoadRoot:
-        qWarning().nospace() << "LoadRoot" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
+        qWarning().nospace() << "\t" << "LoadRoot" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
         break;
     case Instr::LoadAttached:
-        qWarning().nospace() << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.index;
+        qWarning().nospace() << "\t" << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.index;
         break;
     case Instr::ConvertIntToReal:
-        qWarning().nospace() << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        qWarning().nospace() << "\t" << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
     case Instr::ConvertRealToInt:
-        qWarning().nospace() << "ConvertRealToInt" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        qWarning().nospace() << "\t" << "ConvertRealToInt" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
     case Instr::Real:
-        qWarning().nospace() << "Real" << "\t\t\t" << instr->real_value.reg << "\t" << instr->real_value.value;
+        qWarning().nospace() << "\t" << "Real" << "\t\t\t" << instr->real_value.reg << "\t" << instr->real_value.value;
         break;
     case Instr::Int:
-        qWarning().nospace() << "Int" << "\t\t\t" << instr->int_value.reg << "\t" << instr->int_value.value;
+        qWarning().nospace() << "\t" << "Int" << "\t\t\t" << instr->int_value.reg << "\t" << instr->int_value.value;
         break;
     case Instr::Bool:
-        qWarning().nospace() << "Bool" << "\t\t\t" << instr->bool_value.reg << "\t" << instr->bool_value.value;
+        qWarning().nospace() << "\t" << "Bool" << "\t\t\t" << instr->bool_value.reg << "\t" << instr->bool_value.value;
         break;
     case Instr::String:
-        qWarning().nospace() << "String" << "\t\t\t" << instr->string_value.reg << "\t" << instr->string_value.offset << "\t" << instr->string_value.length;
+        qWarning().nospace() << "\t" << "String" << "\t\t\t" << instr->string_value.reg << "\t" << instr->string_value.offset << "\t" << instr->string_value.length;
         break;
     case Instr::AddReal:
-        qWarning().nospace() << "AddReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "AddReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::AddInt:
-        qWarning().nospace() << "AddInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "AddInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::AddString:
-        qWarning().nospace() << "AddString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "AddString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::MinusReal:
-        qWarning().nospace() << "MinusReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "MinusReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::MinusInt:
-        qWarning().nospace() << "MinusInt" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "MinusInt" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::CompareReal:
-        qWarning().nospace() << "CompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "CompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::CompareString:
-        qWarning().nospace() << "CompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "CompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::NotCompareReal:
-        qWarning().nospace() << "NotCompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "NotCompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::NotCompareString:
-        qWarning().nospace() << "NotCompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "NotCompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::GreaterThanReal:
-        qWarning().nospace() << "GreaterThanReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "GreaterThanReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::MaxReal:
-        qWarning().nospace() << "MaxReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "MaxReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::MinReal:
-        qWarning().nospace() << "MinReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        qWarning().nospace() << "\t" << "MinReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
     case Instr::NewString:
-        qWarning().nospace() << "NewString" << "\t\t" << instr->construct.reg;
+        qWarning().nospace() << "\t" << "NewString" << "\t\t" << instr->construct.reg;
         break;
     case Instr::NewUrl:
-        qWarning().nospace() << "NewUrl" << "\t\t\t" << instr->construct.reg;
+        qWarning().nospace() << "\t" << "NewUrl" << "\t\t\t" << instr->construct.reg;
         break;
     case Instr::CleanupString:
-        qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg;
+        qWarning().nospace() << "\t" << "CleanupString" << "\t\t" << instr->cleanup.reg;
         break;
     case Instr::CleanupUrl:
-        qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg;
+        qWarning().nospace() << "\t" << "CleanupUrl" << "\t\t" << instr->cleanup.reg;
         break;
     case Instr::Fetch:
-        qWarning().nospace() << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
+        qWarning().nospace() << "\t" << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
         break;
     case Instr::Store:
-        qWarning().nospace() << "Store" << "\t\t\t" << instr->store.output << "\t" << instr->store.index << "\t" << instr->store.reg;
+        qWarning().nospace() << "\t" << "Store" << "\t\t\t" << instr->store.output << "\t" << instr->store.index << "\t" << instr->store.reg;
         break;
     case Instr::Copy:
-        qWarning().nospace() << "Copy" << "\t\t\t" << instr->copy.reg << "\t" << instr->copy.src;
+        qWarning().nospace() << "\t" << "Copy" << "\t\t\t" << instr->copy.reg << "\t" << instr->copy.src;
         break;
     case Instr::Skip:
-        qWarning().nospace() << "Skip" << "\t\t\t" << instr->skip.reg << "\t" << instr->skip.count;
+        qWarning().nospace() << "\t" << "Skip" << "\t\t\t" << instr->skip.reg << "\t" << instr->skip.count;
         break;
     case Instr::Done:
-        qWarning().nospace() << "Done";
+        qWarning().nospace() << "\t" << "Done";
         break;
     case Instr::InitString:
-        qWarning().nospace() << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx;
+        qWarning().nospace() << "\t" << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx;
         break;
     case Instr::FindGeneric:
-        qWarning().nospace() << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.name;
+        qWarning().nospace() << "\t" << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.name;
         break;
     case Instr::FindGenericTerminal:
-        qWarning().nospace() << "FindGenericTerminal" << "\t" << instr->find.reg << "\t" <<  instr->find.name;
+        qWarning().nospace() << "\t" << "FindGenericTerminal" << "\t" << instr->find.reg << "\t" <<  instr->find.name;
         break;
     case Instr::FindProperty:
-        qWarning().nospace() << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
+        qWarning().nospace() << "\t" << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
         break;
     case Instr::FindPropertyTerminal:
-        qWarning().nospace() << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
+        qWarning().nospace() << "\t" << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
         break;
     case Instr::CleanupGeneric:
-        qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg;
+        qWarning().nospace() << "\t" << "CleanupGeneric" << "\t\t" << instr->cleanup.reg;
         break;
     case Instr::ConvertGenericToReal:
-        qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        qWarning().nospace() << "\t" << "ConvertGenericToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
     case Instr::ConvertGenericToBool:
-        qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        qWarning().nospace() << "\t" << "ConvertGenericToBool" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
     case Instr::ConvertGenericToString:
-        qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        qWarning().nospace() << "\t" << "ConvertGenericToString" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
     case Instr::ConvertGenericToUrl:
-        qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        qWarning().nospace() << "\t" << "ConvertGenericToUrl" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
     default:
-        qWarning().nospace() << "Unknown";
+        qWarning().nospace() << "\t" << "Unknown";
         break;
     }
 }
 
 void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
-                                     QDeclarativeContextPrivate *context, QDeclarativeDelayedError *error,
-                                     QObject *scope, QObject *output)
+                                              QDeclarativeContextData *context, QDeclarativeDelayedError *error,
+                                              QObject *scope, QObject *output, QDeclarativePropertyPrivate::WriteFlags storeFlags)
 {
+    Q_Q(QDeclarativeCompiledBindings);
+
     error->removeError();
 
     Register registers[32];
-    int storeFlags = 0;
 
     QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(context->engine);
     Program *program = (Program *)programData;
@@ -1134,6 +1104,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
     instr += instrIndex;
     const char *data = program->data();
 
+    // return;
 #ifdef COMPILEDBINDINGS_DEBUG
     qWarning().nospace() << "Begin binding run";
 #endif
@@ -1145,6 +1116,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
 
     switch (instr->common.type) {
     case Instr::Noop:
+    case Instr::BindingId:
         break;
 
     case Instr::SubscribeId:
@@ -1160,6 +1132,32 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
     }
         break;
 
+    case Instr::FetchAndSubscribe:
+    {
+        const Register &input = registers[instr->fetchAndSubscribe.objectReg];
+        Register &output = registers[instr->fetchAndSubscribe.output];
+
+        if (input.isUndefined()) {
+            throwException(instr->fetchAndSubscribe.exceptionId, error, program, context);
+            return;
+        }
+
+        QObject *object = input.getQObject();
+        if (!object) {
+            output.setUndefined();
+        } else {
+            int subIdx = instr->fetchAndSubscribe.subscription;
+            QDeclarativeCompiledBindingsPrivate::Subscription *sub = 0;
+            if (subIdx != -1) {
+                sub = (subscriptions + subIdx);
+                sub->target = q;
+                sub->targetMethod = methodCount + subIdx; 
+            }
+            fastProperties()->accessor(instr->fetchAndSubscribe.function)(object, output.typeDataPtr(), sub);
+        }
+    }
+        break;
+
     case Instr::LoadId:
         registers[instr->load.reg].setQObject(context->idValues[instr->load.index].data());
         break;
@@ -1169,7 +1167,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         break;
 
     case Instr::LoadRoot:
-        registers[instr->load.reg].setQObject(context->defaultObjects.at(0));
+        registers[instr->load.reg].setQObject(context->contextObject);
         break;
 
     case Instr::LoadAttached:
@@ -1455,7 +1453,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         // name is not present in the current context or it would have been
         // found during the static compile
         findgeneric(registers + instr->find.reg, instr->find.subscribeIndex, 
-                    QDeclarativeContextPrivate::get(context->parent),
+                    context->parent,
                     identifiers[instr->find.name].identifier, 
                     instr->common.type == Instr::FindGenericTerminal);
         break;
@@ -1602,6 +1600,17 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
     if (destination->type == -1)
         return false;
 
+    if (bindingsDump()) {
+        QDeclarativeJS::AST::ExpressionNode *n = node->expressionCast();
+        if (n) {
+            Instr id;
+            id.common.type = Instr::BindingId;
+            id.id.column = n->firstSourceLocation().startColumn;
+            id.id.line = n->firstSourceLocation().startLine;
+            bytecode << id;
+        }
+    }
+
     Result type;
 
     if (!parseExpression(node, type)) 
@@ -1612,6 +1621,9 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
         return false;
 
     if (type.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         if (destination->type != QMetaType::QReal &&
             destination->type != QVariant::String &&
             destination->type != QMetaType::Bool &&
@@ -1895,7 +1907,7 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
 
                     if (!fetch(type, component->metaObject(), reg, d1Idx, subscribeName, nameNodes.at(ii)))
                         return false;
-                } else {
+                } else if (qmlExperimental()) {
                     Instr find;
                     if (nameParts.count() == 1)
                         find.common.type = Instr::FindGenericTerminal;
@@ -2051,7 +2063,11 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
 
     int lhsTmp = -1;
     int rhsTmp = -1;
+
     if (lhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         lhsTmp = acquireReg();
 
         Instr conv;
@@ -2062,6 +2078,9 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
     }
 
     if (rhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         rhsTmp = acquireReg();
 
         Instr conv;
@@ -2107,6 +2126,9 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     int rhsTmp = -1;
 
     if (lhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         lhsTmp = acquireReg(Instr::CleanupString);
 
         Instr convert;
@@ -2117,6 +2139,9 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     }
 
     if (rhs.unknownType) {
+        if (!qmlExperimental())
+            return false;
+
         rhsTmp = acquireReg(Instr::CleanupString);
 
         Instr convert;
@@ -2413,29 +2438,41 @@ bool QDeclarativeBindingCompilerPrivate::buildName(QStringList &name,
     return true;
 }
 
-
 bool QDeclarativeBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg, 
-                                      int idx, const QStringList &subName, QDeclarativeJS::AST::ExpressionNode *node)
+                                               int idx, const QStringList &subName, 
+                                               QDeclarativeJS::AST::ExpressionNode *node)
 {
     QMetaProperty prop = mo->property(idx);
     rv.metaObject = 0;
     rv.type = 0;
 
-    if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
-        Instr sub;
-        sub.common.type = Instr::Subscribe;
-        sub.subscribe.offset = subscriptionIndex(subName);
-        sub.subscribe.reg = reg;
-        sub.subscribe.index = prop.notifySignalIndex();
-        bytecode << sub;
-    }
+    int fastFetchIndex = fastProperties()->accessorIndexForProperty(mo, idx);
 
     Instr fetch;
-    fetch.common.type = Instr::Fetch;
-    fetch.fetch.objectReg = reg;
-    fetch.fetch.index = idx;
-    fetch.fetch.output = reg;
-    fetch.fetch.exceptionId = exceptionId(node);
+
+    if (!qmlDisableFastProperties() && fastFetchIndex != -1) {
+        fetch.common.type = Instr::FetchAndSubscribe;
+        fetch.fetchAndSubscribe.objectReg = reg;
+        fetch.fetchAndSubscribe.output = reg;
+        fetch.fetchAndSubscribe.function = fastFetchIndex;
+        fetch.fetchAndSubscribe.subscription = subscriptionIndex(subName);
+        fetch.fetchAndSubscribe.exceptionId = exceptionId(node);
+    } else {
+        if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
+            Instr sub;
+            sub.common.type = Instr::Subscribe;
+            sub.subscribe.offset = subscriptionIndex(subName);
+            sub.subscribe.reg = reg;
+            sub.subscribe.index = prop.notifySignalIndex();
+            bytecode << sub;
+        }
+
+        fetch.common.type = Instr::Fetch;
+        fetch.fetch.objectReg = reg;
+        fetch.fetch.index = idx;
+        fetch.fetch.output = reg;
+        fetch.fetch.exceptionId = exceptionId(node);
+    }
 
     rv.type = prop.userType();
     rv.metaObject = engine->metaObjectForType(rv.type);
@@ -2636,6 +2673,12 @@ bool QDeclarativeBindingCompiler::isValid() const
 int QDeclarativeBindingCompiler::compile(const Expression &expression, QDeclarativeEnginePrivate *engine)
 {
     if (!expression.expression.asAST()) return false;
+
+    if (!qmlExperimental() && expression.property->isValueTypeSubProperty)
+        return -1;
+
+    if (qmlDisableOptimizer())
+        return -1;
 
     d->context = expression.context;
     d->component = expression.component;

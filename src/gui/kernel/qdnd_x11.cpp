@@ -51,10 +51,10 @@
 #include "qbitmap.h"
 #include "qdesktopwidget.h"
 #include "qevent.h"
-#include "qdatetime.h"
 #include "qiodevice.h"
 #include "qpointer.h"
 #include "qcursor.h"
+#include "qelapsedtimer.h"
 #include "qvariant.h"
 #include "qvector.h"
 #include "qurl.h"
@@ -1911,23 +1911,19 @@ Qt::DropAction QDragManager::drag(QDrag * o)
         // then we could still have problems, but this is highly unlikely
         QApplication::flush();
 
-        QTime started = QTime::currentTime();
-        QTime now = started;
+        QElapsedTimer timer;
+        timer.start();
         do {
             XEvent event;
             if (XCheckTypedEvent(X11->display, ClientMessage, &event))
                 qApp->x11ProcessEvent(&event);
-
-            now = QTime::currentTime();
-            if (started > now) // crossed midnight
-                started = now;
 
             // sleep 50 ms, so we don't use up CPU cycles all the time.
             struct timeval usleep_tv;
             usleep_tv.tv_sec = 0;
             usleep_tv.tv_usec = 50000;
             select(0, 0, 0, 0, &usleep_tv);
-        } while (object && started.msecsTo(now) < 1000);
+        } while (object && timer.hasExpired(1000));
     }
 
     object = o;

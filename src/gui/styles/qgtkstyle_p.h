@@ -85,9 +85,14 @@ public:
     int size() const { return m_size; }
     const char *data() const { return m_data; }
 
+#ifdef __SUNPRO_CC
+        QHashableLatin1Literal(const char* str)
+        : m_size(strlen(str)), m_data(str) {}
+#else
     template <int N>
         QHashableLatin1Literal(const char (&str)[N])
         : m_size(N - 1), m_data(str) {}
+#endif
 
     QHashableLatin1Literal(const QHashableLatin1Literal &other)
         : m_size(other.m_size), m_data(other.m_data)

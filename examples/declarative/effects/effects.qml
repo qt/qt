@@ -1,9 +1,7 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
-    color: "white"
-    width: 400
-    height: 200
+    width: 400; height: 200
 
     Image {
         id: blur
@@ -16,7 +14,7 @@ Rectangle {
                 running: false
                 from: 0; to: 10
                 duration: 1000
-                repeat: true
+                loops: Animation.Infinite
             }
         }
 
@@ -33,7 +31,14 @@ Rectangle {
         effect: DropShadow {
             blurRadius: 3
             offset.x: 3
-            NumberAnimation on offset.y { id: dropShadowEffect; from: 0; to: 10; duration: 1000; running: false; repeat: true; }
+
+            NumberAnimation on offset.y {
+                id: dropShadowEffect
+                from: 0; to: 10
+                duration: 1000
+                running: false
+                loops: Animation.Infinite
+            }
         }
 
         MouseArea { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }

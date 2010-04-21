@@ -37,6 +37,7 @@ SUBDIRS=\
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
     SUBDIRS += macgui \
+               macnativeevents \
                macplist \
                qaccessibility_mac
 }

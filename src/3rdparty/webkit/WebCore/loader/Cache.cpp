@@ -31,6 +31,7 @@
 #include "DocLoader.h"
 #include "Document.h"
 #include "FrameLoader.h"
+#include "FrameLoaderTypes.h"
 #include "FrameView.h"
 #include "Image.h"
 #include "ResourceHandle.h"
@@ -123,19 +124,21 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
         
         resource->load(docLoader);
         
+        if (resource->errorOccurred()) {
+            // We don't support immediate loads, but we do support immediate failure.
+            // In that case we should to delete the resource now and return 0 because otherwise
+            // it would leak if no ref/deref was ever done on it.
+            resource->setInCache(false);
+            delete resource;
+            return 0;
+        }
+
         if (!disabled())
             m_resources.set(url.string(), resource);  // The size will be added in later once the resource is loaded and calls back to us with the new size.
         else {
             // Kick the resource out of the cache, because the cache is disabled.
             resource->setInCache(false);
             resource->setDocLoader(docLoader);
-            if (resource->errorOccurred()) {
-                // We don't support immediate loads, but we do support immediate failure.
-                // In that case we should to delete the resource now and return 0 because otherwise
-                // it would leak if no ref/deref was ever done on it.
-                delete resource;
-                return 0;
-            }
         }
     }
 
@@ -164,7 +167,7 @@ CachedCSSStyleSheet* Cache::requestUserCSSStyleSheet(DocLoader* docLoader, const
         // FIXME: CachedResource should just use normal refcounting instead.
         userSheet->setInCache(true);
         // Don't load incrementally, skip load checks, don't send resource load callbacks.
-        userSheet->load(docLoader, false, true, false);
+        userSheet->load(docLoader, false, SkipSecurityCheck, false);
         if (!disabled())
             m_resources.set(url, userSheet);
         else
@@ -292,7 +295,7 @@ void Cache::pruneLiveResources()
                 return;
 
             // Destroy our decoded data. This will remove us from 
-            // m_liveDecodedResources, and possibly move us to a differnt LRU 
+            // m_liveDecodedResources, and possibly move us to a different LRU 
             // list in m_allResources.
             current->destroyDecodedData();
 
@@ -344,7 +347,7 @@ void Cache::pruneDeadResources()
             CachedResource* prev = current->m_prevInAllResourcesList;
             if (!current->hasClients() && !current->isPreloaded() && current->isLoaded()) {
                 // Destroy our decoded data. This will remove us from 
-                // m_liveDecodedResources, and possibly move us to a differnt 
+                // m_liveDecodedResources, and possibly move us to a different 
                 // LRU list in m_allResources.
                 current->destroyDecodedData();
                 
@@ -465,13 +468,13 @@ void Cache::removeFromLRUList(CachedResource* resource)
     if (resource->accessCount() == 0)
         return;
 
-#ifndef NDEBUG
+#if !ASSERT_DISABLED
     unsigned oldListIndex = resource->m_lruIndex;
 #endif
 
     LRUList* list = lruListFor(resource);
 
-#ifndef NDEBUG
+#if !ASSERT_DISABLED
     // Verify that the list we got is the list we want.
     ASSERT(resource->m_lruIndex == oldListIndex);
 

@@ -1,39 +1,42 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     id: screen
+
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: toolbar.top
+        width: parent.width
+        anchors { top: parent.top; bottom: toolBar.top }
 
         Image {
             id: background
-            anchors.fill: parent; source: "../shared/pics/background.jpg"
+            anchors.fill: parent
+            source: "../shared/pics/background.jpg"
             fillMode: Image.PreserveAspectCrop
         }
     }
 
     Rectangle {
-        id: toolbar
+        id: toolBar
+        width: parent.width; height: 32
         color: activePalette.window
-        height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: console.log("Implement me!");
-            anchors.left: parent.left; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "New Game" 
+            onClicked: console.log("This doesn't do anything yet...")
         }
 
         Text {
             id: score
-            text: "Score: Who knows?"; font.bold: true
-            anchors.right: parent.right; anchors.rightMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "Score: Who knows?"
+            font.bold: true
         }
     }
 }

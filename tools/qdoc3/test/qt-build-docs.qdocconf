@@ -18,16 +18,44 @@ qhp.Qt.file                = qt.qhp
 qhp.Qt.namespace           = com.trolltech.qt.470
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
-qhp.Qt.indexRoot           =
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
-qhp.Qt.extraFiles          = classic.css \
+qhp.Qt.extraFiles          = index.html \
+                             style/style.css \
+			     scripts/functions.js \
+			     scripts/jquery.js \
+                             images/api_examples.png \
+                             images/api_lookup.png \
+                             images/api_topics.png \
+                             images/bg_ll.png \
+                             images/bg_l_blank.png \
+                             images/bg_l.png \
+                             images/bg_lr.png \
+                             images/bg_r.png \
+                             images/bg_ul_blank.png \
+                             images/bg_ul.png \
+                             images/bg_ur_blank.png \
+                             images/bg_ur.png \
+                             images/breadcrumb.png \
+                             images/bullet_dn.png \
+                             images/bullet_gt.png \
+                             images/feedbackground.png \
+                             images/form_bg.png \
+                             images/horBar.png \
+                             images/page_bg.png \
+                             images/print.png \
+                             images/qt_guide.png \
                              images/qt-logo.png \
+                             images/qt_ref_doc.png \
+                             images/qt_tools.png \
+                             images/sep.png \
+                             images/sprites-combined.png \
                              images/taskmenuextension-example.png \
                              images/coloreditorfactoryimage.png \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
+
 
 qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc
 qhp.Qt.customFilters.Qt.name = Qt 4.7.0
@@ -106,7 +134,8 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples \
-                          $QT_SOURCE_TREE/doc/src/declarative/pics
+                          $QT_SOURCE_TREE/doc/src/declarative/pics \
+			  $QT_SOURCE_TREE/doc/src/template/images
 outputdir               = $QT_BUILD_TREE/doc/html
 tagfile                 = $QT_BUILD_TREE/doc/html/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html

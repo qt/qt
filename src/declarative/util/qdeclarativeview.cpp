@@ -41,9 +41,6 @@
 
 #include "qdeclarativeview.h"
 
-#include "qperformancelog_p_p.h"
-#include "qfxperf_p_p.h"
-
 #include <qdeclarative.h>
 #include <qdeclarativeitem.h>
 #include <qdeclarativeengine.h>
@@ -132,6 +129,7 @@ class QDeclarativeViewPrivate
 public:
     QDeclarativeViewPrivate(QDeclarativeView *view)
         : q(view), root(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
+    ~QDeclarativeViewPrivate() { delete root; }
 
     void execute();
 
@@ -159,6 +157,7 @@ void QDeclarativeViewPrivate::execute()
 {
     delete root;
     delete component;
+    initialSize = QSize();
     component = new QDeclarativeComponent(&engine, source, q);
 
     if (!component->isLoading()) {
@@ -205,7 +204,7 @@ void QDeclarativeViewPrivate::execute()
     QDeclarativeView *view = new QDeclarativeView(this);
     vbox->addWidget(view);
 
-    QUrl url(fileName);
+    QUrl url = QUrl::fromLocalFile(fileName);
     view->setSource(url);
     view->show();
     \endcode
@@ -251,13 +250,6 @@ QDeclarativeView::QDeclarativeView(const QUrl &source, QWidget *parent)
 
 void QDeclarativeViewPrivate::init()
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    {
-        QDeclarativePerfTimer<QDeclarativePerf::FontDatabase> perf;
-        QFontDatabase database;
-    }
-#endif
-
     q->setScene(&scene);
 
     q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
@@ -280,17 +272,23 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
-    delete d->root;
+    delete d;
 }
 
 /*! \property QDeclarativeView::source
   \brief The URL of the source of the QML component.
 
   Changing this property causes the QML component to be reloaded.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
  */
 
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
 
     Calling this methods multiple times with the same url will result
     in the QML being reloaded.
@@ -454,8 +452,6 @@ void QDeclarativeView::setRootObject(QObject *obj)
     if (QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(obj)) {
         d->scene.addItem(item);
 
-        QPerformanceLog::displayData();
-        QPerformanceLog::clear();
         d->root = item;
         d->qmlRoot = item;
         connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));

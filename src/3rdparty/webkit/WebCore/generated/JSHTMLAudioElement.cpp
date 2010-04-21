@@ -37,7 +37,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLAudioElement);
 
 static const HashTableValue JSHTMLAudioElementTableValues[2] =
 {
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLAudioElementConstructor, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLAudioElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,9 +138,9 @@ bool JSHTMLAudioElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLAudioElement, Base>(exec, &JSHTMLAudioElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLAudioElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLAudioElement* domObject = static_cast<JSHTMLAudioElement*>(asObject(slot.slotBase()));
+    JSHTMLAudioElement* domObject = static_cast<JSHTMLAudioElement*>(asObject(slotBase));
     return JSHTMLAudioElement::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSHTMLAudioElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

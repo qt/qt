@@ -84,6 +84,7 @@
 #include "HTMLOptionElement.h"
 #include "HTMLParagraphElement.h"
 #include "HTMLParamElement.h"
+#include "HTMLProgressElement.h"
 #include "HTMLQuoteElement.h"
 #include "HTMLScriptElement.h"
 #include "HTMLSelectElement.h"
@@ -393,6 +394,14 @@ static PassRefPtr<HTMLElement> paramConstructor(const QualifiedName& tagName, Do
     return new HTMLParamElement(tagName, document);
 }
 
+#if ENABLE(PROGRESS_TAG)
+
+static PassRefPtr<HTMLElement> progressConstructor(const QualifiedName& tagName, Document* document, HTMLFormElement*, bool)
+{
+    return HTMLProgressElement::create(tagName, document);
+}
+
+#endif
 static PassRefPtr<HTMLElement> quoteConstructor(const QualifiedName& tagName, Document* document, HTMLFormElement*, bool)
 {
     return new HTMLQuoteElement(tagName, document);
@@ -565,6 +574,10 @@ static void createFunctionMap()
     addTag(pTag, paragraphConstructor);
     addTag(paramTag, paramConstructor);
     addTag(preTag, preConstructor);
+#if ENABLE(PROGRESS_TAG)
+    addTag(progressTag, progressConstructor);
+#endif
+
     addTag(qTag, quoteConstructor);
     addTag(scriptTag, scriptConstructor);
     addTag(selectTag, selectConstructor);

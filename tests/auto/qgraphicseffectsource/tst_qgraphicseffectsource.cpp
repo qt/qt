@@ -48,6 +48,8 @@
 
 #include <private/qgraphicseffect_p.h>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -220,9 +222,8 @@ void tst_QGraphicsEffectSource::styleOption()
     QCOMPARE(item->numRepaints, 0);
     QCOMPARE(effect->numRepaints, 0);
     item->update();
-    QTest::qWait(50);
-    QCOMPARE(item->numRepaints, 1);
-    QCOMPARE(effect->numRepaints, 1);
+    QTRY_COMPARE(item->numRepaints, 1);
+    QTRY_COMPARE(effect->numRepaints, 1);
 }
 
 void tst_QGraphicsEffectSource::isPixmap()
@@ -255,10 +256,9 @@ void tst_QGraphicsEffectSource::update()
     QCOMPARE(effect->numRepaints, 0);
 
     effect->source()->update();
-    QTest::qWait(50);
 
-    QCOMPARE(item->numRepaints, 1);
-    QCOMPARE(effect->numRepaints, 1);
+    QTRY_COMPARE(item->numRepaints, 1);
+    QTRY_COMPARE(effect->numRepaints, 1);
 }
 
 void tst_QGraphicsEffectSource::boundingRect()
@@ -273,22 +273,20 @@ void tst_QGraphicsEffectSource::boundingRect()
     // We can at least check that the device bounding rect was correct in QGraphicsEffect::draw.
     effect->storeDeviceDependentStuff = true;
     effect->source()->update();
-    QTest::qWait(50);
     const QTransform deviceTransform = item->deviceTransform(view->viewportTransform());
-    QCOMPARE(effect->sourceDeviceBoundingRect, deviceTransform.mapRect(itemBoundingRect));
+    QTRY_COMPARE(effect->sourceDeviceBoundingRect, deviceTransform.mapRect(itemBoundingRect));
 
     // Bounding rect in logical coordinates is of course fine.
-    QCOMPARE(effect->source()->boundingRect(Qt::LogicalCoordinates), itemBoundingRect);
+    QTRY_COMPARE(effect->source()->boundingRect(Qt::LogicalCoordinates), itemBoundingRect);
     // Make sure default value is Qt::LogicalCoordinates.
-    QCOMPARE(effect->source()->boundingRect(), itemBoundingRect);
+    QTRY_COMPARE(effect->source()->boundingRect(), itemBoundingRect);
 }
 
 void tst_QGraphicsEffectSource::deviceRect()
 {
     effect->storeDeviceDependentStuff = true;
     effect->source()->update();
-    QTest::qWait(50);
-    QCOMPARE(effect->deviceRect, view->viewport()->rect());
+    QTRY_COMPARE(effect->deviceRect, view->viewport()->rect());
 }
 
 void tst_QGraphicsEffectSource::pixmap()
@@ -299,8 +297,7 @@ void tst_QGraphicsEffectSource::pixmap()
     // We can at least verify a valid pixmap from QGraphicsEffect::draw.
     effect->storeDeviceDependentStuff = true;
     effect->source()->update();
-    QTest::qWait(50);
-    QVERIFY(!effect->deviceCoordinatesPixmap.isNull());
+    QTRY_VERIFY(!effect->deviceCoordinatesPixmap.isNull());
 
     // Pixmaps in logical coordinates we can do fine.
     QPixmap pixmap1 = effect->source()->pixmap(Qt::LogicalCoordinates);

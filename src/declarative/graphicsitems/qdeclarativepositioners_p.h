@@ -90,10 +90,10 @@ Q_SIGNALS:
     void addChanged();
 
 protected Q_SLOTS:
-    virtual void doPositioning()=0;
     void prePositioning();
 
 protected:
+    virtual void doPositioning(QSizeF *contentSize)=0;
     struct PositionedItem {
         PositionedItem(QDeclarativeItem *i) : item(i), isNew(false), isVisible(true) {}
         bool operator==(const PositionedItem &other) const { return other.item == item; }
@@ -116,8 +116,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeColumn : public QDeclarativeBasePositione
     Q_OBJECT
 public:
     QDeclarativeColumn(QDeclarativeItem *parent=0);
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 private:
     Q_DISABLE_COPY(QDeclarativeColumn)
 };
@@ -127,8 +127,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeRow: public QDeclarativeBasePositioner
     Q_OBJECT
 public:
     QDeclarativeRow(QDeclarativeItem *parent=0);
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 private:
     Q_DISABLE_COPY(QDeclarativeRow)
 };
@@ -138,25 +138,34 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
     Q_OBJECT
     Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowChanged)
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+
 public:
     QDeclarativeGrid(QDeclarativeItem *parent=0);
 
-    int rows() const {return _rows;}
+    int rows() const {return m_rows;}
     void setRows(const int rows);
 
-    int columns() const {return _columns;}
+    int columns() const {return m_columns;}
     void setColumns(const int columns);
+
+    Q_ENUMS(Flow)
+    enum Flow { LeftToRight, TopToBottom };
+    Flow flow() const;
+    void setFlow(Flow);
 
 Q_SIGNALS:
     void rowsChanged();
     void columnsChanged();
+    void flowChanged();
 
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 
 private:
-    int _rows;
-    int _columns;
+    int m_rows;
+    int m_columns;
+    Flow m_flow;
     Q_DISABLE_COPY(QDeclarativeGrid)
 };
 
@@ -176,8 +185,8 @@ public:
 Q_SIGNALS:
     void flowChanged();
 
-protected Q_SLOTS:
-    virtual void doPositioning();
+protected:
+    virtual void doPositioning(QSizeF *contentSize);
 
 protected:
     QDeclarativeFlow(QDeclarativeFlowPrivate &dd, QDeclarativeItem *parent);

@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import org.webkit 1.0
 
 Flickable {
@@ -25,21 +25,19 @@ Flickable {
         pixelCacheSize: 4000000
         transformOrigin: Item.TopLeft
 
-        Script {
-            function fixUrl(url)
-            {
-                if (url == "") return url
-                if (url[0] == "/") return "file://"+url
-                if (url.indexOf(":")<0) {
-                    if (url.indexOf(".")<0 || url.indexOf(" ")>=0) {
-                        // Fall back to a search engine; hard-code Wikipedia
-                        return "http://en.wikipedia.org/w/index.php?search="+url
-                    } else {
-                        return "http://"+url
-                    }
+        function fixUrl(url)
+        {
+            if (url == "") return url
+            if (url[0] == "/") return "file://"+url
+            if (url.indexOf(":")<0) {
+                if (url.indexOf(".")<0 || url.indexOf(" ")>=0) {
+                    // Fall back to a search engine; hard-code Wikipedia
+                    return "http://en.wikipedia.org/w/index.php?search="+url
+                } else {
+                    return "http://"+url
                 }
-                return url
             }
+            return url
         }
 
         url: fixUrl(webBrowser.urlString)

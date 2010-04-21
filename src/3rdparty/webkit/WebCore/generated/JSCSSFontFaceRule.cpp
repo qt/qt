@@ -37,8 +37,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSFontFaceRule);
 
 static const HashTableValue JSCSSFontFaceRuleTableValues[3] =
 {
-    { "style", DontDelete|ReadOnly, (intptr_t)jsCSSFontFaceRuleStyle, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSFontFaceRuleConstructor, (intptr_t)0 },
+    { "style", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSFontFaceRuleStyle), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSFontFaceRuleConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -139,17 +139,18 @@ bool JSCSSFontFaceRule::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSCSSFontFaceRule, Base>(exec, &JSCSSFontFaceRuleTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSFontFaceRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSFontFaceRuleStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSFontFaceRule* castedThis = static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()));
+    JSCSSFontFaceRule* castedThis = static_cast<JSCSSFontFaceRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSFontFaceRule* imp = static_cast<CSSFontFaceRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
-JSValue jsCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSFontFaceRuleConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSFontFaceRule* domObject = static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()));
+    JSCSSFontFaceRule* domObject = static_cast<JSCSSFontFaceRule*>(asObject(slotBase));
     return JSCSSFontFaceRule::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCSSFontFaceRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

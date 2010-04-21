@@ -106,6 +106,9 @@ private slots:
     void filter();
 
     void task244669_remove();
+
+    void roleNames_data();
+    void roleNames();
 };
 
 // Testing get/set functions
@@ -680,6 +683,31 @@ void tst_QDirModel::task244669_remove()
     QVERIFY(!index1.isValid());
     QCOMPARE(parent.data() , model.index(SRCDIR "dirtest").data());
 }
+
+void tst_QDirModel::roleNames_data()
+{
+    QTest::addColumn<int>("role");
+    QTest::addColumn<QByteArray>("roleName");
+    QTest::newRow("decoration") << int(Qt::DecorationRole) << QByteArray("decoration");
+    QTest::newRow("display") << int(Qt::DisplayRole) << QByteArray("display");
+    QTest::newRow("fileIcon") << int(QDirModel::FileIconRole) << QByteArray("fileIcon");
+    QTest::newRow("filePath") << int(QDirModel::FilePathRole) << QByteArray("filePath");
+    QTest::newRow("fileName") << int(QDirModel::FileNameRole) << QByteArray("fileName");
+}
+
+void tst_QDirModel::roleNames()
+{
+    QDirModel model;
+    QHash<int, QByteArray> roles = model.roleNames();
+
+    QFETCH(int, role);
+    QVERIFY(roles.contains(role));
+
+    QFETCH(QByteArray, roleName);
+    QList<QByteArray> values = roles.values(role);
+    QVERIFY(values.contains(roleName));
+}
+
 
 QTEST_MAIN(tst_QDirModel)
 #include "tst_qdirmodel.moc"

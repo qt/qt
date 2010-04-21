@@ -1,11 +1,12 @@
-import Qt 4.6
+import Qt 4.7
 
 Image {
     width: 400
     height: 250
     source: "face.png"
+
     SequentialAnimation on fillMode {
-        repeat: true
+        loops: Animation.Infinite
         PropertyAction { value: Image.Stretch }
         PropertyAction { target: label; property: "text"; value: "Stretch" }
         PauseAnimation { duration: 1000 }
@@ -25,17 +26,19 @@ Image {
         PropertyAction { target: label; property: "text"; value: "TileVertically" }
         PauseAnimation { duration: 1000 }
     }
+
     Text {
         id: label
         font.pointSize: 24
         color: "blue"
         style: Text.Outline
         styleColor: "white"
-        anchors { centerIn: parent }
+        anchors.centerIn: parent
     }
+
     Rectangle {
         border.color: "black"
         color: "transparent"
-        anchors { fill: parent; rightMargin: 1; bottomMargin: 1}
+        anchors { fill: parent; rightMargin: 1; bottomMargin: 1 }
     }
 }

@@ -1,7 +1,8 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: tabWidget
+
     property int current: 0
     default property alias content: stack.children
 
@@ -18,21 +19,26 @@ Item {
     Row {
         id: header
         Repeater {
-            delegate:
-            Rectangle {
+            delegate: Rectangle {
                 width: tabWidget.width / stack.children.length; height: 36
+
                 Rectangle {
-                    color: "#acb2c2"; width: parent.width; height: 1
+                    width: parent.width; height: 1
                     anchors { bottom: parent.bottom; bottomMargin: 1 }
+                    color: "#acb2c2"
                 }
                 BorderImage {
-                    source: "tab.png"; visible: tabWidget.current == index; border.left: 7; border.right: 7
                     anchors { fill: parent; leftMargin: 2; topMargin: 5; rightMargin: 1 }
+                    border { left: 7; right: 7 }
+                    source: "tab.png"
+                    visible: tabWidget.current == index
                 }
                 Text {
                     horizontalAlignment: Qt.AlignHCenter; verticalAlignment: Qt.AlignVCenter
-                    anchors.fill: parent; text: stack.children[index].title
-                    elide: Text.ElideRight; font.bold: tabWidget.current == index
+                    anchors.fill: parent
+                    text: stack.children[index].title
+                    elide: Text.ElideRight
+                    font.bold: tabWidget.current == index
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -45,6 +51,7 @@ Item {
 
     Item {
         id: stack
-        anchors.top: header.bottom; anchors.bottom: tabWidget.bottom; width: tabWidget.width
+        width: tabWidget.width
+        anchors.top: header.bottom; anchors.bottom: tabWidget.bottom
     }
 }

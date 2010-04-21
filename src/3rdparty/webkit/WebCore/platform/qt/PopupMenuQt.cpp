@@ -1,8 +1,7 @@
 /*
  * This file is part of the popup menu implementation for <select> elements in WebCore.
  *
- * Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
- * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2008, 2009, 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2006 Apple Computer, Inc.
  * Copyright (C) 2006 Michael Emmel mike.emmel@gmail.com 
  * Coypright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
@@ -27,99 +26,50 @@
 #include "config.h"
 #include "PopupMenu.h"
 
-#include "Frame.h"
+#include "Chrome.h"
+#include "ChromeClientQt.h"
 #include "FrameView.h"
-#include "HostWindow.h"
 #include "PopupMenuClient.h"
 #include "QWebPageClient.h"
-#include "QWebPopup.h"
-
-#include <QAction>
-#include <QDebug>
-#include <QGraphicsProxyWidget>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <qgraphicswebview.h>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QMenu>
-#include <QPoint>
-#include <QStandardItemModel>
-#include <QWidgetAction>
+#include "QtAbstractWebPopup.h"
 
 namespace WebCore {
 
 PopupMenu::PopupMenu(PopupMenuClient* client)
     : m_popupClient(client)
-    , m_proxy(0)
+    , m_popup(0)
 {
-    m_popup = new QWebPopup(client);
 }
 
 PopupMenu::~PopupMenu()
 {
-    // If we create a proxy, then the deletion of the proxy and the
-    // combo will be done by the proxy's parent (QGraphicsWebView)
-    if (!m_proxy)
-        delete m_popup;
+    delete m_popup;
 }
 
-void PopupMenu::clear()
+void PopupMenu::show(const IntRect& rect, FrameView* view, int index)
 {
-    m_popup->clear();
-}
+    ChromeClientQt* chromeClient = static_cast<ChromeClientQt*>(
+        view->frame()->page()->chrome()->client());
+    ASSERT(chromeClient);
 
-void PopupMenu::populate(const IntRect&)
-{
-    clear();
-    Q_ASSERT(client());
+    if (!m_popup)
+        m_popup = chromeClient->createSelectPopup();
 
-    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(m_popup->model());
-    Q_ASSERT(model);
+    m_popup->m_popupClient = m_popupClient;
+    m_popup->m_currentIndex = index;
+    m_popup->m_pageClient = chromeClient->platformPageClient();
 
-    int size = client()->listSize();
-    for (int i = 0; i < size; i++) {
-        if (client()->itemIsSeparator(i))
-            m_popup->insertSeparator(i);
-        else {
-            m_popup->insertItem(i, client()->itemText(i));
+    QRect geometry(rect);
+    geometry.moveTopLeft(view->contentsToWindow(rect.topLeft()));
+    m_popup->m_geometry = geometry;
 
-            if (model && !client()->itemIsEnabled(i))
-                model->item(i)->setEnabled(false);
+    m_popup->show();
 
-            if (client()->itemIsSelected(i))
-                m_popup->setCurrentIndex(i);
-        }
-    }
-}
-
-void PopupMenu::show(const IntRect& r, FrameView* v, int index)
-{
-    QWebPageClient* client = v->hostWindow()->platformPageClient();
-    populate(r);
-    QRect rect = r;
-    rect.moveTopLeft(v->contentsToWindow(r.topLeft()));
-    rect.setHeight(m_popup->sizeHint().height());
-
-    if (QGraphicsView* view = qobject_cast<QGraphicsView*>(client->ownerWidget())) {
-        if (!m_proxy) {
-            m_proxy = new QGraphicsProxyWidget(qobject_cast<QGraphicsWebView*>(client->pluginParent()));
-            m_proxy->setWidget(m_popup);
-        } else
-            m_proxy->setVisible(true);
-        m_proxy->setGeometry(rect);
-    } else {
-        m_popup->setParent(client->ownerWidget());
-        m_popup->setGeometry(rect);
-    }
-
-    m_popup->setCurrentIndex(index);
-    m_popup->exec();
 }
 
 void PopupMenu::hide()
 {
-    m_popup->hidePopup();
+    m_popup->hide();
 }
 
 void PopupMenu::updateFromElement()

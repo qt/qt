@@ -75,7 +75,7 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
 
         foreach(QFileInfo item, sourceInfos) {
             QFileInfo destInfo = QFileInfo(destDir.absolutePath() + "/" + item.fileName());
-            if (!destInfo.exists() || destInfo.lastModified() < item.lastModified()) {
+            if (!destInfo.exists() || destInfo.lastModified() != item.lastModified()) {
                 if (destInfo.exists())
                     QFile::remove(destInfo.absoluteFilePath());
                 if (QFile::copy(item.absoluteFilePath(), destInfo.absoluteFilePath()))
@@ -147,6 +147,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "QMAKE             = " << var("QMAKE_QMAKE") << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
+    t << "CHK_DIR_EXISTS    = " << var("QMAKE_CHK_DIR_EXISTS") << endl;
+    t << "MKDIR             = " << var("QMAKE_MKDIR") << endl;
     t << "MOVE              = " << var("QMAKE_MOVE") << endl;
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
     t << "RELEASE_PLATFORMS = " << releasePlatforms.join(" ") << endl;
@@ -386,7 +388,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     //write emulator deployment
     t << "#if defined(WINSCW)" << endl;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << "#endif" << endl;
@@ -394,7 +396,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     //write ROM deployment
     remoteTestPath = epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
     depList.clear();
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(ROM_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << endl;

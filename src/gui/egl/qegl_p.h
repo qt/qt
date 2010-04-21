@@ -100,13 +100,52 @@ typedef NativeDisplayType EGLNativeDisplayType;
 QT_END_INCLUDE_NAMESPACE
 
 #include <QtGui/qpaintdevice.h>
-
 #include <QFlags>
 
 QT_BEGIN_NAMESPACE
 
 #define QEGL_NO_CONFIG ((EGLConfig)-1)
 
+#ifndef EGLAPIENTRY
+#define EGLAPIENTRY
+#endif
+
+// Try to get some info to debug the symbian build failues:
+#ifdef Q_OS_SYMBIAN
+
+#ifdef EGL_KHR_image
+#warning "EGL_KHR_image is defined"
+#else
+#warning "EGL_KHR_image is NOT defined"
+#endif
+
+#ifdef EGL_KHR_image_base
+#warning "EGL_KHR_image_base is defined"
+#else
+#warning "EGL_KHR_image_base is NOT defined"
+#endif
+
+#ifdef EGL_EGLEXT_PROTOTYPES
+#warning "EGL_EGLEXT_PROTOTYPES is defined"
+#else
+#warning "EGL_EGLEXT_PROTOTYPES NOT not defined"
+#endif
+
+#endif
+
+
+// Declare/define the bits of EGL_KHR_image_base we need:
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
+typedef void *EGLImageKHR;
+#define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
+#define EGL_IMAGE_PRESERVED_KHR     0x30D2
+#define EGL_KHR_image_base
+#endif
+
+#if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_pixmap)
+#define EGL_NATIVE_PIXMAP_KHR       0x30B0
+#define EGL_KHR_image_pixmap
+#endif
 
 
 class QEglProperties;
@@ -132,7 +171,6 @@ namespace QEgl {
     };
     Q_DECLARE_FLAGS(ConfigOptions, ConfigOption);
 
-
     // Most of the time we use the same config for things like widgets & pixmaps, so rather than
     // go through the eglChooseConfig loop every time, we use defaultConfig, which will return
     // the config for a particular device/api/option combo. This function assumes that once a
@@ -144,10 +182,7 @@ namespace QEgl {
 
     Q_GUI_EXPORT void dumpAllConfigs();
 
-    Q_GUI_EXPORT void clearError();
-    Q_GUI_EXPORT EGLint error();
-    Q_GUI_EXPORT QString errorString(EGLint code);
-    Q_GUI_EXPORT QString errorString();
+    Q_GUI_EXPORT QString errorString(EGLint code = eglGetError());
 
     Q_GUI_EXPORT QString extensions();
     Q_GUI_EXPORT bool hasExtension(const char* extensionName);
@@ -157,6 +192,10 @@ namespace QEgl {
     Q_GUI_EXPORT EGLNativeDisplayType nativeDisplay();
     Q_GUI_EXPORT EGLNativeWindowType  nativeWindow(QWidget*);
     Q_GUI_EXPORT EGLNativePixmapType  nativePixmap(QPixmap*);
+
+    // Extension functions
+    Q_GUI_EXPORT EGLImageKHR eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+    Q_GUI_EXPORT EGLBoolean  eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img);
 
 #ifdef Q_WS_X11
     Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);

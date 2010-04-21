@@ -6,9 +6,9 @@ MyQmlObject
     property int intProperty
     property real realProperty
     property color colorProperty
-    property var variantProperty
+    property variant variantProperty
 
-    signal mySignal(int a, real b, color c, var d)
+    signal mySignal(int a, real b, color c, variant d)
 
     onMySignal: { intProperty = a; realProperty = b; colorProperty = c; variantProperty = d; }
 

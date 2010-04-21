@@ -53,14 +53,15 @@
 // We mean it.
 //
 
-#include "qdeclarativeanchors_p.h"
-#include "qdeclarativeitemchangelistener_p.h"
+#include "private/qdeclarativeanchors_p.h"
+#include "private/qdeclarativeitemchangelistener_p.h"
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-struct QDeclarativeAnchorLine
+class QDeclarativeAnchorLine
 {
+public:
     QDeclarativeAnchorLine() : item(0), anchorLine(Invalid) {}
 
     enum AnchorLine {
@@ -76,7 +77,7 @@ struct QDeclarativeAnchorLine
         Vertical_Mask = Top | Bottom | VCenter | Baseline
     };
 
-    QDeclarativeItem *item;
+    QGraphicsObject *item;
     AnchorLine anchorLine;
 };
 
@@ -89,7 +90,7 @@ class QDeclarativeAnchorsPrivate : public QObjectPrivate, public QDeclarativeIte
 {
     Q_DECLARE_PUBLIC(QDeclarativeAnchors)
 public:
-    QDeclarativeAnchorsPrivate(QDeclarativeItem *i)
+    QDeclarativeAnchorsPrivate(QGraphicsObject *i)
       : componentComplete(true), updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), updatingFill(0), updatingCenterIn(0), item(i), usedAnchors(0), fill(0),
         centerIn(0), leftMargin(0), rightMargin(0), topMargin(0), bottomMargin(0),
@@ -97,10 +98,10 @@ public:
     {
     }
 
-    void clearItem(QDeclarativeItem *);
+    void clearItem(QGraphicsObject *);
 
-    void addDepend(QDeclarativeItem *);
-    void remDepend(QDeclarativeItem *);
+    void addDepend(QGraphicsObject *);
+    void remDepend(QGraphicsObject *);
     bool isItemComplete() const;
 
     bool componentComplete:1;
@@ -122,6 +123,8 @@ public:
 
     // QDeclarativeItemGeometryListener interface
     void itemGeometryChanged(QDeclarativeItem *, const QRectF &, const QRectF &);
+    void _q_widgetDestroyed(QObject *);
+    void _q_widgetGeometryChanged();
     QDeclarativeAnchorsPrivate *anchorPrivate() { return this; }
 
     bool checkHValid() const;
@@ -135,11 +138,11 @@ public:
     void fillChanged();
     void centerInChanged();
 
-    QDeclarativeItem *item;
+    QGraphicsObject *item;
     QDeclarativeAnchors::UsedAnchors usedAnchors;
 
-    QDeclarativeItem *fill;
-    QDeclarativeItem *centerIn;
+    QGraphicsObject *fill;
+    QGraphicsObject *centerIn;
 
     QDeclarativeAnchorLine left;
     QDeclarativeAnchorLine right;

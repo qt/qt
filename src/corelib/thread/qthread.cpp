@@ -173,7 +173,7 @@ void QAdoptedThread::run()
 */
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)
-    : QObjectPrivate(), running(false), finished(false), terminated(false),
+    : QObjectPrivate(), running(false), finished(false), terminated(false), exited(false), returnCode(-1),
       stackSize(0), priority(QThread::InheritPriority), data(d)
 {
 #if defined (Q_OS_UNIX)
@@ -482,9 +482,16 @@ int QThread::exec()
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
-    QEventLoop eventLoop;
+    if (d->exited)
+        return d->returnCode;
     locker.unlock();
+
+    QEventLoop eventLoop;
     int returnCode = eventLoop.exec();
+
+    locker.relock();
+    d->exited = false;
+    d->returnCode = -1;
     return returnCode;
 }
 
@@ -511,6 +518,8 @@ void QThread::exit(int returnCode)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
+    d->exited = true;
+    d->returnCode = returnCode;
     d->data->quitNow = true;
     for (int i = 0; i < d->data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = d->data->eventLoops.at(i);
@@ -617,7 +626,9 @@ QThread::Priority QThread::priority() const
 {
     Q_D(const QThread);
     QMutexLocker locker(&d->mutex);
-    return d->priority;
+
+    // mask off the high bits that are used for flags
+    return Priority(d->priority & 0xffff);
 }
 
 /*!

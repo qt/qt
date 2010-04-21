@@ -63,8 +63,6 @@ QT_BEGIN_NAMESPACE
 
 class QSoftKeyManagerPrivate;
 
-const char MENU_ACTION_PROPERTY[] = "_q_menuaction";
-
 class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
 {
     Q_OBJECT
@@ -88,6 +86,8 @@ public:
     static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
     static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
     static QString standardSoftKeyText(StandardSoftKey standardKey);
+    static void setForceEnabledInSoftkeys(QAction *action);
+    static bool isForceEnabledInSofkeys(QAction *action);
 
 protected:
     bool event(QEvent *e);

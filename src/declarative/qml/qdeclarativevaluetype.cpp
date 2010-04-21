@@ -39,17 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativevaluetype_p.h"
+#include "private/qdeclarativevaluetype_p.h"
 
-#include "qdeclarativemetatype_p.h"
+#include "private/qdeclarativemetatype_p.h"
 
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
-
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-Q_DECLARE_METATYPE(QEasingCurve);
-#endif
 
 template<typename T>
 int qmlRegisterValueTypeEnums(const char *qmlName)
@@ -61,7 +57,7 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
     QDeclarativePrivate::RegisterType type = {
         0, 
 
-        qRegisterMetaType<T *>(pointerName.constData()), 0, 0,
+        qRegisterMetaType<T *>(pointerName.constData()), 0, 0, 0,
 
         "Qt", 4, 6, qmlName, &T::staticMetaObject,
 
@@ -82,29 +78,18 @@ QDeclarativeValueTypeFactory::QDeclarativeValueTypeFactory()
     // ### Optimize
     for (unsigned int ii = 0; ii < (QVariant::UserType - 1); ++ii)
         valueTypes[ii] = valueType(ii);
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-    easingType = qMetaTypeId<QEasingCurve>();
-    easingValueType = valueType(easingType);
-#endif
 }
 
 QDeclarativeValueTypeFactory::~QDeclarativeValueTypeFactory()
 {
     for (unsigned int ii = 0; ii < (QVariant::UserType - 1); ++ii)
         delete valueTypes[ii];
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-    delete easingValueType;
-#endif
 }
 
 bool QDeclarativeValueTypeFactory::isValueType(int idx)
 {
     if ((uint)idx < QVariant::UserType)
         return true;
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-    if (idx == qMetaTypeId<QEasingCurve>())
-        return true;
-#endif
     return false;
 }
 
@@ -113,15 +98,6 @@ void QDeclarativeValueTypeFactory::registerValueTypes()
     qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("Easing");
     qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("Font");
 }
-
-QDeclarativeValueType *QDeclarativeValueTypeFactory::operator[](int idx) const
-{
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-    if (idx == easingType) return easingValueType;
-#endif
-    return valueTypes[idx];
-}
-
 
 QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)
 {
@@ -140,17 +116,11 @@ QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)
         return new QDeclarativeRectFValueType;
     case QVariant::Vector3D:
         return new QDeclarativeVector3DValueType;
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     case QVariant::EasingCurve:
         return new QDeclarativeEasingValueType;
-#endif
     case QVariant::Font:
         return new QDeclarativeFontValueType;
     default:
-#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
-        if (t == qMetaTypeId<QEasingCurve>())
-            return new QDeclarativeEasingValueType;
-#endif
         return 0;
     }
 }
@@ -566,11 +536,7 @@ void QDeclarativeEasingValueType::write(QObject *obj, int idx, QDeclarativePrope
 
 QVariant QDeclarativeEasingValueType::value()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     return QVariant(easing);
-#else
-    return QVariant::fromValue<QEasingCurve>(easing);
-#endif
 }
 
 void QDeclarativeEasingValueType::setValue(QVariant value)
@@ -619,7 +585,7 @@ void QDeclarativeEasingValueType::setPeriod(qreal period)
 }
 
 QDeclarativeFontValueType::QDeclarativeFontValueType(QObject *parent)
-: QDeclarativeValueType(parent), hasPixelSize(false)
+: QDeclarativeValueType(parent), pixelSizeSet(false), pointSizeSet(false)
 {
 }
 
@@ -627,6 +593,8 @@ void QDeclarativeFontValueType::read(QObject *obj, int idx)
 {
     void *a[] = { &font, 0 };
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+    pixelSizeSet = false;
+    pointSizeSet = false;
 }
 
 void QDeclarativeFontValueType::write(QObject *obj, int idx, QDeclarativePropertyPrivate::WriteFlags flags)
@@ -724,13 +692,17 @@ qreal QDeclarativeFontValueType::pointSize() const
 
 void QDeclarativeFontValueType::setPointSize(qreal size)
 {
-    if (hasPixelSize) {
+    if (pixelSizeSet) {
         qWarning() << "Both point size and pixel size set. Using pixel size.";
         return;
     }
 
-    if (size >= 0.0)
+    if (size >= 0.0) {
+        pointSizeSet = true;
         font.setPointSizeF(size);
+    } else {
+        pointSizeSet = false;
+    }
 }
 
 int QDeclarativeFontValueType::pixelSize() const
@@ -741,10 +713,12 @@ int QDeclarativeFontValueType::pixelSize() const
 void QDeclarativeFontValueType::setPixelSize(int size)
 {
     if (size >=0) {
+        if (pointSizeSet)
+            qWarning() << "Both point size and pixel size set. Using pixel size.";
         font.setPixelSize(size);
-        hasPixelSize = true;
+        pixelSizeSet = true;
     } else {
-        hasPixelSize = false;
+        pixelSizeSet = false;
     }
 }
 

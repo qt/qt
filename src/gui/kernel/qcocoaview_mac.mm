@@ -197,6 +197,7 @@ static int qCocoaViewCount = 0;
     if (self) {
         [self finishInitWithQWidget:widget widgetPrivate:widgetprivate];
     }
+    [self setFocusRingType:NSFocusRingTypeNone];
     composingText = new QString();
 
 #ifdef ALIEN_DEBUG
@@ -241,7 +242,8 @@ static int qCocoaViewCount = 0;
 
     QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
     NSCursor *nscursor = static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursorWidget->cursor()));
-    if (mask.isEmpty()) {
+    // The mask could have the WA_MouseNoMask attribute set and that means that we have to ignore the mask.
+    if (mask.isEmpty() || cursorWidget->testAttribute(Qt::WA_MouseNoMask)) {
         [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
     } else {
         const QVector<QRect> &rects = mask.rects();
@@ -444,7 +446,11 @@ static int qCocoaViewCount = 0;
     return YES;
 }
 
-- (BOOL) preservesContentDuringLiveResize;
+// We preserve the content of the view if WA_StaticContents is defined.
+//
+// More info in the Cocoa documentation:
+// http://developer.apple.com/mac/library/documentation/cocoa/conceptual/CocoaViewsGuide/Optimizing/Optimizing.html
+- (BOOL) preservesContentDuringLiveResize
 {
     return qwidget->testAttribute(Qt::WA_StaticContents);
 }
@@ -471,6 +477,18 @@ static int qCocoaViewCount = 0;
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
+    }
+}
+
+// We catch the 'setNeedsDisplay:' message in order to avoid a useless full repaint.
+// During the resize, the top of the widget is repainted, probably because of the
+// change of coordinate space (Quartz vs Qt). This is then followed by this message:
+// -[NSView _setNeedsDisplayIfTopLeftChanged]
+// which force a full repaint by sending the message 'setNeedsDisplay:'.
+// That is what we are preventing here.
+- (void)setNeedsDisplay:(BOOL)flag {
+    if (![self inLiveResize] || !(qwidget->testAttribute(Qt::WA_StaticContents))) {
+        [super setNeedsDisplay:flag];
     }
 }
 
@@ -639,23 +657,34 @@ static int qCocoaViewCount = 0;
 {
     if (!qwidget)
         return;
-
     if (qwidgetprivate->data.in_destructor)
         return;
-    QEvent enterEvent(QEvent::Enter);
-    NSPoint windowPoint = [event locationInWindow];
-    NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];
-    NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
+
     if (!qAppInstance()->activeModalWidget() || QApplicationPrivate::tryModalHelper(qwidget, 0)) {
+        QEvent enterEvent(QEvent::Enter);
+        NSPoint windowPoint = [event locationInWindow];
+        NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];
+        NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
         QApplication::sendEvent(qwidget, &enterEvent);
         qt_mouseover = qwidget;
 
-        // Update cursor and dispatch hover events.
+        // Update cursor icon:
         qt_mac_update_cursor_at_global_pos(flipPoint(globalPoint).toPoint());
-        if (qwidget->testAttribute(Qt::WA_Hover) &&
-            (!qAppInstance()->activePopupWidget() || qAppInstance()->activePopupWidget() == qwidget->window())) {
-            QHoverEvent he(QEvent::HoverEnter, QPoint(viewPoint.x, viewPoint.y), QPoint(-1, -1));
-            QApplicationPrivate::instance()->notify_helper(qwidget, &he);
+
+        // Send mouse move and hover events as well:
+        if (!qAppInstance()->activePopupWidget() || qAppInstance()->activePopupWidget() == qwidget->window()) {
+            // This mouse move event should be sendt, even when mouse
+            // tracking is switched off (to trigger tooltips):
+            NSEvent *mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
+                location:windowPoint modifierFlags:[event modifierFlags] timestamp:[event timestamp]
+                windowNumber:[event windowNumber] context:[event context] eventNumber:[event eventNumber]
+                clickCount:0 pressure:0];
+            qt_mac_handleMouseEvent(self, mouseEvent, QEvent::MouseMove, Qt::NoButton);
+
+            if (qwidget->testAttribute(Qt::WA_Hover)) {
+                QHoverEvent he(QEvent::HoverEnter, QPoint(viewPoint.x, viewPoint.y), QPoint(-1, -1));
+                QApplicationPrivate::instance()->notify_helper(qwidget, &he);
+            }
         }
     }
 }
@@ -1029,11 +1058,16 @@ static int qCocoaViewCount = 0;
 {
     if (!qwidget)
         return NO;
+    // disabled widget shouldn't get focus even if it's a window.
+    // hence disabled windows will not get any key or mouse events.
+    if (!qwidget->isEnabled())
+        return NO;
     // Before accepting the focus for a window, we check that
     // the focusWidget (if any) is not contained in the same window.
-    if (qwidget->isWindow() && (!qApp->focusWidget()
-				|| qApp->focusWidget()->window() != qwidget))
+    if (qwidget->isWindow() && !qt_widget_private(qwidget)->topData()->embedded
+        && (!qApp->focusWidget() || qApp->focusWidget()->window() != qwidget)) {
         return YES;  // Always do it, so that windows can accept key press events.
+    }
     return qwidget->focusPolicy() != Qt::NoFocus;
 }
 
@@ -1044,7 +1078,17 @@ static int qCocoaViewCount = 0;
     // Seems like the following test only triggers if this
     // view is inside a QMacNativeWidget:
     if (qwidget == QApplication::focusWidget())
-        QApplicationPrivate::setFocusWidget(0, Qt::OtherFocusReason);
+        qwidget->clearFocus();
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    // see the comment in the acceptsFirstResponder - if the window "stole" focus
+    // let it become the responder, but don't tell Qt
+    if (qwidget && qt_widget_private(qwidget->window())->topData()->embedded
+        && !QApplication::focusWidget() && qwidget->focusPolicy() != Qt::NoFocus)
+        qwidget->setFocus(Qt::OtherFocusReason);
     return YES;
 }
 
@@ -1118,8 +1162,15 @@ static int qCocoaViewCount = 0;
     }
     if (sendKeyEvents && !composing) {
         bool keyOK = qt_dispatchKeyEvent(theEvent, widgetToGetKey);
-        if (!keyOK && !sendToPopup)
-            [super keyDown:theEvent];
+        if (!keyOK && !sendToPopup) {
+            // find the first responder that is not created by Qt and forward
+            // the event to it (for example if Qt widget is embedded into native).
+            QWidget *toplevel = qwidget->window();
+            if (toplevel && qt_widget_private(toplevel)->topData()->embedded) {
+                if (NSResponder *w = [qt_mac_nativeview_for(toplevel) superview])
+                    [w keyDown:theEvent];
+            }
+        }
     }
 }
 
@@ -1128,8 +1179,13 @@ static int qCocoaViewCount = 0;
 {
     if (sendKeyEvents) {
         bool keyOK = qt_dispatchKeyEvent(theEvent, qwidget);
-        if (!keyOK)
-            [super keyUp:theEvent];
+        if (!keyOK) {
+            QWidget *toplevel = qwidget->window();
+            if (toplevel && qt_widget_private(toplevel)->topData()->embedded) {
+                if (NSResponder *w = [qt_mac_nativeview_for(toplevel) superview])
+                    [w keyUp:theEvent];
+            }
+        }
     }
 }
 

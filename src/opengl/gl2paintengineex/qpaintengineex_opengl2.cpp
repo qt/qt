@@ -191,7 +191,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QImage texImage = qt_imageForBrush(style, false);
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true, QGLContext::InternalBindOption);
+        ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
@@ -217,7 +217,9 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         const QPixmap& texPixmap = currentBrush.texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption |
+                                                     QGLContext::CanFlipNativePixmapBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
@@ -514,6 +516,8 @@ void QGL2PaintEngineEx::beginNativePainting()
     ensureActive();
     d->transferMode(BrushDrawingMode);
 
+    d->nativePaintingActive = true;
+
     QGLContext *ctx = d->ctx;
     glUseProgram(0);
 
@@ -529,10 +533,10 @@ void QGL2PaintEngineEx::beginNativePainting()
 
     float mv_matrix[4][4] =
     {
-        { mtx.m11(), mtx.m12(),     0, mtx.m13() },
-        { mtx.m21(), mtx.m22(),     0, mtx.m23() },
-        {         0,         0,     1,         0 },
-        {  mtx.dx(),  mtx.dy(),     0, mtx.m33() }
+        { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
+        { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
+        {                0,                0,     1,                0 },
+        {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
     };
 
     const QSize sz = d->device->size();
@@ -581,6 +585,12 @@ void QGL2PaintEngineEx::endNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
     d->needsSync = true;
+    d->nativePaintingActive = false;
+}
+
+bool QGL2PaintEngineEx::isNativePaintingActive() const {
+    Q_D(const QGL2PaintEngineEx);
+    return d->nativePaintingActive;
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
@@ -1641,7 +1651,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         glBindTexture(GL_TEXTURE_2D, cache->texture());
         lastMaskTextureUsed = cache->texture();
     }
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
@@ -1706,23 +1716,23 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
         QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
         QGLPoint bottomLeft(-right * c - bottom * s, -right * s + bottom * c);
 
-        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
-        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.addVertex(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
 
         QGLRect src(fragments[i].sourceLeft * dx, fragments[i].sourceTop * dy,
                     (fragments[i].sourceLeft + fragments[i].width) * dx,
                     (fragments[i].sourceTop + fragments[i].height) * dy);
 
-        textureCoordinateArray.lineToArray(src.right, src.bottom);
-        textureCoordinateArray.lineToArray(src.right, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.top);
-        textureCoordinateArray.lineToArray(src.left, src.bottom);
-        textureCoordinateArray.lineToArray(src.right, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.top);
+        textureCoordinateArray.addVertex(src.left, src.top);
+        textureCoordinateArray.addVertex(src.left, src.top);
+        textureCoordinateArray.addVertex(src.left, src.bottom);
+        textureCoordinateArray.addVertex(src.right, src.bottom);
 
         qreal opacity = fragments[i].opacity * q->state()->opacity;
         opacityArray << opacity << opacity << opacity << opacity << opacity << opacity;

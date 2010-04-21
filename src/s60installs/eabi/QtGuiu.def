@@ -1818,7 +1818,7 @@ EXPORTS
 	_ZN12QLineControl17_q_deleteSelectedEv @ 1817 NONAME
 	_ZN12QLineControl17processMouseEventEP11QMouseEvent @ 1818 NONAME
 	_ZN12QLineControl17resetInputContextEv @ 1819 NONAME
-	_ZN12QLineControl17updateDisplayTextEv @ 1820 NONAME
+	_ZN12QLineControl17updateDisplayTextEv @ 1820 NONAME ABSENT
 	_ZN12QLineControl18displayTextChangedERK7QString @ 1821 NONAME
 	_ZN12QLineControl18removeSelectedTextEv @ 1822 NONAME
 	_ZN12QLineControl19_q_clipboardChangedEv @ 1823 NONAME
@@ -1834,7 +1834,7 @@ EXPORTS
 	_ZN12QLineControl4initERK7QString @ 1833 NONAME
 	_ZN12QLineControl5clearEv @ 1834 NONAME
 	_ZN12QLineControl5fixupEv @ 1835 NONAME
-	_ZN12QLineControl5pasteEv @ 1836 NONAME
+	_ZN12QLineControl5pasteEv @ 1836 NONAME ABSENT
 	_ZN12QLineControl6insertERK7QString @ 1837 NONAME
 	_ZN12QLineControl8acceptedEv @ 1838 NONAME
 	_ZN12QLineControl8completeEi @ 1839 NONAME
@@ -2148,7 +2148,7 @@ EXPORTS
 	_ZN12QTextControl4undoEv @ 2147 NONAME
 	_ZN12QTextControl5clearEv @ 2148 NONAME
 	_ZN12QTextControl5eventEP6QEvent @ 2149 NONAME
-	_ZN12QTextControl5pasteEv @ 2150 NONAME
+	_ZN12QTextControl5pasteEv @ 2150 NONAME ABSENT
 	_ZN12QTextControl6appendERK7QString @ 2151 NONAME
 	_ZN12QTextControl7setHtmlERK7QString @ 2152 NONAME
 	_ZN12QTextControl8setFocusEbN2Qt11FocusReasonE @ 2153 NONAME
@@ -3726,7 +3726,7 @@ EXPORTS
 	_ZN16QFileSystemModelD1Ev @ 3725 NONAME
 	_ZN16QFileSystemModelD2Ev @ 3726 NONAME
 	_ZN16QPainterReplayer14setupTransformEP8QPainter @ 3727 NONAME
-	_ZN16QPainterReplayer4drawERK12QPaintBufferP8QPainteri @ 3728 NONAME
+	_ZN16QPainterReplayer4drawERK12QPaintBufferP8QPainteri @ 3728 NONAME ABSENT
 	_ZN16QPainterReplayer7processERK19QPaintBufferCommand @ 3729 NONAME
 	_ZN16QRegExpValidator11qt_metacallEN11QMetaObject4CallEiPPv @ 3730 NONAME
 	_ZN16QRegExpValidator11qt_metacastEPKc @ 3731 NONAME
@@ -11805,7 +11805,7 @@ EXPORTS
 	_ZN24QImagePixmapCleanupHooks34executePixmapDataModificationHooksEP11QPixmapData @ 11804 NONAME
 	_ZN9QS60Style10timerEventEP11QTimerEvent @ 11805 NONAME
 	_ZN9QS60Style11eventFilterEP7QObjectP6QEvent @ 11806 NONAME
-	_Z14qt_draw_glyphsP8QPainterPKjPK7QPointFi @ 11807 NONAME
+	_ZN13QFontDatabase25removeAllApplicationFontsEv @ 11807 NONAME
 	_ZN10QZipReader5closeEv @ 11808 NONAME
 	_ZN10QZipReader8FileInfoC1ERKS0_ @ 11809 NONAME
 	_ZN10QZipReader8FileInfoC1Ev @ 11810 NONAME
@@ -11821,15 +11821,15 @@ EXPORTS
 	_ZN10QZipReaderD1Ev @ 11820 NONAME
 	_ZN10QZipReaderD2Ev @ 11821 NONAME
 	_ZN11QStaticText13setTextFormatEN2Qt10TextFormatE @ 11822 NONAME
-	_ZN11QStaticText14setMaximumSizeERK6QSizeF @ 11823 NONAME
+	_ZN11QStaticText14setMaximumSizeERK6QSizeF @ 11823 NONAME ABSENT
 	_ZN11QStaticText18setPerformanceHintENS_15PerformanceHintE @ 11824 NONAME
 	_ZN11QStaticText6detachEv @ 11825 NONAME
 	_ZN11QStaticText7prepareERK10QTransformRK5QFont @ 11826 NONAME
 	_ZN11QStaticText7setTextERK7QString @ 11827 NONAME
-	_ZN11QStaticTextC1ERK7QStringRK6QSizeF @ 11828 NONAME
+	_ZN11QStaticTextC1ERK7QString @ 11828 NONAME
 	_ZN11QStaticTextC1ERKS_ @ 11829 NONAME
 	_ZN11QStaticTextC1Ev @ 11830 NONAME
-	_ZN11QStaticTextC2ERK7QStringRK6QSizeF @ 11831 NONAME
+	_ZN11QStaticTextC2ERK7QString @ 11831 NONAME
 	_ZN11QStaticTextC2ERKS_ @ 11832 NONAME
 	_ZN11QStaticTextC2Ev @ 11833 NONAME
 	_ZN11QStaticTextD1Ev @ 11834 NONAME
@@ -11839,7 +11839,7 @@ EXPORTS
 	_ZN12QKeySequenceC1ERK7QStringNS_14SequenceFormatE @ 11838 NONAME
 	_ZN12QKeySequenceC2ERK7QStringNS_14SequenceFormatE @ 11839 NONAME
 	_ZN13QTextDocument19clearUndoRedoStacksENS_6StacksE @ 11840 NONAME
-	_ZN14QPaintEngineEx19drawPixmapFragmentsEPKN8QPainter8FragmentEiRK7QPixmap6QFlagsINS0_12FragmentHintEE @ 11841 NONAME
+	_ZN14QPaintEngineEx19drawPixmapFragmentsEPKN8QPainter8FragmentEiRK7QPixmap6QFlagsINS0_12FragmentHintEE @ 11841 NONAME ABSENT
 	_ZN14QWidgetPrivate11inTabWidgetEP7QWidget @ 11842 NONAME
 	_ZN14QWidgetPrivate17canKeypadNavigateEN2Qt11OrientationE @ 11843 NONAME
 	_ZN14QWidgetPrivate6renderEP12QPaintDeviceRK6QPointRK7QRegion6QFlagsIN7QWidget10RenderFlagEEb @ 11844 NONAME
@@ -11882,8 +11882,8 @@ EXPORTS
 	_ZN6QLabel12setSelectionEii @ 11881 NONAME
 	_ZN7QPixmap16convertFromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 11882 NONAME
 	_ZN8QPainter14drawStaticTextERK7QPointFRK11QStaticText @ 11883 NONAME
-	_ZN8QPainter19drawPixmapFragmentsEPKNS_8FragmentEiRK7QPixmap6QFlagsINS_12FragmentHintEE @ 11884 NONAME
-	_ZN8QPainter8Fragment6createERK7QPointFRK6QRectFffff @ 11885 NONAME
+	_ZN8QPainter19drawPixmapFragmentsEPKNS_8FragmentEiRK7QPixmap6QFlagsINS_12FragmentHintEE @ 11884 NONAME ABSENT
+	_ZN8QPainter8Fragment6createERK7QPointFRK6QRectFffff @ 11885 NONAME ABSENT
 	_ZN8QToolBar17visibilityChangedEb @ 11886 NONAME
 	_ZNK10QZipReader10extractAllERK7QString @ 11887 NONAME
 	_ZNK10QZipReader10isReadableEv @ 11888 NONAME
@@ -11894,7 +11894,7 @@ EXPORTS
 	_ZNK10QZipReader6statusEv @ 11893 NONAME
 	_ZNK10QZipReader8fileDataERK7QString @ 11894 NONAME
 	_ZNK11QStaticText10textFormatEv @ 11895 NONAME
-	_ZNK11QStaticText11maximumSizeEv @ 11896 NONAME
+	_ZNK11QStaticText11maximumSizeEv @ 11896 NONAME ABSENT
 	_ZNK11QStaticText15performanceHintEv @ 11897 NONAME
 	_ZNK11QStaticText4sizeEv @ 11898 NONAME
 	_ZNK11QStaticText4textEv @ 11899 NONAME
@@ -11926,4 +11926,72 @@ EXPORTS
 	_ZTI26QAbstractScrollAreaPrivate @ 11925 NONAME
 	_ZTV20QGraphicsViewPrivate @ 11926 NONAME
 	_ZTV26QAbstractScrollAreaPrivate @ 11927 NONAME
+	_Z14qt_draw_glyphsP8QPainterPKjPK7QPointFi @ 11928 NONAME
+	_ZN11QFontEngine16getGlyphBearingsEjPfS0_ @ 11929 NONAME
+	_ZN12QLineControl17updateDisplayTextEb @ 11930 NONAME
+	_ZN12QLineControl5pasteEN10QClipboard4ModeE @ 11931 NONAME
+	_ZN12QTextControl5pasteEN10QClipboard4ModeE @ 11932 NONAME
+	_ZN14QPaintEngineEx19drawPixmapFragmentsEPKN8QPainter14PixmapFragmentEiRK7QPixmap6QFlagsINS0_18PixmapFragmentHintEE @ 11933 NONAME
+	_ZN15QGraphicsObject12widthChangedEv @ 11934 NONAME
+	_ZN15QGraphicsObject13heightChangedEv @ 11935 NONAME
+	_ZN15QGraphicsObject15childrenChangedEv @ 11936 NONAME
+	_ZN15QGraphicsWidget15geometryChangedEv @ 11937 NONAME
+	_ZN15QSplitterHandle11resizeEventEP12QResizeEvent @ 11938 NONAME
+	_ZN20QGraphicsItemPrivate10resetWidthEv @ 11939 NONAME
+	_ZN20QGraphicsItemPrivate11resetHeightEv @ 11940 NONAME
+	_ZN20QGraphicsItemPrivate12childrenListEv @ 11941 NONAME
+	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEbb @ 11942 NONAME
+	_ZN20QGraphicsItemPrivate16clearFocusHelperEb @ 11943 NONAME
+	_ZN20QGraphicsItemPrivate24prependGraphicsTransformEP18QGraphicsTransform @ 11944 NONAME
+	_ZN20QGraphicsItemPrivate6appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11945 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate8setWidthEf @ 11946 NONAME
+	_ZN20QGraphicsItemPrivate9setHeightEf @ 11947 NONAME
+	_ZN7QWizard11pageRemovedEi @ 11948 NONAME
+	_ZN7QWizard13setSideWidgetEP7QWidget @ 11949 NONAME
+	_ZN7QWizard9pageAddedEi @ 11950 NONAME
+	_ZN8QPainter14PixmapFragment6createERK7QPointFRK6QRectFffff @ 11951 NONAME
+	_ZN8QPainter19drawPixmapFragmentsEPKNS_14PixmapFragmentEiRK7QPixmap6QFlagsINS_18PixmapFragmentHintEE @ 11952 NONAME
+	_ZN9QLineEdit18setPlaceholderTextERK7QString @ 11953 NONAME
+	_ZNK10QZipReader6deviceEv @ 11954 NONAME
+	_ZNK10QZipReader8FileInfo7isValidEv @ 11955 NONAME
+	_ZNK20QGraphicsItemPrivate5widthEv @ 11956 NONAME
+	_ZNK20QGraphicsItemPrivate6heightEv @ 11957 NONAME
+	_ZNK6QImage13bitPlaneCountEv @ 11958 NONAME
+	_ZNK7QWizard10sideWidgetEv @ 11959 NONAME
+	_ZNK9QLineEdit15placeholderTextEv @ 11960 NONAME
+	_ZNK9QTextLine17horizontalAdvanceEv @ 11961 NONAME
+	_ZN11QStaticText12setTextWidthEf @ 11962 NONAME
+	_ZN13QGraphicsItem16updateMicroFocusEv @ 11963 NONAME
+	_ZN15QGraphicsObject16updateMicroFocusEv @ 11964 NONAME
+	_ZN15QGraphicsWidget13layoutChangedEv @ 11965 NONAME
+	_ZN16QPainterReplayer15processCommandsERK12QPaintBufferP8QPainterii @ 11966 NONAME
+	_ZNK11QStaticText9textWidthEv @ 11967 NONAME
+	_ZNK12QPaintBuffer13frameEndIndexEi @ 11968 NONAME
+	_ZNK12QPaintBuffer15frameStartIndexEi @ 11969 NONAME
+	_ZNK12QPaintBuffer15processCommandsEP8QPainterii @ 11970 NONAME
+	_ZNK12QPaintBuffer18commandDescriptionEi @ 11971 NONAME
+	_ZN20QGraphicsItemPrivate11children_atEP24QDeclarativeListPropertyI15QGraphicsObjectEi @ 11972 NONAME
+	_ZN20QGraphicsItemPrivate14children_countEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 11973 NONAME
+	_ZN20QGraphicsItemPrivate15children_appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11974 NONAME
+	_ZN11QEglContext14destroyContextEv @ 11975 NONAME ABSENT
+	_ZN14QEglProperties13setDeviceTypeEi @ 11976 NONAME ABSENT
+	_ZN4QEgl10clearErrorEv @ 11977 NONAME ABSENT
+	_ZN4QEgl10extensionsEv @ 11978 NONAME ABSENT
+	_ZN4QEgl11errorStringEi @ 11979 NONAME ABSENT
+	_ZN4QEgl11errorStringEv @ 11980 NONAME ABSENT
+	_ZN4QEgl12chooseConfigEPK14QEglPropertiesNS_16PixelFormatMatchE @ 11981 NONAME ABSENT
+	_ZN4QEgl12hasExtensionEPKc @ 11982 NONAME ABSENT
+	_ZN4QEgl12nativePixmapEP7QPixmap @ 11983 NONAME ABSENT
+	_ZN4QEgl12nativeWindowEP7QWidget @ 11984 NONAME ABSENT
+	_ZN4QEgl13createSurfaceEP12QPaintDeviceiPK14QEglProperties @ 11985 NONAME ABSENT
+	_ZN4QEgl13defaultConfigEiNS_3APIE6QFlagsINS_12ConfigOptionEE @ 11986 NONAME ABSENT
+	_ZN4QEgl13nativeDisplayEv @ 11987 NONAME ABSENT
+	_ZN4QEgl14dumpAllConfigsEv @ 11988 NONAME ABSENT
+	_ZN4QEgl17eglCreateImageKHREiiiiPKi @ 11989 NONAME ABSENT
+	_ZN4QEgl18eglDestroyImageKHREii @ 11990 NONAME ABSENT
+	_ZN4QEgl5errorEv @ 11991 NONAME ABSENT
+	_ZN4QEgl7displayEv @ 11992 NONAME ABSENT
+	_ZNK11QEglContext12configAttribEi @ 11993 NONAME ABSENT
+	_ZNK11QEglContext16configPropertiesEv @ 11994 NONAME ABSENT
+	_ZNK19QItemSelectionRange7isEmptyEv @ 11995 NONAME
 

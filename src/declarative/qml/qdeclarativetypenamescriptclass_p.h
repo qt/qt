@@ -52,18 +52,17 @@
 //
 // We mean it.
 //
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 
+#include <private/qscriptdeclarativeclass_p.h>
 #include <QtScript/qscriptclass.h>
-
-#include <private/qdeclarativescriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QDeclarativeType;
 class QDeclarativeTypeNameCache;
-class QDeclarativeTypeNameScriptClass : public QDeclarativeScriptClass
+class QDeclarativeTypeNameScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeTypeNameScriptClass(QDeclarativeEngine *);
@@ -77,7 +76,7 @@ protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:

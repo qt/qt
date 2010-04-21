@@ -1,20 +1,20 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: clock
     width: 200; height: 230
 
     property alias city: cityLabel.text
-    property var hours
-    property var minutes
-    property var seconds
-    property var shift : 0
+    property variant hours
+    property variant minutes
+    property variant seconds
+    property variant shift : 0
     property bool night: false
 
     function timeChanged() {
         var date = new Date;
         hours = shift ? date.getUTCHours() + Math.floor(clock.shift) : date.getHours()
-        if ( hours < 7 || hours > 19 ) night = true; else night = false
+        night = ( hours < 7 || hours > 19 )
         minutes = shift ? date.getUTCMinutes() + ((clock.shift % 1) * 60) : date.getMinutes()
         seconds = date.getUTCSeconds();
     }
@@ -36,7 +36,7 @@ Item {
             origin.x: 7.5; origin.y: 73; angle: 0
             SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
-                source: (clock.hours * 30) + (clock.minutes * 0.5)
+                to: (clock.hours * 30) + (clock.minutes * 0.5)
             }
         }
     }
@@ -50,7 +50,7 @@ Item {
             origin.x: 6.5; origin.y: 83; angle: 0
             SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
-                source: clock.minutes * 6
+                to: clock.minutes * 6
             }
         }
     }
@@ -64,7 +64,7 @@ Item {
             origin.x: 2.5; origin.y: 80; angle: 0
             SpringFollow on angle {
                 spring: 5; damping: 0.25; modulus: 360
-                source: clock.seconds * 6
+                to: clock.seconds * 6
             }
         }
     }
@@ -74,7 +74,10 @@ Item {
     }
 
     Text {
-        id: cityLabel; font.bold: true; font.pixelSize: 14; y:200; color: "white"
-        anchors.horizontalCenter: parent.horizontalCenter
+        id: cityLabel
+        y: 200; anchors.horizontalCenter: parent.horizontalCenter
+        color: "white"
+        font.bold: true; font.pixelSize: 14
+        style: Text.Raised; styleColor: "black"
     }
 }

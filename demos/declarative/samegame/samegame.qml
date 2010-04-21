@@ -1,5 +1,6 @@
-import Qt 4.6
-import SamegameCore 1.0
+import Qt 4.7
+import "SamegameCore"
+import "SamegameCore/samegame.js" as Logic
 
 Rectangle {
     id: screen
@@ -8,87 +9,95 @@ Rectangle {
     SystemPalette { id: activePalette }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: toolBar.top
+        width: parent.width
+        anchors { top: parent.top; bottom: toolBar.top }
 
         Image {
             id: background
-            anchors.fill: parent; source: "SamegameCore/pics/background.png"
+            anchors.fill: parent
+            source: "SamegameCore/pics/background.png"
             fillMode: Image.PreserveAspectCrop
-            smooth: true
         }
 
         Item {
             id: gameCanvas
             property int score: 0
-            property int tileSize: 40
-
-            Script { source: "SamegameCore/samegame.js" }
+            property int blockSize: 40
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % getTileSize());
-            height: parent.height - (parent.height % getTileSize());
+            width: parent.width - (parent.width % blockSize);
+            height: parent.height - (parent.height % blockSize);
 
             MouseArea {
-                id: gameMR
-                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+                anchors.fill: parent; onClicked: Logic.handleClick(mouse.x,mouse.y);
             }
         }
     }
 
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+
     Dialog {
-        id: scoreName; anchors.centerIn: parent; z: 22;
+        id: nameInputDialog
+        
         property int initialWidth: 0
-        Behavior on width {NumberAnimation{} enabled: initialWidth!=0}
+
+        anchors.centerIn: parent
+        z: 22;
+
+        Behavior on width {
+            NumberAnimation {} 
+            enabled: initialWidth != 0
+        }
+
         Text {
-            id: spacer
-            anchors.left: scoreName.left
-            anchors.leftMargin: 20
-            anchors.verticalCenter: parent.verticalCenter
+            id: dialogText
+            anchors { left: nameInputDialog.left; leftMargin: 20; verticalCenter: parent.verticalCenter }
             text: "You won! Please enter your name: "
         }
+
         TextInput {
-            id: editor
+            id: nameInputText
+            anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
+            focus: true
+
             onTextChanged: {
-                var newWidth = editor.width + spacer.width + 40;
-                if((newWidth > scoreName.width && newWidth < screen.width) 
-                        || (scoreName.width > scoreName.initialWidth))
-                    scoreName.width = newWidth;
+                var newWidth = nameInputText.width + dialogText.width + 40;
+                if ( (newWidth > nameInputDialog.width && newWidth < screen.width) 
+                        || (nameInputDialog.width > nameInputDialog.initialWidth) )
+                    nameInputDialog.width = newWidth;
             }
             onAccepted: {
-                if(scoreName.opacity==1&&editor.text!="")
-                    saveHighScore(editor.text);
-                scoreName.forceClose();
+                if (nameInputDialog.opacity == 1 && nameInputText.text != "")
+                    Logic.saveHighScore(nameInputText.text);
+                nameInputDialog.forceClose();
             }
-            anchors.verticalCenter: parent.verticalCenter
-            focus: true
-            anchors.left: spacer.right
         }
     }
 
     Rectangle {
         id: toolBar
+        width: parent.width; height: 32
         color: activePalette.window
-        height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: {initBoard();}
-            anchors.left: parent.left; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            id: newGameButton
+            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "New Game" 
+            onClicked: Logic.startNewGame()
         }
 
         Button {
-            id: btnB; text: "Quit"; onClicked: {Qt.quit();}
-            anchors.left: btnA.right; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            text: "Quit"
+            anchors { left: newGameButton.right; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            onClicked: Qt.quit();
         }
 
         Text {
             id: score
-            text: "Score: " + gameCanvas.score; font.bold: true
-            anchors.right: parent.right; anchors.rightMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "Score: " + gameCanvas.score
+            font.bold: true
             color: activePalette.windowText
         }
     }

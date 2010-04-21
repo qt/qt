@@ -104,7 +104,7 @@ symbian {
         # built in this exact environment.  *Never* use this when building a version 
         # for release.
         contains(CONFIG, def_files) {
-            defFilePath=../s60installs
+            DEF_FILE=../s60installs
         }
     }
     load(armcc_warnings)

@@ -25,9 +25,8 @@
 
 bool WebCore::HistoryItem::restoreState(QDataStream& in, int version)
 {
-    // we only support version 1 for now
-
-    if (version != 1)
+    // we support up to version 2
+    if (version > 2)
         return false;
 
     WebCore::String url;
@@ -48,6 +47,7 @@ bool WebCore::HistoryItem::restoreState(QDataStream& in, int version)
     WebCore::IntPoint scrollPoint;
     WTF::Vector<int> weeklyVisitCounts;
     WTF::Vector<int> dailyVisitCounts;
+    long long documentSequenceNumber;
     // bool loadFormdata;
     // WebCore::String formContentType;
     // WTF::Vector<char> formData;
@@ -79,6 +79,12 @@ bool WebCore::HistoryItem::restoreState(QDataStream& in, int version)
     setTitle(title);
     setAlternateTitle(altTitle);
 
+    if (version > 1)
+    {
+        in >> documentSequenceNumber;
+        setDocumentSequenceNumber(documentSequenceNumber);
+    }
+
     // at the end load userData
     in >> validUserData;
     if (validUserData) {
@@ -92,15 +98,16 @@ bool WebCore::HistoryItem::restoreState(QDataStream& in, int version)
 
 QDataStream& WebCore::HistoryItem::saveState(QDataStream& out, int version) const
 {
-    // we only support version 1 for now.
-    if (version != 1)
-        return out;
-
     out << urlString() << title() << alternateTitle() << lastVisitedTime();
     out << originalURLString() << referrer() << target() << parent();
     out << lastVisitWasHTTPNonGet() << lastVisitWasFailure() << isTargetItem();
     out << visitCount() << documentState() << scrollPoint();
     out << dailyVisitCounts() << weeklyVisitCounts();
+
+    // Since version 2
+    Q_ASSERT_X(version > 1, "HistoryItem::saveState()", "Stream version should be greater than 1");
+    out << documentSequenceNumber();
+
     /*if (m_formData) {
         out << true;
         out << formContentType();

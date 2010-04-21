@@ -56,18 +56,25 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The SoundEffect element provides a way to play sound effects in qml.
 
+    This element is part of the \bold{Qt.multimedia 4.7} module.
+
     The following example plays a wav file on mouse click.
 
     \qml
-    SoundEffect {
-        id: playSound
-        source: "test.wav"
-    }
-    MouseArea {
-        id: playArea
-        anchors.fill: parent
-        onPressed: {
-            playSound.play()
+    import Qt 4.7
+    import Qt.multimedia 4.7
+
+    Item {
+        SoundEffect {
+            id: playSound
+            source: "test.wav"
+        }
+        MouseArea {
+            id: playArea
+            anchors.fill: parent
+            onPressed: {
+                playSound.play()
+            }
         }
     }
     \endqml
@@ -80,7 +87,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty int SoundEffect::loopCount
+    \qmlproperty int SoundEffect::loops
 
     This property provides a way to control the number of times to repeat the sound on each play().
 */
@@ -104,7 +111,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlsignal SoundEffect::loopCountChanged()
+    \qmlsignal SoundEffect::loopsChanged()
 
     This handler is called when the number of loops has changes.
 */
@@ -150,18 +157,18 @@ void QSoundEffect::setSource(const QUrl &url)
     emit sourceChanged();
 }
 
-int QSoundEffect::loopCount() const
+int QSoundEffect::loops() const
 {
     return d->loopCount();
 }
 
-void QSoundEffect::setLoopCount(int loopCount)
+void QSoundEffect::setLoops(int loopCount)
 {
     if (d->loopCount() == loopCount)
         return;
 
     d->setLoopCount(loopCount);
-    emit loopCountChanged();
+    emit loopsChanged();
 }
 
 int QSoundEffect::volume() const

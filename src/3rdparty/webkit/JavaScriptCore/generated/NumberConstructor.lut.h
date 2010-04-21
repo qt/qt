@@ -1,15 +1,15 @@
-// Automatically generated from ../runtime/NumberConstructor.cpp using JavaScriptCore/create_hash_table. DO NOT EDIT!
+// Automatically generated from runtime\NumberConstructor.cpp using C:/dev/webkit-2.0/JavaScriptCore/create_hash_table. DO NOT EDIT!
 
 #include "Lookup.h"
 
 namespace JSC {
 
 static const struct HashTableValue numberTableValues[6] = {
-   { "NaN", DontEnum|DontDelete|ReadOnly, (intptr_t)numberConstructorNaNValue, (intptr_t)0 },
-   { "NEGATIVE_INFINITY", DontEnum|DontDelete|ReadOnly, (intptr_t)numberConstructorNegInfinity, (intptr_t)0 },
-   { "POSITIVE_INFINITY", DontEnum|DontDelete|ReadOnly, (intptr_t)numberConstructorPosInfinity, (intptr_t)0 },
-   { "MAX_VALUE", DontEnum|DontDelete|ReadOnly, (intptr_t)numberConstructorMaxValue, (intptr_t)0 },
-   { "MIN_VALUE", DontEnum|DontDelete|ReadOnly, (intptr_t)numberConstructorMinValue, (intptr_t)0 },
+   { "NaN", DontEnum|DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(numberConstructorNaNValue), (intptr_t)0 },
+   { "NEGATIVE_INFINITY", DontEnum|DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(numberConstructorNegInfinity), (intptr_t)0 },
+   { "POSITIVE_INFINITY", DontEnum|DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(numberConstructorPosInfinity), (intptr_t)0 },
+   { "MAX_VALUE", DontEnum|DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(numberConstructorMaxValue), (intptr_t)0 },
+   { "MIN_VALUE", DontEnum|DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(numberConstructorMinValue), (intptr_t)0 },
    { 0, 0, 0, 0 }
 };
 

@@ -57,7 +57,6 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmutex.h>
-#include <QtNetwork/QNetworkInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +71,7 @@ public:
     {
     }
 
-    ~QNetworkConfigurationPrivate()
+    virtual ~QNetworkConfigurationPrivate()
     {
         //release pointers to member configurations
         serviceNetworkMembers.clear(); 
@@ -85,6 +84,8 @@ public:
         return bearer;
     }
 
+    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
+
     mutable QMutex mutex;
 
     QString bearer;
@@ -94,8 +95,6 @@ public:
     QNetworkConfiguration::StateFlags state;
     QNetworkConfiguration::Type type;
     QNetworkConfiguration::Purpose purpose;
-
-    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
     bool isValid;
     bool roamingSupported;

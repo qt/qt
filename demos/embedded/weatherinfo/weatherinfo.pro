@@ -7,7 +7,7 @@ QT += network svg
 symbian {
     TARGET.UID3 = 0xA000CF77
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-    HEADERS += $$QT_SOURCE_TREE/examples/network/qftp/sym_iap_util.h
+    INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
     LIBS += -lesock -lcommdb -linsock # For IAP selection
     TARGET.CAPABILITY = NetworkServices
 }

@@ -63,7 +63,7 @@
 #include <AknUtils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
-#include <AknBitmapAnimation.h>
+#include <aknbitmapanimation.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -377,6 +377,27 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x21b8},
     /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_X,    EAknsMajorSkin, 0x21b9},
 
+    // No pressed down grid in 3.1/3.2
+    /* SP_QsnFrGridCornerTlPressed */    {KAknsIIDQsnFrGridCornerTl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2681}, /*KAknsIIDQsnFrGridCornerTlPressed*/
+    /* SP_QsnFrGridCornerTrPressed */    {KAknsIIDQsnFrGridCornerTr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2682},
+    /* SP_QsnFrGridCornerBlPressed */    {KAknsIIDQsnFrGridCornerBl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2683},
+    /* SP_QsnFrGridCornerBrPressed */    {KAknsIIDQsnFrGridCornerBr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2684},
+    /* SP_QsnFrGridSideTPressed */       {KAknsIIDQsnFrGridSideT,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2685},
+    /* SP_QsnFrGridSideBPressed */       {KAknsIIDQsnFrGridSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2686},
+    /* SP_QsnFrGridSideLPressed */       {KAknsIIDQsnFrGridSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2687},
+    /* SP_QsnFrGridSideRPressed */       {KAknsIIDQsnFrGridSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2688},
+    /* SP_QsnFrGridCenterPressed */      {KAknsIIDQsnFrGridCenter,      ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2689},
+
+    // No pressed down list in 3.1/3.2
+    /* SP_QsnFrListCornerTlPressed */    {KAknsIIDQsnFrListCornerTl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268b}, /*KAknsIIDQsnFrListCornerTlPressed*/
+    /* SP_QsnFrListCornerTrPressed */    {KAknsIIDQsnFrListCornerTr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268c},
+    /* SP_QsnFrListCornerBlPressed */    {KAknsIIDQsnFrListCornerBl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268d},
+    /* SP_QsnFrListCornerBrPressed */    {KAknsIIDQsnFrListCornerBr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268e},
+    /* SP_QsnFrListSideTPressed */       {KAknsIIDQsnFrListSideT,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x268f},
+    /* SP_QsnFrListSideBPressed */       {KAknsIIDQsnFrListSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2690},
+    /* SP_QsnFrListSideLPressed */       {KAknsIIDQsnFrListSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2691},
+    /* SP_QsnFrListSideRPressed */       {KAknsIIDQsnFrListSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2692},
+    /* SP_QsnFrListPressed */            {KAknsIIDQsnFrList,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2693},
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -755,7 +776,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             if (drawn)
                 result = fromFbsBitmap(background, NULL, flags, targetSize);
-            // if drawing fails in skin server, just ignore the background (probably OOM occured)
+            // if drawing fails in skin server, just ignore the background (probably OOM case)
 
             CleanupStack::PopAndDestroy(4, background); //background, dev, gc, bgContext
     //        QS60WindowSurface::lockBitmapHeap();
@@ -787,7 +808,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
 
             const int currentFrame = QS60StylePrivate::currentAnimationFrame(part);
             if (constructedFromTheme && aknAnimation && aknAnimation->BitmapAnimData()->FrameArray().Count() > 0) {
-                //Animation was created succesfully and contains frames, just fetch current frame
+                //Animation was created successfully and contains frames, just fetch current frame
                 if(currentFrame >= aknAnimation->BitmapAnimData()->FrameArray().Count())
                     User::Leave(KErrOverflow);
                 const CBitmapFrameData* frameData = aknAnimation->BitmapAnimData()->FrameArray().At(currentFrame);
@@ -859,11 +880,9 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     User::LeaveIfError(bitmapDev->CreateContext(bitmapGc));
     CleanupStack::PushL(bitmapGc);
 
-#ifndef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
     frame->LockHeap();
     memset(frame->DataAddress(), 0, frame->SizeInPixels().iWidth * frame->SizeInPixels().iHeight * 4);  // 4: argb bytes
     frame->UnlockHeap();
-#endif
 
     const TRect outerRect(TPoint(0, 0), targetSize);
     const TRect innerRect = innerRectFromElement(frameElement, outerRect);
@@ -978,21 +997,25 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
             break;
         case QS60StylePrivate::SF_ToolTip:
-            widthShrink = widthShrink>>1;
-            heightShrink = heightShrink>>1;
+            widthShrink = widthShrink >> 1;
+            heightShrink = heightShrink >> 1;
             break;
         case QS60StylePrivate::SF_ListHighlight:
-            widthShrink = widthShrink-2;
-            heightShrink = heightShrink-2;
+            widthShrink = widthShrink - 2;
+            heightShrink = heightShrink - 2;
+            break;
+        case QS60StylePrivate::SF_PopupBackground:
+            widthShrink = widthShrink + 5;
+            heightShrink = heightShrink + 5;
             break;
         default:
             break;
@@ -1096,7 +1119,7 @@ void QS60StylePrivate::setActiveLayout()
         activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
-    m_pmPointer = data[activeLayoutIndex];
+    setCurrentLayout(activeLayoutIndex);
 }
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
@@ -1121,7 +1144,7 @@ QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
         &KAknsIIDQsnParentColors,
         &KAknsIIDQsnTextColors
     };
-    Q_ASSERT((int)list <= (int)sizeof(idMap)/sizeof(idMap[0]));
+    Q_ASSERT((int)list < (int)sizeof(idMap)/sizeof(idMap[0]));
     const QColor color = QS60StyleModeSpecifics::colorValue(*idMap[(int) list], index - 1);
     return option ? QS60StylePrivate::stateColor(color, option) : color;
 }

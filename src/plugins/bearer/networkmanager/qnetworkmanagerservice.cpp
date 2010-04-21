@@ -54,6 +54,8 @@
 #include "qnetworkmanagerservice.h"
 #include "qnmdbushelper.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 static QDBusConnection dbusConnection = QDBusConnection::systemBus();
@@ -353,9 +355,9 @@ QString QNetworkManagerInterfaceDevice::udi() const
     return d->connectionInterface->property("Udi").toString();
 }
 
-QNetworkInterface QNetworkManagerInterfaceDevice::networkInterface() const
+QString QNetworkManagerInterfaceDevice::networkInterface() const
 {
-    return QNetworkInterface::interfaceFromName(d->connectionInterface->property("Interface").toString());
+    return d->connectionInterface->property("Interface").toString();
 }
 
 quint32 QNetworkManagerInterfaceDevice::ip4Address() const
@@ -993,3 +995,5 @@ QStringList QNetworkManagerIp4Config::domains() const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtGui>
 #include "../../shared/util.h"
+#include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
@@ -787,7 +788,6 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
     if (hasScene) {
         scene.addItem(proxy);
@@ -836,7 +836,6 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     view.activateWindow();
     view.setFocus();
     QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
     QTRY_VERIFY(view.isVisible());
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
@@ -989,7 +988,6 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
-    QTest::qWait(25);
     QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
@@ -999,11 +997,10 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // out
     QTest::mouseMove(&view, QPoint(10, 10));
-    QTest::qWait(25);
     // QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), false);
     // ### this attribute isn't supported
-    QCOMPARE(widget->leaveCount, hasWidget ? 1 : 0);
-    QCOMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
+    QTRY_COMPARE(widget->leaveCount, hasWidget ? 1 : 0);
+    QTRY_COMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
     // does not work on all platforms
     //QCOMPARE(widget->moveCount, 0);
 
@@ -1071,7 +1068,6 @@ void tst_QGraphicsProxyWidget::hoverMoveEvent()
 
     // move a little bit
     QTest::mouseMove(&view, QPoint(60, 60));
-    QTest::qWait(12);
     QTRY_COMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
     QCOMPARE(widget->moveCount, (hasWidget && mouseTracking) || (hasWidget && mouseDown) ? 1 : 0);
 
@@ -1097,7 +1093,6 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     view.viewport()->setFocus();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1305,13 +1300,11 @@ void tst_QGraphicsProxyWidget::paintEvent()
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
-    QTest::qWait(30);
     QTRY_VERIFY(proxy.paintCount > 1);
     QTest::qWait(30);
     proxy.paintCount = 0;
 
     w->update();
-    QTest::qWait(30);
     QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 
@@ -1504,7 +1497,6 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
-    QTest::qWait(50);
     QTRY_COMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
@@ -2483,9 +2475,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
 		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
 
-    QTest::qWait(12);
-
-    QCOMPARE(box->pos(), QPoint());
+    QTRY_COMPARE(box->pos(), QPoint());
 
     QCOMPARE(proxy->childItems().count(), 1);
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
@@ -2498,7 +2488,6 @@ void tst_QGraphicsProxyWidget::popup_basic()
         QSKIP("Does not work due to SH_Combobox_Popup", SkipAll);
     QCOMPARE(child->widget()->parent(), static_cast<QObject*>(box));
 
-    QTest::qWait(12);
     QTRY_COMPARE(proxy->pos(), QPointF(box->pos()));
     QCOMPARE(child->x(), qreal(box->x()));
     QCOMPARE(child->y(), qreal(box->rect().bottom()));
@@ -2583,47 +2572,79 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
     sendMouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
-    QTest::qWait(12);
     QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
 
     // out
     QTest::mouseMove(view.viewport(), QPoint(1, 1));
     sendMouseMove(view.viewport(), QPoint(1, 1));
-    QTest::qWait(12);
     QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
 #endif
 }
 
 void tst_QGraphicsProxyWidget::tooltip_basic()
 {
-    // Confirm that mouse events are working properly by checking that
-    // when moving the mouse over a label with a tooptip the tooltip appears
+    QString toolTip = "Qt rocks!";
+    QString toolTip2 = "Qt rocks even more!";
+
+    QPushButton *button = new QPushButton("button");
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget;
+    QGraphicsProxyWidgetPrivate *proxyd = static_cast<QGraphicsProxyWidgetPrivate *>(QGraphicsItemPrivate::get(proxy));
+    proxy->setWidget(button);
+    proxyd->lastWidgetUnderMouse = button; // force widget under mouse
+
+    QVERIFY(button->toolTip().isEmpty());
+    QVERIFY(proxy->toolTip().isEmpty());
+    // Check that setting the tooltip on the proxy also set it on the widget
+    proxy->setToolTip(toolTip);
+    QCOMPARE(proxy->toolTip(), toolTip);
+    QCOMPARE(button->toolTip(), toolTip);
+    // Check that setting the tooltip on the widget also set it on the proxy
+    button->setToolTip(toolTip2);
+    QCOMPARE(proxy->toolTip(), toolTip2);
+    QCOMPARE(button->toolTip(), toolTip2);
+
     QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    view.show();
-
-    QSKIP("Tooltips don't work yet", SkipAll);
-
-    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
-    QLabel *widget = new QLabel;
-    widget->setText("If it ain't tested it's broken");
-    widget->setToolTip("When in doubt, test");
-    proxy->setWidget(widget);
-    widget->show();
     scene.addItem(proxy);
-    QTest::qWait(125);
 
-    // in
-    QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
-    QTest::qWait(3000);
+    QGraphicsView view(&scene);
+    view.setFixedSize(200, 200);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    {
+        QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
+                             view.viewport()->mapToGlobal(view.viewport()->rect().topLeft()));
+        QApplication::sendEvent(view.viewport(), &helpEvent);
+        QTest::qWait(350);
 
-    QCOMPARE(proxy->childItems().count(), 1);
-    QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
-    QVERIFY(child->isWidget());
-    QVERIFY(child->widget());
-    QCOMPARE(child->widget()->parent(), static_cast<QObject*>(widget));
-    QCOMPARE(child->widget()->x(), widget->x()); // ### ???
-    QCOMPARE(child->widget()->y(), widget->y() + widget->height()); // ### ???
+        bool foundView = false;
+        bool foundTipLabel = false;
+        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+            if (widget == &view)
+                foundView = true;
+            if (widget->inherits("QTipLabel"))
+                foundTipLabel = true;
+        }
+        QVERIFY(foundView);
+        QVERIFY(!foundTipLabel);
+    }
+
+    {
+        QHelpEvent helpEvent(QEvent::ToolTip, view.mapFromScene(proxy->boundingRect().center()),
+                             view.viewport()->mapToGlobal(view.mapFromScene(proxy->boundingRect().center())));
+        QApplication::sendEvent(view.viewport(), &helpEvent);
+        QTest::qWait(350);
+
+        bool foundView = false;
+        bool foundTipLabel = false;
+        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+            if (widget == &view)
+                foundView = true;
+            if (widget->inherits("QTipLabel"))
+                foundTipLabel = true;
+        }
+        QVERIFY(foundView);
+        QVERIFY(foundTipLabel);
+    }
 }
 
 void tst_QGraphicsProxyWidget::childPos_data()
@@ -3348,7 +3369,6 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(20);
     QTRY_VERIFY(view.npaints > 0);
 
     const QRect itemDeviceBoundingRect = proxy->deviceTransform(view.viewportTransform())
@@ -3361,8 +3381,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and hide.
     proxy->update();
     proxy->hide();
-    QTest::qWait(50);
-    QCOMPARE(view.npaints, 1);
+    QTRY_COMPARE(view.npaints, 1);
     QCOMPARE(view.paintEventRegion, expectedRegion);
 
     proxy->show();
@@ -3373,8 +3392,7 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and delete.
     proxy->update();
     delete proxy;
-    QTest::qWait(50);
-    QCOMPARE(view.npaints, 1);
+    QTRY_COMPARE(view.npaints, 1);
     QCOMPARE(view.paintEventRegion, expectedRegion);
 }
 
@@ -3426,85 +3444,105 @@ void tst_QGraphicsProxyWidget::clickFocus()
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     QGraphicsProxyWidget *proxy = scene.addWidget(new QLineEdit);
 
-    EventSpy proxySpy(proxy);
-    EventSpy widgetSpy(proxy->widget());
-
     QGraphicsView view(&scene);
-    view.setFrameStyle(0);
-    view.resize(300, 300);
-    view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QApplication::setActiveWindow(&view);
-    QTest::qWait(25);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
-    QVERIFY(!proxy->hasFocus());
-    QVERIFY(!proxy->widget()->hasFocus());
-
-    QCOMPARE(proxySpy.counts[QEvent::FocusIn], 0);
-    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 0);
-    QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 0);
-    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 0);
-
-    QPointF lineEditCenter = proxy->mapToScene(proxy->boundingRect().center());
-    // Spontaneous mouse click sets focus on a clickable widget.
-    for (int retry = 0; retry < 50 && !proxy->hasFocus(); retry++)
-        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
-    QVERIFY(proxy->hasFocus());
-    QVERIFY(proxy->widget()->hasFocus());
-    QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);
-    QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 1);
-
-    scene.setFocusItem(0);
-    QVERIFY(!proxy->hasFocus());
-    QVERIFY(!proxy->widget()->hasFocus());
-    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 1);
-    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 1);
-
-    // Non-spontaneous mouse click sets focus if the widget has been clicked before
     {
-        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
-        event.setScenePos(lineEditCenter);
-        event.setButton(Qt::LeftButton);
-        qApp->sendEvent(&scene, &event);
+        EventSpy proxySpy(proxy);
+        EventSpy widgetSpy(proxy->widget());
+
+        view.setFrameStyle(0);
+        view.resize(300, 300);
+        view.show();
+#ifdef Q_WS_X11
+        qt_x11_wait_for_window_manager(&view);
+#endif
+        QApplication::setActiveWindow(&view);
+        QTRY_COMPARE(QApplication::activeWindow(), &view);
+
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+
+        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 0);
+        QCOMPARE(proxySpy.counts[QEvent::FocusOut], 0);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 0);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 0);
+
+        QPointF lineEditCenter = proxy->mapToScene(proxy->boundingRect().center());
+        // Spontaneous mouse click sets focus on a clickable widget.
+        for (int retry = 0; retry < 50 && !proxy->hasFocus(); retry++)
+            QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
         QVERIFY(proxy->hasFocus());
         QVERIFY(proxy->widget()->hasFocus());
-        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 2);
-        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 2);
+        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 1);
+
+        scene.setFocusItem(0);
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+        QCOMPARE(proxySpy.counts[QEvent::FocusOut], 1);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 1);
+
+        // Non-spontaneous mouse click sets focus if the widget has been clicked before
+        {
+            QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+            event.setScenePos(lineEditCenter);
+            event.setButton(Qt::LeftButton);
+            qApp->sendEvent(&scene, &event);
+            QVERIFY(proxy->hasFocus());
+            QVERIFY(proxy->widget()->hasFocus());
+            QCOMPARE(proxySpy.counts[QEvent::FocusIn], 2);
+            QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 2);
+        }
     }
 
     scene.setFocusItem(0);
     proxy->setWidget(new QLineEdit); // resets focusWidget
-    QVERIFY(!proxy->hasFocus());
-    QVERIFY(!proxy->widget()->hasFocus());
-    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 2);
-    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 2);
 
-    // Non-spontaneous mouse click does not set focus on the embedded widget.
     {
-        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
-        event.setScenePos(lineEditCenter);
-        event.setButton(Qt::LeftButton);
-        qApp->sendEvent(&scene, &event);
+        QPointF lineEditCenter = proxy->mapToScene(proxy->boundingRect().center());
+        EventSpy proxySpy(proxy);
+        EventSpy widgetSpy(proxy->widget());
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());
-        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 2);
-        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 2);
+        QCOMPARE(proxySpy.counts[QEvent::FocusOut], 0);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 0);
+
+        // Non-spontaneous mouse click does not set focus on the embedded widget.
+        {
+            QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+            event.setScenePos(lineEditCenter);
+            event.setButton(Qt::LeftButton);
+            qApp->sendEvent(&scene, &event);
+            QVERIFY(!proxy->hasFocus());
+            QVERIFY(!proxy->widget()->hasFocus());
+            QCOMPARE(proxySpy.counts[QEvent::FocusIn], 0);
+            QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 0);
+        }
+
+        scene.setFocusItem(0);
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+        QCOMPARE(proxySpy.counts[QEvent::FocusOut], 0);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 0);
+
+        // Spontaneous click on non-clickable widget does not give focus.
+        proxy->widget()->setFocusPolicy(Qt::NoFocus);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+
+        // Multiple clicks should only result in one FocusIn.
+        proxy->widget()->setFocusPolicy(Qt::StrongFocus);
+        scene.setFocusItem(0);
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+        QVERIFY(proxy->hasFocus());
+        QVERIFY(proxy->widget()->hasFocus());
+        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 1);
+        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);
     }
-
-    scene.setFocusItem(0);
-    QVERIFY(!proxy->hasFocus());
-    QVERIFY(!proxy->widget()->hasFocus());
-    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 2);
-    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 2);
-
-    // Spontaneous click on non-clickable widget does not give focus.
-    proxy->widget()->setFocusPolicy(Qt::NoFocus);
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
-    QVERIFY(!proxy->hasFocus());
-    QVERIFY(!proxy->widget()->hasFocus());
 }
 
 void tst_QGraphicsProxyWidget::windowFrameMargins()

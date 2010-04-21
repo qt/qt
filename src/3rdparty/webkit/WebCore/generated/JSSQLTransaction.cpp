@@ -38,7 +38,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSQLTransaction);
 
 static const HashTableValue JSSQLTransactionPrototypeTableValues[2] =
 {
-    { "executeSql", DontDelete|Function, (intptr_t)jsSQLTransactionPrototypeFunctionExecuteSql, (intptr_t)4 },
+    { "executeSql", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSQLTransactionPrototypeFunctionExecuteSql), (intptr_t)4 },
     { 0, 0, 0, 0 }
 };
 

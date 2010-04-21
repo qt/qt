@@ -41,74 +41,11 @@
 
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
+#include <QGraphicsWidget>
 
 #include "graphicslayouts_p.h"
-#include "graphicswidgets_p.h"
-
+#include <private/qdeclarativegraphicswidget_p.h>
 QT_BEGIN_NAMESPACE
-
-class QGraphicsViewDeclarativeUI : public QObject
-{
-    Q_OBJECT
-
-    Q_PROPERTY(QGraphicsScene *scene READ scene WRITE setScene)
-    Q_CLASSINFO("DefaultProperty", "scene")
-public:
-    QGraphicsViewDeclarativeUI(QObject *other) : QObject(other) {}
-
-    QGraphicsScene *scene() const { return static_cast<QGraphicsView *>(parent())->scene(); }
-    void setScene(QGraphicsScene *scene)
-    {
-        static_cast<QGraphicsView *>(parent())->setScene(scene);
-    }
-};
-
-class QGraphicsSceneDeclarativeUI : public QObject
-{
-    Q_OBJECT
-
-    Q_PROPERTY(QDeclarativeListProperty<QObject> children READ children)
-    Q_CLASSINFO("DefaultProperty", "children")
-public:
-    QGraphicsSceneDeclarativeUI(QObject *other) : QObject(other) {}
-
-    QDeclarativeListProperty<QObject> children() { return QDeclarativeListProperty<QObject>(this->parent(), 0, children_append); }
-
-private:
-    static void children_append(QDeclarativeListProperty<QObject> *prop, QObject *o) {
-        if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(o))
-            static_cast<QGraphicsScene *>(prop->object)->addItem(go);
-    }
-};
-
-class QGraphicsWidgetDeclarativeUI : public QObject
-{
-    Q_OBJECT
-
-    Q_PROPERTY(QDeclarativeListProperty<QGraphicsItem> children READ children)
-    Q_PROPERTY(QGraphicsLayout *layout READ layout WRITE setLayout)
-    Q_CLASSINFO("DefaultProperty", "children")
-public:
-    QGraphicsWidgetDeclarativeUI(QObject *other) : QObject(other) {}
-
-    QDeclarativeListProperty<QGraphicsItem> children() { return QDeclarativeListProperty<QGraphicsItem>(this, 0, children_append); }
-
-    QGraphicsLayout *layout() const { return static_cast<QGraphicsWidget *>(parent())->layout(); }
-    void setLayout(QGraphicsLayout *lo)
-    {
-        static_cast<QGraphicsWidget *>(parent())->setLayout(lo);
-    }
-
-private:
-    void setItemParent(QGraphicsItem *wid)
-    {
-        wid->setParentItem(static_cast<QGraphicsWidget *>(parent()));
-    }
-
-    static void children_append(QDeclarativeListProperty<QGraphicsItem> *prop, QGraphicsItem *i) {
-        static_cast<QGraphicsWidgetDeclarativeUI*>(prop->object)->setItemParent(i);
-    }
-};
 
 class QWidgetsQmlModule : public QDeclarativeExtensionPlugin
 {
@@ -118,15 +55,11 @@ public:
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.widgets"));
 
-        QML_REGISTER_INTERFACE(QGraphicsLayoutItem);
-        QML_REGISTER_INTERFACE(QGraphicsLayout);
+        qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
+        qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
         qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,6,"QGraphicsLinearLayoutStretchItem");
         qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,6,"QGraphicsLinearLayout");
         qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,6,"QGraphicsGridLayout");
-        qmlRegisterExtendedType<QGraphicsView, QGraphicsViewDeclarativeUI>(uri,4,6,"QGraphicsView");
-        qmlRegisterExtendedType<QGraphicsScene,QGraphicsSceneDeclarativeUI>(uri,4,6,"QGraphicsScene");
-        qmlRegisterExtendedType<QGraphicsWidget,QGraphicsWidgetDeclarativeUI>(uri,4,6,"QGraphicsWidget");
-        QML_REGISTER_INTERFACE(QGraphicsItem);
     }
 };
 

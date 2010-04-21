@@ -301,7 +301,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
     switch (event->type()) {
     case QEvent::TouchBegin: {
         d->speed = 1;
-        d->time = QTime::currentTime();
+        d->time.start();
         d->started = true;
         result = QGestureRecognizer::MayBeGesture;
         break;
@@ -338,11 +338,10 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                              p3.screenPos().y() - d->lastPositions[2].y()) / 3;
 
             const int distance = xDistance >= yDistance ? xDistance : yDistance;
-            int elapsedTime = d->time.msecsTo(QTime::currentTime());
+            int elapsedTime = d->time.restart();
             if (!elapsedTime)
                 elapsedTime = 1;
             d->speed = 0.9 * d->speed + distance / elapsedTime;
-            d->time = QTime::currentTime();
             d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
 
             static const int MoveThreshold = 50;
@@ -405,7 +404,7 @@ void QSwipeGestureRecognizer::reset(QGesture *state)
     d->lastPositions[0] = d->lastPositions[1] = d->lastPositions[2] = QPoint();
     d->started = false;
     d->speed = 0;
-    d->time = QTime();
+    d->time.invalidate();
 
     QGestureRecognizer::reset(state);
 }

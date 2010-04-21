@@ -42,7 +42,9 @@
 #ifndef QDECLARATIVEANIMATEDIMAGE_H
 #define QDECLARATIVEANIMATEDIMAGE_H
 
-#include "qdeclarativeimage_p.h"
+#include "private/qdeclarativeimage_p.h"
+
+#ifndef QT_NO_MOVIE
 
 QT_BEGIN_HEADER
 
@@ -61,6 +63,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeAnimatedImage : public QDeclarativeImage
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
     Q_PROPERTY(int frameCount READ frameCount)
+
+    // read-only for AnimatedImage
+    Q_PROPERTY(QSize sourceSize READ sourceSize NOTIFY sourceSizeChanged)
+
 public:
     QDeclarativeAnimatedImage(QDeclarativeItem *parent=0);
     ~QDeclarativeAnimatedImage();
@@ -83,6 +89,7 @@ Q_SIGNALS:
     void playingChanged();
     void pausedChanged();
     void frameChanged();
+    void sourceSizeChanged();
 
 private Q_SLOTS:
     void movieUpdate();
@@ -102,5 +109,7 @@ QT_END_NAMESPACE
 QML_DECLARE_TYPE(QDeclarativeAnimatedImage)
 
 QT_END_HEADER
+
+#endif // QT_NO_MOVIE
 
 #endif

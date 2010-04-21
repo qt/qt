@@ -40,8 +40,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSSQLError);
 
 static const HashTableValue JSSQLErrorTableValues[3] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsSQLErrorCode, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsSQLErrorMessage, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSQLErrorCode), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSQLErrorMessage), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -101,20 +101,22 @@ bool JSSQLError::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pro
     return getStaticValueDescriptor<JSSQLError, Base>(exec, &JSSQLErrorTable, this, propertyName, descriptor);
 }
 
-JSValue jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLErrorCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
+    JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SQLError* imp = static_cast<SQLError*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsSQLErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSQLErrorMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
+    JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SQLError* imp = static_cast<SQLError*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLError* object)

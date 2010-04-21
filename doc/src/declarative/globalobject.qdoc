@@ -182,24 +182,29 @@ This function returns a color 50% darker than \c baseColor. See QColor::darker()
     \image declarative-rect_tint.png
 
     Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
-\section3 Qt.closestAngle(number fromAngle, number toAngle)
-This function returns an equivalent angle to toAngle, such that the difference between fromAngle and toAngle is never more than 180 degrees. This is useful when animating angles using a NumberAnimation, which does not know about equivalent angles, when you always want to take the shortest path. 
-
-For example, the following would rotate myItem counterclockwise from 350 degrees to 10 degrees, for a total of 340 degrees of rotation.
-\qml
-NumberAnimation { target: myItem; property: "rotation"; from: 350; to: 10 }
-\endqml
-
-while the following would rotate myItem clockwise from 350 degrees to 370 degrees (which is visually equivilant to 10 degrees), for a total of 20 degrees of rotation.
-\qml
-NumberAnimation { target: myItem; property: "rotation"; from: 350; to: Qt.closetAngle(350, 10) }
-\endqml
 
 \section3 Qt.openUrlExternally(url target)
 This function attempts to open the specified \c target url in an external application, based on the user's desktop preferences. It will return true if it succeeds, and false otherwise.
 
 \section3 Qt.md5(data)
 This function returns a hex string of the md5 hash of \c data.
+
+\section3 Qt.btoa(data)
+This function returns a base64 encoding of \c data.
+
+\section3 Qt.atob(data)
+This function returns a base64 decoding of \c data.
+
+\section3 Qt.quit()
+This function causes the QML engine to emit the quit signal, which in
+\l {Qt Declarative UI Runtime}{qml} causes the runtime to quit.
+
+\section3 Qt.resolvedUrl(url)
+This function returns \c url resolved relative to the URL of the
+caller.
+
+\section3 Qt.isQtObject(object)
+Returns true if \c object is a valid reference to a Qt or QML object, otherwise false.
 
 \section1 Dynamic Object Creation
 The following functions on the global object allow you to dynamically create QML
@@ -264,7 +269,7 @@ of their use.
 
     Example (where targetItem is the id of an existing QML item):
     \code
-    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
+    newObject = createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
         targetItem, "dynamicSnippet1");
     \endcode
 
@@ -285,20 +290,33 @@ of their use.
 QML script supports the XMLHttpRequest object, which can be used to asynchronously obtain data from over a network.
 \section2 XMLHttpRequest()
 In QML you can construct an XMLHttpRequest object just like in a web browser! TODO: Real documentation for this object.
+
+
 \section1 Offline Storage API
 
-The \c openDatabase() and related functions
+\section2 Database API
+
+The \c openDatabaseSync() and related functions
 provide the ability to access local offline storage in an SQL database.
 
-These databases are user-specific and QML-specific. They are stored in the \c Databases subdirectory
+These databases are user-specific and QML-specific, but accessible to all QML applications.
+They are stored in the \c Databases subdirectory
 of QDeclarativeEngine::offlineStoragePath(), currently as SQLite databases.
-
-The API conforms to the Synchronous API of the HTML5 Web Database API,
-\link http://www.w3.org/TR/2009/WD-webdatabase-20091029/ W3C Working Draft 29 October 2009\endlink.
 
 The API can be used from JavaScript functions in your QML:
 
 \quotefile declarative/sql/hello.qml
+
+The API conforms to the Synchronous API of the HTML5 Web Database API,
+\link http://www.w3.org/TR/2009/WD-webdatabase-20091029/ W3C Working Draft 29 October 2009\endlink.
+
+\section3 db = openDatabaseSync(identifier, version, description, estimated_size, callback(db))
+
+Returns the database identified by \e identifier. If the database does not already exist, it
+is created with the properties \e description and \e estimated_size and the function \e callback
+is called with the database as a parameter.
+
+May throw exception with code property SQLException.DATABASE_ERR, or SQLException.VERSION_ERR.
 
 When a database is first created, an INI file is also created specifying its characteristics:
 
@@ -312,5 +330,49 @@ When a database is first created, an INI file is also created specifying its cha
 \endtable
 
 This data can be used by application tools.
+
+\section3 db.changeVersion(from, to, callback(tx))
+
+This method allows you to perform a \e{Scheme Upgrade}.
+
+If the current version of \e db is not \e from, then an exception is thrown.
+
+Otherwise, a database transaction is created and passed to \e callback. In this function,
+you can call \e executeSql on \e tx to upgrade the database.
+
+May throw exception with code property SQLException.DATABASE_ERR or SQLException.UNKNOWN_ERR.
+
+\section3 db.transaction(callback(tx))
+
+This method creates a read/write transaction and passed to \e callback. In this function,
+you can call \e executeSql on \e tx to read and modify the database.
+
+If the callback throws exceptions, the transaction is rolled back.
+
+\section3 db.readTransaction(callback(tx))
+
+This method creates a read-only transaction and passed to \e callback. In this function,
+you can call \e executeSql on \e tx to read the database (with SELECT statements).
+
+\section3 results = tx.executeSql(statement, values)
+
+This method executes a SQL \e statement, binding the list of \e values to SQL positional parameters ("?").
+
+It returns a results object, with the following properties:
+
+\table
+\header \o \bold {Type} \o \bold {Property} \o \bold {Value} \o \bold {Applicability}
+\row \o int \o rows.length \o The number of rows in the result \o SELECT
+\row \o var \o rows.item(i) \o Function that returns row \e i of the result \o SELECT
+\row \o int \o rowsAffected \o The number of rows affected by a modification \o UPDATE, DELETE
+\row \o string \o insertId \o The id of the row inserted \o INSERT
+\endtable
+
+May throw exception with code property SQLException.DATABASE_ERR, SQLException.SYNTAX_ERR, or SQLException.UNKNOWN_ERR.
+
+\section1 Logging
+
+\c console.log() and \c console.debug() can be used to print information
+to the console. See \l{Debugging QML} for more information.
 
 */

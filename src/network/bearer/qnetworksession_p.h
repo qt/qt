@@ -56,7 +56,7 @@
 #include "qnetworksession.h"
 #include "qnetworkconfiguration_p.h"
 
-#include <QNetworkInterface>
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
@@ -82,7 +82,9 @@ public:
     //notification hooks to discover future state changes.
     virtual void syncStateWithInterface() = 0;
 
+#ifndef QT_NO_NETWORKINTERFACE
     virtual QNetworkInterface currentInterface() const = 0;
+#endif
     virtual QVariant sessionProperty(const QString& key) const = 0;
     virtual void setSessionProperty(const QString& key, const QVariant& value) = 0;
 
@@ -126,6 +128,8 @@ Q_SIGNALS:
     void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
 
 protected:
+    QNetworkSession *q;
+
     // The config set on QNetworkSession.
     QNetworkConfiguration publicConfig;
 
@@ -140,11 +144,11 @@ protected:
 
     QNetworkSession::State state;
     bool isOpen;
-
-    QNetworkSession *q;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSIONPRIVATE_H
 

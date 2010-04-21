@@ -39,9 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetextinput_p.h"
-#include "qdeclarativetextinput_p_p.h"
+#include "private/qdeclarativetextinput_p.h"
+#include "private/qdeclarativetextinput_p_p.h"
 
+#include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativeinfo.h>
 
 #include <QValidator>
@@ -96,14 +97,116 @@ void QDeclarativeTextInput::setText(const QString &s)
 
 /*!
     \qmlproperty string TextInput::font.family
+
+    Sets the family name of the font.
+
+    The family name is case insensitive and may optionally include a foundry name, e.g. "Helvetica [Cronyx]".
+    If the family is available from more than one foundry and the foundry isn't specified, an arbitrary foundry is chosen.
+    If the family isn't available a family will be set using the font matching algorithm.
+*/
+
+/*!
     \qmlproperty bool TextInput::font.bold
+
+    Sets the font's weight to bold.
+*/
+
+/*!
+    \qmlproperty enumeration TextInput::font.weight
+
+    Sets the font's weight.
+
+    The weight can be one of:
+    \list
+    \o Light
+    \o Normal - the default
+    \o DemiBold
+    \o Bold
+    \o Black
+    \endlist
+
+    \qml
+    TextInput { text: "Hello"; font.weight: Font.DemiBold }
+    \endqml
+*/
+
+/*!
     \qmlproperty bool TextInput::font.italic
+
+    Sets the style of the text to italic.
+*/
+
+/*!
     \qmlproperty bool TextInput::font.underline
+
+    Set the style of the text to underline.
+*/
+
+/*!
+    \qmlproperty bool TextInput::font.outline
+
+    Set the style of the text to outline.
+*/
+
+/*!
+    \qmlproperty bool TextInput::font.strikeout
+
+    Set the style of the text to strikeout.
+*/
+
+/*!
     \qmlproperty real TextInput::font.pointSize
+
+    Sets the font size in points. The point size must be greater than zero.
+*/
+
+/*!
     \qmlproperty int TextInput::font.pixelSize
 
-    Set the TextInput's font attributes.
+    Sets the font size in pixels.
+
+    Using this function makes the font device dependent.
+    Use \c pointSize to set the size of the font in a device independent manner.
 */
+
+/*!
+    \qmlproperty real TextInput::font.letterSpacing
+
+    Sets the letter spacing for the font.
+
+    Letter spacing changes the default spacing between individual letters in the font.
+    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
+    the width of the character itself.
+*/
+
+/*!
+    \qmlproperty real TextInput::font.wordSpacing
+
+    Sets the word spacing for the font.
+
+    Word spacing changes the default spacing between individual words.
+    A positive value increases the word spacing by a corresponding amount of pixels,
+    while a negative value decreases the inter-word spacing accordingly.
+*/
+
+/*!
+    \qmlproperty enumeration TextInput::font.capitalization
+
+    Sets the capitalization for the text.
+
+    \list
+    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \endlist
+
+    \qml
+    TextInput { text: "Hello"; font.capitalization: Font.AllLowercase }
+    \endqml
+*/
+
 QFont QDeclarativeTextInput::font() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -220,6 +323,7 @@ void QDeclarativeTextInput::setHAlign(HAlignment align)
     if(align == d->hAlign)
         return;
     d->hAlign = align;
+    updateRect();
     emit horizontalAlignmentChanged(d->hAlign);
 }
 
@@ -427,28 +531,113 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
 }
 
 /*!
-    \qmlproperty QValidator* TextInput::validator
+    \qmlproperty bool TextInput::autoScroll
 
-    Allows you to set a QValidator on the TextInput. When a validator is set
+    Whether the TextInput should scroll when the text is longer than the width. By default this is
+    set to true.
+*/
+bool QDeclarativeTextInput::autoScroll() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->autoScroll;
+}
+
+void QDeclarativeTextInput::setAutoScroll(bool b)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->autoScroll == b)
+        return;
+
+    d->autoScroll = b;
+
+    emit autoScrollChanged(d->autoScroll);
+}
+
+/*!
+    \qmlclass IntValidator QIntValidator
+
+    This element provides a validator for integer values
+*/
+/*!
+    \qmlproperty int IntValidator::top
+
+    This property holds the validator's highest acceptable value.
+    By default, this property's value is derived from the highest signed integer available (typically 2147483647).
+*/
+/*!
+    \qmlproperty int IntValidator::bottom
+
+    This property holds the validator's lowest acceptable value.
+    By default, this property's value is derived from the lowest signed integer available (typically -2147483647).
+*/
+
+/*!
+    \qmlclass DoubleValidator QDoubleValidator
+
+    This element provides a validator for non-integer numbers.
+*/
+
+/*!
+    \qmlproperty real DoubleValidator::top
+
+    This property holds the validator's maximum acceptable value.
+    By default, this property contains a value of infinity.
+*/
+/*!
+    \qmlproperty real DoubleValidator::bottom
+
+    This property holds the validator's minimum acceptable value.
+    By default, this property contains a value of -infinity.
+*/
+/*!
+    \qmlproperty int DoubleValidator::decimals
+
+    This property holds the validator's maximum number of digits after the decimal point.
+    By default, this property contains a value of 1000.
+*/
+/*!
+    \qmlproperty enumeration DoubleValidator::notation
+    This property holds the notation of how a string can describe a number.
+
+    The values for this property are DoubleValidator.StandardNotation or DoubleValidator.ScientificNotation.
+    If this property is set to ScientificNotation, the written number may have an exponent part(i.e. 1.5E-2).
+
+    By default, this property is set to ScientificNotation.
+*/
+
+/*!
+    \qmlclass RegExpValidator QRegExpValidator
+
+    This element provides a validator, which counts as valid any string which
+    matches a specified regular expression.
+*/
+/*!
+   \qmlproperty regExp RegExpValidator::regExp
+
+   This property holds the regular expression used for validation.
+
+   Note that this property should be a regular expression in JS syntax, e.g /a/ for the regular expression
+   matching "a".
+
+   By default, this property contains a regular expression with the pattern .* that matches any string.
+*/
+
+/*!
+    \qmlproperty Validator TextInput::validator
+
+    Allows you to set a validator on the TextInput. When a validator is set
     the TextInput will only accept input which leaves the text property in
     an acceptable or intermediate state. The accepted signal will only be sent
     if the text is in an acceptable state when enter is pressed.
 
-    Currently supported validators are QIntValidator, QDoubleValidator and
-    QRegExpValidator. For details, refer to their C++ documentation and remember
-    that all Q_PROPERTIES are accessible from Qml. A brief usage guide follows:
-
-    QIntValidator and QDoubleValidator both are controllable through two properties,
-    top and bottom. The difference is that for QIntValidator the top and bottom properties
-    should be integers, and for QDoubleValidator they should be doubles. QRegExpValidator
-    has a single string property, regExp, which should be set to the regular expression to
-    be used for validation. An example of using validators is shown below, which allows
+    Currently supported validators are IntValidator, DoubleValidator and
+    RegExpValidator. An example of using validators is shown below, which allows
     input of integers between 11 and 31 into the text input:
 
     \code
-    import Qt 4.6
+    import Qt 4.7
     TextInput{
-        validator: QIntValidator{bottom: 11; top: 31;}
+        validator: IntValidator{bottom: 11; top: 31;}
         focus: true
     }
     \endcode
@@ -617,6 +806,7 @@ void QDeclarativeTextInput::createCursor()
         return;
     }
 
+    QDeclarative_setParent_noEvent(d->cursorItem, this);
     d->cursorItem->setParentItem(this);
     d->cursorItem->setX(d->control->cursorToX());
     d->cursorItem->setHeight(d->control->height());
@@ -630,18 +820,33 @@ void QDeclarativeTextInput::moveCursor()
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
-int QDeclarativeTextInput::xToPos(int x)
+/*
+    \qmlmethod int xToPosition(int x)
+
+    This function returns the character position at
+    x pixels from the left of the textInput. Position 0 is before the
+    first character, position 1 is after the first character but before the second,
+    and so on until position text.length, which is after all characters.
+
+    This means that for all x values before the first character this function returns 0,
+    and for all x values after the last character this function returns text.length.
+*/
+int QDeclarativeTextInput::xToPosition(int x)
 {
     Q_D(const QDeclarativeTextInput);
     return d->control->xToPos(x - d->hscroll);
 }
 
-void QDeclarativeTextInput::focusChanged(bool hasFocus)
+void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 {
-    Q_D(QDeclarativeTextInput);
-    d->focused = hasFocus;
-    setCursorVisible(hasFocus);
-    QDeclarativeItem::focusChanged(hasFocus);
+    Q_Q(QDeclarativeTextInput);
+    focused = hasFocus;
+    q->setCursorVisible(hasFocus);
+    if(q->echoMode() == QDeclarativeTextInput::PasswordEchoOnEdit && !hasFocus)
+        control->updatePasswordEchoEditing(false);//QLineControl sets it on key events, but doesn't deal with focus events
+    if (!hasFocus)
+        control->deselect();
+    QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
 void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
@@ -675,7 +880,15 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         setFocus(true);
     }
-    d->control->processEvent(event);
+    bool mark = event->modifiers() & Qt::ShiftModifier;
+    int cursor = d->xToPos(event->pos().x());
+    d->control->moveCursor(cursor, mark);
+}
+
+void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->moveCursor(d->xToPos(event->pos().x()), true);
 }
 
 /*!
@@ -700,6 +913,7 @@ bool QDeclarativeTextInput::event(QEvent* ev)
         case QEvent::KeyPress:
         case QEvent::KeyRelease://###Should the control be doing anything with release?
         case QEvent::GraphicsSceneMousePress:
+        case QEvent::GraphicsSceneMouseMove:
         case QEvent::GraphicsSceneMouseRelease:
             break;
         default:
@@ -729,28 +943,56 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
     int flags = QLineControl::DrawText;
     if(!isReadOnly() && d->cursorVisible && !d->cursorItem)
         flags |= QLineControl::DrawCursor;
-    if (d->control->hasSelectedText()){
+    if (d->control->hasSelectedText())
             flags |= QLineControl::DrawSelections;
+    QPoint offset = QPoint(0,0);
+    QFontMetrics fm = QFontMetrics(d->font);
+    int cix = qRound(d->control->cursorToX());
+    QRect br(boundingRect().toRect());
+    //###Is this using bearing appropriately?
+    int minLB = qMax(0, -fm.minLeftBearing());
+    int minRB = qMax(0, -fm.minRightBearing());
+    int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
+    if (d->autoScroll) {
+        if ((minLB + widthUsed) <=  br.width()) {
+            // text fits in br; use hscroll for alignment
+            switch (d->hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            case Qt::AlignRight:
+                d->hscroll = widthUsed - br.width() + 1;
+                break;
+            case Qt::AlignHCenter:
+                d->hscroll = (widthUsed - br.width()) / 2;
+                break;
+            default:
+                // Left
+                d->hscroll = 0;
+                break;
+            }
+            d->hscroll -= minLB;
+        } else if (cix - d->hscroll >= br.width()) {
+            // text doesn't fit, cursor is to the right of br (scroll right)
+            d->hscroll = cix - br.width() + 1;
+        } else if (cix - d->hscroll < 0 && d->hscroll < widthUsed) {
+            // text doesn't fit, cursor is to the left of br (scroll left)
+            d->hscroll = cix;
+        } else if (widthUsed - d->hscroll < br.width()) {
+            // text doesn't fit, text document is to the left of br; align
+            // right
+            d->hscroll = widthUsed - br.width() + 1;
+        }
+        // the y offset is there to keep the baseline constant in case we have script changes in the text.
+        offset = br.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
+    } else {
+        if(d->hAlign == AlignRight){
+            d->hscroll = width() - widthUsed;
+        }else if(d->hAlign == AlignHCenter){
+            d->hscroll = (width() - widthUsed) / 2;
+        }
+        d->hscroll -= minLB;
+        offset = QPoint(d->hscroll, 0);
     }
 
-    QPoint offset = QPoint(0,0);
-    if(d->hAlign != AlignLeft){
-        QFontMetrics fm = QFontMetrics(d->font);
-        //###Is this using bearing appropriately?
-        int minLB = qMax(0, -fm.minLeftBearing());
-        int minRB = qMax(0, -fm.minRightBearing());
-        int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
-        int hOffset = 0;
-        if(d->hAlign == AlignRight){
-            hOffset = width() - widthUsed;
-        }else if(d->hAlign == AlignHCenter){
-            hOffset = (width() - widthUsed) / 2;
-        }
-        hOffset -= minLB;
-        offset = QPoint(hOffset, 0);
-    }
-    QRect clipRect = r;
-    d->control->draw(p, offset, clipRect, flags);
+    d->control->draw(p, offset, r, flags);
 
     p->restore();
 }
@@ -805,6 +1047,72 @@ void QDeclarativeTextInput::selectAll()
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
+/*
+   \qmlproperty string TextInput::passwordCharacter
+
+   This is the character displayed when echoMode is set to Password or
+   PasswordEchoOnEdit. By default it is an asterisk.
+
+   Attempting to set this to more than one character will set it to
+   the first character in the string. Attempting to set this to less
+   than one character will fail.
+*/
+QString QDeclarativeTextInput::passwordCharacter() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return QString(d->control->passwordCharacter());
+}
+
+void QDeclarativeTextInput::setPasswordCharacter(const QString &str)
+{
+    Q_D(QDeclarativeTextInput);
+    if(str.length() < 1)
+        return;
+    emit passwordCharacterChanged();
+    d->control->setPasswordCharacter(str.constData()[0]);
+}
+
+/*
+   \qmlproperty string TextInput::displayText
+
+   This is the actual text displayed in the TextInput. When
+   echoMode is set to TextInput::Normal this will be exactly
+   the same as the TextInput::text property. When echoMode
+   is set to something else, this property will contain the text
+   the user sees, while the text property will contain the
+   entered text.
+*/
+QString QDeclarativeTextInput::displayText() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->control->displayText();
+}
+
+/*
+    \qmlmethod void moveCursorSelection(int pos)
+
+    This method allows you to move the cursor while modifying the selection accordingly.
+    To simply move the cursor, set the cursorPosition property.
+
+    When this method is called it additionally sets either the
+    selectionStart or the selectionEnd (whichever was at the previous cursor position)
+    to the specified position. This allows you to easily extend and contract the selected
+    text range.
+
+    Example: The sequence of calls
+        cursorPosition = 5
+        moveCursorSelection(9)
+        moveCursorSelection(7)
+    would move the cursor to position 5, extend the selection end from 5 to 9
+    and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
+    selected (the 6th and 7th characters).
+*/
+void QDeclarativeTextInput::moveCursorSelection(int pos)
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->moveCursor(pos, true);
+}
+
 void QDeclarativeTextInputPrivate::init()
 {
     Q_Q(QDeclarativeTextInput);
@@ -820,6 +1128,8 @@ void QDeclarativeTextInputPrivate::init()
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(selectionChanged()));
     q->connect(control, SIGNAL(textChanged(const QString &)),
+               q, SIGNAL(displayTextChanged(const QString &)));
+    q->connect(control, SIGNAL(textChanged(const QString &)),
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),
                q, SIGNAL(accepted()));
@@ -834,6 +1144,9 @@ void QDeclarativeTextInputPrivate::init()
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
     lastSelectionEnd = 0;
+    QPalette p = control->palette();
+    selectedTextColor = p.color(QPalette::HighlightedText);
+    selectionColor = p.color(QPalette::Highlight);
 }
 
 void QDeclarativeTextInput::cursorPosChanged()
@@ -885,10 +1198,11 @@ void QDeclarativeTextInput::q_textChanged()
 
 void QDeclarativeTextInput::updateRect(const QRect &r)
 {
+    Q_D(QDeclarativeTextInput);
     if(r == QRect())
         clearCache();
     else
-        dirtyCache(r);
+        dirtyCache(QRect(r.x() - d->hscroll, r.y(), r.width(), r.height()));
     update();
 }
 

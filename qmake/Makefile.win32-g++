@@ -39,9 +39,7 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o \
               msvc_objectmodel.o symmake.o initprojectdeploy_symbian.o \
-              registry.o \
-              epocroot.o \
-              symmake_abld.o symmake_sbsv2.o
+              symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION
@@ -275,6 +273,9 @@ symmake_abld.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_abld.cpp
 symmake_sbsv2.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
 
+symbiancommon.o: $(SOURCE_PATH)/qmake/generators/symbian/symbiancommon.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symbiancommon.cpp
+
 initprojectdeploy_symbian.o: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
 
@@ -308,7 +309,7 @@ pbuilder_pbx.o: $(SOURCE_PATH)/qmake/generators/mac/pbuilder_pbx.cpp
 makefiledeps.o: $(SOURCE_PATH)/qmake/generators/makefiledeps.cpp
 	$(CXX) $(CXXFLAGS) generators/makefiledeps.cpp
 
-metamakefile.o: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp
+metamakefile.o: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp $(SOURCE_PATH)/qmake/generators/symbian/symbian_makefile.h
 	$(CXX) $(CXXFLAGS) generators/metamakefile.cpp
 
 xmloutput.o: $(SOURCE_PATH)/qmake/generators/xmloutput.cpp

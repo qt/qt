@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativescriptparser_p.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativescriptparser_p.h"
+#include "private/qdeclarativerefcount_p.h"
 #include "qdeclarativeerror.h"
 #include "qdeclarativeengine.h"
 
@@ -109,6 +109,9 @@ private:
     Components components;
     typedef QHash<QUrl, QDeclarativeCompositeTypeResource *> Resources;
     Resources resources;
+    typedef QHash<QUrl, QUrl> Redirects;
+    Redirects redirects;
+    int redirectCount;
 };
 
 QT_END_NAMESPACE

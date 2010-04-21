@@ -1,77 +1,87 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
+import "content/samegame.js" as SameGame
 
 Rectangle {
     id: screen
+
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: toolBar.top
+        width: parent.width
+        anchors { top: parent.top; bottom: toolBar.top }
 
         Image {
             id: background
-            anchors.fill: parent; source: "../shared/pics/background.jpg"
+            anchors.fill: parent
+            source: "../shared/pics/background.jpg"
             fillMode: Image.PreserveAspectCrop
         }
 
         Item {
             id: gameCanvas
             property int score: 0
-            property int tileSize: 40
-
-            Script { source: "content/samegame.js" }
+            property int blockSize: 40
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % getTileSize());
-            height: parent.height - (parent.height % getTileSize());
+            width: parent.width - (parent.width % blockSize);
+            height: parent.height - (parent.height % blockSize);
 
             MouseArea {
-                id: gameMR
-                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+                anchors.fill: parent; onClicked: SameGame.handleClick(mouse.x,mouse.y);
             }
         }
     }
 
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+
+    //![0]
     Dialog {
-        id: scoreName; anchors.centerIn: parent; z: 22;
+        id: nameInputDialog
+
+        anchors.centerIn: parent
+        z: 22
+
         Text {
-            id: spacer
+            id: dialogText
             opacity: 0
             text: "   You won! Please enter your name:"
         }
+
         TextInput {
-            id: editor
+            id: nameInput
+            width: 72
+            anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
+            focus: true
+
             onAccepted: {
-                if(scoreName.opacity==1&&editor.text!="")
-                    saveHighScore(editor.text);
-                scoreName.forceClose();
+                if (nameInputDialog.opacity == 1 && nameInput.text != "")
+                    SameGame.saveHighScore(nameInput.text);
+                nameInputDialog.forceClose();
             }
-            anchors.verticalCenter: parent.verticalCenter
-            width: 72; focus: true
-            anchors.left: spacer.right
         }
     }
+    //![0]
 
     Rectangle {
         id: toolBar
+        width: parent.width; height: 32
         color: activePalette.window
-        height: 32; width: parent.width
         anchors.bottom: screen.bottom
 
         Button {
-            id: btnA; text: "New Game"; onClicked: {initBoard();}
-            anchors.left: parent.left; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "New Game" 
+            onClicked: SameGame.startNewGame()
         }
 
         Text {
             id: score
-            text: "Score: " + gameCanvas.score; font.bold: true
-            anchors.right: parent.right; anchors.rightMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
+            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            text: "Score: " + gameCanvas.score
+            font.bold: true
         }
     }
 }

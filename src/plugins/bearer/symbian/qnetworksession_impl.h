@@ -58,26 +58,26 @@
 #include <QDateTime>
 
 #include <e32base.h>
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 #include <es_sock.h>
 #include <rconnmon.h>
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     #include <comms-infras/cs_mobility_apiext.h>
 #endif
-
-typedef int(*TOpenCSetdefaultifFunction)(const struct ifreq*);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+    #include <extendedconnpref.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class ConnectionProgressNotifier;
 class SymbianEngine;
 
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive,
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive, public MMobilityProtocolResp,
-                                     public MConnectionMonitorObserver
-#else
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive, public MConnectionMonitorObserver
+                                   public MMobilityProtocolResp,
 #endif
+                                   public MConnectionMonitorObserver
 {
     Q_OBJECT
 public:
@@ -90,7 +90,9 @@ public:
     //notification hooks to discover future state changes.
     void syncStateWithInterface();
 
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface currentInterface() const;
+#endif
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
     
@@ -138,17 +140,18 @@ private:
     void handleSymbianConnectionStatusChange(TInt aConnectionStatus, TInt aError, TUint accessPointId = 0);
     QNetworkConfiguration bestConfigFromSNAP(const QNetworkConfiguration& snapConfig) const;
     QNetworkConfiguration activeConfiguration(TUint32 iapId = 0) const;
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interface(TUint iapId) const;
+#endif
 
 private: // data
     SymbianEngine *engine;
 
+#ifndef QT_NO_NETWORKINTERFACE
     mutable QNetworkInterface activeInterface;
+#endif
 
     QDateTime startTime;
-
-    RLibrary iOpenCLibrary;
-    TOpenCSetdefaultifFunction iDynamicSetdefaultif;
 
     mutable RSocketServ iSocketServ;
     mutable RConnection iConnection;
@@ -161,6 +164,7 @@ private: // data
     QNetworkSession::SessionError iError;
     TInt iALREnabled;
     TBool iALRUpgradingConnection;
+    TBool iConnectInBackground;
     
     QList<QString> iKnownConfigsBeforeConnectionStart;
     

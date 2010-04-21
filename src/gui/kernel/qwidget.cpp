@@ -1481,7 +1481,7 @@ QWidget::~QWidget()
     QObjectPrivate::clearGuards(this);
 
     if (d->declarativeData) {
-        d->declarativeData->destroyed(this);
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
@@ -1509,8 +1509,12 @@ QWidget::~QWidget()
     if (QWidgetPrivate::allWidgets) // might have been deleted by ~QApplication
         QWidgetPrivate::allWidgets->remove(this);
 
-    QEvent e(QEvent::Destroy);
-    QCoreApplication::sendEvent(this, &e);
+    QT_TRY {
+        QEvent e(QEvent::Destroy);
+        QCoreApplication::sendEvent(this, &e);
+    } QT_CATCH(const std::exception&) {
+        // if this fails we can't do anything about it but at least we are not allowed to throw.
+    }
 }
 
 int QWidgetPrivate::instanceCounter = 0;  // Current number of widget instances
@@ -6183,6 +6187,8 @@ void QWidget::setFocus(Qt::FocusReason reason)
             previousProxyFocus = topData->proxyWidget->widget()->focusWidget();
             if (previousProxyFocus && previousProxyFocus->focusProxy())
                 previousProxyFocus = previousProxyFocus->focusProxy();
+            if (previousProxyFocus == this && !topData->proxyWidget->d_func()->proxyIsGivingFocus)
+                return;
         }
     }
 #endif
@@ -10564,6 +10570,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_X11OpenGLOverlay:
         d->updateIsOpaque();
+        break;
+    case Qt::WA_X11DoNotAcceptFocus:
+        if (testAttribute(Qt::WA_WState_Created))
+            d->updateX11AcceptFocus();
         break;
 #endif
     case Qt::WA_DontShowOnScreen: {

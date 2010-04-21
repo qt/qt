@@ -53,33 +53,34 @@
 // We mean it.
 //
 
-#include "qdeclarativetypenamecache_p.h"
-#include "qdeclarativescriptclass_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QDeclarativeContext;
-class QDeclarativeContextScriptClass : public QDeclarativeScriptClass
+class QDeclarativeContextData;
+class QDeclarativeContextScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeContextScriptClass(QDeclarativeEngine *);
     ~QDeclarativeContextScriptClass();
 
-    QScriptValue newContext(QDeclarativeContext *, QObject * = 0);
+    QScriptValue newContext(QDeclarativeContextData *, QObject * = 0);
     QScriptValue newSharedContext();
 
-    QDeclarativeContext *contextFromValue(const QScriptValue &);
+    QDeclarativeContextData *contextFromValue(const QScriptValue &);
     QObject *setOverrideObject(QScriptValue &, QObject *);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:
-    QScriptClass::QueryFlags queryProperty(QDeclarativeContext *, QObject *scopeObject, 
+    QScriptClass::QueryFlags queryProperty(QDeclarativeContextData *, QObject *scopeObject, 
                                            const Identifier &,
                                            QScriptClass::QueryFlags flags,
                                            bool includeTypes);
@@ -87,10 +88,9 @@ private:
     QDeclarativeEngine *engine;
 
     QObject *lastScopeObject;
-    QDeclarativeContext *lastContext;
+    QDeclarativeContextData *lastContext;
     QDeclarativeTypeNameCache::Data *lastData;
     int lastPropertyIndex;
-    int lastDefaultObject;
     QScriptValue lastFunction;
 
     uint m_id;

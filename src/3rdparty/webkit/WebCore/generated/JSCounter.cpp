@@ -36,10 +36,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSCounter);
 
 static const HashTableValue JSCounterTableValues[5] =
 {
-    { "identifier", DontDelete|ReadOnly, (intptr_t)jsCounterIdentifier, (intptr_t)0 },
-    { "listStyle", DontDelete|ReadOnly, (intptr_t)jsCounterListStyle, (intptr_t)0 },
-    { "separator", DontDelete|ReadOnly, (intptr_t)jsCounterSeparator, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCounterConstructor, (intptr_t)0 },
+    { "identifier", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCounterIdentifier), (intptr_t)0 },
+    { "listStyle", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCounterListStyle), (intptr_t)0 },
+    { "separator", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCounterSeparator), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCounterConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,33 +146,36 @@ bool JSCounter::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSCounter, Base>(exec, &JSCounterTable, this, propertyName, descriptor);
 }
 
-JSValue jsCounterIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterIdentifier(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
+    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(castedThis->impl());
-    return jsString(exec, imp->identifier());
+    JSValue result = jsString(exec, imp->identifier());
+    return result;
 }
 
-JSValue jsCounterListStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterListStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
+    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(castedThis->impl());
-    return jsString(exec, imp->listStyle());
+    JSValue result = jsString(exec, imp->listStyle());
+    return result;
 }
 
-JSValue jsCounterSeparator(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterSeparator(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
+    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(castedThis->impl());
-    return jsString(exec, imp->separator());
+    JSValue result = jsString(exec, imp->separator());
+    return result;
 }
 
-JSValue jsCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCounter* domObject = static_cast<JSCounter*>(asObject(slot.slotBase()));
+    JSCounter* domObject = static_cast<JSCounter*>(asObject(slotBase));
     return JSCounter::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSCounter::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

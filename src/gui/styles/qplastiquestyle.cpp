@@ -56,7 +56,6 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qabstractitemview.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
-#include <qdatetime.h>
 #include <qdebug.h>
 #include <qdialogbuttonbox.h>
 #include <qformlayout.h>
@@ -81,6 +80,7 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qsplitter.h>
 #include <qstyleoption.h>
 #include <qtextedit.h>
+#include <qelapsedtimer.h>
 #include <qtoolbar.h>
 #include <qtoolbox.h>
 #include <qtoolbutton.h>
@@ -980,7 +980,7 @@ public:
 #ifndef QT_NO_PROGRESSBAR
     QList<QProgressBar *> bars;
     int progressBarAnimateTimer;
-    QTime timer;
+    QElapsedTimer timer;
 #endif
 };
 
@@ -5846,7 +5846,6 @@ void QPlastiqueStyle::polish(QApplication *app)
 void QPlastiqueStyle::polish(QPalette &pal)
 {
     QWindowsStyle::polish(pal);
-    pal.setBrush(QPalette::AlternateBase, pal.base().color().darker(110));
 #ifdef Q_WS_MAC
     pal.setBrush(QPalette::Shadow, Qt::black);
 #endif

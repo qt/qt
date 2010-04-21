@@ -108,6 +108,8 @@ public:
                 && top() <= bottom() && left() <= right());
     }
 
+    bool isEmpty() const;
+
     QModelIndexList indexes() const;
 
 private:

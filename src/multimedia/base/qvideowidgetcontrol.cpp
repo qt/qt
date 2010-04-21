@@ -126,7 +126,7 @@ QVideoWidgetControl::~QVideoWidgetControl()
 */
 
 /*!
-    \fn QVideoWidgetControl::setAspectRatioMode(QVideoWidget::AspectRatioMode mode)
+    \fn QVideoWidgetControl::setAspectRatioMode(Qt::AspectRatioMode mode)
 
     Sets the aspect ratio \a mode which determines how video is scaled to the fit the widget with
     respect to its aspect ratio.

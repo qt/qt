@@ -53,6 +53,7 @@
 #endif
 
 class CCommsDatabase;
+class QEventLoop;
 
 QT_BEGIN_NAMESPACE
 class QTimer;
@@ -83,14 +84,14 @@ public:
 
     QString bearerName() const;
 
+    QNetworkConfigurationPrivatePointer serviceNetworkPtr;
+
+    QString mappingName;
+
     Bearer bearer;
 
     TUint32 numericId;
     TUint connectionId;
-
-    QNetworkConfigurationPrivatePointer serviceNetworkPtr;
-
-    QString mappingName;
 };
 
 inline SymbianNetworkConfigurationPrivate *toSymbianConfig(QNetworkConfigurationPrivatePointer ptr)
@@ -148,6 +149,7 @@ private:
     void accessPointScanningReady(TBool scanSuccessful, TConnMonIapInfo iapInfo);
     void startCommsDatabaseNotifications();
     void stopCommsDatabaseNotifications();
+    void waitRandomTime();
 
     QNetworkConfigurationPrivatePointer defaultConfigurationL();
     TBool GetS60PlatformVersion(TUint& aMajor, TUint& aMinor) const;
@@ -170,8 +172,10 @@ private: // Data
     TBool              iOnline;
     TBool              iInitOk;
     TBool              iUpdateGoingOn;
+    TBool              iIgnoringUpdates;
+    TUint              iTimeToWait;
+    QEventLoop*        iIgnoreEventLoop;
 
-    
     AccessPointsAvailabilityScanner* ipAccessPointsAvailabilityScanner;
     
     friend class QNetworkSessionPrivate;

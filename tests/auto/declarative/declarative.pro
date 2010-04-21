@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += \
+           examples \
            graphicswidgets \        # Cover
-           layouts \                # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
            qdeclarativeanimations \          # Cover
@@ -14,7 +14,6 @@ SUBDIRS += \
            qdeclarativedebugclient \         # Cover
            qdeclarativedebugservice \        # Cover
            qdeclarativedom \                 # Cover
-           qdeclarativeeasefollow \          # Cover
            qdeclarativeecmascript \          # Cover
            qdeclarativeengine     \          # Cover
            qdeclarativeerror \               # Cover
@@ -25,10 +24,12 @@ SUBDIRS += \
            qdeclarativeborderimage \ # Cover
            qdeclarativeflickable   \ # Cover
            qdeclarativeflipable    \ # Cover
+           qdeclarativefocusscope  \ # Cover
            qdeclarativegridview \    # Cover
            qdeclarativeitem \        # Cover
            qdeclarativelistview \    # Cover
            qdeclarativeloader \      # Cover
+           qdeclarativelayouts \     # Cover
            qdeclarativemousearea \   # Cover
            qdeclarativeparticles \   # Cover
            qdeclarativepathview \    # Cover
@@ -41,12 +42,14 @@ SUBDIRS += \
            qdeclarativelanguage \            # Cover
            qdeclarativelistreference \       # Cover
            qdeclarativelistmodel \           # Cover
-           qdeclarativeproperty \        # Cover
+           qdeclarativeproperty \            # Cover
            qdeclarativemetatype \            # Cover
            qdeclarativemoduleplugin \        # Cover
            qdeclarativepixmapcache \         # Cover
            qdeclarativepropertymap \         # Cover
            qdeclarativeqt \                  # Cover
+           qdeclarativesmoothedanimation \   # Cover
+           qdeclarativesmoothedfollow\       # Cover
            qdeclarativespringfollow \        # Cover
            qdeclarativestates \              # Cover
            qdeclarativesystempalette \       # Cover
@@ -55,12 +58,12 @@ SUBDIRS += \
            qpacketprotocol \        # Cover
            qdeclarativerepeater \    # Cover
            qdeclarativeworkerscript \    # Cover
-           qdeclarativeworkerlistmodel \    # Cover
            qdeclarativevaluetypes \          # Cover
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
-           sql                      # Cover
+           qdeclarativesqldatabase \         # Cover
+           qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

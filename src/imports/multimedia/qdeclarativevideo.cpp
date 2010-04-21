@@ -73,7 +73,12 @@ void QDeclarativeVideo::_q_error(int errorCode, const QString &errorString)
     \brief The Video element allows you to add videos to a scene.
     \inherits Item
 
+    This element is part of the \bold{Qt.multimedia 4.7} module.
+
     \qml
+    import Qt 4.7
+    import Qt.multimedia 4.7
+
     Video { source: "video/movie.mpg" }
     \endqml
 
@@ -100,17 +105,6 @@ QDeclarativeVideo::QDeclarativeVideo(QDeclarativeItem *parent)
     m_graphicsItem = new QGraphicsVideoItem(this);
     connect(m_graphicsItem, SIGNAL(nativeSizeChanged(QSizeF)),
             this, SLOT(_q_nativeSizeChanged(QSizeF)));
-
-    setObject(this);
-
-    if (m_mediaService) {
-        connect(m_playerControl, SIGNAL(audioAvailableChanged(bool)),
-                this, SIGNAL(hasAudioChanged()));
-        connect(m_playerControl, SIGNAL(videoAvailableChanged(bool)),
-                this, SIGNAL(hasVideoChanged()));
-
-        m_graphicsItem->setMediaObject(m_mediaObject);
-    }
 }
 
 QDeclarativeVideo::~QDeclarativeVideo()
@@ -124,6 +118,14 @@ QDeclarativeVideo::~QDeclarativeVideo()
     \qmlproperty url Video::source
 
     This property holds the source URL of the media.
+*/
+
+/*!
+    \qmlproperty url Video::autoLoad
+
+    This property indicates if loading of media should begin immediately.
+
+    Defaults to true, if false media will not be loaded until playback is started.
 */
 
 /*!
@@ -253,7 +255,7 @@ QDeclarativeVideo::Status QDeclarativeVideo::status() const
 
 bool QDeclarativeVideo::hasAudio() const
 {
-    return m_playerControl->isAudioAvailable();
+    return m_playerControl == 0 ? false : m_playerControl->isAudioAvailable();
 }
 
 /*!
@@ -264,7 +266,7 @@ bool QDeclarativeVideo::hasAudio() const
 
 bool QDeclarativeVideo::hasVideo() const
 {
-    return m_playerControl->isVideoAvailable();
+    return m_playerControl == 0 ? false : m_playerControl->isVideoAvailable();
 }
 
 /*!
@@ -356,12 +358,11 @@ void QDeclarativeVideo::setFillMode(FillMode mode)
 
 void QDeclarativeVideo::play()
 {
-    m_playerControl->play();
+    if (m_playerControl == 0)
+        return;
 
-    if (m_paused) {
-        m_paused = false;
-        emit pausedChanged();
-    }
+    setPaused(false);
+    setPlaying(true);
 }
 
 /*!
@@ -374,12 +375,11 @@ void QDeclarativeVideo::play()
 
 void QDeclarativeVideo::pause()
 {
-    m_playerControl->pause();
+    if (m_playerControl == 0)
+        return;
 
-    if (!m_paused && m_state == QMediaPlayer::PausedState) {
-        m_paused = true;
-        emit pausedChanged();
-    }
+    setPaused(true);
+    setPlaying(true);
 }
 
 /*!
@@ -392,12 +392,11 @@ void QDeclarativeVideo::pause()
 
 void QDeclarativeVideo::stop()
 {
-    m_playerControl->stop();
+    if (m_playerControl == 0)
+        return;
 
-    if (m_paused) {
-        m_paused = false;
-        emit pausedChanged();
-    }
+    setPlaying(false);
+    setPaused(false);
 }
 
 void QDeclarativeVideo::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
@@ -409,6 +408,20 @@ void QDeclarativeVideo::geometryChanged(const QRectF &newGeometry, const QRectF 
     m_graphicsItem->setSize(newGeometry.size());
 
     QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
+}
+
+void QDeclarativeVideo::componentComplete()
+{
+    setObject(this);
+
+    if (m_mediaService) {
+        connect(m_playerControl, SIGNAL(audioAvailableChanged(bool)),
+                this, SIGNAL(hasAudioChanged()));
+        connect(m_playerControl, SIGNAL(videoAvailableChanged(bool)),
+                this, SIGNAL(hasVideoChanged()));
+
+        m_graphicsItem->setMediaObject(m_mediaObject);
+    }
 }
 
 QT_END_NAMESPACE

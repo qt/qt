@@ -20,10 +20,10 @@ Rectangle {
         name: "reanchored"
         AnchorChanges {
             target: myRect;
-            left: leftGuideline.left
-            right: container.right
-            top: container.top
-            bottom: bottomGuideline.bottom
+            anchors.left: leftGuideline.left
+            anchors.right: container.right
+            anchors.top: container.top
+            anchors.bottom: bottomGuideline.bottom
         }
     }
 }

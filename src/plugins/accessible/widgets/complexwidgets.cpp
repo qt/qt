@@ -724,7 +724,8 @@ public:
         if (start.isValid()) {
             m_current = start;
         } else if (m_view && m_view->model()) {
-            m_current = view->model()->index(0, 0);
+            m_current = view->rootIndex().isValid() ? 
+                        view->rootIndex().child(0,0) : view->model()->index(0, 0);
         }
     }
 

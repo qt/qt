@@ -524,18 +524,14 @@ QOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 
     if (fEscapePressed) {
         return ResultFromScode(DRAGDROP_S_CANCEL);
-    } else if (!(grfKeyState & (MK_LBUTTON|MK_MBUTTON|MK_RBUTTON))) {
+    } else if ((GetAsyncKeyState(VK_LBUTTON) == 0)
+        && (GetAsyncKeyState(VK_MBUTTON) == 0)
+        && (GetAsyncKeyState(VK_RBUTTON) == 0))    {
+        // grfKeyState is broken on CE & some Windows XP versions,
+        // therefore we need to check the state manually
         return ResultFromScode(DRAGDROP_S_DROP);
     } else {
-#if defined(Q_OS_WINCE)
-        // grfKeyState is broken on CE, therefore need to check
-        // the state manually
-        if ((GetAsyncKeyState(VK_LBUTTON) == 0) &&
-            (GetAsyncKeyState(VK_MBUTTON) == 0) &&
-            (GetAsyncKeyState(VK_RBUTTON) == 0)) {
-            return ResultFromScode(DRAGDROP_S_DROP);
-        }
-#else
+#if !defined(Q_OS_WINCE)
         if (currentButtons == Qt::NoButton) {
             currentButtons = keystate_to_mousebutton(grfKeyState);
         } else {

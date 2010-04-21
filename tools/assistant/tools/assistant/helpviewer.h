@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMouseEvent;
 class QUrl;
 
 class AbstractHelpViewer
@@ -64,12 +65,15 @@ public:
     virtual void resetScale() = 0;
     virtual qreal scale() const = 0;
 
+    virtual bool handleForwardBackwardMouseButtons(QMouseEvent *e) = 0;
+
     static QString AboutBlank;
     static QString LocalHelpFile;
     static QString PageNotFoundMessage;
 
     static bool isLocalUrl(const QUrl &url);
     static bool canOpenPage(const QString &url);
+    static QString mimeFromUrl(const QString &url);
     static bool launchWithExternalApp(const QUrl &url);
 };
 

@@ -48,7 +48,7 @@
 
 using namespace QtConcurrent;
 
-class tst_threadengine: public QObject
+class tst_QtConcurrentThreadEngine: public QObject
 {
     Q_OBJECT
 public:
@@ -79,7 +79,7 @@ public:
     }
 };
 
-void tst_threadengine::runDirectly()
+void tst_QtConcurrentThreadEngine::runDirectly()
 {
     {
         PrintUser engine;
@@ -120,7 +120,7 @@ public:
     bool done;
 };
 
-void tst_threadengine::result()
+void tst_QtConcurrentThreadEngine::result()
 {
     StringResultUser engine;
     QCOMPARE(*engine.startBlocking(), QString("Foo"));
@@ -147,7 +147,7 @@ public:
     bool done;
 };
 
-void tst_threadengine::runThroughStarter()
+void tst_QtConcurrentThreadEngine::runThroughStarter()
 {
     {
         ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
@@ -180,7 +180,7 @@ public:
     }
 };
 
-void tst_threadengine::cancel()
+void tst_QtConcurrentThreadEngine::cancel()
 {
     {
         CancelUser *engine = new CancelUser();
@@ -234,7 +234,7 @@ public:
 // Test that a user task with a thread function that always
 // want to be throttled still completes. The thread engine
 // should make keep one thread running at all times.
-void tst_threadengine::throttle()
+void tst_QtConcurrentThreadEngine::throttle()
 {
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
@@ -280,7 +280,7 @@ public:
     bool finishing;
 };
 
-void tst_threadengine::threadCount()
+void tst_QtConcurrentThreadEngine::threadCount()
 {
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
@@ -320,7 +320,7 @@ public:
 };
 
 
-void tst_threadengine::multipleResults()
+void tst_QtConcurrentThreadEngine::multipleResults()
 {
     MultipleResultsUser *engine =  new MultipleResultsUser();
     QFuture<int> f = engine->startAsynchronously();
@@ -351,7 +351,7 @@ public:
     }
 };
 
-void tst_threadengine::stresstest()
+void tst_QtConcurrentThreadEngine::stresstest()
 {
     const int times = 20000;
 
@@ -379,7 +379,7 @@ public:
     ThreadFunctionResult threadFunction() { QTest::qSleep(sleepTime); return ThreadFinished; }
 };
 
-void tst_threadengine::cancelQueuedSlowUser()
+void tst_QtConcurrentThreadEngine::cancelQueuedSlowUser()
 {
     const int times = 100;
 
@@ -436,7 +436,7 @@ public:
     QThread *blockThread;
 };
 
-void tst_threadengine::exceptions()
+void tst_QtConcurrentThreadEngine::exceptions()
 {
     // Asynchronous mode:
     {
@@ -527,7 +527,7 @@ void tst_threadengine::exceptions()
 
 #endif
 
-QTEST_MAIN(tst_threadengine)
+QTEST_MAIN(tst_QtConcurrentThreadEngine)
 
 #include "tst_qtconcurrentthreadengine.moc"
 

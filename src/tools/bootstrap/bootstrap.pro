@@ -95,7 +95,7 @@ macx: {
    LIBS += -framework CoreServices
 }
 
-contains(QT_CONFIG, zlib) {
+contains(QT_CONFIG, zlib)|cross_compile {
    INCLUDEPATH += ../../3rdparty/zlib
    SOURCES+= \
         ../3rdparty/zlib/adler32.c \
@@ -113,3 +113,13 @@ contains(QT_CONFIG, zlib) {
 
 lib.CONFIG = dummy_install
 INSTALLS += lib
+
+# Make dummy "sis" and "freeze" target to keep recursive "make sis/freeze" working.
+sis_target.target = sis
+sis_target.commands =
+sis_target.depends = first
+QMAKE_EXTRA_TARGETS += sis_target
+freeze_target.target = freeze
+freeze_target.commands =
+freeze_target.depends = first
+QMAKE_EXTRA_TARGETS += freeze_target

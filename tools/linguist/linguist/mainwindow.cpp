@@ -1810,28 +1810,50 @@ QString MainWindow::friendlyString(const QString& str)
     return f.simplified();
 }
 
+static inline void setThemeIcon(QAction *action, const char *name, const char *fallback)
+{
+    const QIcon fallbackIcon(MainWindow::resourcePrefix() + QLatin1String(fallback));
+#ifdef Q_WS_X11
+    action->setIcon(QIcon::fromTheme(QLatin1String(name), fallbackIcon));
+#else
+    Q_UNUSED(name)
+    action->setIcon(fallbackIcon);
+#endif
+}
+
 void MainWindow::setupMenuBar()
 {
+    // There are no fallback icons for these
+#ifdef Q_WS_X11
+    m_ui.menuRecentlyOpenedFiles->setIcon(QIcon::fromTheme(QLatin1String("document-open-recent")));
+    m_ui.actionCloseAll->setIcon(QIcon::fromTheme(QLatin1String("window-close")));
+    m_ui.actionExit->setIcon(QIcon::fromTheme(QLatin1String("application-exit")));
+    m_ui.actionSelectAll->setIcon(QIcon::fromTheme(QLatin1String("edit-select-all")));
+#endif
+
+    // Prefer theme icons when available for these actions
+    setThemeIcon(m_ui.actionOpen, "document-open", "/fileopen.png");
+    setThemeIcon(m_ui.actionOpenAux, "document-open", "/fileopen.png");
+    setThemeIcon(m_ui.actionSave, "document-save", "/filesave.png");
+    setThemeIcon(m_ui.actionSaveAll, "document-save", "/filesave.png");
+    setThemeIcon(m_ui.actionPrint, "document-print", "/print.png");
+    setThemeIcon(m_ui.actionRedo, "edit-redo", "/redo.png");
+    setThemeIcon(m_ui.actionUndo, "edit-undo", "/undo.png");
+    setThemeIcon(m_ui.actionCut, "edit-cut", "/editcut.png");
+    setThemeIcon(m_ui.actionCopy, "edit-copy", "/editcopy.png");
+    setThemeIcon(m_ui.actionPaste, "edit-paste", "/editpaste.png");
+    setThemeIcon(m_ui.actionFind, "edit-find", "/searchfind.png");
+
+    // No well defined theme icons for these actions
     m_ui.actionAccelerators->setIcon(QIcon(resourcePrefix() + QLatin1String("/accelerator.png")));
     m_ui.actionOpenPhraseBook->setIcon(QIcon(resourcePrefix() + QLatin1String("/book.png")));
     m_ui.actionDoneAndNext->setIcon(QIcon(resourcePrefix() + QLatin1String("/doneandnext.png")));
-    m_ui.actionCopy->setIcon(QIcon(resourcePrefix() + QLatin1String("/editcopy.png")));
-    m_ui.actionCut->setIcon(QIcon(resourcePrefix() + QLatin1String("/editcut.png")));
-    m_ui.actionPaste->setIcon(QIcon(resourcePrefix() + QLatin1String("/editpaste.png")));
-    m_ui.actionOpen->setIcon(QIcon(resourcePrefix() + QLatin1String("/fileopen.png")));
-    m_ui.actionOpenAux->setIcon(QIcon(resourcePrefix() + QLatin1String("/fileopen.png")));
-    m_ui.actionSaveAll->setIcon(QIcon(resourcePrefix() + QLatin1String("/filesave.png")));
-    m_ui.actionSave->setIcon(QIcon(resourcePrefix() + QLatin1String("/filesave.png")));
     m_ui.actionNext->setIcon(QIcon(resourcePrefix() + QLatin1String("/next.png")));
     m_ui.actionNextUnfinished->setIcon(QIcon(resourcePrefix() + QLatin1String("/nextunfinished.png")));
     m_ui.actionPhraseMatches->setIcon(QIcon(resourcePrefix() + QLatin1String("/phrase.png")));
     m_ui.actionEndingPunctuation->setIcon(QIcon(resourcePrefix() + QLatin1String("/punctuation.png")));
     m_ui.actionPrev->setIcon(QIcon(resourcePrefix() + QLatin1String("/prev.png")));
     m_ui.actionPrevUnfinished->setIcon(QIcon(resourcePrefix() + QLatin1String("/prevunfinished.png")));
-    m_ui.actionPrint->setIcon(QIcon(resourcePrefix() + QLatin1String("/print.png")));
-    m_ui.actionRedo->setIcon(QIcon(resourcePrefix() + QLatin1String("/redo.png")));
-    m_ui.actionFind->setIcon(QIcon(resourcePrefix() + QLatin1String("/searchfind.png")));
-    m_ui.actionUndo->setIcon(QIcon(resourcePrefix() + QLatin1String("/undo.png")));
     m_ui.actionPlaceMarkerMatches->setIcon(QIcon(resourcePrefix() + QLatin1String("/validateplacemarkers.png")));
     m_ui.actionWhatsThis->setIcon(QIcon(resourcePrefix() + QLatin1String("/whatsthis.png")));
 
@@ -2370,7 +2392,7 @@ static bool haveMnemonic(const QString &str)
             // because we get a lot of false positives.
             if (c != '&' && c != ' ' && QChar(c).isPrint()) {
                 const ushort *pp = p;
-                for (; *p < 256 && ::isalpha(*p); p++) ;
+                for (; *p < 256 && isalpha(*p); p++) ;
                 if (pp == p || *p != ';')
                     return true;
                 // This looks like a HTML &entity;, so ignore it. As a HTML string

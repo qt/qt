@@ -168,6 +168,23 @@ bool DeclarativeObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecStat
     return QScriptObjectDelegate::hasInstance(object, exec, value, proto);
 }
 
+bool DeclarativeObjectDelegate::compareToObject(QScriptObject *o, JSC::ExecState *exec, JSC::JSObject *o2)
+{
+    if (!o2->inherits(&QScriptObject::info))
+        return false;
+    
+    QScriptObject *scriptObject = static_cast<QScriptObject*>(o2);
+    QScriptObjectDelegate *delegate = scriptObject->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
+        return false;
+
+    DeclarativeObjectDelegate *other = static_cast<DeclarativeObjectDelegate*>(delegate);
+    if (m_class != other->m_class)
+        return false;
+    else
+        return m_class->compare(m_object, other->m_object);
+}
+
 } // namespace QScript
 
 QT_END_NAMESPACE

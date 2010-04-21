@@ -79,6 +79,7 @@ private slots:
     void inputMethodHints();
 
     void cursorDelegate();
+    void delegateLoading_data();
     void delegateLoading();
     void navigation();
     void readOnly();
@@ -149,7 +150,7 @@ void tst_qdeclarativetextedit::text()
 {
     {
         QDeclarativeComponent texteditComponent(&engine);
-        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\"  }", QUrl());
+        texteditComponent.setData("import Qt 4.7\nTextEdit {  text: \"\"  }", QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
@@ -158,7 +159,7 @@ void tst_qdeclarativetextedit::text()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -169,7 +170,7 @@ void tst_qdeclarativetextedit::text()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit { text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -189,7 +190,7 @@ void tst_qdeclarativetextedit::width()
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
         QDeclarativeComponent texteditComponent(&engine);
-        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\" }", QUrl());
+        texteditComponent.setData("import Qt 4.7\nTextEdit {  text: \"\" }", QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
@@ -203,7 +204,7 @@ void tst_qdeclarativetextedit::width()
         qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
         metricWidth = floor(metricWidth);
 
-        QString componentStr = "import Qt 4.6\nTextEdit { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -220,7 +221,7 @@ void tst_qdeclarativetextedit::width()
 
         int documentWidth = document.idealWidth();
 
-        QString componentStr = "import Qt 4.6\nTextEdit { text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -235,7 +236,7 @@ void tst_qdeclarativetextedit::wrap()
     // for specified width and wrap set true
     {
         QDeclarativeComponent texteditComponent(&engine);
-        texteditComponent.setData("import Qt 4.6\nTextEdit {  text: \"\"; wrap: true; width: 300 }", QUrl());
+        texteditComponent.setData("import Qt 4.7\nTextEdit {  text: \"\"; wrapMode: TextEdit.WordWrap; width: 300 }", QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
@@ -244,7 +245,7 @@ void tst_qdeclarativetextedit::wrap()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  wrap: true; width: 300; text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  wrapMode: TextEdit.WordWrap; width: 300; text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -255,7 +256,7 @@ void tst_qdeclarativetextedit::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  wrap: true; width: 300; text: \"" + richText.at(i) + "\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  wrapMode: TextEdit.WordWrap; width: 300; text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -270,7 +271,7 @@ void tst_qdeclarativetextedit::textFormat()
 {
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import Qt 4.6\nTextEdit { text: \"Hello\"; textFormat: Text.RichText }", QUrl::fromLocalFile(""));
+        textComponent.setData("import Qt 4.7\nTextEdit { text: \"Hello\"; textFormat: Text.RichText }", QUrl::fromLocalFile(""));
         QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -278,7 +279,7 @@ void tst_qdeclarativetextedit::textFormat()
     }
     {
         QDeclarativeComponent textComponent(&engine);
-        textComponent.setData("import Qt 4.6\nTextEdit { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl::fromLocalFile(""));
+        textComponent.setData("import Qt 4.7\nTextEdit { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl::fromLocalFile(""));
         QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -295,7 +296,7 @@ void tst_qdeclarativetextedit::hAlign()
     {
         for (int j=0; j < hAlignmentStrings.size(); j++)
         {
-            QString componentStr = "import Qt 4.6\nTextEdit {  horizontalAlignment: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import Qt 4.7\nTextEdit {  horizontalAlignment: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent texteditComponent(&engine);
             texteditComponent.setData(componentStr.toLatin1(), QUrl());
             QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -309,7 +310,7 @@ void tst_qdeclarativetextedit::hAlign()
     {
         for (int j=0; j < hAlignmentStrings.size(); j++)
         {
-            QString componentStr = "import Qt 4.6\nTextEdit {  horizontalAlignment: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import Qt 4.7\nTextEdit {  horizontalAlignment: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent texteditComponent(&engine);
             texteditComponent.setData(componentStr.toLatin1(), QUrl());
             QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -329,7 +330,7 @@ void tst_qdeclarativetextedit::vAlign()
     {
         for (int j=0; j < vAlignmentStrings.size(); j++)
         {
-            QString componentStr = "import Qt 4.6\nTextEdit {  verticalAlignment: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import Qt 4.7\nTextEdit {  verticalAlignment: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QDeclarativeComponent texteditComponent(&engine);
             texteditComponent.setData(componentStr.toLatin1(), QUrl());
             QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -343,7 +344,7 @@ void tst_qdeclarativetextedit::vAlign()
     {
         for (int j=0; j < vAlignmentStrings.size(); j++)
         {
-            QString componentStr = "import Qt 4.6\nTextEdit {  verticalAlignment: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import Qt 4.7\nTextEdit {  verticalAlignment: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
             QDeclarativeComponent texteditComponent(&engine);
             texteditComponent.setData(componentStr.toLatin1(), QUrl());
             QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -359,7 +360,7 @@ void tst_qdeclarativetextedit::font()
 {
     //test size, then bold, then italic, then family
     { 
-        QString componentStr = "import Qt 4.6\nTextEdit {  font.pointSize: 40; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  font.pointSize: 40; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -371,7 +372,7 @@ void tst_qdeclarativetextedit::font()
     }
 
     { 
-        QString componentStr = "import Qt 4.6\nTextEdit {  font.bold: true; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  font.bold: true; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -382,7 +383,7 @@ void tst_qdeclarativetextedit::font()
     }
 
     { 
-        QString componentStr = "import Qt 4.6\nTextEdit {  font.italic: true; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  font.italic: true; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -393,7 +394,7 @@ void tst_qdeclarativetextedit::font()
     }
  
     { 
-        QString componentStr = "import Qt 4.6\nTextEdit {  font.family: \"Helvetica\"; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  font.family: \"Helvetica\"; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -405,7 +406,7 @@ void tst_qdeclarativetextedit::font()
     }
 
     { 
-        QString componentStr = "import Qt 4.6\nTextEdit {  font.family: \"\"; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  font.family: \"\"; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -420,7 +421,7 @@ void tst_qdeclarativetextedit::color()
     //test normal
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import Qt 4.6\nTextEdit {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -432,7 +433,7 @@ void tst_qdeclarativetextedit::color()
     //test selection
     for (int i = 0; i < colorStrings.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -443,7 +444,7 @@ void tst_qdeclarativetextedit::color()
     //test selected text
     for (int i = 0; i < colorStrings.size(); i++)
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -456,7 +457,7 @@ void tst_qdeclarativetextedit::color()
         QColor testColor("#001234");
         testColor.setAlpha(170);
 
-        QString componentStr = "import Qt 4.6\nTextEdit {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -469,7 +470,7 @@ void tst_qdeclarativetextedit::color()
 void tst_qdeclarativetextedit::textMargin()
 {
     for(qreal i=0; i<=10; i+=0.3){
-        QString componentStr = "import Qt 4.6\nTextEdit {  textMargin: " + QString::number(i) + "; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  textMargin: " + QString::number(i) + "; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -481,7 +482,7 @@ void tst_qdeclarativetextedit::textMargin()
 void tst_qdeclarativetextedit::persistentSelection()
 {
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  persistentSelection: true; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  persistentSelection: true; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -490,7 +491,7 @@ void tst_qdeclarativetextedit::persistentSelection()
     }
 
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  persistentSelection: false; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  persistentSelection: false; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -502,7 +503,7 @@ void tst_qdeclarativetextedit::persistentSelection()
 void tst_qdeclarativetextedit::focusOnPress()
 {
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  focusOnPress: true; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  focusOnPress: true; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -511,7 +512,7 @@ void tst_qdeclarativetextedit::focusOnPress()
     }
 
     {
-        QString componentStr = "import Qt 4.6\nTextEdit {  focusOnPress: false; text: \"Hello World\" }";
+        QString componentStr = "import Qt 4.7\nTextEdit {  focusOnPress: false; text: \"Hello World\" }";
         QDeclarativeComponent texteditComponent(&engine);
         texteditComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -523,7 +524,7 @@ void tst_qdeclarativetextedit::focusOnPress()
 void tst_qdeclarativetextedit::selection()
 {
     QString testStr = standard[0];//TODO: What should happen for multiline/rich text?
-    QString componentStr = "import Qt 4.6\nTextEdit {  text: \""+ testStr +"\"; }";
+    QString componentStr = "import Qt 4.7\nTextEdit {  text: \""+ testStr +"\"; }";
     QDeclarativeComponent texteditComponent(&engine);
     texteditComponent.setData(componentStr.toLatin1(), QUrl());
     QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
@@ -641,41 +642,60 @@ void tst_qdeclarativetextedit::cursorDelegate()
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));
 }
 
+void tst_qdeclarativetextedit::delegateLoading_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+    QTest::addColumn<QString>("error");
+
+    // import installed
+    QTest::newRow("pass") << "cursorHttpTestPass.qml" << "";
+    QTest::newRow("fail1") << "cursorHttpTestFail1.qml" << ":-1: Network error for URL http://localhost:42332/FailItem.qml ";
+    QTest::newRow("fail2") << "cursorHttpTestFail2.qml" << "http://localhost:42332/ErrItem.qml:4:5: Fungus is not a type ";
+}
+
 void tst_qdeclarativetextedit::delegateLoading()
 {
+    QFETCH(QString, qmlfile);
+    QFETCH(QString, error);
+
     TestHTTPServer server(42332);
     server.serveDirectory(SRCDIR "/data/httpfail", TestHTTPServer::Disconnect);
     server.serveDirectory(SRCDIR "/data/httpslow", TestHTTPServer::Delay);
     server.serveDirectory(SRCDIR "/data/http");
+
     QDeclarativeView* view = new QDeclarativeView(0);
-    view->setSource(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
+
+    view->setSource(QUrl(QLatin1String("http://localhost:42332/") + qmlfile));
     view->show();
     view->setFocus();
-    QTRY_VERIFY(view->rootObject());//Wait for loading to finish.
-    QDeclarativeTextEdit *textEditObject = view->rootObject()->findChild<QDeclarativeTextEdit*>("textEditObject");
-    //    view->rootObject()->dumpObjectTree();
-    QVERIFY(textEditObject != 0);
-    textEditObject->setFocus(true);
-    QDeclarativeItem *delegate;
-    delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateOkay");
-    QVERIFY(delegate);
-    delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateSlow");
-    QVERIFY(delegate);
-    view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
-    view->show();
-    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
-    view->setFocus();
-    QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
-    view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
-    view->show();
-    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
-    view->setFocus();
-    QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
+
+    if (!error.isEmpty()) {
+        QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
+        QTRY_VERIFY(view->status()==QDeclarativeView::Error);
+        QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
+    } else {
+        QTRY_VERIFY(view->rootObject());//Wait for loading to finish.
+        QDeclarativeTextEdit *textEditObject = view->rootObject()->findChild<QDeclarativeTextEdit*>("textEditObject");
+        //    view->rootObject()->dumpObjectTree();
+        QVERIFY(textEditObject != 0);
+        textEditObject->setFocus(true);
+        QDeclarativeItem *delegate;
+        delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateOkay");
+        QVERIFY(delegate);
+        delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateSlow");
+        QVERIFY(delegate);
+
+        delete delegate;
+    }
+
+
     //A test should be added here with a component which is ready but component.create() returns null
     //Not sure how to accomplish this with QDeclarativeTextEdits cursor delegate
     //###This was only needed for code coverage, and could be a case of overzealous defensive programming
     //delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateErrorB");
     //QVERIFY(!delegate);
+
+    delete view;
 }
 
 /*

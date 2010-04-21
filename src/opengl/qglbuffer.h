@@ -43,6 +43,7 @@
 #define QGLBUFFER_H
 
 #include <QtCore/qscopedpointer.h>
+#include <QtOpenGL/qgl.h>
 
 QT_BEGIN_HEADER
 
@@ -97,9 +98,9 @@ public:
     bool bind() const;
     void release() const;
 
-    static bool bind(QGLBuffer::Type type, uint bufferId);
+    static void release(QGLBuffer::Type type);
 
-    uint bufferId() const;
+    GLuint bufferId() const;
 
     int size() const;
 

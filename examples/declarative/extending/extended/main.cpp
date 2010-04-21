@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    QML_REGISTER_EXTENDED_TYPE(People, 1,0, QLineEdit, QLineEdit, LineEditExtension);
+    qmlRegisterExtendedType<QLineEdit, LineEditExtension>("People", 1,0, "QLineEdit");
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, ":example.qml");

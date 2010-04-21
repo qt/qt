@@ -51,7 +51,7 @@
 #include <QtGui/qmacdefines_mac.h>
 #include "qt7videooutputcontrol.h"
 
-#include <CoreVideo/CVOpenGLTexture.h>
+#include <QuartzCore/CVOpenGLTexture.h>
 #include <QuickTime/QuickTime.h>
 
 
@@ -72,7 +72,6 @@ public:
     QT7MovieVideoWidget(QObject *parent = 0);
     virtual ~QT7MovieVideoWidget();
 
-    void setEnabled(bool);
     void setMovie(void *movie);
     void updateNaturalSize(const QSize &newSize);
 
@@ -83,8 +82,8 @@ public:
 
     QSize nativeSize() const;
 
-    QVideoWidget::AspectRatioMode aspectRatioMode() const;
-    void setAspectRatioMode(QVideoWidget::AspectRatioMode mode);
+    Qt::AspectRatioMode aspectRatioMode() const;
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
 
     int brightness() const;
     void setBrightness(int brightness);
@@ -118,7 +117,7 @@ private:
 
     bool m_fullscreen;
     QSize m_nativeSize;
-    QVideoWidget::AspectRatioMode m_aspectRatioMode;
+    Qt::AspectRatioMode m_aspectRatioMode;
     int m_brightness;
     int m_contrast;
     int m_hue;

@@ -47,10 +47,10 @@
 highly dynamic, custom user interfaces.
 
 Qt Declarative UI provides a declarative framework for building highly dynamic, custom
-user interfaces.  Declarative UI helps programmers and designers collaborate to build 
-the animation rich, fluid user interfaces that are becoming common in portable 
-consumer devices, such as mobile phones, media players, set-top boxes and netbooks.  
-The Qt Declarative module provides an engine for interpreting the declarative QML 
+user interfaces.  Declarative UI helps programmers and designers collaborate to build
+the animation rich, fluid user interfaces that are becoming common in portable
+consumer devices, such as mobile phones, media players, set-top boxes and netbooks.
+The Qt Declarative module provides an engine for interpreting the declarative QML
 language, and a rich set of \l {QML Elements}{QML elements} that can be used
 from QML.
 
@@ -68,7 +68,7 @@ internet-enabled applications like a \l {http://www.flickr.com}{Flickr} photo br
 
 Qt Declarative builds on \l {QML for Qt programmers}{Qt's existing strengths}.
 QML can be be used to incrementally extend an existing application or to build
-completely new applications.  QML is fully \l {Extending QML}{extensible from C++}.
+completely new applications.  QML is fully \l {Extending QML in C++}{extensible from C++}.
 
 \section1 Getting Started:
 \list
@@ -77,13 +77,14 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {QML Advanced Tutorial}{Tutorial: 'Same Game'}
 \o \l {QML Examples and Walkthroughs}
 \o \l {Using QML in C++ Applications}
+\o \l {QML for Qt programmers}
 \endlist
 
 \section1 Core QML Features:
 \list
 \o \l {QML Documents}
 \o \l {Property Binding}
-\o \l {JavaScript Blocks}
+\o \l {Integrating JavaScript}
 \o \l {QML Scope}
 \o \l {Network Transparency}
 \o \l {Data Models}
@@ -94,15 +95,19 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {qdeclarativefocus.html}{Keyboard Focus}
 \o \l {Extending types from QML}
 \o \l {Dynamic Object Creation}
+\o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \endlist
 
 \section1 Reference:
 \list
 \o \l {QML Elements}
 \o \l {QML Global Object}
-\o \l {Extending QML}
+\o \l {Extending QML in C++}
+\o \l {Integrating QML with existing Qt UI code}
 \o \l {QML Internationalization}
+\o \l {QML Security}
 \o \l {QtDeclarative Module}
 \o \l {Debugging QML}
+\o \l {QML Coding Conventions}
 \endlist
 */

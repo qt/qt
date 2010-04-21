@@ -104,6 +104,7 @@ private slots:
     void setCommitPage();
     void setWizardStyle();
     void removePage();
+    void sideWidget();
 
     // task-specific tests below me:
     void task161660_buttonSpacing();
@@ -569,12 +570,16 @@ void tst_QWizard::addPage()
     QWizard wizard;
     const int N = 100;
     QWizardPage *pages[N];
+    QSignalSpy spy(&wizard, SIGNAL(pageAdded(int)));
 
     for (int i = 0; i < N; ++i) {
         pages[i] = new QWizardPage(parent);
         QCOMPARE(wizard.addPage(pages[i]), i);
         QCOMPARE(pages[i]->window(), (QWidget *)&wizard);
         QCOMPARE(wizard.startId(), 0);
+        QCOMPARE(spy.count(), 1);
+        QList<QVariant> arguments = spy.takeFirst();
+        QCOMPARE(arguments.at(0).toInt(), i);
     }
 
     for (int i = 0; i < N; ++i) {
@@ -585,16 +590,29 @@ void tst_QWizard::addPage()
     QVERIFY(!wizard.page(N + 1));
 
     wizard.setPage(N + 50, new QWizardPage);
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), N + 50);
     wizard.setPage(-3000, new QWizardPage);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), -3000);
 
     QWizardPage *pageX = new QWizardPage;
     QCOMPARE(wizard.addPage(pageX), N + 51);
     QCOMPARE(wizard.page(N + 51), pageX);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), N + 51);
 
     QCOMPARE(wizard.addPage(new QWizardPage), N + 52);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), N + 52);
 
     QTest::ignoreMessage(QtWarningMsg,"QWizard::setPage: Cannot insert null page");    
     wizard.addPage(0); // generates a warning
+    QCOMPARE(spy.count(), 0);
     delete parent;
 }
 
@@ -611,6 +629,7 @@ void tst_QWizard::setPage()
     QWidget *parent = new QWidget;
     QWizard wizard;
     QWizardPage *page;
+    QSignalSpy spy(&wizard, SIGNAL(pageAdded(int)));
 
     QCOMPARE(wizard.startId(), -1);
     QCOMPARE(wizard.currentId(), -1);
@@ -620,6 +639,7 @@ void tst_QWizard::setPage()
     page = new QWizardPage(parent);
     QTest::ignoreMessage(QtWarningMsg,"QWizard::setPage: Cannot insert page with ID -1");    
     wizard.setPage(-1, page);   // gives a warning and does nothing
+    QCOMPARE(spy.count(), 0);
     QVERIFY(!wizard.page(-2));
     QVERIFY(!wizard.page(-1));
     QVERIFY(!wizard.page(0));
@@ -631,6 +651,9 @@ void tst_QWizard::setPage()
 
     page = new QWizardPage(parent);
     wizard.setPage(0, page);
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 0);
     QCOMPARE(page->window(), (QWidget *)&wizard);
     QCOMPARE(wizard.page(0), page);
     QCOMPARE(wizard.startId(), 0);
@@ -641,6 +664,9 @@ void tst_QWizard::setPage()
 
     page = new QWizardPage(parent);
     wizard.setPage(-2, page);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), -2);
     QCOMPARE(page->window(), (QWidget *)&wizard);
     QCOMPARE(wizard.page(-2), page);
     QCOMPARE(wizard.startId(), -2);
@@ -659,6 +685,9 @@ void tst_QWizard::setPage()
 
     page = new QWizardPage(parent);
     wizard.setPage(2, page);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 2);
     QCOMPARE(wizard.page(2), page);
     QCOMPARE(wizard.startId(), -2);
     QCOMPARE(wizard.currentId(), -2);
@@ -675,6 +704,9 @@ void tst_QWizard::setPage()
 
     page = new QWizardPage(parent);
     wizard.setPage(-3, page);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), -3);
     QCOMPARE(wizard.page(-3), page);
     QCOMPARE(wizard.startId(), -3);
     QCOMPARE(wizard.currentId(), -2);
@@ -743,6 +775,7 @@ void tst_QWizard::setPage()
         QCOMPARE(wizard.nextId(), -2);
         CHECK_VISITED(wizard, QList<int>() << -3);
     }
+    QCOMPARE(spy.count(), 0);
     delete parent;
 }
 
@@ -766,7 +799,17 @@ void tst_QWizard::setStartId()
     wizard.setPage(INT_MAX, new QWizardPage);
     QCOMPARE(wizard.startId(), INT_MIN);
 
-    QTest::ignoreMessage(QtWarningMsg,"QWizard::setStartId: Invalid page ID -1");    
+    QTest::ignoreMessage(QtWarningMsg,"QWizard::setStartId: Invalid page ID 123");
+    wizard.setStartId(123);
+    QCOMPARE(wizard.startId(), INT_MIN);
+
+    wizard.setStartId(-1);
+    QCOMPARE(wizard.startId(), INT_MIN);
+
+    wizard.setStartId(-2);
+    QCOMPARE(wizard.startId(), -2);
+    QCOMPARE(wizard.nextId(), -1);
+
     wizard.setStartId(-1);
     QCOMPARE(wizard.startId(), INT_MIN);
 
@@ -2209,6 +2252,7 @@ void tst_QWizard::removePage()
     QWizardPage *page1 = new QWizardPage;
     QWizardPage *page2 = new QWizardPage;
     QWizardPage *page3 = new QWizardPage;
+    QSignalSpy spy(&wizard, SIGNAL(pageRemoved(int)));
 
     wizard.setPage(0, page0);
     wizard.setPage(1, page1);
@@ -2218,26 +2262,36 @@ void tst_QWizard::removePage()
     wizard.restart();
     QCOMPARE(wizard.pageIds().size(), 4);
     QCOMPARE(wizard.visitedPages().size(), 1);
+    QCOMPARE(spy.count(), 0);
 
     // Removing a non-existent page
     wizard.removePage(4);
     QCOMPARE(wizard.pageIds().size(), 4);
+    QCOMPARE(spy.count(), 0);
 
     // Removing and then reinserting a page
     QCOMPARE(wizard.pageIds().size(), 4);
     QVERIFY(wizard.pageIds().contains(2));
     wizard.removePage(2);
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 2);
     QCOMPARE(wizard.pageIds().size(), 3);
     QVERIFY(!wizard.pageIds().contains(2));
     wizard.setPage(2, page2);
+    QCOMPARE(spy.count(), 0);
     QCOMPARE(wizard.pageIds().size(), 4);
     QVERIFY(wizard.pageIds().contains(2));
 
     // Removing the same page twice
     wizard.removePage(2); // restore
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 2);
     QCOMPARE(wizard.pageIds().size(), 3);
     QVERIFY(!wizard.pageIds().contains(2));
     wizard.removePage(2);
+    QCOMPARE(spy.count(), 0);
     QCOMPARE(wizard.pageIds().size(), 3);
     QVERIFY(!wizard.pageIds().contains(2));
 
@@ -2247,7 +2301,11 @@ void tst_QWizard::removePage()
     wizard.next();
     QCOMPARE(wizard.visitedPages().size(), 2);
     QCOMPARE(wizard.currentPage(), page1);
+    QCOMPARE(spy.count(), 0);
     wizard.removePage(2);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 2);
     QCOMPARE(wizard.visitedPages().size(), 2);
     QVERIFY(!wizard.pageIds().contains(2));
     QCOMPARE(wizard.currentPage(), page1);
@@ -2256,9 +2314,13 @@ void tst_QWizard::removePage()
     wizard.setPage(2, page2); // restore
     wizard.restart();
     wizard.next();
+    QCOMPARE(spy.count(), 0);
     QCOMPARE(wizard.visitedPages().size(), 2);
     QCOMPARE(wizard.currentPage(), page1);
     wizard.removePage(0);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 0);
     QCOMPARE(wizard.visitedPages().size(), 1);
     QVERIFY(!wizard.visitedPages().contains(0));
     QVERIFY(!wizard.pageIds().contains(0));
@@ -2268,9 +2330,13 @@ void tst_QWizard::removePage()
     wizard.setPage(0, page0); // restore
     wizard.restart();
     wizard.next();
+    QCOMPARE(spy.count(), 0);
     QCOMPARE(wizard.visitedPages().size(), 2);
     QCOMPARE(wizard.currentPage(), page1);
     wizard.removePage(1);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 1);
     QCOMPARE(wizard.visitedPages().size(), 1);
     QVERIFY(!wizard.visitedPages().contains(1));
     QVERIFY(!wizard.pageIds().contains(1));
@@ -2278,6 +2344,9 @@ void tst_QWizard::removePage()
 
     // Remove the current page which is the first (and only) one in the history
     wizard.removePage(0);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 0);
     QCOMPARE(wizard.visitedPages().size(), 1);
     QVERIFY(!wizard.visitedPages().contains(0));
     QCOMPARE(wizard.pageIds().size(), 2);
@@ -2285,6 +2354,9 @@ void tst_QWizard::removePage()
     QCOMPARE(wizard.currentPage(), page2);
     //
     wizard.removePage(2);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 2);
     QCOMPARE(wizard.visitedPages().size(), 1);
     QVERIFY(!wizard.visitedPages().contains(2));
     QCOMPARE(wizard.pageIds().size(), 1);
@@ -2292,9 +2364,32 @@ void tst_QWizard::removePage()
     QCOMPARE(wizard.currentPage(), page3);
     //
     wizard.removePage(3);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.at(0).toInt(), 3);
     QVERIFY(wizard.visitedPages().empty());
     QVERIFY(wizard.pageIds().empty());
     QCOMPARE(wizard.currentPage(), static_cast<QWizardPage *>(0));
+}
+
+void tst_QWizard::sideWidget()
+{
+    QWizard wizard;
+
+    wizard.setSideWidget(0);
+    QVERIFY(wizard.sideWidget() == 0);
+    QWidget *w1 = new QWidget(&wizard);
+    wizard.setSideWidget(w1);
+    QVERIFY(wizard.sideWidget() == w1);
+    QWidget *w2 = new QWidget(&wizard);
+    wizard.setSideWidget(w2);
+    QVERIFY(wizard.sideWidget() == w2);
+    QVERIFY(w1->parent() != 0);
+    QCOMPARE(w1->window(), static_cast<QWidget *>(&wizard));
+    QCOMPARE(w2->window(), static_cast<QWidget *>(&wizard));
+    w1->setParent(0);
+    wizard.setSideWidget(0);
+    QVERIFY(wizard.sideWidget() == 0);
 }
 
 void tst_QWizard::task161660_buttonSpacing()

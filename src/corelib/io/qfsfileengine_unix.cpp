@@ -55,7 +55,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #if defined(Q_OS_SYMBIAN)
-# include <syslimits.h>
+# include <sys/syslimits.h>
 # include <f32file.h>
 # include <pathinfo.h>
 # include "private/qcore_symbian_p.h"
@@ -81,6 +81,40 @@ static bool isRelativePathSymbian(const QString& fileName)
              && ((fileName.at(0).isLetter() && fileName.at(1) == QLatin1Char(':'))
              || (fileName.at(0) == QLatin1Char('/') && fileName.at(1) == QLatin1Char('/')))));
 }
+
+/*!
+ \internal
+ convert symbian error code to the one suitable for setError.
+ example usage: setSymbianError(err, QFile::CopyError, QLatin1String("copy error"))
+*/
+void QFSFileEnginePrivate::setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString)
+{
+    Q_Q(QFSFileEngine);
+    switch (symbianError) {
+    case KErrNone:
+        q->setError(QFile::NoError, QLatin1String(""));
+        break;
+    case KErrAccessDenied:
+        q->setError(QFile::PermissionsError, QLatin1String("access denied"));
+        break;
+    case KErrPermissionDenied:
+        q->setError(QFile::PermissionsError, QLatin1String("permission denied"));
+        break;
+    case KErrAbort:
+        q->setError(QFile::AbortError, QLatin1String("aborted"));
+        break;
+    case KErrCancel:
+        q->setError(QFile::AbortError, QLatin1String("cancelled"));
+        break;
+    case KErrTimedOut:
+        q->setError(QFile::TimeOutError, QLatin1String("timed out"));
+        break;
+    default:
+        q->setError(defaultError, defaultString);
+        break;
+    }
+}
+
 #endif
 
 /*!
@@ -427,8 +461,10 @@ bool QFSFileEngine::copy(const QString &newName)
         }
     ) // End TRAP
     delete fm;
-    // ### Add error reporting on failure
-    return (err == KErrNone);
+    if (err == KErrNone)
+        return true;
+    d->setSymbianError(err, QFile::CopyError, QLatin1String("copy error"));
+    return false;
 #else
     Q_UNUSED(newName);
     // ### Add copy code for Unix here

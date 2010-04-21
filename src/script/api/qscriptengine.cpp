@@ -42,6 +42,7 @@
 
 #include <math.h>
 
+#include "CodeBlock.h"
 #include "Error.h"
 #include "JSLock.h"
 #include "Interpreter.h"
@@ -260,6 +261,22 @@ QT_BEGIN_NAMESPACE
   whether an engine is currently running a script by calling
   isEvaluating().
 
+  \section1 Garbage Collection
+
+  Qt Script objects may be garbage collected when they are no longer
+  referenced. There is no guarantee as to when automatic garbage
+  collection will take place.
+
+  The collectGarbage() function can be called to explicitly request
+  garbage collection.
+
+  The reportAdditionalMemoryCost() function can be called to indicate
+  that a Qt Script object occupies memory that isn't managed by the
+  scripting environment. Reporting the additional cost makes it more
+  likely that the garbage collector will be triggered. This can be
+  useful, for example, when many custom, native Qt Script objects are
+  allocated.
+
   \section1 Core Debugging/Tracing Facilities
 
   Since Qt 4.4, you can be notified of events pertaining to script
@@ -292,6 +309,7 @@ QT_BEGIN_NAMESPACE
     \value ExcludeSuperClassProperties The script object will not expose properties inherited from the superclass.
     \value ExcludeSuperClassContents Shorthand form for ExcludeSuperClassMethods | ExcludeSuperClassProperties
     \value ExcludeDeleteLater The script object will not expose the QObject::deleteLater() slot.
+    \value ExcludeSlots The script object will not expose the QObject's slots.
     \value AutoCreateDynamicProperties Properties that don't already exist in the QObject will be created as dynamic properties of that object, rather than as properties of the script object.
     \value PreferExistingWrapperObject If a wrapper object with the requested configuration already exists, return that object.
     \value SkipMethodsInEnumeration Don't include methods (signals and slots) when enumerating the object's properties.
@@ -738,7 +756,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
         else if (encStr == "UnicodeUTF8")
             encoding = QCoreApplication::UnicodeUTF8;
         else
-            return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr));
+            return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%0'").arg(encStr));
     }
     int n = -1;
     if (args.size() > 4)
@@ -772,12 +790,22 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     if ((args.size() > 1) && !args.at(1).isString())
         return JSC::throwError(exec, JSC::GeneralError, "qsTr(): second argument (comment) must be a string");
     if ((args.size() > 2) && !args.at(2).isNumber())
-        return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
+        return JSC::throwError(exec, JSC::GeneralError, "qsTr(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     JSC::UString context;
-    QScriptContext *ctx = QScriptEnginePrivate::contextForFrame(exec);
-    if (ctx && ctx->parentContext())
-        context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
+    // The first non-empty source URL in the call stack determines the translation context.
+    {
+        JSC::ExecState *frame = exec->removeHostCallFrameFlag();
+        while (frame) {
+            if (frame->codeBlock() && frame->codeBlock()->source()
+                && !frame->codeBlock()->source()->url().isEmpty()) {
+                context = engine->translationContextFromUrl(frame->codeBlock()->source()->url());
+                break;
+            }
+            frame = frame->callerFrame()->removeHostCallFrameFlag();
+        }
+    }
 #endif
     JSC::UString text = args.at(0).toString(exec);
 #ifndef QT_NO_QOBJECT
@@ -858,7 +886,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
         return;
     }
     JSC::initializeThreading();
-
+    JSC::IdentifierTable *oldTable = JSC::currentIdentifierTable();
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
@@ -894,11 +922,14 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     activeAgent = 0;
     agentLineNumber = -1;
     processEventsInterval = -1;
+    cachedTranslationUrl = JSC::UString();
+    cachedTranslationContext = JSC::UString();
+    JSC::setCurrentIdentifierTable(oldTable);
 }
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
-    JSC::setCurrentIdentifierTable(globalData->identifierTable);
+    QScript::APIShim shim(this);
 
     //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events
     QHash<intptr_t,QScript::UStringSourceProviderWithFeedback*>::const_iterator it;
@@ -1049,11 +1080,15 @@ void QScriptEnginePrivate::setGlobalObject(JSC::JSObject *object)
     if (object == globalObject())
         return;
     QScript::GlobalObject *glob = static_cast<QScript::GlobalObject*>(originalGlobalObject());
-    if (object == originalGlobalObjectProxy)
+    if (object == originalGlobalObjectProxy) {
         glob->customGlobalObject = 0;
-    else {
+        // Sync the internal prototype, since JSObject::prototype() is not virtual.
+        glob->setPrototype(originalGlobalObjectProxy->prototype());
+    } else {
         Q_ASSERT(object != originalGlobalObject());
         glob->customGlobalObject = object;
+        // Sync the internal prototype, since JSObject::prototype() is not virtual.
+        glob->setPrototype(object->prototype());
     }
 }
 
@@ -1190,6 +1225,12 @@ void QScriptEnginePrivate::collectGarbage()
     JSC::JSLock lock(false);
     QScript::APIShim shim(this);
     globalData->heap.collectAllGarbage();
+}
+
+void QScriptEnginePrivate::reportAdditionalMemoryCost(int size)
+{
+    if (size > 0)
+        globalData->heap.reportExtraMemoryCost(size);
 }
 
 QScript::TimeoutCheckerProxy *QScriptEnginePrivate::timeoutChecker() const
@@ -1473,7 +1514,7 @@ void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
 
 #ifndef QT_NO_REGEXP
 
-extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 JSC::JSValue QScriptEnginePrivate::newRegExp(JSC::ExecState *exec, const QRegExp &regexp)
 {
@@ -1876,6 +1917,7 @@ QScriptEngine::~QScriptEngine()
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
+    QScript::APIShim shim(const_cast<QScriptEnginePrivate*>(d));
     JSC::JSObject *result = d->globalObject();
     return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(result);
 }
@@ -1897,6 +1939,7 @@ void QScriptEngine::setGlobalObject(const QScriptValue &object)
     Q_D(QScriptEngine);
     if (!object.isObject())
         return;
+    QScript::APIShim shim(d);
     JSC::JSObject *jscObject = JSC::asObject(d->scriptValueToJSCValue(object));
     d->setGlobalObject(jscObject);
 }
@@ -1953,6 +1996,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
                                         int length)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
@@ -1965,7 +2009,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
 
 #ifndef QT_NO_REGEXP
 
-extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 /*!
   Creates a QtScript object of class RegExp with the given
@@ -1976,6 +2020,7 @@ extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newRegExp(d->currentFrame, regexp));
 }
 
@@ -1989,11 +2034,12 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
   prototype; otherwise, the prototype will be the Object prototype
   object.
 
-  \sa setDefaultPrototype(), QScriptValue::toVariant()
+  \sa setDefaultPrototype(), QScriptValue::toVariant(), reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newVariant(value));
 }
 
@@ -2020,11 +2066,14 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
   true), you can pass QScriptContext::thisObject() (the default
   constructed script object) to this function to initialize the new
   object.
+
+  \sa reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
                                        const QVariant &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jsObject = d->scriptValueToJSCValue(object);
     return d->scriptValueFromJSCValue(d->newVariant(jsObject, value));
 }
@@ -2050,12 +2099,13 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
   wrapper object (either by script code or C++) will result in a
   script exception.
 
-  \sa QScriptValue::toQObject()
+  \sa QScriptValue::toQObject(), reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jscQObject = d->newQObject(object, ownership, options);
     return d->scriptValueFromJSCValue(jscQObject);
 }
@@ -2084,14 +2134,18 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
   (QScriptContext::isCalledAsConstructor() returns true), you can pass
   QScriptContext::thisObject() (the default constructed script object)
   to this function to initialize the new object.
+
+  \sa reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
                                        QObject *qtObject,
                                        ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
+    Q_D(QScriptEngine);
     if (!scriptObject.isObject())
         return newQObject(qtObject, ownership, options);
+    QScript::APIShim shim(d);
     JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
     if (!jscObject->inherits(&QScriptObject::info)) {
         qWarning("QScriptEngine::newQObject(): changing class of non-QScriptObject not supported");
@@ -2122,6 +2176,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
 QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newObject());
 }
 
@@ -2137,12 +2192,13 @@ QScriptValue QScriptEngine::newObject()
   \a data, if specified, is set as the internal data of the
   new object (using QScriptValue::setData()).
 
-  \sa QScriptValue::scriptClass()
+  \sa QScriptValue::scriptClass(), reportAdditionalMemoryCost()
 */
 QScriptValue QScriptEngine::newObject(QScriptClass *scriptClass,
                                       const QScriptValue &data)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     QScriptObject *result = new (exec) QScriptObject(d->scriptObjectStructure);
     result->setDelegate(new QScript::ClassObjectDelegate(scriptClass));
@@ -2210,6 +2266,7 @@ QScriptValue QScriptEngine::newActivationObject()
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWrapper(exec, length, JSC::Identifier(exec, ""), fun);
     QScriptValue result = d->scriptValueFromJSCValue(function);
@@ -2227,6 +2284,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue function = new (exec)QScript::FunctionWithArgWrapper(exec, /*length=*/0, JSC::Identifier(exec, ""), fun, arg);
     QScriptValue result = d->scriptValueFromJSCValue(function);
@@ -2245,6 +2303,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 QScriptValue QScriptEngine::newArray(uint length)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newArray(d->currentFrame, length));
 }
 
@@ -2258,6 +2317,7 @@ QScriptValue QScriptEngine::newArray(uint length)
 QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newRegExp(d->currentFrame, pattern, flags));
 }
 
@@ -2269,6 +2329,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
 QScriptValue QScriptEngine::newDate(qsreal value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newDate(d->currentFrame, value));
 }
 
@@ -2280,6 +2341,7 @@ QScriptValue QScriptEngine::newDate(qsreal value)
 QScriptValue QScriptEngine::newDate(const QDateTime &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->newDate(d->currentFrame, value));
 }
 
@@ -2303,6 +2365,7 @@ QScriptValue QScriptEngine::newQMetaObject(
     const QMetaObject *metaObject, const QScriptValue &ctor)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jscCtor = d->scriptValueToJSCValue(ctor);
     JSC::JSValue jscQMetaObject = d->newQMetaObject(metaObject, jscCtor);
     return d->scriptValueFromJSCValue(jscQMetaObject);
@@ -2555,6 +2618,7 @@ QScriptContext *QScriptEngine::currentContext() const
 QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
 
     JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, d->currentFrame->globalData().dynamicGlobalObject,
                                               JSC::ArgList(), /*callee = */0);
@@ -2646,6 +2710,7 @@ void QScriptEngine::popContext()
     if (agent())
         agent()->contextPop();
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     if (d->currentFrame->returnPC() != 0 || d->currentFrame->codeBlock() != 0
         || !currentContext()->parentContext()) {
         qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
@@ -2841,6 +2906,7 @@ void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prot
 QScriptValue QScriptEngine::create(int type, const void *ptr)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return d->scriptValueFromJSCValue(d->create(d->currentFrame, type, ptr));
 }
 
@@ -3244,12 +3310,22 @@ bool QScriptEnginePrivate::hasDemarshalFunction(int type) const
     return info && (info->demarshal != 0);
 }
 
+JSC::UString QScriptEnginePrivate::translationContextFromUrl(const JSC::UString &url)
+{
+    if (url != cachedTranslationUrl) {
+        cachedTranslationContext = QFileInfo(url).baseName();
+        cachedTranslationUrl = url;
+    }
+    return cachedTranslationContext;
+}
+
 /*!
     \internal
 */
 bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     return QScriptEnginePrivate::convertValue(d->currentFrame, d->scriptValueToJSCValue(value), type, ptr);
 }
 
@@ -3262,8 +3338,12 @@ bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
     if (vp) {
         switch (vp->type) {
         case QScriptValuePrivate::JavaScriptCore: {
-            JSC::ExecState *exec = vp->engine ? vp->engine->currentFrame : 0;
-            return QScriptEnginePrivate::convertValue(exec, vp->jscValue, type, ptr);
+            if (vp->engine) {
+                QScript::APIShim shim(vp->engine);
+                return QScriptEnginePrivate::convertValue(vp->engine->currentFrame, vp->jscValue, type, ptr);
+            } else {
+                return QScriptEnginePrivate::convertValue(0, vp->jscValue, type, ptr);
+            }
         }
         case QScriptValuePrivate::Number:
             return QScriptEnginePrivate::convertNumber(vp->numberValue, type, ptr);
@@ -3282,6 +3362,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
                                        const QScriptValue &prototype)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     QScriptTypeInfo *info = d->m_typeInfos.value(type);
     if (!info) {
         info = new QScriptTypeInfo();
@@ -3314,15 +3395,16 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf,
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue jscObject = d->scriptValueToJSCValue(object);
     JSC::JSGlobalObject *glob = d->originalGlobalObject();
     if (!jscObject || !jscObject.isObject())
-        jscObject = glob;
+        jscObject = d->globalObject();
 //    unsigned attribs = JSC::DontEnum;
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 5, JSC::Identifier(exec, "qsTranslate"), QScript::functionQsTranslate));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 2, JSC::Identifier(exec, "QT_TRANSLATE_NOOP"), QScript::functionQsTranslateNoOp));
-    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 3, JSC::Identifier(exec, "qsTr"), QScript::functionQsTr));
+    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::PrototypeFunction(exec, glob->prototypeFunctionStructure(), 3, JSC::Identifier(exec, "qsTr"), QScript::functionQsTr));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "QT_TR_NOOP"), QScript::functionQsTrNoOp));
 
     glob->stringPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "arg"), QScript::stringProtoFuncArg));
@@ -3347,6 +3429,7 @@ QScriptValue QScriptEngine::importExtension(const QString &extension)
     Q_UNUSED(extension);
 #else
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     if (d->importedExtensions.contains(extension))
         return undefinedValue(); // already imported
 
@@ -3843,11 +3926,40 @@ QStringList QScriptEngine::importedExtensions() const
   been created). However, you can call this function to explicitly
   request that garbage collection should be performed as soon as
   possible.
+
+  \sa reportAdditionalMemoryCost()
 */
 void QScriptEngine::collectGarbage()
 {
     Q_D(QScriptEngine);
     d->collectGarbage();
+}
+
+/*!
+  \since 4.7
+
+  Reports an additional memory cost of the given \a size, measured in
+  bytes, to the garbage collector.
+
+  This function can be called to indicate that a Qt Script object has
+  memory associated with it that isn't managed by Qt Script itself.
+  Reporting the additional cost makes it more likely that the garbage
+  collector will be triggered.
+
+  Note that if the additional memory is shared with objects outside
+  the scripting environment, the cost should not be reported, since
+  collecting the Qt Script object would not cause the memory to be
+  freed anyway.
+
+  Negative \a size values are ignored, i.e. this function can't be
+  used to report that the additional memory has been deallocated.
+
+  \sa collectGarbage()
+*/
+void QScriptEngine::reportAdditionalMemoryCost(int size)
+{
+    Q_D(QScriptEngine);
+    d->reportAdditionalMemoryCost(size);
 }
 
 /*!
@@ -3958,6 +4070,7 @@ bool qScriptConnect(QObject *sender, const char *signal,
     if (receiver.isObject() && (receiver.engine() != function.engine()))
         return false;
     QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
+    QScript::APIShim shim(engine);
     JSC::JSValue jscReceiver = engine->scriptValueToJSCValue(receiver);
     JSC::JSValue jscFunction = engine->scriptValueToJSCValue(function);
     return engine->scriptConnect(sender, signal, jscReceiver, jscFunction,
@@ -3984,6 +4097,7 @@ bool qScriptDisconnect(QObject *sender, const char *signal,
     if (receiver.isObject() && (receiver.engine() != function.engine()))
         return false;
     QScriptEnginePrivate *engine = QScriptEnginePrivate::get(function.engine());
+    QScript::APIShim shim(engine);
     JSC::JSValue jscReceiver = engine->scriptValueToJSCValue(receiver);
     JSC::JSValue jscFunction = engine->scriptValueToJSCValue(function);
     return engine->scriptDisconnect(sender, signal, jscReceiver, jscFunction);
@@ -4089,6 +4203,7 @@ QScriptString QScriptEngine::toStringHandle(const QString &str)
 QScriptValue QScriptEngine::toObject(const QScriptValue &value)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     JSC::JSValue jscValue = d->scriptValueToJSCValue(value);
     if (!jscValue || jscValue.isUndefined() || jscValue.isNull())
         return QScriptValue();

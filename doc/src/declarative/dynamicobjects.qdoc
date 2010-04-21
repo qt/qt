@@ -62,39 +62,35 @@ item which you want to manage dynamic instances of, and creating an item from
 a string of QML is intended for when the QML itself is generated at runtime.
 
 If you have a component specified in a QML file, you can dynamically load it with
-the createComponent function on the \l{QML Global Object}. 
+the \l {createComponent(url file)}{createComponent()} function on the \l{QML Global Object}. 
 This function takes the URL of the QML file as its only argument and returns
 a component object which can be used to create and load that QML file.
 
-You can also create a component by placing your QML inside a Component element.
-Referencing that component element by id will be the same as referencing the variable
-which you save the result of createComponent into.
-
-Once you have a component you can use its createObject method to create an instance of
+Once you have a component you can use its \c createObject() method to create an instance of
 the component. Example QML script is below. Remember that QML files that might be loaded
     over the network cannot be expected to be ready immediately.
     \code
         var component;
         var sprite;
-        function finishCreation(){
-            if(component.isReady()){
+        function finishCreation() {
+            if(component.isReady()) {
                 sprite = component.createObject();
-                if(sprite == 0){
+                if(sprite == 0) {
                     // Error Handling
-                }else{
+                } else {
                     sprite.parent = page;
                     sprite.x = 200;
                     //...
                 }
-            }else if(component.isError()){
+            } else if(component.isError()) {
                 // Error Handling
             }
         }
 
         component = createComponent("Sprite.qml");
-        if(component.isReady()){
+        if(component.isReady()) {
             finishCreation();
-        }else{
+        } else {
             component.statusChanged.connect(finishCreation);
         }
     \endcode
@@ -104,10 +100,10 @@ the component. Example QML script is below. Remember that QML files that might b
     \code
         component = createComponent("Sprite.qml");
         sprite = component.createObject();
-        if(sprite == 0){
+        if(sprite == 0) {
             // Error Handling
             console.log(component.errorsString());
-        }else{
+        } else {
             sprite.parent = page;
             sprite.x = 200;
             //...
@@ -116,13 +112,13 @@ the component. Example QML script is below. Remember that QML files that might b
 
 After creating the item, remember to set its parent to an item within the scene.
 Otherwise your dynamically created item will not appear in the scene. When using files with relative paths, the path should
-be relative to the file where createComponent is executed.
+be relative to the file where \c createComponent() is executed.
 
 If the QML does not exist until runtime, you can create a QML item from
-a string of QML using the createQmlObject function, as in the following example:
+a string of QML using the \l{createQmlObject(string qml, object parent, string filepath)}{createQmlObject()} function, as in the following example:
 
     \code
-    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
+    newObject = createQmlObject('import Qt 4.7; Rectangle { color: "red"; width: 20; height: 20 }',
         targetItem, "dynamicSnippet1");
     \endcode
 The first argument is the string of QML to create. Just like in a new file, you will need to
@@ -139,9 +135,9 @@ will not have an id in QML.
 
 A restriction which you need to manage with dynamically created items,
 is that the creation context must outlive the
-created item. The creation context is the QDeclarativeContext in which createComponent
+created item. The creation context is the QDeclarativeContext in which \c createComponent()
 was called, or the context in which the Component element, or the item used as the
-second argument to createQmlObject, was specified. If the creation
+second argument to \c createQmlObject(), was specified. If the creation
 context is destroyed before the dynamic item is, then bindings in the dynamic item will
 fail to work.
 
@@ -158,11 +154,12 @@ argument, which is an approximate delay in ms and which defaults to zero. This
 allows you to wait until the completion of an animation or transition. An example:
 
 \code
-    Component{ id:fadesOut
+    Component {
+        id: fadesOut
         Rectangle{
             id: rect
             width: 40; height: 40;
-            opacity: NumberAnimation{from:1; to:0; duration: 1000;}
+            NumberAnimation on opacity { from:1; to:0; duration: 1000 }
             Component.onCompleted: rect.destroy(1000);
         }
     }

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 
 #include <qdatetime.h>
 #include <qbasictimer.h>
@@ -101,7 +101,6 @@ public:
     bool dragY : 1;
     bool dragged : 1;
     QDeclarativeDrag *drag;
-    QPointF start;
     QPointF startScene;
     qreal startX;
     qreal startY;

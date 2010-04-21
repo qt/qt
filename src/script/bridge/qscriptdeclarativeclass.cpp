@@ -70,9 +70,12 @@ QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, uint value)
     new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
 }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, bool value)
+QScriptDeclarativeClass::Value::Value(QScriptContext *, bool value)
 {
-    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+    if (value)
+        new (this) JSC::JSValue(JSC::JSValue::JSTrue);
+    else
+        new (this) JSC::JSValue(JSC::JSValue::JSFalse);
 }
 
 QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, double value)
@@ -107,7 +110,10 @@ QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, uint value)
 
 QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, bool value)
 {
-    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+    if (value)
+        new (this) JSC::JSValue(JSC::JSValue::JSTrue);
+    else
+        new (this) JSC::JSValue(JSC::JSValue::JSFalse);
 }
 
 QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, double value)
@@ -148,9 +154,12 @@ QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier()
 
 QScriptDeclarativeClass::PersistentIdentifier::~PersistentIdentifier()
 {
-    if (engine)
-        JSC::setCurrentIdentifierTable(engine->globalData->identifierTable);
-    ((JSC::Identifier &)d).JSC::Identifier::~Identifier();
+    if (engine) {
+        QScript::APIShim shim(engine);
+        ((JSC::Identifier &)d).JSC::Identifier::~Identifier();
+    } else {
+        ((JSC::Identifier &)d).JSC::Identifier::~Identifier();
+    }
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(const PersistentIdentifier &other)
@@ -184,7 +193,8 @@ QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine,
     Q_ASSERT(engine);
     Q_ASSERT(scriptClass);
 
-    QScriptEnginePrivate *p = static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(engine)); 
+    QScriptEnginePrivate *p = static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(engine));
+    QScript::APIShim shim(p);
 
     JSC::ExecState* exec = p->currentFrame;
     QScriptObject *result = new (exec) QScriptObject(p->scriptObjectStructure);
@@ -201,6 +211,7 @@ QScriptDeclarativeClass::newObjectValue(QScriptEngine *engine,
     Q_ASSERT(scriptClass);
 
     QScriptEnginePrivate *p = static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(engine)); 
+    QScript::APIShim shim(p);
 
     JSC::ExecState* exec = p->currentFrame;
     QScriptObject *result = new (exec) QScriptObject(p->scriptObjectStructure);
@@ -231,6 +242,7 @@ QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Iden
     if (!d->isObject())
         return QScriptValue();
 
+    QScript::APIShim shim(d->engine);
     JSC::ExecState *exec = d->engine->currentFrame;
     JSC::JSObject *object = d->jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -254,6 +266,7 @@ QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Iden
     if (!d->isObject())
         return QScriptValue();
 
+    QScript::APIShim shim(d->engine);
     JSC::ExecState *exec = d->engine->currentFrame;
     JSC::JSObject *object = d->jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -277,6 +290,7 @@ QScriptDeclarativeClass::functionValue(const QScriptValue &v, const Identifier &
     if (!d->isObject())
         return Value();
 
+    QScript::APIShim shim(d->engine);
     JSC::ExecState *exec = d->engine->currentFrame;
     JSC::JSObject *object = d->jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -301,6 +315,7 @@ QScriptDeclarativeClass::propertyValue(const QScriptValue &v, const Identifier &
     if (!d->isObject())
         return Value();
 
+    QScript::APIShim shim(d->engine);
     JSC::ExecState *exec = d->engine->currentFrame;
     JSC::JSObject *object = d->jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -326,6 +341,7 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
     context->activationObject(); //ensure the creation of the normal scope for native context
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(context);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    QScript::APIShim shim(engine);
 
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
@@ -386,6 +402,7 @@ QScriptContext * QScriptDeclarativeClass::pushCleanContext(QScriptEngine *engine
         return 0;
 
     QScriptEnginePrivate *d = QScriptEnginePrivate::get(engine);
+    QScript::APIShim shim(d);
 
     JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, 
                                               d->currentFrame->globalData().dynamicGlobalObject,
@@ -421,6 +438,7 @@ QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
 {
     QScriptEnginePrivate *p = 
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
+    QScript::APIShim shim(p);
     JSC::ExecState* exec = p->currentFrame;
 
     PersistentIdentifier rv(p);
@@ -434,6 +452,7 @@ QScriptDeclarativeClass::createPersistentIdentifier(const Identifier &id)
 {
     QScriptEnginePrivate *p = 
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
+    QScript::APIShim shim(p);
     JSC::ExecState* exec = p->currentFrame;
 
     PersistentIdentifier rv(p);
@@ -495,6 +514,11 @@ QScriptDeclarativeClass::Value QScriptDeclarativeClass::call(Object *object,
     Q_UNUSED(object);
     Q_UNUSED(ctxt);
     return Value();
+}
+
+bool QScriptDeclarativeClass::compare(Object *o, Object *o2)
+{
+    return o == o2;
 }
 
 QStringList QScriptDeclarativeClass::propertyNames(Object *object)

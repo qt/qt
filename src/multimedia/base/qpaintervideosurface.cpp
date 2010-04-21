@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qpaintervideosurface_p.h"
+#include "qpaintervideosurface_mac_p.h"
 
 #include <qmath.h>
 
@@ -55,28 +56,6 @@
 
 
 QT_BEGIN_NAMESPACE
-
-class QVideoSurfacePainter
-{
-public:
-    virtual ~QVideoSurfacePainter();
-
-    virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(
-            QAbstractVideoBuffer::HandleType handleType) const = 0;
-
-    virtual bool isFormatSupported(
-            const QVideoSurfaceFormat &format, QVideoSurfaceFormat *similar) const = 0;
-
-    virtual QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format) = 0;
-    virtual void stop() = 0;
-
-    virtual QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame) = 0;
-
-    virtual QAbstractVideoSurface::Error paint(
-            const QRectF &target, QPainter *painter, const QRectF &source) = 0;
-
-    virtual void updateColors(int brightness, int contrast, int hue, int saturation) = 0;
-};
 
 QVideoSurfacePainter::~QVideoSurfacePainter()
 {
@@ -758,10 +737,15 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
         const QRectF &target, QPainter *painter, const QRectF &source)
 {
     if (m_frame.isValid()) {
+        bool stencilTestEnabled = glIsEnabled(GL_STENCIL_TEST);
+        bool scissorTestEnabled = glIsEnabled(GL_SCISSOR_TEST);
+
         painter->beginNativePainting();
 
-        glEnable(GL_STENCIL_TEST);
-        glEnable(GL_SCISSOR_TEST);
+        if (stencilTestEnabled)
+            glEnable(GL_STENCIL_TEST);
+        if (scissorTestEnabled)
+            glEnable(GL_SCISSOR_TEST);
 
         const float txLeft = source.left() / m_frameSize.width();
         const float txRight = source.right() / m_frameSize.width();
@@ -782,10 +766,10 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
         };
         const float v_array[] =
         {
-            target.left()     , target.bottom() + 1,
-            target.right() + 1, target.bottom() + 1,
-            target.left()     , target.top(),
-            target.right() + 1, target.top()
+            float(target.left())     , float(target.bottom() + 1),
+            float(target.right() + 1), float(target.bottom() + 1),
+            float(target.left())     , float(target.top()),
+            float(target.right() + 1), float(target.top())
         };
 
         glEnable(GL_FRAGMENT_PROGRAM_ARB);
@@ -835,9 +819,6 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisable(GL_FRAGMENT_PROGRAM_ARB);
-
-        glDisable(GL_STENCIL_TEST);
-        glDisable(GL_SCISSOR_TEST);
 
         painter->endNativePainting();
     }
@@ -1084,10 +1065,15 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
         const QRectF &target, QPainter *painter, const QRectF &source)
 {
     if (m_frame.isValid()) {
+        bool stencilTestEnabled = glIsEnabled(GL_STENCIL_TEST);
+        bool scissorTestEnabled = glIsEnabled(GL_SCISSOR_TEST);
+
         painter->beginNativePainting();
 
-        glEnable(GL_STENCIL_TEST);
-        glEnable(GL_SCISSOR_TEST);
+        if (stencilTestEnabled)
+            glEnable(GL_STENCIL_TEST);
+        if (scissorTestEnabled)
+            glEnable(GL_SCISSOR_TEST);
 
         const int width = QGLContext::currentContext()->device()->width();
         const int height = QGLContext::currentContext()->device()->height();
@@ -1100,34 +1086,34 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
         const GLfloat positionMatrix[4][4] =
         {
             {
-                /*(0,0)*/ wfactor * transform.m11() - transform.m13(),
-                /*(0,1)*/ hfactor * transform.m12() + transform.m13(),
+                /*(0,0)*/ GLfloat(wfactor * transform.m11() - transform.m13()),
+                /*(0,1)*/ GLfloat(hfactor * transform.m12() + transform.m13()),
                 /*(0,2)*/ 0.0,
-                /*(0,3)*/ transform.m13()
+                /*(0,3)*/ GLfloat(transform.m13())
             }, {
-                /*(1,0)*/ wfactor * transform.m21() - transform.m23(),
-                /*(1,1)*/ hfactor * transform.m22() + transform.m23(),
+                /*(1,0)*/ GLfloat(wfactor * transform.m21() - transform.m23()),
+                /*(1,1)*/ GLfloat(hfactor * transform.m22() + transform.m23()),
                 /*(1,2)*/ 0.0,
-                /*(1,3)*/ transform.m23()
+                /*(1,3)*/ GLfloat(transform.m23())
             }, {
                 /*(2,0)*/ 0.0,
                 /*(2,1)*/ 0.0,
                 /*(2,2)*/ -1.0,
                 /*(2,3)*/ 0.0
             }, {
-                /*(3,0)*/ wfactor * transform.dx() - transform.m33(),
-                /*(3,1)*/ hfactor * transform.dy() + transform.m33(),
+                /*(3,0)*/ GLfloat(wfactor * transform.dx() - transform.m33()),
+                /*(3,1)*/ GLfloat(hfactor * transform.dy() + transform.m33()),
                 /*(3,2)*/ 0.0,
-                /*(3,3)*/ transform.m33()
+                /*(3,3)*/ GLfloat(transform.m33())
             }
         };
 
         const GLfloat vertexCoordArray[] =
         {
-            target.left()     , target.bottom() + 1,
-            target.right() + 1, target.bottom() + 1,
-            target.left()     , target.top(),
-            target.right() + 1, target.top()
+            GLfloat(target.left())     , GLfloat(target.bottom() + 1),
+            GLfloat(target.right() + 1), GLfloat(target.bottom() + 1),
+            GLfloat(target.left())     , GLfloat(target.top()),
+            GLfloat(target.right() + 1), GLfloat(target.top())
         };
 
         const GLfloat txLeft = source.left() / m_frameSize.width();
@@ -1179,9 +1165,6 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
 
         m_program.release();
 
-
-        glDisable(GL_SCISSOR_TEST);
-        glDisable(GL_STENCIL_TEST);
         painter->endNativePainting();
     }
     return QAbstractVideoSurface::NoError;
@@ -1543,6 +1526,14 @@ void QPainterVideoSurface::setShaderType(ShaderType type)
 void QPainterVideoSurface::createPainter()
 {
     Q_ASSERT(!m_painter);
+
+#ifdef Q_WS_MAC
+    if (m_glContext)
+        m_glContext->makeCurrent();
+
+    m_painter = new QVideoSurfaceCoreGraphicsPainter(m_glContext != 0);
+    return;
+#endif
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
     switch (m_shaderType) {

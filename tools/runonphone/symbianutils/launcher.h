@@ -69,6 +69,7 @@ public:
         ActionInstall = 0x2,
         ActionCopyInstall = ActionCopy | ActionInstall,
         ActionRun = 0x4,
+        ActionDownload = 0x8,
         ActionCopyRun = ActionCopy | ActionRun,
         ActionInstallRun = ActionInstall | ActionRun,
         ActionCopyInstallRun = ActionCopy | ActionInstall | ActionRun
@@ -94,10 +95,11 @@ public:
     QString trkServerName() const;
     void setFileName(const QString &name);
     void setCopyFileName(const QString &srcName, const QString &dstName);
+    void setDownloadFileName(const QString &srcName, const QString &dstName);
     void setInstallFileName(const QString &name);
     void setCommandLineArgs(const QStringList &args);
     bool startServer(QString *errorMessage);
-    void setVerbose(int v);    
+    void setVerbose(int v);
     void setSerialFrame(bool b);
     bool serialFrame() const;
     // Close device or leave it open
@@ -109,6 +111,15 @@ public:
     // becomes valid after successful execution of ActionPingOnly
     QString deviceDescription(unsigned verbose = 0u) const;
 
+    // Acquire a device from SymbianDeviceManager, return 0 if not available.
+    // The device will be released on destruction.
+    static Launcher *acquireFromDeviceManager(const QString &serverName,
+                                              QObject *parent,
+                                              QString *errorMessage);
+    // Preliminary release of device, disconnecting the signal.
+    static void releaseToDeviceManager(Launcher *l);
+
+    // Create Trk message to start a process.
     static QByteArray startProcessMessage(const QString &executable,
                                           const QStringList &arguments);
     // Parse a TrkNotifyStopped message
@@ -119,9 +130,12 @@ public:
     static QString msgStopped(uint pid, uint tid, uint address, const QString &why);
 
 signals:
+    void deviceDescriptionReceived(const QString &port, const QString &description);
     void copyingStarted();
     void canNotConnect(const QString &errorMessage);
     void canNotCreateFile(const QString &filename, const QString &errorMessage);
+    void canNotOpenFile(const QString &filename, const QString &errorMessage);
+    void canNotOpenLocalFile(const QString &filename, const QString &errorMessage);
     void canNotWriteFile(const QString &filename, const QString &errorMessage);
     void canNotCloseFile(const QString &filename, const QString &errorMessage);
     void installingStarted();
@@ -135,6 +149,8 @@ signals:
     void copyProgress(int percent);
     void stateChanged(int);
     void processStopped(uint pc, uint pid, uint tid, const QString& reason);
+    // Emitted by the destructor, for releasing devices of SymbianDeviceManager by name
+    void destroyed(const QString &serverName);
 
 public slots:
     void terminate();
@@ -152,8 +168,11 @@ private:
     void handleRemoteProcessKilled(const TrkResult &result);
     void handleConnect(const TrkResult &result);
     void handleFileCreation(const TrkResult &result);
+    void handleFileOpened(const TrkResult &result);
     void handleCopy(const TrkResult &result);
+    void handleRead(const TrkResult &result);
     void continueCopying(uint lastCopiedBlockSize = 0);
+    void continueReading();
     void closeRemoteFile(bool failed = false);
     void handleFileCopied(const TrkResult &result);
     void handleInstallPackageFinished(const TrkResult &result);
@@ -165,8 +184,10 @@ private:
     void handleTrkVersion(const TrkResult &result);
 
     void copyFileToRemote();
+    void copyFileFromRemote();
     void installRemotePackageSilently();
     void startInferiorIfNeeded();
+    void handleFinished();
 
     void logMessage(const QString &msg);
     void setState(State s);

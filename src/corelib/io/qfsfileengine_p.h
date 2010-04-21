@@ -112,7 +112,11 @@ public:
     HANDLE fileHandle;
     HANDLE mapHandle;
     QHash<uchar *, DWORD /* offset % AllocationGranularity */> maps;
+
+#ifndef Q_OS_WINCE
     mutable int cachedFd;
+#endif
+
     mutable DWORD fileAttrib;
 #else
     QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
@@ -149,6 +153,10 @@ public:
     static void resolveLibs();
     static bool resolveUNCLibs();
     static bool uncListSharesOnServer(const QString &server, QStringList *list);
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    void setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString);
 #endif
 
 protected:
