@@ -112,7 +112,7 @@ QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId
     return new QDirectFbWindow(widget);
 }
 
-QWindowSurface *QDirectFbIntegration::createWindowSurfaceForWindow(QWidget *widget, WId winId) const
+QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const
 {
     return new QDirectFbWindowSurface(widget,winId);
 }

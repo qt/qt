@@ -78,7 +78,7 @@ public:
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId WinId) const;
-    QWindowSurface *createWindowSurfaceForWindow(QWidget *widget, WId WinId) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId WinId) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 

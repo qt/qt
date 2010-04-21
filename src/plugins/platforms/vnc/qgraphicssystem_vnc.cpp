@@ -114,10 +114,8 @@ QPixmapData *QVNCIntegration::createPixmapData(QPixmapData::PixelType type) cons
 //     return surface;
 // }
 
-QWindowSurface *QVNCIntegration::createWindowSurfaceForWindow(QWidget *widget, WId) const
+QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
     QFbWindowSurface * surface;
     surface = new QFbWindowSurface(mPrimaryScreen, widget);
     return surface;

@@ -77,7 +77,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     Q_ASSERT(platformWindow);
 
     if (!surface) {
-        surface = QApplicationPrivate::platformIntegration()->createWindowSurfaceForWindow(q,platformWindow->winId());
+        surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
     }
     Q_ASSERT(surface);
 

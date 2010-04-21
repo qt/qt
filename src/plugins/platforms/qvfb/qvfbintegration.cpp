@@ -421,10 +421,8 @@ QPixmapData *QVFbIntegration::createPixmapData(QPixmapData::PixelType type) cons
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QVFbIntegration::createWindowSurfaceForWindow(QWidget *widget, WId) const
+QWindowSurface *QVFbIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
     return new QVFbWindowSurface(mPrimaryScreen, widget);
 }
 
@@ -436,4 +434,4 @@ QPlatformWindow *QVFbIntegration::createPlatformWindow(QWidget *widget, WId) con
 
 QT_END_NAMESPACE
 
-#include "qgraphicssystem_qvfb.moc"
+#include "qvfbintegration.moc"

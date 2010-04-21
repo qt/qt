@@ -103,10 +103,8 @@ QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type)
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QTestLiteIntegration::createWindowSurfaceForWindow(QWidget *widget, WId) const
+QWindowSurface *QTestLiteIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
     return new QTestLiteWindowSurface(mPrimaryScreen, widget);
 }
 

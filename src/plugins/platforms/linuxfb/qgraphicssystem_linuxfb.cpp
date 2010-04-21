@@ -786,10 +786,8 @@ QPixmapData *QLinuxFbIntegration::createPixmapData(QPixmapData::PixelType type) 
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QLinuxFbIntegration::createWindowSurfaceForWindow(QWidget *widget, WId) const
+QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
     QFbWindowSurface * surface =
         new QFbWindowSurface(mPrimaryScreen, widget);
     return surface;
