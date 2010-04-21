@@ -384,7 +384,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                 if (!replyPrivate->expectContent()) {
                     replyPrivate->state = QHttpNetworkReplyPrivate::AllDoneState;
                     allDone();
-                    return;
+                    break;
                 }
             }
             break;
