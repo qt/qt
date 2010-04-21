@@ -1,4 +1,4 @@
-/*
+/****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
@@ -93,7 +93,8 @@ void showWarnings()
 void myMessageOutput(QtMsgType type, const char *msg)
 {
     if (!logger.isNull()) {
-        logger.data()->append(type, msg);
+        QString strMsg = QString::fromAscii(msg);
+        QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
     } else {
         warnings += msg;
         warnings += QLatin1Char('\n');
@@ -346,7 +347,7 @@ int main(int argc, char ** argv)
     }
 #endif
 
-    QDeclarativeViewer viewer(0, wflags);
+    QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     if (!scriptopts.isEmpty()) {
         QStringList options = 
             scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
@@ -382,45 +383,45 @@ int main(int argc, char ** argv)
 
         if (!(scriptOptions & QDeclarativeViewer::Record) && !(scriptOptions & QDeclarativeViewer::Play))
             scriptOptsUsage();
-        viewer.setScriptOptions(scriptOptions);
-        viewer.setScript(script);
+        viewer->setScriptOptions(scriptOptions);
+        viewer->setScript(script);
     }  else if (!script.isEmpty()) {
         usage();
     }
 
-    viewer.addLibraryPath(QCoreApplication::applicationDirPath());
+    viewer->addLibraryPath(QCoreApplication::applicationDirPath());
 
     foreach (QString lib, imports)
-        viewer.addLibraryPath(lib);
+        viewer->addLibraryPath(lib);
 
     foreach (QString plugin, plugins)
-        viewer.addPluginPath(plugin);
+        viewer->addPluginPath(plugin);
 
-    viewer.setNetworkCacheSize(cache);
-    viewer.setRecordFile(recordfile);
-    viewer.setSizeToView(sizeToView);
+    viewer->setNetworkCacheSize(cache);
+    viewer->setRecordFile(recordfile);
+    viewer->setSizeToView(sizeToView);
     if (resizeview)
-        viewer.setScaleView();
+        viewer->setScaleView();
     if (fps>0)
-        viewer.setRecordRate(fps);
+        viewer->setRecordRate(fps);
     if (autorecord_to)
-        viewer.setAutoRecord(autorecord_from,autorecord_to);
+        viewer->setAutoRecord(autorecord_from,autorecord_to);
     if (!skin.isEmpty()) {
         if (skin == "list") {
-            foreach (QString s, viewer.builtinSkins())
+            foreach (QString s, viewer->builtinSkins())
                 qWarning() << qPrintable(s);
             exit(0);
         } else {
-            viewer.setSkin(skin);
+            viewer->setSkin(skin);
         }
     }
     if (devkeys)
-        viewer.setDeviceKeys(true);
-    viewer.setRecordDither(dither);
+        viewer->setDeviceKeys(true);
+    viewer->setRecordDither(dither);
     if (recordargs.count())
-        viewer.setRecordArgs(recordargs);
+        viewer->setRecordArgs(recordargs);
 
-    viewer.setUseNativeFileBrowser(useNativeFileBrowser);
+    viewer->setUseNativeFileBrowser(useNativeFileBrowser);
     if (fullScreen && maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
 
@@ -439,17 +440,19 @@ int main(int argc, char ** argv)
     }
 
     if (!fileName.isEmpty()) {
-        viewer.open(fileName);
-        fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
+        viewer->open(fileName);
+        fullScreen ? viewer->showFullScreen() : maximized ? viewer->showMaximized() : viewer->show();
     } else {
         if (!useNativeFileBrowser)
-            viewer.openFile();
-        fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
+            viewer->openFile();
+        fullScreen ? viewer->showFullScreen() : maximized ? viewer->showMaximized() : viewer->show();
         if (useNativeFileBrowser)
-            viewer.openFile();
+            viewer->openFile();
     }
-    viewer.setUseGL(useGL);
-    viewer.raise();
+    viewer->setUseGL(useGL);
+    viewer->raise();
 
-    exit(app.exec());
+    int rv = app.exec();
+    delete viewer;
+    exit(rv);
 }

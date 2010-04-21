@@ -43,7 +43,7 @@
 #include <QDeclarativeComponent>
 #include <QDebug>
 #include "birthdayparty.h"
-#include "happybirthday.h"
+#include "happybirthdaysong.h"
 #include "person.h"
 
 int main(int argc, char ** argv)
@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
 
     qmlRegisterType<BirthdayPartyAttached>();
     qmlRegisterType<BirthdayParty>("People", 1,0, "BirthdayParty");
-    qmlRegisterType<HappyBirthday>("People", 1,0, "HappyBirthday");
+    qmlRegisterType<HappyBirthdaySong>("People", 1,0, "HappyBirthdaySong");
     qmlRegisterType<ShoeDescription>();
     qmlRegisterType<Person>();
     qmlRegisterType<Boy>("People", 1,0, "Boy");
@@ -62,10 +62,10 @@ int main(int argc, char ** argv)
     QDeclarativeComponent component(&engine, ":example.qml");
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
-    if (party && party->celebrant()) {
-        qWarning() << party->celebrant()->name() << "is having a birthday!";
+    if (party && party->host()) {
+        qWarning() << party->host()->name() << "is having a birthday!";
 
-        if (qobject_cast<Boy *>(party->celebrant()))
+        if (qobject_cast<Boy *>(party->host()))
             qWarning() << "He is inviting:";
         else
             qWarning() << "She is inviting:";

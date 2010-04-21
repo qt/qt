@@ -124,6 +124,10 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
         const QPointF &point = transform.map(QPointF(target->x(),target->y()));
         qreal x = point.x();
         qreal y = point.y();
+
+        // setParentItem will update the transformOriginPoint if needed
+        target->setParentItem(targetParent);
+
         if (ok && target->transformOrigin() != QDeclarativeItem::TopLeft) {
             qreal tempxt = target->transformOriginPoint().x();
             qreal tempyt = target->transformOriginPoint().y();
@@ -137,7 +141,6 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
             y += offset.y();
         }
 
-        target->setParentItem(targetParent);
         if (ok) {
             //qDebug() << x << y << rotation << scale;
             target->setX(x);
