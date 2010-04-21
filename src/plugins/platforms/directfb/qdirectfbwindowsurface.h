@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,24 +39,39 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_lite_p.h"
-#include <QtGui/private/qapplication_p.h>
+#ifndef QWINDOWSURFACE_DIRECTFB_H
+#define QWINDOWSURFACE_DIRECTFB_H
+
+#include <QtGui/private/qwindowsurface_p.h>
+#include <private/qpixmap_blitter_p.h>
+
+#include <directfb.h>
 
 QT_BEGIN_NAMESPACE
 
-QPixmapData *QLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+class QDirectFbWindowSurface : public QWindowSurface
 {
-    return QApplicationPrivate::platformIntegration()->createPixmapData(type);
-}
+public:
+    QDirectFbWindowSurface(QWidget *window, WId wid);
+    ~QDirectFbWindowSurface();
 
-QWindowSurface *QLiteGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-    return QApplicationPrivate::platformIntegration()->createWindowSurface(widget, widget->winId());
-}
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void resize (const QSize &size);
+    bool scroll(const QRegion &area, int dx, int dy);
 
-QBlittable *QLiteGraphicsSystem::createBlittable(const QSize &size) const
-{
-    return QApplicationPrivate::platformIntegration()->createBlittable(size);
-}
+    void beginPaint(const QRegion &region);
+    void endPaint(const QRegion &region);
+
+private:
+    void lockSurfaceToImage();
+
+    QPixmap *m_pixmap;
+    QBlittablePixmapData *m_pmdata;
+
+    IDirectFBSurface *m_dfbSurface;
+};
 
 QT_END_NAMESPACE
+
+#endif

@@ -52,7 +52,11 @@ public:
     QWindowSurfacePrivate(QWidget *w) : window(w), staticContentsSupport(false) {}
 
     QWidget *window;
+#if !defined(Q_WS_LITE)
     QRect geometry;
+#else
+    QSize size;
+#endif //Q_WS_LITE
     QRegion staticContents;
     QList<QImage*> bufferImages;
     bool staticContentsSupport;
@@ -144,6 +148,7 @@ void QWindowSurface::endPaint(const QRegion &)
     d_ptr->bufferImages.clear();
 }
 
+#if !defined(Q_WS_LITE)
 /*!
     Sets the currently allocated area to be the given \a rect.
 
@@ -164,6 +169,17 @@ QRect QWindowSurface::geometry() const
 {
     return d_ptr->geometry;
 }
+#else
+void QWindowSurface::resize(const QSize &size)
+{
+    d_ptr->size = size;
+}
+
+QSize QWindowSurface::size() const
+{
+    return d_ptr->size;
+}
+#endif //Q_WS_LITE
 
 /*!
     Scrolls the given \a area \a dx pixels to the right and \a dy
@@ -348,42 +364,5 @@ void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
         } while (--h);
     }
 }
-
-
-#ifdef Q_WS_LITE
-/*!
-Requests setting the window flags of this surface to \a type. Returns the actual flags set.
-*/
-Qt::WindowFlags QWindowSurface::setWindowFlags(Qt::WindowFlags type)
-{
-    Q_UNUSED(type);
-    qDebug() << "QWindowSurface::setWindowFlags" << hex << type;
-    return Qt::Window;
-}
-
-/*!
-  Returns the effective window flags for this surface.
-*/
-Qt::WindowFlags QWindowSurface::windowFlags() const
-{
-    return Qt::Window;
-}
-
-/*!
-Reimplemented in subclasses to show the surface if \a visible is \c true, and hide it if \a visible is \c false.
-*/
-
-void QWindowSurface::setVisible(bool visible)
-{
-    Q_UNUSED(visible);
-}
-
-
-WId QWindowSurface::winId() const
-{
-    return WId(0);
-}
-
-#endif
 
 QT_END_NAMESPACE

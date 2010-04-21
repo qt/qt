@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QVNCCursor::QVNCCursor(QVNCServer * srvr, QVNCPlatformScreen *scr )
+QVNCCursor::QVNCCursor(QVNCServer * srvr, QVNCScreen *scr )
         :QGraphicsSystemSoftwareCursor(scr), useVncCursor(false), server(srvr)
 {
 }

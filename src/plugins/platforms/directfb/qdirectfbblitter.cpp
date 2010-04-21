@@ -1,4 +1,4 @@
-#include "qblitter_directfb.h"
+#include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
 
 #include <QtGui/private/qpixmap_blitter_p.h>
@@ -28,6 +28,7 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
         dfb->CreateSurface(dfb,&surfaceDesc, &m_surface);
         m_surface->Clear(m_surface,0,0,0,0);
     }
+
 }
 
 QDirectFbBlitter::~QDirectFbBlitter()
@@ -59,14 +60,18 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
 
     IDirectFBSurface *s = dfbBlitter->m_surface;
 
-    quint32 blittingFlags = pixmap.hasAlpha()? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
+    DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
+    DFBSurfacePorterDuffRule porterDuff = DSPD_SRC;
+    if (pixmap.hasAlpha()) {
+        blittingFlags = DSBLIT_BLEND_ALPHACHANNEL;
+        porterDuff = DSPD_SRC_OVER;
+    }
 
-    s->SetBlittingFlags(s, DFBSurfaceBlittingFlags(blittingFlags));
     m_surface->SetBlittingFlags(m_surface, DFBSurfaceBlittingFlags(blittingFlags));
-    m_surface->SetPorterDuff(m_surface,DSPD_SRC_OVER);
+    m_surface->SetPorterDuff(m_surface,porterDuff);
     m_surface->SetDstBlendFunction(m_surface,DSBF_INVSRCALPHA);
 
-    const DFBRectangle sRect = { srcRect.x(), srcRect.y(), rect.width(), rect.height() };
+    const DFBRectangle sRect = { srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height() };
 
     DFBResult result;
     if (rect.width() == srcRect.width() && rect.height() == srcRect.height())

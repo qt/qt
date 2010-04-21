@@ -51,8 +51,8 @@
 #include <QtCore/QTimer>
 
 
-QVNCPlatformScreen::QVNCPlatformScreen()
-        : QFbPlatformScreen::QFbPlatformScreen()
+QVNCScreen::QVNCScreen()
+        : QFbScreen::QFbScreen()
 {
     int w = 800;
     int h = 600;
@@ -69,21 +69,21 @@ QVNCPlatformScreen::QVNCPlatformScreen()
     setPhysicalSize((geometry().size()*254)/720);
 
 
-    d_ptr = new QVNCPlatformScreenPrivate(this);
+    d_ptr = new QVNCScreenPrivate(this);
 
     cursor = new QVNCCursor(d_ptr->vncServer, this);
     d_ptr->vncServer->setCursor(static_cast<QVNCCursor *>(cursor));
 }
 
-QVNCDirtyMap *QVNCPlatformScreen::dirtyMap()
+QVNCDirtyMap *QVNCScreen::dirtyMap()
 {
     return d_ptr->dirty;
 }
 
-QRegion QVNCPlatformScreen::doRedraw()
+QRegion QVNCScreen::doRedraw()
 {
     QRegion touched;
-    touched = QFbPlatformScreen::doRedraw();
+    touched = QFbScreen::doRedraw();
 
     QVector<QRect> rects = touched.rects();
     for (int i = 0; i < rects.size(); i++)
@@ -92,24 +92,40 @@ QRegion QVNCPlatformScreen::doRedraw()
 }
 
 
-QVNCPlatformIntegration::QVNCPlatformIntegration()
+QVNCIntegration::QVNCIntegration()
 {
-    mPrimaryScreen = new QVNCPlatformScreen();
+    mPrimaryScreen = new QVNCScreen();
 
     mScreens.append(mPrimaryScreen);
 }
 
-QPixmapData *QVNCPlatformIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPixmapData *QVNCIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QVNCPlatformIntegration::createWindowSurface(QWidget *widget) const
+// QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget) const
+// {
+//     if (widget->windowType() == Qt::Desktop)
+//         return 0;   // Don't create an explicit window surface for the destkop.
+//     QFbWindowSurface * surface;
+//     surface = new QFbWindowSurface(mPrimaryScreen, widget);
+//     mPrimaryScreen->addWindowSurface(surface);
+//     return surface;
+// }
+
+QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
     QFbWindowSurface * surface;
     surface = new QFbWindowSurface(mPrimaryScreen, widget);
-    mPrimaryScreen->addWindowSurface(surface);
     return surface;
 }
+
+
+QPlatformWindow *QVNCIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
+{
+    QFbWindow *w = new QFbWindow(mPrimaryScreen, widget);
+    mPrimaryScreen->addWindow(w);
+    return w;
+}
+

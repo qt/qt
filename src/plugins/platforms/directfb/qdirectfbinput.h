@@ -9,6 +9,8 @@
 #include <QPoint>
 #include <QEvent>
 
+#include <QtGui/qwindowdefs.h>
+
 #include <directfb.h>
 
 class InputSocketWaiter : public QThread
@@ -35,7 +37,7 @@ class QDirectFbInput : public QObject
 public:
     static QDirectFbInput *instance();
     void addWindow(DFBWindowID id, QWidget *tlw);
-    void removeWindow(QWidget *tlw);
+    void removeWindow(WId wId);
 
 public slots:
     void handleEvents();

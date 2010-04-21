@@ -41,15 +41,15 @@
 
 
 #include "qwindowsurface_qvfb.h"
-#include "qgraphicssystem_qvfb.h"
+#include "qvfbintegration.h"
 #include <QtCore/qdebug.h>
 #include <QtGui/qpainter.h>
 #include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QVFbWindowSurface::QVFbWindowSurface(QVFbGraphicsSystem *graphicsSystem,
-                                     QVFbGraphicsSystemScreen *screen, QWidget *window)
+QVFbWindowSurface::QVFbWindowSurface(//QVFbIntegration *graphicsSystem,
+                                     QVFbScreen *screen, QWidget *window)
     : QWindowSurface(window),
       mScreen(screen)
 {
@@ -69,36 +69,40 @@ void QVFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     Q_UNUSED(widget);
     Q_UNUSED(offset);
 
-    QRect rect = geometry();
-    QPoint topLeft = rect.topLeft();
+//    QRect rect = geometry();
+//    QPoint topLeft = rect.topLeft();
 
     mScreen->setDirty(region.boundingRect());
 }
 
-void QVFbWindowSurface::setGeometry(const QRect &)
+void QVFbWindowSurface::resize(const QSize&)
 {
 
 // any size you like as long as it's full-screen...
 
     QRect rect(mScreen->availableGeometry());
-    QWindowSystemInterface::handleGeometryChange(this->window(), rect);
-
-    QWindowSurface::setGeometry(rect);
+    QWindowSurface::resize(rect.size());
 }
 
-bool QVFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
+
+QVFbWindow::QVFbWindow(QVFbScreen *screen, QWidget *window)
+    : QPlatformWindow(window),
+      mScreen(screen)
 {
-    return QWindowSurface::scroll(area, dx, dy);
 }
 
-void QVFbWindowSurface::beginPaint(const QRegion &region)
+
+void QVFbWindow::setGeometry(const QRect &)
 {
-    Q_UNUSED(region);
+
+// any size you like as long as it's full-screen...
+
+    QRect rect(mScreen->availableGeometry());
+    QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
+
+    QPlatformWindow::setGeometry(rect);
 }
 
-void QVFbWindowSurface::endPaint(const QRegion &region)
-{
-    Q_UNUSED(region);
-}
+
 
 QT_END_NAMESPACE

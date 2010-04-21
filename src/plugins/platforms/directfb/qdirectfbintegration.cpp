@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegration_directfb.h"
-#include "qwindowsurface_directfb.h"
-#include "qblitter_directfb.h"
+#include "qdirectfbintegration.h"
+#include "qdirectfbwindowsurface.h"
+#include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
 #include "qdirectfbcursor.h"
+#include "qdirectfbwindow.h"
 
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qpixmap_raster_p.h>
@@ -105,9 +106,15 @@ QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type)
         return new QBlittablePixmapData(type);
 }
 
-QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget) const
+QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
-    return new QDirectFbWindowSurface (widget);
+    Q_UNUSED(winId);
+    return new QDirectFbWindow(widget);
+}
+
+QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const
+{
+    return new QDirectFbWindowSurface(widget,winId);
 }
 
 QBlittable *QDirectFbIntegration::createBlittable(const QSize &size) const

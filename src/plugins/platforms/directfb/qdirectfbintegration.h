@@ -54,6 +54,7 @@ class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
 {
+Q_OBJECT
 public:
     QDirectFbScreen(int display);
     ~QDirectFbScreen();
@@ -82,7 +83,8 @@ public:
     QDirectFbIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
     QBlittable *createBlittable(const QSize &size) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,24 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_lite_p.h"
-#include <QtGui/private/qapplication_p.h>
+#ifndef QDIRECTFBWINDOW_H
+#define QDIRECTFBWINDOW_H
+
+#include <QPlatformWindow>
+
+#include "qdirectfbconvenience.h"
 
 QT_BEGIN_NAMESPACE
 
-QPixmapData *QLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+class QDirectFbWindow : public QPlatformWindow
 {
-    return QApplicationPrivate::platformIntegration()->createPixmapData(type);
-}
+public:
+    QDirectFbWindow(QWidget *tlw);
+    ~QDirectFbWindow();
 
-QWindowSurface *QLiteGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-    return QApplicationPrivate::platformIntegration()->createWindowSurface(widget, widget->winId());
-}
+    void setGeometry(const QRect &rect);
+    void setOpacity(qreal level);
 
-QBlittable *QLiteGraphicsSystem::createBlittable(const QSize &size) const
-{
-    return QApplicationPrivate::platformIntegration()->createBlittable(size);
-}
+    void setVisible(bool visible);
+
+    Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    void raise();
+    void lower();
+    WId winId() const;
+
+private:
+    IDirectFBWindow *m_dfbWindow;
+};
 
 QT_END_NAMESPACE
+
+#endif // QDIRECTFBWINDOW_H

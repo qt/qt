@@ -358,13 +358,13 @@ bool QRfbClientCutText::read(QTcpSocket *s)
 
 //===========================================================================
 
-QVNCServer::QVNCServer(QVNCPlatformScreen *screen)
+QVNCServer::QVNCServer(QVNCScreen *screen)
     : qvnc_screen(screen), cursor(0)
 {
     init(5900);
 }
 
-QVNCServer::QVNCServer(QVNCPlatformScreen *screen, int id)
+QVNCServer::QVNCServer(QVNCScreen *screen, int id)
     : qvnc_screen(screen), cursor(0)
 {
     init(5900 + id);
@@ -1499,7 +1499,7 @@ static void blendCursor(QImage &image, const QRect &imageRect)
 }
 #endif // QT_NO_QWS_CURSOR
 
-QVNCDirtyMap::QVNCDirtyMap(QVNCPlatformScreen *s)
+QVNCDirtyMap::QVNCDirtyMap(QVNCScreen *s)
     : bytesPerPixel(0), numDirty(0), screen(s)
 {
     bytesPerPixel = (screen->depth() + 7) / 8;
@@ -1885,7 +1885,7 @@ void QVNCServer::discardClient()
 
 
 
-QVNCPlatformScreenPrivate::QVNCPlatformScreenPrivate(QVNCPlatformScreen *parent)
+QVNCScreenPrivate::QVNCScreenPrivate(QVNCScreen *parent)
     : dpiX(72), dpiY(72), doOnScreenSurface(false), refreshRate(25),
       vncServer(0), q_ptr(parent)
 {
@@ -1902,12 +1902,12 @@ QVNCPlatformScreenPrivate::QVNCPlatformScreenPrivate(QVNCPlatformScreen *parent)
     dirty = new QVNCDirtyMapOptimized<quint32>(q_ptr);
 }
 
-QVNCPlatformScreenPrivate::~QVNCPlatformScreenPrivate()
+QVNCScreenPrivate::~QVNCScreenPrivate()
 {
 }
 
 
-void QVNCPlatformScreenPrivate::setDirty(const QRect& rect, bool force)
+void QVNCScreenPrivate::setDirty(const QRect& rect, bool force)
 {
     if (rect.isEmpty())
         return;

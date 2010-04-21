@@ -57,7 +57,6 @@ public:
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
 
 public:
     QRect mGeometry;
@@ -72,7 +71,8 @@ public:
     QMinimalIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 

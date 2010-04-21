@@ -2,6 +2,7 @@
 #include "qwindowsurface_minimal.h"
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/QPlatformWindow>
 
 QMinimalIntegration::QMinimalIntegration()
 {
@@ -10,7 +11,6 @@ QMinimalIntegration::QMinimalIntegration()
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
     mPrimaryScreen->mDepth = 16;
     mPrimaryScreen->mFormat = QImage::Format_RGB16;
-    mPrimaryScreen->mPhysicalSize = QSize(40, 54);
 
     mScreens.append(mPrimaryScreen);
 }
@@ -19,7 +19,15 @@ QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) 
 {
     return new QRasterPixmapData(type);
 }
-QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget) const
+
+QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
+    Q_UNUSED(winId);
+    return new QPlatformWindow(widget);
+}
+
+QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget, WId winId) const
+{
+    Q_UNUSED(winId);
     return new QMinimalWindowSurface(widget);
 }

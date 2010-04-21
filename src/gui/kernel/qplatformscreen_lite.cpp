@@ -56,3 +56,11 @@ QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
     return 0;
 }
 
+QSize QPlatformScreen::physicalSize() const
+{
+    static const int dpi = 100;
+    int width = geometry().width() / dpi * qreal(25.4) ;
+    int height = geometry().height() / dpi * qreal(25.4) ;
+    return QSize(width,height);
+}
+

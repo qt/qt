@@ -44,48 +44,49 @@
 
 #include "qvnccursor.h"
 #include "../fb_base/fb_base.h"
-#include <QtGui/QPlatformIntegration>
+#include <QPlatformIntegration>
 
 QT_BEGIN_NAMESPACE
 
 class QVNCServer;
 class QVNCDirtyMap;
 
-class QVNCPlatformScreenPrivate;
+class QVNCScreenPrivate;
 
-class QVNCPlatformScreen : public QFbPlatformScreen
+class QVNCScreen : public QFbScreen
 {
 public:
-    QVNCPlatformScreen();
+    QVNCScreen();
 
     int linestep() const { return image() ? image()->bytesPerLine() : 0; }
     uchar *base() const { return image() ? image()->bits() : 0; }
     QVNCDirtyMap *dirtyMap();
 
 public:
-    QVNCPlatformScreenPrivate *d_ptr;
+    QVNCScreenPrivate *d_ptr;
 
 private:
     QVNCServer *server;
     QRegion doRedraw();
 };
 
-class QVNCPlatformIntegrationPrivate;
+class QVNCIntegrationPrivate;
 
 
-class QVNCPlatformIntegration : public QPlatformIntegration
+class QVNCIntegration : public QPlatformIntegration
 {
 public:
-    QVNCPlatformIntegration();
+    QVNCIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
 
 private:
-    QVNCPlatformScreen *mPrimaryScreen;
+    QVNCScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
 };
 

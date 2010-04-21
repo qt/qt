@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QPlatformIntegrationPlugin>
+#include <QPlatformIntegrationPlugin>
 #include "qgraphicssystem_linuxfb.h"
 
 QT_BEGIN_NAMESPACE

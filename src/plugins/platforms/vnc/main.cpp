@@ -39,34 +39,34 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QPlatformIntegrationPlugin>
 #include "qgraphicssystem_vnc.h"
 #include <qstringlist.h>
+#include <QtGui/QPlatformIntegrationPlugin>
 
 QT_BEGIN_NAMESPACE
 
-class QVNCPlatformIntegrationPlugin : public QPlatformIntegrationPlugin
+class QVNCIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&);
 };
 
-QStringList QVNCPlatformIntegrationPlugin::keys() const
+QStringList QVNCIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "VNC";
     return list;
 }
 
-QPlatformIntegration* QVNCPlatformIntegrationPlugin::create(const QString& system)
+QPlatformIntegration* QVNCIntegrationPlugin::create(const QString& system)
 {
     if (system.toLower() == "vnc")
-        return new QVNCPlatformIntegration;
+        return new QVNCIntegration;
 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(vnc, QVNCPlatformIntegrationPlugin)
+Q_EXPORT_PLUGIN2(vnc, QVNCIntegrationPlugin)
 
 QT_END_NAMESPACE

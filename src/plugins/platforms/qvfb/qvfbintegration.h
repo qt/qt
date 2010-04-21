@@ -42,18 +42,19 @@
 #ifndef QGRAPHICSSYSTEM_QVFB_H
 #define QGRAPHICSSYSTEM_QVFB_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
+#include <QPlatformScreen>
+#include <QPlatformIntegration>
 
 QT_BEGIN_NAMESPACE
 
 
-class QVFbGraphicsSystemScreenPrivate;
+class QVFbScreenPrivate;
 
-class QVFbGraphicsSystemScreen : public QGraphicsSystemScreen
+class QVFbScreen : public QPlatformScreen
 {
 public:
-    QVFbGraphicsSystemScreen();
-    ~QVFbGraphicsSystemScreen();
+    QVFbScreen();
+    ~QVFbScreen();
 
     QRect geometry() const;
      int depth() const;
@@ -66,25 +67,26 @@ public:
 
 public:
 
-    QVFbGraphicsSystemScreenPrivate *d_ptr;
+    QVFbScreenPrivate *d_ptr;
 };
 
-class QVFbGraphicsSystemPrivate;
+class QVFbIntegrationPrivate;
 
 
-class QVFbGraphicsSystem : public QGraphicsSystem
+class QVFbIntegration : public QPlatformIntegration
 {
 public:
-    QVFbGraphicsSystem();
+    QVFbIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+    QList<QPlatformScreen *> screens() const { return mScreens; }
 
 private:
-    QVFbGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
+    QVFbScreen *mPrimaryScreen;
+    QList<QPlatformScreen *> mScreens;
 };
 
 

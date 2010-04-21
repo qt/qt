@@ -52,7 +52,7 @@
 #include <qvfbhdr.h>
 #include <qsocketnotifier.h>
 
-#include "qgraphicssystem_qvfb.h"
+#include "qvfbintegration.h"
 #include "qwindowsurface_qvfb.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
@@ -65,12 +65,12 @@
 QT_BEGIN_NAMESPACE
 
 
-class QVFbGraphicsSystemScreenKeyboardHandler : public QObject
+class QVFbScreenKeyboardHandler : public QObject
 {
     Q_OBJECT
 public:
-    QVFbGraphicsSystemScreenKeyboardHandler();
-    ~QVFbGraphicsSystemScreenKeyboardHandler();
+    QVFbScreenKeyboardHandler();
+    ~QVFbScreenKeyboardHandler();
 
 private slots:
     void readKeyboardData();
@@ -83,7 +83,7 @@ private:
     QSocketNotifier *keyNotifier;
 };
 
-QVFbGraphicsSystemScreenKeyboardHandler::QVFbGraphicsSystemScreenKeyboardHandler()
+QVFbScreenKeyboardHandler::QVFbScreenKeyboardHandler()
 {
     int displayId = 0; //TODO displayId
     const QString keyboardDev = QT_VFB_KEYBOARD_PIPE(displayId);
@@ -97,8 +97,8 @@ QVFbGraphicsSystemScreenKeyboardHandler::QVFbGraphicsSystemScreenKeyboardHandler
     kbdFD = QT_OPEN(keyboardDev.toLatin1().constData(), O_RDWR | O_NDELAY);
 
     if (kbdFD == -1) {
-        perror("QVFbGraphicsSystemScreenKeyboardHandler");
-        qWarning("QVFbGraphicsSystemScreenKeyboardHandler: Unable to open device %s",
+        perror("QVFbScreenKeyboardHandler");
+        qWarning("QVFbScreenKeyboardHandler: Unable to open device %s",
                  qPrintable(keyboardDev));
         return;
     }
@@ -112,7 +112,7 @@ QVFbGraphicsSystemScreenKeyboardHandler::QVFbGraphicsSystemScreenKeyboardHandler
 
 }
 
-QVFbGraphicsSystemScreenKeyboardHandler::~QVFbGraphicsSystemScreenKeyboardHandler()
+QVFbScreenKeyboardHandler::~QVFbScreenKeyboardHandler()
 {
     if (kbdFD >= 0)
         QT_CLOSE(kbdFD);
@@ -120,7 +120,7 @@ QVFbGraphicsSystemScreenKeyboardHandler::~QVFbGraphicsSystemScreenKeyboardHandle
 }
 
 
-void QVFbGraphicsSystemScreenKeyboardHandler::readKeyboardData()
+void QVFbScreenKeyboardHandler::readKeyboardData()
 {
     int n;
     do {
@@ -161,12 +161,12 @@ void QVFbGraphicsSystemScreenKeyboardHandler::readKeyboardData()
 
 
 
-class QVFbGraphicsSystemScreenMouseHandler : public QObject
+class QVFbScreenMouseHandler : public QObject
 {
     Q_OBJECT
 public:
-    QVFbGraphicsSystemScreenMouseHandler();
-    ~QVFbGraphicsSystemScreenMouseHandler();
+    QVFbScreenMouseHandler();
+    ~QVFbScreenMouseHandler();
 
 private slots:
     void readMouseData();
@@ -181,7 +181,7 @@ private:
     int oldButtonState;
 };
 
-QVFbGraphicsSystemScreenMouseHandler::QVFbGraphicsSystemScreenMouseHandler()
+QVFbScreenMouseHandler::QVFbScreenMouseHandler()
 {
     int displayId = 0; //TODO: displayId
     QString mouseDev = QT_VFB_MOUSE_PIPE(displayId);
@@ -206,13 +206,13 @@ QVFbGraphicsSystemScreenMouseHandler::QVFbGraphicsSystemScreenMouseHandler()
 }
 
 
-QVFbGraphicsSystemScreenMouseHandler::~QVFbGraphicsSystemScreenMouseHandler()
+QVFbScreenMouseHandler::~QVFbScreenMouseHandler()
 {
     if (mouseFD >= 0)
         QT_CLOSE(mouseFD);
 }
 
-void QVFbGraphicsSystemScreenMouseHandler::readMouseData()
+void QVFbScreenMouseHandler::readMouseData()
 {
    int n;
     do {
@@ -229,7 +229,7 @@ void QVFbGraphicsSystemScreenMouseHandler::readMouseData()
         mb += sizeof(QPoint);
         int bstate = *reinterpret_cast<int *>(mb);
         mb += sizeof(int);
-        int wheel = *reinterpret_cast<int *>(mb);
+        //int wheel = *reinterpret_cast<int *>(mb);
 
         int button = bstate ^ oldButtonState;
         QEvent::Type type = QEvent::MouseMove;
@@ -254,16 +254,16 @@ void QVFbGraphicsSystemScreenMouseHandler::readMouseData()
 }
 
 
-class QVFbGraphicsSystemScreenPrivate
+class QVFbScreenPrivate
 {
 public:
-    QVFbGraphicsSystemScreenPrivate(QVFbGraphicsSystemScreen *)
+    QVFbScreenPrivate(QVFbScreen *)
         : shmrgn(0), hdr(0), data(0), mouseHandler(0), keyboardHandler(0)
         {
             connect(0); //for now we only handle one screen
         }
 
-    ~QVFbGraphicsSystemScreenPrivate() { disconnect(); }
+    ~QVFbScreenPrivate() { disconnect(); }
     void setDirty(const QRect &r);
 
     bool connect(int displayId);
@@ -279,22 +279,22 @@ private:
     unsigned char *shmrgn;
     QVFbHeader *hdr;
     uchar *data;
-    QVFbGraphicsSystemScreenMouseHandler *mouseHandler;
-    QVFbGraphicsSystemScreenKeyboardHandler *keyboardHandler;
+    QVFbScreenMouseHandler *mouseHandler;
+    QVFbScreenKeyboardHandler *keyboardHandler;
 
 
     QImage img;
 };
 
 
-void QVFbGraphicsSystemScreenPrivate::setDirty(const QRect &r)
+void QVFbScreenPrivate::setDirty(const QRect &r)
 {
     hdr->dirty = true;
     hdr->update = hdr->update.united(r);
 }
 
 
-bool QVFbGraphicsSystemScreenPrivate::connect(int displayId)
+bool QVFbScreenPrivate::connect(int displayId)
 {
 
     key_t key = ftok(QT_VFB_MOUSE_PIPE(displayId).toLatin1(), 'b');
@@ -339,12 +339,12 @@ bool QVFbGraphicsSystemScreenPrivate::connect(int displayId)
     qDebug("connected %dx%d %d bpp", w, h, d);
 
 
-    mouseHandler = new QVFbGraphicsSystemScreenMouseHandler;
-    keyboardHandler = new QVFbGraphicsSystemScreenKeyboardHandler;
+    mouseHandler = new QVFbScreenMouseHandler;
+    keyboardHandler = new QVFbScreenKeyboardHandler;
     return true;
 }
 
-void QVFbGraphicsSystemScreenPrivate::disconnect()
+void QVFbScreenPrivate::disconnect()
 {
     if ((long)shmrgn != -1 && shmrgn) {
         shmdt((char*)shmrgn);
@@ -357,78 +357,81 @@ void QVFbGraphicsSystemScreenPrivate::disconnect()
 }
 
 
-QVFbGraphicsSystemScreen::QVFbGraphicsSystemScreen()
+QVFbScreen::QVFbScreen()
 {
-    d_ptr = new QVFbGraphicsSystemScreenPrivate(this);
+    d_ptr = new QVFbScreenPrivate(this);
 }
 
 
-QVFbGraphicsSystemScreen::~QVFbGraphicsSystemScreen()
+QVFbScreen::~QVFbScreen()
 {
     delete d_ptr;
 }
 
-void QVFbGraphicsSystemScreen::setDirty(const QRect &rect)
+void QVFbScreen::setDirty(const QRect &rect)
 {
     d_ptr->setDirty(rect);
 }
 
 
 
-QRect QVFbGraphicsSystemScreen::geometry() const {
+QRect QVFbScreen::geometry() const {
     return QRect(QPoint(), d_ptr->screenSize());
 }
 
 
-int QVFbGraphicsSystemScreen::depth() const
+int QVFbScreen::depth() const
 {
     return d_ptr->depth();
 }
 
-QImage::Format QVFbGraphicsSystemScreen::format() const
+QImage::Format QVFbScreen::format() const
 {
     return d_ptr->format();
 }
 
-QSize QVFbGraphicsSystemScreen::physicalSize() const {
+QSize QVFbScreen::physicalSize() const {
     return (d_ptr->screenSize()*254)/720;
 }
 
 #if 0
-int QVFbGraphicsSystemScreen::linestep() const {
+int QVFbScreen::linestep() const {
     return d_ptr->screenImage() ? d_ptr->screenImage()->bytesPerLine() : 0;
 }
 
-uchar *QVFbGraphicsSystemScreen::base() const {
+uchar *QVFbScreen::base() const {
     return d_ptr->screenImage() ? d_ptr->screenImage()->bits() : 0;
 }
 #endif
 
-QImage *QVFbGraphicsSystemScreen::screenImage()
+QImage *QVFbScreen::screenImage()
 {
     return d_ptr->screenImage();
 }
 
-QVFbGraphicsSystem::QVFbGraphicsSystem()
+QVFbIntegration::QVFbIntegration()
 {
-    mPrimaryScreen = new QVFbGraphicsSystemScreen();
+    mPrimaryScreen = new QVFbScreen();
 
     mScreens.append(mPrimaryScreen);
 }
 
-QPixmapData *QVFbGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+QPixmapData *QVFbIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QVFbGraphicsSystem::createWindowSurface(QWidget *widget) const
+QWindowSurface *QVFbIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
-    return new QVFbWindowSurface
-        (const_cast<QVFbGraphicsSystem *>(this), mPrimaryScreen, widget);
+    return new QVFbWindowSurface(mPrimaryScreen, widget);
+}
+
+
+QPlatformWindow *QVFbIntegration::createPlatformWindow(QWidget *widget, WId) const
+{
+    return new QVFbWindow(mPrimaryScreen, widget);
 }
 
 QT_END_NAMESPACE
 
-#include "qgraphicssystem_qvfb.moc"
+#include "qvfbintegration.moc"

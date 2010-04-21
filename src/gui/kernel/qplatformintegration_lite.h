@@ -64,7 +64,8 @@ public:
 
 // GraphicsSystem functions
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+    virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
+    virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
     virtual QBlittable *createBlittable(const QSize &size) const;
 
 // Window System functions

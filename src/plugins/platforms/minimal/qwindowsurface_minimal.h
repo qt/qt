@@ -44,6 +44,8 @@
 
 #include <QtGui/private/qwindowsurface_p.h>
 
+#include <QtGui/QPlatformWindow>
+
 QT_BEGIN_NAMESPACE
 
 class QMinimalWindowSurface : public QWindowSurface
@@ -54,7 +56,7 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
+    void resize(const QSize &size);
 
 private:
     QImage mImage;

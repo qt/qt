@@ -69,11 +69,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLinuxFbPrivate
+class QLinuxFbIntegrationPrivate
 {
 public:
-    QLinuxFbPrivate();
-    ~QLinuxFbPrivate();
+    QLinuxFbIntegrationPrivate();
+    ~QLinuxFbIntegrationPrivate();
 
     void openTty();
     void closeTty();
@@ -94,7 +94,7 @@ public:
     QString displaySpec;
 };
 
-QLinuxFbPrivate::QLinuxFbPrivate()
+QLinuxFbIntegrationPrivate::QLinuxFbIntegrationPrivate()
     : fd(-1), blank(true), doGraphicsMode(true),
 #ifdef QT_QWS_DEPTH_GENERIC
       doGenericColors(false),
@@ -103,12 +103,12 @@ QLinuxFbPrivate::QLinuxFbPrivate()
 {
 }
 
-QLinuxFbPrivate::~QLinuxFbPrivate()
+QLinuxFbIntegrationPrivate::~QLinuxFbIntegrationPrivate()
 {
     closeTty();
 }
 
-void QLinuxFbPrivate::openTty()
+void QLinuxFbIntegrationPrivate::openTty()
 {
     const char *const devs[] = {"/dev/tty0", "/dev/tty", "/dev/console", 0};
 
@@ -139,7 +139,7 @@ void QLinuxFbPrivate::openTty()
     QT_WRITE(ttyfd, termctl, sizeof(termctl));
 }
 
-void QLinuxFbPrivate::closeTty()
+void QLinuxFbIntegrationPrivate::closeTty()
 {
     if (ttyfd == -1)
         return;
@@ -157,18 +157,19 @@ void QLinuxFbPrivate::closeTty()
 
 QLinuxFbIntegration::QLinuxFbIntegration()
 {
-    d_ptr = new QLinuxFbPrivate();
+    d_ptr = new QLinuxFbIntegrationPrivate();
 
     // XXX
     QString displaySpec = QString::fromLatin1(qgetenv("QWS_DISPLAY"));
 
     if (!connect(displaySpec))
-        qFatal("QLinuxFbGraphicsSystem: could not initialize screen");
+        qFatal("QLinuxFbIntegration: could not initialize screen");
     initDevice();
 
     // Create a QImage directly on the screen's framebuffer.
     // This is the blit target for copying windows to the screen.
-    mPrimaryScreen = new QLinuxFbScreen(data, w, h, lstep, screenFormat);
+    mPrimaryScreen = new QLinuxFbScreen(data, w, h, lstep,
+                                                      screenFormat);
     mPrimaryScreen->setPhysicalSize(QSize(physWidth, physHeight));
     mScreens.append(mPrimaryScreen);
 }
@@ -235,7 +236,7 @@ bool QLinuxFbIntegration::connect(const QString &displaySpec)
 
     /* Get fixed screen information */
     if (d_ptr->fd != -1 && ioctl(d_ptr->fd, FBIOGET_FSCREENINFO, &finfo)) {
-        perror("QLinuxFbGraphicsSystem::connect");
+        perror("QLinuxFbIntegration::connect");
         qWarning("Error reading fixed information");
         return false;
     }
@@ -247,7 +248,7 @@ bool QLinuxFbIntegration::connect(const QString &displaySpec)
 
     /* Get variable screen information */
     if (d_ptr->fd != -1 && ioctl(d_ptr->fd, FBIOGET_VSCREENINFO, &vinfo)) {
-        perror("QLinuxFbGraphicsSystem::connect");
+        perror("QLinuxFbIntegration::connect");
         qWarning("Error reading variable information");
         return false;
     }
@@ -293,7 +294,7 @@ bool QLinuxFbIntegration::connect(const QString &displaySpec)
     }
 
     if (w == 0 || h == 0) {
-        qWarning("QLinuxFbGraphicsSystem::connect(): Unable to find screen geometry, "
+        qWarning("QLinuxFbIntegration::connect(): Unable to find screen geometry, "
                  "will use 320x240.");
         dw = w = 320;
         dh = h = 240;
@@ -345,7 +346,7 @@ bool QLinuxFbIntegration::connect(const QString &displaySpec)
                                      MAP_SHARED, d_ptr->fd, 0);
 
     if ((long)data == -1) {
-        perror("QLinuxFbGraphicsSystem::connect");
+        perror("QLinuxFbIntegration::connect");
         qWarning("Error: failed to map framebuffer device to memory.");
         return false;
     } else {
@@ -375,7 +376,7 @@ bool QLinuxFbIntegration::connect(const QString &displaySpec)
         startcmap.transp=(unsigned short int *)
                     malloc(sizeof(unsigned short int)*screencols);
         if (d_ptr->fd == -1 || ioctl(d_ptr->fd, FBIOGETCMAP, &startcmap)) {
-            perror("QLinuxFbGraphicsSystem::connect");
+            perror("QLinuxFbIntegration::connect");
             qWarning("Error reading palette from framebuffer, using default palette");
             createPalette(startcmap, vinfo, finfo);
         }
@@ -784,14 +785,18 @@ QPixmapData *QLinuxFbIntegration::createPixmapData(QPixmapData::PixelType type) 
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget) const
+QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-    if (widget->windowType() == Qt::Desktop)
-        return 0;   // Don't create an explicit window surface for the destkop.
     QFbWindowSurface * surface =
         new QFbWindowSurface(mPrimaryScreen, widget);
-    mPrimaryScreen->addWindowSurface(surface);
     return surface;
+}
+
+QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
+{
+    QFbWindow *w = new QFbWindow(mPrimaryScreen, widget);
+    mPrimaryScreen->addWindow(w);
+    return w;
 }
 
 QLinuxFbScreen::QLinuxFbScreen(uchar * d, int w,
@@ -840,7 +845,7 @@ void QLinuxFbScreen::setFormat(QImage::Format format)
 QRegion QLinuxFbScreen::doRedraw()
 {
     QRegion touched;
-    touched = QFbPlatformScreen::doRedraw();
+    touched = QFbScreen::doRedraw();
 
     if (!compositePainter) {
         compositePainter = new QPainter(mFbScreenImage);

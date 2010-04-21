@@ -73,13 +73,13 @@ void QMinimalWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     mImage.save(filename);
 }
 
-void QMinimalWindowSurface::setGeometry(const QRect &rect)
+void QMinimalWindowSurface::resize(const QSize &size)
 {
     //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
-    QWindowSurface::setGeometry(rect);
+    QWindowSurface::resize(size);
     QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
-    if (mImage.size() != rect.size())
-        mImage = QImage(rect.size(), format);
+    if (mImage.size() != size)
+        mImage = QImage(size, format);
 }
 
 QT_END_NAMESPACE

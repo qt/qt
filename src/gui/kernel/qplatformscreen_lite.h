@@ -44,7 +44,7 @@
 
 #include <QtCore/qrect.h>
 #include <QtGui/qimage.h>
-#include <QObject>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -54,6 +54,7 @@ QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QPlatformScreen : public QObject
 {
+    Q_OBJECT
 public:
     virtual ~QPlatformScreen() { }
 
@@ -61,7 +62,7 @@ public:
     virtual QRect availableGeometry() const {return geometry();};
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
-    virtual QSize physicalSize() const = 0;
+    virtual QSize physicalSize() const;
     virtual void setDirty(const QRect &) {}
     virtual QWidget *topLevelAt(const QPoint &point) const;
 };

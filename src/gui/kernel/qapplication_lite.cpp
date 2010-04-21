@@ -422,6 +422,15 @@ static void init_platform(const QString &name)
 
 }
 
+
+static void cleanup_platform()
+{
+    delete QApplicationPrivate::platform_integration;
+    QApplicationPrivate::platform_integration = 0;
+    delete QApplicationPrivate::graphics_system;
+    QApplicationPrivate::graphics_system = 0;
+}
+
 static void init_plugins(const QList<QByteArray> pluginList)
 {
     for (int i = 0; i < pluginList.count(); ++i) {
@@ -520,6 +529,8 @@ void qt_init(QApplicationPrivate *priv, int type)
 
 void qt_cleanup()
 {
+    cleanup_platform();
+
     QPixmapCache::clear();
 #ifndef QT_NO_CURSOR
     QCursorData::cleanup();
@@ -767,6 +778,7 @@ void QApplicationPrivate::processGeometryChange(QWidget *tlw, const QRect &newRe
     if (isResize) {
         QResizeEvent e(tlw->data->crect.size(), cr.size());
         QApplication::sendSpontaneousEvent(tlw, &e);
+        tlw->update();
     }
 
     if (isMove) {
