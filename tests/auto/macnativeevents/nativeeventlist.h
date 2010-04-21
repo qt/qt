@@ -57,6 +57,7 @@ class NativeEventList : public QObject
 
     void append(QNativeEvent *event);
     void append(int waitMs, QNativeEvent *event = 0);
+    void append(int waitMs);
 
     void play(Playback playback = WaitUntilFinished);
     void stop();
