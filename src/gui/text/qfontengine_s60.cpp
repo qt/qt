@@ -221,9 +221,11 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
 
     HB_Glyph *g = glyphs->glyphs;
     const unsigned char* cmap = m_extensions->cmap();
+    const bool isRtl = (flags & QTextEngine::RightToLeft);
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(characters, i, len);
-        *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap, uc);
+        *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap,
+        		isRtl ? QChar::mirroredChar(uc) : uc);
     }
 
     glyphs->numGlyphs = g - glyphs->glyphs;
@@ -241,8 +243,8 @@ void QFontEngineS60::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
     Q_UNUSED(flags);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         const glyph_metrics_t bbox = boundingBox_const(glyphs->glyphs[i]);
-        glyphs->advances_x[i] = glyphs->offsets[i].x = bbox.xoff;
-        glyphs->advances_y[i] = glyphs->offsets[i].y = bbox.yoff;
+        glyphs->advances_x[i] = bbox.xoff;
+        glyphs->advances_y[i] = bbox.yoff;
     }
 }
 
