@@ -42,12 +42,12 @@
 #define PERSON_H
 
 #include <QObject>
-#include <qdeclarative.h>
 
-class Person : public QObject {
-Q_OBJECT
-Q_PROPERTY(QString name READ name WRITE setName)
-Q_PROPERTY(int shoeSize READ shoeSize WRITE setShoeSize)
+class Person : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(int shoeSize READ shoeSize WRITE setShoeSize)
 public:
     Person(QObject *parent = 0);
 
@@ -61,14 +61,16 @@ private:
     int m_shoeSize;
 };
 
-class Boy : public Person {
-Q_OBJECT
+class Boy : public Person
+{
+    Q_OBJECT
 public:
     Boy(QObject * parent = 0);
 };
 
-class Girl : public Person {
-Q_OBJECT
+class Girl : public Person
+{
+    Q_OBJECT
 public:
     Girl(QObject * parent = 0);
 };

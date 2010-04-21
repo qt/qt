@@ -38,44 +38,43 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "happybirthday.h"
-#include <QTimer>
+#ifndef HAPPYBIRTHDAYSONG_H
+#define HAPPYBIRTHDAYSONG_H
 
-HappyBirthday::HappyBirthday(QObject *parent)
-: QObject(parent), m_line(-1)
+#include <QDeclarativePropertyValueSource>
+#include <QDeclarativeProperty>
+#include <qdeclarative.h>
+
+#include <QStringList>
+
+// ![0]
+class HappyBirthdaySong : public QObject, public QDeclarativePropertyValueSource
 {
-    setName(QString());
-    QTimer *timer = new QTimer(this);
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(advance()));
-    timer->start(1000);
-}
+    Q_OBJECT
+    Q_INTERFACES(QDeclarativePropertyValueSource)
+// ![0]
+    Q_PROPERTY(QString name READ name WRITE setName)
+// ![1]
+public:
+    HappyBirthdaySong(QObject *parent = 0);
 
-void HappyBirthday::setTarget(const QDeclarativeProperty &p)
-{
-    m_target = p;
-}
+    virtual void setTarget(const QDeclarativeProperty &);
+// ![1]
 
-QString HappyBirthday::name() const
-{
-    return m_name;
-}
+    QString name() const;
+    void setName(const QString &);
 
-void HappyBirthday::setName(const QString &name)
-{
-    m_name = name;
+private slots:
+    void advance();
 
-    m_lyrics.clear();
-    m_lyrics << "Happy birthday to you,";
-    m_lyrics << "Happy birthday to you,";
-    m_lyrics << "Happy birthday dear " + m_name + ",";
-    m_lyrics << "Happy birthday to you!";
-    m_lyrics << "";
-}
-    
-void HappyBirthday::advance()
-{
-    m_line = (m_line + 1) % m_lyrics.count();
+private:
+    int m_line;
+    QStringList m_lyrics;
+    QDeclarativeProperty m_target;
+    QString m_name;
+// ![2]
+};
+// ![2]
 
-    m_target.write(m_lyrics.at(m_line));
-}
+#endif // HAPPYBIRTHDAYSONG_H
 
