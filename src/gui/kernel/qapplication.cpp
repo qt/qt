@@ -788,6 +788,10 @@ void QApplicationPrivate::construct(
     qt_gui_eval_init(application_type);
 #endif
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+    symbianInit();
+#endif
+
 #ifndef QT_NO_LIBRARY
     if(load_testability) {
         QLibrary testLib(QLatin1String("qttestability"));

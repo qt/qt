@@ -63,6 +63,7 @@
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
+#include <private/qlocale_p.h>
 
 #ifdef Q_OS_SYMBIAN
 #  include <exception>
@@ -521,6 +522,9 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
     QFactoryLoader::refreshAll();
 #endif
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+    d_func()->symbianInit();
+#endif
 }
 
 // ### move to QCoreApplicationPrivate constructor?
@@ -596,6 +600,15 @@ void QCoreApplication::init()
 
     qt_startup_hook();
 }
+
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+void QCoreApplicationPrivate::symbianInit()
+{
+    if (!environmentChangeNotifier)
+        environmentChangeNotifier.reset(new QEnvironmentChangeNotifier);
+}
+#endif
+
 
 /*!
     Destroys the QCoreApplication object.
