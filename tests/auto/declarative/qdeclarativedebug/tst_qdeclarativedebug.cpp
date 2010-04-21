@@ -276,6 +276,7 @@ void tst_QDeclarativeDebug::initTestCase()
 {
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
 
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3768...");
     qputenv("QML_DEBUG_SERVER_PORT", "3768");
     m_engine = new QDeclarativeEngine(this);
 
@@ -301,13 +302,14 @@ void tst_QDeclarativeDebug::initTestCase()
     }
     m_rootItem = qobject_cast<QDeclarativeItem*>(m_components.first());
 
-
     // add an extra context to test for multiple contexts
     QDeclarativeContext *context = new QDeclarativeContext(m_engine->rootContext(), this);
     context->setObjectName("tst_QDeclarativeDebug_childContext");
 
     m_conn = new QDeclarativeDebugConnection(this);
     m_conn->connectToHost("127.0.0.1", 3768);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
     Q_ASSERT(ok);
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
