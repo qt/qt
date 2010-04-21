@@ -221,9 +221,11 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
 
     HB_Glyph *g = glyphs->glyphs;
     const unsigned char* cmap = m_extensions->cmap();
+    const bool isRtl = (flags & QTextEngine::RightToLeft);
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(characters, i, len);
-        *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap, uc);
+        *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap,
+        		isRtl ? QChar::mirroredChar(uc) : uc);
     }
 
     glyphs->numGlyphs = g - glyphs->glyphs;
