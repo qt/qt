@@ -17,7 +17,7 @@ SOURCES = \
 target.path = $$[QT_INSTALL_DEMOS]/multimedia/player
 
 sources.files = $$SOURCES $$HEADERS
-sources.path = $$[QT_INSTALL_DEMOS]/multimedia/player
+sources.path = $$[QT_INSTALL_DEMOS]/multimedia/player player.pro
 
 INSTALLS += target sources
 
