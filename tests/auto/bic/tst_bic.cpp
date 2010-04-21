@@ -193,6 +193,7 @@ void tst_Bic::sizesAndVTables_data()
 #elif defined Q_OS_WIN && defined Q_CC_GNU
 #  define FILESUFFIX "win32-gcc-ia32"
 #else
+#  define FILESUFFIX "nonsuch"
     QSKIP("No reference files found for this platform", SkipAll);
 #endif
 
