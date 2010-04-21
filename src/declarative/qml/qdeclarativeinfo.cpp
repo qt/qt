@@ -80,92 +80,97 @@ QT_BEGIN_NAMESPACE
 
 struct QDeclarativeInfoPrivate
 {
+    QDeclarativeInfoPrivate() : ref (1), object(0) {}
+
+    int ref;
     const QObject *object;
-    QString *buffer;
+    QString buffer;
     QList<QDeclarativeError> errors;
 };
 
-QDeclarativeInfo::QDeclarativeInfo(const QObject *object)
-: QDebug((*(QString **)&d) = new QString)
+QDeclarativeInfo::QDeclarativeInfo(QDeclarativeInfoPrivate *p)
+: QDebug(&p->buffer), d(p)
 {
-    QDeclarativeInfoPrivate *p = new QDeclarativeInfoPrivate;
-    p->buffer = (QString *)d;
-    d = p;
-
-    d->object = object;
     nospace();
 }
 
-QDeclarativeInfo::QDeclarativeInfo(const QObject *object, const QList<QDeclarativeError> &errors)
-: QDebug((*(QString **)&d) = new QString)
+QDeclarativeInfo::QDeclarativeInfo(const QDeclarativeInfo &other)
+: QDebug(other), d(other.d)
 {
-    QDeclarativeInfoPrivate *p = new QDeclarativeInfoPrivate;
-    p->buffer = (QString *)d;
-    d = p;
-
-    d->object = object;
-    d->errors = errors;
-    nospace();
-}
-
-QDeclarativeInfo::QDeclarativeInfo(const QObject *object, const QDeclarativeError &error)
-: QDebug((*(QString **)&d) = new QString)
-{
-    QDeclarativeInfoPrivate *p = new QDeclarativeInfoPrivate;
-    p->buffer = (QString *)d;
-    d = p;
-
-    d->object = object;
-    d->errors << error;
-    nospace();
+    d->ref++;
 }
 
 QDeclarativeInfo::~QDeclarativeInfo()
 {
-    QList<QDeclarativeError> errors = d->errors;
+    if (0 == --d->ref) {
+        QList<QDeclarativeError> errors = d->errors;
 
-    QDeclarativeEngine *engine = 0;
+        QDeclarativeEngine *engine = 0;
 
-    if (!d->buffer->isEmpty()) {
-        QDeclarativeError error;
+        if (!d->buffer.isEmpty()) {
+            QDeclarativeError error;
 
-        QObject *object = const_cast<QObject *>(d->object);
+            QObject *object = const_cast<QObject *>(d->object);
 
-        if (object) {
-            engine = qmlEngine(d->object);
-            QString typeName;
-            QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
-            if (type) {
-                typeName = QLatin1String(type->qmlTypeName());
-                int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
-                if (lastSlash != -1)
-                    typeName = typeName.mid(lastSlash+1);
-            } else {
-                typeName = QString::fromUtf8(object->metaObject()->className());
-                int marker = typeName.indexOf(QLatin1String("_QMLTYPE_"));
-                if (marker != -1)
-                    typeName = typeName.left(marker);
+            if (object) {
+                engine = qmlEngine(d->object);
+                QString typeName;
+                QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
+                if (type) {
+                    typeName = QLatin1String(type->qmlTypeName());
+                    int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
+                    if (lastSlash != -1)
+                        typeName = typeName.mid(lastSlash+1);
+                } else {
+                    typeName = QString::fromUtf8(object->metaObject()->className());
+                    int marker = typeName.indexOf(QLatin1String("_QMLTYPE_"));
+                    if (marker != -1)
+                        typeName = typeName.left(marker);
+                }
+
+                d->buffer.prepend(QLatin1String("QML ") + typeName + QLatin1String(": "));
+
+                QDeclarativeData *ddata = QDeclarativeData::get(object, false);
+                if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty()) {
+                    error.setUrl(ddata->outerContext->url);
+                    error.setLine(ddata->lineNumber);
+                    error.setColumn(ddata->columnNumber);
+                }
             }
 
-            d->buffer->prepend(QLatin1String("QML ") + typeName + QLatin1String(": "));
+            error.setDescription(d->buffer);
 
-            QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty()) {
-                error.setUrl(ddata->outerContext->url);
-                error.setLine(ddata->lineNumber);
-                error.setColumn(ddata->columnNumber);
-            }
+            errors.prepend(error);
         }
 
-        error.setDescription(*d->buffer);
+        QDeclarativeEnginePrivate::warning(engine, errors);
 
-        errors.prepend(error);
+        delete d;
     }
-
-    QDeclarativeEnginePrivate::warning(engine, errors);
-
-    delete d->buffer;
-    delete d;
 }
+
+QDeclarativeInfo qmlInfo(const QObject *me)
+{
+    QDeclarativeInfoPrivate *d = new QDeclarativeInfoPrivate;
+    d->object = me;
+    return QDeclarativeInfo(d);
+}
+
+QDeclarativeInfo qmlInfo(const QObject *me, const QDeclarativeError &error)
+{
+    QDeclarativeInfoPrivate *d = new QDeclarativeInfoPrivate;
+    d->object = me;
+    d->errors << error;
+    return QDeclarativeInfo(d);
+}
+
+QDeclarativeInfo qmlInfo(const QObject *me, const QList<QDeclarativeError> &errors)
+{
+    QDeclarativeInfoPrivate *d = new QDeclarativeInfoPrivate;
+    d->object = me;
+    d->errors = errors;
+    return QDeclarativeInfo(d);
+}
+
 
 QT_END_NAMESPACE
