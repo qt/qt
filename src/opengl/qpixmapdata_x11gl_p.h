@@ -65,6 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QX11GLSharedContexts;
+
 class QX11GLPixmapData : public QX11PixmapData, public QGLPaintDevice
 {
 public:
@@ -84,11 +86,8 @@ public:
 
     static bool hasX11GLPixmaps();
     static QGLFormat glFormat();
+    static QX11GLSharedContexts* sharedContexts();
 
-#ifndef QT_NO_EGL
-    static QEglContext* rgbContext;
-    static QEglContext* argbContext;
-#endif
 private:
     mutable QGLContext* ctx;
 };
