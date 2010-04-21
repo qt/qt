@@ -326,6 +326,12 @@ void tst_qdeclarativelistmodel::dynamic_worker()
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script");
 
+        if (QByteArray(QTest::currentDataTag()).startsWith("nested-append")) {
+            int callsToGet = script.count(QLatin1String(";get("));
+            for (int i=0; i<callsToGet; i++)
+                QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: get: index 0 out of range");
+        }
+
         QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
                 Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
         waitForWorker(item);
