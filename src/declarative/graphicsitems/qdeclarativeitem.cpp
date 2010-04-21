@@ -1595,10 +1595,10 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
     }
 }
 
-void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e) 
+void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e)
 {
     QDeclarativeItem *item = static_cast<QDeclarativeItem*>(o);
-    if (e) 
+    if (e)
         e->connect(&item->d_func()->parentNotifier);
     *((QDeclarativeItem **)rv) = item->parentItem();
 }
@@ -2278,6 +2278,23 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
     sv.setProperty(QLatin1String("x"), p.x());
     sv.setProperty(QLatin1String("y"), p.y());
     return sv;
+}
+
+/*!
+    \qmlmethod Item::forceFocus()
+
+    Force the focus on the item.
+    This method sets the focus on the item and makes sure that all the focus scopes higher in the object hierarchy are given focus.
+*/
+void QDeclarativeItem::forceFocus()
+{
+    setFocus(true);
+    QGraphicsItem *parent = parentItem();
+    while (parent) {
+        if (parent->flags() & QGraphicsItem::ItemIsFocusScope)
+            parent->setFocus(Qt::OtherFocusReason);
+        parent = parent->parentItem();
+    }
 }
 
 void QDeclarativeItemPrivate::focusChanged(bool flag)
