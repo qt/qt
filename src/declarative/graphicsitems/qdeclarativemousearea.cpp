@@ -564,8 +564,10 @@ bool QDeclarativeMouseArea::sceneEvent(QEvent *event)
             // state
             d->pressed = false;
             setKeepMouseGrab(false);
+            QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, false);
+            emit released(&me);
             emit pressedChanged();
-            //emit hoveredChanged();
+            setHovered(false);
         }
     }
     return rv;
