@@ -164,4 +164,50 @@ bool QX11GLWindowSurface::scroll(const QRegion &area, int dx, int dy)
 }
 
 
+QPixmap QX11GLWindowSurface::grabWidget(const QWidget *widget, const QRect& rect) const
+{
+    if (!widget || m_backBuffer.isNull())
+        return QPixmap();
+
+    QRect srcRect;
+
+    // make sure the rect is inside the widget & clip to widget's rect
+    if (!rect.isEmpty())
+        srcRect = rect & widget->rect();
+    else
+        srcRect = widget->rect();
+
+    if (srcRect.isEmpty())
+        return QPixmap();
+
+    // If it's a child widget we have to translate the coordinates
+    if (widget != window())
+        srcRect.translate(widget->mapTo(window(), QPoint(0, 0)));
+
+    QPixmap::x11SetDefaultScreen(widget->x11Info().screen());
+
+    QX11PixmapData *pmd = new QX11PixmapData(QPixmapData::PixmapType);
+    pmd->resize(srcRect.width(), srcRect.height());
+    QPixmap px(pmd);
+
+    GC tmpGc = XCreateGC(X11->display, m_backBuffer.handle(), 0, 0);
+
+    // Make sure all GL rendering is complete before copying the window
+    QGLContext* ctx = static_cast<QX11GLPixmapData*>(m_backBuffer.pixmapData())->context();
+    if (QGLContext::currentContext() != ctx && ctx && ctx->isValid())
+        ctx->makeCurrent();
+    eglWaitClient();
+
+    // Copy srcRect from the backing store to the new pixmap
+    XSetGraphicsExposures(X11->display, tmpGc, False);
+    XCopyArea(X11->display, m_backBuffer.handle(), px.handle(), tmpGc,
+              srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height(), 0, 0);
+    XFreeGC(X11->display, tmpGc);
+
+    // Wait until the copy has finised before allowing more rendering into the back buffer
+    eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+
+    return px;
+}
+
 QT_END_NAMESPACE

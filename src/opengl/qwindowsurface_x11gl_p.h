@@ -68,6 +68,7 @@ public:
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void setGeometry(const QRect &rect);
     bool scroll(const QRegion &area, int dx, int dy);
+    QPixmap grabWidget(const QWidget *widget, const QRect& rectangle = QRect()) const;
 
 private:
     GC      m_windowGC;
