@@ -2809,25 +2809,6 @@ bool QDeclarativeCompiler::canCoerce(int to, QDeclarativeParser::Object *from)
     return false;
 }
 
-/*!
-    Returns true if from can be assigned to a (QObject) property of type
-    to.
-*/
-bool QDeclarativeCompiler::canCoerce(int to, int from)
-{
-    const QMetaObject *toMo = 
-        QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(to);
-    const QMetaObject *fromMo = 
-        QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(from);
-
-    while (fromMo) {
-        if (QDeclarativePropertyPrivate::equal(fromMo, toMo))
-            return true;
-        fromMo = fromMo->superClass();
-    }
-    return false;
-}
-
 QDeclarativeType *QDeclarativeCompiler::toQmlType(QDeclarativeParser::Object *from)
 {
     // ### Optimize
