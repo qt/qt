@@ -665,6 +665,7 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
         }
     }
 #else
+    bool modalWindowOnScreen = qApp->activeModalWidget() != 0;
     for (NSMenuItem *item in [menu itemArray]) {
         OSMenuRef submenu = [item submenu];
         if (submenu != merge) {
@@ -674,10 +675,20 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
                 // The item should follow what the QAction has.
                 if ([item tag]) {
                     QAction *action = reinterpret_cast<QAction *>([item tag]);
-                     syncNSMenuItemEnabled(item, action->isEnabled());
-                 } else {
-                     syncNSMenuItemEnabled(item, YES);
-                 }
+                    syncNSMenuItemEnabled(item, action->isEnabled());
+                } else {
+                    syncNSMenuItemEnabled(item, YES);
+                }
+                // We sneak in some extra code here to handle a menu problem:
+                // If there is no window on screen, we cannot set 'nil' as
+                // menu item target, because then cocoa will disable the item
+                // (guess it assumes that there will be no first responder to
+                // catch the trigger anyway?) OTOH, If we have a modal window,
+                // then setting the menu loader as target will make cocoa not
+                // deliver the trigger because the loader is then seen as modally
+                // shaddowed). So either way there are shortcomings. Instead, we
+                // decide the target as late as possible:
+                [item setTarget:modalWindowOnScreen ? nil : getMenuLoader()];
             } else {
                 syncNSMenuItemEnabled(item, NO);
             }

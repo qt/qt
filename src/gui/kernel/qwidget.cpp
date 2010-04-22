@@ -7307,9 +7307,9 @@ void QWidgetPrivate::show_helper()
     setVisible(false).
 
 
-    \note If you are working with QDialog or its subclasses and you invoke
-    the show() function after this function, the dialog will be displayed in
-    its original position.
+    \note Since Qt 4.7, when calling hide() and then show() on QDialog
+    derived widgets will show on the previous (as in "Where the user moved it to")
+    position.
 
     \sa hideEvent(), isHidden(), show(), setVisible(), isVisible(), close()
 */

@@ -63,6 +63,8 @@
 #define WTF_COMPILER_MSVC 1
 #if _MSC_VER < 1400
 #define WTF_COMPILER_MSVC7 1
+#elif _MSC_VER < 1600
+#define WTF_COMPILER_MSVC9 1
 #endif
 #endif
 

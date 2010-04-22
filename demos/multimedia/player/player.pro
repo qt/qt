@@ -3,7 +3,6 @@ TARGET = player
 
 QT += gui mediaservices
 
-
 HEADERS = \
     player.h \
     playercontrols.h \
@@ -18,5 +17,12 @@ SOURCES = \
     videowidget.cpp
 
 target.path = $$[QT_INSTALL_DEMOS]/multimedia/player
-INSTALLS += target
+sources.files = $$SOURCES $$HEADERS *.pro
+sources.path = $$[QT_INSTALL_DEMOS]/multimedia/player
+
+INSTALLS += target sources
+
+symbian {
+    TARGET.UID3 = 0xA000E3FA
+}
 

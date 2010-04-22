@@ -107,9 +107,7 @@ public Q_SLOTS:
 protected:
     QDialog(QDialogPrivate &, QWidget *parent, Qt::WindowFlags f = 0);
 
-#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
     bool event(QEvent *e);
-#endif
     void keyPressEvent(QKeyEvent *);
     void closeEvent(QCloseEvent *);
     void showEvent(QShowEvent *);

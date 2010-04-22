@@ -57,9 +57,10 @@ wince*{
 
 symbian {
     load(data_caging_paths)
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    RSS_RULES = # Clear RSS_RULES, otherwise fluidlauncher will get put into QtDemos folder
 
     TARGET.UID3 = 0xA000A641
-    ICON = $$QT_SOURCE_TREE/src/s60installs/qt.svg
 
     defineReplace(regResourceDir) {
         symbian-abld|symbian-sbsv2 {

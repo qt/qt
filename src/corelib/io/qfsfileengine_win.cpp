@@ -542,11 +542,13 @@ qint64 QFSFileEnginePrivate::nativeSize() const
             if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
                 QByteArray path = nativeFilePath;
                 // path for the FindFirstFile should not end with a trailing slash
-                while (path.endsWith('\\'))
-                    path.chop(1);
+                while (!path.isEmpty() && reinterpret_cast<const wchar_t *>(
+                                path.constData() + path.length())[-1] == '\\')
+                    path.chop(2);
 
                 // FindFirstFile can not handle drives
-                if (!path.endsWith(':')) {
+                if (!path.isEmpty() && reinterpret_cast<const wchar_t *>(
+                                path.constData() + path.length())[-1] != ':') {
                     WIN32_FIND_DATA findData;
                     HANDLE hFind = ::FindFirstFile((const wchar_t*)path.constData(),
                                                    &findData);

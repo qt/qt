@@ -452,7 +452,7 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
             QCOMPARE(index.column(), c);
             QCOMPARE(currentModel->data(index, Qt::DisplayRole).isValid(), true);
 
-            // If the next test fails here is some somewhat usefull debug you play with.
+            // If the next test fails here is some somewhat useful debug you play with.
             /*
             if (currentModel->parent(index) != parent) {
                 qDebug() << r << c << currentDepth << currentModel->data(index).toString()

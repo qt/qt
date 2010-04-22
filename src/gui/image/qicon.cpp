@@ -879,6 +879,25 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
 }
 
 /*!
+    \since 4.7
+
+    Returns the name used to create the icon, if available.
+
+    Depending on the way the icon was created, it may have an associated
+    name. This is the case for icons created with fromTheme() or icons
+    using a QIconEngine which supports the QIconEngineV2::IconNameHook.
+
+    \sa fromTheme(), QIconEngine
+*/
+QString QIcon::name() const
+{
+    if (!d || !d->engine || d->engine_version < 2)
+        return QString();
+    QIconEngineV2 *engine = static_cast<QIconEngineV2*>(d->engine);
+    return engine->iconName();
+}
+
+/*!
     \since 4.6
 
     Sets the search paths for icon themes to \a paths.

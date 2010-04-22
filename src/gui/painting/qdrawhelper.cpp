@@ -674,6 +674,11 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
     int image_width = data->texture.width;
     int image_height = data->texture.height;
 
+    int image_x1 = data->texture.x1;
+    int image_y1 = data->texture.y1;
+    int image_x2 = data->texture.x2;
+    int image_y2 = data->texture.y2;
+
     const qreal cx = x + 0.5;
     const qreal cy = y + 0.5;
 
@@ -708,17 +713,17 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 y2 = y1 + 1;
                 y2 %= image_height;
             } else {
-                if (x1 < 0) {
-                    x2 = x1 = 0;
-                } else if (x1 >= image_width - 1) {
-                    x2 = x1 = image_width - 1;
+                if (x1 < image_x1) {
+                    x2 = x1 = image_x1;
+                } else if (x1 >= image_x2 - 1) {
+                    x2 = x1 = image_x2 - 1;
                 } else {
                     x2 = x1 + 1;
                 }
-                if (y1 < 0) {
-                    y2 = y1 = 0;
-                } else if (y1 >= image_height - 1) {
-                    y2 = y1 = image_height - 1;
+                if (y1 < image_y1) {
+                    y2 = y1 = image_y1;
+                } else if (y1 >= image_y2 - 1) {
+                    y2 = y1 = image_y2 - 1;
                 } else {
                     y2 = y1 + 1;
                 }
