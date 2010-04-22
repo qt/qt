@@ -97,6 +97,7 @@ extern Q_GUI_EXPORT bool qt_win_owndc_required;
 QGLGraphicsSystem::QGLGraphicsSystem()
     : QGraphicsSystem()
 {
+    QGLWindowSurface::surfaceFormat.setSampleBuffers(true);
 #if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
     // only override the system defaults if the user hasn't already
     // picked a visual
