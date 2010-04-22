@@ -729,13 +729,15 @@ QObject::QObject(QObject *parent)
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    QT_TRY {
-        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-            parent = 0;
-        setParent(parent);
-    } QT_CATCH(...) {
-        d->threadData->deref();
-        QT_RETHROW;
+    if (parent) {
+        QT_TRY {
+            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+                parent = 0;
+            setParent(parent);
+        } QT_CATCH(...) {
+            d->threadData->deref();
+            QT_RETHROW;
+        }
     }
     qt_addObject(this);
 }
@@ -754,9 +756,11 @@ QObject::QObject(QObject *parent, const char *name)
     qt_addObject(d_ptr->q_ptr = this);
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-        parent = 0;
-    setParent(parent);
+    if (parent) {
+        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+            parent = 0;
+        setParent(parent);
+    }
     setObjectName(QString::fromAscii(name));
 }
 #endif
@@ -770,21 +774,23 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    QT_TRY {
-        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-            parent = 0;
-        if (d->isWidget) {
-            if (parent) {
-                d->parent = parent;
-                d->parent->d_func()->children.append(this);
+    if (parent) {
+        QT_TRY {
+            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+                parent = 0;
+            if (d->isWidget) {
+                if (parent) {
+                    d->parent = parent;
+                    d->parent->d_func()->children.append(this);
+                }
+                // no events sent here, this is done at the end of the QWidget constructor
+            } else {
+                setParent(parent);
             }
-            // no events sent here, this is done at the end of the QWidget constructor
-        } else {
-            setParent(parent);
+        } QT_CATCH(...) {
+            d->threadData->deref();
+            QT_RETHROW;
         }
-    } QT_CATCH(...) {
-        d->threadData->deref();
-        QT_RETHROW;
     }
     qt_addObject(this);
 }
