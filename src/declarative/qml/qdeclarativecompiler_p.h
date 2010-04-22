@@ -274,7 +274,6 @@ private:
 
     static QDeclarativeType *toQmlType(QDeclarativeParser::Object *from);
     bool canCoerce(int to, QDeclarativeParser::Object *from);
-    bool canCoerce(int to, int from);
 
     QStringList deferredProperties(QDeclarativeParser::Object *);
 

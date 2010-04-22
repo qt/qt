@@ -190,10 +190,10 @@ This function attempts to open the specified \c target url in an external applic
 This function returns a hex string of the md5 hash of \c data.
 
 \section3 Qt.btoa(data)
-This function returns a base64 encoding of \c data.
+Binary to ASCII - this function returns a base64 encoding of \c data.
 
 \section3 Qt.atob(data)
-This function returns a base64 decoding of \c data.
+ASCII to binary - this function returns a base64 decoding of \c data.
 
 \section3 Qt.quit()
 This function causes the QML engine to emit the quit signal, which in

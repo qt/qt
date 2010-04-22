@@ -74,6 +74,8 @@ private slots:
     void consoleLog();
     void formatting();
     void isQtObject();
+    void btoa();
+    void atob();
 
 private:
     QDeclarativeEngine engine;
@@ -102,8 +104,8 @@ void tst_qdeclarativeqt::rgba()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("rgba.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Error: expected 3 or 4 parameters";
-    QString warning2 = component.url().toString() + ":7: Error: expected 3 or 4 parameters";
+    QString warning1 = component.url().toString() + ":6: Error: Qt.rgba(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":7: Error: Qt.rgba(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -125,8 +127,8 @@ void tst_qdeclarativeqt::hsla()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("hsla.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Error: expected 3 or 4 parameters";
-    QString warning2 = component.url().toString() + ":7: Error: expected 3 or 4 parameters";
+    QString warning1 = component.url().toString() + ":6: Error: Qt.hsla(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":7: Error: Qt.hsla(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -147,8 +149,8 @@ void tst_qdeclarativeqt::rect()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("rect.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Error: expected 4 parameters";
-    QString warning2 = component.url().toString() + ":7: Error: expected 4 parameters";
+    QString warning1 = component.url().toString() + ":6: Error: Qt.rect(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":7: Error: Qt.rect(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -168,8 +170,8 @@ void tst_qdeclarativeqt::point()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("point.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Error: expected 2 parameters";
-    QString warning2 = component.url().toString() + ":7: Error: expected 2 parameters";
+    QString warning1 = component.url().toString() + ":6: Error: Qt.point(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":7: Error: Qt.point(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -188,8 +190,8 @@ void tst_qdeclarativeqt::size()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("size.qml"));
 
-    QString warning1 = component.url().toString() + ":7: Error: expected 2 parameters";
-    QString warning2 = component.url().toString() + ":8: Error: expected 2 parameters";
+    QString warning1 = component.url().toString() + ":7: Error: Qt.size(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":8: Error: Qt.size(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -209,8 +211,8 @@ void tst_qdeclarativeqt::vector()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vector.qml"));
 
-    QString warning1 = component.url().toString() + ":6: Error: expected 3 parameters";
-    QString warning2 = component.url().toString() + ":7: Error: expected 3 parameters";
+    QString warning1 = component.url().toString() + ":6: Error: Qt.vector(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":7: Error: Qt.vector(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -229,8 +231,8 @@ void tst_qdeclarativeqt::lighter()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("lighter.qml"));
 
-    QString warning1 = component.url().toString() + ":5: Error: expected 1 parameter";
-    QString warning2 = component.url().toString() + ":6: Error: expected 1 parameter";
+    QString warning1 = component.url().toString() + ":5: Error: Qt.lighter(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":6: Error: Qt.lighter(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -251,8 +253,8 @@ void tst_qdeclarativeqt::darker()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("darker.qml"));
 
-    QString warning1 = component.url().toString() + ":5: Error: expected 1 parameter";
-    QString warning2 = component.url().toString() + ":6: Error: expected 1 parameter";
+    QString warning1 = component.url().toString() + ":5: Error: Qt.darker(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":6: Error: Qt.darker(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -273,8 +275,8 @@ void tst_qdeclarativeqt::tint()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("tint.qml"));
 
-    QString warning1 = component.url().toString() + ":7: Error: expected 2 parameters";
-    QString warning2 = component.url().toString() + ":8: Error: expected 2 parameters";
+    QString warning1 = component.url().toString() + ":7: Error: Qt.tint(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":8: Error: Qt.tint(): Invalid arguments";
 
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
@@ -322,10 +324,13 @@ void tst_qdeclarativeqt::openUrlExternally()
 void tst_qdeclarativeqt::md5()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("md5.qml"));
+
+    QString warning1 = component.url().toString() + ":4: Error: Qt.md5(): Invalid arguments";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    QCOMPARE(object->property("test1").toString(), QLatin1String(QCryptographicHash::hash(QByteArray(), QCryptographicHash::Md5).toHex()));
     QCOMPARE(object->property("test2").toString(), QLatin1String(QCryptographicHash::hash("Hello World", QCryptographicHash::Md5).toHex()));
 
     delete object;
@@ -335,8 +340,8 @@ void tst_qdeclarativeqt::createComponent()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("createComponent.qml"));
 
-    QString warning1 = component.url().toString() + ":9: Error: expected 1 parameter";
-    QString warning2 = component.url().toString() + ":10: Error: expected 1 parameter";
+    QString warning1 = component.url().toString() + ":9: Error: Qt.createComponent(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":10: Error: Qt.createComponent(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -353,11 +358,11 @@ void tst_qdeclarativeqt::createQmlObject()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("createQmlObject.qml"));
 
-    QString warning1 = component.url().toString() + ":7: Error: expected 2 or 3 parameters";
+    QString warning1 = component.url().toString() + ":7: Error: Qt.createQmlObject(): Invalid arguments";
     QString warning2 = component.url().toString()+ ":10: Error: Qt.createQmlObject() failed to create object:     " + TEST_FILE("inline").toString() + ":2:10: Blah is not a type\n";
     QString warning3 = component.url().toString()+ ":11: Error: Qt.createQmlObject() failed to create object:     " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name\n";
-    QString warning4 = component.url().toString()+ ":9: Error: parent object not found";
-    QString warning5 = component.url().toString()+ ":8: Error: expected 2 or 3 parameters";
+    QString warning4 = component.url().toString()+ ":9: Error: Qt.createQmlObject(): Missing parent object";
+    QString warning5 = component.url().toString()+ ":8: Error: Qt.createQmlObject(): Invalid arguments";
     QString warning6 = "RunTimeError:  Qt.createQmlObject() failed to create object:     " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method\n";
 
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
@@ -429,6 +434,36 @@ void tst_qdeclarativeqt::isQtObject()
     QCOMPARE(object->property("test3").toBool(), false);
     QCOMPARE(object->property("test4").toBool(), false);
     QCOMPARE(object->property("test5").toBool(), false);
+
+    delete object;
+}
+
+void tst_qdeclarativeqt::btoa()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("btoa.qml"));
+
+    QString warning1 = component.url().toString() + ":4: Error: Qt.btoa(): Invalid arguments";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test2").toString(), QString("SGVsbG8gd29ybGQh"));
+
+    delete object;
+}
+
+void tst_qdeclarativeqt::atob()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("atob.qml"));
+
+    QString warning1 = component.url().toString() + ":4: Error: Qt.atob(): Invalid arguments";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test2").toString(), QString("Hello world!"));
 
     delete object;
 }

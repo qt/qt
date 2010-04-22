@@ -99,8 +99,12 @@ struct QDeclarativeMetaTypeData
     StringConverters stringConverters;
 
     struct ModuleInfo {
-        ModuleInfo(int maj, int min) : vmajor(maj), vminor(min) {}
-        int vmajor, vminor;
+        ModuleInfo(int major, int minor)
+            : vmajor_min(major), vminor_min(minor), vmajor_max(major), vminor_max(minor) {}
+        ModuleInfo(int major_min, int minor_min, int major_max, int minor_max)
+            : vmajor_min(major_min), vminor_min(minor_min), vmajor_max(major_max), vminor_max(minor_max) {}
+        int vmajor_min, vminor_min;
+        int vmajor_max, vminor_max;
     };
     typedef QHash<QByteArray, ModuleInfo> ModuleInfoHash;
     ModuleInfoHash modules;
@@ -544,9 +548,15 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     if (type.uri) {
         QByteArray mod(type.uri);
         QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(mod);
-        if (it == data->modules.end()
-                || ((*it).vmajor < type.versionMajor || ((*it).vmajor == type.versionMajor && (*it).vminor < type.versionMinor))) {
+        if (it == data->modules.end()) {
+            // New module
             data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo(type.versionMajor,type.versionMinor));
+        } else if ((*it).vmajor_max < type.versionMajor || ((*it).vmajor_max == type.versionMajor && (*it).vminor_max < type.versionMinor)) {
+            // Newer module
+            data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo((*it).vmajor_min, (*it).vminor_min, type.versionMajor, type.versionMinor));
+        } else if ((*it).vmajor_min > type.versionMajor || ((*it).vmajor_min == type.versionMajor && (*it).vminor_min > type.versionMinor)) {
+            // Older module
+            data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo(type.versionMajor, type.versionMinor, (*it).vmajor_min, (*it).vminor_min));
         }
     }
 
@@ -554,15 +564,23 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
 }
 
 /*
-    Have any types been registered for \a module with at least versionMajor.versionMinor.
+    Have any types been registered for \a module with at least versionMajor.versionMinor, and types
+    for \a module with at most versionMajor.versionMinor.
+
+    So if only 4.7 and 4.9 have been registered, 4.7,4.8, and 4.9 are valid, but not 4.6 nor 4.10.
+
+    Passing -1 for both \a versionMajor \a versionMinor will return true if any version is installed.
 */
 bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
 {
     QDeclarativeMetaTypeData *data = metaTypeData();
     QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
     return it != data->modules.end()
-        && ((*it).vmajor > versionMajor ||
-                ((*it).vmajor == versionMajor && (*it).vminor >= versionMinor));
+        && ((versionMajor<0 && versionMinor<0) ||
+                (((*it).vmajor_max > versionMajor ||
+                    ((*it).vmajor_max == versionMajor && (*it).vminor_max >= versionMinor))
+                && ((*it).vmajor_min < versionMajor ||
+                    ((*it).vmajor_min == versionMajor && (*it).vminor_min <= versionMinor))));
 }
 
 QObject *QDeclarativeMetaType::toQObject(const QVariant &v, bool *ok)
