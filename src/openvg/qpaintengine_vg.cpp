@@ -3292,7 +3292,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     ti.fontEngine->getGlyphPositions
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
-    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p, ti.renderFlags()))
         QPaintEngineEx::drawTextItem(p, textItem);
 #else
     // OpenGL 1.0 does not have support for VGFont and glyphs,
@@ -3308,7 +3308,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 }
 
  bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
-                                       QFontEngine *fontEngine, const QPointF &p)
+                                       QFontEngine *fontEngine, const QPointF &p, QTextItem::RenderFlags renderFlags)
  {
 #if !defined(QVG_NO_DRAW_GLYPHS)
     Q_D(QVGPaintEngine);
@@ -3361,7 +3361,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    if (ti.renderFlags() & QTextItem::RightToLeft) {
+    if (renderFlags & QTextItem::RightToLeft) {
         for (int index = numGlyphs - 1; index >= 0; --index)
             vgDrawGlyph(glyphCache->font, glyphs[index], VG_FILL_PATH, VG_TRUE);
     } else {
