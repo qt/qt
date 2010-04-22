@@ -432,6 +432,7 @@ private:
     friend class QGLFBOGLPaintDevice;
     friend class QGLPaintDevice;
     friend class QX11GLPixmapData;
+    friend class QX11GLSharedContexts;
 private:
     Q_DISABLE_COPY(QGLContext)
 };
