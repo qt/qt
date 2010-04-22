@@ -5907,9 +5907,9 @@ EXPORTS
 	_ZN7QActionD1Ev @ 5906 NONAME
 	_ZN7QActionD2Ev @ 5907 NONAME
 	_ZN7QBezier10fromPointsERK7QPointFS2_S2_S2_ @ 5908 NONAME
-	_ZN7QBezier17findIntersectionsERKS_S1_ @ 5909 NONAME
-	_ZN7QBezier17findIntersectionsERKS_S1_P7QVectorI5QPairIffEE @ 5910 NONAME
-	_ZN7QBezier20splitAtIntersectionsERS_ @ 5911 NONAME
+	_ZN7QBezier17findIntersectionsERKS_S1_ @ 5909 NONAME ABSENT
+	_ZN7QBezier17findIntersectionsERKS_S1_P7QVectorI5QPairIffEE @ 5910 NONAME ABSENT
+	_ZN7QBezier20splitAtIntersectionsERS_ @ 5911 NONAME ABSENT
 	_ZN7QBitmap8fromDataERK5QSizePKhN6QImage6FormatE @ 5912 NONAME
 	_ZN7QBitmap9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 5913 NONAME
 	_ZN7QBitmapC1ERK5QSize @ 5914 NONAME

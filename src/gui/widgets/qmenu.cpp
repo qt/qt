@@ -1834,7 +1834,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     QSize size = sizeHint();
     QRect screen;
 #ifndef QT_NO_GRAPHICSVIEW
-    bool isEmbedded = d->nearestGraphicsProxyWidget(this);
+    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
     if (isEmbedded)
         screen = d->popupGeometry(this);
     else
