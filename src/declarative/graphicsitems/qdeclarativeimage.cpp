@@ -221,7 +221,7 @@ qreal QDeclarativeImage::paintedHeight() const
 }
 
 /*!
-    \qmlproperty enum Image::status
+    \qmlproperty enumeration Image::status
 
     This property holds the status of image loading.  It can be one of:
     \list
@@ -236,9 +236,12 @@ qreal QDeclarativeImage::paintedHeight() const
     to react to the change in status you need to do it yourself, for example in one
     of the following ways:
     \list
-    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: image.status = Image.Ready;}
-    \o Do something inside the onStatusChanged signal handler, e.g. Image{id: image; onStatusChanged: if(image.status == Image.Ready) console.log('Loaded');}
-    \o Bind to the status variable somewhere, e.g. Text{text: if(image.status!=Image.Ready){'Not Loaded';}else{'Loaded';}}
+    \o Create a state, so that a state change occurs, e.g.
+    \qml State { name: 'loaded'; when: image.status = Image.Ready } \endqml
+    \o Do something inside the onStatusChanged signal handler, e.g.
+    \qml Image { id: image; onStatusChanged: if (image.status == Image.Ready) console.log('Loaded') } \endqml
+    \o Bind to the status variable somewhere, e.g.
+    \qml Text { text: if (image.status != Image.Ready) { 'Not Loaded' } else { 'Loaded' } } \endqml
     \endlist
 
     \sa progress
@@ -366,12 +369,27 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 
     if (width() != d->pix.width() || height() != d->pix.height()) {
         if (d->fillMode >= Tile) {
-            if (d->fillMode == Tile)
+            if (d->fillMode == Tile) {
                 p->drawTiledPixmap(QRectF(0,0,width(),height()), d->pix);
-            else if (d->fillMode == TileVertically)
-                p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
-            else
-                p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
+            } else {
+                qreal widthScale = width() / qreal(d->pix.width());
+                qreal heightScale = height() / qreal(d->pix.height());
+
+                QTransform scale;
+                if (d->fillMode == TileVertically) {
+                    scale.scale(widthScale, 1.0);
+                    QTransform old = p->transform();
+                    p->setWorldTransform(scale * old);
+                    p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
+                    p->setWorldTransform(old);
+                } else {
+                    scale.scale(1.0, heightScale);
+                    QTransform old = p->transform();
+                    p->setWorldTransform(scale * old);
+                    p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
+                    p->setWorldTransform(old);
+                }
+            }
         } else {
             qreal widthScale = width() / qreal(d->pix.width());
             qreal heightScale = height() / qreal(d->pix.height());

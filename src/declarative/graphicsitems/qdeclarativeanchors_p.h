@@ -83,18 +83,18 @@ public:
     QDeclarativeAnchors(QGraphicsObject *item, QObject *parent=0);
     virtual ~QDeclarativeAnchors();
 
-    enum UsedAnchor { 
-        HasLeftAnchor = 0x01,
-        HasRightAnchor = 0x02,
-        HasTopAnchor = 0x04,
-        HasBottomAnchor = 0x08,
-        HasHCenterAnchor = 0x10,
-        HasVCenterAnchor = 0x20,
-        HasBaselineAnchor = 0x40,
-        Horizontal_Mask = HasLeftAnchor | HasRightAnchor | HasHCenterAnchor,
-        Vertical_Mask = HasTopAnchor | HasBottomAnchor | HasVCenterAnchor | HasBaselineAnchor
+    enum Anchor {
+        LeftAnchor = 0x01,
+        RightAnchor = 0x02,
+        TopAnchor = 0x04,
+        BottomAnchor = 0x08,
+        HCenterAnchor = 0x10,
+        VCenterAnchor = 0x20,
+        BaselineAnchor = 0x40,
+        Horizontal_Mask = LeftAnchor | RightAnchor | HCenterAnchor,
+        Vertical_Mask = TopAnchor | BottomAnchor | VCenterAnchor | BaselineAnchor
     };
-    Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor)
+    Q_DECLARE_FLAGS(Anchors, Anchor)
 
     QDeclarativeAnchorLine left() const;
     void setLeft(const QDeclarativeAnchorLine &edge);
@@ -156,7 +156,7 @@ public:
     void setCenterIn(QGraphicsObject *);
     void resetCenterIn();
 
-    UsedAnchors usedAnchors() const;
+    Anchors usedAnchors() const;
 
     void classBegin();
     void componentComplete();
@@ -188,7 +188,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_widgetGeometryChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_widgetDestroyed(QObject *obj))
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeAnchors::UsedAnchors)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeAnchors::Anchors)
 
 QT_END_NAMESPACE
 

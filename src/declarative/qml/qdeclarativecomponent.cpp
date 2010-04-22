@@ -530,10 +530,8 @@ QScriptValue QDeclarativeComponent::createObject()
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
-    if(!ctxt){
-        qWarning() << QLatin1String("createObject can only be used in QML");
+    if(!ctxt)
         return QScriptValue();
-    }
     QObject* ret = create(ctxt);
     if (!ret)
         return QScriptValue();
@@ -613,17 +611,17 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 {
     Q_Q(QDeclarativeComponent);
     if (!context) {
-        qWarning("QDeclarativeComponent::beginCreate(): Cannot create a component in a null context");
+        qWarning("QDeclarativeComponent: Cannot create a component in a null context");
         return 0;
     }
 
     if (!context->isValid()) {
-        qWarning("QDeclarativeComponent::beginCreate(): Cannot create a component in an invalid context");
+        qWarning("QDeclarativeComponent: Cannot create a component in an invalid context");
         return 0;
     }
 
     if (context->engine != engine) {
-        qWarning("QDeclarativeComponent::beginCreate(): Must create component in context from the same QDeclarativeEngine");
+        qWarning("QDeclarativeComponent: Must create component in context from the same QDeclarativeEngine");
         return 0;
     }
 
@@ -766,7 +764,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
         enginePriv->inProgressCreations--;
         if (0 == enginePriv->inProgressCreations) {
             while (enginePriv->erroredBindings) {
-                qWarning().nospace() << qPrintable(enginePriv->erroredBindings->error.toString());
+                enginePriv->warning(enginePriv->erroredBindings->error);
                 enginePriv->erroredBindings->removeError();
             }
         }

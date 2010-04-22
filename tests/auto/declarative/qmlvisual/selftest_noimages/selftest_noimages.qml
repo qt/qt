@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 Text {
     property string error: "not pressed"
     text: (new Date()).valueOf()

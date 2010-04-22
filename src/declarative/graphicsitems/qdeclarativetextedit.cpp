@@ -614,7 +614,7 @@ void QDeclarativeTextEdit::loadCursorDelegate()
         d->cursor->setHeight(QFontMetrics(d->font).height());
         moveCursorDelegate();
     }else{
-        qWarning() << QLatin1String("Error loading cursor delegate for TextEdit:") + objectName();
+        qmlInfo(this) << "Error loading cursor delegate.";
     }
 }
 
@@ -1076,8 +1076,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
         q->selectionEndChanged();
     startChange = (lastSelectionStart != control->textCursor().selectionStart());
     endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
-    if(startChange || endChange)
-        qWarning() << "QDeclarativeTextEditPrivate::updateSelection() has failed you.";
 }
 
 void QDeclarativeTextEdit::updateSelectionMarkers()

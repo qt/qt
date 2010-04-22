@@ -89,8 +89,6 @@ QDeclarativeParser::Object::~Object()
         prop.first->release();
     foreach(const DynamicProperty &prop, dynamicProperties)
         if (prop.defaultValue) prop.defaultValue->release();
-    foreach(Object *obj, scriptBlockObjects)
-        obj->release();
 }
 
 void Object::setBindingBit(int b)

@@ -44,6 +44,7 @@
 
 #ifndef QT_NO_MOVIE
 
+#include <qdeclarativeinfo.h>
 #include <qdeclarativeengine.h>
 
 #include <QMovie>
@@ -213,7 +214,7 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
             //### should be unified with movieRequestFinished
             d->_movie = new QMovie(lf);
             if (!d->_movie->isValid()){
-                qWarning() << "Error Reading Animated Image File" << d->url;
+                qmlInfo(this) << "Error Reading Animated Image File " << d->url.toString();
                 delete d->_movie;
                 d->_movie = 0;
                 return;
@@ -270,7 +271,7 @@ void QDeclarativeAnimatedImage::movieRequestFinished()
 
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
-        qWarning() << "Error Reading Animated Image File " << d->url;
+        qmlInfo(this) << "Error Reading Animated Image File " << d->url;
         delete d->_movie;
         d->_movie = 0;
         return;
