@@ -97,13 +97,12 @@ protected:
     QDeclarativeExpression(QDeclarativeContextData *, void *, QDeclarativeRefCount *rc, 
                            QObject *me, const QString &, int, QDeclarativeExpressionPrivate &dd);
 
-private Q_SLOTS:
-    void __q_notify();
-
 private:
     QDeclarativeExpression(QDeclarativeContextData *, const QString &, QObject *);
 
+    Q_DISABLE_COPY(QDeclarativeExpression)
     Q_DECLARE_PRIVATE(QDeclarativeExpression)
+    Q_PRIVATE_SLOT(d_func(), void _q_notify())
     friend class QDeclarativeDebugger;
     friend class QDeclarativeContext;
     friend class QDeclarativeVME;

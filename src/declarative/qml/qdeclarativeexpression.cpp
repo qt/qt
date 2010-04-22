@@ -606,10 +606,9 @@ QDeclarativeError QDeclarativeExpression::error() const
 }
 
 /*! \internal */
-void QDeclarativeExpression::__q_notify()
+void QDeclarativeExpressionPrivate::_q_notify()
 {
-    Q_D(QDeclarativeExpression);
-    d->emitValueChanged();
+    emitValueChanged();
 }
 
 void QDeclarativeExpressionPrivate::clearGuards()
@@ -625,7 +624,7 @@ void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEn
 
     static int notifyIdx = -1;
     if (notifyIdx == -1) 
-        notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
+        notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("_q_notify()");
 
     if (properties.count() != data->guardListLength) {
         QDeclarativeNotifierEndpoint *newGuardList = 
@@ -771,3 +770,4 @@ bool QDeclarativeAbstractExpression::isValid() const
 
 QT_END_NAMESPACE
 
+#include <moc_qdeclarativeexpression.cpp>
