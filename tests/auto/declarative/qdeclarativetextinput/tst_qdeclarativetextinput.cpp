@@ -644,21 +644,38 @@ void tst_qdeclarativetextinput::echoMode()
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasFocus() == true);
     QString initial = input->text();
+    Qt::InputMethodHints ref;
     QCOMPARE(initial, QLatin1String("ABCDefgh"));
     QCOMPARE(input->echoMode(), QDeclarativeTextInput::Normal);
     QCOMPARE(input->displayText(), input->text());
+    //Normal
+    ref &= ~Qt::ImhHiddenText;
+    ref &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
     input->setEchoMode(QDeclarativeTextInput::NoEcho);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String(""));
     QCOMPARE(input->passwordCharacter(), QLatin1String("*"));
+    //NoEcho
+    ref |= Qt::ImhHiddenText;
+    ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
     input->setEchoMode(QDeclarativeTextInput::Password);
+    //Password
+    ref |= Qt::ImhHiddenText;
+    ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("********"));
+    QCOMPARE(input->inputMethodHints(), ref);
     input->setPasswordCharacter(QChar('Q'));
     QCOMPARE(input->passwordCharacter(), QLatin1String("Q"));
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
     input->setEchoMode(QDeclarativeTextInput::PasswordEchoOnEdit);
+    //PasswordEchoOnEdit
+    ref &= ~Qt::ImhHiddenText;
+    ref |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    QCOMPARE(input->inputMethodHints(), ref);
     QCOMPARE(input->text(), initial);
     QCOMPARE(input->displayText(), QLatin1String("QQQQQQQQ"));
     QTest::keyPress(canvas, Qt::Key_A);//Clearing previous entry is part of PasswordEchoOnEdit

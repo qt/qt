@@ -63,6 +63,7 @@
 #include <QGraphicsEffect>
 #include <QInputContext>
 #include <QPushButton>
+#include <QLineEdit>
 
 #include "../../shared/util.h"
 
@@ -945,8 +946,52 @@ class ImhTester : public QGraphicsItem
 
 void tst_QGraphicsItem::inputMethodHints()
 {
-    ImhTester item;
-    QCOMPARE(item.inputMethodHints(), Qt::ImhNone);
+    ImhTester *item = new ImhTester;
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    item->setFlag(QGraphicsItem::ItemIsFocusable, true);
+    QCOMPARE(item->inputMethodHints(), Qt::ImhNone);
+    ImhTester *item2 = new ImhTester;
+    item2->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable, true);
+    Qt::InputMethodHints imHints = item2->inputMethodHints();
+    imHints |= Qt::ImhHiddenText;
+    item2->setInputMethodHints(imHints);
+    QGraphicsScene scene;
+    scene.addItem(item);
+    scene.addItem(item2);
+    QGraphicsView view(&scene);
+    QApplication::setActiveWindow(&view);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    item->setFocus();
+    QTRY_VERIFY(item->hasFocus());
+    QCOMPARE(view.inputMethodHints(), item->inputMethodHints());
+    item2->setFocus();
+    QTRY_VERIFY(item2->hasFocus());
+    QCOMPARE(view.inputMethodHints(), item2->inputMethodHints());
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
+    item->setFocus();
+    QTRY_VERIFY(item->hasFocus());
+    //Focus has changed but the new item doesn't accept input method, no hints.
+    QCOMPARE(view.inputMethodHints(), 0);
+    item2->setFocus();
+    QTRY_VERIFY(item2->hasFocus());
+    QCOMPARE(view.inputMethodHints(), item2->inputMethodHints());
+    imHints = item2->inputMethodHints();
+    imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    item2->setInputMethodHints(imHints);
+    QCOMPARE(view.inputMethodHints(), item2->inputMethodHints());
+    QGraphicsProxyWidget *widget = new QGraphicsProxyWidget;
+    QLineEdit *edit = new QLineEdit;
+    edit->setEchoMode(QLineEdit::Password);
+    scene.addItem(widget);
+    widget->setFocus();
+    QTRY_VERIFY(widget->hasFocus());
+    //No widget on the proxy, so no hints
+    QCOMPARE(view.inputMethodHints(), 0);
+    widget->setWidget(edit);
+    //View should match with the line edit
+    QCOMPARE(view.inputMethodHints(), edit->inputMethodHints());
 }
 
 void tst_QGraphicsItem::toolTip()
@@ -10055,6 +10100,9 @@ void tst_QGraphicsItem::updateMicroFocus()
     QApplication::setActiveWindow(&parent);
     QTest::qWaitForWindowShown(&parent);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
+    //We reset the number of updates that happened previously (initialisation)
+    ic.nbUpdates = 0;
+    ic2.nbUpdates = 0;
     input.doUpdateMicroFocus();
     QApplication::processEvents();
     QTRY_COMPARE(ic.nbUpdates, 1);
