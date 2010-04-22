@@ -1914,7 +1914,7 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
 
         case QPainterPath::MoveToElement:
             if (i > 0
-                && qFuzzyCompare(last_pt.x(), last_start.y())
+                && qFuzzyCompare(last_pt.x(), last_start.x())
                 && qFuzzyCompare(last_pt.y(), last_start.y())
                 && qt_painterpath_isect_line_rect(last_pt.x(), last_pt.y(),
                                                   last_start.x(), last_start.y(), rect))
