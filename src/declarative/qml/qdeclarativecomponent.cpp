@@ -67,14 +67,14 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
 
 /*!
     \class QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeComponent class encapsulates a QML component description.
     \mainclass
 */
 
 /*!
     \qmlclass Component QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The Component element encapsulates a QML component description.
 
     Components are reusable, encapsulated Qml element with a well-defined interface.
@@ -86,26 +86,26 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
     file containing it.
 
     \qml
-Item {
-    Component {
-        id: redSquare
-        Rectangle {
-            color: "red"
-            width: 10
-            height: 10
+    Item {
+        Component {
+            id: redSquare
+            Rectangle {
+                color: "red"
+                width: 10
+                height: 10
+            }
         }
+        Loader { sourceComponent: redSquare }
+        Loader { sourceComponent: redSquare; x: 20 }
     }
-    Loader { sourceComponent: redSquare }
-    Loader { sourceComponent: redSquare; x: 20 }
-}
     \endqml
+*/
 
-    \section1 Attached Properties
-
-    \e onCompleted
+/*!
+    \qmlattachedsignal Component::onCompleted()
 
     Emitted after component "startup" has completed.  This can be used to
-    execute script code at startup, once the full QML environment has been 
+    execute script code at startup, once the full QML environment has been
     established.
 
     The \c {Component::onCompleted} attached property can be applied to
@@ -120,8 +120,10 @@ Item {
         }
     }
     \endqml
+*/
 
-    \e onDestruction
+/*!
+    \qmlattachedsignal Component::onDestruction()
 
     Emitted as the component begins destruction.  This can be used to undo
     work done in the onCompleted signal, or other imperative code in your
@@ -129,7 +131,7 @@ Item {
 
     The \c {Component::onDestruction} attached property can be applied to
     any element.  However, it applies to the destruction of the component as
-    a whole, and not the destruction of the specific object.  The order of 
+    a whole, and not the destruction of the specific object.  The order of
     running the \c onDestruction scripts is undefined.
 
     \qml
