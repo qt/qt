@@ -381,7 +381,7 @@ void tst_qdeclarativeecmascript::basicExpressions()
     nestedContext.setContextProperty("millipedeLegs", QVariant(100));
 
     MyExpression expr(nest?&nestedContext:&context, expression);
-    QCOMPARE(expr.value(), result);
+    QCOMPARE(expr.evaluate(), result);
 }
 
 void tst_qdeclarativeecmascript::arrayExpressions()
@@ -396,7 +396,7 @@ void tst_qdeclarativeecmascript::arrayExpressions()
     context.setContextProperty("c", &obj3);
 
     MyExpression expr(&context, "[a, b, c, 10]");
-    QVariant result = expr.value();
+    QVariant result = expr.evaluate();
     QCOMPARE(result.userType(), qMetaTypeId<QList<QObject *> >());
     QList<QObject *> list = qvariant_cast<QList<QObject *> >(result);
     QCOMPARE(list.count(), 4);
@@ -424,47 +424,47 @@ void tst_qdeclarativeecmascript::contextPropertiesTriggerReeval()
     { 
         MyExpression expr(&context, "testProp + 1");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant(2));
+        QCOMPARE(expr.evaluate(), QVariant(2));
 
         context.setContextProperty("testProp", QVariant(2));
         QCOMPARE(expr.changed, true);
-        QCOMPARE(expr.value(), QVariant(3));
+        QCOMPARE(expr.evaluate(), QVariant(3));
     }
 
     { 
         MyExpression expr(&context, "testProp + testProp + testProp");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant(6));
+        QCOMPARE(expr.evaluate(), QVariant(6));
 
         context.setContextProperty("testProp", QVariant(4));
         QCOMPARE(expr.changed, true);
-        QCOMPARE(expr.value(), QVariant(12));
+        QCOMPARE(expr.evaluate(), QVariant(12));
     }
 
     { 
         MyExpression expr(&context, "testObj.stringProperty");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant("Hello"));
+        QCOMPARE(expr.evaluate(), QVariant("Hello"));
 
         context.setContextProperty("testObj", &object2);
         QCOMPARE(expr.changed, true);
-        QCOMPARE(expr.value(), QVariant("World"));
+        QCOMPARE(expr.evaluate(), QVariant("World"));
     }
 
     { 
         MyExpression expr(&context, "testObj.stringProperty /**/");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant("World"));
+        QCOMPARE(expr.evaluate(), QVariant("World"));
 
         context.setContextProperty("testObj", &object1);
         QCOMPARE(expr.changed, true);
-        QCOMPARE(expr.value(), QVariant("Hello"));
+        QCOMPARE(expr.evaluate(), QVariant("Hello"));
     }
 
     { 
         MyExpression expr(&context, "testObj2");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant::fromValue((QObject *)object3));
+        QCOMPARE(expr.evaluate(), QVariant::fromValue((QObject *)object3));
     }
 
 }
@@ -484,42 +484,42 @@ void tst_qdeclarativeecmascript::objectPropertiesTriggerReeval()
     { 
         MyExpression expr(&context, "testObj.stringProperty");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant("Hello"));
+        QCOMPARE(expr.evaluate(), QVariant("Hello"));
 
         object1.setStringProperty(QLatin1String("World"));
         QCOMPARE(expr.changed, true);
-        QCOMPARE(expr.value(), QVariant("World"));
+        QCOMPARE(expr.evaluate(), QVariant("World"));
     }
 
     { 
         MyExpression expr(&context, "testObj.objectProperty.stringProperty");
         QCOMPARE(expr.changed, false);
-        QCOMPARE(expr.value(), QVariant());
+        QCOMPARE(expr.evaluate(), QVariant());
 
         object1.setObjectProperty(&object2);
         QCOMPARE(expr.changed, true);
         expr.changed = false;
-        QCOMPARE(expr.value(), QVariant("Dog"));
+        QCOMPARE(expr.evaluate(), QVariant("Dog"));
 
         object1.setObjectProperty(&object3);
         QCOMPARE(expr.changed, true);
         expr.changed = false;
-        QCOMPARE(expr.value(), QVariant("Cat"));
+        QCOMPARE(expr.evaluate(), QVariant("Cat"));
 
         object1.setObjectProperty(0);
         QCOMPARE(expr.changed, true);
         expr.changed = false;
-        QCOMPARE(expr.value(), QVariant());
+        QCOMPARE(expr.evaluate(), QVariant());
 
         object1.setObjectProperty(&object3);
         QCOMPARE(expr.changed, true);
         expr.changed = false;
-        QCOMPARE(expr.value(), QVariant("Cat"));
+        QCOMPARE(expr.evaluate(), QVariant("Cat"));
 
         object3.setStringProperty("Donkey");
         QCOMPARE(expr.changed, true);
         expr.changed = false;
-        QCOMPARE(expr.value(), QVariant("Donkey"));
+        QCOMPARE(expr.evaluate(), QVariant("Donkey"));
     }
 }
 

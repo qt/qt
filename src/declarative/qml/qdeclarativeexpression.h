@@ -86,7 +86,7 @@ public:
     void clearError();
     QDeclarativeError error() const;
 
-    QVariant value(bool *isUndefined = 0);
+    QVariant evaluate(bool *valueIsUndefined = 0);
 
 Q_SIGNALS:
     void valueChanged();
