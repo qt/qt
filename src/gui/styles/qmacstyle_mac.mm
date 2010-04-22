@@ -5616,6 +5616,57 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
          // hack to work around horrible sizeHint() code in QAbstractSpinBox
         sz.setHeight(sz.height() - 3);
         break;
+	case QStyle::CT_TabWidget:
+        // the size between the pane and the "contentsRect" (+4,+4)
+        // (the "contentsRect" is on the inside of the pane)
+        sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
+        /**
+            This is supposed to show the relationship between the tabBar and
+            the stack widget of a QTabWidget.
+            Unfortunately ascii is not a good way of representing graphics.....
+            PS: The '=' line is the painted frame.
+
+               top    ---+
+                         |
+                         |
+                         |
+                         |                vvv just outside the painted frame is the "pane"
+                      - -|- - - - - - - - - - <-+
+            TAB BAR      +=====^============    | +2 pixels
+                    - - -|- - -|- - - - - - - <-+
+                         |     |      ^   ^^^ just inside the painted frame is the "contentsRect"
+                         |     |      |
+                         |   overlap  |
+                         |     |      |
+            bottom ------+   <-+     +14 pixels
+                                      |
+                                      v
+                ------------------------------  <- top of stack widget
+
+
+        To summarize: 
+             * 2 is the distance between the pane and the contentsRect 
+             * The 14 and the 1's are the distance from the contentsRect to the stack widget.
+               (same value as used in SE_TabWidgetTabContents)
+             * overlap is how much the pane should overlap the tab bar
+        */	
+        // then add the size between the stackwidget and the "contentsRect"
+
+        if (const QStyleOptionTabWidgetFrame *twf
+                = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
+            QSize extra(0,0);
+            const int overlap = pixelMetric(PM_TabBarBaseOverlap, opt, widget);
+            const int gapBetweenTabbarAndStackWidget = 2 + 14 - overlap;
+
+            if (getTabDirection(twf->shape) == kThemeTabNorth || getTabDirection(twf->shape) == kThemeTabSouth) {
+                extra = QSize(2, gapBetweenTabbarAndStackWidget + 1);
+            } else {
+                extra = QSize(gapBetweenTabbarAndStackWidget + 1, 2);
+            }
+            sz+= extra;
+        }
+
+        break;
     case QStyle::CT_TabBarTab:
         if (const QStyleOptionTabV3 *tab = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
             const QAquaWidgetSize AquaSize = d->aquaSizeConstrain(opt, widget);
