@@ -41,7 +41,7 @@
 
 #include "private/qdeclarativeflickable_p.h"
 #include "private/qdeclarativeflickable_p_p.h"
-
+#include <qdeclarativeinfo.h>
 #include <QGraphicsSceneMouseEvent>
 #include <QPointer>
 #include <QTimer>
@@ -125,12 +125,13 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
   : viewport(new QDeclarativeItem)
     , hData(this, &QDeclarativeFlickablePrivate::setRoundedViewportX)
     , vData(this, &QDeclarativeFlickablePrivate::setRoundedViewportY)
-    , overShoot(true), flicked(false), moving(false), stealMouse(false)
+    , flicked(false), moving(false), stealMouse(false)
     , pressed(false)
     , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
     , vTime(0), visibleArea(0)
     , flickDirection(QDeclarativeFlickable::AutoFlickDirection)
+    , boundsBehavior(QDeclarativeFlickable::DragAndOvershootBounds)
 {
 }
 
@@ -203,6 +204,7 @@ void QDeclarativeFlickablePrivate::flick(AxisData &data, qreal minExtent, qreal 
 {
     Q_Q(QDeclarativeFlickable);
     qreal maxDistance = -1;
+    bool overShoot = boundsBehavior == QDeclarativeFlickable::DragAndOvershootBounds;
     // -ve velocity means list is moving up
     if (velocity > 0) {
         if (data.move.value() < minExtent)
@@ -646,7 +648,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                 newY = minY + (newY - minY) / 2;
             if (newY < maxY && maxY - minY <= 0)
                 newY = maxY + (newY - maxY) / 2;
-            if (!q->overShoot() && (newY > minY || newY < maxY)) {
+            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && (newY > minY || newY < maxY)) {
                 if (newY > minY)
                     newY = minY;
                 else if (newY < maxY)
@@ -673,7 +675,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                 newX = minX + (newX - minX) / 2;
             if (newX < maxX && maxX - minX <= 0)
                 newX = maxX + (newX - maxX) / 2;
-            if (!q->overShoot() && (newX > minX || newX < maxX)) {
+            if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && (newX > minX || newX < maxX)) {
                 if (newX > minX)
                     newX = minX;
                 else if (newX < maxX)
@@ -997,28 +999,58 @@ QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildr
     return QGraphicsItemPrivate::get(d->viewport)->childrenList();
 }
 
-/*!
-    \qmlproperty bool Flickable::overShoot
-    This property holds whether the surface may overshoot the
-    Flickable's boundaries when flicked.
-
-    If overShoot is true the contents can be flicked beyond the boundary
-    of the Flickable before being moved back to the boundary.  This provides
-    the feeling that the edges of the view are soft, rather than a hard
-    physical boundary.
-*/
 bool QDeclarativeFlickable::overShoot() const
 {
     Q_D(const QDeclarativeFlickable);
-    return d->overShoot;
+    return d->boundsBehavior == DragAndOvershootBounds;
 }
 
 void QDeclarativeFlickable::setOverShoot(bool o)
 {
     Q_D(QDeclarativeFlickable);
-    if (d->overShoot == o)
+    if ((o && d->boundsBehavior == DragAndOvershootBounds)
+        || (!o && d->boundsBehavior == StopAtBounds))
         return;
-    d->overShoot = o;
+    qmlInfo(this) << "overshoot is deprecated and will be removed imminently - use boundsBehavior.";
+    d->boundsBehavior = o ? DragAndOvershootBounds : StopAtBounds;
+    emit boundsBehaviorChanged();
+    emit overShootChanged();
+}
+
+/*!
+    \qmlproperty enumeration Flickable::boundsBehavior
+    This property holds whether the surface may be dragged
+    beyond the Fickable's boundaries, or overshoot the
+    Flickable's boundaries when flicked.
+
+    This enables the feeling that the edges of the view are soft,
+    rather than a hard physical boundary.
+
+    boundsBehavior can be one of:
+
+    \list
+    \o \e StopAtBounds - the contents can not be dragged beyond the boundary
+    of the flickable, and flicks will not overshoot.
+    \o \e DragOverBounds - the contents can be dragged beyond the boundary
+    of the Flickable, but flicks will not overshoot.
+    \o \e DragAndOvershootBounds (default) - the contents can be dragged
+    beyond the boundary of the Flickable, and can overshoot the
+    boundary when flicked.
+    \endlist
+*/
+QDeclarativeFlickable::BoundsBehavior QDeclarativeFlickable::boundsBehavior() const
+{
+    Q_D(const QDeclarativeFlickable);
+    return d->boundsBehavior;
+}
+
+void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
+{
+    Q_D(QDeclarativeFlickable);
+    if (b == d->boundsBehavior)
+        return;
+    d->boundsBehavior = b;
+    emit boundsBehaviorChanged();
     emit overShootChanged();
 }
 
