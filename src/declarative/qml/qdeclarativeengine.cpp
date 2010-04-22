@@ -986,7 +986,7 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
     Q_ASSERT(context);
 
     if(ctxt->argumentCount() != 1) {
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 1 parameter"));
+        return ctxt->throwError("Qt.createComponent(): Invalid arguments");
     }else{
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
@@ -1006,7 +1006,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     QDeclarativeEngine* activeEngine = activeEnginePriv->q_func();
 
     if(ctxt->argumentCount() < 2 || ctxt->argumentCount() > 3)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 2 or 3 parameters"));
+        return ctxt->throwError("Qt.createQmlObject(): Invalid arguments");
 
     QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
     Q_ASSERT(context);
@@ -1026,7 +1026,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
 
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     if(!parentArg)
-        return ctxt->throwError(QDeclarativeEngine::tr("parent object not found"));
+        return ctxt->throwError("Qt.createQmlObject(): Missing parent object");
 
     QDeclarativeComponent component(activeEngine);
     component.setData(qml.toUtf8(), url);
@@ -1051,7 +1051,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     }
 
     if (!component.isReady())
-        return ctxt->throwError(QDeclarativeEngine::tr("Qt.createQmlObject(): component is not ready"));
+        return ctxt->throwError("Qt.createQmlObject(): Component is not ready");
 
     QObject *obj = component.create(context->asQDeclarativeContext());
 
@@ -1097,7 +1097,7 @@ QScriptValue QDeclarativeEnginePrivate::isQtObject(QScriptContext *ctxt, QScript
 QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 3)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 3 parameters"));
+        return ctxt->throwError("Qt.vector(): Invalid arguments");
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
@@ -1108,7 +1108,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
 {
     int argCount = ctxt->argumentCount();
     if(argCount == 0 || argCount > 2)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 1 or 2 parameters"));
+        return ctxt->throwError("Qt.formatDate(): Invalid arguments");
 
     QDate date = ctxt->argument(0).toDateTime().date();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
@@ -1118,8 +1118,9 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
             return engine->newVariant(qVariantFromValue(date.toString(format)));
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
-        } else
-            return ctxt->throwError(QDeclarativeEngine::tr("invalid date format"));
+        } else {
+            return ctxt->throwError("Qt.formatDate(): Invalid date format");
+        }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
@@ -1128,7 +1129,7 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
 {
     int argCount = ctxt->argumentCount();
     if(argCount == 0 || argCount > 2)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 1 or 2 parameters"));
+        return ctxt->throwError("Qt.formatTime(): Invalid arguments");
 
     QTime date = ctxt->argument(0).toDateTime().time();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
@@ -1138,8 +1139,9 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
             return engine->newVariant(qVariantFromValue(date.toString(format)));
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
-        } else
-            return ctxt->throwError(QDeclarativeEngine::tr("invalid time format"));
+        } else {
+            return ctxt->throwError("Qt.formatTime(): Invalid time format");
+        }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
@@ -1148,7 +1150,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
 {
     int argCount = ctxt->argumentCount();
     if(argCount == 0 || argCount > 2)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 1 or 2 parameters"));
+        return ctxt->throwError("Qt.formatDateTime(): Invalid arguments");
 
     QDateTime date = ctxt->argument(0).toDateTime();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
@@ -1158,8 +1160,9 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
             return engine->newVariant(qVariantFromValue(date.toString(format)));
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
-        } else
-            return ctxt->throwError(QDeclarativeEngine::tr("invalid datetiem format"));
+        } else { 
+            return ctxt->throwError("Qt.formatDateTime(): Invalid datetime formate");
+        }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
@@ -1168,7 +1171,7 @@ QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine
 {
     int argCount = ctxt->argumentCount();
     if(argCount < 3 || argCount > 4)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 3 or 4 parameters"));
+        return ctxt->throwError("Qt.rgba(): Invalid arguments");
     qsreal r = ctxt->argument(0).toNumber();
     qsreal g = ctxt->argument(1).toNumber();
     qsreal b = ctxt->argument(2).toNumber();
@@ -1190,7 +1193,7 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
 {
     int argCount = ctxt->argumentCount();
     if(argCount < 3 || argCount > 4)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 3 or 4 parameters"));
+        return ctxt->throwError("Qt.hsla(): Invalid arguments");
     qsreal h = ctxt->argument(0).toNumber();
     qsreal s = ctxt->argument(1).toNumber();
     qsreal l = ctxt->argument(2).toNumber();
@@ -1211,7 +1214,7 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
 QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 4)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 4 parameters"));
+        return ctxt->throwError("Qt.rect(): Invalid arguments");
 
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
@@ -1227,7 +1230,7 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
 QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 2)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 2 parameters"));
+        return ctxt->throwError("Qt.point(): Invalid arguments");
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     return qScriptValueFromValue(engine, qVariantFromValue(QPointF(x, y)));
@@ -1236,7 +1239,7 @@ QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngin
 QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 2)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 2 parameters"));
+        return ctxt->throwError("Qt.size(): Invalid arguments");
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
     return qScriptValueFromValue(engine, qVariantFromValue(QSizeF(w, h)));
@@ -1245,7 +1248,7 @@ QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine
 QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 1)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 1 parameter"));
+        return ctxt->throwError("Qt.lighter(): Invalid arguments");
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
     if (v.userType() == QVariant::Color)
@@ -1264,7 +1267,7 @@ QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEng
 QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 1)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 1 parameter"));
+        return ctxt->throwError("Qt.darker(): Invalid arguments");
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
     if (v.userType() == QVariant::Color)
@@ -1283,21 +1286,20 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
 QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
 {
     if(ctxt->argumentCount() < 1)
-        return e->newVariant(QVariant(false));
+        return QScriptValue(e, false);
     bool ret = false;
 #ifndef QT_NO_DESKTOPSERVICES
     ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
 #endif
-    return e->newVariant(QVariant(ret));
+    return QScriptValue(e, ret);
 }
 
 QScriptValue QDeclarativeEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *)
 {
-    QByteArray data;
+    if (ctxt->argumentCount() != 1)
+        return ctxt->throwError("Qt.md5(): Invalid arguments");
 
-    if (ctxt->argumentCount() >= 1)
-        data = ctxt->argument(0).toString().toUtf8();
-
+    QByteArray data = ctxt->argument(0).toString().toUtf8();
     QByteArray result = QCryptographicHash::hash(data, QCryptographicHash::Md5);
 
     return QScriptValue(QLatin1String(result.toHex()));
@@ -1305,20 +1307,20 @@ QScriptValue QDeclarativeEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine 
 
 QScriptValue QDeclarativeEnginePrivate::btoa(QScriptContext *ctxt, QScriptEngine *)
 {
-    QByteArray data;
+    if (ctxt->argumentCount() != 1) 
+        return ctxt->throwError("Qt.btoa(): Invalid arguments");
 
-    if (ctxt->argumentCount() >= 1)
-        data = ctxt->argument(0).toString().toUtf8();
+    QByteArray data = ctxt->argument(0).toString().toUtf8();
 
     return QScriptValue(QLatin1String(data.toBase64()));
 }
 
 QScriptValue QDeclarativeEnginePrivate::atob(QScriptContext *ctxt, QScriptEngine *)
 {
-    QByteArray data;
+    if (ctxt->argumentCount() != 1) 
+        return ctxt->throwError("Qt.atob(): Invalid arguments");
 
-    if (ctxt->argumentCount() >= 1)
-        data = ctxt->argument(0).toString().toUtf8();
+    QByteArray data = ctxt->argument(0).toString().toUtf8();
 
     return QScriptValue(QLatin1String(QByteArray::fromBase64(data)));
 }
@@ -1417,7 +1419,7 @@ QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptE
 QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 2)
-        return ctxt->throwError(QDeclarativeEngine::tr("expected 2 parameters"));
+        return ctxt->throwError("Qt.tint(): Invalid arguments");
     //get color
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
