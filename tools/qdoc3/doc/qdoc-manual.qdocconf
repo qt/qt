@@ -32,7 +32,7 @@ HTML.postheader  = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"5\" widt
                    "<td class=\"postheader\" valign=\"center\">" \
                    "<a href=\"01-qdoc-manual.html\">" \
                    "<font color=\"#004faf\">Home: QDoc Manual</font></a>&nbsp;&middot;" \
-                   "<a href=\"http://qt.nokia.com/doc/4.7\">" \
+                   "<a href=\"http://qt.nokia.com/doc/4.8\">" \
                    "<font color=\"#004faf\"> Qt Reference Documentation</font></a>" \
                    "</td>\n" \
                    "</tr></table>"
