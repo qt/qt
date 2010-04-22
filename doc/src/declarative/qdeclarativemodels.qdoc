@@ -233,7 +233,7 @@ dataList.append("Ginger");
 dataList.append("Skipper");
 
 QDeclarativeContext *ctxt = view.rootContext();
-ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));
+ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 \endcode
 
 \o
