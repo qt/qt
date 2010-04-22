@@ -2268,44 +2268,35 @@ void CppCodeParser::instantiateIteratorMacro(const QString &container,
 void CppCodeParser::createExampleFileNodes(FakeNode *fake)
 {
     QString examplePath = fake->name();
+    QString proFileName = examplePath + "/" + examplePath.split("/").last() + ".pro";
     QString userFriendlyFilePath;
-    bool isQmlExample = false;
 
-    // let's check if this is a QML example
-    QString proFileName = examplePath + "/" + examplePath.split("/").last() + ".qmlproject";
     QString fullPath = Config::findFile(fake->doc().location(),
                                         exampleFiles,
                                         exampleDirs,
                                         proFileName,
                                         userFriendlyFilePath);
 
-    if (!fullPath.isEmpty()) {
-        isQmlExample = true;
-    } else {
-        // let's check if there is a .pro file
-        proFileName = examplePath + "/" + examplePath.split("/").last() + ".pro";
+    if (fullPath.isEmpty()) {
+        QString tmp = proFileName;
+        proFileName = examplePath + "/" + "qbuild.pro";
         userFriendlyFilePath.clear();
-
         fullPath = Config::findFile(fake->doc().location(),
                                     exampleFiles,
                                     exampleDirs,
                                     proFileName,
                                     userFriendlyFilePath);
-
         if (fullPath.isEmpty()) {
-            // let's check if there is a qbuild.pro file
-            QString tmp = proFileName;
-            proFileName = examplePath + "/" + "qbuild.pro";
+            proFileName = examplePath + "/" + examplePath.split("/").last() + ".qmlproject";
             userFriendlyFilePath.clear();
             fullPath = Config::findFile(fake->doc().location(),
                                         exampleFiles,
                                         exampleDirs,
                                         proFileName,
                                         userFriendlyFilePath);
-
             if (fullPath.isEmpty()) {
                 fake->doc().location().warning(
-                        tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
+                    tr("Cannot find file '%1' or '%2'").arg(tmp).arg(proFileName));
                 return;
             }
         }
@@ -2315,14 +2306,7 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     fullPath.truncate(fullPath.lastIndexOf('/'));
 
     QStringList exampleFiles = Config::getFilesHere(fullPath,exampleNameFilter);
-
-    // QML examples do not put images in a "images" directory.
-    QString imagesPath;
-    if (isQmlExample)
-        imagesPath = fullPath;
-    else
-        imagesPath = fullPath + "/images";
-
+    QString imagesPath = fullPath + "/images";
     QStringList imageFiles = Config::getFilesHere(imagesPath,exampleImageFilter);
 
     if (!exampleFiles.isEmpty()) {
