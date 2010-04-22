@@ -446,6 +446,7 @@ private slots:
     void QT_2653_fullUpdateDiscardingOpacityUpdate();
     void QT_2649_focusScope();
     void sortItemsWhileAdding();
+    void doNotMarkFullUpdateIfNotInScene();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -10429,6 +10430,52 @@ void tst_QGraphicsItem::sortItemsWhileAdding()
     parent.resize(200, 200);
     MyGraphicsItemWithItemChange item(&parent);
     grandParent.setParentItem(&grandGrandParent);
+}
+
+void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
+{
+    struct Item : public QGraphicsTextItem
+    {
+        int painted;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *opt, QWidget *wid)
+        {
+            painted++;
+            QGraphicsTextItem::paint(painter, opt, wid);
+        }
+    };
+    QGraphicsScene scene;
+    MyGraphicsView view(&scene);
+    Item *item = new Item;
+    item->painted = 0;
+    item->setPlainText("Grandparent");
+    Item *item2 = new Item;
+    item2->setPlainText("parent");
+    item2->painted = 0;
+    Item *item3 = new Item;
+    item3->setPlainText("child");
+    item3->painted = 0;
+    QGraphicsOpacityEffect *effect = new QGraphicsOpacityEffect;
+    effect->setOpacity(0.5);
+    item2->setGraphicsEffect(effect);
+    item3->setParentItem(item2);
+    item2->setParentItem(item);
+    scene.addItem(item);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->painted, 1);
+    QTRY_COMPARE(item2->painted, 1);
+    QTRY_COMPARE(item3->painted, 1);
+    item2->update();
+    QApplication::processEvents();
+    QTRY_COMPARE(item->painted, 2);
+    QTRY_COMPARE(item2->painted, 2);
+    QTRY_COMPARE(item3->painted, 2);
+    item2->update();
+    QApplication::processEvents();
+    QTRY_COMPARE(item->painted, 3);
+    QTRY_COMPARE(item2->painted, 3);
+    QTRY_COMPARE(item3->painted, 3);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
