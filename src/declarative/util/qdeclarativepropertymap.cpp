@@ -265,7 +265,7 @@ QVariant &QDeclarativePropertyMap::operator[](const QString &key)
 
     Same as value().
 */
-const QVariant QDeclarativePropertyMap::operator[](const QString &key) const
+QVariant QDeclarativePropertyMap::operator[](const QString &key) const
 {
     return value(key);
 }
