@@ -116,7 +116,7 @@ public:
 // These functions are outside of the QHostInfo class and strictly internal.
 // Do NOT use them outside of QAbstractSocket.
 QHostInfo Q_NETWORK_EXPORT qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char *member, bool *valid, int *id);
-void Q_NETWORK_EXPORT qt_qhostinfo_clear_cache();
+void Q_AUTOTEST_EXPORT qt_qhostinfo_clear_cache();
 void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e);
 
 class QHostInfoCache
@@ -161,6 +161,7 @@ public:
     QHostInfoLookupManager();
     ~QHostInfoLookupManager();
 
+    void clear();
     void work();
 
     // called from QHostInfo

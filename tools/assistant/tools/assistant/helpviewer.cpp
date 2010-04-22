@@ -52,6 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
+QString AbstractHelpViewer::DocPath = QString::fromLatin1("qthelp://com."
+    "trolltech.qt.%1/").arg(QString(QLatin1String(QT_VERSION_STR))
+    .replace(QLatin1String("."), QLatin1String("")));
+
 QString AbstractHelpViewer::AboutBlank =
     QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
 
@@ -128,11 +132,12 @@ bool AbstractHelpViewer::canOpenPage(const QString &url)
     return !mimeFromUrl(url).isEmpty();
 }
 
-QString AbstractHelpViewer::mimeFromUrl(const QString &url)
+QString AbstractHelpViewer::mimeFromUrl(const QUrl &url)
 {
     TRACE_OBJ
-    const int index = url.lastIndexOf(QLatin1Char('.'));
-    const QByteArray &ext = url.mid(index).toUtf8().toLower();
+    const QString &path = url.path();
+    const int index = path.lastIndexOf(QLatin1Char('.'));
+    const QByteArray &ext = path.mid(index).toUtf8().toLower();
 
     const ExtensionMap *e = extensionMap;
     while (e->extension) {

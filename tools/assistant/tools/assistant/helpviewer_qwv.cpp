@@ -129,13 +129,27 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     const QNetworkRequest &request, QIODevice* /*outgoingData*/)
 {
     TRACE_OBJ
-    const QUrl &url = request.url();
-    const QString &mimeType = AbstractHelpViewer::mimeFromUrl(url.toString());
-    
+    QString url = request.url().toString();
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+
+    // TODO: For some reason the url to load is already wrong (passed from webkit)
+    // though the css file and the references inside should work that way. One 
+    // possible problem might be that the css is loaded at the same level as the
+    // html, thus a path inside the css like (../images/foo.png) might cd out of
+    // the virtual folder
+    if (!helpEngine.findFile(url).isValid()) {
+        if (url.startsWith(AbstractHelpViewer::DocPath)) {
+            if (!url.startsWith(AbstractHelpViewer::DocPath + QLatin1String("qdoc/"))) {
+                url = url.replace(AbstractHelpViewer::DocPath,
+                    AbstractHelpViewer::DocPath + QLatin1String("qdoc/"));
+            }
+        }
+    }
+
+    const QString &mimeType = AbstractHelpViewer::mimeFromUrl(url);
     const QByteArray &data = helpEngine.findFile(url).isValid()
         ? helpEngine.fileData(url)
-        : AbstractHelpViewer::PageNotFoundMessage.arg(url.toString()).toUtf8();
+        : AbstractHelpViewer::PageNotFoundMessage.arg(url).toUtf8();
     return new HelpNetworkReply(request, data, mimeType.isEmpty()
         ? QLatin1String("application/octet-stream") : mimeType);
 }
