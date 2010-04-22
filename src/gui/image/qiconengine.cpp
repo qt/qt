@@ -183,6 +183,10 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     that should be filled with icon sizes. Engines that work in terms
     of a scalable, vectorial format normally return an empty list.
 
+    \value IconNameHook Allows to query the name used to create the
+    icon, for example when instantiating an icon using
+    QIcon::fromTheme().
+
     \sa virtual_hook()
  */
 
@@ -299,6 +303,22 @@ QList<QSize> QIconEngineV2::availableSizes(QIcon::Mode mode, QIcon::State state)
     arg.state = state;
     virtual_hook(QIconEngineV2::AvailableSizesHook, reinterpret_cast<void*>(&arg));
     return arg.sizes;
+}
+
+/*!
+    \since 4.7
+
+    Returns the name used to create the engine, if available.
+
+    \note This is a helper method and the actual work is done by
+    virtual_hook() method, hence this method depends on icon engine support
+    and may not work with all icon engines.
+ */
+QString QIconEngineV2::iconName()
+{
+    QString name;
+    virtual_hook(QIconEngineV2::IconNameHook, reinterpret_cast<void*>(&name));
+    return name;
 }
 
 QT_END_NAMESPACE

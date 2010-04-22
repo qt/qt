@@ -393,7 +393,6 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
 #ifdef Q_WS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
@@ -408,12 +407,12 @@ void QDialogPrivate::_q_doneAction()
 bool QDialog::event(QEvent *e)
 {
     bool result = QWidget::event(e);
-#ifdef Q_WS_WINCE
+#if defined(Q_WS_WINCE)
     if (e->type() == QEvent::OkRequest) {
         accept();
         result = true;
-     }
-#else
+     } else
+#elif defined(Q_WS_S60)
     if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize )) {
         if (!testAttribute(Qt::WA_Moved)) {
             Qt::WindowStates state = windowState();
@@ -422,11 +421,14 @@ bool QDialog::event(QEvent *e)
             if (state != windowState())
                 setWindowState(state);
         }
-    }
+    } else
 #endif
+    if (e->type() == QEvent::Move) {
+        setAttribute(Qt::WA_Moved, true); // as explicit as the user wants it to be
+    }
+
     return result;
 }
-#endif
 
 /*!
   Returns the modal dialog's result code, \c Accepted or \c Rejected.

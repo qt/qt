@@ -124,9 +124,10 @@ private:
 public:
     //XXX this is needed by dui
     static Q_CORE_EXPORT QUnifiedTimer *instance();
+    static QUnifiedTimer *instance(bool create);
 
-    void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
-    void unregisterAnimation(QAbstractAnimation *animation);
+    static void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
+    static void unregisterAnimation(QAbstractAnimation *animation);
 
     //defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
     void setTimingInterval(int interval)
@@ -151,13 +152,13 @@ public:
         this is used for updating the currentTime of all animations in case the pause
         timer is active or, otherwise, only of the animation passed as parameter.
     */
-    void ensureTimerUpdate();
+    static void ensureTimerUpdate();
 
     /*
         this will evaluate the need of restarting the pause timer in case there is still
         some pause animations running.
     */
-    void restartAnimationTimer();
+    static void updateAnimationTimer();
 
 protected:
     void timerEvent(QTimerEvent *);
@@ -186,6 +187,8 @@ private:
 
     void registerRunningAnimation(QAbstractAnimation *animation);
     void unregisterRunningAnimation(QAbstractAnimation *animation);
+
+    void restartAnimationTimer();
 
     void updateAnimationsTime();
     int closestPauseAnimationTimeToFinish();

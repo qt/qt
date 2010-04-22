@@ -42,6 +42,9 @@
 
 void Object::emitSignal0()
 { emit signal0(); }
+void Object::emitSignal1()
+{ emit signal1(); }
+
 
 void Object::slot0()
 { }
