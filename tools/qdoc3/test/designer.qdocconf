@@ -16,8 +16,7 @@ qhp.Designer.file                = designer.qhp
 qhp.Designer.namespace           = com.trolltech.designer.470
 qhp.Designer.virtualFolder       = qdoc
 qhp.Designer.indexTitle          = Qt Designer Manual
-qhp.Designer.extraFiles          = index.html \
-				   images/api_examples.png \
+qhp.Designer.extraFiles          = images/api_examples.png \
                              	   images/api_lookup.png \
                              	   images/api_topics.png \
                              	   images/bg_l_blank.png \

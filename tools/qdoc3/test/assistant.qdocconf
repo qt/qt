@@ -16,8 +16,7 @@ qhp.Assistant.file                = assistant.qhp
 qhp.Assistant.namespace           = com.trolltech.assistant.470
 qhp.Assistant.virtualFolder       = qdoc
 qhp.Assistant.indexTitle          = Qt Assistant Manual
-qhp.Assistant.extraFiles          = index.html \
-				    images/api_examples.png \
+qhp.Assistant.extraFiles          = images/api_examples.png \
                              	    images/api_lookup.png \
                              	    images/api_topics.png \
                              	    images/bg_l_blank.png \
