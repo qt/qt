@@ -738,8 +738,14 @@ bool QLineEdit::validateAndSet(const QString &newText, int newPos,
         setText(oldText);
         return false;
     }
-    setCursorPosition(newPos);
-    setSelection(qMin(newMarkAnchor, newMarkDrag), qAbs(newMarkAnchor - newMarkDrag));
+    int selstart = qMin(newMarkAnchor, newMarkDrag);
+    int sellength = qAbs(newMarkAnchor - newMarkDrag);
+    if (selstart == newPos) {
+        selstart = qMax(newMarkAnchor, newMarkDrag);
+        sellength = -sellength;
+    }
+    //setSelection also set the position
+    setSelection(selstart, sellength);
     return true;
 }
 #endif //QT3_SUPPORT
