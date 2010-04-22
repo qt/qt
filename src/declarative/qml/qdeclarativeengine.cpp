@@ -767,6 +767,9 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
 */
 void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership ownership)
 {
+    if (!object)
+        return;
+
     QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
@@ -780,6 +783,9 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
 */
 QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject *object)
 {
+    if (!object)
+        return CppOwnership;
+
     QDeclarativeData *ddata = QDeclarativeData::get(object, false);
     if (!ddata)
         return CppOwnership;
