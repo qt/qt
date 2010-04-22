@@ -285,46 +285,6 @@ static QPainterPath samplePath10()
     return path;
 }
 
-static QPainterPath samplePath11()
-{
-    QPainterPath path;
-    path.moveTo(QPointF(165.71429, 338.79076));
-    path.lineTo(QPointF(227.74288, 338.79076));
-    path.cubicTo(QPointF(232.95048, 338.79076),
-                 QPointF(237.14288, 342.88102),
-                 QPointF(237.14288, 347.96176));
-    path.lineTo(QPointF(237.14288, 366.76261));
-    path.cubicTo(QPointF(237.14288, 371.84335),
-                 QPointF(232.95048, 375.93361),
-                 QPointF(227.74288, 375.93361));
-    path.lineTo(QPointF(165.7142905131896, 375.93361));
-    path.lineTo(QPointF(165.71429, 338.79076));
-    return path;
-}
-static QPainterPath samplePath12()
-{
-    QPainterPath path;
-    path.moveTo(QPointF(333.297085225735, 61.53486494396167));
-    path.cubicTo(QPointF(339.851755668807, 65.26555884471786),
-                 QPointF(346.7164458828328, 69.04482864715078),
-                 QPointF(353.4159970843586, 72.56059416636147));
-    path.cubicTo(QPointF(353.4166971116034, 72.56155590850551),
-                 QPointF(353.4173961086004, 72.56251809989483),
-                 QPointF(353.4180950127331, 72.56348028832946));
-    path.cubicTo(QPointF(342.4340366381152, 76.42344228577481),
-                 QPointF(317.0596805768079, 94.67086588954379),
-                 QPointF(309.78055, 101.00195));
-    path.cubicTo(QPointF(286.0370715501102, 121.6530659984711),
-                 QPointF(272.7748256344584, 134.1525788344904),
-                 QPointF(250.7436468364447, 150.4434491585085));
-    path.lineTo(QPointF(247.03629, 146.56585));
-    path.lineTo(QPointF(240.71086, 91.501867));
-    path.cubicTo(QPointF(240.71086, 91.501867),
-                 QPointF(305.6382515924416, 62.21715375368672),
-                 QPointF(333.297085225735, 61.53486494396167));
-    return path;
-}
-
 static QPainterPath samplePath13()
 {
     QPainterPath path;
@@ -411,16 +371,6 @@ void tst_QPathClipper::clip_data()
                                  << Paths::frame4() * QTransform().translate(280, 220)
                                  << QPathClipper::BoolAnd
                                  << samplePath10();
-
-    QTest::newRow( "simple11" )  << Paths::frame2()*QTransform().translate(40, 235)
-                                 << Paths::frame1()
-                                 << QPathClipper::BoolAnd
-                                 << samplePath11();
-
-    QTest::newRow( "intersection_at_edge" )  << Paths::lips()
-                                             << Paths::mailbox()*QTransform().translate(-85, 34)
-                                             << QPathClipper::BoolAnd
-                                             << samplePath12();
 
     QTest::newRow( "simple_move_to1" )  << Paths::rect4()
                                        << Paths::rect2() * QTransform().translate(-20, 50)
