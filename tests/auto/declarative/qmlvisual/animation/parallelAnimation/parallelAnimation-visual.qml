@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 /*
     This test verifies that a single animation animating two properties is visually the same as two

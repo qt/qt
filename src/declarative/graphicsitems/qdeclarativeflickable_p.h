@@ -64,7 +64,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(qreal horizontalVelocity READ horizontalVelocity NOTIFY horizontalVelocityChanged)
     Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
 
-    Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot NOTIFY overShootChanged)
+    Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot NOTIFY overShootChanged) // deprecated
+    Q_PROPERTY(BoundsBehavior boundsBehavior READ boundsBehavior WRITE setBoundsBehavior NOTIFY boundsBehaviorChanged)
     Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity NOTIFY maximumFlickVelocityChanged)
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
@@ -86,6 +87,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_CLASSINFO("DefaultProperty", "flickableData")
 
     Q_ENUMS(FlickDirection)
+    Q_ENUMS(BoundsBehavior)
 
 public:
     QDeclarativeFlickable(QDeclarativeItem *parent=0);
@@ -96,6 +98,10 @@ public:
 
     bool overShoot() const;
     void setOverShoot(bool);
+
+    enum BoundsBehavior { StopAtBounds, DragOverBounds, DragAndOvershootBounds };
+    BoundsBehavior boundsBehavior() const;
+    void setBoundsBehavior(BoundsBehavior);
 
     qreal contentWidth() const;
     void setContentWidth(qreal);
@@ -156,6 +162,7 @@ Q_SIGNALS:
     void flickDirectionChanged();
     void interactiveChanged();
     void overShootChanged();
+    void boundsBehaviorChanged();
     void maximumFlickVelocityChanged();
     void flickDecelerationChanged();
     void pressDelayChanged();

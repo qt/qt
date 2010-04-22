@@ -89,6 +89,8 @@ using namespace QDeclarativeParser;
     by \a data, which is a block of data previously returned by a call
     to compile().
 
+    Errors should be reported using qmlInfo(object).
+
     The \a object will be an instance of the TypeClass specified by QML_REGISTER_CUSTOM_TYPE.
 */
 
@@ -232,6 +234,24 @@ QList<QVariant> QDeclarativeCustomParserProperty::assignedValues() const
 void QDeclarativeCustomParser::clearErrors()
 {
     exceptions.clear();
+}
+
+/*!
+    Reports an error with the given \a description.
+
+    This can only be used during the compile() step. For errors during setCustomData(), use qmlInfo().
+
+    An error is generated referring to the position of the element in the source file.
+*/
+void QDeclarativeCustomParser::error(const QString& description)
+{
+    Q_ASSERT(object);
+    QDeclarativeError error;
+    QString exceptionDescription;
+    error.setLine(object->location.start.line);
+    error.setColumn(object->location.start.column);
+    error.setDescription(description);
+    exceptions << error;
 }
 
 /*!

@@ -5,8 +5,8 @@ var links = new Array;
 var scheduledDirections = new Array;
 var numRows = 1;
 var numColumns = 1;
-var linkComponent = createComponent("content/Link.qml"); // XXX should resolve relative to script, not component
-var cookieComponent = createComponent("content/Cookie.qml");
+var linkComponent = Qt.createComponent("content/Link.qml"); // XXX should resolve relative to script, not component
+var cookieComponent = Qt.createComponent("content/Cookie.qml");
 var cookie;
 var linksToGrow = 0;
 var linksToDie = 0;

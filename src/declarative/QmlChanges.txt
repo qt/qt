@@ -1,4 +1,9 @@
 =============================================================================
+The changes below are pre Qt 4.7.0 RC
+
+Flickable: overShoot is replaced by boundsBehavior enumeration.
+
+=============================================================================
 The changes below are pre Qt 4.7.0 beta
 
 TextEdit: wrap property is replaced by wrapMode enumeration.
@@ -19,6 +24,8 @@ Animation: replace repeat with loops (loops: Animation.Infinite gives the old re
 AnchorChanges: use natural form to specify anchors (anchors.left instead of left)
 AnchorChanges: removed reset property. (reset: "left" should now be anchors.left: undefined)
 PathView: snapPosition replaced by preferredHighlightBegin, preferredHighlightEnd
+createQmlObject: Moved to the Qt object, now use Qt.createQmlObject()
+createComponent: Moved to the Qt object, now use Qt.createComponent()
 
 C++ API
 -------

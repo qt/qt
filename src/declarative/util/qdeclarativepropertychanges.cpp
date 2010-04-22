@@ -159,12 +159,12 @@ public:
     QDeclarativeExpression *rewindExpression;
     QDeclarativeGuard<QDeclarativeExpression> ownedExpression;
 
-    virtual void execute() {
+    virtual void execute(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, expression);
     }
 
     virtual bool isReversable() { return true; }
-    virtual void reverse() {
+    virtual void reverse(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
     }
 

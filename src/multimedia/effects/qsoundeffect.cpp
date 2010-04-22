@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass SoundEffect QSoundEffect
     \since 4.7
-    \brief The SoundEffect element provides a way to play sound effects in qml.
+    \brief The SoundEffect element provides a way to play sound effects in QML.
 
     This element is part of the \bold{Qt.multimedia 4.7} module.
 
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty QUrl SoundEffect::source
+    \qmlproperty url SoundEffect::source
 
     This property provides a way to control the sound to play.
 */

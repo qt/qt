@@ -49,7 +49,7 @@
 #include <private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativeanchors_p_p.h>
 
-Q_DECLARE_METATYPE(QDeclarativeAnchors::UsedAnchor)
+Q_DECLARE_METATYPE(QDeclarativeAnchors::Anchor)
 Q_DECLARE_METATYPE(QDeclarativeAnchorLine::AnchorLine)
 
 
@@ -262,7 +262,7 @@ void tst_qdeclarativeanchors::loops()
     {
         QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop1.qml"));
 
-        QString expect = "QML Text (" + source.toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = source.toString() + ":6:5: QML Text: Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -277,7 +277,7 @@ void tst_qdeclarativeanchors::loops()
     {
         QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop2.qml"));
 
-        QString expect = "QML Image (" + source.toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = source.toString() + ":8:3: QML Image: Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
 
         QDeclarativeView *view = new QDeclarativeView;
@@ -312,62 +312,62 @@ void tst_qdeclarativeanchors::illegalSets_data()
 
     QTest::newRow("H - too many anchors")
         << "Rectangle { id: rect; Rectangle { anchors.left: rect.left; anchors.right: rect.right; anchors.horizontalCenter: rect.horizontalCenter } }"
-        << "QML Rectangle (file::2:23) Cannot specify left, right, and hcenter anchors.";
+        << "file::2:23: QML Rectangle: Cannot specify left, right, and hcenter anchors.";
 
     foreach (const QString &side, QStringList() << "left" << "right") {
         QTest::newRow("H - anchor to V")
             << QString("Rectangle { Rectangle { anchors.%1: parent.top } }").arg(side)
-            << "QML Rectangle (file::2:13) Cannot anchor a horizontal edge to a vertical edge.";
+            << "file::2:13: QML Rectangle: Cannot anchor a horizontal edge to a vertical edge.";
 
         QTest::newRow("H - anchor to non parent/sibling")
             << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
-            << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+            << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 
         QTest::newRow("H - anchor to self")
             << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
-            << "QML Rectangle (file::2:1) Cannot anchor item to self.";
+            << "file::2:1: QML Rectangle: Cannot anchor item to self.";
     }
 
 
     QTest::newRow("V - too many anchors")
         << "Rectangle { id: rect; Rectangle { anchors.top: rect.top; anchors.bottom: rect.bottom; anchors.verticalCenter: rect.verticalCenter } }"
-        << "QML Rectangle (file::2:23) Cannot specify top, bottom, and vcenter anchors.";
+        << "file::2:23: QML Rectangle: Cannot specify top, bottom, and vcenter anchors.";
 
     QTest::newRow("V - too many anchors with baseline")
         << "Rectangle { Text { id: text1; text: \"Hello\" } Text { anchors.baseline: text1.baseline; anchors.top: text1.top; } }"
-        << "QML Text (file::2:47) Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.";
+        << "file::2:47: QML Text: Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.";
 
     foreach (const QString &side, QStringList() << "top" << "bottom" << "baseline") {
 
         QTest::newRow("V - anchor to H")
             << QString("Rectangle { Rectangle { anchors.%1: parent.left } }").arg(side)
-            << "QML Rectangle (file::2:13) Cannot anchor a vertical edge to a horizontal edge.";
+            << "file::2:13: QML Rectangle: Cannot anchor a vertical edge to a horizontal edge.";
 
         QTest::newRow("V - anchor to non parent/sibling")
             << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
-            << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+            << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 
         QTest::newRow("V - anchor to self")
             << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
-            << "QML Rectangle (file::2:1) Cannot anchor item to self.";
+            << "file::2:1: QML Rectangle: Cannot anchor item to self.";
     }
 
 
     QTest::newRow("centerIn - anchor to non parent/sibling")
         << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.centerIn: rect} }"
-        << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+        << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 
 
     QTest::newRow("fill - anchor to non parent/sibling")
         << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.fill: rect} }"
-        << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+        << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 }
 
 void tst_qdeclarativeanchors::reset()
 {
     QFETCH(QString, side);
     QFETCH(QDeclarativeAnchorLine::AnchorLine, anchorLine);
-    QFETCH(QDeclarativeAnchors::UsedAnchor, usedAnchor);
+    QFETCH(QDeclarativeAnchors::Anchor, usedAnchor);
 
     QDeclarativeItem *baseItem = new QDeclarativeItem;
 
@@ -394,16 +394,16 @@ void tst_qdeclarativeanchors::reset_data()
 {
     QTest::addColumn<QString>("side");
     QTest::addColumn<QDeclarativeAnchorLine::AnchorLine>("anchorLine");
-    QTest::addColumn<QDeclarativeAnchors::UsedAnchor>("usedAnchor");
+    QTest::addColumn<QDeclarativeAnchors::Anchor>("usedAnchor");
 
-    QTest::newRow("left") << "left" << QDeclarativeAnchorLine::Left << QDeclarativeAnchors::HasLeftAnchor;
-    QTest::newRow("top") << "top" << QDeclarativeAnchorLine::Top << QDeclarativeAnchors::HasTopAnchor;
-    QTest::newRow("right") << "right" << QDeclarativeAnchorLine::Right << QDeclarativeAnchors::HasRightAnchor;
-    QTest::newRow("bottom") << "bottom" << QDeclarativeAnchorLine::Bottom << QDeclarativeAnchors::HasBottomAnchor;
+    QTest::newRow("left") << "left" << QDeclarativeAnchorLine::Left << QDeclarativeAnchors::LeftAnchor;
+    QTest::newRow("top") << "top" << QDeclarativeAnchorLine::Top << QDeclarativeAnchors::TopAnchor;
+    QTest::newRow("right") << "right" << QDeclarativeAnchorLine::Right << QDeclarativeAnchors::RightAnchor;
+    QTest::newRow("bottom") << "bottom" << QDeclarativeAnchorLine::Bottom << QDeclarativeAnchors::BottomAnchor;
 
-    QTest::newRow("hcenter") << "horizontalCenter" << QDeclarativeAnchorLine::HCenter << QDeclarativeAnchors::HasHCenterAnchor;
-    QTest::newRow("vcenter") << "verticalCenter" << QDeclarativeAnchorLine::VCenter << QDeclarativeAnchors::HasVCenterAnchor;
-    QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::HasBaselineAnchor;
+    QTest::newRow("hcenter") << "horizontalCenter" << QDeclarativeAnchorLine::HCenter << QDeclarativeAnchors::HCenterAnchor;
+    QTest::newRow("vcenter") << "verticalCenter" << QDeclarativeAnchorLine::VCenter << QDeclarativeAnchors::VCenterAnchor;
+    QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::BaselineAnchor;
 }
 
 void tst_qdeclarativeanchors::resetConvenience()
@@ -437,7 +437,7 @@ void tst_qdeclarativeanchors::nullItem()
     const QMetaObject *meta = item->anchors()->metaObject();
     QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML Item (unknown location) Cannot anchor to a null item.");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML Item: Cannot anchor to a null item.");
     QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
 
     delete item;
@@ -461,7 +461,7 @@ void tst_qdeclarativeanchors::crash1()
 {
     QUrl source(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
 
-    QString expect = "QML Text (" + source.toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+    QString expect = source.toString() + ":4:5: QML Text: Possible anchor loop detected on fill.";
 
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
 

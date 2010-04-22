@@ -2,13 +2,13 @@ import People 1.0
 
 // ![0]
 BirthdayParty {
-    celebrant: Boy {
+    host: Boy {
         name: "Bob Jones"
         shoe { size: 12; color: "white"; brand: "Nike"; price: 90.0 }
     }
 
     Boy { 
-        name: "Joan Hodges" 
+        name: "Leo Hodges" 
         shoe { size: 10; color: "black"; brand: "Reebok"; price: 59.95 }
     }
     // ![1]

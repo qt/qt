@@ -61,8 +61,6 @@ private:
     int v;
 };
 
-QML_DECLARE_TYPE(MyPluginType);
-
 
 class MyPlugin : public QDeclarativeExtensionPlugin
 {

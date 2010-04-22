@@ -115,6 +115,10 @@ public:
     bool wasHeld() const { return _wasHeld; }
     bool isClick() const { return _isClick; }
 
+    // only for internal usage
+    void setX(int x) { _x = x; }
+    void setY(int y) { _y = y; }
+
     bool isAccepted() { return _accepted; }
     void setAccepted(bool accepted) { _accepted = accepted; }
 
