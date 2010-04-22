@@ -16,8 +16,7 @@ qhp.Linguist.file                = linguist.qhp
 qhp.Linguist.namespace           = com.trolltech.linguist.470
 qhp.Linguist.virtualFolder       = qdoc
 qhp.Linguist.indexTitle          = Qt Linguist Manual
-qhp.Linguist.extraFiles          = index.html \
-				   images/api_examples.png \
+qhp.Linguist.extraFiles          = images/api_examples.png \
                              	   images/api_lookup.png \
                              	   images/api_topics.png \
                              	   images/bg_l_blank.png \
