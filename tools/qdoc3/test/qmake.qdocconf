@@ -16,8 +16,7 @@ qhp.qmake.file                = qmake.qhp
 qhp.qmake.namespace           = com.trolltech.qmake.470
 qhp.qmake.virtualFolder       = qdoc
 qhp.qmake.indexTitle          = QMake Manual
-qhp.qmake.extraFiles          = index.html \
-				images/api_examples.png \
+qhp.qmake.extraFiles          = images/api_examples.png \
                              	images/api_lookup.png \
                              	images/api_topics.png \
                              	images/bg_l_blank.png \
