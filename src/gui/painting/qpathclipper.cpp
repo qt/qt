@@ -162,11 +162,6 @@ bool QIntersectionFinder::linesIntersect(const QLineF &a, const QLineF &b) const
         return false;
     }
 
-    // if the lines are not parallel and share a common end point, then they
-    // don't intersect
-    if (p1_equals_q1 || p1_equals_q2 || p2_equals_q1 || p2_equals_q2)
-        return false;
-
     const qreal invPar = 1 / par;
 
     const qreal tp = (qDelta.y() * (q1.x() - p1.x()) -
@@ -1236,7 +1231,7 @@ bool QPathClipper::intersect()
         }
     }
 
-    return !clipPath.intersected(subjectPath).isEmpty();
+    return false;
 }
 
 bool QPathClipper::contains()
@@ -1273,7 +1268,7 @@ bool QPathClipper::contains()
         }
     }
 
-    return clipPath.subtracted(subjectPath).isEmpty();
+    return true;
 }
 
 QPathClipper::QPathClipper(const QPainterPath &subject,
