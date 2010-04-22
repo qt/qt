@@ -118,6 +118,7 @@ Q_SIGNALS:
     void warnings(const QList<QDeclarativeError> &warnings);
 
 private:
+    Q_DISABLE_COPY(QDeclarativeEngine)
     Q_DECLARE_PRIVATE(QDeclarativeEngine)
 };
 

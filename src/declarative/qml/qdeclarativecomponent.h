@@ -117,6 +117,7 @@ protected:
 private:
     QDeclarativeComponent(QDeclarativeEngine *, QDeclarativeCompiledData *, int, int, QObject *parent);
 
+    Q_DISABLE_COPY(QDeclarativeComponent)
     friend class QDeclarativeVME;
     friend class QDeclarativeCompositeTypeData;
 };
