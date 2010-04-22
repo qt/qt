@@ -475,12 +475,24 @@ class QDeclarativeAnchorAnimation : public QDeclarativeAbstractAnimation
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeAnchorAnimation)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> targets READ targets)
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(QEasingCurve easing READ easing WRITE setEasing NOTIFY easingChanged)
 
 public:
     QDeclarativeAnchorAnimation(QObject *parent=0);
     virtual ~QDeclarativeAnchorAnimation();
 
     QDeclarativeListProperty<QDeclarativeItem> targets();
+
+    int duration() const;
+    void setDuration(int);
+
+    QEasingCurve easing() const;
+    void setEasing(const QEasingCurve &);
+
+Q_SIGNALS:
+    void durationChanged(int);
+    void easingChanged(const QEasingCurve&);
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,

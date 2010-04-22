@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 /*
 This test displays 6 red rects -- 4 in the top row, 2 in the bottom.

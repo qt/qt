@@ -59,10 +59,14 @@
 #include <qfontdatabase.h>
 #include <qicon.h>
 #include <qurl.h>
-#include <qboxlayout.h>
+#include <qlayout.h>
+#include <qwidget.h>
+#include <qgraphicswidget.h>
 #include <qbasictimer.h>
 #include <QtCore/qabstractanimation.h>
 #include <private/qgraphicsview_p.h>
+#include <private/qdeclarativeitem_p.h>
+#include <private/qdeclarativeitemchangelistener_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -124,19 +128,23 @@ void FrameBreakAnimation::updateCurrentTime(int msecs)
     server->frameBreak();
 }
 
-class QDeclarativeViewPrivate
+class QDeclarativeViewPrivate : public QDeclarativeItemChangeListener
 {
 public:
     QDeclarativeViewPrivate(QDeclarativeView *view)
-        : q(view), root(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
+        : q(view), root(0), declarativeItemRoot(0), graphicsWidgetRoot(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
     ~QDeclarativeViewPrivate() { delete root; }
-
     void execute();
+    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
+    void initResize();
+    void updateSize();
+    inline QSize rootObjectSize();
 
     QDeclarativeView *q;
 
     QDeclarativeGuard<QGraphicsObject> root;
-    QDeclarativeGuard<QDeclarativeItem> qmlRoot;
+    QDeclarativeGuard<QDeclarativeItem> declarativeItemRoot;
+    QDeclarativeGuard<QGraphicsWidget> graphicsWidgetRoot;
 
     QUrl source;
 
@@ -144,7 +152,6 @@ public:
     QDeclarativeComponent *component;
     QBasicTimer resizetimer;
 
-    mutable QSize initialSize;
     QDeclarativeView::ResizeMode resizeMode;
     QTime frameTimer;
 
@@ -155,18 +162,32 @@ public:
 
 void QDeclarativeViewPrivate::execute()
 {
-    delete root;
-    delete component;
-    initialSize = QSize();
-    component = new QDeclarativeComponent(&engine, source, q);
-
-    if (!component->isLoading()) {
-        q->continueExecute();
-    } else {
-        QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)), q, SLOT(continueExecute()));
+    if (root) {
+        delete root;
+        root = 0;
+    }
+    if (component) {
+        delete component;
+        component = 0;
+    }
+    if (!source.isEmpty()) {
+        component = new QDeclarativeComponent(&engine, source, q);
+        if (!component->isLoading()) {
+            q->continueExecute();
+        } else {
+            QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)), q, SLOT(continueExecute()));
+        }
     }
 }
 
+void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    if (resizeItem == root && resizeMode == QDeclarativeView::SizeViewToRootObject) {
+        // wait for both width and height to be changed
+        resizetimer.start(0,q);
+    }
+    QDeclarativeItemChangeListener::itemGeometryChanged(resizeItem, newGeometry, oldGeometry);
+}
 
 /*!
     \class QDeclarativeView
@@ -332,21 +353,20 @@ QDeclarativeContext* QDeclarativeView::rootContext()
 
 /*!
   \enum QDeclarativeView::Status
-
     Specifies the loading status of the QDeclarativeView.
 
     \value Null This QDeclarativeView has no source set.
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
-    \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+    \value Error An error has occured.  Call errorDescription() to retrieve a description.
 */
 
 /*! \enum QDeclarativeView::ResizeMode
 
   This enum specifies how to resize the view.
 
-  \value SizeViewToRootObject
-  \value SizeRootObjectToView
+  \value SizeViewToRootObject The view resizes with the root item in the QML.
+  \value SizeRootObjectToView The view will automatically resize the root item to the size of the view.
 */
 
 /*!
@@ -373,7 +393,6 @@ QList<QDeclarativeError> QDeclarativeView::errors() const
     return QList<QDeclarativeError>();
 }
 
-
 /*!
     \property QDeclarativeView::resizeMode
     \brief whether the view should resize the canvas contents
@@ -394,16 +413,92 @@ void QDeclarativeView::setResizeMode(ResizeMode mode)
     if (d->resizeMode == mode)
         return;
 
+    if (d->declarativeItemRoot) {
+        if (d->resizeMode == SizeViewToRootObject) {
+            QDeclarativeItemPrivate *p =
+                static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(d->declarativeItemRoot));
+            p->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        }
+    } else if (d->graphicsWidgetRoot) {
+         if (d->resizeMode == QDeclarativeView::SizeViewToRootObject) {
+             d->graphicsWidgetRoot->removeEventFilter(this);
+         }
+    }
+
     d->resizeMode = mode;
-    if (d->qmlRoot) {
-        if (d->resizeMode == SizeRootObjectToView) {
-            d->qmlRoot->setWidth(width());
-            d->qmlRoot->setHeight(height());
-        } else {
-            d->qmlRoot->setWidth(d->initialSize.width());
-            d->qmlRoot->setHeight(d->initialSize.height());
+    if (d->root) {
+        d->initResize();
+    }
+}
+
+void QDeclarativeViewPrivate::initResize()
+{
+    if (declarativeItemRoot) {
+        if (resizeMode == QDeclarativeView::SizeViewToRootObject) {
+            QDeclarativeItemPrivate *p =
+                static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(declarativeItemRoot));
+            p->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+        }
+    } else if (graphicsWidgetRoot) {
+        if (resizeMode == QDeclarativeView::SizeViewToRootObject) {
+            graphicsWidgetRoot->installEventFilter(q);
         }
     }
+    updateSize();
+}
+
+void QDeclarativeViewPrivate::updateSize()
+{
+    if (!root)
+        return;
+    if (declarativeItemRoot) {
+        if (resizeMode == QDeclarativeView::SizeViewToRootObject) {
+            QSize newSize = QSize(declarativeItemRoot->width(), declarativeItemRoot->height());
+            if (newSize.isValid() && newSize != q->size()) {
+                q->resize(newSize);
+            }
+        } else if (resizeMode == QDeclarativeView::SizeRootObjectToView) {
+            if (!qFuzzyCompare(q->width(), declarativeItemRoot->width()))
+                declarativeItemRoot->setWidth(q->width());
+            if (!qFuzzyCompare(q->height(), declarativeItemRoot->height()))
+                declarativeItemRoot->setHeight(q->height());
+        }
+    } else if (graphicsWidgetRoot) {
+        if (resizeMode == QDeclarativeView::SizeViewToRootObject) {
+            QSize newSize = QSize(graphicsWidgetRoot->size().width(), graphicsWidgetRoot->size().height());
+            if (newSize.isValid() && newSize != q->size()) {
+                q->resize(newSize);
+            }
+        } else if (resizeMode == QDeclarativeView::SizeRootObjectToView) {
+            QSizeF newSize = QSize(q->size().width(), q->size().height());
+            if (newSize.isValid() && newSize != graphicsWidgetRoot->size()) {
+                graphicsWidgetRoot->resize(newSize);
+            }
+        }
+    }
+    q->updateGeometry();
+}
+
+QSize QDeclarativeViewPrivate::rootObjectSize()
+{
+    QSize rootObjectSize(0,0);
+    int widthCandidate = -1;
+    int heightCandidate = -1;
+    if (declarativeItemRoot) {
+        widthCandidate = declarativeItemRoot->width();
+        heightCandidate = declarativeItemRoot->height();
+    } else if (root) {
+        QSizeF size = root->boundingRect().size();
+        widthCandidate = size.width();
+        heightCandidate = size.height();
+    }
+    if (widthCandidate > 0) {
+        rootObjectSize.setWidth(widthCandidate);
+    }
+    if (heightCandidate > 0) {
+        rootObjectSize.setHeight(heightCandidate);
+    }
+    return rootObjectSize;
 }
 
 QDeclarativeView::ResizeMode QDeclarativeView::resizeMode() const
@@ -449,55 +544,46 @@ void QDeclarativeView::continueExecute()
 */
 void QDeclarativeView::setRootObject(QObject *obj)
 {
-    if (QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(obj)) {
-        d->scene.addItem(item);
-
-        d->root = item;
-        d->qmlRoot = item;
-        connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
-        connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
-        if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
-            d->initialSize.setWidth(d->qmlRoot->width());
-        if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)
-            d->initialSize.setHeight(d->qmlRoot->height());
-        resize(d->initialSize);
-
-        if (d->resizeMode == SizeRootObjectToView) {
-            d->qmlRoot->setWidth(width());
-            d->qmlRoot->setHeight(height());
+    if (d->root == obj)
+        return;
+    if (QDeclarativeItem *declarativeItem = qobject_cast<QDeclarativeItem *>(obj)) {
+        d->scene.addItem(declarativeItem);
+        d->root = declarativeItem;
+        d->declarativeItemRoot = declarativeItem;
+    } else if (QGraphicsObject *graphicsObject = qobject_cast<QGraphicsObject *>(obj)) {
+        d->scene.addItem(graphicsObject);
+        d->root = graphicsObject;
+        if (graphicsObject->isWidget()) {
+            d->graphicsWidgetRoot = static_cast<QGraphicsWidget*>(graphicsObject);
         } else {
-            QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
-            emit sceneResized(sz);
-            resize(sz);
+            qWarning() << "QDeclarativeView::resizeMode is not honored for components of type QGraphicsObject";
         }
-        updateGeometry();
-    } else if (QGraphicsObject *item = qobject_cast<QGraphicsObject *>(obj)) {
-        d->scene.addItem(item);
-        qWarning() << "QDeclarativeView::resizeMode is not honored for components of type QGraphicsObject";
-    } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
-        window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
-        window()->setAttribute(Qt::WA_NoSystemBackground, false);
-        if (!layout()) {
-            setLayout(new QVBoxLayout);
-            layout()->setContentsMargins(0, 0, 0, 0);
-        } else if (layout()->count()) {
-            // Hide the QGraphicsView in GV mode.
-            QLayoutItem *item = layout()->itemAt(0);
-            if (item->widget())
-                item->widget()->hide();
+    } else if (obj) {
+        qWarning() << "QDeclarativeView only supports loading of root objects that derive from QGraphicsObject";
+        if (QWidget* widget  = qobject_cast<QWidget *>(obj)) {
+            window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
+            window()->setAttribute(Qt::WA_NoSystemBackground, false);
+            if (layout() && layout()->count()) {
+                // Hide the QGraphicsView in GV mode.
+                QLayoutItem *item = layout()->itemAt(0);
+                if (item->widget())
+                    item->widget()->hide();
+            }
+            widget->setParent(this);
+            if (isVisible()) {
+                widget->setVisible(true);
+            }
+            resize(widget->size());
         }
-        layout()->addWidget(wid);
-        emit sceneResized(wid->size());
     }
-}
 
-/*!
-  \internal
- */
-void QDeclarativeView::sizeChanged()
-{
-    // delay, so we catch both width and height changing.
-    d->resizetimer.start(0,this);
+    if (d->root) {
+        QSize initialSize = d->rootObjectSize();
+        if (initialSize != size()) {
+            resize(initialSize);
+        }
+        d->initResize();
+    }
 }
 
 /*!
@@ -508,30 +594,37 @@ void QDeclarativeView::sizeChanged()
 void QDeclarativeView::timerEvent(QTimerEvent* e)
 {
     if (!e || e->timerId() == d->resizetimer.timerId()) {
-        if (d->qmlRoot) {
-            QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
-            emit sceneResized(sz);
-            //if (!d->resizable)
-                //resize(sz);
-        }
+        d->updateSize();
         d->resizetimer.stop();
-        updateGeometry();
     }
+}
+
+/*! \reimp */
+bool QDeclarativeView::eventFilter(QObject *watched, QEvent *e)
+{
+    if (watched == d->root && d->resizeMode == SizeViewToRootObject) {
+        if (d->graphicsWidgetRoot) {
+            if (e->type() == QEvent::GraphicsSceneResize) {
+                d->updateSize();
+            }
+        }
+    }
+    return QGraphicsView::eventFilter(watched, e);
 }
 
 /*!
     \internal
-    The size hint is the size of the root item.
+    Preferred size follows the root object in
+    resize mode SizeViewToRootObject and
+    the view in resize mode SizeRootObjectToView.
 */
 QSize QDeclarativeView::sizeHint() const
 {
-    if (d->qmlRoot) {
-        if (d->initialSize.width() <= 0)
-            d->initialSize.setWidth(d->qmlRoot->width());
-        if (d->initialSize.height() <= 0)
-            d->initialSize.setHeight(d->qmlRoot->height());
+    if (d->resizeMode == SizeRootObjectToView) {
+        return size();
+    } else { // d->resizeMode == SizeViewToRootObject
+        return d->rootObjectSize();
     }
-    return d->initialSize;
 }
 
 /*!
@@ -549,17 +642,17 @@ QGraphicsObject *QDeclarativeView::rootObject() const
  */
 void QDeclarativeView::resizeEvent(QResizeEvent *e)
 {
-    if (d->resizeMode == SizeRootObjectToView && d->qmlRoot) {
-        d->qmlRoot->setWidth(width());
-        d->qmlRoot->setHeight(height());
+    if (d->resizeMode == SizeRootObjectToView) {
+        d->updateSize();
     }
-    if (d->qmlRoot) {
-        setSceneRect(QRectF(0, 0, d->qmlRoot->width(), d->qmlRoot->height()));
+    if (d->declarativeItemRoot) {
+        setSceneRect(QRectF(0, 0, d->declarativeItemRoot->width(), d->declarativeItemRoot->height()));
     } else if (d->root) {
         setSceneRect(d->root->boundingRect());
     } else {
         setSceneRect(rect());
     }
+    emit sceneResized(e->size());
     QGraphicsView::resizeEvent(e);
 }
 

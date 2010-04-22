@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Path {
     startX: 120; startY: 100

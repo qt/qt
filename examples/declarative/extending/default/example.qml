@@ -2,12 +2,12 @@ import People 1.0
 
 // ![0]
 BirthdayParty {
-    celebrant: Boy {
+    host: Boy {
         name: "Bob Jones"
         shoeSize: 12
     }
 
-    Boy { name: "Joan Hodges" }
+    Boy { name: "Leo Hodges" }
     Boy { name: "Jack Smith" }
     Girl { name: "Anne Brown" }
 }

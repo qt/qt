@@ -43,7 +43,7 @@ function startNewGame() {
 
 function createBlock(column, row) {
     if (component == null)
-        component = createComponent("content/BoomBlock.qml");
+        component = Qt.createComponent("content/BoomBlock.qml");
 
     // Note that if Block.qml was not a local file, component.isReady would be
     // false and we should wait for the component's statusChanged() signal to

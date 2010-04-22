@@ -143,6 +143,25 @@ symbian: {
 
     contains(QT_CONFIG, declarative): {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtDeclarative$${QT_LIBINFIX}.dll
+
+        widgetImport.sources = widgets.dll $$QT_BUILD_TREE/src/imports/widgets/qmldir
+        widgetImport.path = $$QT_IMPORTS_BASE_DIR/Qt/widgets
+        DEPLOYMENT += widgetImport
+
+        particlesImport.sources = particles.dll $$QT_BUILD_TREE/src/imports/particles/qmldir
+        particlesImport.path = $$QT_IMPORTS_BASE_DIR/Qt/labs/particles
+        DEPLOYMENT += particlesImport
+
+        contains(QT_CONFIG, webkit): {
+            webkitImport.sources = webkitqmlplugin.dll $$QT_BUILD_TREE/src/imports/webkit/qmldir
+            webkitImport.path = $$QT_IMPORTS_BASE_DIR/org/webkit
+            DEPLOYMENT += webkitImport
+        }
+        contains(QT_CONFIG, multimedia): {
+            multimediaImport.sources = multimedia.dll $$QT_BUILD_TREE/src/imports/multimedia/qmldir
+            multimediaImport.path = $$QT_IMPORTS_BASE_DIR/Qt/multimedia
+            DEPLOYMENT += multimediaImport
+        }
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems

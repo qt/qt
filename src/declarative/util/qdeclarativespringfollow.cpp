@@ -267,7 +267,7 @@ qreal QDeclarativeSpringFollow::to() const
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::to
+    \qmlproperty real SpringFollow::to
     This property holds the target value which will be tracked.
 
     Bind to a property in order to track its changes.
@@ -284,7 +284,7 @@ void QDeclarativeSpringFollow::setTo(qreal value)
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::velocity
+    \qmlproperty real SpringFollow::velocity
     This property holds the maximum velocity allowed when tracking the source.
 */
 
@@ -303,7 +303,7 @@ void QDeclarativeSpringFollow::setVelocity(qreal velocity)
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::spring
+    \qmlproperty real SpringFollow::spring
     This property holds the spring constant
 
     The spring constant describes how strongly the target is pulled towards the
@@ -326,7 +326,7 @@ void QDeclarativeSpringFollow::setSpring(qreal spring)
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::damping
+    \qmlproperty real SpringFollow::damping
     This property holds the spring damping constant
 
     The damping constant describes how quickly a sprung follower comes to rest.
@@ -349,7 +349,7 @@ void QDeclarativeSpringFollow::setDamping(qreal damping)
 
 
 /*!
-    \qmlproperty qreal SpringFollow::epsilon
+    \qmlproperty real SpringFollow::epsilon
     This property holds the spring epsilon
 
     The epsilon is the rate and amount of change in the value which is close enough
@@ -371,7 +371,7 @@ void QDeclarativeSpringFollow::setEpsilon(qreal epsilon)
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::modulus
+    \qmlproperty real SpringFollow::modulus
     This property holds the modulus value.
 
     Setting a \a modulus forces the target value to "wrap around" at the modulus.
@@ -394,7 +394,7 @@ void QDeclarativeSpringFollow::setModulus(qreal modulus)
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::mass
+    \qmlproperty real SpringFollow::mass
     This property holds the "mass" of the property being moved.
 
     mass is 1.0 by default.  Setting a different mass changes the dynamics of
@@ -452,7 +452,7 @@ bool QDeclarativeSpringFollow::inSync() const
 }
 
 /*!
-    \qmlproperty qreal SpringFollow::value
+    \qmlproperty real SpringFollow::value
     The current value.
 */
 qreal QDeclarativeSpringFollow::value() const

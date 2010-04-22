@@ -148,6 +148,7 @@ private:
     QScriptValue readVarProperty(int);
     QVariant readVarPropertyAsVariant(int);
     void writeVarProperty(int, const QScriptValue &);
+    void writeVarProperty(int, const QVariant &);
 
     QAbstractDynamicMetaObject *parent;
 

@@ -100,7 +100,8 @@ public:
     void addPluginPath(const QString& plugin);
     void setUseGL(bool use);
     void setUseNativeFileBrowser(bool);
-
+    void updateSizeHints();
+    void setSizeToView(bool sizeToView);
     QStringList builtinSkins() const;
 
     QMenuBar *menuBar() const;
@@ -149,6 +150,7 @@ private:
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QDeclarativeView *canvas;
+    QSize initialSize;
     QString currentFileOrUrl;
     QDeclarativeTimer recordTimer;
     QString frame_fmt;

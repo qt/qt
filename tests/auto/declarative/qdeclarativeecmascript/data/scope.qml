@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: root
@@ -7,21 +7,17 @@ Item {
     property int binding: a
     property string binding2: a + "Test"
     property int binding3: myFunction()
-    property int binding4: myNestedFunction()
+    property int binding4: nestedObject.myNestedFunction()
 
-    Script {
-        function myFunction() {
-            return a;
-        }
+    function myFunction() {
+        return a;
     }
 
     Item {
         id: nestedObject
 
-        Script {
-            function myNestedFunction() {
-                return a;
-            }
+        function myNestedFunction() {
+            return a;
         }
 
         property int a: 2

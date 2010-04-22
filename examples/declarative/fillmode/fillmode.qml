@@ -1,44 +1,22 @@
 import Qt 4.7
+import "content"
 
-Image {
-    width: 400
-    height: 250
-    source: "face.png"
+Rectangle {
+    id: window
 
-    SequentialAnimation on fillMode {
-        loops: Animation.Infinite
-        PropertyAction { value: Image.Stretch }
-        PropertyAction { target: label; property: "text"; value: "Stretch" }
-        PauseAnimation { duration: 1000 }
-        PropertyAction { value: Image.PreserveAspectFit }
-        PropertyAction { target: label; property: "text"; value: "PreserveAspectFit" }
-        PauseAnimation { duration: 1000 }
-        PropertyAction { value: Image.PreserveAspectCrop }
-        PropertyAction { target: label; property: "text"; value: "PreserveAspectCrop" }
-        PauseAnimation { duration: 1000 }
-        PropertyAction { value: Image.Tile }
-        PropertyAction { target: label; property: "text"; value: "Tile" }
-        PauseAnimation { duration: 1000 }
-        PropertyAction { value: Image.TileHorizontally }
-        PropertyAction { target: label; property: "text"; value: "TileHorizontally" }
-        PauseAnimation { duration: 1000 }
-        PropertyAction { value: Image.TileVertically }
-        PropertyAction { target: label; property: "text"; value: "TileVertically" }
-        PauseAnimation { duration: 1000 }
-    }
+    width: 800; height: 480
+    color: "#cdcdcd"
 
-    Text {
-        id: label
-        font.pointSize: 24
-        color: "blue"
-        style: Text.Outline
-        styleColor: "white"
-        anchors.centerIn: parent
-    }
+    Grid {
+        id: grid
+        anchors { fill: parent; topMargin: 10; leftMargin: 10; rightMargin: 10; bottomMargin: 10 }
+        columns: 3; rows: 2; spacing: 20
 
-    Rectangle {
-        border.color: "black"
-        color: "transparent"
-        anchors { fill: parent; rightMargin: 1; bottomMargin: 1 }
+        QtLogo { fillMode: Image.Stretch; label: "Stretch" }
+        QtLogo { fillMode: Image.PreserveAspectFit; label: "PreserveAspectFit" }
+        QtLogo { fillMode: Image.PreserveAspectCrop; label: "PreserveAspectCrop" }
+        QtLogo { fillMode: Image.Tile; label: "Tile" }
+        QtLogo { fillMode: Image.TileHorizontally; label: "TileHorizontally" }
+        QtLogo { fillMode: Image.TileVertically; label: "TileVertically" }
     }
 }

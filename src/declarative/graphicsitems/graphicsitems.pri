@@ -5,7 +5,6 @@ HEADERS += \
     $$PWD/qdeclarativeanchors_p.h \
     $$PWD/qdeclarativeanchors_p_p.h \
     $$PWD/qdeclarativeevents_p_p.h \
-    $$PWD/qdeclarativeeffects_p.h \
     $$PWD/qdeclarativeflickable_p.h \
     $$PWD/qdeclarativeflickable_p_p.h \
     $$PWD/qdeclarativeflipable_p.h \
@@ -50,7 +49,6 @@ HEADERS += \
     $$PWD/qdeclarativelistview_p.h \
     $$PWD/qdeclarativelayoutitem_p.h \
     $$PWD/qdeclarativeitemchangelistener_p.h \
-    $$PWD/qdeclarativeeffects.cpp \
     $$PWD/qdeclarativegraphicswidget_p.h
 
 SOURCES += \

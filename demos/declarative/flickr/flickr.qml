@@ -13,7 +13,6 @@ Item {
         Image { source: "mobile/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
         Common.RssModel { id: rssModel }
-        Common.Loading { anchors.centerIn: parent; visible: rssModel.status == 2 }
 
         Item {
             id: views
@@ -22,8 +21,9 @@ Item {
 
             Mobile.GridDelegate { id: gridDelegate }
             GridView {
+                x: (width/4-79)/2; y: x
                 id: photoGridView; model: rssModel; delegate: gridDelegate; cacheBuffer: 100
-                cellWidth: 79; cellHeight: 79; width: parent.width; height: parent.height - 1; z: 6
+                cellWidth: (parent.width-2)/4; cellHeight: cellWidth; width: parent.width; height: parent.height - 1; z: 6
             }
 
             Mobile.ListDelegate { id: listDelegate }

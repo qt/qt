@@ -49,8 +49,8 @@
 
 class BirthdayPartyAttached : public QObject
 {
-Q_OBJECT
-Q_PROPERTY(QDate rsvp READ rsvp WRITE setRsvp)
+    Q_OBJECT
+    Q_PROPERTY(QDate rsvp READ rsvp WRITE setRsvp)
 public:
     BirthdayPartyAttached(QObject *object);
 
@@ -60,30 +60,28 @@ public:
 private:
     QDate m_rsvp;
 };
-QML_DECLARE_TYPE(BirthdayPartyAttached)
 
 class BirthdayParty : public QObject
 {
-Q_OBJECT
-Q_PROPERTY(Person *celebrant READ celebrant WRITE setCelebrant)
-Q_PROPERTY(QDeclarativeListProperty<Person> guests READ guests)
+    Q_OBJECT
+    Q_PROPERTY(Person *host READ host WRITE setHost)
+    Q_PROPERTY(QDeclarativeListProperty<Person> guests READ guests)
 // ![0]
-Q_PROPERTY(QString speaker READ speaker WRITE setSpeaker)
+    Q_PROPERTY(QString announcement READ announcement WRITE setAnnouncement)
 // ![0]
-Q_CLASSINFO("DefaultProperty", "guests")
+    Q_CLASSINFO("DefaultProperty", "guests")
 public:
     BirthdayParty(QObject *parent = 0);
 
-    Person *celebrant() const;
-    void setCelebrant(Person *);
+    Person *host() const;
+    void setHost(Person *);
 
     QDeclarativeListProperty<Person> guests();
     int guestCount() const;
     Person *guest(int) const;
 
-
-    QString speaker() const;
-    void setSpeaker(const QString &);
+    QString announcement() const;
+    void setAnnouncement(const QString &);
 
     static BirthdayPartyAttached *qmlAttachedProperties(QObject *);
 
@@ -92,11 +90,9 @@ signals:
     void partyStarted(const QTime &time);
 
 private:
-    Person *m_celebrant;
+    Person *m_host;
     QList<Person *> m_guests;
 };
-
 QML_DECLARE_TYPEINFO(BirthdayParty, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(BirthdayParty)
 
 #endif // BIRTHDAYPARTY_H

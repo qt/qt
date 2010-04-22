@@ -55,13 +55,15 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
     QByteArray pointerName(name + '*');
 
     QDeclarativePrivate::RegisterType type = {
-        0, 
+        0,
 
         qRegisterMetaType<T *>(pointerName.constData()), 0, 0, 0,
 
-        "Qt", 4, 6, qmlName, &T::staticMetaObject,
+        QString(),
 
-        0, 0, 
+        "Qt", 4, 7, qmlName, &T::staticMetaObject,
+
+        0, 0,
 
         0, 0, 0,
 
@@ -712,7 +714,7 @@ int QDeclarativeFontValueType::pixelSize() const
 
 void QDeclarativeFontValueType::setPixelSize(int size)
 {
-    if (size >=0) {
+    if (size >0) {
         if (pointSizeSet)
             qWarning() << "Both point size and pixel size set. Using pixel size.";
         font.setPixelSize(size);

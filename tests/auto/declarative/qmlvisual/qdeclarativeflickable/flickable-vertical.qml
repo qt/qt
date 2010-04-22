@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     color: "lightSteelBlue"
@@ -15,7 +15,7 @@ Rectangle {
         ListElement { dayColor: "orange" }
     }
 
-    flickable {
+    Flickable {
         id: flick
         height: parent.height-50
         width: parent.width; contentHeight: column.height
@@ -33,7 +33,6 @@ Rectangle {
             }
         }
         clip: true
-        reportedVelocitySmoothing: 1000
     }
     Rectangle {
         radius: 3
@@ -77,7 +76,7 @@ Rectangle {
         color: "yellow"
         MouseArea {
             anchors.fill: parent
-            onClicked: flick.overShoot = flick.overShoot > 0 ? 0 : 30
+            onClicked: flick.boundsBehavior = flick.boundsBehavior == Flickable.StopAtBounds ? Flickable.DragAndOvershootBounds : Flickable.StopAtBounds
         }
     }
 

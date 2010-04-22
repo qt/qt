@@ -45,8 +45,36 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeclarativeParserStatus
-  \since 4.7
-    \brief The QDeclarativeParserStatus class provides updates on the parser state.
+    \since 4.7
+    \brief The QDeclarativeParserStatus class provides updates on the QML parser state.
+
+    QDeclarativeParserStatus provides a mechanism for classes instantiated by
+    a QDeclarativeEngine to receive notification at key points in their creation.
+
+    This class is often used for optimization purposes, as it allows you to defer an
+    expensive operation until after all the properties have been set on an
+    object. For example, QML's \l {Text} element uses the parser status
+    to defer text layout until all of its properties have been set (we
+    don't want to layout when the \c text is assigned, and then relayout
+    when the \c font is assigned, and relayout again when the \c width is assigned,
+    and so on).
+
+    To use QDeclarativeParserStatus, you must inherit both a QObject-derived class
+    and QDeclarativeParserStatus, and use the Q_INTERFACES() macro.
+
+    \code
+    class MyObject : public QObject, public QDeclarativeParserStatus
+    {
+        Q_OBJECT
+        Q_INTERFACES(QDeclarativeParserStatus)
+
+    public:
+        MyObject(QObject *parent = 0);
+        ...
+        void classBegin();
+        void componentComplete();
+    }
+    \endcode
 */
 
 /*! \internal */

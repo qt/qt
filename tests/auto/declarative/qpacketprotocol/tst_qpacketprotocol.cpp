@@ -111,14 +111,6 @@ void tst_QPacketProtocol::setMaximumPacketSize()
 
     QPacketProtocol out(m_serverConn);
     QCOMPARE(out.setMaximumPacketSize(size), expected);
-
-    if (size == expected) {
-        QPacketProtocol in(m_client);
-        QByteArray b;
-        b.fill('a', size + 1);
-        out.send() << b.constData();
-        QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(invalidPacket())));
-    }
 }
 
 void tst_QPacketProtocol::setMaximumPacketSize_data()
