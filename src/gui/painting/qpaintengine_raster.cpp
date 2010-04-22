@@ -94,6 +94,8 @@
 #  include <private/qabstractfontengine_p.h>
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 #  include <private/qfontengine_s60_p.h>
+#elif defined(Q_WS_LITE)
+#  include <private/qfontengine_ft_p.h>
 #endif
 
 #if defined(Q_WS_WIN64)
@@ -3314,9 +3316,9 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     }
 #endif // Q_WS_QWS
 
-#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN) || defined(Q_WS_LITE)) && !defined(QT_NO_FREETYPE)
 
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_QPF2)
+#if (defined(Q_WS_QWS) || defined(Q_WS_LITE)) && !defined(QT_NO_QWS_QPF2)
     if (fontEngine->type() == QFontEngine::QPF2) {
         QFontEngine *renderingEngine = static_cast<QFontEngineQPF *>(fontEngine)->renderingEngine();
         if (renderingEngine)
