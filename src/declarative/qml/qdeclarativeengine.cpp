@@ -1736,7 +1736,7 @@ public:
                 found = QDeclarativeMetaType::isModule(uri.toUtf8(), vmaj, vmin);
                 if (!found) {
                     if (errorString) {
-                        bool anyversion = QDeclarativeMetaType::isModule(uri.toUtf8(), 0, 0);
+                        bool anyversion = QDeclarativeMetaType::isModule(uri.toUtf8(), -1, -1);
                         if (anyversion)
                             *errorString = QDeclarativeEngine::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
                         else

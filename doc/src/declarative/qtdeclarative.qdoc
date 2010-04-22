@@ -91,6 +91,10 @@
   qmlRegisterType<MinehuntGame>("MinehuntCore", 0, 1, "Game");
   \endcode
 
+  Note that it's perfectly reasonable for a library to register types to older versions
+  than the actual version of the library. Indeed, it is normal for the new library to allow
+  QML written to previous versions to continue to work, even if more advanced versions of
+  some of its types are available.
 */
 
 /*!
