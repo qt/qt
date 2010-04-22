@@ -182,7 +182,6 @@ public:
     qreal penScale;         // Pen scaling factor from "transform".
 
     QTransform pathTransform;  // Calculated VG path transformation.
-    QTransform glyphTransform; // Calculated VG glyph transformation.
     QTransform imageTransform; // Calculated VG image transformation.
     bool pathTransformSet;  // True if path transform set in the VG context.
 
@@ -507,24 +506,15 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
     //        | 1  0  0   |
     //        | 0 -1 devh |
     //        | 0  0  1   |
-    // The glyph transform uses a slightly different transformation:
-    //        | 1  0  0       |   | 1 0  0.5 |   | 1  0     0.5      |
-    //        | 0 -1 devh - 1 | * | 0 1 -0.5 | = | 0 -1 (devh - 0.5) |
-    //        | 0  0  1       |   | 0 0   1  |   | 0  0      1       |
     // The full VG transform is effectively:
     //      1. Apply the user's transformation matrix.
-    //      2. Translate glyphs by an extra (0.5, -0.5).
-    //      3. Flip the co-ordinate system upside down.
+    //      2. Flip the co-ordinate system upside down.
     QTransform viewport(1.0f, 0.0f, 0.0f,
                         0.0f, -1.0f, 0.0f,
                         0.0f, devh, 1.0f);
-    QTransform gviewport(1.0f, 0.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.5f, devh - 0.5f, 1.0f);
 
     // Compute the path transform and determine if it is projective.
     pathTransform = transform * viewport;
-    glyphTransform = transform * gviewport;
     bool projective = (pathTransform.m13() != 0.0f ||
                        pathTransform.m23() != 0.0f ||
                        pathTransform.m33() != 1.0f);
@@ -533,7 +523,6 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
         // so we will have to convert the co-ordinates ourselves.
         // Change the matrix to just the viewport transformation.
         pathTransform = viewport;
-        glyphTransform = gviewport;
         simpleTransform = false;
     } else {
         simpleTransform = true;
@@ -3242,10 +3231,10 @@ void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
                 vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
             }
         }
-        origin[0] = -metrics.x.toReal() + 0.5f;
-        origin[1] = -metrics.y.toReal() + 0.5f;
-        escapement[0] = metrics.xoff.toReal();
-        escapement[1] = metrics.yoff.toReal();
+        origin[0] = -metrics.x.toReal();
+        origin[1] = -metrics.y.toReal();
+        escapement[0] = 0;
+        escapement[1] = 0;
         vgSetGlyphToImage(font, glyph, vgImage, origin, escapement);
         vgDestroyImage(vgImage);    // Reduce reference count.
 #else
@@ -3261,8 +3250,8 @@ void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
         }
         origin[0] = 0;
         origin[1] = 0;
-        escapement[0] = metrics.xoff.toReal();
-        escapement[1] = metrics.yoff.toReal();
+        escapement[0] = 0;
+        escapement[1] = 0;
         vgSetGlyphToPath(font, glyph, vgPath, VG_FALSE, origin, escapement);
         vgDestroyPath(vgPath);      // Reduce reference count.
 #endif // !defined(QVG_NO_IMAGE_GLYPHS)
@@ -3287,10 +3276,8 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Get the glyphs and positions associated with the text item.
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = d->transform;
-    matrix.translate(p.x(), p.y());
-    ti.fontEngine->getGlyphPositions
-        (ti.glyphs, matrix, ti.flags, glyphs, positions);
+    QTransform matrix;
+    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
         QPaintEngineEx::drawTextItem(p, textItem);
@@ -3334,7 +3321,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     }
 
     // Set the transformation to use for drawing the current glyphs.
-    QTransform glyphTransform(d->glyphTransform);
+    QTransform glyphTransform(d->pathTransform);
     glyphTransform.translate(p.x(), p.y());
 #if defined(QVG_NO_IMAGE_GLYPHS)
     glyphTransform.scale(glyphCache->scaleX, glyphCache->scaleY);
@@ -3344,10 +3331,18 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     // Add the glyphs from the text item into the glyph cache.
     glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
+    // Create the array of adjustments between glyphs
+    QVarLengthArray<VGfloat> adjustments_x(glyphs.size());
+    QVarLengthArray<VGfloat> adjustments_y(glyphs.size());
+    for (int i = 1; i < glyphs.size(); ++i) {
+        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).toReal();
+        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).toReal();
+    }
+
     // Set the glyph drawing origin.
     VGfloat origin[2];
-    origin[0] = 0;
-    origin[1] = 0;
+    origin[0] = positions[0].x.toReal();
+    origin[1] = positions[0].y.toReal();
     vgSetfv(VG_GLYPH_ORIGIN, 2, origin);
 
     // Fast anti-aliasing for paths, better for images.
@@ -3361,13 +3356,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    if (ti.renderFlags() & QTextItem::RightToLeft) {
-        for (int index = numGlyphs - 1; index >= 0; --index)
-            vgDrawGlyph(glyphCache->font, glyphs[index], VG_FILL_PATH, VG_TRUE);
-    } else {
-        vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs.data(),
-                     NULL, NULL, VG_FILL_PATH, VG_TRUE);
-    }
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs.data(),
+                 adjustments_x.data(), adjustments_y.data(), VG_FILL_PATH, VG_TRUE);
     return true;
 #else
     Q_UNUSED(numGlyphs);
