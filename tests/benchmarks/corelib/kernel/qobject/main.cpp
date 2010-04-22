@@ -69,6 +69,7 @@ void QObjectBenchmark::signal_slot_benchmark_data()
     QTest::newRow("simple function") << 0;
     QTest::newRow("single signal/slot") << 1;
     QTest::newRow("multi signal/slot") << 2;
+    QTest::newRow("unconnected signal") << 3;
 }
 
 void QObjectBenchmark::signal_slot_benchmark()
@@ -110,9 +111,13 @@ void QObjectBenchmark::signal_slot_benchmark()
         QBENCHMARK {
             singleObject.emitSignal0();
         }
-    } else {
+    } else if (type == 2) {
         QBENCHMARK {
-            multiObject.emitSignal0();   
+            multiObject.emitSignal0();
+        }
+    } else if (type == 3) {
+        QBENCHMARK {
+            singleObject.emitSignal1();
         }
     }
 }

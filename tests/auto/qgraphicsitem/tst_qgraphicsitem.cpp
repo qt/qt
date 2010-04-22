@@ -62,6 +62,7 @@
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
 #include <QInputContext>
+#include <QPushButton>
 
 #include "../../shared/util.h"
 
@@ -426,6 +427,7 @@ private slots:
     void itemIsInFront();
     void scenePosChange();
     void updateMicroFocus();
+    void textItem_shortcuts();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -10058,6 +10060,42 @@ void tst_QGraphicsItem::updateMicroFocus()
     QTRY_COMPARE(ic.nbUpdates, 1);
     //No update since view2 does not have the focus.
     QTRY_COMPARE(ic2.nbUpdates, 0);
+}
+
+void tst_QGraphicsItem::textItem_shortcuts()
+{
+    QWidget w;
+    QVBoxLayout l;
+    w.setLayout(&l);
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    l.addWidget(&view);
+    QPushButton b("Push Me");
+    l.addWidget(&b);
+
+    QGraphicsTextItem *item = scene.addText("Troll Text");
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+    item->setTextInteractionFlags(Qt::TextEditorInteraction);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+
+    item->setFocus();
+    QTRY_VERIFY(item->hasFocus());
+    QVERIFY(item->textCursor().selectedText().isEmpty());
+
+    // Shortcut should work (select all)
+    QTest::keyClick(&view, Qt::Key_A, Qt::ControlModifier);
+    QTRY_COMPARE(item->textCursor().selectedText(), item->toPlainText());
+    QTextCursor tc = item->textCursor();
+    tc.clearSelection();
+    item->setTextCursor(tc);
+    QVERIFY(item->textCursor().selectedText().isEmpty());
+
+    // Shortcut should also work if the text item has the focus and another widget
+    // has the same shortcut.
+    b.setShortcut(QKeySequence("CTRL+A"));
+    QTest::keyClick(&view, Qt::Key_A, Qt::ControlModifier);
+    QTRY_COMPARE(item->textCursor().selectedText(), item->toPlainText());
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()

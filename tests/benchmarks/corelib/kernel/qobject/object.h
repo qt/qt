@@ -48,6 +48,7 @@ class Object : public QObject
     Q_OBJECT
 public:
     void emitSignal0();
+    void emitSignal1();
 signals:
     void signal0();
     void signal1();
