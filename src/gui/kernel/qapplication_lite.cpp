@@ -627,7 +627,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterface::MouseEvent *
         //even if we're blocked by modality, we should deliver the mouse release event..
         //### this code is not completely correct: multiple buttons can be pressed simultaneously
         if (!(implicit_mouse_grabber && buttons == Qt::NoButton)) {
-            qDebug() << "modal blocked mouse event to" << tlw;
+            //qDebug() << "modal blocked mouse event to" << tlw;
             return;
         }
     }

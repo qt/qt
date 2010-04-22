@@ -342,7 +342,13 @@ void QWindowSurface::setPartialUpdateSupport(bool enable)
     d_ptr->partialUpdateSupport = enable;
 }
 
-void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
+#ifdef Q_WS_LITE
+#define Q_EXPORT_SCROLLRECT Q_GUI_EXPORT
+#else
+#define Q_EXPORT_SCROLLRECT
+#endif
+
+void Q_EXPORT_SCROLLRECT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
 {
     // make sure we don't detach
     uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
