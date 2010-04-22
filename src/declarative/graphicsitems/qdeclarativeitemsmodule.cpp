@@ -46,7 +46,6 @@
 #include <QtGui/qgraphicseffect.h>
 
 #include "private/qdeclarativeevents_p_p.h"
-#include "private/qdeclarativeeffects_p.h"
 #include "private/qdeclarativescalegrid_p_p.h"
 #include "private/qdeclarativeanimatedimage_p.h"
 #include "private/qdeclarativeborderimage_p.h"
@@ -144,19 +143,6 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QAction>();
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
-#ifdef QT_NO_GRAPHICSEFFECT
-    QString no_graphicseffect = qApp->translate("QGraphicsBlurEffect","Qt was built without support for graphicseffects");
-    qmlRegisterTypeNotAvailable("Qt",4,7,"Blur",no_graphicseffect);
-    qmlRegisterTypeNotAvailable("Qt",4,7,"Colorize",no_graphicseffect);
-    qmlRegisterTypeNotAvailable("Qt",4,7,"DropShadow",no_graphicseffect);
-    qmlRegisterTypeNotAvailable("Qt",4,7,"Opacity",no_graphicseffect);
-#else
-    qmlRegisterType<QGraphicsEffect>();
-    qmlRegisterType<QGraphicsBlurEffect>("Qt",4,7,"Blur");
-    qmlRegisterType<QGraphicsColorizeEffect>("Qt",4,7,"Colorize");
-    qmlRegisterType<QGraphicsDropShadowEffect>("Qt",4,7,"DropShadow");
-    qmlRegisterType<QGraphicsOpacityEffect>("Qt",4,7,"Opacity");
-#endif
 
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,7,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,7,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));

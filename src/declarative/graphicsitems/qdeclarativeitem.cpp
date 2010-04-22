@@ -61,7 +61,6 @@
 #include <QtCore/qnumeric.h>
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
-#include <QtGui/qgraphicseffect.h>
 #include <qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,8 +68,6 @@ QT_BEGIN_NAMESPACE
 #ifndef FLT_MAX
 #define FLT_MAX 1E+37
 #endif
-
-#include "qdeclarativeeffects.cpp"
 
 /*!
     \qmlclass Transform QGraphicsTransform
@@ -231,11 +228,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \group group_coreitems
     \title Basic Items
-*/
-
-/*!
-    \group group_effects
-    \title Effects
 */
 
 /*!
@@ -2154,8 +2146,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
 
   Opacity is an \e inherited attribute.  That is, the opacity is
   also applied individually to child items.  In almost all cases this
-  is what you want.  If you can spot the issue in the following
-  example, you might need to use an \l Opacity effect instead.
+  is what you want, but in some cases (like the following example)
+  it may produce undesired results.
 
   \table
   \row
