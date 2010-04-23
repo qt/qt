@@ -619,16 +619,10 @@ void QTabBarPrivate::layoutTab(int index)
     }
 }
 
-void QTabBarPrivate::layoutWidgets(int index)
+void QTabBarPrivate::layoutWidgets(int start)
 {
     Q_Q(QTabBar);
-    int start = 0;
-    int end = q->count();
-    if (index != -1) {
-        start = qMax(index, 0);
-        end = qMin(end, start + 1);
-    }
-    for (int i = start; i < end; ++i) {
+    for (int i = start; i < q->count(); ++i) {
         layoutTab(i);
     }
 }
@@ -1210,8 +1204,9 @@ void QTabBar::setCurrentIndex(int index)
         update();
         d->makeVisible(index);
         d->tabList[index].lastTab = oldIndex;
-        d->layoutWidgets(oldIndex);
-        d->layoutWidgets(index);
+        if (oldIndex >= 0 && oldIndex < count())
+            d->layoutTab(oldIndex);
+        d->layoutTab(index);
 #ifdef QT3_SUPPORT
         emit selected(index);
 #endif
