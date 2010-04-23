@@ -41,15 +41,15 @@
 
 #include <QtTest/QtTest>
 
-#include <QtMultimedia/qvideowidget.h>
+#include <QtMediaServices/qvideowidget.h>
 
-#include <QtMultimedia/qmediaobject.h>
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/private/qpaintervideosurface_p.h>
-#include <QtMultimedia/qvideooutputcontrol.h>
-#include <QtMultimedia/qvideowindowcontrol.h>
-#include <QtMultimedia/qvideowidgetcontrol.h>
-#include <QtMultimedia/qvideorenderercontrol.h>
+#include <QtMediaServices/qmediaobject.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/private/qpaintervideosurface_p.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideowindowcontrol.h>
+#include <QtMediaServices/qvideowidgetcontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
 #include <QtMultimedia/qabstractvideosurface.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 
@@ -1589,7 +1589,9 @@ void tst_QVideoWidget::paintRendererControl()
     QCOMPARE(surface->isActive(), true);
     QCOMPARE(surface->isReady(), false);
 
-    QCoreApplication::processEvents(QEventLoop::AllEvents);
+    //wait up to 2 seconds for the frame to be presented
+    for (int i=0; i<200 && !surface->isReady(); i++)
+        QTest::qWait(10);
 
     QCOMPARE(surface->isActive(), true);
     QCOMPARE(surface->isReady(), true);

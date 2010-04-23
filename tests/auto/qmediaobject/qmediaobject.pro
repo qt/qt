@@ -1,4 +1,4 @@
 load(qttest_p4)
 
 SOURCES += tst_qmediaobject.cpp
-QT = core multimedia
+QT = core mediaservices

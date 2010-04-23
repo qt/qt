@@ -2,5 +2,5 @@ load(qttest_p4)
 
 SOURCES = tst_qmediatimerange.cpp
 
-QT = core multimedia
+QT = core mediaservices
 
