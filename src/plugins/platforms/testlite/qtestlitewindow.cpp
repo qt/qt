@@ -1188,6 +1188,8 @@ void MyX11Cursors::timeout()
         lookupMap.take(id);
         MyX11CursorNode * tmp = node;
         node = node->post();
+        if (node)
+            node->setAnte(0);
         delete tmp;
         XFreeCursor(display, c);
     }
