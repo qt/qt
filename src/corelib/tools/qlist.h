@@ -712,7 +712,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T>::~QList()
 {
-    if (d && !d->ref.deref())
+    if (!d->ref.deref())
         free(d);
 }
 
@@ -740,8 +740,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::free(QListData::Data *data)
 {
     node_destruct(reinterpret_cast<Node *>(data->array + data->begin),
                   reinterpret_cast<Node *>(data->array + data->end));
-    if (data->ref == 0)
-        qFree(data);
+    qFree(data);
 }
 
 
