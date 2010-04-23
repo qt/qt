@@ -1923,18 +1923,30 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     inLink = true;
 
     out() << "<div class=\"toc\">\n";
-    out() << "<h3>Table of Contents</h3>\n";
+    out() << "<h3>Contents</h3>\n";
     sectionNumber.append("1");
-    out() << "<ul class=\"level" << sectionNumber.size() << "\">\n";
+    out() << "<ul>\n";
 
     if (node->subType() == Node::Module) {
         if (moduleNamespaceMap.contains(node->name())) {
-            out() << "<li><a href=\"#" << registerRef("namespaces") << "\">Namespaces</a></li>\n";
+            out() << "<li class=\"level"
+                  << sectionNumber.size()
+                  << "\"><a href=\"#"
+                  << registerRef("namespaces")
+                  << "\">Namespaces</a></li>\n";
         }
         if (moduleClassMap.contains(node->name())) {
-            out() << "<li><a href=\"#" << registerRef("classes") << "\">Classes</a></li>\n";
+            out() << "<li class=\"level"
+                  << sectionNumber.size()
+                  << "\"><a href=\"#"
+                  << registerRef("classes")
+                  << "\">Classes</a></li>\n";
         }
-        out() << "<li><a href=\"#" << registerRef("details") << "\">Detailed Description</a></li>\n";
+        out() << "<li class=\"level"
+              << sectionNumber.size()
+              << "\"><a href=\"#"
+              << registerRef("details")
+              << "\">Detailed Description</a></li>\n";
         for (int i = 0; i < toc.size(); ++i) {
             if (toc.at(i)->string().toInt() == 1) {
                 detailsBase = 1;
@@ -1946,14 +1958,20 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         QList<Section>::ConstIterator s = sections->begin();
         while (s != sections->end()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
-                out() << "<li><a href=\"#"
+                out() << "<li class=\"level"
+                      << sectionNumber.size()
+                      << "\"><a href=\"#"
                       << registerRef((*s).pluralMember)
                       << "\">" << (*s).name
                       << "</a></li>\n";
             }
             ++s;
         }
-        out() << "<li><a href=\"#" << registerRef("details") << "\">Detailed Description</a></li>\n";
+        out() << "<li class=\"level"
+              << sectionNumber.size()
+              << "\"><a href=\"#"
+              << registerRef("details")
+              << "\">Detailed Description</a></li>\n";
         for (int i = 0; i < toc.size(); ++i) {
             if (toc.at(i)->string().toInt() == 1) {
                 detailsBase = 1;
@@ -1968,12 +1986,10 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         if (sectionNumber.size() < nextLevel) {
             do {
                 sectionNumber.append("1");
-                out() << "<ul class=\"level" << sectionNumber.size() << "\">\n";
             } while (sectionNumber.size() < nextLevel);
         }
         else {
             while (sectionNumber.size() > nextLevel) {
-                out() << "</ul>\n";
                 sectionNumber.removeLast();
             }
             sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
@@ -1981,19 +1997,20 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         int numAtoms;
         Text headingText = Text::sectionHeading(atom);
         QString s = headingText.toString();
-        out() << "<li>";
+        out() << "<li class=\"level"
+              << sectionNumber.size()
+              << "\">";
         out() << "<a href=\""
               << "#"
-            //<< registerRef(s)
               << Doc::canonicalTitle(s)
               << "\">";
         generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
         out() << "</a></li>\n";
     }
     while (!sectionNumber.isEmpty()) {
-        out() << "</ul>\n";
         sectionNumber.removeLast();
     }
+    out() << "</ul>\n";
     out() << "</div>\n";
     inContents = false;
     inLink = false;
