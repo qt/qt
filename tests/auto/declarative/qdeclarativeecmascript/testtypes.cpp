@@ -72,6 +72,14 @@ private:
     int m_value;
 };
 
+class DefaultPropertyExtensionObject : public QObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("DefaultProperty", "firstProperty")
+public:
+    DefaultPropertyExtensionObject(QObject *parent) : QObject(parent) {}
+};
+
 void registerTypes()
 {
     qmlRegisterType<MyQmlObject>("Qt.test", 1,0, "MyQmlObject");
@@ -81,6 +89,8 @@ void registerTypes()
     qmlRegisterExtendedType<MyExtendedObject, ExtensionObject>("Qt.test", 1,0, "MyExtendedObject");
     qmlRegisterType<MyTypeObject>("Qt.test", 1,0, "MyTypeObject");
     qmlRegisterType<NumberAssignment>("Qt.test", 1,0, "NumberAssignment");
+    qmlRegisterExtendedType<DefaultPropertyExtendedObject, DefaultPropertyExtensionObject>("Qt.test", 1,0, "DefaultPropertyExtendedObject");
+    qmlRegisterType<OverrideDefaultPropertyObject>("Qt.test", 1,0, "OverrideDefaultPropertyObject");
 }
 
 #include "testtypes.moc"

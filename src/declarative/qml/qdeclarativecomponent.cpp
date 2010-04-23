@@ -67,14 +67,14 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
 
 /*!
     \class QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeComponent class encapsulates a QML component description.
     \mainclass
 */
 
 /*!
     \qmlclass Component QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The Component element encapsulates a QML component description.
 
     Components are reusable, encapsulated Qml element with a well-defined interface.
@@ -86,26 +86,26 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
     file containing it.
 
     \qml
-Item {
-    Component {
-        id: redSquare
-        Rectangle {
-            color: "red"
-            width: 10
-            height: 10
+    Item {
+        Component {
+            id: redSquare
+            Rectangle {
+                color: "red"
+                width: 10
+                height: 10
+            }
         }
+        Loader { sourceComponent: redSquare }
+        Loader { sourceComponent: redSquare; x: 20 }
     }
-    Loader { sourceComponent: redSquare }
-    Loader { sourceComponent: redSquare; x: 20 }
-}
     \endqml
+*/
 
-    \section1 Attached Properties
-
-    \e onCompleted
+/*!
+    \qmlattachedsignal Component::onCompleted()
 
     Emitted after component "startup" has completed.  This can be used to
-    execute script code at startup, once the full QML environment has been 
+    execute script code at startup, once the full QML environment has been
     established.
 
     The \c {Component::onCompleted} attached property can be applied to
@@ -120,8 +120,10 @@ Item {
         }
     }
     \endqml
+*/
 
-    \e onDestruction
+/*!
+    \qmlattachedsignal Component::onDestruction()
 
     Emitted as the component begins destruction.  This can be used to undo
     work done in the onCompleted signal, or other imperative code in your
@@ -129,7 +131,7 @@ Item {
 
     The \c {Component::onDestruction} attached property can be applied to
     any element.  However, it applies to the destruction of the component as
-    a whole, and not the destruction of the specific object.  The order of 
+    a whole, and not the destruction of the specific object.  The order of
     running the \c onDestruction scripts is undefined.
 
     \qml
@@ -530,10 +532,8 @@ QScriptValue QDeclarativeComponent::createObject()
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
-    if(!ctxt){
-        qWarning() << QLatin1String("createObject can only be used in QML");
+    if(!ctxt)
         return QScriptValue();
-    }
     QObject* ret = create(ctxt);
     if (!ret)
         return QScriptValue();
@@ -613,17 +613,17 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 {
     Q_Q(QDeclarativeComponent);
     if (!context) {
-        qWarning("QDeclarativeComponent::beginCreate(): Cannot create a component in a null context");
+        qWarning("QDeclarativeComponent: Cannot create a component in a null context");
         return 0;
     }
 
     if (!context->isValid()) {
-        qWarning("QDeclarativeComponent::beginCreate(): Cannot create a component in an invalid context");
+        qWarning("QDeclarativeComponent: Cannot create a component in an invalid context");
         return 0;
     }
 
     if (context->engine != engine) {
-        qWarning("QDeclarativeComponent::beginCreate(): Must create component in context from the same QDeclarativeEngine");
+        qWarning("QDeclarativeComponent: Must create component in context from the same QDeclarativeEngine");
         return 0;
     }
 
@@ -766,7 +766,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
         enginePriv->inProgressCreations--;
         if (0 == enginePriv->inProgressCreations) {
             while (enginePriv->erroredBindings) {
-                qWarning().nospace() << qPrintable(enginePriv->erroredBindings->error.toString());
+                enginePriv->warning(enginePriv->erroredBindings->error);
                 enginePriv->erroredBindings->removeError();
             }
         }

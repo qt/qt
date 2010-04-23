@@ -697,7 +697,7 @@ T *tst_QDeclarativePathView::findItem(QGraphicsObject *parent, const QString &ob
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QDeclarativeExpression e(qmlContext(item), "index", item);
-                if (e.value().toInt() == index)
+                if (e.evaluate().toInt() == index)
                     return static_cast<T*>(item);
             } else {
                 return static_cast<T*>(item);

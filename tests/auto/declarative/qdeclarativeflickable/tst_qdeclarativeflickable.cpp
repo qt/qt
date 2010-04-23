@@ -57,7 +57,7 @@ private slots:
     void horizontalViewportSize();
     void verticalViewportSize();
     void properties();
-    void overShoot();
+    void boundsBehavior();
     void maximumFlickVelocity();
     void flickDeceleration();
     void pressDelay();
@@ -88,7 +88,7 @@ void tst_qdeclarativeflickable::create()
     QCOMPARE(obj->verticalVelocity(), 0.);
 
     QCOMPARE(obj->isInteractive(), true);
-    QCOMPARE(obj->overShoot(), true);
+    QCOMPARE(obj->boundsBehavior(), QDeclarativeFlickable::DragAndOvershootBounds);
     QCOMPARE(obj->pressDelay(), 0);
     QCOMPARE(obj->maximumFlickVelocity(), 2000.);
 
@@ -137,34 +137,40 @@ void tst_qdeclarativeflickable::properties()
 
     QVERIFY(obj != 0);
     QCOMPARE(obj->isInteractive(), false);
-    QCOMPARE(obj->overShoot(), false);
+    QCOMPARE(obj->boundsBehavior(), QDeclarativeFlickable::StopAtBounds);
     QCOMPARE(obj->pressDelay(), 200);
     QCOMPARE(obj->maximumFlickVelocity(), 2000.);
 
     delete obj;
 }
 
-void tst_qdeclarativeflickable::overShoot()
+void tst_qdeclarativeflickable::boundsBehavior()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Flickable { overShoot: false; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Flickable { boundsBehavior: Flickable.StopAtBounds }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
-    QSignalSpy spy(flickable, SIGNAL(overShootChanged()));
+    QSignalSpy spy(flickable, SIGNAL(boundsBehaviorChanged()));
 
     QVERIFY(flickable);
-    QVERIFY(!flickable->overShoot());
+    QVERIFY(flickable->boundsBehavior() == QDeclarativeFlickable::StopAtBounds);
 
-    flickable->setOverShoot(true);
-    QVERIFY(flickable->overShoot());
+    flickable->setBoundsBehavior(QDeclarativeFlickable::DragAndOvershootBounds);
+    QVERIFY(flickable->boundsBehavior() == QDeclarativeFlickable::DragAndOvershootBounds);
     QCOMPARE(spy.count(),1);
-    flickable->setOverShoot(true);
+    flickable->setBoundsBehavior(QDeclarativeFlickable::DragAndOvershootBounds);
     QCOMPARE(spy.count(),1);
 
-    flickable->setOverShoot(false);
-    QVERIFY(!flickable->overShoot());
+    flickable->setBoundsBehavior(QDeclarativeFlickable::DragOverBounds);
+    QVERIFY(flickable->boundsBehavior() == QDeclarativeFlickable::DragOverBounds);
     QCOMPARE(spy.count(),2);
-    flickable->setOverShoot(false);
+    flickable->setBoundsBehavior(QDeclarativeFlickable::DragOverBounds);
     QCOMPARE(spy.count(),2);
+
+    flickable->setBoundsBehavior(QDeclarativeFlickable::StopAtBounds);
+    QVERIFY(flickable->boundsBehavior() == QDeclarativeFlickable::StopAtBounds);
+    QCOMPARE(spy.count(),3);
+    flickable->setBoundsBehavior(QDeclarativeFlickable::StopAtBounds);
+    QCOMPARE(spy.count(),3);
 }
 
 void tst_qdeclarativeflickable::maximumFlickVelocity()

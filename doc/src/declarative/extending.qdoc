@@ -59,7 +59,7 @@ QML for their own independent use.
 \snippet examples/declarative/extending/adding/example.qml 0
 
 The QML snippet shown above instantiates one \c Person instance and sets
-the name and shoeSize properties on it.  Everything in QML ultimately comes down
+the \c name and \c shoeSize properties on it.  Everything in QML ultimately comes down
 to either instantiating an object instance, or assigning a property a value.
 QML relies heavily on Qt's meta object system and can only instantiate classes
 that derive from QObject.
@@ -67,12 +67,11 @@ that derive from QObject.
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must define the C++ types, and their corresponding QML name.
 
-Custom C++ types are declared QML types using a macro and a template function:
+Custom C++ types are registered using a template function:
 
 \quotation
 
 \code
-#define QML_DECLARE_TYPE(T)
 template<typename T>
 int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 \endcode
@@ -80,10 +79,6 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
 Calling qmlRegisterType() registers the C++ type \a T with the QML system, and makes it available in QML
 under the name \a qmlName in library \a uri version \a versionMajor.versionMinor.
 The \a qmlName can be the same as the C++ type name.
-
-Generally the QML_DECLARE_TYPE() macro should be included immediately following
-the type declaration (usually in its header file), and the template function qmlRegisterType()
-called by the implementation.
 
 Type \a T must be a concrete type that inherits QObject and has a default
 constructor.
@@ -129,7 +124,7 @@ the \c Person type.
 \snippet examples/declarative/extending/properties/example.qml 0
 
 The QML snippet shown above assigns a \c Person object to the \c BirthdayParty's
-celebrant property, and assigns three \c Person objects to the guests property.
+\c host property, and assigns three \c Person objects to the guests property.
 
 QML can set properties of types that are more complex than basic intrinsics like
 integers and strings.  Properties can also be object pointers, Qt interface
@@ -138,42 +133,37 @@ is typesafe it ensures that only valid types are assigned to these properties,
 just like it does for primitive types.
 
 Properties that are pointers to objects or Qt interfaces are declared with the
-Q_PROPERTY() macro, just like other properties.  The celebrant property
+Q_PROPERTY() macro, just like other properties.  The \c host property
 declaration looks like this:
 
 \snippet examples/declarative/extending/properties/birthdayparty.h 1
 
-As long as the property type, in this case Person, is registered with QML the
+As long as the property type, in this case \c Person, is registered with QML the
 property can be assigned.
 
 QML also supports assigning Qt interfaces.  To assign to a property whose type
 is a Qt interface pointer, the interface must also be registered with QML.  As
 they cannot be instantiated directly, registering a Qt interface is different
-from registering a new QML type.  The following macro and function are used instead:
+from registering a new QML type. The following function is used instead:
 
 \quotation
 \code
-#define QML_DECLARE_INTERFACE(T)
 template<typename T>
 int qmlRegisterInterface(const char *typeName)
 \endcode
 
 Registers the C++ interface \a T with the QML system as \a typeName.
 
-Generally the QML_DECLARE_INTERFACE() macro should be included immediately
-following the interface declaration (usually in its header file), and the
-qmlRegisterInterface() template function called by the implementation.
-
 Following registration, QML can coerce objects that implement this interface
 for assignment to appropriately typed properties.
 \endquotation
 
-The guests property is a list of \c Person objects.  Properties that are lists
+The \c guests property is a list of \c Person objects.  Properties that are lists
 of objects or Qt interfaces are also declared with the Q_PROPERTY() macro, just
 like other properties.  List properties must have the type \c {QDeclarativeListProperty<T>}.
 As with object properties, the type \a T must be registered with QML.
 
-The guest property declaration looks like this:
+The \c guest property declaration looks like this:
 
 \snippet examples/declarative/extending/properties/birthdayparty.h 2
 
@@ -185,24 +175,23 @@ code used to create the \c BirthdayParty type.
 \snippet examples/declarative/extending/coercion/example.qml 0
 
 The QML snippet shown above assigns a \c Boy object to the \c BirthdayParty's
-celebrant property, and assigns three other objects to the guests property.
+\c host property, and assigns three other objects to the \c guests property.
 
-QML supports C++ inheritance heirarchies and can freely coerce between known,
+QML supports C++ inheritance hierarchies and can freely coerce between known,
 valid object types.  This enables the creation of common base classes that allow
 the assignment of specialized classes to object or list properties.  In the
-snippet shown, both the celebrant and the guests properties retain the Person
-type used in the previous section, but the assignment is valid as both the Boy
-and Girl objects inherit from Person.
+snippet shown, both the \c host and the \c guests properties retain the \c Person
+type used in the previous section, but the assignment is valid as both the \c Boy
+and \c Girl objects inherit from \c Person.
 
 To assign to a property, the property's type must have been registered with QML.
 Both the qmlRegisterType() and qmlRegisterInterface() template functions already
 shown can be used to register a type with QML.  Additionally, if a type that acts purely
 as a base class that cannot be instantiated from QML needs to be
-registered these macro and function can be used:
+registered, the following function can be used:
 
 \quotation
 \code
-    #define QML_DECLARE_TYPE(T)
     template<typename T>
     int qmlRegisterType()
 \endcode
@@ -211,10 +200,6 @@ Registers the C++ type \a T with the QML system. The parameterless call to the t
 function qmlRegisterType() does not define a mapping between the
 C++ class and a QML element name, so the type is not instantiable from QML, but
 it is available for type coercion.
-
-Generally the QML_DECLARE_TYPE() macro should be included immediately following
-the type declaration (usually in its header file), and the
-qmlRegisterType() template function called from the implementation.
 
 Type \a T must inherit QObject, but there are no restrictions on whether it is
 concrete or the signature of its constructor.
@@ -234,7 +219,7 @@ code used to create the \c Boy and \c Girl types.
 The QML snippet shown above assigns a collection of objects to the
 \c BirthdayParty's default property.
 
-The default property is a syntactic convenience that allows a type designer to
+The \e {default property} is a syntactic convenience that allows a type designer to
 specify a single property as the type's default.  The default property is
 assigned to whenever no explicit property is specified.  As a convenience, it is
 behaviorally identical to assigning the default property explicitly by name.
@@ -272,12 +257,12 @@ may also simplify the implementation of common property collections across
 different types through implementation reuse.
 
 A grouped property block is implemented as a read-only object property.  The
-shoe property shown is declared like this:
+\c shoe property shown is declared like this:
 
 \snippet examples/declarative/extending/grouped/person.h 1
 
-The ShoeDescription type declares the properties available to the grouped
-property block - in this case the size, color, brand and price properties.
+The \c ShoeDescription type declares the properties available to the grouped
+property block - in this case the \c size, \c color, \c brand and \c price properties.
 
 Grouped property blocks may declared and accessed be recusively.
 
@@ -288,7 +273,7 @@ implement the \c shoe property grouping.
 
 \snippet examples/declarative/extending/attached/example.qml 1
 
-The QML snippet shown above assigns the rsvp property using the attached
+The QML snippet shown above assigns the \c rsvp property using the attached
 property syntax.
 
 Attached properties allow unrelated types to annotate other types with some
@@ -297,7 +282,7 @@ identified through the use of the attacher type name, in the case shown
 \c BirthdayParty, as a suffix to the property name.
 
 In the example shown, \c BirthdayParty is called the attaching type, and the
-Boy instance the attachee object instance.
+\c Boy instance the attachee object instance.
 
 For the attaching type, an attached property block is implemented as a new
 QObject derived type, called the attachment object.  The properties on the
@@ -320,7 +305,6 @@ public:
 };
 
 QML_DECLARE_TYPEINFO(MyType, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(MyType)
 \endcode
 Return an attachment object, of type \a AttachedPropertiesType, for the
 attachee \a object instance.  It is customary, though not strictly required, for
@@ -342,7 +326,7 @@ their effect may be so limited.
 
 For example, a common usage scenario is for a type to enhance the properties
 available to its children in order to gather instance specific data.  Here we
-add a rsvp field to all the guests coming to a birthday party:
+add a \c rsvp field to all the guests coming to a birthday party:
 \code
 BirthdayParty {
     Boy { BirthdayParty.rsvp: "2009-06-01" }
@@ -378,7 +362,7 @@ implement the rsvp attached property.
 
 \section1 Memory Management and QVariant types
 
-It is an elements responsibility to ensure that it does not access or return
+It is an element's responsibility to ensure that it does not access or return
 pointers to invalid objects.  QML makes the following guarentees:
 
 \list
@@ -443,7 +427,7 @@ implement the onPartyStarted signal property.
 \snippet examples/declarative/extending/valuesource/example.qml 0
 \snippet examples/declarative/extending/valuesource/example.qml 1
 
-The QML snippet shown above assigns a property value to the speaker property.
+The QML snippet shown above applies a property value source to the \c announcment property.
 A property value source generates a value for a property that changes over time.
 
 Property value sources are most commonly used to do animation.  Rather than
@@ -451,9 +435,9 @@ constructing an animation object and manually setting the animation's "target"
 property, a property value source can be assigned directly to a property of any
 type and automatically set up this association.
 
-The example shown here is rather contrived: the speaker property of the
-BirthdayParty object is a string that is printed every time it is assigned and
-the HappyBirthday value source generates the lyrics of the song
+The example shown here is rather contrived: the \c announcment property of the
+\c BirthdayParty object is a string that is printed every time it is assigned and
+the \c HappyBirthdaySong value source generates the lyrics of the song
 "Happy Birthday".
 
 \snippet examples/declarative/extending/valuesource/birthdayparty.h 0
@@ -467,11 +451,11 @@ Property value sources are special types that derive from the
 QDeclarativePropertyValueSource base class.  This base class contains a single method,
 QDeclarativePropertyValueSource::setTarget(), that the QML engine invokes when
 associating the property value source with a property.  The relevant part of
-the HappyBirthday type declaration looks like this:
+the \c HappyBirthdaySong type declaration looks like this:
 
-\snippet examples/declarative/extending/valuesource/happybirthday.h 0
-\snippet examples/declarative/extending/valuesource/happybirthday.h 1
-\snippet examples/declarative/extending/valuesource/happybirthday.h 2
+\snippet examples/declarative/extending/valuesource/happybirthdaysong.h 0
+\snippet examples/declarative/extending/valuesource/happybirthdaysong.h 1
+\snippet examples/declarative/extending/valuesource/happybirthdaysong.h 2
 
 In all other respects, property value sources are regular QML types.  They must
 be registered with the QML engine using the same macros as other types, and can
@@ -479,11 +463,11 @@ contain properties, signals and methods just like other types.
 
 When a property value source object is assigned to a property, QML first tries
 to assign it normally, as though it were a regular QML type.  Only if this
-assignment fails does the engine call the setTarget() method.  This allows
+assignment fails does the engine call the \l {QDeclarativePropertyValueSource::}{setTarget()} method.  This allows
 the type to also be used in contexts other than just as a value source.
 
 \l {Extending QML -  Property Value Source Example} shows the complete code used
-implement the HappyBirthday property value source.
+implement the \c HappyBirthdaySong property value source.
 
 \section1 Property Binding
 
@@ -491,7 +475,7 @@ implement the HappyBirthday property value source.
 \snippet examples/declarative/extending/binding/example.qml 1
 
 The QML snippet shown above uses a property binding to ensure the
-HappyBirthday's name property remains up to date with the celebrant.
+\c HappyBirthdaySong's \c name property remains up to date with the \c host.
 
 Property binding is a core feature of QML.  In addition to assigning literal
 values, property bindings allow the developer to assign an arbitrarily complex
@@ -504,9 +488,9 @@ All properties on custom types automatically support property binding.  However,
 for binding to work correctly, QML must be able to reliably determine when a
 property has changed so that it knows to reevaluate any bindings that depend on
 the property's value.  QML relies on the presence of a
-\c {Qt's Property System}{NOTIFY signal} for this determination.
+\l {Qt's Property System}{NOTIFY signal} for this determination.
 
-Here is the celebrant property declaration:
+Here is the \c host property declaration:
 
 \snippet examples/declarative/extending/binding/birthdayparty.h 0
 

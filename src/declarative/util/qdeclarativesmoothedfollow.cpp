@@ -195,7 +195,7 @@ qreal QDeclarativeSmoothedFollow::velocity() const
 }
 
 /*!
-    \qmlproperty qreal SmoothedFollow::velocity
+    \qmlproperty real SmoothedFollow::velocity
 
     This property holds the average velocity allowed when tracking the 'to' value.
 
@@ -214,7 +214,7 @@ void QDeclarativeSmoothedFollow::setVelocity(qreal v)
 }
 
 /*!
-    \qmlproperty qreal SmoothedFollow::maximumEasingTime
+    \qmlproperty int SmoothedFollow::maximumEasingTime
 
     This property specifies the maximum time, in msecs, an "eases" during the follow should take.
     Setting this property causes the velocity to "level out" after at a time.  Setting

@@ -70,9 +70,7 @@
   \macro QML_DECLARE_TYPE()
   \relates QDeclarativeEngine
 
-  Declares a C++ type to be usable in the QML system. In addition
-  to this, a type must also be registered with the QML system using
-  qmlRegisterType().
+  Equivalent to  Q_DECLARE_METATYPE(TYPE) and Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
 */
 
 
@@ -81,9 +79,8 @@
   \relates QDeclarativeEngine
 
   This template function registers the C++ type in the QML system with
-  the name \a qmlName. in the library imported from \a uri having the
+  the name \a qmlName, in the library imported from \a uri having the
   version number composed from \a versionMajor and \a versionMinor.
-  The type should also haved been declared with the QML_DECLARE_TYPE() macro.
 
   Returns the QML type id.
 
@@ -94,6 +91,63 @@
   qmlRegisterType<MinehuntGame>("MinehuntCore", 0, 1, "Game");
   \endcode
 
+  Note that it's perfectly reasonable for a library to register types to older versions
+  than the actual version of the library. Indeed, it is normal for the new library to allow
+  QML written to previous versions to continue to work, even if more advanced versions of
+  some of its types are available.
+*/
+
+/*!
+  \fn int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message)
+  \relates QDeclarativeEngine
+
+  This template function registers the C++ type in the QML system with
+  the name \a qmlName, in the library imported from \a uri having the
+  version number composed from \a versionMajor and \a versionMinor.
+
+  While the type has a name and a type, it cannot be created, and the
+  given error \a message will result if creation is attempted.
+
+  This is useful where the type is only intended for providing attached properties or enum values.
+
+  Returns the QML type id.
+
+  \sa qmlRegisterTypeNotAvailable
+*/
+
+/*!
+  \fn int qmlRegisterTypeNotAvailable(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message)
+  \relates QDeclarativeEngine
+
+  This function registers a type in the QML system with the name \a qmlName, in the library imported from \a uri having the
+  version number composed from \a versionMajor and \a versionMinor, but any attempt to instantiate the type
+  will produce the given error \a message.
+
+  Normally, the types exported by a module should be fixed. However, if a C++ type is not available, you should
+  at least "reserve" the QML type name, and give the user of your module a meaningful error message.
+
+  Returns the QML type id.
+
+  Example:
+
+  \code
+  #ifdef NO_GAMES_ALLOWED
+  qmlRegisterTypeNotAvailable("MinehuntCore", 0, 1, "Game", "Get back to work, slacker!");
+  #else
+  qmlRegisterType<MinehuntGame>("MinehuntCore", 0, 1, "Game");
+  #endif
+  \endcode
+
+  This will cause any QML which uses this module and attempts to use the type to produce an error message:
+  \code
+fun.qml: Get back to work, slacker!
+     Game {
+     ^
+  \endcode
+
+  Without this, a generic "Game is not a type" message would be given.
+
+  \sa qmlRegisterUncreatableType
 */
 
 /*!
@@ -114,7 +168,6 @@
 
   This template function registers the C++ type in the QML system
   under the name \a typeName.
-  The type should also haved been declared with the QML_DECLARE_TYPE() macro.
 
 
   Returns the QML type id.

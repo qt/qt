@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 import Qt.test 1.0
 
 QtObject {
@@ -20,6 +20,6 @@ QtObject {
         myObject.deleteOnSet = 1;
 
         test3 = myObject.value == undefined;
-    //    test4 = obj.value == undefined;
+        test4 = obj.value == undefined;
     }
 }

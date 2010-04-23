@@ -121,10 +121,10 @@ void tst_qdeclarativeborderimage::imageSource_data()
 
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << false
-        << "QML BorderImage (file::2:1) Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
+        << "file::2:1: QML BorderImage: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
-        << "QML BorderImage (file::2:1) Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
+        << "file::2:1: QML BorderImage: Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
 }
 
 void tst_qdeclarativeborderimage::imageSource()
@@ -304,8 +304,8 @@ void tst_qdeclarativeborderimage::sciSource_data()
 
 void tst_qdeclarativeborderimage::invalidSciFile()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Roun"
-    QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Repea"
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeGridScaledImage: Invalid tile rule specified. Using Stretch."); // for "Roun"
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeGridScaledImage: Invalid tile rule specified. Using Stretch."); // for "Repea"
 
     QString componentStr = "import Qt 4.7\nBorderImage { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/invalid.sci").toString() +"\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);

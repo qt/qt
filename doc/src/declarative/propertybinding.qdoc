@@ -78,16 +78,52 @@ Rectangle {
 }
 \endcode
 
-Being JavaScript expressions, bindings are evaluated in a scope chain.  The \l {QML Scope} 
-documentation covers the specifics of scoping in QML.
+While syntactically bindings can be of arbitrary complexity, if a binding starts to become
+overly complex - such as involving multiple lines, or imperative loops - it may be better
+to refactor the component entirely, or at least factor the binding out into a separate
+function.
 
-\list
-\o When does a binding not get updated?
-\o Scope
-\o Assigning a constant/other binding clears existing binding
-\o Loops
-\o Using model data
-\endlist
+\section1 Changing Bindings
+
+The \l PropertyChanges element can be used within a state change to modify the bindings on 
+properties.  
+
+This example modifies the \l Rectangle's width property binding to be \c {otherItem.height} 
+when in the "square" state.  When it returns to its default state, width's original property
+binding will have been restored.
+
+\code
+Rectangle {
+    id: rectangle
+    width: otherItem.width
+    height: otherItem.height
+
+    states: State {
+        name: "square"
+        PropertyChanges {
+            target: rectangle
+            width: otherItem.height
+        }
+    }
+}
+\endcode
+
+Imperatively assigning a value directly to a property will also implicitly remove a binding
+on a property.  A property can only have one value at a time, and if code explicitly sets
+this value the binding must be removed.  The \l Rectangle in the example below will have
+a width of 13, regardless of the otherItem's width.
+
+\code
+Rectangle {
+    width: otherItem.width
+
+    Component.onCompleted: {
+        width = 13;
+    }
+}
+\endcode
+
+There is no way to create a property binding directly from imperative JavaScript code.
 
 \section1 Binding Element
 

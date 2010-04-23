@@ -113,7 +113,7 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativeCustomParser
 {
 public:
-    QDeclarativeCustomParser() : compiler(0) {}
+    QDeclarativeCustomParser() : compiler(0), object(0) {}
     virtual ~QDeclarativeCustomParser() {}
 
     void clearErrors();
@@ -124,6 +124,7 @@ public:
     QList<QDeclarativeError> errors() const { return exceptions; }
 
 protected:
+    void error(const QString& description);
     void error(const QDeclarativeCustomParserProperty&, const QString& description);
     void error(const QDeclarativeCustomParserNode&, const QString& description);
 
@@ -132,6 +133,7 @@ protected:
 private:
     QList<QDeclarativeError> exceptions;
     QDeclarativeCompiler *compiler;
+    QDeclarativeParser::Object *object;
     friend class QDeclarativeCompiler;
 };
 
