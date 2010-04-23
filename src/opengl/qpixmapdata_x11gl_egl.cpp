@@ -74,7 +74,6 @@ public:
         EGLint rgbConfigId;
         EGLint argbConfigId;
 
-
         do {
             EGLConfig rgbConfig = QEgl::defaultConfig(QInternal::Pixmap, QEgl::OpenGL, QEgl::Renderable);
             EGLConfig argbConfig = QEgl::defaultConfig(QInternal::Pixmap, QEgl::OpenGL,
@@ -138,6 +137,7 @@ public:
                 valid = argbContext->makeCurrent(argbPixmapSurface);
                 argbContext->doneCurrent();
                 eglDestroySurface(QEgl::display(), argbPixmapSurface);
+                argbPixmapData->gl_surface = 0;
             }
 
             if (!valid) {
@@ -150,12 +150,15 @@ public:
             QGLTextureCache::instance();
         } while(0);
 
-
         if (!valid)
             cleanup();
         else
             qDebug("Using QX11GLPixmapData with EGL config %d for ARGB and config %d for RGB", argbConfigId, rgbConfigId);
 
+    }
+
+    ~QX11GLSharedContexts() {
+        cleanup();
     }
 
     void cleanup() {
@@ -222,8 +225,8 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
     if (checkedForX11GLPixmaps)
         return haveX11GLPixmaps;
 
+    haveX11GLPixmaps = qt_x11gl_share_contexts()->isValid();
     checkedForX11GLPixmaps = true;
-    haveX11GLPixmaps = sharedContexts()->isValid();
 
     return haveX11GLPixmaps;
 }
