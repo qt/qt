@@ -273,6 +273,11 @@ private slots:
     void taskQTBUG_4679_selectToStartEndOfBlock();
     void taskQTBUG_7395_readOnlyShortcut();
 
+#ifdef QT3_SUPPORT
+    void validateAndSet_data();
+    void validateAndSet();
+#endif
+
 protected slots:
 #ifdef QT3_SUPPORT
     void lostFocus();
@@ -1488,6 +1493,34 @@ void tst_QLineEdit::lostFocus()
 {
     editingFinished();
 }
+
+void tst_QLineEdit::validateAndSet_data()
+{
+    QTest::addColumn<QString>("newText");
+    QTest::addColumn<int>("newPos");
+    QTest::addColumn<int>("newMarkAnchor");
+    QTest::addColumn<int>("newMarkDrag");
+
+    QTest::newRow("1") << QString("Hello World") << 3 << 3 << 5;
+    QTest::newRow("2") << QString("Hello World") << 5 << 3 << 5;
+}
+
+void tst_QLineEdit::validateAndSet()
+{
+    QFETCH(QString, newText);
+    QFETCH(int, newPos);
+    QFETCH(int, newMarkAnchor);
+    QFETCH(int, newMarkDrag);
+
+    QLineEdit e;
+    e.validateAndSet(newText, newPos, newMarkAnchor, newMarkDrag);
+    QCOMPARE(e.text(), newText);
+    QCOMPARE(e.cursorPosition(), newPos);
+    QCOMPARE(e.selectedText(), newText.mid(newMarkAnchor, newMarkDrag-newMarkAnchor));
+}
+
+
+
 #endif
 void tst_QLineEdit::editingFinished()
 {
