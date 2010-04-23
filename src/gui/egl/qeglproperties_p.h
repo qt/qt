@@ -58,6 +58,7 @@
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
+#ifndef QT_NO_EGL
 #if defined(QT_OPENGL_ES_2)
 #   include <GLES2/gl2.h>
 #endif
@@ -67,6 +68,24 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #else
 #   include <EGL/egl.h>
 #endif
+#else
+
+//types from egltypes.h for compiling stub without EGL headers
+typedef int EGLBoolean;
+typedef int EGLint;
+typedef int EGLenum;
+typedef int    NativeDisplayType;
+typedef void*  NativeWindowType;
+typedef void*  NativePixmapType;
+typedef int EGLDisplay;
+typedef int EGLConfig;
+typedef int EGLSurface;
+typedef int EGLContext;
+typedef int EGLClientBuffer;
+#define EGL_NONE            0x3038  /* Attrib list terminator */
+
+#endif
+
 
 
 #if defined(Q_WS_X11)
@@ -103,7 +122,7 @@ namespace QEgl {
         ExactPixelFormat,
         BestPixelFormat
     };
-};
+}
 
 class QX11Info;
 class QPaintDevice;
