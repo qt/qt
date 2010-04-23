@@ -82,11 +82,6 @@ private:
 
 #define QAudioEndpointSelector_iid "com.nokia.Qt.QAudioEndpointSelector/1.0"
 
-class Duck
-{
-    uint quack;
-};
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
