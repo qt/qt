@@ -44,6 +44,7 @@
 #include <qimage.h>
 #include <qvariant.h>
 #include <qvector.h>
+#include <qbuffer.h>
 
 #include <stdio.h>      // jpeglib needs this to be pre-included
 #include <setjmp.h>
@@ -102,6 +103,7 @@ struct my_jpeg_source_mgr : public jpeg_source_mgr {
     // Nothing dynamic - cannot rely on destruction over longjump
     QIODevice *device;
     JOCTET buffer[max_buf];
+    const QBuffer *memDevice;
 
 public:
     my_jpeg_source_mgr(QIODevice *device);
@@ -117,10 +119,14 @@ static void qt_init_source(j_decompress_ptr)
 
 static boolean qt_fill_input_buffer(j_decompress_ptr cinfo)
 {
-    int num_read;
     my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
+    if (src->memDevice) {
+        src->next_input_byte = (const JOCTET *)src->memDevice->data().constData();
+        src->bytes_in_buffer = (size_t)src->memDevice->data().size();
+        return true;
+    }
     src->next_input_byte = src->buffer;
-    num_read = src->device->read((char*)src->buffer, max_buf);
+    int num_read = src->device->read((char*)src->buffer, max_buf);
     if (num_read <= 0) {
         // Insert a fake EOI marker - as per jpeglib recommendation
         src->buffer[0] = (JOCTET) 0xFF;
@@ -147,7 +153,7 @@ static void qt_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
      * any trouble anyway --- large skips are infrequent.
      */
     if (num_bytes > 0) {
-        while (num_bytes > (long) src->bytes_in_buffer) {
+        while (num_bytes > (long) src->bytes_in_buffer) {  // Should not happen in case of memDevice
             num_bytes -= (long) src->bytes_in_buffer;
             (void) qt_fill_input_buffer(cinfo);
             /* note we assume that qt_fill_input_buffer will never return false,
@@ -178,6 +184,7 @@ inline my_jpeg_source_mgr::my_jpeg_source_mgr(QIODevice *device)
     jpeg_source_mgr::resync_to_restart = jpeg_resync_to_restart;
     jpeg_source_mgr::term_source = qt_term_source;
     this->device = device;
+    memDevice = qobject_cast<QBuffer *>(device);
     bytes_in_buffer = 0;
     next_input_byte = buffer;
 }

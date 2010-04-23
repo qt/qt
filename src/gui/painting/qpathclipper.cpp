@@ -43,6 +43,7 @@
 
 #include <private/qbezier_p.h>
 #include <private/qdatabuffer_p.h>
+#include <private/qnumeric_p.h>
 #include <qmath.h>
 
 /**
@@ -105,7 +106,6 @@ public:
     bool hasIntersections(const QPathSegments &a, const QPathSegments &b) const;
 
 private:
-    void intersectLines(const QLineF &a, const QLineF &b, QDataBuffer<QIntersection> &intersections);
     bool linesIntersect(const QLineF &a, const QLineF &b) const;
 };
 
@@ -176,7 +176,223 @@ bool QIntersectionFinder::linesIntersect(const QLineF &a, const QLineF &b) const
     return tq >= 0 && tq <= 1;
 }
 
-void QIntersectionFinder::intersectLines(const QLineF &a, const QLineF &b, QDataBuffer<QIntersection> &intersections)
+bool QIntersectionFinder::hasIntersections(const QPathSegments &a, const QPathSegments &b) const
+{
+    if (a.segments() == 0 || b.segments() == 0)
+        return false;
+
+    const QRectF &rb0 = b.elementBounds(0);
+
+    qreal minX = rb0.left();
+    qreal minY = rb0.top();
+    qreal maxX = rb0.right();
+    qreal maxY = rb0.bottom();
+
+    for (int i = 1; i < b.segments(); ++i) {
+        const QRectF &r = b.elementBounds(i);
+        minX = qMin(minX, r.left());
+        minY = qMin(minY, r.top());
+        maxX = qMax(maxX, r.right());
+        maxY = qMax(maxY, r.bottom());
+    }
+
+    QRectF rb(minX, minY, maxX - minX, maxY - minY);
+
+    for (int i = 0; i < a.segments(); ++i) {
+        const QRectF &r1 = a.elementBounds(i);
+
+        if (r1.left() > rb.right() || rb.left() > r1.right())
+            continue;
+        if (r1.top() > rb.bottom() || rb.top() > r1.bottom())
+            continue;
+
+        for (int j = 0; j < b.segments(); ++j) {
+            const QRectF &r2 = b.elementBounds(j);
+
+            if (r1.left() > r2.right() || r2.left() > r1.right())
+                continue;
+            if (r1.top() > r2.bottom() || r2.top() > r1.bottom())
+                continue;
+
+            if (linesIntersect(a.lineAt(i), b.lineAt(j)))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+namespace {
+struct TreeNode
+{
+    qreal splitLeft;
+    qreal splitRight;
+    bool leaf;
+
+    int lowestLeftIndex;
+    int lowestRightIndex;
+
+    union {
+        struct {
+            int first;
+            int last;
+        } interval;
+        struct {
+            int left;
+            int right;
+        } children;
+    } index;
+};
+
+struct RectF
+{
+    qreal x1;
+    qreal y1;
+    qreal x2;
+    qreal y2;
+};
+
+class SegmentTree
+{
+public:
+    SegmentTree(QPathSegments &segments);
+
+    QRectF boundingRect() const;
+
+    void produceIntersections(int segment);
+
+private:
+    TreeNode buildTree(int first, int last, int depth, const RectF &bounds);
+
+    void produceIntersectionsLeaf(const TreeNode &node, int segment);
+    void produceIntersections(const TreeNode &node, int segment, const RectF &segmentBounds, const RectF &nodeBounds, int axis);
+    void intersectLines(const QLineF &a, const QLineF &b, QDataBuffer<QIntersection> &intersections);
+
+    QPathSegments &m_segments;
+    QVector<int> m_index;
+
+    RectF m_bounds;
+
+    QVector<TreeNode> m_tree;
+    QDataBuffer<QIntersection> m_intersections;
+};
+
+SegmentTree::SegmentTree(QPathSegments &segments)
+    : m_segments(segments)
+{
+    m_bounds.x1 = qt_inf();
+    m_bounds.y1 = qt_inf();
+    m_bounds.x2 = -qt_inf();
+    m_bounds.y2 = -qt_inf();
+
+    m_index.resize(m_segments.segments());
+
+    for (int i = 0; i < m_index.size(); ++i) {
+        m_index[i] = i;
+
+        const QRectF &segmentBounds = m_segments.elementBounds(i);
+
+        if (segmentBounds.left() < m_bounds.x1)
+            m_bounds.x1 = segmentBounds.left();
+        if (segmentBounds.top() < m_bounds.y1)
+            m_bounds.y1 = segmentBounds.top();
+        if (segmentBounds.right() > m_bounds.x2)
+            m_bounds.x2 = segmentBounds.right();
+        if (segmentBounds.bottom() > m_bounds.y2)
+            m_bounds.y2 = segmentBounds.bottom();
+    }
+
+    m_tree.resize(1);
+
+    TreeNode root = buildTree(0, m_index.size(), 0, m_bounds);
+    m_tree[0] = root;
+}
+
+QRectF SegmentTree::boundingRect() const
+{
+    return QRectF(QPointF(m_bounds.x1, m_bounds.y1),
+                  QPointF(m_bounds.x2, m_bounds.y2));
+}
+
+static inline qreal coordinate(const QPointF &pos, int axis)
+{
+    return axis == 0 ? pos.x() : pos.y();
+}
+
+TreeNode SegmentTree::buildTree(int first, int last, int depth, const RectF &bounds)
+{
+    if (depth >= 24 || (last - first) <= 10) {
+        TreeNode node;
+        node.leaf = true;
+        node.index.interval.first = first;
+        node.index.interval.last = last;
+
+        return node;
+    }
+
+    int splitAxis = (depth & 1);
+
+    TreeNode node;
+    node.leaf = false;
+
+    qreal split = 0.5f * ((&bounds.x1)[splitAxis] + (&bounds.x2)[splitAxis]);
+
+    node.splitLeft = (&bounds.x1)[splitAxis];
+    node.splitRight = (&bounds.x2)[splitAxis];
+
+    node.lowestLeftIndex = INT_MAX;
+    node.lowestRightIndex = INT_MAX;
+
+    const int treeSize = m_tree.size();
+
+    node.index.children.left = treeSize;
+    node.index.children.right = treeSize + 1;
+
+    m_tree.resize(treeSize + 2);
+
+    int l = first;
+    int r = last - 1;
+
+    // partition into left and right sets
+    while (l <= r) {
+        const int index = m_index.at(l);
+        const QRectF &segmentBounds = m_segments.elementBounds(index);
+
+        qreal lowCoordinate = coordinate(segmentBounds.topLeft(), splitAxis);
+
+        if (coordinate(segmentBounds.center(), splitAxis) < split) {
+            qreal highCoordinate = coordinate(segmentBounds.bottomRight(), splitAxis);
+            if (highCoordinate > node.splitLeft)
+                node.splitLeft = highCoordinate;
+            if (index < node.lowestLeftIndex)
+                node.lowestLeftIndex = index;
+            ++l;
+        } else {
+            if (lowCoordinate < node.splitRight)
+                node.splitRight = lowCoordinate;
+            if (index < node.lowestRightIndex)
+                node.lowestRightIndex = index;
+            qSwap(m_index[l], m_index[r]);
+            --r;
+        }
+    }
+
+    RectF lbounds = bounds;
+    (&lbounds.x2)[splitAxis] = node.splitLeft;
+
+    RectF rbounds = bounds;
+    (&rbounds.x1)[splitAxis] = node.splitRight;
+
+    TreeNode left = buildTree(first, l, depth + 1, lbounds);
+    m_tree[node.index.children.left] = left;
+
+    TreeNode right = buildTree(l, last, depth + 1, rbounds);
+    m_tree[node.index.children.right] = right;
+
+    return node;
+}
+
+void SegmentTree::intersectLines(const QLineF &a, const QLineF &b, QDataBuffer<QIntersection> &intersections)
 {
     const QPointF p1 = a.p1();
     const QPointF p2 = a.p2();
@@ -298,90 +514,86 @@ void QIntersectionFinder::intersectLines(const QLineF &a, const QLineF &b, QData
     intersections.add(intersection);
 }
 
-bool QIntersectionFinder::hasIntersections(const QPathSegments &a, const QPathSegments &b) const
+void SegmentTree::produceIntersections(int segment)
 {
-    if (a.segments() == 0 || b.segments() == 0)
-        return false;
+    const QRectF &segmentBounds = m_segments.elementBounds(segment);
 
-    const QRectF &rb0 = b.elementBounds(0);
+    RectF sbounds;
+    sbounds.x1 = segmentBounds.left();
+    sbounds.y1 = segmentBounds.top();
+    sbounds.x2 = segmentBounds.right();
+    sbounds.y2 = segmentBounds.bottom();
 
-    qreal minX = rb0.left();
-    qreal minY = rb0.top();
-    qreal maxX = rb0.right();
-    qreal maxY = rb0.bottom();
+    produceIntersections(m_tree.at(0), segment, sbounds, m_bounds, 0);
+}
 
-    for (int i = 1; i < b.segments(); ++i) {
-        const QRectF &r = b.elementBounds(i);
-        minX = qMin(minX, r.left());
-        minY = qMin(minY, r.top());
-        maxX = qMax(maxX, r.right());
-        maxY = qMax(maxY, r.bottom());
-    }
+void SegmentTree::produceIntersectionsLeaf(const TreeNode &node, int segment)
+{
+    const QRectF &r1 = m_segments.elementBounds(segment);
+    const QLineF lineA = m_segments.lineAt(segment);
 
-    QRectF rb(minX, minY, maxX - minX, maxY - minY);
-
-    for (int i = 0; i < a.segments(); ++i) {
-        const QRectF &r1 = a.elementBounds(i);
-
-        if (r1.left() > rb.right() || rb.left() > r1.right())
-            continue;
-        if (r1.top() > rb.bottom() || rb.top() > r1.bottom())
+    for (int i = node.index.interval.first; i < node.index.interval.last; ++i) {
+        const int other = m_index.at(i);
+        if (other >= segment)
             continue;
 
-        for (int j = 0; j < b.segments(); ++j) {
-            const QRectF &r2 = b.elementBounds(j);
+        const QRectF &r2 = m_segments.elementBounds(other);
 
-            if (r1.left() > r2.right() || r2.left() > r1.right())
-                continue;
-            if (r1.top() > r2.bottom() || r2.top() > r1.bottom())
-                continue;
+        if (r1.left() > r2.right() || r2.left() > r1.right())
+            continue;
+        if (r1.top() > r2.bottom() || r2.top() > r1.bottom())
+            continue;
 
-            if (linesIntersect(a.lineAt(i), b.lineAt(j)))
-                return true;
+        m_intersections.reset();
+
+        const QLineF lineB = m_segments.lineAt(other);
+
+        intersectLines(lineA, lineB, m_intersections);
+
+        for (int k = 0; k < m_intersections.size(); ++k) {
+            QPathSegments::Intersection i_isect, j_isect;
+            i_isect.vertex = j_isect.vertex = m_segments.addPoint(m_intersections.at(k).pos);
+
+            i_isect.t = m_intersections.at(k).alphaA;
+            j_isect.t = m_intersections.at(k).alphaB;
+
+            i_isect.next = 0;
+            j_isect.next = 0;
+
+            m_segments.addIntersection(segment, i_isect);
+            m_segments.addIntersection(other, j_isect);
         }
     }
+}
 
-    return false;
+void SegmentTree::produceIntersections(const TreeNode &node, int segment, const RectF &segmentBounds, const RectF &nodeBounds, int axis)
+{
+    if (node.leaf) {
+        produceIntersectionsLeaf(node, segment);
+        return;
+    }
+
+    RectF lbounds = nodeBounds;
+    (&lbounds.x2)[axis] = node.splitLeft;
+
+    RectF rbounds = nodeBounds;
+    (&rbounds.x1)[axis] = node.splitRight;
+
+    if (segment > node.lowestLeftIndex && (&segmentBounds.x1)[axis] <= node.splitLeft)
+        produceIntersections(m_tree.at(node.index.children.left), segment, segmentBounds, lbounds, !axis);
+
+    if (segment > node.lowestRightIndex && (&segmentBounds.x2)[axis] >= node.splitRight)
+        produceIntersections(m_tree.at(node.index.children.right), segment, segmentBounds, rbounds, !axis);
+}
+
 }
 
 void QIntersectionFinder::produceIntersections(QPathSegments &segments)
 {
-    QVector<QPair<qreal, qreal> > t;
-    QDataBuffer<QIntersection> intersections;
+    SegmentTree tree(segments);
 
-    for (int i = 0; i < segments.segments(); ++i) {
-        const QRectF &r1 = segments.elementBounds(i);
-
-        for (int j = 0; j < i; ++j) {
-            const QRectF &r2 = segments.elementBounds(j);
-
-            if (r1.left() > r2.right() || r2.left() > r1.right())
-                continue;
-            if (r1.top() > r2.bottom() || r2.top() > r1.bottom())
-                continue;
-
-            intersections.reset();
-
-            const QLineF lineA = segments.lineAt(i);
-            const QLineF lineB = segments.lineAt(j);
-
-            intersectLines(lineA, lineB, intersections);
-
-            for (int k = 0; k < intersections.size(); ++k) {
-                QPathSegments::Intersection i_isect, j_isect;
-                i_isect.vertex = j_isect.vertex = segments.addPoint(intersections.at(k).pos);
-
-                i_isect.t = intersections.at(k).alphaA;
-                j_isect.t = intersections.at(k).alphaB;
-
-                i_isect.next = 0;
-                j_isect.next = 0;
-
-                segments.addIntersection(i, i_isect);
-                segments.addIntersection(j, j_isect);
-            }
-        }
-    }
+    for (int i = 0; i < segments.segments(); ++i)
+        tree.produceIntersections(i);
 }
 
 class QKdPointTree
@@ -707,9 +919,6 @@ void QPathSegments::addPath(const QPainterPath &path)
 {
     int firstSegment = m_segments.size();
 
-    QRectF pathBounds = path.boundingRect();
-    qreal invPathScale = 1 / qMax(pathBounds.width(), pathBounds.height());
-
     bool hasMoveTo = false;
     int lastMoveTo = 0;
     int last = 0;
@@ -746,10 +955,9 @@ void QPathSegments::addPath(const QPainterPath &path)
                 } else {
                     QRectF bounds = bezier.bounds();
 
-                    qreal segmentScale = qMax(bounds.width(), bounds.height());
+                    // threshold based on similar algorithm as in qtriangulatingstroker.cpp
+                    int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * (2 * qreal(3.14) / 6));
 
-                    // threshold based on same algorithm as in qtriangulatingstroker.cpp
-                    int threshold = qMin<float>(64, segmentScale * invPathScale * (512 * 3.14f / 6));
                     if (threshold < 3) threshold = 3;
                     qreal one_over_threshold_minus_1 = qreal(1) / (threshold - 1);
 
