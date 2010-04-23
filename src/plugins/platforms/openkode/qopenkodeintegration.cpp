@@ -39,12 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_openkode.h"
-#include "qwindowsurface_openkode.h"
+#include "qopenkodeintegration.h"
+#include "qopenkodewindowsurface.h"
+#include "qopenkodewindow.h"
+
 #include <QtGui/private/qpixmap_raster_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qfile.h>
 
 #include <KD/kd.h>
 #include <KD/NV_display.h>
@@ -52,15 +55,17 @@
 
 #include "GLES2/gl2ext.h"
 
+#include <nvgl2demo_common.h>
+
 
 QT_BEGIN_NAMESPACE
 
-QOpenKODEGraphicsSystemScreen::QOpenKODEGraphicsSystemScreen()
+QOpenKODEScreen::QOpenKODEScreen()
 {
     KDDesktopNV *kdDesktop = KD_NULL;
     KDDisplayNV *kdDisplay = KD_NULL;
 
-    qDebug() << "QOpenKODEGraphicsSystemScreen::QOpenKODEGraphicsSystemScreen()";
+    qDebug() << "QOpenKODEScreen::QOpenKODEIntegrationScreen()";
 
     // Get the default desktop and display
     kdDesktop = kdGetDesktopNV(KD_DEFAULT_DESKTOP_NV, KD_NULL);
@@ -100,48 +105,40 @@ QOpenKODEGraphicsSystemScreen::QOpenKODEGraphicsSystemScreen()
     mPhysicalSize = QSize(mode.width * 25.4 / defaultDpi, mode.height * 25.4 / defaultDpi);
 
     mDepth = 24;
-    mFormat = QImage::Format_RGB888;
-
-
-    QEglProperties properties;
-    properties.setPixelFormat(QImage::Format_RGB888);
-    properties.setValue(EGL_BUFFER_SIZE, EGL_DONT_CARE);
-    properties.setRenderableType(QEgl::OpenGL);
-
-    if (!mContext.chooseConfig(properties, QEgl::BestPixelFormat)) {
-        qWarning("qEglContext: Unable to choose config!");
-        return;
-    }
-
-    if (!mContext.display()) {
-        qWarning("qEglContext: Unable to open display!");
-        return;
-    }
-
-    qDebug() << " - QEglContext::openDisplay OK";
+    mFormat = QImage::Format_RGB32;
 }
 
-static GLuint NvKdTestLoadShaders(const char *vertex_shader_binary,
-                    const char *fragment_shader_binary,
-                    GLuint vertex_shader_binary_size,
-                    GLuint fragment_shader_binary_size)
+static GLuint loadShaders(const QString &vertexShader, const QString &fragmentShader)
 {
-    GLuint prog;
+    GLuint prog = 0;
     GLuint vertShader;
     GLuint fragShader;
 
-    // Create the program
+   // Create the program
     prog = glCreateProgram();
 
     // Create the GL shader objects
     vertShader = glCreateShader(GL_VERTEX_SHADER);
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    // Load the binary data into the shader objects
-    glShaderBinary(1, &vertShader,
-                   GL_NVIDIA_PLATFORM_BINARY_NV, vertex_shader_binary, vertex_shader_binary_size);
-    glShaderBinary(1, &fragShader,
-                   GL_NVIDIA_PLATFORM_BINARY_NV, fragment_shader_binary, fragment_shader_binary_size);
+    // Load shader sources into GL and compile
+    QFile vertexFile(vertexShader);
+    vertexFile.open(QFile::ReadOnly);
+    QByteArray vertSource = vertexFile.readAll();
+    const char *vertChar = vertSource.constData();
+    int vertSize = vertSource.size();
+
+    QFile fragFile(fragmentShader);
+    fragFile.open(QFile::ReadOnly);
+    QByteArray fragSource = fragFile.readAll();
+    const char *fragChar = fragSource.constData();
+    int fragSize = fragSource.size();
+
+    glShaderSource(vertShader, 1, (const char**)&vertChar, &vertSize);
+    glCompileShader(vertShader);
+
+    glShaderSource(fragShader, 1, (const char**)&fragChar, &fragSize);
+    glCompileShader(fragShader);
 
     // Attach the shaders to the program
     glAttachShader(prog, vertShader);
@@ -170,9 +167,9 @@ public:
 protected:
     void run()
     {
-        qDebug() << "initializing KD";
-        kdInitializeNV();
-        qDebug() << "done initializing KD";
+        if (kdInitializeNV() == KD_ENOTINITIALIZED) {
+            qFatal("Did not manage to initialize openkode");
+        }
         eventMutex->release();
 
         const KDEvent *event;
@@ -180,52 +177,46 @@ protected:
             qDebug() << "!!! received event!";
             kdDefaultEvent(event);
         }
-
-        qDebug() << "exiting event loop";
     }
 
 private:
     QSemaphore *eventMutex;
 };
 
-QOpenKODEGraphicsSystem::QOpenKODEGraphicsSystem()
+QOpenKODEIntegration::QOpenKODEIntegration()
     : eventMutex(1)
 {
     QOpenKODEEventLoopHelper *loop = new QOpenKODEEventLoopHelper(&eventMutex);
     loop->start();
     eventMutex.acquire(); // block until initialization done
 
-    mPrimaryScreen = new QOpenKODEGraphicsSystemScreen();
+    QOpenKODEScreen *mPrimaryScreen = new QOpenKODEScreen();
 
     mScreens.append(mPrimaryScreen);
 
 }
 
-QPixmapData *QOpenKODEGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+QPixmapData *QOpenKODEIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QRasterPixmapData(type);
 }
 
-QWindowSurface *QOpenKODEGraphicsSystem::createWindowSurface(QWidget *widget) const
+QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) const
 {
-    return new QOpenKODEWindowSurface(mPrimaryScreen, widget);
+    return new QOpenKODEWindow(tlw);
 }
 
-GLuint QOpenKODEGraphicsSystem::blitterProgram()
+QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId winId) const
+{
+    return new QOpenKODEWindowSurface(widget,winId);
+}
+
+GLuint QOpenKODEIntegration::blitterProgram()
 {
     static GLuint shaderProgram = 0;
     if (!shaderProgram) {
 
-        const char vertShaderBinary[] = {
-#   include "vert.h"
-        };
-        const char fragShaderBinary[] = {
-#   include "frag.h"
-        };
-
-        shaderProgram = NvKdTestLoadShaders(vertShaderBinary, fragShaderBinary,
-                    sizeof(vertShaderBinary), sizeof(fragShaderBinary));
-
+        shaderProgram = loadShaders(":/shaders/vert.glslv",":/shaders/frag.glslf");
         if (!shaderProgram)
             qFatal("QOpenKodeGraphicsSystem(): Cannot load shaders!");
     }

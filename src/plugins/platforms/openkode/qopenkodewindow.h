@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,25 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QPlatformIntegrationPlugin>
-#include "qopenkodeintegration.h"
+#ifndef QOPENKODEWINDOW_H
+#define QOPENKODEWINDOW_H
 
-QT_BEGIN_NAMESPACE
+#include <QtGui/QPlatformWindow>
 
-class QOpenKODEPlugin : public QPlatformIntegrationPlugin
+#include <KD/kd.h>
+
+class QOpenKODEWindow : public QPlatformWindow
 {
 public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QOpenKODEWindow(QWidget *tlw);
+
+    void setGeometry(const QRect &rect);
+    void setVisible(bool visible);
+    WId winId() const { return WId(eglWindow); }
+
+private:
+    struct KDWindow *kdWindow;
+    EGLNativeWindowType eglWindow;
 };
 
-QStringList QOpenKODEPlugin::keys() const
-{
-    QStringList list;
-    list << "OpenKODE";
-    return list;
-}
-
-QPlatformIntegration * QOpenKODEPlugin::create(const QString& system)
-{
-    if (system.toLower() == "openkode")
-        return new QOpenKODEIntegration;
-
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(openkode, QOpenKODEPlugin)
-
-QT_END_NAMESPACE
+#endif //QOPENKODEWINDOW_H

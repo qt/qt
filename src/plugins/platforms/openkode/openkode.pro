@@ -1,14 +1,20 @@
-TARGET = qopenkodegraphicssystem
+TARGET = qopenkodeintegration
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-SOURCES = main.cpp qgraphicssystem_openkode.cpp qwindowsurface_openkode.cpp
-HEADERS = qgraphicssystem_openkode.h qwindowsurface_openkode.h
+SOURCES =   main.cpp \
+            qopenkodeintegration.cpp \
+            qopenkodewindowsurface.cpp \
+            qopenkodewindow.cpp
 
-target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
+HEADERS =   qopenkodeintegration.h \
+            qopenkodewindowsurface.h \
+            qopenkodewindow.h
+
+RESOURCES = resources.qrc
+
+target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 
-# openkode specific stuff
-INCLUDEPATH += $(OPENKODE_DIR)/include
-LIBS += $${QMAKE_RPATH}/$(OPENKODE_DIR)/lib-target -L$(OPENKODE_DIR)/lib-target -lKD -lEGL -lGLESv2
+LIBS += -lKD -lEGL -lGLESv2 

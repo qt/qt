@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,39 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_OPENKODE_H
-#define QWINDOWSURFACE_OPENKODE_H
+#ifndef QGRAPHICSSYSTEM_OPENKODE_H
+#define QGRAPHICSSYSTEM_OPENKODE_H
 
-#include <QtGui/private/qwindowsurface_p.h>
+#include <QtCore/qsemaphore.h>
+
+#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformScreen>
 #include <QtGui/private/qeglcontext_p.h>
+
+# include <GLES2/gl2.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenKODEGraphicsSystemScreen;
+struct KDDesktopNV;
 
-class QOpenKODEWindowSurface : public QWindowSurface
+class QOpenKODEScreen : public QPlatformScreen
 {
 public:
-    QOpenKODEWindowSurface
-        (QOpenKODEGraphicsSystemScreen *screen, QWidget *window);
-    ~QOpenKODEWindowSurface();
+    QOpenKODEScreen();
+    ~QOpenKODEScreen() {}
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
+    QRect geometry() const { return mGeometry; }
+    int depth() const { return mDepth; }
+    QImage::Format format() const { return mFormat; }
+    QSize physicalSize() const { return mPhysicalSize; }
 
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
+public:
+    QRect mGeometry;
+    int mDepth;
+    QImage::Format mFormat;
+    QSize mPhysicalSize;
+};
+
+class QOpenKODEIntegration : public QPlatformIntegration
+{
+public:
+    QOpenKODEIntegration();
+
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+
+    virtual QList<QPlatformScreen *> screens() const { return mScreens; }
+
+    static GLuint blitterProgram();
 
 private:
-    QOpenKODEGraphicsSystemScreen *mScreen;
-    QImage mImage;
-    struct KDWindow *kdWindow;
-    EGLSurface *mSurface;
-    QEglContext mContext;
-
-    void createWindow(QWidget *window);
+    QList<QPlatformScreen *> mScreens;
+    QSemaphore eventMutex;
 };
 
 QT_END_NAMESPACE

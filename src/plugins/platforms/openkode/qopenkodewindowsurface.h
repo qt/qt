@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,55 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_OPENKODE_H
-#define QGRAPHICSSYSTEM_OPENKODE_H
+#ifndef QWINDOWSURFACE_OPENKODE_H
+#define QWINDOWSURFACE_OPENKODE_H
 
-#include <QtCore/qsemaphore.h>
-
-#include <QtGui/private/qgraphicssystem_p.h>
+#include <QtGui/private/qwindowsurface_p.h>
 #include <QtGui/private/qeglcontext_p.h>
-
-# include <GLES2/gl2.h>
 
 QT_BEGIN_NAMESPACE
 
-struct KDDesktopNV;
+class QOpenKODEWindow;
 
-class QOpenKODEGraphicsSystemScreen : public QGraphicsSystemScreen
+class QOpenKODEWindowSurface : public QWindowSurface
 {
 public:
-    QOpenKODEGraphicsSystemScreen();
-    ~QOpenKODEGraphicsSystemScreen() {}
+    QOpenKODEWindowSurface
+        (QWidget *window, WId winId);
+    ~QOpenKODEWindowSurface();
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void resize (const QSize &size);
 
-public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-    QEglContext mContext;
-};
-
-class QOpenKODEGraphicsSystem : public QGraphicsSystem
-{
-public:
-    QOpenKODEGraphicsSystem();
-
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
-
-    QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
-
-    static GLuint blitterProgram();
+    void beginPaint(const QRegion &region);
+    void endPaint(const QRegion &region);
 
 private:
-    QOpenKODEGraphicsSystemScreen *mPrimaryScreen;
-    QList<QGraphicsSystemScreen *> mScreens;
-    QSemaphore eventMutex;
+    QImage mImage;
+    EGLSurface mSurface;
+    QEglContext mContext;
+    EGLNativeWindowType mWin;
 };
 
 QT_END_NAMESPACE
