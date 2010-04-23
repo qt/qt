@@ -933,12 +933,6 @@ QObject::~QObject()
             d->threadData->eventDispatcher->unregisterTimers(this);
     }
 
-#ifdef QT3_SUPPORT
-    d->pendingChildInsertedEvents.clear();
-#endif
-
-    d->eventFilters.clear();
-
     if (!d->children.isEmpty())
         d->deleteChildren();
 
