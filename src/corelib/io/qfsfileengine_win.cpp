@@ -1298,7 +1298,7 @@ static QString readSymLink(const QString &link)
             DWORD len;
             wchar_t buffer[MAX_PATH];
             QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
-            if(GetVolumePathNamesForVolumeNameW(volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
+            if(GetVolumePathNamesForVolumeNameW((wchar_t*)volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
                 result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
         }
     }
