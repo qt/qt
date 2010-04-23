@@ -125,7 +125,7 @@ void usage()
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
-    qWarning("  -warnings ................................ show warnings in a separate log window");
+    qWarning("  -warnings [show|hide]..................... show warnings in a separate log window");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -167,6 +167,8 @@ void scriptOptsUsage()
     qWarning(" One of record, play or both must be specified.");
     exit(1);
 }
+
+enum WarningsConfig { ShowWarnings, HideWarnings, DefaultWarnings };
 
 int main(int argc, char ** argv)
 {
@@ -230,7 +232,7 @@ int main(int argc, char ** argv)
     bool maximized = false;
     bool useNativeFileBrowser = true;
 
-    bool showLogWidget = false;
+    WarningsConfig warningsConfig = DefaultWarnings;
     bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
@@ -292,7 +294,15 @@ int main(int argc, char ** argv)
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
         } else if (arg == "-warnings") {
-            showLogWidget = true;
+            if (lastArg) usage();
+            QString warningsStr = QString(argv[++i]);
+            if (warningsStr == QLatin1String("show")) {
+                warningsConfig = ShowWarnings;
+            } else if (warningsStr == QLatin1String("hide")) {
+                warningsConfig = HideWarnings;
+            } else {
+                usage();
+            }
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
                 qWarning("-L option provided for compatibility only, use -I instead");
@@ -341,13 +351,6 @@ int main(int argc, char ** argv)
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
 
-#if !defined(Q_OS_SYMBIAN)
-    LoggerWidget loggerWidget(0);
-    if (showLogWidget) {
-        logger = &loggerWidget;
-    }
-#endif
-
     QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     if (!scriptopts.isEmpty()) {
         QStringList options = 
@@ -389,6 +392,16 @@ int main(int argc, char ** argv)
     }  else if (!script.isEmpty()) {
         usage();
     }
+
+#if !defined(Q_OS_SYMBIAN)
+    logger = viewer->warningsWidget();
+    if (warningsConfig == ShowWarnings) {
+        logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
+        logger.data()->show();
+    } else if (warningsConfig == HideWarnings){
+        logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
+    }
+#endif
 
     foreach (QString lib, imports)
         viewer->addLibraryPath(lib);

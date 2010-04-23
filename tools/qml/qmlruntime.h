@@ -48,6 +48,8 @@
 #include <QTime>
 #include <QList>
 
+#include "loggerwidget.h"
+
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeView;
@@ -108,6 +110,7 @@ public:
     QMenuBar *menuBar() const;
 
     QDeclarativeView *view() const;
+    LoggerWidget *warningsWidget() const;
 
 public slots:
     void sceneResized(QSize size);
@@ -145,10 +148,15 @@ private slots:
     void startNetwork();
     void toggleFullScreen();
 
+    void showWarnings(bool show);
+    void warningsWidgetOpened();
+    void warningsWidgetClosed();
+
 private:
     QString getVideoFileName();
     int menuBarHeight() const;
 
+    LoggerWidget *loggerWindow;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QDeclarativeView *canvas;
@@ -182,6 +190,8 @@ private:
 
     QAction *portraitOrientation;
     QAction *landscapeOrientation;
+
+    QAction *showWarningsWindow;
 
     QString m_script;
     ScriptOptions m_scriptOptions;

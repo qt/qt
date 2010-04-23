@@ -462,10 +462,13 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 #else
     : QWidget(parent, flags)
 #endif
+      , loggerWindow(new LoggerWidget())
       , frame_stream(0), scaleSkin(true), mb(0)
       , portraitOrientation(0), landscapeOrientation(0)
-      , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
-      , translator(0)
+      , showWarningsWindow(0)
+      , m_scriptOptions(0)
+      , tester(0)
+      , useQmlFileBrowser(true)
 {
     QDeclarativeViewer::registerTypes();
     setWindowTitle(tr("Qt Qml Runtime"));
@@ -505,6 +508,9 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     QObject::connect(canvas, SIGNAL(statusChanged(QDeclarativeView::Status)), this, SLOT(statusChanged()));
     QObject::connect(canvas->engine(), SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
+
+    QObject::connect(warningsWidget(), SIGNAL(opened()), this, SLOT(warningsWidgetOpened()));
+    QObject::connect(warningsWidget(), SIGNAL(closed()), this, SLOT(warningsWidgetClosed()));
 
     if (!(flags & Qt::FramelessWindowHint)) {
         createMenu(menuBar(),0);
@@ -565,6 +571,11 @@ QDeclarativeView *QDeclarativeViewer::view() const
     return canvas;
 }
 
+LoggerWidget *QDeclarativeViewer::warningsWidget() const
+{
+    return loggerWindow;
+}
+
 void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 {
     QObject *parent = flatmenu ? (QObject*)flatmenu : (QObject*)menu;
@@ -615,6 +626,15 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     slowAction->setCheckable(true);
     connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
     debugMenu->addAction(slowAction);
+
+    showWarningsWindow = new QAction(tr("Show Warnings"), parent);
+    showWarningsWindow->setCheckable((true));
+    showWarningsWindow->setChecked(loggerWindow->isVisible());
+    connect(showWarningsWindow, SIGNAL(triggered(bool)), this, SLOT(showWarnings(bool)));
+
+#if !defined(Q_OS_SYMBIAN)
+    debugMenu->addAction(showWarningsWindow);
+#endif
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -672,6 +692,8 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 #if !defined(Q_OS_SYMBIAN)
     if (!flatmenu)
         settingsMenu->addAction(recordOptions);
+
+    settingsMenu->addMenu(loggerWindow->preferencesMenu());
 #else
     QAction *fullscreenAction = new QAction(tr("Full Screen"), parent);
     fullscreenAction->setCheckable(true);
@@ -679,7 +701,10 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     settingsMenu->addAction(fullscreenAction);
 #endif
 
+    if (flatmenu) flatmenu->addSeparator();
+
     QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
+
     QActionGroup *orientation = new QActionGroup(parent);
 
     QAction *toggleOrientation = new QAction(tr("&Toggle Orientation"), parent);
@@ -756,6 +781,21 @@ void QDeclarativeViewer::toggleFullScreen()
         showMaximized();
     else
         showFullScreen();
+}
+
+void QDeclarativeViewer::showWarnings(bool show)
+{
+    loggerWindow->setVisible(show);
+}
+
+void QDeclarativeViewer::warningsWidgetOpened()
+{
+    showWarningsWindow->setChecked(true);
+}
+
+void QDeclarativeViewer::warningsWidgetClosed()
+{
+    showWarningsWindow->setChecked(false);
 }
 
 void QDeclarativeViewer::setScaleSkin()
