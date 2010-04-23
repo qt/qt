@@ -95,10 +95,8 @@ QDeclarativeAbstractBoundSignal::~QDeclarativeAbstractBoundSignal()
 
 QDeclarativeBoundSignal::QDeclarativeBoundSignal(QObject *scope, const QMetaMethod &signal, 
                                QObject *parent)
-: m_expression(0), m_signal(signal), m_paramsValid(false), m_params(0)
+: m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0)
 {
-    // A cached evaluation of the QDeclarativeExpression::value() slot index.
-    //
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
@@ -111,10 +109,8 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QObject *scope, const QMetaMeth
 QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, const QString &val, 
                                QObject *scope, const QMetaMethod &signal,
                                QObject *parent)
-: m_expression(0), m_signal(signal), m_paramsValid(false), m_params(0)
+: m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0)
 {
-    // A cached evaluation of the QDeclarativeExpression::value() slot index.
-    //
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
@@ -169,6 +165,7 @@ QDeclarativeBoundSignal *QDeclarativeBoundSignal::cast(QObject *o)
 int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
+        m_isEvaluating = true;
         if (!m_paramsValid) {
             if (!m_signal.parameterTypes().isEmpty())
                 m_params = new QDeclarativeBoundSignalParameters(m_signal, this);
@@ -179,9 +176,10 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         if (m_expression && m_expression->engine()) {
             QDeclarativeExpressionPrivate::get(m_expression)->value(m_params);
             if (m_expression && m_expression->hasError())
-                qWarning().nospace() << qPrintable(m_expression->error().toString());
+                QDeclarativeEnginePrivate::warning(m_expression->engine(), m_expression->error());
         }
         if (m_params) m_params->clearValues();
+        m_isEvaluating = false;
         return -1;
     } else {
         return QObject::qt_metacall(c, id, a);

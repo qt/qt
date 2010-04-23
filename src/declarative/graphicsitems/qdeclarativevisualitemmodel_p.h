@@ -150,7 +150,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeVisualDataModel : public QDeclarativeVisu
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(QString part READ part WRITE setPart)
     Q_PROPERTY(QObject *parts READ parts CONSTANT)
-    Q_PROPERTY(QModelIndex rootIndex READ rootIndex WRITE setRootIndex NOTIFY rootIndexChanged)
+    Q_PROPERTY(QVariant rootIndex READ rootIndex WRITE setRootIndex NOTIFY rootIndexChanged)
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
     QDeclarativeVisualDataModel();
@@ -163,8 +163,11 @@ public:
     QDeclarativeComponent *delegate() const;
     void setDelegate(QDeclarativeComponent *);
 
-    QModelIndex rootIndex() const;
-    void setRootIndex(const QModelIndex &root);
+    QVariant rootIndex() const;
+    void setRootIndex(const QVariant &root);
+
+    Q_INVOKABLE QVariant modelIndex(int idx) const;
+    Q_INVOKABLE QVariant parentModelIndex() const;
 
     QString part() const;
     void setPart(const QString &);

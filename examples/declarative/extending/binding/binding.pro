@@ -8,10 +8,10 @@ QT += declarative
 SOURCES += main.cpp \
            person.cpp \
            birthdayparty.cpp \
-           happybirthday.cpp 
+           happybirthdaysong.cpp 
 HEADERS += person.h \
            birthdayparty.h \
-           happybirthday.h
+           happybirthdaysong.h
 RESOURCES += binding.qrc
 target.path = $$[QT_INSTALL_EXAMPLES]/declarative/extending/binding
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS binding.pro

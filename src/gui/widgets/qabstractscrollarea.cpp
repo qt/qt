@@ -983,6 +983,7 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
     case QEvent::ApplicationLayoutDirectionChange:
+    case QEvent::LayoutRequest:
         d->layoutChildren();
         // fall through
     default:

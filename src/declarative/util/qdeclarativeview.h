@@ -97,16 +97,18 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void continueExecute();
-    void sizeChanged();
 
 protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void paintEvent(QPaintEvent *event);
     virtual void timerEvent(QTimerEvent*);
     virtual void setRootObject(QObject *obj);
+    virtual bool eventFilter(QObject *watched, QEvent *e);
 
+private:
     friend class QDeclarativeViewPrivate;
     QDeclarativeViewPrivate *d;
+    Q_DISABLE_COPY(QDeclarativeView)
 };
 
 QT_END_NAMESPACE

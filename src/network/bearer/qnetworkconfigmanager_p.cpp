@@ -381,7 +381,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
                         this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
 
-                QMetaObject::invokeMethod(engine, "requestUpdate");
+                QMetaObject::invokeMethod(engine, "initialize");
             }
         }
 

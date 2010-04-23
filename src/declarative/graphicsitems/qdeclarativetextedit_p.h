@@ -73,7 +73,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapChanged) //### deprecated
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
@@ -139,8 +138,6 @@ public:
     VAlignment vAlign() const;
     void setVAlign(VAlignment align);
 
-    bool wrap() const;
-    void setWrap(bool w);
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 

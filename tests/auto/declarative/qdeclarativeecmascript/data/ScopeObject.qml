@@ -1,14 +1,12 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     property int a: 3
     property int binding: myFunction();
     property int binding2: myCompFunction();
 
-    Script {
-        function myCompFunction() {
-            return a;
-        }
+    function myCompFunction() {
+        return a;
     }
 }
 

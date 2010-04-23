@@ -85,11 +85,13 @@ private: // convenience functions
         return false;
     }
 
-    bool createFile(const QString &fileName)
+    enum Cleanup { DoDelete, DontDelete };
+    bool createFile(const QString &fileName, Cleanup cleanup = DoDelete)
     {
         QFile file(fileName);
         if (file.open(QIODevice::WriteOnly)) {
-            createdFiles << fileName;
+            if (cleanup == DoDelete)
+                createdFiles << fileName;
             return true;
         }
         return false;
@@ -131,9 +133,9 @@ tst_QDirIterator::tst_QDirIterator()
 
     createDirectory("entrylist");
     createDirectory("entrylist/directory");
-    createFile("entrylist/file");
+    createFile("entrylist/file", DontDelete);
     createFile("entrylist/writable");
-    createFile("entrylist/directory/dummy");
+    createFile("entrylist/directory/dummy", DontDelete);
 
     createDirectory("recursiveDirs");
     createDirectory("recursiveDirs/dir1");

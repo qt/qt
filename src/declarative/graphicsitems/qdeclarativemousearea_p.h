@@ -61,6 +61,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDrag : public QObject
     Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax NOTIFY maximumXChanged)
     Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin NOTIFY minimumYChanged)
     Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax NOTIFY maximumYChanged)
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
     //### consider drag and drop
 
 public:
@@ -84,6 +85,9 @@ public:
     qreal ymax() const;
     void setYmax(qreal);
 
+    bool active() const;
+    void setActive(bool);
+
 Q_SIGNALS:
     void targetChanged();
     void axisChanged();
@@ -91,6 +95,7 @@ Q_SIGNALS:
     void maximumXChanged();
     void minimumYChanged();
     void maximumYChanged();
+    void activeChanged();
 
 private:
     QGraphicsObject *_target;
@@ -99,6 +104,7 @@ private:
     qreal _xmax;
     qreal _ymin;
     qreal _ymax;
+    bool _active;
     Q_DISABLE_COPY(QDeclarativeDrag)
 };
 
@@ -108,8 +114,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeMouseArea : public QDeclarativeItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(qreal mouseX READ mouseX NOTIFY positionChanged)
-    Q_PROPERTY(qreal mouseY READ mouseY NOTIFY positionChanged)
+    Q_PROPERTY(qreal mouseX READ mouseX NOTIFY mousePositionChanged)
+    Q_PROPERTY(qreal mouseY READ mouseY NOTIFY mousePositionChanged)
     Q_PROPERTY(bool containsMouse READ hovered NOTIFY hoveredChanged)
     Q_PROPERTY(bool pressed READ pressed NOTIFY pressedChanged)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
@@ -144,6 +150,7 @@ Q_SIGNALS:
     void enabledChanged();
     void acceptedButtonsChanged();
     void positionChanged(QDeclarativeMouseEvent *mouse);
+    void mousePositionChanged(QDeclarativeMouseEvent *mouse);
 
     void pressed(QDeclarativeMouseEvent *mouse);
     void pressAndHold(QDeclarativeMouseEvent *mouse);
@@ -166,6 +173,9 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     bool sceneEvent(QEvent *);
     void timerEvent(QTimerEvent *event);
+
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
 
 private:
     void handlePress();

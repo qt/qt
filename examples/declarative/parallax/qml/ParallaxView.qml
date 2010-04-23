@@ -21,7 +21,7 @@ Item {
         onCurrentIndexChanged: root.currentIndex = currentIndex 
 
         orientation: "Horizontal"
-        overShoot: false
+        boundsBehavior: Flickable.DragOverBounds
         anchors.fill: parent
         model: VisualItemModel { id: visualModel }
 

@@ -46,6 +46,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qmap.h>
 #include <QtScript/qscriptvalue.h>
+#include <QtDeclarative/qdeclarativeerror.h>
 
 QT_BEGIN_HEADER
 
@@ -102,6 +103,9 @@ public:
     QUrl baseUrl() const;
     void setBaseUrl(const QUrl &);
 
+    bool outputWarningsToStandardError() const;
+    void setOutputWarningsToStandardError(bool);
+
     static QDeclarativeContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QDeclarativeContext *);
 
@@ -110,9 +114,11 @@ public:
     static ObjectOwnership objectOwnership(QObject *);
 
 Q_SIGNALS:
-    void quit ();
+    void quit();
+    void warnings(const QList<QDeclarativeError> &warnings);
 
 private:
+    Q_DISABLE_COPY(QDeclarativeEngine)
     Q_DECLARE_PRIVATE(QDeclarativeEngine)
 };
 

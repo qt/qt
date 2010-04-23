@@ -135,7 +135,7 @@ QSize ElidingLabel::sizeHint() const
     return size;
 }
 
-void ElidingLabel::paintEvent(QPaintEvent *e) {
+void ElidingLabel::paintEvent(QPaintEvent *) {
     QPainter painter(this);
     painter.setPen(QColor(0, 0, 0, 60));
     painter.setBrush(QColor(255, 255, 255, 40));

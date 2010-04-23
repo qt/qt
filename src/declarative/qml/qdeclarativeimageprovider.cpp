@@ -45,31 +45,39 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeclarativeImageProvider
-    \brief The QDeclarativeImageProvider class provides an interface for threaded image requests.
+    \since 4.7
+    \brief The QDeclarativeImageProvider class provides an interface for threaded image requests in QML.
 
-    Note: the request() method may be called by multiple threads, so ensure the
+    QDeclarativeImageProvider can be used by a QDeclarativeEngine to provide images to QML asynchronously.
+    The image request will be run in a low priority thread, allowing potentially costly image
+    loading to be done in the background, without affecting the performance of the UI.
+
+    See the QDeclarativeEngine::addImageProvider() documentation for an
+    example of how a custom QDeclarativeImageProvider can be constructed and used.
+
+    \note the request() method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
 
     \sa QDeclarativeEngine::addImageProvider()
 */
 
 /*!
-  The destructor is virtual.
+  Destroys the image provider.
  */
 QDeclarativeImageProvider::~QDeclarativeImageProvider()
 {
 }
 
 /*!
-    \fn QImage QDeclarativeImageProvider::request(const QString &id, QSize *size, const QSize& requested_size)
+    \fn QImage QDeclarativeImageProvider::request(const QString &id, QSize *size, const QSize& requestedSize)
 
     Implement this method to return the image with \a id.
 
-    If \a requested_size is a valid size, resize the image to that size before returning.
+    If \a requestedSize is a valid size, the image returned should be of that size.
 
-    In any case, \a size must be set to the (original) size of the image.
+    In all cases, \a size must be set to the original size of the image.
 
-    Note: this method may be called by multiple threads, so ensure the
+    \note this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
 */
 

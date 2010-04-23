@@ -147,7 +147,7 @@ Grund:
         <translation>Lesezeichen verwalten...</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Add Bookmark...</source>
         <translation>Lesezeichen hinzufügen ...</translation>
     </message>
@@ -190,7 +190,7 @@ Grund:
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+117"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+121"/>
         <source>Add new page</source>
         <translation>Neue Seite hinzufügen</translation>
     </message>
@@ -488,19 +488,19 @@ Grund:
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+123"/>
-        <location line="+366"/>
+        <location line="+369"/>
         <source>Index</source>
         <translation>Index</translation>
     </message>
     <message>
-        <location line="-360"/>
-        <location line="+358"/>
+        <location line="-363"/>
+        <location line="+361"/>
         <source>Contents</source>
         <translation>Inhalt</translation>
     </message>
     <message>
-        <location line="-351"/>
-        <location line="+355"/>
+        <location line="-354"/>
+        <location line="+358"/>
         <source>Bookmarks</source>
         <translation>Lesezeichen</translation>
     </message>
@@ -510,14 +510,14 @@ Grund:
         <translation>Suchen</translation>
     </message>
     <message>
-        <location line="-335"/>
-        <location line="+672"/>
+        <location line="-338"/>
+        <location line="+680"/>
         <location line="+284"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-702"/>
+        <location line="-705"/>
         <source>Page Set&amp;up...</source>
         <translation>S&amp;eite einrichten ...</translation>
     </message>
@@ -532,17 +532,17 @@ Grund:
         <translation>&amp;Drucken ...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-10"/>
         <source>New &amp;Tab</source>
         <translation>Neuer &amp;Reiter</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+17"/>
         <source>&amp;Close Tab</source>
         <translation>Reiter &amp;schließen</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>&amp;Quit</source>
         <translation>&amp;Beenden</translation>
     </message>
@@ -662,17 +662,17 @@ Grund:
         <translation>Ctrl+Alt+Left</translation>
     </message>
     <message>
-        <location line="+591"/>
+        <location line="+596"/>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>Die Datei &apos;%1&apos; konnte nicht registriert werden: %2</translation>
     </message>
     <message>
-        <location line="-584"/>
+        <location line="-589"/>
         <source>About...</source>
         <translation>Über ...</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+21"/>
         <source>Navigation Toolbar</source>
         <translation>Navigationsleiste</translation>
     </message>
@@ -717,12 +717,12 @@ Grund:
         <translation>Suchindex wird aufgebaut</translation>
     </message>
     <message>
-        <location line="-661"/>
+        <location line="-669"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Suche nach Qt-Dokumentation ...</translation>
     </message>
     <message>
-        <location line="+219"/>
+        <location line="+227"/>
         <source>&amp;Window</source>
         <translation>&amp;Fenster</translation>
     </message>
@@ -742,12 +742,12 @@ Grund:
         <translation>Zoom</translation>
     </message>
     <message>
-        <location line="-161"/>
+        <location line="-169"/>
         <source>&amp;File</source>
         <translation>&amp;Datei</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+32"/>
         <source>&amp;Edit</source>
         <translation>&amp;Bearbeiten</translation>
     </message>

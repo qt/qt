@@ -38,7 +38,7 @@ Rectangle {
 
     Dialog {
         id: nameInputDialog
-        
+
         property int initialWidth: 0
 
         anchors.centerIn: parent

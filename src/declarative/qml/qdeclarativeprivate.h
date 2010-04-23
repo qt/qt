@@ -184,6 +184,7 @@ namespace QDeclarativePrivate
         int listId;
         int objectSize;
         void (*create)(void *);
+        QString noCreationReason;
 
         const char *uri;
         int versionMajor;

@@ -3984,7 +3984,7 @@ bool QGLWidget::event(QEvent *e)
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.
-        d->recreateEglSurface(false);
+        d->recreateEglSurface();
     }
 #endif
 #elif defined(Q_WS_WIN)

@@ -4417,8 +4417,8 @@ EXPORTS
 	?findData@QComboBox@@QBEHABVQVariant@@HV?$QFlags@W4MatchFlag@Qt@@@@@Z @ 4416 NONAME ; int QComboBox::findData(class QVariant const &, int, class QFlags<enum Qt::MatchFlag>) const
 	?findFont@QFontDatabase@@CAPAVQFontEngine@@HPBVQFontPrivate@@ABUQFontDef@@@Z @ 4417 NONAME ; class QFontEngine * QFontDatabase::findFont(int, class QFontPrivate const *, struct QFontDef const &)
 	?findInMask@QLineControl@@ABEHH_N0VQChar@@@Z @ 4418 NONAME ; int QLineControl::findInMask(int, bool, bool, class QChar) const
-	?findIntersections@QBezier@@SA?AV?$QVector@U?$QPair@MM@@@@ABV1@0@Z @ 4419 NONAME ; class QVector<struct QPair<float, float> > QBezier::findIntersections(class QBezier const &, class QBezier const &)
-	?findIntersections@QBezier@@SA_NABV1@0PAV?$QVector@U?$QPair@MM@@@@@Z @ 4420 NONAME ; bool QBezier::findIntersections(class QBezier const &, class QBezier const &, class QVector<struct QPair<float, float> > *)
+	?findIntersections@QBezier@@SA?AV?$QVector@U?$QPair@MM@@@@ABV1@0@Z @ 4419 NONAME ABSENT ; class QVector<struct QPair<float, float> > QBezier::findIntersections(class QBezier const &, class QBezier const &)
+	?findIntersections@QBezier@@SA_NABV1@0PAV?$QVector@U?$QPair@MM@@@@@Z @ 4420 NONAME ABSENT ; bool QBezier::findIntersections(class QBezier const &, class QBezier const &, class QVector<struct QPair<float, float> > *)
 	?findItem@QTextEngine@@QBEHH@Z @ 4421 NONAME ; int QTextEngine::findItem(int) const
 	?findItems@QListWidget@@QBE?AV?$QList@PAVQListWidgetItem@@@@ABVQString@@V?$QFlags@W4MatchFlag@Qt@@@@@Z @ 4422 NONAME ; class QList<class QListWidgetItem *> QListWidget::findItems(class QString const &, class QFlags<enum Qt::MatchFlag>) const
 	?findItems@QStandardItemModel@@QBE?AV?$QList@PAVQStandardItem@@@@ABVQString@@V?$QFlags@W4MatchFlag@Qt@@@@H@Z @ 4423 NONAME ; class QList<class QStandardItem *> QStandardItemModel::findItems(class QString const &, class QFlags<enum Qt::MatchFlag>, int) const
@@ -10501,7 +10501,7 @@ EXPORTS
 	?speed@QMovie@@QBEHXZ @ 10500 NONAME ; int QMovie::speed(void) const
 	?split@QBezier@@QBEXPAV1@0@Z @ 10501 NONAME ; void QBezier::split(class QBezier *, class QBezier *) const
 	?split@QItemSelection@@SAXABVQItemSelectionRange@@0PAV1@@Z @ 10502 NONAME ; void QItemSelection::split(class QItemSelectionRange const &, class QItemSelectionRange const &, class QItemSelection *)
-	?splitAtIntersections@QBezier@@QAE?AV?$QVector@V?$QList@VQBezier@@@@@@AAV1@@Z @ 10503 NONAME ; class QVector<class QList<class QBezier> > QBezier::splitAtIntersections(class QBezier &)
+	?splitAtIntersections@QBezier@@QAE?AV?$QVector@V?$QList@VQBezier@@@@@@AAV1@@Z @ 10503 NONAME ABSENT ; class QVector<class QList<class QBezier> > QBezier::splitAtIntersections(class QBezier &)
 	?splitCell@QTextTable@@QAEXHHHH@Z @ 10504 NONAME ; void QTextTable::splitCell(int, int, int, int)
 	?splitDockWidget@QMainWindow@@QAEXPAVQDockWidget@@0W4Orientation@Qt@@@Z @ 10505 NONAME ; void QMainWindow::splitDockWidget(class QDockWidget *, class QDockWidget *, enum Qt::Orientation)
 	?splitItem@QTextEngine@@ABEXHH@Z @ 10506 NONAME ; void QTextEngine::splitItem(int, int) const

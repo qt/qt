@@ -17,21 +17,21 @@ Item {
     //![1]
 
     //![2]
-    Image { 
+    Image {
         id: img
 
         anchors.fill: parent
         source: {
             if (type == 0)
                 return "../../shared/pics/redStone.png";
-            else if (type == 1) 
+            else if (type == 1)
                 return "../../shared/pics/blueStone.png";
             else
                 return "../../shared/pics/greenStone.png";
         }
         opacity: 0
 
-        Behavior on opacity { 
+        Behavior on opacity {
             NumberAnimation { properties:"opacity"; duration: 200 }
         }
     }
@@ -41,7 +41,7 @@ Item {
     Particles {
         id: particles
 
-        width: 1; height: 1 
+        width: 1; height: 1
         anchors.centerIn: parent
 
         emissionRate: 0

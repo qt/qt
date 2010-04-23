@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 //![0]
-#include <QtDeclarative/qdeclarative.h>
 #include <QGraphicsWidget>
 #include <QPainter>
 
@@ -52,6 +51,4 @@ public:
         painter->fillRect(0, 0, size().width(), size().height(), QColor(Qt::red));
     }
 };
-
-QML_DECLARE_TYPE(RedSquare)
 //![0]

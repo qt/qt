@@ -145,10 +145,8 @@ public:
     QObject *contextObject;
 
     // Any script blocks that exist on this context
-    QList<QScriptValue> scripts;
     QList<QScriptValue> importedScripts;
     void addImportedScript(const QDeclarativeParser::Object::ScriptBlock &script);
-    void addScript(const QDeclarativeParser::Object::ScriptBlock &script, QObject *scopeObject);
 
     // Context base url
     QUrl url;

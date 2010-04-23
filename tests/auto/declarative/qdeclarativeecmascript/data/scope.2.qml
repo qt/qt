@@ -1,13 +1,11 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     property int a: 0
     property int b: 0
 
-    Script {
-        function b() { return 11; }
-        function c() { return 33; }
-    }
+    function b() { return 11; }
+    function c() { return 33; }
 
     QtObject {
         id: a

@@ -131,7 +131,6 @@ public:
     AxisData vData;
 
     QDeclarativeTimeLine timeline;
-    bool overShoot : 1;
     bool flicked : 1;
     bool moving : 1;
     bool stealMouse : 1;
@@ -160,6 +159,7 @@ public:
     QDeclarativeTimeLine velocityTimeline;
     QDeclarativeFlickableVisibleArea *visibleArea;
     QDeclarativeFlickable::FlickDirection flickDirection;
+    QDeclarativeFlickable::BoundsBehavior boundsBehavior;
 
     void handleMousePressEvent(QGraphicsSceneMouseEvent *);
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);

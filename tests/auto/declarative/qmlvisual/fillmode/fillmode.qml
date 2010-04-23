@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 /*
     This is a static display test of the various Image fill modes. See the png file in the data
