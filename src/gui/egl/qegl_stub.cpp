@@ -165,6 +165,18 @@ bool QEglContext::configAttrib(int name, EGLint *value) const
     return false;
 }
 
+void QEglContext::clearError()
+{
+    NOEGL
+    return;
+}
+
+EGLint QEglContext::error()
+{
+    NOEGL
+    return 0;
+}
+
 EGLDisplay QEglContext::display()
 {
     NOEGL
