@@ -478,11 +478,6 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(object);
-
-    if (!priv->hasGuards)
-        return;
-
     GuardHash *hash = 0;
     QMutex *mutex = 0;
     QT_TRY {
@@ -824,7 +819,7 @@ QObject::~QObject()
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
-    if (!d->isWidget) {
+    if (d->hasGuards && !d->isWidget) {
         // set all QPointers for this object to zero - note that
         // ~QWidget() does this for us, so we don't have to do it twice
         QObjectPrivate::clearGuards(this);
