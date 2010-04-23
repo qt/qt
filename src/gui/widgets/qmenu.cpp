@@ -2812,7 +2812,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     if (d->sloppyRegion.contains(e->pos())) {
         d->sloppyAction = action;
         QMenuPrivate::sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this)*6);
-    } else {
+    } else if (action != d->currentAction) {
         d->setCurrentAction(action, style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this));
     }
 }
