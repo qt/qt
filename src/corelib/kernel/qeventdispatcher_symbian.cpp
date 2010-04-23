@@ -43,7 +43,6 @@
 #include <private/qthread_p.h>
 #include <qcoreapplication.h>
 #include <private/qcoreapplication_p.h>
-#include <qdatetime.h>
 
 #include <unistd.h>
 #include <errno.h>
@@ -636,6 +635,74 @@ void QSocketActiveObject::deleteLater()
     }
 }
 
+#ifdef QT_SYMBIAN_PRIORITY_DROP
+class QIdleDetectorThread
+{
+public:
+    QIdleDetectorThread()
+    : m_state(STATE_RUN), m_stop(false)
+    {
+        qt_symbian_throwIfError(m_lock.CreateLocal());
+        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, &User::Allocator(), this);
+        if (err != KErrNone)
+            m_lock.Close();
+        qt_symbian_throwIfError(err);
+        m_idleDetectorThread.SetPriority(EPriorityAbsoluteBackgroundNormal);
+        m_idleDetectorThread.Resume();
+    }
+
+    ~QIdleDetectorThread()
+    {
+        // close down the idle thread because if corelib is loaded temporarily, this would leak threads into the host process
+        m_stop = true;
+        m_lock.Signal();
+        m_idleDetectorThread.SetPriority(EPriorityNormal);
+        TRequestStatus s;
+        m_idleDetectorThread.Logon(s);
+        User::WaitForRequest(s);
+        m_idleDetectorThread.Close();
+        m_lock.Close();
+    }
+
+    void kick()
+    {
+        m_state = STATE_KICKED;
+        m_lock.Signal();
+    }
+
+    bool hasRun()
+    {
+        return m_state == STATE_RUN;
+    }
+
+private:
+    static TInt idleDetectorThreadFunc(TAny* self)
+    {
+        static_cast<QIdleDetectorThread*>(self)->IdleLoop();
+        return KErrNone;
+    }
+
+    void IdleLoop()
+    {
+        while (!m_stop) {
+            m_lock.Wait();
+            m_state = STATE_RUN;
+        }
+    }
+
+private:
+    enum IdleStates {STATE_KICKED, STATE_RUN} m_state;
+    bool m_stop;
+    RThread m_idleDetectorThread;
+    RFastLock m_lock;
+};
+
+Q_GLOBAL_STATIC(QIdleDetectorThread, idleDetectorThread);
+
+const int maxBusyTime = 2000; // maximum time we allow idle detector to be blocked before worrying, in milliseconds
+const int baseDelay = 1000; // minimum delay time used when backing off to allow idling, in microseconds
+#endif
+
 QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
     : QAbstractEventDispatcher(parent),
       m_activeScheduler(0),
@@ -646,11 +713,15 @@ QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
       m_iterationCount(0),
       m_noSocketEvents(false)
 {
+#ifdef QT_SYMBIAN_PRIORITY_DROP
+    m_delay = baseDelay;
+    m_avgEventTime = 0;
+    idleDetectorThread();
+#endif
 }
 
 QEventDispatcherSymbian::~QEventDispatcherSymbian()
 {
-    m_processHandle.Close();
 }
 
 void QEventDispatcherSymbian::startingUp()
@@ -711,23 +782,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         m_interrupt = false;
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
-        /*
-         * This QTime variable is used to measure the time it takes to finish
-         * the event loop. If we take too long in the loop, other processes
-         * may be starved and killed. After the first event has completed, we
-         * take the current time, and if the remaining events take longer than
-         * a preset time, we temporarily lower the priority to force a context
-         * switch. For applications that do not take unecessarily long in the
-         * event loop, the priority will not be altered.
-         */
-        QTime time;
-        enum {
-            FirstRun,
-            SubsequentRun,
-            TimeStarted
-        } timeState = FirstRun;
-
-        TProcessPriority priority;
+        QTime eventTimer;
 #endif
 
         while (1) {
@@ -743,10 +798,18 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             }
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
-            if (timeState == SubsequentRun) {
-                time.start();
-                timeState = TimeStarted;
+            if (idleDetectorThread()->hasRun()) {
+                if (m_delay > baseDelay)
+                    m_delay -= baseDelay;
+                m_lastIdleRequestTimer.start();
+                idleDetectorThread()->kick();
+            } else if (m_lastIdleRequestTimer.elapsed() > maxBusyTime) {
+                User::AfterHighRes(m_delay);
+                // allow delay to be up to 1/4 of execution time
+                if (!idleDetectorThread()->hasRun() && m_delay*3 < m_avgEventTime)
+                    m_delay += baseDelay;
             }
+            eventTimer.start();
 #endif
 
             TInt error;
@@ -756,6 +819,12 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 CActiveScheduler::Current()->Error(error);
             }
 
+#ifdef QT_SYMBIAN_PRIORITY_DROP
+            int eventDur = eventTimer.elapsed()*1000;
+            // average is calcualted as a 5% decaying exponential average
+            m_avgEventTime = (m_avgEventTime * 95 + eventDur * 5) / 100;
+#endif
+
             if (!handledSymbianEvent) {
                 qFatal("QEventDispatcherSymbian::processEvents(): Caught Symbian stray signal");
             }
@@ -764,20 +833,6 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 break;
             }
             block = false;
-#ifdef QT_SYMBIAN_PRIORITY_DROP
-            if (timeState == TimeStarted && time.elapsed() > 100) {
-                priority = m_processHandle.Priority();
-                m_processHandle.SetPriority(EPriorityBackground);
-                time.start();
-                // Slight chance of race condition in the next lines, but nothing fatal
-                // will happen, just wrong priority.
-                if (m_processHandle.Priority() == EPriorityBackground) {
-                    m_processHandle.SetPriority(priority);
-                }
-            }
-            if (timeState == FirstRun)
-                timeState = SubsequentRun;
-#endif
         };
 
         emit awake();
