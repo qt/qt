@@ -149,9 +149,11 @@ QObjectPrivate::QObjectPrivate(int version)
     postedEvents = 0;
     extraData = 0;
     connectedSignals[0] = connectedSignals[1] = 0;
-    inEventHandler = false;
     inThreadChangeEvent = false;
+#ifdef QT_JAMBI_BUILD
+    inEventHandler = false;
     deleteWatch = 0;
+#endif
     metaObject = 0;
     hasGuards = false;
 }
@@ -159,8 +161,10 @@ QObjectPrivate::QObjectPrivate(int version)
 QObjectPrivate::~QObjectPrivate()
 {
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
+#ifdef QT_JAMBI_BUILD
     if (deleteWatch)
         *deleteWatch = 1;
+#endif
 #ifndef QT_NO_USERDATA
     if (extraData)
         qDeleteAll(extraData->userData);
@@ -169,6 +173,7 @@ QObjectPrivate::~QObjectPrivate()
 }
 
 
+#ifdef QT_JAMBI_BUILD
 int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
     int *old = d->deleteWatch;
     d->deleteWatch = w;
@@ -183,10 +188,7 @@ void QObjectPrivate::resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int dele
     if (oldWatch)
         *oldWatch = deleteWatch;
 }
-
-
-
-
+#endif
 
 #ifdef QT3_SUPPORT
 void QObjectPrivate::sendPendingChildInsertedEvents()
@@ -1192,7 +1194,9 @@ bool QObject::event(QEvent *e)
 
     case QEvent::MetaCall:
         {
+#ifdef QT_JAMBI_BUILD
             d_func()->inEventHandler = false;
+#endif
             QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
             QObjectPrivate::Sender currentSender;
             currentSender.sender = const_cast<QObject*>(mce->sender());
@@ -1510,11 +1514,14 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
         currentSender->ref = 0;
     currentSender = 0;
 
+#ifdef QT_JAMBI_BUILD
     // the current event thread also shouldn't restore the delete watch
     inEventHandler = false;
+
     if (deleteWatch)
         *deleteWatch = 1;
     deleteWatch = 0;
+#endif
 
     // set new thread data
     targetData->ref();
