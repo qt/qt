@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,62 @@
 **
 ****************************************************************************/
 
-#include <qstring.h>
-#include <qt_windows.h>
+#ifndef MSVC_VCXPROJ_H
+#define MSVC_VCXPROJ_H
+
+#include "winmakefile.h"
+#include "msbuild_objectmodel.h"
+#include "msvc_vcproj.h"
 
 QT_BEGIN_NAMESPACE
 
-
-enum Compiler {
-    CC_UNKNOWN = 0,
-    CC_BORLAND = 0x01,
-    CC_MINGW   = 0x02,
-    CC_INTEL   = 0x03,
-    CC_MSVC4   = 0x40,
-    CC_MSVC5   = 0x50,
-    CC_MSVC6   = 0x60,
-    CC_NET2002 = 0x70,
-    CC_NET2003 = 0x71,
-    CC_NET2005 = 0x80,
-    CC_NET2008 = 0x90,
-    CC_NET2010 = 0x91
-};
-
-struct CompilerInfo;
-class Environment
+class VcxprojGenerator : public VcprojGenerator
 {
+    bool writeMakefile(QTextStream &);
+    bool writeProjectMakefile();
+
 public:
-    static Compiler detectCompiler();
-    static QString detectQMakeSpec();
-    static bool detectExecutable(const QString &executable);
+    VcxprojGenerator();
+    ~VcxprojGenerator();
 
-    static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static bool cpdir(const QString &srcDir, const QString &destDir);
-    static bool rmdir(const QString &name);
+protected:
+    virtual bool supportsMetaBuild() { return true; }
+    virtual bool supportsMergedBuilds() { return true; }
+    virtual bool mergeBuildProject(MakefileGenerator *other);
 
-    static QString symbianEpocRoot();
+    virtual void initProject();
+
+    void initConfiguration();
+    void initCompilerTool();
+    void initDeploymentTool();
+    void initLinkerTool();
+    void initPreLinkEventTools();
+    void initPostBuildEventTools();
+    void initRootFiles();
+    void initResourceTool();
+    void initSourceFiles();
+    void initHeaderFiles();
+    void initGeneratedFiles();
+    void initTranslationFiles();
+    void initFormFiles();
+    void initResourceFiles();
+    void initLexYaccFiles();
+    void initExtraCompilerOutputs();
+
+    // Used for single project
+    VCXProjectSingleConfig vcxProject;
+
+    // Holds all configurations for glue (merged) project
+    QList<VcxprojGenerator*> mergedProjects;
 
 private:
-    static Compiler detectedCompiler;
+    friend class VCXFilter;
 
-    static CompilerInfo *compilerInfo(Compiler compiler);
 };
 
+inline VcxprojGenerator::~VcxprojGenerator()
+{ }
 
 QT_END_NAMESPACE
+
+#endif // MSVC_VCXPROJ_H

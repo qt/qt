@@ -1186,7 +1186,8 @@ void Configure::parseCmdLine()
             dictionary[ "QMAKESPEC" ].endsWith( "-msvc2002" ) ||
             dictionary[ "QMAKESPEC" ].endsWith( "-msvc2003" ) ||
             dictionary[ "QMAKESPEC" ].endsWith( "-msvc2005" ) ||
-            dictionary[ "QMAKESPEC" ].endsWith( "-msvc2008" )) {
+            dictionary[ "QMAKESPEC" ].endsWith( "-msvc2008" ) ||
+            dictionary[ "QMAKESPEC" ].endsWith( "-msvc2010" )) {
             if ( dictionary[ "MAKE" ].isEmpty() ) dictionary[ "MAKE" ] = "nmake";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
         } else if ( dictionary[ "QMAKESPEC" ] == QString( "win32-g++" ) ) {
@@ -2095,7 +2096,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "DECLARATIVE") {
         available = true;
     } else if (part == "WEBKIT") {
-        available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
+        available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-msvc2010") || (dictionary.value("QMAKESPEC") == "win32-g++");
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {

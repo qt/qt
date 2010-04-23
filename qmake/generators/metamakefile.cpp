@@ -443,6 +443,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "msvc_nmake.h"
 #include "borland_bmake.h"
 #include "msvc_vcproj.h"
+#include "msvc_vcxproj.h"
 #include "symmake_abld.h"
 #include "symmake_sbsv2.h"
 #include "symbian_makefile.h"
@@ -471,6 +472,12 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     } else if(gen == "MSVC.NET") {
         if (proj->first("TEMPLATE").startsWith("vc"))
             mkfile = new VcprojGenerator;
+        else
+            mkfile = new NmakeMakefileGenerator;
+    } else if(gen == "MSBUILD") {
+        // Visual Studio >= v11.0
+        if(proj->first("TEMPLATE").indexOf(QRegExp("^vc.*")) != -1 || proj->first("TEMPLATE").indexOf(QRegExp("^ce.*")) != -1)
+            mkfile = new VcxprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;
     } else if(gen == "BMAKE") {
