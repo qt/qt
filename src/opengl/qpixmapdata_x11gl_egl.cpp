@@ -216,18 +216,16 @@ QX11GLSharedContexts* QX11GLPixmapData::sharedContexts()
 
 bool QX11GLPixmapData::hasX11GLPixmaps()
 {
-    static bool checkedForX11Pixmaps = false;
-    static bool haveX11Pixmaps = false;
+    static bool checkedForX11GLPixmaps = false;
+    static bool haveX11GLPixmaps = false;
 
-    if (checkedForX11Pixmaps)
-        return haveX11Pixmaps;
+    if (checkedForX11GLPixmaps)
+        return haveX11GLPixmaps;
 
-    checkedForX11Pixmaps = true;
+    checkedForX11GLPixmaps = true;
+    haveX11GLPixmaps = sharedContexts()->isValid();
 
-    if (!qgetenv("QT_USE_X11GL_PIXMAPS").isEmpty() && sharedContexts()->isValid())
-        haveX11Pixmaps = true;
-
-    return haveX11Pixmaps;
+    return haveX11GLPixmaps;
 }
 
 QX11GLPixmapData::QX11GLPixmapData()

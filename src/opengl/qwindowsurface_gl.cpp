@@ -94,8 +94,8 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_WS_WIN
 extern Q_GUI_EXPORT bool qt_win_owndc_required;
 #endif
-QGLGraphicsSystem::QGLGraphicsSystem()
-    : QGraphicsSystem()
+QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
+    : QGraphicsSystem(), m_useX11GL(useX11GL)
 {
     QGLWindowSurface::surfaceFormat.setSampleBuffers(true);
 #if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
