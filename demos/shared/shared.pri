@@ -6,12 +6,12 @@ build_all:!build_pass {
 }
 contains(CONFIG, debug_and_release_target) {    
     CONFIG(debug, debug|release) { 
-	LIBS+=-L$$SHARED_FOLDER/debug
+        QMAKE_LIBDIR += $$SHARED_FOLDER/debug
     } else {
-	LIBS+=-L$$SHARED_FOLDER/release
+        QMAKE_LIBDIR += $$SHARED_FOLDER/release
     }
 } else {
-    LIBS += -L$$SHARED_FOLDER
+    QMAKE_LIBDIR += $$SHARED_FOLDER
 }
 
 hpux-acc*:LIBS += $$SHARED_FOLDER/libdemo_shared.a

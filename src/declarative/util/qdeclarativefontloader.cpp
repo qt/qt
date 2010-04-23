@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativefontloader_p.h"
+#include "private/qdeclarativefontloader_p.h"
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeengine.h>
@@ -61,7 +61,7 @@ class QDeclarativeFontLoaderPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeFontLoader)
 
 public:
-    QDeclarativeFontLoaderPrivate() : reply(0), status(QDeclarativeFontLoader::Null) {}
+    QDeclarativeFontLoaderPrivate() : reply(0), status(QDeclarativeFontLoader::Null), redirectCount(0) {}
 
     void addFontToDatabase(const QByteArray &);
 
@@ -69,6 +69,7 @@ public:
     QString name;
     QNetworkReply *reply;
     QDeclarativeFontLoader::Status status;
+    int redirectCount;
 };
 
 
@@ -189,6 +190,16 @@ void QDeclarativeFontLoader::setName(const QString &name)
     \o Loading - the font is currently being loaded
     \o Error - an error occurred while loading the font
     \endlist
+
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened to the font loader internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: loader.status = FontLoader.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. FontLoader{id: loader; onStatusChanged: if(loader.status == FontLoader.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(loader.status!=FontLoader.Ready){'Not Loaded';}else{'Loaded';}}
+    \endlist
 */
 QDeclarativeFontLoader::Status QDeclarativeFontLoader::status() const
 {
@@ -196,15 +207,31 @@ QDeclarativeFontLoader::Status QDeclarativeFontLoader::status() const
     return d->status;
 }
 
+#define FONTLOADER_MAXIMUM_REDIRECT_RECURSION 16
+
 void QDeclarativeFontLoader::replyFinished()
 {
     Q_D(QDeclarativeFontLoader);
     if (d->reply) {
+        d->redirectCount++;
+        if (d->redirectCount < FONTLOADER_MAXIMUM_REDIRECT_RECURSION) {
+            QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+            if (redirect.isValid()) {
+                QUrl url = d->reply->url().resolved(redirect.toUrl());
+                d->reply->deleteLater();
+                d->reply = 0;
+                setSource(url);
+                return;
+            }
+        }
+        d->redirectCount=0;
+
         if (!d->reply->error()) {
             QByteArray ba = d->reply->readAll();
             d->addFontToDatabase(ba);
         } else {
             d->status = Error;
+            qWarning() << "Cannot load font:" << d->reply->url();
             emit statusChanged();
         }
         d->reply->deleteLater();

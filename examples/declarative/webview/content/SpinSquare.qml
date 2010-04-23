@@ -1,8 +1,8 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
-    property var period : 250
-    property var color : "black"
+    property variant period : 250
+    property variant color : "black"
     id: root
 
     Item {
@@ -15,10 +15,10 @@ Item {
             width: root.width
             height: width
         }
-        rotation: NumberAnimation {
+        NumberAnimation on rotation {
             from: 0
             to: 360
-            repeat: true
+            loops: Animation.Infinite
             duration: root.period
         }
     }

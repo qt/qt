@@ -1,2 +1,2 @@
-3:5:"" is not a valid object id
+3:9:Invalid empty ID
 

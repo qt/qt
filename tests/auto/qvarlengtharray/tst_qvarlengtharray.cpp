@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qvarlengtharray.h>
+#include <qvariant.h>
 
 const int N = 1;
 
@@ -61,6 +62,7 @@ private slots:
     void removeLast();
     void oldTests();
     void task214223();
+    void QTBUG6718_resize();
 };
 
 int fooCtor = 0;
@@ -71,7 +73,7 @@ struct Foo
     int *p;
 
     Foo() { p = new int; ++fooCtor; }
-    Foo(const Foo &other) { p = new int; ++fooCtor; }
+    Foo(const Foo &/*other*/) { p = new int; ++fooCtor; }
 
     void operator=(const Foo & /* other */) { }
 
@@ -131,6 +133,12 @@ void tst_QVarLengthArray::oldTests()
 	QVERIFY(sa.data() == &sa[0]);
 	QVERIFY(sa[0] == 0xfee);
 	QVERIFY(sa[10] == 0xff);
+        QVERIFY(sa.at(0) == 0xfee);
+        QVERIFY(sa.at(10) == 0xff);
+        QVERIFY(sa.value(0) == 0xfee);
+        QVERIFY(sa.value(10) == 0xff);
+        QVERIFY(sa.value(1000) == 0);
+        QVERIFY(sa.value(1000, 12) == 12);
 	QVERIFY(sa.size() == 512);
 	sa.reserve(1024);
 	QVERIFY(sa.capacity() == 1024);
@@ -166,6 +174,13 @@ void tst_QVarLengthArray::oldTests()
         QCOMPARE(sa.size(), 12);
         QCOMPARE(sa[10], QString("hello"));
         QCOMPARE(sa[11], QString("world"));
+        QCOMPARE(sa.at(10), QString("hello"));
+        QCOMPARE(sa.at(11), QString("world"));
+        QCOMPARE(sa.value(10), QString("hello"));
+        QCOMPARE(sa.value(11), QString("world"));
+        QCOMPARE(sa.value(10000), QString());
+        QCOMPARE(sa.value(1212112, QString("none")), QString("none"));
+        QCOMPARE(sa.value(-12, QString("neg")), QString("neg"));
 
         sa.append(arr, 1);
         QCOMPARE(sa.size(), 13);
@@ -244,8 +259,49 @@ void tst_QVarLengthArray::task214223()
     // will make the next call to append(const T&) corrupt the memory
     // you should get a segfault pretty soon after that :-)
     QVarLengthArray<float, 1> d(1);
-    for (int i=0; i<30; i++) 
+    for (int i=0; i<30; i++)
         d.append(i);
+}
+
+void tst_QVarLengthArray::QTBUG6718_resize()
+{
+    //MOVABLE
+    {
+        QVarLengthArray<QVariant,1> values(1);
+        QCOMPARE(values.size(), 1);
+        values[0] = 1;
+        values.resize(2);
+        QCOMPARE(values[1], QVariant());
+        QCOMPARE(values[0], QVariant(1));
+        values[1] = 2;
+        QCOMPARE(values[1], QVariant(2));
+        QCOMPARE(values.size(), 2);
+    }
+
+    //POD
+    {
+        QVarLengthArray<int,1> values(1);
+        QCOMPARE(values.size(), 1);
+        values[0] = 1;
+        values.resize(2);
+        QCOMPARE(values[0], 1);
+        values[1] = 2;
+        QCOMPARE(values[1], 2);
+        QCOMPARE(values.size(), 2);
+    }
+
+    //COMPLEX
+    {
+        QVarLengthArray<QVarLengthArray<QString, 15>,1> values(1);
+        QCOMPARE(values.size(), 1);
+        values[0].resize(10);
+        values.resize(2);
+        QCOMPARE(values[1].size(), 0);
+        QCOMPARE(values[0].size(), 10);
+        values[1].resize(20);
+        QCOMPARE(values[1].size(), 20);
+        QCOMPARE(values.size(), 2);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

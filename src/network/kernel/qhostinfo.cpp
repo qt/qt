@@ -112,6 +112,13 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
     To retrieve the name of the local host, use the static
     QHostInfo::localHostName() function.
 
+    \note Since Qt 4.6.1 QHostInfo is using multiple threads for DNS lookup
+    instead of one dedicated DNS thread. This improves performance,
+    but also changes the order of signal emissions when using lookupHost()
+    compared to previous versions of Qt.
+    \note Since Qt 4.6.3 QHostInfo is using a small internal 60 second DNS cache
+    for performance improvements.
+
     \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492}
 */
 
@@ -181,9 +188,26 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
                      receiver, member, Qt::QueuedConnection);
     result.data()->emitResultsReady(hostInfo);
 #else
-    QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id);
-    QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
-    theHostInfoLookupManager()->scheduleLookup(runnable);
+    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    if (manager) {
+        // the application is still alive
+        if (manager->cache.isEnabled()) {
+            // check cache first
+            bool valid = false;
+            QHostInfo info = manager->cache.get(name, &valid);
+            if (valid) {
+                info.setLookupId(id);
+                QHostInfoResult result;
+                QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
+                result.emitResultsReady(info);
+                return id;
+            }
+        }
+        // cache is not enabled or it was not in the cache, do normal lookup
+        QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id);
+        QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
+        manager->scheduleLookup(runnable);
+    }
 #endif
 
     return id;
@@ -418,14 +442,24 @@ void QHostInfoRunnable::run()
         return;
     }
 
-    // check cache
-    // FIXME
+    QHostInfo hostInfo;
 
-    // if not in cache: OS lookup
-    QHostInfo hostInfo = QHostInfoAgent::fromName(toBeLookedUp);
-
-    // save to cache
-    // FIXME
+    // QHostInfo::lookupHost already checks the cache. However we need to check
+    // it here too because it might have been cache saved by another QHostInfoRunnable
+    // in the meanwhile while this QHostInfoRunnable was scheduled but not running
+    if (manager->cache.isEnabled()) {
+        // check the cache first
+        bool valid = false;
+        hostInfo = manager->cache.get(toBeLookedUp, &valid);
+        if (!valid) {
+            // not in cache, we need to do the lookup and store the result in the cache
+            hostInfo = QHostInfoAgent::fromName(toBeLookedUp);
+            manager->cache.put(toBeLookedUp, hostInfo);
+        }
+    } else {
+        // cache is not enabled, just do the lookup and continue
+        hostInfo = QHostInfoAgent::fromName(toBeLookedUp);
+    }
 
     // check aborted again
     if (manager->wasAborted(id)) {
@@ -445,12 +479,18 @@ void QHostInfoRunnable::run()
 QHostInfoLookupManager::QHostInfoLookupManager() : mutex(QMutex::Recursive), wasDeleted(false)
 {
     moveToThread(QCoreApplicationPrivate::mainThread());
+    connect(QCoreApplication::instance(), SIGNAL(destroyed()), SLOT(waitForThreadPoolDone()), Qt::DirectConnection);
     threadPool.setMaxThreadCount(5); // do 5 DNS lookups in parallel
 }
 
 QHostInfoLookupManager::~QHostInfoLookupManager()
 {
     wasDeleted = true;
+
+    // don't qDeleteAll currentLookups, the QThreadPool has ownership
+    qDeleteAll(postponedLookups);
+    qDeleteAll(scheduledLookups);
+    qDeleteAll(finishedLookups);
 }
 
 void QHostInfoLookupManager::work()
@@ -568,6 +608,106 @@ void QHostInfoLookupManager::lookupFinished(QHostInfoRunnable *r)
     currentLookups.removeOne(r);
     finishedLookups.append(r);
     work();
+}
+
+// This function returns immediatly when we had a result in the cache, else it will later emit a signal
+QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char *member, bool *valid, int *id)
+{
+    *valid = false;
+    *id = -1;
+
+    // check cache
+    QHostInfoLookupManager* manager = theHostInfoLookupManager();
+    if (manager && manager->cache.isEnabled()) {
+        QHostInfo info = manager->cache.get(name, valid);
+        if (*valid) {
+            return info;
+        }
+    }
+
+    // was not in cache, trigger lookup
+    *id = QHostInfo::lookupHost(name, receiver, member);
+
+    // return empty response, valid==false
+    return QHostInfo();
+}
+
+void qt_qhostinfo_clear_cache()
+{
+    QHostInfoLookupManager* manager = theHostInfoLookupManager();
+    if (manager) {
+        manager->cache.clear();
+    }
+}
+
+void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
+{
+    QHostInfoLookupManager* manager = theHostInfoLookupManager();
+    if (manager) {
+        manager->cache.setEnabled(e);
+    }
+}
+
+// cache for 60 seconds
+// cache 64 items
+QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(64)
+{
+#ifdef QT_QHOSTINFO_CACHE_DISABLED_BY_DEFAULT
+    enabled = false;
+#endif
+}
+
+bool QHostInfoCache::isEnabled()
+{
+    return enabled;
+}
+
+// this function is currently only used for the auto tests
+// and not usable by public API
+void QHostInfoCache::setEnabled(bool e)
+{
+    enabled = e;
+}
+
+
+QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
+{
+    QMutexLocker locker(&this->mutex);
+
+    *valid = false;
+    if (cache.contains(name)) {
+        QHostInfoCacheElement *element = cache.object(name);
+        if (element->age.elapsed() < max_age*1000)
+            *valid = true;
+        return element->info;
+
+        // FIXME idea:
+        // if too old but not expired, trigger a new lookup
+        // to freshen our cache
+    }
+
+    return QHostInfo();
+}
+
+void QHostInfoCache::put(const QString &name, const QHostInfo &info)
+{
+    // if the lookup failed, don't cache
+    if (info.error() != QHostInfo::NoError)
+        return;
+
+    QHostInfoCacheElement* element = new QHostInfoCacheElement();
+    element->info = info;
+    element->age = QTime();
+    element->age.start();
+
+    QMutexLocker locker(&this->mutex);
+    cache.insert(name, element); // cache will take ownership
+}
+
+void QHostInfoCache::clear()
+{
+    QMutexLocker locker(&this->mutex);
+    cache.clear();
 }
 
 #endif // QT_NO_THREAD

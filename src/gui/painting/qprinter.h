@@ -124,7 +124,7 @@ public:
     enum OutputFormat { NativeFormat, PdfFormat, PostScriptFormat };
 
     // ### Qt 5: Merge with QAbstractPrintDialog::PrintRange
-    enum PrintRange { AllPages, Selection, PageRange };
+    enum PrintRange { AllPages, Selection, PageRange, CurrentPage };
 
     enum Unit {
         Millimeter,

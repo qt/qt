@@ -45,7 +45,7 @@
 
 #ifdef Q_WS_S60
 #include <e32base.h>                 // CBase -> Required by cdirectorylocalizer.h
-#include <cdirectorylocalizer.h>     // CDirectoryLocalizer
+#include <CDirectoryLocalizer.h>     // CDirectoryLocalizer
 
 EXPORT_C QString localizedDirectoryName(QString& rawPath)
 {

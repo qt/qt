@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qregion
+TARGET = tst_bench_qregion
 DEPENDPATH += .
 INCLUDEPATH += .
 

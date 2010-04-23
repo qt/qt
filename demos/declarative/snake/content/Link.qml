@@ -1,4 +1,5 @@
-import Qt 4.6
+import Qt 4.7
+import Qt.labs.particles 1.0
 
 Item { id:link
     property bool dying: false
@@ -13,8 +14,8 @@ Item { id:link
 
     x: margin - 3 + gridSize * column
     y: margin - 3 + gridSize * row
-    x: Behavior { NumberAnimation { duration: spawned ? heartbeatInterval : 0} }
-    y: Behavior { NumberAnimation { duration: spawned ? heartbeatInterval : 0 } }
+    Behavior on x { NumberAnimation { duration: spawned ? heartbeatInterval : 0} }
+    Behavior on y { NumberAnimation { duration: spawned ? heartbeatInterval : 0 } }
 
 
     Item {
@@ -35,7 +36,7 @@ Item { id:link
                 id: actualImageRotation
                 origin.x: width/2; origin.y: height/2;
                 angle: rotation * 90
-                angle: Behavior{ NumberAnimation { duration: spawned ? 200 : 0} }
+                Behavior on angle { NumberAnimation { duration: spawned ? 200 : 0} }
             }
         }
 
@@ -44,7 +45,7 @@ Item { id:link
         }
 
         opacity: 0
-        opacity: Behavior { NumberAnimation { duration: 200 } }
+        Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 
 

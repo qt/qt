@@ -64,6 +64,7 @@
 #ifndef QT_NO_CODECS
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
+#ifndef Q_OS_SYMBIAN
 #  if defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
 // no iconv(3) support, must build all codecs into the library
 #    include "../../plugins/codecs/cn/qgb18030codec.h"
@@ -77,6 +78,7 @@
 #    include "qfontlaocodec_p.h"
 #    include "../../plugins/codecs/jp/qfontjpcodec.h"
 #  endif
+#endif // QT_NO_SYMBIAN
 #endif // QT_NO_CODECS
 #include "qlocale.h"
 #include "qmutex.h"
@@ -93,6 +95,11 @@
 #  define QT_NO_SETLOCALE
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include "qtextcodec_symbian.cpp"
+#endif
+
+
 // enabling this is not exception safe!
 // #define Q_DEBUG_TEXTCODEC
 
@@ -102,6 +109,7 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QTextCodecFactoryInterface_iid, QLatin1String("/codecs")))
 #endif
+
 
 static char qtolower(register char c)
 { if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
@@ -216,6 +224,19 @@ QTextCodecCleanup::~QTextCodecCleanup()
 }
 
 Q_GLOBAL_STATIC(QTextCodecCleanup, createQTextCodecCleanup)
+
+bool QTextCodec::validCodecs()
+{
+#ifdef Q_OS_SYMBIAN
+    // If we don't have a trap handler, we're outside of the main() function,
+    // ie. in global constructors or destructors. Don't use codecs in this
+    // case as it would lead to crashes because we don't have a cleanup stack on Symbian
+    return (User::TrapHandler() != NULL);
+#else
+    return true;
+#endif
+}
+
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 class QWindowsLocalCodec: public QTextCodec
@@ -392,9 +413,35 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
     return s;
 }
 
-QByteArray QWindowsLocalCodec::convertFromUnicode(const QChar *uc, int len, ConverterState *) const
+QByteArray QWindowsLocalCodec::convertFromUnicode(const QChar *ch, int uclen, ConverterState *) const
 {
-    return qt_winQString2MB(uc, len);
+    if (!ch)
+        return QByteArray();
+    if (uclen == 0)
+        return QByteArray("");
+    BOOL used_def;
+    QByteArray mb(4096, 0);
+    int len;
+    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
+                mb.data(), mb.size()-1, 0, &used_def)))
+    {
+        int r = GetLastError();
+        if (r == ERROR_INSUFFICIENT_BUFFER) {
+            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
+                                (const wchar_t*)ch, uclen,
+                                0, 0, 0, &used_def));
+                // and try again...
+        } else {
+#ifndef QT_NO_DEBUG
+            // Fail.
+            qWarning("WideCharToMultiByte: Cannot convert multibyte text (error %d): %s (UTF-8)",
+                r, QString(ch, uclen).toLocal8Bit().data());
+#endif
+            break;
+        }
+    }
+    mb.resize(len);
+    return mb;
 }
 
 
@@ -537,6 +584,12 @@ static QTextCodec *checkForCodec(const QByteArray &name) {
 */
 static void setupLocaleMapper()
 {
+#ifdef Q_OS_SYMBIAN
+    localeMapper = QSymbianTextCodec::localeMapper;
+    if (localeMapper)
+        return;
+#endif
+
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     localeMapper = QTextCodec::codecForName("System");
 #else
@@ -671,6 +724,14 @@ static void setup()
     if (all)
         return;
 
+#ifdef Q_OS_SYMBIAN
+    // If we don't have a trap handler, we're outside of the main() function,
+    // ie. in global constructors or destructors. Don't create codecs in this
+    // case as it would lead to crashes because of a missing cleanup stack on Symbian
+    if (User::TrapHandler() == NULL)
+        return;
+#endif
+
 #ifdef Q_DEBUG_TEXTCODEC
     if (destroying_is_ok)
         qWarning("QTextCodec: Creating new codec during codec cleanup");
@@ -680,6 +741,17 @@ static void setup()
     (void) createQTextCodecCleanup();
 
 #ifndef QT_NO_CODECS
+    (void)new QTsciiCodec;
+    for (int i = 0; i < 9; ++i)
+        (void)new QIsciiCodec(i);
+
+    for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
+        (void)new QSimpleTextCodec(i);
+
+#ifdef Q_OS_SYMBIAN
+    localeMapper = QSymbianTextCodec::init();
+#endif
+
 #  if defined(Q_WS_X11) && !defined(QT_BOOTSTRAPPED)
     // no font codecs when bootstrapping
     (void)new QFontLaoCodec;
@@ -696,12 +768,8 @@ static void setup()
 #    endif // QT_NO_ICONV && !QT_BOOTSTRAPPED
 #  endif // Q_WS_X11
 
-    (void)new QTsciiCodec;
 
-    for (int i = 0; i < 9; ++i)
-        (void)new QIsciiCodec(i);
-
-
+#ifndef Q_OS_SYMBIAN
 #  if defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     // no asian codecs when bootstrapping, sorry
     (void)new QGb18030Codec;
@@ -715,6 +783,7 @@ static void setup()
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
 #  endif // QT_NO_ICONV && !QT_BOOTSTRAPPED
+#endif //Q_OS_SYMBIAN
 #endif // QT_NO_CODECS
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -727,16 +796,17 @@ static void setup()
     (void)new QUtf32Codec;
     (void)new QUtf32BECodec;
     (void)new QUtf32LECodec;
+#ifndef Q_OS_SYMBIAN
     (void)new QLatin15Codec;
+#endif
     (void)new QLatin1Codec;
     (void)new QUtf8Codec;
 
-    for (int i = 0; i < QSimpleTextCodec::numSimpleCodecs; ++i)
-        (void)new QSimpleTextCodec(i);
-
+#ifndef Q_OS_SYMBIAN
 #if defined(Q_OS_UNIX) && !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
     // QIconvCodec depends on the UTF-16 codec, so it needs to be created last
     (void) new QIconvCodec();
+#endif
 #endif
 
     if (!localeMapper)
@@ -964,6 +1034,9 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 #endif
     setup();
 
+    if (!validCodecs())
+        return 0;
+
     static QHash <QByteArray, QTextCodec *> cache;
     if (clearCaches & 0x1) {
         cache.clear();
@@ -1004,6 +1077,9 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     QMutexLocker locker(textCodecsMutex());
 #endif
     setup();
+
+    if (!validCodecs())
+        return 0;
 
     static QHash <int, QTextCodec *> cache;
     if (clearCaches & 0x2) {
@@ -1052,6 +1128,10 @@ QList<QByteArray> QTextCodec::availableCodecs()
     setup();
 
     QList<QByteArray> codecs;
+
+    if (!validCodecs())
+        return codecs;
+
     for (int i = 0; i < all->size(); ++i) {
         codecs += all->at(i)->name();
         codecs += all->at(i)->aliases();
@@ -1090,6 +1170,10 @@ QList<int> QTextCodec::availableMibs()
     setup();
 
     QList<int> codecs;
+
+    if (!validCodecs())
+        return codecs;
+
     for (int i = 0; i < all->size(); ++i)
         codecs += all->at(i)->mibEnum();
 
@@ -1124,6 +1208,9 @@ QList<int> QTextCodec::availableMibs()
 */
 void QTextCodec::setCodecForLocale(QTextCodec *c)
 {
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     localeMapper = c;
     if (!localeMapper)
         setupLocaleMapper();
@@ -1140,6 +1227,9 @@ void QTextCodec::setCodecForLocale(QTextCodec *c)
 
 QTextCodec* QTextCodec::codecForLocale()
 {
+    if (!validCodecs())
+        return 0;
+
     if (localeMapper)
         return localeMapper;
 

@@ -1,19 +1,26 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
+import "content/tic-tac-toe.js" as Logic
 
 Item {
-    width: boardimage.width
-    height: boardimage.height
+    id: game
+
+    property bool show: false
+    property real difficulty: 1.0   //chance it will actually think
+
+    width: 440
+    height: 480
+    anchors.fill: parent
 
     Image {
         id: boardimage
+        anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
         source: "content/pics/board.png"
     }
 
     Grid {
         id: board
         anchors.fill: boardimage
-
         columns: 3
 
         Repeater {
@@ -23,93 +30,48 @@ Item {
                 height: board.height/3
                 onClicked: {
                     if (!endtimer.running) {
-                        if (!makeMove(index,"X"))
-                            computerTurn()
+                        if (!Logic.makeMove(index,"X"))
+                            Logic.computerTurn()
                     }
                 }
-            }
-        }
-
-        Script {
-            function winner()
-            {
-                for (var i=0; i<3; ++i) {
-                    if (board.children[i].state!=""
-                        && board.children[i].state==board.children[i+3].state
-                        && board.children[i].state==board.children[i+6].state)
-                        return true
-
-                    if (board.children[i*3].state!=""
-                        && board.children[i*3].state==board.children[i*3+1].state
-                        && board.children[i*3].state==board.children[i*3+2].state)
-                        return true
-                }
-
-                if (board.children[0].state!=""
-                    && board.children[0].state==board.children[4].state!=""
-                    && board.children[0].state==board.children[8].state!="")
-                    return true
-
-                if (board.children[2].state!=""
-                    && board.children[2].state==board.children[4].state!=""
-                    && board.children[2].state==board.children[6].state!="")
-                    return true
-
-                return false
-            }
-
-            function restart()
-            {
-                // No moves left - start again
-                for (var i=0; i<9; ++i)
-                    board.children[i].state = ""
-            }
-
-            function makeMove(pos,player)
-            {
-                board.children[pos].state = player
-                if (winner()) {
-                    win(player + " wins")
-                    return true
-                } else {
-                    return false
-                }
-            }
-
-            function computerTurn()
-            {
-                // world's dumbest player
-                for (var i=0; i<9; ++i)
-                    if (board.children[i].state == "") {
-                        makeMove(i,"O")
-                        return
-                    }
-                restart()
-            }
-
-            function win(s)
-            {
-                msg.text = s
-                msg.opacity = 1
-                endtimer.running = true
             }
         }
 
         Timer {
             id: endtimer
             interval: 1600
-            onTriggered: { msg.opacity = 0; restart() }
+            onTriggered: { msg.opacity = 0; Logic.restart() }
+        }
+    }
+
+    Row {
+        spacing: 4
+        anchors { top: board.bottom; horizontalCenter: board.horizontalCenter }
+
+        Button {
+            text: "Hard"
+            onClicked: game.difficulty = 1.0;
+            down: game.difficulty == 1.0
+        }
+        Button {
+            text: "Moderate"
+            onClicked: game.difficulty = 0.8;
+            down: game.difficulty == 0.8
+        }
+        Button {
+            text: "Easy"
+            onClicked: game.difficulty = 0.2;
+            down: game.difficulty == 0.2
         }
     }
 
     Text {
         id: msg
-        opacity: 0
+
         anchors.centerIn: parent
+        opacity: 0
         color: "blue"
-        styleColor: "white"
-        style: Text.Outline
-        font.pixelSize: 50
-        font.bold: true
+        style: Text.Outline; styleColor: "white"
+        font.pixelSize: 50; font.bold: true
     }
 }

@@ -48,7 +48,7 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer
     (MediaObject *parent, const AbstractPlayer *player)
         :   AbstractPlayer(player)
         ,   m_parent(parent)
-        ,   m_playPending(false)
+        ,   m_pending(NothingPending)
         ,   m_positionTimer(new QTimer(this))
         ,   m_bufferStatusTimer(new QTimer(this))
         ,   m_mmfMaxVolume(NullMaxVolume)
@@ -74,14 +74,12 @@ void MMF::AbstractMediaPlayer::play()
         break;
 
     case LoadingState:
-        m_playPending = true;
+        setPending(PlayPending);
         break;
 
     case StoppedState:
     case PausedState:
-        doPlay();
-        startPositionTimer();
-        changeState(PlayingState);
+        startPlayback();
         break;
 
     case PlayingState:
@@ -103,14 +101,16 @@ void MMF::AbstractMediaPlayer::pause()
     TRACE_CONTEXT(AbstractMediaPlayer::pause, EAudioApi);
     TRACE_ENTRY("state %d", privateState());
 
-    m_playPending = false;
     stopTimers();
 
     switch (privateState()) {
     case GroundState:
     case LoadingState:
-    case PausedState:
     case StoppedState:
+        setPending(PausePending);
+        break;
+
+    case PausedState:
         // Do nothing
         break;
 
@@ -135,7 +135,7 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_CONTEXT(AbstractMediaPlayer::stop, EAudioApi);
     TRACE_ENTRY("state %d", privateState());
 
-    m_playPending = false;
+    setPending(NothingPending);
     stopTimers();
 
     switch (privateState()) {
@@ -365,12 +365,31 @@ void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
     doVolumeChanged();
 }
 
+void MMF::AbstractMediaPlayer::loadingComplete(int error)
+{
+    Q_ASSERT(Phonon::LoadingState == state());
+
+    if (KErrNone == error) {
+        updateMetaData();
+        changeState(StoppedState);
+    } else {
+        setError(tr("Loading clip failed"), error);
+    }
+}
+
 void MMF::AbstractMediaPlayer::playbackComplete(int error)
 {
     stopTimers();
 
+    if (KErrNone == error && !m_aboutToFinishSent) {
+        const qint64 total = totalTime();
+        emit MMF::AbstractPlayer::tick(total);
+        m_aboutToFinishSent = true;
+        emit aboutToFinish();
+    }
+
     if (KErrNone == error) {
-        changeState(StoppedState);
+        changeState(PausedState);
 
         // MediaObject::switchToNextSource deletes the current player, so we
         // call it via delayed slot invokation to ensure that this object does
@@ -379,6 +398,7 @@ void MMF::AbstractMediaPlayer::playbackComplete(int error)
     }
     else {
         setError(tr("Playback complete"), error);
+        emit finished();
     }
 }
 
@@ -393,15 +413,13 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 void MMF::AbstractMediaPlayer::positionTick()
 {
-    emitMarksIfReached();
-
     const qint64 current = currentTime();
+    emitMarksIfReached(current);
     emit MMF::AbstractPlayer::tick(current);
 }
 
-void MMF::AbstractMediaPlayer::emitMarksIfReached()
+void MMF::AbstractMediaPlayer::emitMarksIfReached(qint64 current)
 {
-    const qint64 current = currentTime();
     const qint64 total = totalTime();
     const qint64 remaining = total - current;
 
@@ -435,9 +453,37 @@ void MMF::AbstractMediaPlayer::resetMarksIfRewound()
             m_aboutToFinishSent = false;
 }
 
+void MMF::AbstractMediaPlayer::setPending(Pending pending)
+{
+    const Phonon::State oldState = state();
+    m_pending = pending;
+    const Phonon::State newState = state();
+    if (newState != oldState)
+        emit stateChanged(newState, oldState);
+}
+
+void MMF::AbstractMediaPlayer::startPlayback()
+{
+    doPlay();
+    startPositionTimer();
+    changeState(PlayingState);
+}
+
 void MMF::AbstractMediaPlayer::bufferStatusTick()
 {
     emit MMF::AbstractPlayer::bufferStatus(bufferStatus());
+}
+
+Phonon::State MMF::AbstractMediaPlayer::phononState(PrivateState state) const
+{
+    Phonon::State result = AbstractPlayer::phononState(state);
+
+    if (PausePending == m_pending) {
+        Q_ASSERT(Phonon::StoppedState == result || Phonon::LoadingState == result);
+        result = Phonon::PausedState;
+    }
+
+    return result;
 }
 
 void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
@@ -447,20 +493,26 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     const Phonon::State oldPhononState = phononState(privateState());
     const Phonon::State newPhononState = phononState(newState);
 
-    // TODO: add some invariants to check that the transition is valid
-    AbstractPlayer::changeState(newState);
-
     if (LoadingState == oldPhononState && StoppedState == newPhononState) {
-        // Ensure initial volume is set on MMF API before starting playback
-        doVolumeChanged();
+        switch (m_pending) {
+        case NothingPending:
+            AbstractPlayer::changeState(newState);
+            break;
 
-        // Check whether play() was called while clip was being loaded.  If so,
-        // playback should be started now
-        if (m_playPending) {
-            TRACE_0("play was called while loading; starting playback now");
-            m_playPending = false;
-            play();
+        case PlayPending:
+            changeState(PlayingState); // necessary in order to apply initial volume
+            doVolumeChanged();
+            startPlayback();
+            break;
+
+        case PausePending:
+            AbstractPlayer::changeState(PausedState);
+            break;
         }
+
+        setPending(NothingPending);
+    } else {
+        AbstractPlayer::changeState(newState);
     }
 }
 

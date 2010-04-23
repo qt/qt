@@ -54,7 +54,7 @@ delegate may bind to.  The roles are exposed as properties of the
 \e model context property, though this property is set as a default property
 of the delegate so, unless there is a naming clash with a
 property in the delegate, the roles are usually accessed unqualified.  The
-example below would  have a clash between he \e color role of the model and
+example below would  have a clash between the \e color role of the model and
 the \e color property of the Rectangle.  The clash is avoided by referencing
 the \e color property of the model by its full name: \e model.color.
 
@@ -191,6 +191,23 @@ will be positioned by the view.
 \section2 QAbstractItemModel
 
 QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNames() method.
+The default role names set by Qt are:
+
+\table
+\header
+\o Qt Role
+\o QML Role Name
+\row
+\o Qt::DisplayRole
+\o display
+\row
+\o Qt::DecorationRole
+\o decoration
+\endtable
+
+QAbstractItemModel presents a heirachy of tables.  Views currently provided by QML
+can only display list data.  In order to display child lists of a heirachical model
+use the VisualDataModel element with \e rootIndex set to a parent node.
 
 
 \section2 QStringList
@@ -198,9 +215,6 @@ QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNam
 QStringList provides the contents of the list via the \e modelData role:
 
 \table
-\header
-\o 
-\o 
 \row
 \o
 \code
@@ -208,7 +222,7 @@ QStringList provides the contents of the list via the \e modelData role:
 QStringList dataList;
 dataList.append("Fred");
 dataList.append("Ginger");
-dataList.appenf("Skipper");
+dataList.append("Skipper");
 
 QDeclarativeContext *ctxt = view.rootContext();
 ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));
@@ -295,13 +309,21 @@ There are no data roles.
 
 The following example creates a ListView with five elements:
 \code
-Component {
-    id: itemDelegate
-    Text { text: "I am item number: " + index }
-}
-ListView {
-    model: 5
-    delegate: itemDelegate
+Item {
+    width: 200
+    height: 250
+
+    Component {
+        id: itemDelegate
+        Text { text: "I am item number: " + index }
+    }
+
+    ListView {
+        anchors.fill: parent
+        model: 5
+        delegate: itemDelegate
+    }
+
 }
 \endcode
 

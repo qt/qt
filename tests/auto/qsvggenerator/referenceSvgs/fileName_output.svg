@@ -4,12 +4,12 @@
 <desc>Generated with Qt</desc>
 <defs>
 </defs>
-<g fill="none" stroke="black" vector-effect="non-scaling-stroke" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
+<g fill="none" stroke="black" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
 
 <g fill="#ff0000" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
-font-family="Arial" font-size="11pt" font-weight="400" font-style="normal" 
+font-family="Sans Serif" font-size="8.25" font-weight="400" font-style="normal" 
 >
-<path fill-rule="evenodd" d="M0,0 L100,0 L100,100 L0,100 L0,0"/>
+<path vector-effect="non-scaling-stroke" fill-rule="evenodd" d="M0,0 L100,0 L100,100 L0,100 L0,0"/>
 </g>
 </g>
 </svg>

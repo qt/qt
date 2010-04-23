@@ -115,7 +115,7 @@ const ClassInfo ArrayPrototype::info = {"Array", &JSArray::info, 0, ExecState::a
 */
 
 // ECMA 15.4.4
-ArrayPrototype::ArrayPrototype(PassRefPtr<Structure> structure)
+ArrayPrototype::ArrayPrototype(NonNullPassRefPtr<Structure> structure)
     : JSArray(structure)
 {
 }
@@ -204,8 +204,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncToString(ExecState* exec, JSObject*, JSValue
             buffer.append(rep->data(), rep->size());
     }
     ASSERT(buffer.size() == totalSize);
-    unsigned finalSize = buffer.size();
-    return jsString(exec, UString(buffer.releaseBuffer(), finalSize, false));
+    return jsString(exec, UString::adopt(buffer));
 }
 
 JSValue JSC_HOST_CALL arrayProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
@@ -532,14 +531,19 @@ JSValue JSC_HOST_CALL arrayProtoFuncSplice(ExecState* exec, JSObject*, JSValue t
     // 15.4.4.12
     JSArray* resObj = constructEmptyArray(exec);
     JSValue result = resObj;
-    unsigned length = thisObj->get(exec, exec->propertyNames().length).toUInt32(exec);
+
+    // FIXME: Firefox returns an empty array.
     if (!args.size())
         return jsUndefined();
-    int begin = args.at(0).toUInt32(exec);
-    if (begin < 0)
-        begin = std::max<int>(begin + length, 0);
-    else
-        begin = std::min<int>(begin, length);
+
+    unsigned length = thisObj->get(exec, exec->propertyNames().length).toUInt32(exec);
+    double relativeBegin = args.at(0).toInteger(exec);
+    unsigned begin;
+    if (relativeBegin < 0) {
+        relativeBegin += length;
+        begin = (relativeBegin < 0) ? 0 : static_cast<unsigned>(relativeBegin);
+    } else
+        begin = std::min<unsigned>(static_cast<unsigned>(relativeBegin), length);
 
     unsigned deleteCount;
     if (args.size() > 1)
@@ -565,7 +569,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncSplice(ExecState* exec, JSObject*, JSValue t
             for (unsigned k = length; k > length - deleteCount + additionalArgs; --k)
                 thisObj->deleteProperty(exec, k - 1);
         } else {
-            for (unsigned k = length - deleteCount; (int)k > begin; --k) {
+            for (unsigned k = length - deleteCount; k > begin; --k) {
                 if (JSValue obj = getProperty(exec, thisObj, k + deleteCount - 1))
                     thisObj->put(exec, k + additionalArgs - 1, obj);
                 else
@@ -745,8 +749,8 @@ JSValue JSC_HOST_CALL arrayProtoFuncEvery(ExecState* exec, JSObject*, JSValue th
             cachedCall.setArgument(0, array->getIndex(k));
             cachedCall.setArgument(1, jsNumber(exec, k));
             cachedCall.setArgument(2, thisObj);
-            
-            if (!cachedCall.call().toBoolean(exec))
+            JSValue result = cachedCall.call();
+            if (!result.toBoolean(cachedCall.newCallFrame(exec)))
                 return jsBoolean(false);
         }
     }
@@ -846,8 +850,8 @@ JSValue JSC_HOST_CALL arrayProtoFuncSome(ExecState* exec, JSObject*, JSValue thi
             cachedCall.setArgument(0, array->getIndex(k));
             cachedCall.setArgument(1, jsNumber(exec, k));
             cachedCall.setArgument(2, thisObj);
-            
-            if (cachedCall.call().toBoolean(exec))
+            JSValue result = cachedCall.call();
+            if (result.toBoolean(cachedCall.newCallFrame(exec)))
                 return jsBoolean(true);
         }
     }
@@ -1034,7 +1038,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncIndexOf(ExecState* exec, JSObject*, JSValue 
         JSValue e = getProperty(exec, thisObj, index);
         if (!e)
             continue;
-        if (JSValue::strictEqual(searchElement, e))
+        if (JSValue::strictEqual(exec, searchElement, e))
             return jsNumber(exec, index);
     }
 
@@ -1065,7 +1069,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncLastIndexOf(ExecState* exec, JSObject*, JSVa
         JSValue e = getProperty(exec, thisObj, index);
         if (!e)
             continue;
-        if (JSValue::strictEqual(searchElement, e))
+        if (JSValue::strictEqual(exec, searchElement, e))
             return jsNumber(exec, index);
     }
 

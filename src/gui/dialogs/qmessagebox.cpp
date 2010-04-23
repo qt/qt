@@ -65,6 +65,10 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 
+#ifndef QT_NO_STYLE_S60
+#include <qs60style.h>
+#endif
+
 #ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone();//defined in qguifunctions_wince.cpp
@@ -118,13 +122,43 @@ public:
     }
     void setText(const QString &text) { textEdit->setPlainText(text); }
     QString text() const { return textEdit->toPlainText(); }
-    QString label(DetailButtonLabel label)
-        { return label == ShowLabel ? QMessageBox::tr("Show Details...")
-                                    : QMessageBox::tr("Hide Details..."); }
 private:
     TextEdit *textEdit;
 };
 #endif // QT_NO_TEXTEDIT
+
+class DetailButton : public QPushButton
+{
+public:
+    DetailButton(QWidget *parent) : QPushButton(label(ShowLabel), parent)
+    {
+        setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    }
+
+    QString label(DetailButtonLabel label) const
+    { return label == ShowLabel ? QMessageBox::tr("Show Details...") : QMessageBox::tr("Hide Details..."); }
+
+    void setLabel(DetailButtonLabel lbl)
+    { setText(label(lbl)); }
+
+    QSize sizeHint() const
+    {
+        ensurePolished();
+        QStyleOptionButton opt;
+        initStyleOption(&opt);
+        const QFontMetrics fm = fontMetrics();
+        opt.text = label(ShowLabel);
+        QSize sz = fm.size(Qt::TextShowMnemonic, opt.text);
+        QSize ret = style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
+                      expandedTo(QApplication::globalStrut());
+        opt.text = label(HideLabel);
+        sz = fm.size(Qt::TextShowMnemonic, opt.text);
+        ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
+                      expandedTo(QApplication::globalStrut()));
+        return ret;
+    }
+};
+
 
 class QMessageBoxPrivate : public QDialogPrivate
 {
@@ -181,7 +215,7 @@ public:
     QAbstractButton *escapeButton;
     QPushButton *defaultButton;
     QAbstractButton *clickedButton;
-    QPushButton *detailsButton;
+    DetailButton *detailsButton;
 #ifndef QT_NO_TEXTEDIT
     QMessageBoxDetailsText *detailsText;
 #endif
@@ -314,6 +348,7 @@ void QMessageBoxPrivate::updateSize()
             }
             width = hardLimit;
         }
+    }
 #ifdef Q_WS_S60
         // in S60 portait messageBoxes should always occupy maximum width
         if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width()){
@@ -323,7 +358,6 @@ void QMessageBoxPrivate::updateSize()
             width = qMin(QApplication::desktop()->size().height(), hardLimit);
         }
 #endif
-    }
 
     if (informativeLabel) {
         label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -353,6 +387,16 @@ void QMessageBoxPrivate::updateSize()
     int height = (layout->hasHeightForWidth())
                      ? layout->totalHeightForWidth(width)
                      : layout->totalMinimumSize().height();
+
+#ifndef QT_NO_STYLE_S60
+        QS60Style *s60Style = 0;
+        s60Style = qobject_cast<QS60Style *>(QApplication::style());
+
+        //use custom pixel metric to deduce the minimum height of the messagebox
+        if (s60Style)
+            height = qMax(height, s60Style->pixelMetric((QStyle::PixelMetric)PM_MessageBoxHeight));
+#endif
+
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);
 }
@@ -421,7 +465,7 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     Q_Q(QMessageBox);
 #ifndef QT_NO_TEXTEDIT
     if (detailsButton && detailsText && button == detailsButton) {
-        detailsButton->setText(detailsText->isHidden() ? detailsText->label(HideLabel) : detailsText->label(ShowLabel));
+        detailsButton->setLabel(detailsText->isHidden() ? HideLabel : ShowLabel);
         detailsText->setHidden(!detailsText->isHidden());
         updateSize();
     } else
@@ -1891,7 +1935,7 @@ void QMessageBoxPrivate::retranslateStrings()
 {
 #ifndef QT_NO_TEXTEDIT
     if (detailsButton)
-        detailsButton->setText(detailsText->isHidden() ? detailsText->label(HideLabel) : detailsText->label(ShowLabel));
+        detailsButton->setLabel(detailsText->isHidden() ? HideLabel : ShowLabel);
 #endif
 }
 
@@ -2399,11 +2443,8 @@ void QMessageBox::setDetailedText(const QString &text)
             grid->addWidget(d->detailsText, grid->rowCount(), 0, 1, grid->columnCount());
         d->detailsText->hide();
     }
-    if (!d->detailsButton) {
-        d->detailsButton = new QPushButton(d->detailsText->label(ShowLabel), this);
-        QPushButton hideDetails(d->detailsText->label(HideLabel));
-        d->detailsButton->setFixedSize(d->detailsButton->sizeHint().expandedTo(hideDetails.sizeHint()));
-    }
+    if (!d->detailsButton)
+        d->detailsButton = new DetailButton(this);
     d->detailsText->setText(text);
 }
 #endif // QT_NO_TEXTEDIT

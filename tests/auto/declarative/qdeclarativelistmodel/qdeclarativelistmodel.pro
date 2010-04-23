@@ -4,3 +4,9 @@ QT += script
 macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativelistmodel.cpp
+
+# Define SRCDIR equal to test's source directory
+DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+CONFIG += parallel_test
+

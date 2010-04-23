@@ -160,8 +160,7 @@ static void qt_cleanup_brush_pattern_image_cache()
     qt_brushPatternImageCache()->cleanup();
 }
 
-Q_GUI_EXPORT
-QImage qt_imageForBrush(int brushStyle, bool invert)
+Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert)
 {
     return qt_brushPatternImageCache()->getImage(brushStyle, invert);
 }
@@ -989,7 +988,8 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
      "LinearGradientPattern",
      "RadialGradientPattern",
      "ConicalGradientPattern",
-     "TexturePattern"
+     0, 0, 0, 0, 0, 0,
+     "TexturePattern" // 24
     };
 
     dbg.nospace() << "QBrush(" << b.color() << ',' << BRUSH_STYLES[b.style()] << ')';

@@ -146,7 +146,7 @@ void Browser::showTable(const QString &t)
 {
     QSqlTableModel *model = new QSqlTableModel(table, connectionWidget->currentDatabase());
     model->setEditStrategy(QSqlTableModel::OnRowChange);
-    model->setTable(t);
+    model->setTable(connectionWidget->currentDatabase().driver()->escapeIdentifier(t, QSqlDriver::TableName));
     model->select();
     if (model->lastError().type() != QSqlError::NoError)
         emit statusMessage(model->lastError().text());

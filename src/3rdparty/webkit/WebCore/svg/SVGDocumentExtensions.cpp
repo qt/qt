@@ -34,6 +34,7 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "Page.h"
+#include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
 #include "SMILTimeContainer.h"
 #include "XMLTokenizer.h"
@@ -86,6 +87,17 @@ void SVGDocumentExtensions::unpauseAnimations()
         (*itr)->unpauseAnimations();
 }
 
+bool SVGDocumentExtensions::sampleAnimationAtTime(const String& elementId, SVGSMILElement* element, double time)
+{
+    ASSERT(element);
+    SMILTimeContainer* container = element->timeContainer();
+    if (!container || container->isPaused())
+        return false;
+
+    container->sampleAnimationAtTime(elementId, time);
+    return true;
+}
+
 void SVGDocumentExtensions::reportWarning(const String& message)
 {
     if (Frame* frame = m_doc->frame())
@@ -123,13 +135,13 @@ bool SVGDocumentExtensions::isPendingResource(const AtomicString& id) const
     return m_pendingResources.contains(id);
 }
 
-std::auto_ptr<HashSet<SVGStyledElement*> > SVGDocumentExtensions::removePendingResource(const AtomicString& id)
+PassOwnPtr<HashSet<SVGStyledElement*> > SVGDocumentExtensions::removePendingResource(const AtomicString& id)
 {
     ASSERT(m_pendingResources.contains(id));
 
-    std::auto_ptr<HashSet<SVGStyledElement*> > set(m_pendingResources.get(id));
+    OwnPtr<HashSet<SVGStyledElement*> > set(m_pendingResources.get(id));
     m_pendingResources.remove(id);
-    return set;
+    return set.release();
 }
 
 }

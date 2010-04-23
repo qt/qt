@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetransitionmanager_p_p.h"
+#include "private/qdeclarativetransitionmanager_p_p.h"
 
-#include "qdeclarativestate_p_p.h"
+#include "private/qdeclarativestate_p_p.h"
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
@@ -126,10 +126,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
             QDeclarativePropertyPrivate::setBinding(action.property, 0); // Disable current binding
         if (action.event && action.event->changesBindings()) {  //### assume isReversable()?
             d->bindingsList << action;
-            if (action.reverseEvent)
-                action.event->clearReverseBindings();
-            else
-                action.event->clearForwardBindings();
+            action.event->clearBindings();
         }
     }
 
@@ -144,8 +141,6 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
 
     if (!d->bindingsList.isEmpty()) {
 
-        //### do extra actions here?
-
         // Apply all the property and binding changes
         for (int ii = 0; ii < applyList.size(); ++ii) {
             const QDeclarativeAction &action = applyList.at(ii);
@@ -158,17 +153,18 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
                     action.event->reverse();
                 else
                     action.event->execute();
-                applyList << action.event->extraActions();
             }
         }
 
         // Read all the end values for binding changes
         for (int ii = 0; ii < applyList.size(); ++ii) {
             QDeclarativeAction *action = &applyList[ii];
-            if (action->event)
+            if (action->event) {
+                action->event->saveTargetValues();
                 continue;
+            }
             const QDeclarativeProperty &prop = action->property;
-            if (action->toBinding || !action->toValue.isValid()) {  //### is this always right (used for exta actions)
+            if (action->toBinding || !action->toValue.isValid()) {
                 action->toValue = prop.read();
             }
         }
@@ -177,15 +173,9 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
         foreach(const QDeclarativeAction &action, applyList) {
             if (action.event) {
                 if (action.event->isReversable()) {
-                    if (action.reverseEvent) {   //reverse the reverse
-                        action.event->clearForwardBindings();
-                        action.event->rewind();
-                        action.event->clearReverseBindings();
-                    } else {
-                        action.event->clearReverseBindings();
-                        action.event->rewind();
-                        action.event->clearForwardBindings();
-                    }
+                    action.event->clearBindings();
+                    action.event->rewind();
+                    action.event->clearBindings();
                 }
                 continue;
             }

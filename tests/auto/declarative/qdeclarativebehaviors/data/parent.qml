@@ -6,7 +6,7 @@ Rectangle {
         id: rect
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
-        parent: Behavior {
+        Behavior on parent {
             SequentialAnimation {
                 PauseAnimation { duration: 500 }
                 PropertyAction {}

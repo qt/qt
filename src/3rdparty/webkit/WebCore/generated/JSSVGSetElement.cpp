@@ -33,6 +33,68 @@ namespace WebCore {
 
 ASSERT_CLASS_FITS_IN_CELL(JSSVGSetElement);
 
+/* Hash table */
+
+static const HashTableValue JSSVGSetElementTableValues[2] =
+{
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGSetElementConstructor), (intptr_t)0 },
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGSetElementTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGSetElementTableValues, 0 };
+#else
+    { 2, 1, JSSVGSetElementTableValues, 0 };
+#endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGSetElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGSetElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGSetElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGSetElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGSetElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGSetElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGSetElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGSetElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGSetElementConstructor::s_info = { "SVGSetElementConstructor", 0, &JSSVGSetElementConstructorTable, 0 };
+
+bool JSSVGSetElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGSetElementConstructor, DOMObject>(exec, &JSSVGSetElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGSetElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGSetElementConstructor, DOMObject>(exec, &JSSVGSetElementConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGSetElementPrototypeTableValues[1] =
@@ -54,7 +116,7 @@ JSObject* JSSVGSetElementPrototype::self(ExecState* exec, JSGlobalObject* global
     return getDOMPrototype<JSSVGSetElement>(exec, globalObject);
 }
 
-const ClassInfo JSSVGSetElement::s_info = { "SVGSetElement", &JSSVGAnimationElement::s_info, 0, 0 };
+const ClassInfo JSSVGSetElement::s_info = { "SVGSetElement", &JSSVGAnimationElement::s_info, &JSSVGSetElementTable, 0 };
 
 JSSVGSetElement::JSSVGSetElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSetElement> impl)
     : JSSVGAnimationElement(structure, globalObject, impl)
@@ -64,6 +126,26 @@ JSSVGSetElement::JSSVGSetElement(NonNullPassRefPtr<Structure> structure, JSDOMGl
 JSObject* JSSVGSetElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
     return new (exec) JSSVGSetElementPrototype(JSSVGSetElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec, globalObject)));
+}
+
+bool JSSVGSetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGSetElement, Base>(exec, &JSSVGSetElementTable, this, propertyName, slot);
+}
+
+bool JSSVGSetElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGSetElement, Base>(exec, &JSSVGSetElementTable, this, propertyName, descriptor);
+}
+
+JSValue jsSVGSetElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGSetElement* domObject = static_cast<JSSVGSetElement*>(asObject(slotBase));
+    return JSSVGSetElement::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGSetElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGSetElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

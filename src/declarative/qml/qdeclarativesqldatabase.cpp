@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativesqldatabase_p.h"
+#include "private/qdeclarativesqldatabase_p.h"
 
 #include "qdeclarativeengine.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativerefcount_p.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativerefcount_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
@@ -217,9 +217,15 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
         if (context->argumentCount() > 1) {
             QScriptValue values = context->argument(1);
             if (values.isObject()) {
-                for (QScriptValueIterator it(values); it.hasNext();) {
-                    it.next();
-                    query.bindValue(it.name(),it.value().toVariant());
+                if (values.isArray()) {
+                    int size = values.property(QLatin1String("length")).toInt32();
+                    for (int i = 0; i < size; ++i)
+                        query.bindValue(i, values.property(i).toVariant());
+                } else {
+                    for (QScriptValueIterator it(values); it.hasNext();) {
+                        it.next();
+                        query.bindValue(it.name(),it.value().toVariant());
+                    }
                 }
             } else {
                 query.bindValue(0,values.toVariant());
@@ -273,7 +279,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
 
     QString foundvers = context->thisObject().property(QLatin1String("version")).toString();
     if (from_version!=foundvers) {
-        THROW_SQL(2,QDeclarativeEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
+        THROW_SQL(VERSION_ERR,QDeclarativeEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
         return engine->undefinedValue();
     }
 
@@ -287,7 +293,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
         } else {
             if (!db.commit()) {
                 db.rollback();
-                THROW_SQL(0,QDeclarativeEngine::tr("SQL transaction failed"));
+                THROW_SQL(UNKNOWN_ERR,QDeclarativeEngine::tr("SQL transaction failed"));
             } else {
                 ok = true;
             }

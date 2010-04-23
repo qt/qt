@@ -22,7 +22,10 @@ windows {
 }
 else:unix:!symbian {
     SOURCES += serenum_unix.cpp
+    LIBS += -lusb
 }
 else {
     SOURCES += serenum_stub.cpp
 }
+
+

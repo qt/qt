@@ -139,6 +139,7 @@ class tst_MediaObject : public QObject
         void pauseToPause();
         void pauseToPlay();
         void pauseToStop();
+        void playSDP();
 
         void testPrefinishMark();
         void testSeek();
@@ -160,6 +161,11 @@ class tst_MediaObject : public QObject
         Phonon::MediaObject *m_media;
         QSignalSpy *m_stateChangedSignalSpy;
         QString m_tmpFileName;
+
+        static void copyMediaFile(const QString &original,
+                                  const QString &name,
+                                  QString &resultFilePath,
+                                  QUrl *const asURL = 0);
 #endif //QT_NO_PHONON
         bool m_success;
 };
@@ -187,31 +193,17 @@ static qint32 castQVariantToInt32(const QVariant &variant)
     return *reinterpret_cast<const qint32 *>(variant.constData());
 }
 
-static const char *const red    = "\033[0;31m";
-static const char *const green  = "\033[0;32m";
-static const char *const yellow = "\033[0;33m";
-static const char *const blue   = "\033[0;34m";
-static const char *const purple = "\033[0;35m";
-static const char *const cyan   = "\033[0;36m";
-static const char *const white  = "\033[0;37m";
-static const char *const normal = "\033[0m";
-
 void tst_MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 {
-    if (newstate == Phonon::ErrorState) {
-        QWARN(QByteArray(QByteArray(red) + ".......................................................... ") + QByteArray(QTest::toString(oldstate)) + " to " + QByteArray(QTest::toString(newstate)) + normal);
-    } else {
-        //qDebug() << ".........................................................." << cyan << QTest::toString(oldstate) << "to" << QTest::toString(newstate) << normal;
-    }
+    if (newstate == Phonon::ErrorState)
+        QWARN(QByteArray(QByteArray(QTest::toString(oldstate)) + " to " + QByteArray(QTest::toString(newstate))));
 }
 
 void tst_MediaObject::testPlayFromResource()
 {
 #ifdef Q_OS_SYMBIAN
     QSKIP("Not implemented yet.", SkipAll);
-    return;
-#endif
-
+#else
     QFile file(MEDIA_FILEPATH);
     MediaObject media;
     media.setCurrentSource(&file);
@@ -223,6 +215,7 @@ void tst_MediaObject::testPlayFromResource()
     if (media.state() != Phonon::PlayingState)
         QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
     QCOMPARE(media.state(), Phonon::PlayingState);
+#endif
 }
 
 void tst_MediaObject::testPlayIllegalFile()
@@ -257,6 +250,13 @@ void tst_MediaObject::init()
             QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)));
         }
         m_stateChangedSignalSpy->clear();
+    }
+
+    // Ensure that m_media is in StoppedState
+    if (m_media->state() != Phonon::StoppedState) {
+        m_media->stop();
+        QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+        QCOMPARE(m_media->state(), Phonon::StoppedState);
     }
 }
 
@@ -352,6 +352,24 @@ void tst_MediaObject::_pausePlayback()
     m_success = true;
 }
 
+/*!
+  Copies the file \a name to the testing area. The resulting file name path is
+  returned in resultFilePath, and also set as a URL in \a asURL.
+ */
+void tst_MediaObject::copyMediaFile(const QString &original,
+                                    const QString &name,
+                                    QString &resultFilePath,
+                                    QUrl *const asURL)
+{
+    resultFilePath = QDir::toNativeSeparators(QDir::tempPath() + name);
+    if (asURL)
+        *asURL = QUrl::fromLocalFile(resultFilePath);
+
+    QFile::remove(resultFilePath);
+    QVERIFY(QFile::copy(original, resultFilePath));
+    QFile::setPermissions(resultFilePath, QFile::permissions(resultFilePath) | QFile::WriteOther);
+}
+
 void tst_MediaObject::initTestCase()
 {
     QCoreApplication::setApplicationName("tst_MediaObject");
@@ -375,14 +393,8 @@ void tst_MediaObject::initTestCase()
     QVERIFY(m_stateChangedSignalSpy->isValid());
     m_stateChangedSignalSpy->clear();
 
-    if (m_url.isEmpty()) {
-        m_tmpFileName = QDir::toNativeSeparators(QDir::tempPath() + MEDIA_FILE);
-        QFile::remove(m_tmpFileName);
-        QVERIFY(QFile::copy(MEDIA_FILEPATH, m_tmpFileName));
-        QFile::Permissions p = QFile::permissions(m_tmpFileName);
-        QFile::setPermissions(m_tmpFileName, p | QFile::WriteOther);
-        m_url = QUrl::fromLocalFile(m_tmpFileName);
-    }
+    if (m_url.isEmpty())
+        copyMediaFile(MEDIA_FILEPATH, MEDIA_FILE, m_tmpFileName, &m_url);
     
     qDebug() << "Using url:" << m_url.toString();
 
@@ -531,6 +543,52 @@ void tst_MediaObject::pauseToStop()
     startPlayback();
     pausePlayback();
     stopPlayback(Phonon::PausedState);
+}
+
+/*!
+
+    We attempt to play a SDP file. An SDP file essentially describes different
+    media streams and is hence a layer in front of the actual media(s).
+    Sometimes the backend handles the SDP file, in other cases not.
+
+    Some Phonon backends doesn't support SDP at all, ifdef appropriately. Real
+    Player and Helix, the two backends for Symbian, are known to support SDP.
+ */
+void tst_MediaObject::playSDP()
+{
+#ifdef Q_OS_SYMBIAN
+    QString sdpFile;
+    copyMediaFile(QLatin1String(":/media/test.sdp"), QLatin1String("test.sdp"), sdpFile);
+
+    // Let's verify our test setup.
+    QVERIFY(QFileInfo(sdpFile).isReadable());
+
+    // We need a window in order to setup the video.
+    QWidget widget;
+    widget.show();
+
+    const MediaSource oldSource(m_media->currentSource());
+    const MediaSource sdpSource(sdpFile);
+    m_media->setCurrentSource(sdpSource);
+    if (m_media->state() != Phonon::StoppedState)
+        QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
+
+    // MediaObject should have loaded the SDP, but be in error state due to absent media
+    const bool stateMatch = (m_media->state() == Phonon::ErrorState);
+    const bool errorStringMatch = (m_media->errorString() == QString::fromLatin1("Loading clip failed: Unknown error (-39)"));
+
+    // Ensure that m_media is back in ground state prior to starting next test step
+    m_media->setCurrentSource(oldSource);
+    if (m_media->state() != Phonon::StoppedState)
+       QTest::waitForSignal(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    QCOMPARE(m_media->state(), Phonon::StoppedState);
+
+    QVERIFY(stateMatch);
+    QVERIFY(errorStringMatch);
+
+#else
+    QSKIP("Unsupported on this platform.", SkipAll);
+#endif
 }
 
 void tst_MediaObject::testPrefinishMark()

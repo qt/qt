@@ -70,9 +70,9 @@ extern bool qt_wince_is_high_dpi();  //defined in qguifunctions_wince.cpp
 
 #if defined(QT_SOFTKEYS_ENABLED)
 #include <qaction.h>
+#endif
 #ifdef Q_WS_S60
 #include "private/qt_s60_p.h"
-#endif
 #endif
 
 QT_BEGIN_NAMESPACE

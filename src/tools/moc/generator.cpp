@@ -738,18 +738,23 @@ void Generator::generateMetacall()
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (p.read.isEmpty())
                     continue;
+                QByteArray prefix;
+                if (p.inPrivateClass.size()) {
+                    prefix = p.inPrivateClass;
+                    prefix.append("->");
+                }
                 if (p.gspec == PropertyDef::PointerSpec)
-                    fprintf(out, "        case %d: _a[0] = const_cast<void*>(reinterpret_cast<const void*>(%s())); break;\n",
-                            propindex, p.read.constData());
+                    fprintf(out, "        case %d: _a[0] = const_cast<void*>(reinterpret_cast<const void*>(%s%s())); break;\n",
+                            propindex, prefix.constData(), p.read.constData());
                 else if (p.gspec == PropertyDef::ReferenceSpec)
-                    fprintf(out, "        case %d: _a[0] = const_cast<void*>(reinterpret_cast<const void*>(&%s())); break;\n",
-                            propindex, p.read.constData());
+                    fprintf(out, "        case %d: _a[0] = const_cast<void*>(reinterpret_cast<const void*>(&%s%s())); break;\n",
+                            propindex, prefix.constData(), p.read.constData());
                 else if (cdef->enumDeclarations.value(p.type, false))
-                    fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s()); break;\n",
-                            propindex, p.read.constData());
+                    fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s%s()); break;\n",
+                            propindex, prefix.constData(), p.read.constData());
                 else
-                    fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s(); break;\n",
-                            propindex, p.type.constData(), p.read.constData());
+                    fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s%s(); break;\n",
+                            propindex, p.type.constData(), prefix.constData(), p.read.constData());
             }
             fprintf(out, "        }\n");
         }
@@ -768,12 +773,17 @@ void Generator::generateMetacall()
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (p.write.isEmpty())
                     continue;
+                QByteArray prefix;
+                if (p.inPrivateClass.size()) {
+                    prefix = p.inPrivateClass;
+                    prefix.append("->");
+                }
                 if (cdef->enumDeclarations.value(p.type, false)) {
-                    fprintf(out, "        case %d: %s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
-                            propindex, p.write.constData());
+                    fprintf(out, "        case %d: %s%s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
+                            propindex, prefix.constData(), p.write.constData());
                 } else {
-                    fprintf(out, "        case %d: %s(*reinterpret_cast< %s*>(_v)); break;\n",
-                            propindex, p.write.constData(), p.type.constData());
+                    fprintf(out, "        case %d: %s%s(*reinterpret_cast< %s*>(_v)); break;\n",
+                            propindex, prefix.constData(), p.write.constData(), p.type.constData());
                 }
             }
             fprintf(out, "        }\n");
@@ -791,8 +801,13 @@ void Generator::generateMetacall()
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (!p.reset.endsWith(')'))
                     continue;
-                fprintf(out, "        case %d: %s; break;\n",
-                        propindex, p.reset.constData());
+                QByteArray prefix;
+                if (p.inPrivateClass.size()) {
+                    prefix = p.inPrivateClass;
+                    prefix.append("->");
+                }
+                fprintf(out, "        case %d: %s%s; break;\n",
+                        propindex, prefix.constData(), p.reset.constData());
             }
             fprintf(out, "        }\n");
         }

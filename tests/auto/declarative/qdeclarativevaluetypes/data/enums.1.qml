@@ -1,6 +1,6 @@
 import Test 1.0
 
 MyTypeObject {
-    font.capitalization: "MixedCase"
+    font.capitalization: "AllUppercase"
 }
 

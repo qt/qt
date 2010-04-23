@@ -3342,15 +3342,15 @@ void QGLEllipseMaskGenerator::drawMask(const QRect &rect)
     QTransform gl_to_qt(1, 0, 0, -1, 0, offscreen->drawableSize().height());
     QTransform inv_matrix = gl_to_qt * matrix().inverted() * translate;
 
-    float m[3][4] = { { inv_matrix.m11(), inv_matrix.m12(), inv_matrix.m13() },
-                      { inv_matrix.m21(), inv_matrix.m22(), inv_matrix.m23() },
-                      { inv_matrix.m31(), inv_matrix.m32(), inv_matrix.m33() } };
+    float m[3][4] = { { float(inv_matrix.m11()), float(inv_matrix.m12()), float(inv_matrix.m13()) },
+                      { float(inv_matrix.m21()), float(inv_matrix.m22()), float(inv_matrix.m23()) },
+                      { float(inv_matrix.m31()), float(inv_matrix.m32()), float(inv_matrix.m33()) } };
 
     QPoint offs(screen_rect.left() - rect.left(), (offscreen->drawableSize().height() - screen_rect.top())
                                                 - (offscreen->offscreenSize().height() - rect.top()));
 
     // last component needs to be 1.0f to avoid Nvidia bug on linux
-    float ellipse_offset[4] = { offs.x(), offs.y(), 0.0f, 1.0f };
+    float ellipse_offset[4] = { float(offs.x()), float(offs.y()), 0.0f, 1.0f };
 
     GLfloat vertexArray[4 * 2];
     qt_add_rect_to_array(rect, vertexArray);

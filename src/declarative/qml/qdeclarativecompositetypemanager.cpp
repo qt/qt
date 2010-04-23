@@ -39,28 +39,21 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
-#include "qdeclarativescriptparser_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativescriptparser_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativeengine_p.h"
+#include "private/qdeclarativeengine_p.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativecomponent_p.h"
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecomponent_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
 
 QT_BEGIN_NAMESPACE
-
-#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-inline uint qHash(const QUrl &uri)
-{
-    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
-}
-#endif
 
 QDeclarativeCompositeTypeData::QDeclarativeCompositeTypeData()
 : status(Invalid), errorType(NoError), component(0), compiledComponent(0)
@@ -126,6 +119,27 @@ QDeclarativeCompositeTypeData::toCompiledComponent(QDeclarativeEngine *engine)
 {
     if (status == Complete && !compiledComponent) {
 
+        // Build script imports
+        foreach (const QDeclarativeScriptParser::Import &import, data.imports()) {
+            if (import.type == QDeclarativeScriptParser::Import::Script) {
+                QString url = imports.baseUrl().resolved(QUrl(import.uri)).toString();
+
+                ScriptReference ref;
+                ref.qualifier = import.qualifier;
+
+                for (int ii = 0; ii < resources.count(); ++ii) {
+                    if (resources.at(ii)->url == url) {
+                        ref.resource = resources.at(ii);
+                        break;
+                    }
+                }
+
+                Q_ASSERT(ref.resource);
+
+                scripts << ref;
+            }
+        }
+
         compiledComponent = new QDeclarativeCompiledData(engine);
         compiledComponent->url = imports.baseUrl();
         compiledComponent->name = compiledComponent->url.toString();
@@ -153,8 +167,13 @@ QDeclarativeCompositeTypeData::TypeReference::TypeReference()
 {
 }
 
+QDeclarativeCompositeTypeData::ScriptReference::ScriptReference()
+: resource(0)
+{
+}
+
 QDeclarativeCompositeTypeManager::QDeclarativeCompositeTypeManager(QDeclarativeEngine *e)
-: engine(e)
+: engine(e), redirectCount(0)
 {
 }
 
@@ -172,6 +191,10 @@ QDeclarativeCompositeTypeManager::~QDeclarativeCompositeTypeManager()
 
 QDeclarativeCompositeTypeData *QDeclarativeCompositeTypeManager::get(const QUrl &url)
 {
+    Redirects::Iterator redir = redirects.find(url);
+    if (redir != redirects.end())
+        return get(*redir);
+
     QDeclarativeCompositeTypeData *unit = components.value(url);
 
     if (!unit) {
@@ -219,12 +242,34 @@ void QDeclarativeCompositeTypeManager::clearCache()
     }
 }
 
+#define TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION 16
+
 void QDeclarativeCompositeTypeManager::replyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
     QDeclarativeCompositeTypeData *unit = components.value(reply->url());
     Q_ASSERT(unit);
+
+    redirectCount++;
+    if (redirectCount < TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = reply->url().resolved(redirect.toUrl());
+            redirects.insert(reply->url(),url);
+            unit->imports.setBaseUrl(url);
+            components.remove(reply->url());
+            components.insert(url, unit);
+            reply->deleteLater();
+            reply = engine->networkAccessManager()->get(QNetworkRequest(url));
+            QObject::connect(reply, SIGNAL(finished()),
+                             this, SLOT(replyFinished()));
+            QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                             this, SLOT(requestProgress(qint64,qint64)));
+            return;
+        }
+    }
+    redirectCount = 0;
 
     if (reply->error() != QNetworkReply::NoError) {
         QString errorDescription;
@@ -256,6 +301,24 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
     QDeclarativeCompositeTypeResource *resource = resources.value(reply->url());
     Q_ASSERT(resource);
 
+    redirectCount++;
+    if (redirectCount < TYPEMANAGER_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = reply->url().resolved(redirect.toUrl());
+            redirects.insert(reply->url(),url);
+            resource->url = url.toString();
+            resources.remove(reply->url());
+            resources.insert(url, resource);
+            reply->deleteLater();
+            reply = engine->networkAccessManager()->get(QNetworkRequest(url));
+            QObject::connect(reply, SIGNAL(finished()),
+                             this, SLOT(resourceReplyFinished()));
+            return;
+        }
+    }
+    redirectCount = 0;
+
     if (reply->error() != QNetworkReply::NoError) {
 
         resource->status = QDeclarativeCompositeTypeResource::Error;
@@ -271,12 +334,17 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
     reply->deleteLater();
 }
 
+// XXX this beyonds in QUrl::toLocalFile()
+// WARNING, there is a copy of this function in qdeclarativeengine.cpp
 static QString toLocalFileOrQrc(const QUrl& url)
 {
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
+    if (url.scheme() == QLatin1String("qrc")) {
+        if (url.authority().isEmpty())
+            return QLatin1Char(':') + url.path();
+        qWarning() << "Invalid url:" << url.toString() << "authority" << url.authority() << "not known.";
+        return QString();
+    }
+    return url.toLocalFile();
 }
 
 void QDeclarativeCompositeTypeManager::loadResource(QDeclarativeCompositeTypeResource *resource)
@@ -461,17 +529,51 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
 
     int waiting = 0;
 
+
+    /*
+     For local urls, add an implicit import "." as first (most overridden) lookup. This will also trigger
+     the loading of the qmldir and the import of any native types from available plugins.
+     */
+    {
+
+        QDeclarativeDirComponents qmldircomponentsnetwork;
+        if (QDeclarativeCompositeTypeResource *resource
+            = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
+            QDeclarativeDirParser parser;
+            parser.setSource(QString::fromUtf8(resource->data));
+            parser.parse();
+            qmldircomponentsnetwork = parser.components();
+        }
+
+        QDeclarativeEnginePrivate::get(engine)->
+                addToImport(&unit->imports,
+                            qmldircomponentsnetwork,
+                            QLatin1String("."),
+                            QString(),
+                            -1, -1,
+                            QDeclarativeScriptParser::Import::File,
+                            0); // error ignored (just means no fallback)
+    }
+
+
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
-        QString qmldir;
+        QDeclarativeDirComponents qmldircomponentsnetwork;
+        if (imp.type == QDeclarativeScriptParser::Import::Script)
+            continue;
+
         if (imp.type == QDeclarativeScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QString importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir"))).toString();
             for (int ii = 0; ii < unit->resources.count(); ++ii) {
                 if (unit->resources.at(ii)->url == importUrl) {
-                    qmldir = QString::fromUtf8(unit->resources.at(ii)->data);
+                    QDeclarativeDirParser parser;
+                    parser.setSource(QString::fromUtf8(unit->resources.at(ii)->data));
+                    parser.parse();
+                    qmldircomponentsnetwork = parser.components();
                     break;
                 }
             }
         }
+
 
         int vmaj = -1;
         int vmin = -1;
@@ -486,12 +588,15 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             }
         }
 
+        QString errorString;
         if (!QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports, qmldir, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
+                addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type, &errorString))
         {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
-            error.setDescription(tr("Import %1 unavailable").arg(imp.uri));
+            error.setDescription(errorString);
+            error.setLine(imp.location.start.line);
+            error.setColumn(imp.location.start.column);
             unit->status = QDeclarativeCompositeTypeData::Error;
             unit->errorType = QDeclarativeCompositeTypeData::GeneralError;
             unit->errors << error;
@@ -499,6 +604,7 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             return 0;
         }
     }
+
 
     QList<QDeclarativeScriptParser::TypeReference*> types = unit->data.referencedTypes();
 
@@ -520,10 +626,12 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             //  - type with unknown namespace (UnknownNamespace.SomeType {})
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
+            QString userTypeName = QString::fromUtf8(typeName);
+            userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
             if (typeNamespace)
-                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QString::fromUtf8(typeName)));
+                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else
-                error.setDescription(tr("%1 is not a type").arg(QString::fromUtf8(typeName)));
+                error.setDescription(tr("%1 is not a type").arg(userTypeName));
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);
@@ -545,6 +653,10 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             unit->types << ref;
             continue;
         }
+
+        Redirects::Iterator redir = redirects.find(url);
+        if (redir != redirects.end())
+            url = *redir;
 
         QDeclarativeCompositeTypeData *urlUnit = components.value(url);
 
@@ -610,6 +722,10 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
             }
         }
     }
+
+    QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
+    if (toLocalFileOrQrc(importUrl).isEmpty())
+        resourceList.prepend(importUrl);
 
     for (int ii = 0; ii < resourceList.count(); ++ii) {
         QUrl url = unit->imports.baseUrl().resolved(resourceList.at(ii));

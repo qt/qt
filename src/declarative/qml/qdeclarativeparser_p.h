@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarative.h"
-#include "qdeclarativerefcount_p.h"
+#include "private/qdeclarativerefcount_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
@@ -104,6 +104,11 @@ namespace QDeclarativeParser
         Location start;
         Location end;
         LocationRange range;
+
+        bool operator<(LocationSpan &o) const {
+            return (start.line < o.start.line) ||
+                   (start.line == o.start.line && start.column < o.start.column);
+        }
     };
 
     class Property;
@@ -174,9 +179,16 @@ namespace QDeclarativeParser
 
         // Script blocks that were nested under this object
         struct ScriptBlock {
+            enum Pragma { 
+                None   = 0x00000000,
+                Shared = 0x00000001
+            };
+            Q_DECLARE_FLAGS(Pragmas, Pragma)
+
             QStringList codes;
             QStringList files;
             QList<int> lineNumbers;
+            QList<Pragmas> pragmas;
         };
         QList<ScriptBlock> scripts;
 
@@ -191,7 +203,7 @@ namespace QDeclarativeParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date, Alias, Custom, CustomList };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Time, Date, DateTime, Alias, Custom, CustomList };
 
             bool isDefaultProperty;
             Type type;
@@ -215,6 +227,7 @@ namespace QDeclarativeParser
             QByteArray name;
             QString body;
             QList<QByteArray> parameterNames;
+            LocationSpan location;
         };
 
         // The list of dynamic properties
@@ -225,7 +238,7 @@ namespace QDeclarativeParser
         QList<DynamicSlot> dynamicSlots;
     };
 
-    class Variant 
+    class Q_DECLARATIVE_EXPORT Variant 
     {
     public:
         enum Type {
@@ -318,8 +331,9 @@ namespace QDeclarativeParser
         // The Object to which this property is attached
         Object *parent;
 
-        Object *getValue();
+        Object *getValue(const LocationSpan &);
         void addValue(Value *v);
+        void addOnValue(Value *v);
 
         // The QVariant::Type of the property, or 0 (QVariant::Invalid) if 
         // unknown.
@@ -333,6 +347,8 @@ namespace QDeclarativeParser
         // The list of values assigned to this property.  Content in values
         // and value are mutually exclusive
         QList<Value *> values;
+        // The list of values assigned to this property using the "on" syntax
+        QList<Value *> onValues;
         // The accessed property.  This is used to represent dot properties.
         // Content in value and values are mutually exclusive.
         Object *value;
@@ -343,12 +359,16 @@ namespace QDeclarativeParser
         // True if the setting of this property will be deferred.  Set by the
         // QDeclarativeCompiler
         bool isDeferred;
+        // True if this property is a value-type psuedo-property
+        bool isValueTypeSubProperty;
 
         LocationSpan location;
         LocationRange listValueRange;
         QList<int> listCommaPositions;
     };
 }
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeParser::Object::ScriptBlock::Pragmas);
 
 QT_END_NAMESPACE
 

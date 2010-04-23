@@ -107,6 +107,14 @@ static const char* const qglslPositionOnlyVertexShader = "\n\
         gl_Position = vec4(transformedPos.xy, 0.0, transformedPos.z); \n\
     }\n";
 
+static const char* const qglslComplexGeometryPositionOnlyVertexShader = "\n\
+    uniform highp mat3 matrix; \n\
+    attribute highp vec2 vertexCoordsArray; \n\
+    void setPosition(void) \n\
+    { \n\
+      gl_Position = vec4(matrix * vec3(vertexCoordsArray, 1), 1);\n\
+    } \n";
+
 static const char* const qglslUntransformedPositionVertexShader = "\n\
     attribute highp   vec4      vertexCoordsArray; \n\
     void setPosition(void) \n\
@@ -331,9 +339,14 @@ static const char* const qglslImageSrcFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\
     uniform   lowp    sampler2D imageTexture; \n\
     lowp vec4 srcPixel() \n\
-    { \n\
-        return texture2D(imageTexture, textureCoords); \n\
-    }\n";
+    { \n"
+#ifdef QT_OPENGL_ES_2
+        // work-around for driver bug
+        "return 1.0 * texture2D(imageTexture, textureCoords); \n"
+#else
+        "return texture2D(imageTexture, textureCoords); \n"
+#endif
+    "}\n";
 
 static const char* const qglslCustomSrcFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\

@@ -59,14 +59,15 @@ class MyTypeObject : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QPoint point READ point WRITE setPoint NOTIFY changed);
-    Q_PROPERTY(QPointF pointf READ pointf WRITE setPointf NOTIFY changed);
-    Q_PROPERTY(QSize size READ size WRITE setSize NOTIFY changed);
-    Q_PROPERTY(QSizeF sizef READ sizef WRITE setSizef NOTIFY changed);
-    Q_PROPERTY(QRect rect READ rect WRITE setRect NOTIFY changed);
-    Q_PROPERTY(QRectF rectf READ rectf WRITE setRectf NOTIFY changed);
-    Q_PROPERTY(QVector3D vector READ vector WRITE setVector NOTIFY changed);
-    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY changed);
+    Q_PROPERTY(QPoint point READ point WRITE setPoint NOTIFY changed)
+    Q_PROPERTY(QPointF pointf READ pointf WRITE setPointf NOTIFY changed)
+    Q_PROPERTY(QSize size READ size WRITE setSize NOTIFY changed)
+    Q_PROPERTY(QSizeF sizef READ sizef WRITE setSizef NOTIFY changed)
+    Q_PROPERTY(QSize sizereadonly READ size NOTIFY changed)
+    Q_PROPERTY(QRect rect READ rect WRITE setRect NOTIFY changed)
+    Q_PROPERTY(QRectF rectf READ rectf WRITE setRectf NOTIFY changed)
+    Q_PROPERTY(QVector3D vector READ vector WRITE setVector NOTIFY changed)
+    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY changed)
 
 public:
     MyTypeObject() :
@@ -128,12 +129,16 @@ public:
 signals:
     void changed();
     void runScript();
+
+public slots:
+    QSize method() { return QSize(13, 14); }
 };
 QML_DECLARE_TYPE(MyTypeObject);
 
 class MyConstantValueSource : public QObject, public QDeclarativePropertyValueSource
 {
     Q_OBJECT
+    Q_INTERFACES(QDeclarativePropertyValueSource)
 public:
     virtual void setTarget(const QDeclarativeProperty &p) { p.write(3345); }
 };
@@ -142,6 +147,7 @@ QML_DECLARE_TYPE(MyConstantValueSource);
 class MyOffsetValueInterceptor : public QObject, public QDeclarativePropertyValueInterceptor
 {
     Q_OBJECT
+    Q_INTERFACES(QDeclarativePropertyValueInterceptor)
 public:
     virtual void setTarget(const QDeclarativeProperty &p) { prop = p; }
     virtual void write(const QVariant &value) { QDeclarativePropertyPrivate::write(prop, value.toInt() + 13, QDeclarativePropertyPrivate::BypassInterceptor); }

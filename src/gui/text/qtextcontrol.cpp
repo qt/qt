@@ -91,7 +91,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CONTEXTMENU
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
 extern bool qt_use_rtl_extensions;
 #endif
 #endif
@@ -848,9 +848,9 @@ void QTextControl::copy()
     QApplication::clipboard()->setMimeData(data);
 }
 
-void QTextControl::paste()
+void QTextControl::paste(QClipboard::Mode mode)
 {
-    const QMimeData *md = QApplication::clipboard()->mimeData();
+    const QMimeData *md = QApplication::clipboard()->mimeData(mode);
     if (md)
         insertFromMimeData(md);
 }
@@ -1201,7 +1201,8 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
             blockFmt.setIndent(blockFmt.indent() - 1);
             cursor.setBlockFormat(blockFmt);
         } else {
-            cursor.deletePreviousChar();
+            QTextCursor localCursor = cursor;
+            localCursor.deletePreviousChar();
         }
         goto accept;
     }
@@ -1230,11 +1231,17 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
            q->cut();
     }
     else if (e == QKeySequence::Paste) {
-           q->paste();
+        QClipboard::Mode mode = QClipboard::Clipboard;
+#ifdef Q_WS_X11
+        if (e->modifiers() == (Qt::CTRL | Qt::SHIFT) && e->key() == Qt::Key_Insert)
+            mode = QClipboard::Selection;
+#endif
+        q->paste(mode);
     }
 #endif
     else if (e == QKeySequence::Delete) {
-        cursor.deleteChar();
+        QTextCursor localCursor = cursor;
+        localCursor.deleteChar();
     }
     else if (e == QKeySequence::DeleteEndOfWord) {
         if (!cursor.hasSelection())
@@ -2075,7 +2082,7 @@ QMenu *QTextControl::createStandardContextMenu(const QPointF &pos, QWidget *pare
     }
 #endif
 
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if ((d->interactionFlags & Qt::TextEditable) && qt_use_rtl_extensions) {
 #else
     if (d->interactionFlags & Qt::TextEditable) {

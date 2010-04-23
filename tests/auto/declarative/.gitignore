@@ -1,4 +1,5 @@
 tst_*
 !tst_*.*
+tst_*.log
 tst_*.debug
 tst_*~

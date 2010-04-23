@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 240; height: 200; color: 'white'
@@ -13,7 +13,7 @@ Rectangle {
             opacity: PathView.opacity
             Column {
                 Image { anchors.horizontalCenter: name.horizontalCenter; width: 64; height: 64; source: icon }
-                Text { id: name; text: name; font.pointSize: 16}
+                Text { text: name; font.pointSize: 16}
             }
         }
     }

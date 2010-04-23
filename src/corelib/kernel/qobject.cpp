@@ -125,14 +125,17 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
     }
 }
 
+void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
+void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
+
 QObjectData::~QObjectData() {}
-QDeclarativeData::~QDeclarativeData() {}
 
 QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
     if (version != QObjectPrivateVersion)
-        qFatal("Cannot mix incompatible Qt libraries");
+        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
+                version, QObjectPrivateVersion);
 
     // QObjectData initialization
     q_ptr = 0;
@@ -495,15 +498,6 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
 void QObjectPrivate::clearGuards(QObject *object)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);
-    QGuard<QObject> *guard = priv->extraData ? priv->extraData->objectGuards : 0;
-    while (guard) {
-        QGuard<QObject> *g = guard;
-        guard = guard->next;
-        g->o = 0;
-        g->prev = 0;
-        g->next = 0;
-        g->objectDestroyed(object);
-    }
 
     if (!priv->hasGuards)
         return;
@@ -884,7 +878,7 @@ QObject::~QObject()
     }
 
     if (d->declarativeData)
-        d->declarativeData->destroyed(this);
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
 
     {
         QMutex *signalSlotMutex = 0;
@@ -1478,7 +1472,7 @@ void QObject::moveToThread(QThread *targetThread)
     } else if (d->threadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 d->threadData->thread, currentData->thread, targetData->thread);
+                 currentData->thread, d->threadData->thread, targetData->thread);
 
 #ifdef Q_WS_MAC
         qWarning("On Mac OS X, you might be loading two sets of Qt binaries into the same process. "
@@ -2032,6 +2026,8 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
+    if (!wasDeleted && declarativeData)
+        QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
 /*!
@@ -3278,12 +3274,14 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
             const int method = c->method;
             QObjectPrivate::Sender currentSender;
-            currentSender.sender = sender;
-            currentSender.signal = signal_absolute_index;
-            currentSender.ref = 1;
+            const bool receiverInSameThread = currentThreadData == receiver->d_func()->threadData;
             QObjectPrivate::Sender *previousSender = 0;
-            if (currentThreadData == receiver->d_func()->threadData)
+            if (receiverInSameThread) {
+                currentSender.sender = sender;
+                currentSender.signal = signal_absolute_index;
+                currentSender.ref = 1;
                 previousSender = QObjectPrivate::setCurrentSender(receiver, &currentSender);
+            }
             locker.unlock();
 
             if (qt_signal_spy_callback_set.slot_begin_callback != 0) {
@@ -3299,8 +3297,8 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
             } QT_CATCH(...) {
                 locker.relock();
-
-                QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
+                if (receiverInSameThread)
+                    QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 
                 --connectionLists->inUse;
                 Q_ASSERT(connectionLists->inUse >= 0);
@@ -3315,7 +3313,8 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
             locker.relock();
 
-            QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
+            if (receiverInSameThread)
+                QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 
             if (connectionLists->orphaned)
                 break;

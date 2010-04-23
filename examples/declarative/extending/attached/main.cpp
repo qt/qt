@@ -49,12 +49,12 @@ int main(int argc, char ** argv)
 {
     QCoreApplication app(argc, argv);
 
-    QML_REGISTER_NOCREATE_TYPE(BirthdayPartyAttached);
-    QML_REGISTER_TYPE(People, 1,0, BirthdayParty, BirthdayParty);
-    QML_REGISTER_NOCREATE_TYPE(ShoeDescription);
-    QML_REGISTER_NOCREATE_TYPE(Person);
-    QML_REGISTER_TYPE(People, 1,0, Boy, Boy);
-    QML_REGISTER_TYPE(People, 1,0, Girl, Girl);
+    qmlRegisterType<BirthdayPartyAttached>();
+    qmlRegisterType<BirthdayParty>("People", 1,0, "BirthdayParty");
+    qmlRegisterType<ShoeDescription>();
+    qmlRegisterType<Person>();
+    qmlRegisterType<Boy>("People", 1,0, "Boy");
+    qmlRegisterType<Girl>("People", 1,0, "Girl");
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, ":example.qml");

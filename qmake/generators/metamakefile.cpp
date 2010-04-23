@@ -58,6 +58,8 @@ MetaMakefileGenerator::~MetaMakefileGenerator()
         delete project;
 }
 
+#ifndef QT_QMAKE_PARSER_ONLY
+
 class BuildsMetaMakefileGenerator : public MetaMakefileGenerator
 {
 private:
@@ -443,6 +445,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "msvc_vcproj.h"
 #include "symmake_abld.h"
 #include "symmake_sbsv2.h"
+#include "symbian_makefile.h"
 QT_END_INCLUDE_NAMESPACE
 
 MakefileGenerator *
@@ -476,6 +479,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         mkfile = new SymbianAbldMakefileGenerator;
     } else if(gen == "SYMBIAN_SBSV2") {
         mkfile = new SymbianSbsv2MakefileGenerator;
+    } else if(gen == "SYMBIAN_UNIX") {
+        mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
     }
@@ -485,6 +490,25 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     }
     return mkfile;
 }
+
+MetaMakefileGenerator *
+MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
+{
+    MetaMakefileGenerator *ret = 0;
+    if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
+         Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
+        if (proj->first("TEMPLATE").endsWith("subdirs"))
+            ret = new SubdirsMetaMakefileGenerator(proj, name, op);
+    }
+    if (!ret)
+        ret = new BuildsMetaMakefileGenerator(proj, name, op);
+    bool res = ret->init();
+    if (success)
+        *success = res;
+    return ret;
+}
+
+#endif // QT_QMAKE_PARSER_ONLY
 
 bool
 MetaMakefileGenerator::modesForGenerator(const QString &gen,
@@ -504,7 +528,7 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
         *host_mode = Option::HOST_MACX_MODE;
         *target_mode = Option::TARG_MACX_MODE;
-    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2") {
+    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2" || gen == "SYMBIAN_UNIX") {
 #if defined(Q_OS_MAC)
         *host_mode = Option::HOST_MACX_MODE;
 #elif defined(Q_OS_UNIX)
@@ -518,23 +542,6 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
         return false;
     }
     return true;
-}
-
-MetaMakefileGenerator *
-MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
-{
-    MetaMakefileGenerator *ret = 0;
-    if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
-         Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
-        if (proj->first("TEMPLATE").endsWith("subdirs"))
-            ret = new SubdirsMetaMakefileGenerator(proj, name, op);
-    }
-    if (!ret)
-        ret = new BuildsMetaMakefileGenerator(proj, name, op);
-    bool res = ret->init();
-    if (success)
-        *success = res;
-    return ret;
 }
 
 QT_END_NAMESPACE

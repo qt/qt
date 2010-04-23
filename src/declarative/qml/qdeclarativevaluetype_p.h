@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
@@ -81,10 +81,18 @@ class Q_DECLARATIVE_EXPORT QDeclarativeValueTypeFactory
 public:
     QDeclarativeValueTypeFactory();
     ~QDeclarativeValueTypeFactory();
+    static bool isValueType(int);
     static QDeclarativeValueType *valueType(int);
 
+    static void registerValueTypes();
+
+    QDeclarativeValueType *operator[](int idx) const {
+        if (idx >= (int)QVariant::UserType) return 0;
+        else return valueTypes[idx];
+    }
+
+private:
     QDeclarativeValueType *valueTypes[QVariant::UserType - 1]; 
-    QDeclarativeValueType *operator[](int idx) const { return valueTypes[idx]; }
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativePointFValueType : public QDeclarativeValueType
@@ -390,7 +398,8 @@ public:
 
 private:
     QFont font;
-    bool hasPixelSize;
+    bool pixelSizeSet;
+    bool pointSizeSet;
 };
 
 QT_END_NAMESPACE

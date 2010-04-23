@@ -46,6 +46,7 @@
 
 #include <QtMultimedia/qvideowidget.h>
 
+#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 QT_BEGIN_HEADER
 
@@ -90,6 +91,9 @@ Q_SIGNALS:
     void nativeSizeChanged(const QSizeF &size);
 
 protected:
+    bool event(QEvent *event);
+    bool sceneEvent(QEvent *event);
+
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
     QGraphicsVideoItemPrivate *d_ptr;
@@ -105,5 +109,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_GRAPHICSVIEW
 
 #endif

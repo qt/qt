@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeimage_p.h"
-#include "qdeclarativeimage_p_p.h"
+#include "private/qdeclarativeimage_p.h"
+#include "private/qdeclarativeimage_p_p.h"
 
 #include <QKeyEvent>
 #include <QPainter>
@@ -127,7 +127,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
     : QDeclarativeImageBase(*(new QDeclarativeImagePrivate), parent)
 {
-    connect(this, SIGNAL(pixmapChanged()), this, SLOT(updatePaintedGeometry()));
 }
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent)
@@ -172,7 +171,7 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     status = pix.isNull() ? QDeclarativeImageBase::Null : QDeclarativeImageBase::Ready;
 
     q->update();
-    emit q->pixmapChanged();
+    q->pixmapChange();
 }
 
 /*!
@@ -232,6 +231,16 @@ qreal QDeclarativeImage::paintedHeight() const
     \o Error - an error occurred while loading the image
     \endlist
 
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened with the image internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: image.status = Image.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. Image{id: image; onStatusChanged: if(image.status == Image.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(image.status!=Image.Ready){'Not Loaded';}else{'Loaded';}}
+    \endlist
+
     \sa progress
 */
 
@@ -257,6 +266,35 @@ qreal QDeclarativeImage::paintedHeight() const
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
+/*!
+    \qmlproperty QSize Image::sourceSize
+
+    This properties is the size of the loaded image, in pixels.
+
+    If you set this property explicitly, you can to control the storage
+    used by a loaded image. The image will be scaled down if its intrinsic size
+    is greater than this value.
+
+    If only one dimension of the size is set (and the other left at 0), the
+    unset dimension will be set in proportion to the set dimension to preserve
+    the source image aspect ratio. The fillMode is independent of this.
+
+    Unlike setting the width and height properties, which merely scale the painting
+    of the image, this property affects the number of pixels stored.
+
+    \e{Changing this property dynamically will lead to the image source being reloaded,
+    potentially even from the network if it is not in the disk cache.}
+
+    If the source is an instrinsically scalable image (eg. SVG), this property
+    determines the size of the loaded image regardless of intrinsic size. You should
+    avoid changing this property dynamically - rendering an SVG is \e slow compared
+    to an image.
+
+    If the source is a non-scalable image (eg. JPEG), the loaded image will
+    be no greater than this property specifies. For some formats (currently only JPEG),
+    the whole image will never actually be loaded into memory.
+*/
+
 void QDeclarativeImage::updatePaintedGeometry()
 {
     Q_D(QDeclarativeImage);
@@ -272,6 +310,12 @@ void QDeclarativeImage::updatePaintedGeometry()
         } else if(heightScale < widthScale) {
             d->paintedWidth = heightScale * qreal(d->pix.width());
             d->paintedHeight = height();
+        }
+        if (widthValid() && !heightValid()) {
+            setImplicitHeight(d->paintedHeight);
+        }
+        if (heightValid() && !widthValid()) {
+            setImplicitWidth(d->paintedWidth);
         }
     } else {
         d->paintedWidth = width();
@@ -372,6 +416,12 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
+}
+
+void QDeclarativeImage::pixmapChange()
+{
+    updatePaintedGeometry();
+    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE

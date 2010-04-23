@@ -1,6 +1,6 @@
 TEMPLATE = lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.7.0
+   VERSION=4.8.0
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -17,5 +17,6 @@ wince*:LIBS += $$QMAKE_LIBS_GUI
 symbian: {
     TARGET.EPOCALLOWDLLDATA=1
     TARGET.CAPABILITY = All -Tcb
+    TARGET = $${TARGET}$${QT_LIBINFIX}
     load(armcc_warnings)
 }

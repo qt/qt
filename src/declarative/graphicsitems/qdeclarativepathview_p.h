@@ -43,7 +43,7 @@
 #define QDECLARATIVEPATHVIEW_H
 
 #include "qdeclarativeitem.h"
-#include "qdeclarativepath_p.h"
+#include "private/qdeclarativepath_p.h"
 
 QT_BEGIN_HEADER
 
@@ -52,19 +52,33 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativePathViewPrivate;
+class QDeclarativePathViewAttached;
 class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
-    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition)
-    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin)
-    Q_PROPERTY(int count READ count)
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
-    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount)
+
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
+
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
+    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode NOTIFY highlightRangeModeChanged)
+    Q_PROPERTY(int highlightMoveDuration READ highlightMoveDuration WRITE setHighlightMoveDuration NOTIFY highlightMoveDurationChanged)
+
+    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin NOTIFY dragMarginChanged)
+    Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
+    Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
+
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
+    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
+
+    Q_ENUMS(HighlightRangeMode)
 
 public:
     QDeclarativePathView(QDeclarativeItem *parent=0);
@@ -82,11 +96,31 @@ public:
     qreal offset() const;
     void setOffset(qreal offset);
 
-    qreal snapPosition() const;
-    void setSnapPosition(qreal pos);
+    QDeclarativeComponent *highlight() const;
+    void setHighlight(QDeclarativeComponent *highlight);
+    QDeclarativeItem *highlightItem();
+
+    enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
+    HighlightRangeMode highlightRangeMode() const;
+    void setHighlightRangeMode(HighlightRangeMode mode);
+
+    qreal preferredHighlightBegin() const;
+    void setPreferredHighlightBegin(qreal);
+
+    qreal preferredHighlightEnd() const;
+    void setPreferredHighlightEnd(qreal);
+
+    int highlightMoveDuration() const;
+    void setHighlightMoveDuration(int);
 
     qreal dragMargin() const;
     void setDragMargin(qreal margin);
+
+    qreal flickDeceleration() const;
+    void setFlickDeceleration(qreal dec);
+
+    bool isInteractive() const;
+    void setInteractive(bool);
 
     int count() const;
 
@@ -96,11 +130,26 @@ public:
     int pathItemCount() const;
     void setPathItemCount(int);
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static QDeclarativePathViewAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void currentIndexChanged();
     void offsetChanged();
+    void modelChanged();
+    void countChanged();
+    void pathChanged();
+    void preferredHighlightBeginChanged();
+    void preferredHighlightEndChanged();
+    void highlightRangeModeChanged();
+    void dragMarginChanged();
+    void snapPositionChanged();
+    void delegateChanged();
+    void pathItemCountChanged();
+    void flickDecelerationChanged();
+    void interactiveChanged();
+    void highlightChanged();
+    void highlightItemChanged();
+    void highlightMoveDurationChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -115,16 +164,63 @@ private Q_SLOTS:
     void ticked();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
+    void itemsMoved(int,int,int);
     void modelReset();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
 
 private:
     friend class QDeclarativePathViewAttached;
-    static QHash<QObject*, QObject*> attachedProperties;
     Q_DISABLE_COPY(QDeclarativePathView)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativePathView)
 };
+
+class QDeclarativeOpenMetaObject;
+class QDeclarativePathViewAttached : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QDeclarativePathView *view READ view CONSTANT)
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
+    Q_PROPERTY(bool onPath READ isOnPath NOTIFY pathChanged)
+
+public:
+    QDeclarativePathViewAttached(QObject *parent);
+    ~QDeclarativePathViewAttached();
+
+    QDeclarativePathView *view() { return m_view; }
+
+    bool isCurrentItem() const { return m_isCurrent; }
+    void setIsCurrentItem(bool c) {
+        if (m_isCurrent != c) {
+            m_isCurrent = c;
+            emit currentItemChanged();
+        }
+    }
+
+    QVariant value(const QByteArray &name) const;
+    void setValue(const QByteArray &name, const QVariant &val);
+
+    bool isOnPath() const { return m_onPath; }
+    void setOnPath(bool on) {
+        if (on != m_onPath) {
+            m_onPath = on;
+            emit pathChanged();
+        }
+    }
+
+Q_SIGNALS:
+    void currentItemChanged();
+    void pathChanged();
+
+private:
+    friend class QDeclarativePathViewPrivate;
+    QDeclarativePathView *m_view;
+    QDeclarativeOpenMetaObject *m_metaobject;
+    bool m_onPath : 1;
+    bool m_isCurrent : 1;
+};
+
 
 QT_END_NAMESPACE
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,6 +28,7 @@
 
 #include "IntRect.h"
 #include "Range.h"
+#include "Timer.h"
 #include "VisibleSelection.h"
 #include <wtf/Noncopyable.h>
 
@@ -36,6 +37,7 @@ namespace WebCore {
 class Frame;
 class GraphicsContext;
 class RenderObject;
+class RenderView;
 class VisiblePosition;
 
 class SelectionController : public Noncopyable {
@@ -45,10 +47,10 @@ public:
 
     SelectionController(Frame* = 0, bool isDragCaretController = false);
 
-    Element* rootEditableElement() const { return m_sel.rootEditableElement(); }
-    bool isContentEditable() const { return m_sel.isContentEditable(); }
-    bool isContentRichlyEditable() const { return m_sel.isContentRichlyEditable(); }
-    Node* shadowTreeRootNode() const { return m_sel.shadowTreeRootNode(); }
+    Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
+    bool isContentEditable() const { return m_selection.isContentEditable(); }
+    bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
+    Node* shadowTreeRootNode() const { return m_selection.shadowTreeRootNode(); }
      
     void moveTo(const Range*, EAffinity, bool userTriggered = false);
     void moveTo(const VisiblePosition&, bool userTriggered = false);
@@ -56,8 +58,9 @@ public:
     void moveTo(const Position&, EAffinity, bool userTriggered = false);
     void moveTo(const Position&, const Position&, EAffinity, bool userTriggered = false);
 
-    const VisibleSelection& selection() const { return m_sel; }
-    void setSelection(const VisibleSelection&, bool closeTyping = true, bool clearTypingStyle = true, bool userTriggered = false);
+    const VisibleSelection& selection() const { return m_selection; }
+    void setSelection(const VisibleSelection&, bool closeTyping = true, bool clearTypingStyle = true, bool userTriggered = false, TextGranularity = CharacterGranularity);
+    void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, true, true, false, granularity); }
     bool setSelectedRange(Range*, EAffinity, bool closeTyping);
     void selectAll();
     void clear();
@@ -67,23 +70,23 @@ public:
 
     bool contains(const IntPoint&);
 
-    VisibleSelection::SelectionType selectionType() const { return m_sel.selectionType(); }
+    VisibleSelection::SelectionType selectionType() const { return m_selection.selectionType(); }
 
-    EAffinity affinity() const { return m_sel.affinity(); }
+    EAffinity affinity() const { return m_selection.affinity(); }
 
     bool modify(EAlteration, EDirection, TextGranularity, bool userTriggered = false);
     bool modify(EAlteration, int verticalDistance, bool userTriggered = false);
-    bool expandUsingGranularity(TextGranularity);
+    TextGranularity granularity() const { return m_granularity; }
 
     void setBase(const VisiblePosition&, bool userTriggered = false);
     void setBase(const Position&, EAffinity, bool userTriggered = false);
     void setExtent(const VisiblePosition&, bool userTriggered = false);
     void setExtent(const Position&, EAffinity, bool userTriggered = false);
 
-    Position base() const { return m_sel.base(); }
-    Position extent() const { return m_sel.extent(); }
-    Position start() const { return m_sel.start(); }
-    Position end() const { return m_sel.end(); }
+    Position base() const { return m_selection.base(); }
+    Position extent() const { return m_selection.extent(); }
+    Position start() const { return m_selection.start(); }
+    Position end() const { return m_selection.end(); }
 
     // Return the renderer that is responsible for painting the caret (in the selection start node)
     RenderObject* caretRenderer() const;
@@ -97,19 +100,21 @@ public:
     void setLastChangeWasHorizontalExtension(bool b) { m_lastChangeWasHorizontalExtension = b; }
     void willBeModified(EAlteration, EDirection);
     
-    bool isNone() const { return m_sel.isNone(); }
-    bool isCaret() const { return m_sel.isCaret(); }
-    bool isRange() const { return m_sel.isRange(); }
-    bool isCaretOrRange() const { return m_sel.isCaretOrRange(); }
+    bool isNone() const { return m_selection.isNone(); }
+    bool isCaret() const { return m_selection.isCaret(); }
+    bool isRange() const { return m_selection.isRange(); }
+    bool isCaretOrRange() const { return m_selection.isCaretOrRange(); }
     bool isInPasswordField() const;
-    bool isAll(StayInEditableContent stayInEditableContent = MustStayInEditableContent) const { return m_sel.isAll(stayInEditableContent); }
+    bool isAll(StayInEditableContent stayInEditableContent = MustStayInEditableContent) const { return m_selection.isAll(stayInEditableContent); }
     
-    PassRefPtr<Range> toNormalizedRange() const { return m_sel.toNormalizedRange(); }
+    PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
     void debugRenderer(RenderObject*, bool selected) const;
     
     void nodeWillBeRemoved(Node*);
 
+    void setCaretVisible(bool = true);
+    void clearCaretRectIfNeeded();
     bool recomputeCaretRect(); // returns true if caret rect moved
     void invalidateCaretRect();
     void paintCaret(GraphicsContext*, int tx, int ty, const IntRect& clipRect);
@@ -124,6 +129,11 @@ public:
     bool isFocusedAndActive() const;
     void pageActivationChanged();
 
+    // Painting.
+    void updateAppearance();
+
+    void updateSecureKeyboardEntryIfActive();
+
 #ifndef NDEBUG
     void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
@@ -133,6 +143,10 @@ private:
     enum EPositionType { START, END, BASE, EXTENT };
 
     TextDirection directionOfEnclosingBlock();
+
+    VisiblePosition positionForPlatform(bool isGetStart) const;
+    VisiblePosition startForPlatform() const;
+    VisiblePosition endForPlatform() const;
 
     VisiblePosition modifyExtendingRight(TextGranularity);
     VisiblePosition modifyExtendingForward(TextGranularity);
@@ -145,47 +159,49 @@ private:
 
     void layout();
     IntRect caretRepaintRect() const;
+    bool shouldRepaintCaret(const RenderView* view) const;
 
     int xPosForVerticalArrowNavigation(EPositionType);
     
-#if PLATFORM(MAC) || PLATFORM(GTK)
     void notifyAccessibilityForSelectionChange();
-#else
-    void notifyAccessibilityForSelectionChange() {};
-#endif
 
     void focusedOrActiveStateChanged();
     bool caretRendersInsideNode(Node*) const;
     
     IntRect absoluteBoundsForLocalRect(const IntRect&) const;
 
+    void caretBlinkTimerFired(Timer<SelectionController>*);
+
+    void setUseSecureKeyboardEntry(bool);
+
     Frame* m_frame;
+
     int m_xPosForVerticalArrowNavigation;
 
-    VisibleSelection m_sel;
+    VisibleSelection m_selection;
+    TextGranularity m_granularity;
 
-    IntRect m_caretRect;        // caret rect in coords local to the renderer responsible for painting the caret
-    IntRect m_absCaretBounds;   // absolute bounding rect for the caret
+    Timer<SelectionController> m_caretBlinkTimer;
+
+    IntRect m_caretRect; // caret rect in coords local to the renderer responsible for painting the caret
+    IntRect m_absCaretBounds; // absolute bounding rect for the caret
     IntRect m_absoluteCaretRepaintBounds;
     
-    bool m_needsLayout : 1;       // true if the caret and expectedVisible rectangles need to be calculated
-    bool m_absCaretBoundsDirty: 1;
-    bool m_lastChangeWasHorizontalExtension : 1;
-    bool m_isDragCaretController : 1;
-    bool m_isCaretBlinkingSuspended : 1;
-    bool m_focused : 1;
-
+    bool m_needsLayout; // true if m_caretRect and m_absCaretBounds need to be calculated
+    bool m_absCaretBoundsDirty;
+    bool m_lastChangeWasHorizontalExtension;
+    bool m_isDragCaretController;
+    bool m_isCaretBlinkingSuspended;
+    bool m_focused;
+    bool m_caretVisible;
+    bool m_caretPaint;
 };
 
-inline bool operator==(const SelectionController& a, const SelectionController& b)
+#if !(PLATFORM(MAC) || PLATFORM(GTK))
+inline void SelectionController::notifyAccessibilityForSelectionChange()
 {
-    return a.start() == b.start() && a.end() == b.end() && a.affinity() == b.affinity();
 }
-
-inline bool operator!=(const SelectionController& a, const SelectionController& b)
-{
-    return !(a == b);
-}
+#endif
 
 } // namespace WebCore
 

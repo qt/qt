@@ -55,7 +55,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #if defined(Q_OS_SYMBIAN)
-# include <syslimits.h>
+# include <sys/syslimits.h>
 # include <f32file.h>
 # include <pathinfo.h>
 # include "private/qcore_symbian_p.h"
@@ -81,6 +81,40 @@ static bool isRelativePathSymbian(const QString& fileName)
              && ((fileName.at(0).isLetter() && fileName.at(1) == QLatin1Char(':'))
              || (fileName.at(0) == QLatin1Char('/') && fileName.at(1) == QLatin1Char('/')))));
 }
+
+/*!
+ \internal
+ convert symbian error code to the one suitable for setError.
+ example usage: setSymbianError(err, QFile::CopyError, QLatin1String("copy error"))
+*/
+void QFSFileEnginePrivate::setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString)
+{
+    Q_Q(QFSFileEngine);
+    switch (symbianError) {
+    case KErrNone:
+        q->setError(QFile::NoError, QLatin1String(""));
+        break;
+    case KErrAccessDenied:
+        q->setError(QFile::PermissionsError, QLatin1String("access denied"));
+        break;
+    case KErrPermissionDenied:
+        q->setError(QFile::PermissionsError, QLatin1String("permission denied"));
+        break;
+    case KErrAbort:
+        q->setError(QFile::AbortError, QLatin1String("aborted"));
+        break;
+    case KErrCancel:
+        q->setError(QFile::AbortError, QLatin1String("cancelled"));
+        break;
+    case KErrTimedOut:
+        q->setError(QFile::TimeOutError, QLatin1String("timed out"));
+        break;
+    default:
+        q->setError(defaultError, defaultString);
+        break;
+    }
+}
+
 #endif
 
 /*!
@@ -427,8 +461,10 @@ bool QFSFileEngine::copy(const QString &newName)
         }
     ) // End TRAP
     delete fm;
-    // ### Add error reporting on failure
-    return (err == KErrNone);
+    if (err == KErrNone)
+        return true;
+    d->setSymbianError(err, QFile::CopyError, QLatin1String("copy error"));
+    return false;
 #else
     Q_UNUSED(newName);
     // ### Add copy code for Unix here
@@ -668,6 +704,16 @@ bool QFSFileEnginePrivate::doStat() const
             could_stat = (QT_FSTAT(QT_FILENO(fh), &st) == 0);
         } else if (fd == -1) {
             // ### actually covers two cases: d->fh and when the file is not open
+#if defined(Q_OS_SYMBIAN)
+            // Optimisation for Symbian where fileFlags() calls both doStat() and isSymlink(), but rarely on real links.
+            // When the filename is not a link, lstat will return the same info as stat, but this also removes
+            // any need for a further call to lstat to check if the file is a link.
+            need_lstat = false;
+            could_stat = (QT_LSTAT(nativeFilePath.constData(), &st) == 0);
+            is_link = could_stat ? S_ISLNK(st.st_mode) : false;
+            // if it turns out this was a link, we can call stat too.
+            if (is_link)
+#endif
             could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
         } else {
             could_stat = (QT_FSTAT(fd, &st) == 0);
@@ -726,6 +772,46 @@ static bool _q_isMacHidden(const QString &path)
 }
 #endif
 
+QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
+{
+    QAbstractFileEngine::FileFlags ret = 0;
+
+    if (st.st_mode & S_IRUSR)
+        ret |= QAbstractFileEngine::ReadOwnerPerm;
+    if (st.st_mode & S_IWUSR)
+        ret |= QAbstractFileEngine::WriteOwnerPerm;
+    if (st.st_mode & S_IXUSR)
+        ret |= QAbstractFileEngine::ExeOwnerPerm;
+    if (st.st_mode & S_IRGRP)
+        ret |= QAbstractFileEngine::ReadGroupPerm;
+    if (st.st_mode & S_IWGRP)
+        ret |= QAbstractFileEngine::WriteGroupPerm;
+    if (st.st_mode & S_IXGRP)
+        ret |= QAbstractFileEngine::ExeGroupPerm;
+    if (st.st_mode & S_IROTH)
+        ret |= QAbstractFileEngine::ReadOtherPerm;
+    if (st.st_mode & S_IWOTH)
+        ret |= QAbstractFileEngine::WriteOtherPerm;
+    if (st.st_mode & S_IXOTH)
+        ret |= QAbstractFileEngine::ExeOtherPerm;
+
+    // calculate user permissions
+    if (type & QAbstractFileEngine::ReadUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), R_OK) == 0)
+            ret |= QAbstractFileEngine::ReadUserPerm;
+    }
+    if (type & QAbstractFileEngine::WriteUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), W_OK) == 0)
+            ret |= QAbstractFileEngine::WriteUserPerm;
+    }
+    if (type & QAbstractFileEngine::ExeUserPerm) {
+        if (QT_ACCESS(nativeFilePath.constData(), X_OK) == 0)
+            ret |= QAbstractFileEngine::ExeUserPerm;
+    }
+
+    return ret;
+}
+
 /*!
     \reimp
 */
@@ -745,32 +831,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     if (!exists && !d->isSymlink())
         return ret;
 
-    if (exists && (type & PermsMask)) {
-        if (d->st.st_mode & S_IRUSR)
-            ret |= ReadOwnerPerm;
-        if (d->st.st_mode & S_IWUSR)
-            ret |= WriteOwnerPerm;
-        if (d->st.st_mode & S_IXUSR)
-            ret |= ExeOwnerPerm;
-        if (d->st.st_mode & S_IRUSR)
-            ret |= ReadUserPerm;
-        if (d->st.st_mode & S_IWUSR)
-            ret |= WriteUserPerm;
-        if (d->st.st_mode & S_IXUSR)
-            ret |= ExeUserPerm;
-        if (d->st.st_mode & S_IRGRP)
-            ret |= ReadGroupPerm;
-        if (d->st.st_mode & S_IWGRP)
-            ret |= WriteGroupPerm;
-        if (d->st.st_mode & S_IXGRP)
-            ret |= ExeGroupPerm;
-        if (d->st.st_mode & S_IROTH)
-            ret |= ReadOtherPerm;
-        if (d->st.st_mode & S_IWOTH)
-            ret |= WriteOtherPerm;
-        if (d->st.st_mode & S_IXOTH)
-            ret |= ExeOtherPerm;
-    }
+    if (exists && (type & PermsMask))
+        ret |= d->getPermissions(type);
     if (type & TypesMask) {
 #if !defined(QWS) && defined(Q_OS_MAC)
         bool foundAlias = false;

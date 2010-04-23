@@ -518,6 +518,7 @@ DomUI *Ui3Reader::generateUi4(const QDomElement &widget)
     if (m_extractImages) {
         Option opt;
         opt.extractImages = m_extractImages;
+        opt.limitXPM_LineLength = (m_options & LimitXPM_LineLength) ? 1 : 0;
         opt.qrcOutputFile = m_qrcOutputFile;
         CPP::ExtractImages(opt).acceptUI(ui);
 

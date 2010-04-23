@@ -357,15 +357,12 @@ void QSvgSwitch::init()
     m_systemLanguagePrefix = m_systemLanguage.mid(0, idx);
 }
 
-QRectF QSvgStructureNode::bounds() const
+QRectF QSvgStructureNode::bounds(QPainter *p, QSvgExtraStates &states) const
 {
-    if (m_bounds.isEmpty()) {
-        foreach(QSvgNode *node, m_renderers) {
-            m_bounds |= node->transformedBounds(QTransform());
-        }
-    }
-
-    return m_bounds;
+    QRectF bounds;
+    foreach(QSvgNode *node, m_renderers)
+        bounds |= node->transformedBounds(p, states);
+    return bounds;
 }
 
 QSvgNode * QSvgStructureNode::previousSiblingNode(QSvgNode *n) const

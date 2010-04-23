@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEBEHAVIOR_H
 #define QDECLARATIVEBEHAVIOR_H
 
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p.h"
 
 #include <qdeclarativepropertyvaluesource.h>
 #include <qdeclarativepropertyvalueinterceptor.h>
@@ -65,6 +65,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeBehavior : public QObject, public QDeclar
     Q_CLASSINFO("DefaultProperty", "animation")
     Q_PROPERTY(QDeclarativeAbstractAnimation *animation READ animation WRITE setAnimation)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_CLASSINFO("DeferredPropertyNames", "animation")
 
 public:
     QDeclarativeBehavior(QObject *parent=0);

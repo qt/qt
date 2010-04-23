@@ -29,6 +29,7 @@
 #include <QtCore/QStringList>
 #include "backendinterface.h"
 #include "platformplugin.h"
+#include "pulsesupport.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -108,27 +109,38 @@ bool ObjectDescriptionData::isValid() const
 
 ObjectDescriptionData *ObjectDescriptionData::fromIndex(ObjectDescriptionType type, int index)
 {
-    // prefer to get the ObjectDescriptionData from the platform plugin for audio devices
+    bool is_audio_device = (AudioOutputDeviceType == type || AudioCaptureDeviceType == type);
+
+    PulseSupport *pulse = PulseSupport::getInstance();
+    if (is_audio_device && pulse->isActive()) {
+        QList<int> indexes = pulse->objectDescriptionIndexes(type);
+        if (indexes.contains(index)) {
+            QHash<QByteArray, QVariant> properties = pulse->objectDescriptionProperties(type, index);
+            return new ObjectDescriptionData(index, properties);
+        }
+    } else {
+        BackendInterface *iface = qobject_cast<BackendInterface *>(Factory::backend());
+
+        // prefer to get the ObjectDescriptionData from the platform plugin for audio devices
 #ifndef QT_NO_PHONON_PLATFORMPLUGIN
-    if (type == AudioOutputDeviceType || type == AudioCaptureDeviceType) {
-        PlatformPlugin *platformPlugin = Factory::platformPlugin();
-        if (platformPlugin) {
-            QList<int> indexes = platformPlugin->objectDescriptionIndexes(type);
-            if (indexes.contains(index)) {
-                QHash<QByteArray, QVariant> properties = platformPlugin->objectDescriptionProperties(type, index);
-                return new ObjectDescriptionData(index, properties);
+        if (is_audio_device) {
+            PlatformPlugin *platformPlugin = Factory::platformPlugin();
+            if (platformPlugin) {
+                QList<int> indexes = platformPlugin->objectDescriptionIndexes(type);
+                if (indexes.contains(index)) {
+                    QHash<QByteArray, QVariant> properties = platformPlugin->objectDescriptionProperties(type, index);
+                    return new ObjectDescriptionData(index, properties);
+                }
             }
         }
-    }
 #endif //QT_NO_PHONON_PLATFORMPLUGIN
 
-    QObject *b = Factory::backend();
-    BackendInterface *iface = qobject_cast<BackendInterface *>(b);
-    if (iface) {
-        QList<int> indexes = iface->objectDescriptionIndexes(type);
-        if (indexes.contains(index)) {
-            QHash<QByteArray, QVariant> properties = iface->objectDescriptionProperties(type, index);
-            return new ObjectDescriptionData(index, properties);
+        if (iface) {
+            QList<int> indexes = iface->objectDescriptionIndexes(type);
+            if (indexes.contains(index)) {
+                QHash<QByteArray, QVariant> properties = iface->objectDescriptionProperties(type, index);
+                return new ObjectDescriptionData(index, properties);
+            }
         }
     }
     return new ObjectDescriptionData(0); // invalid

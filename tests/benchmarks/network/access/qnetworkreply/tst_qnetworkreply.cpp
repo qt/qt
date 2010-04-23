@@ -555,7 +555,7 @@ void tst_qnetworkreply::uploadPerformance()
 
 void tst_qnetworkreply::httpUploadPerformance()
 {
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
       // SHow some mercy for non-desktop platform/s
       enum {UploadSize = 4*1024*1024}; // 4 MB
 #else
@@ -626,7 +626,7 @@ void tst_qnetworkreply::httpDownloadPerformance()
 {
     QFETCH(bool, serverSendsContentLength);
     QFETCH(bool, chunkedEncoding);
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
     // Show some mercy to non-desktop platform/s
     enum {UploadSize = 4*1024*1024}; // 4 MB
 #else

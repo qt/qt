@@ -382,6 +382,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     QFixed y;
     QFixed width;
     QFixed textWidth;
+    QFixed textAdvance;
     int from;
     signed int length : 29;
     mutable uint justified : 1;

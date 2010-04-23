@@ -31,7 +31,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern double qstrtod(const char *s00, char const **se, bool *ok);
+Q_DECL_IMPORT extern double qstrtod(const char *s00, char const **se, bool *ok);
 
 #define shiftWindowsLineBreak() \
     do { \

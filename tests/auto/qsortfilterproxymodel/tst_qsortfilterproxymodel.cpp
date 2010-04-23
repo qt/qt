@@ -139,6 +139,8 @@ private slots:
     void taskQTBUG_7537_appearsAndSort();
     void taskQTBUG_7716_unnecessaryDynamicSorting();
 
+    void testMultipleProxiesWithSelection();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -2949,6 +2951,91 @@ void tst_QSortFilterProxyModel::taskQTBUG_7716_unnecessaryDynamicSorting()
         QModelIndex index = proxy.index(row, 0, QModelIndex());
         QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
     }
+}
+
+class SelectionProxyModel : QAbstractProxyModel
+{
+    Q_OBJECT
+public:
+    SelectionProxyModel()
+        : QAbstractProxyModel(), selectionModel(0)
+    {
+    }
+
+    QModelIndex mapFromSource(QModelIndex const&) const
+    { return QModelIndex(); }
+
+    QModelIndex mapToSource(QModelIndex const&) const
+    { return QModelIndex(); }
+
+    QModelIndex index(int, int, const QModelIndex&) const
+    { return QModelIndex(); }
+
+    QModelIndex parent(const QModelIndex&) const
+    { return QModelIndex(); }
+
+    int rowCount(const QModelIndex&) const
+    { return 0; }
+
+    int columnCount(const QModelIndex&) const
+    { return 0; }
+
+    void setSourceModel( QAbstractItemModel *sourceModel )
+    {
+        beginResetModel();
+        disconnect( sourceModel, SIGNAL(modelAboutToBeReset()), this, SLOT(sourceModelAboutToBeReset()) );
+        QAbstractProxyModel::setSourceModel( sourceModel );
+        connect( sourceModel, SIGNAL(modelAboutToBeReset()), this, SLOT(sourceModelAboutToBeReset()) );
+        endResetModel();
+    }
+
+    void setSelectionModel( QItemSelectionModel *_selectionModel )
+    {
+        selectionModel = _selectionModel;
+    }
+
+private slots:
+    void sourceModelAboutToBeReset()
+    {
+        QVERIFY( selectionModel->selectedIndexes().size() == 1 );
+        beginResetModel();
+    }
+
+    void sourceModelReset()
+    {
+        endResetModel();
+    }
+
+private:
+    QItemSelectionModel *selectionModel;
+
+};
+
+void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
+{
+    QStringListModel model;
+    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    model.setStringList(initial);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel( &model );
+
+    SelectionProxyModel proxy1;
+    QSortFilterProxyModel proxy2;
+
+    // Note that the order here matters. The order of the sourceAboutToBeReset
+    // exposes the bug in QSortFilterProxyModel.
+    proxy2.setSourceModel( &proxy );
+    proxy1.setSourceModel( &proxy );
+
+    QItemSelectionModel selectionModel(&proxy2);
+    proxy1.setSelectionModel( &selectionModel );
+
+    selectionModel.select( proxy2.index( 0, 0 ), QItemSelectionModel::Select );
+
+    // trick the proxy into emitting begin/end reset signals.
+    proxy.setSourceModel(0);
+
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

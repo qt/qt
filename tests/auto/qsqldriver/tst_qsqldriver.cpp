@@ -84,18 +84,19 @@ void tst_QSqlDriver::initTestCase_data()
 void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 {
     QSqlQuery q(db);
+    const QString relTEST1(qTableName("relTEST1", __FILE__));
 
     if(tst_Databases::isPostgreSQL(db))
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-    tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
+    tst_Databases::safeDropTable( db, relTEST1 );
 
-    QVERIFY_SQL( q, exec("create table " + qTableName("relTEST1") +
+    QVERIFY_SQL( q, exec("create table " + relTEST1 +
             " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("relTEST1") + " values(1, 'harry', 1, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("relTEST1") + " values(2, 'trond', 2, 1)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("relTEST1") + " values(3, 'vohi', 1, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("relTEST1") + " values(4, 'boris', 2, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(1, 'harry', 1, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(2, 'trond', 2, 1)"));
+    QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(3, 'vohi', 1, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(4, 'boris', 2, 2)"));
 }
 
 void tst_QSqlDriver::initTestCase()
@@ -108,7 +109,7 @@ void tst_QSqlDriver::cleanupTestCase()
 {
     foreach (const QString &dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
+        tst_Databases::safeDropTable( db, qTableName( "relTEST1", __FILE__ ) );
     }
     dbs.close();
 }
@@ -127,7 +128,7 @@ void tst_QSqlDriver::record()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tablename =  qTableName("relTEST1");
+    QString tablename(qTableName("relTEST1", __FILE__));
     QStringList fields;
     fields << "id" << "name" << "title_key" << "another_title_key";
 
@@ -180,7 +181,7 @@ void tst_QSqlDriver::primaryIndex()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tablename =  qTableName("relTEST1");
+    QString tablename(qTableName("relTEST1", __FILE__));
     //check that we can get primary index using unquoted mixed case table name
     QSqlIndex index = db.driver()->primaryIndex(tablename);
     QCOMPARE(index.count(), 1);

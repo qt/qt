@@ -5414,10 +5414,15 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         scale(w / sw, h / sh);
         setBackgroundMode(Qt::TransparentMode);
         setRenderHint(Antialiasing, renderHints() & SmoothPixmapTransform);
-        QBrush brush(d->state->pen.color(), pm);
+        QBrush brush;
+
+        if (sw == pm.width() && sh == pm.height())
+            brush = QBrush(d->state->pen.color(), pm);
+        else
+            brush = QBrush(d->state->pen.color(), pm.copy(sx, sy, sw, sh));
+
         setBrush(brush);
         setPen(Qt::NoPen);
-        setBrushOrigin(QPointF(-sx, -sy));
 
         drawRect(QRectF(0, 0, sw, sh));
         restore();
@@ -5715,6 +5720,16 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
 
     QFontEngine *fontEngine = state->font.d->engineForScript(QUnicodeTables::Common);
 
+    while (fontEngine->type() == QFontEngine::Multi) {
+        // Pick engine based on first glyph in array if we are using a multi engine.
+        // (all glyphs must be for same font)
+        int engineIdx = 0;
+        if (glyphCount > 0)
+            engineIdx = glyphArray[0] >> 24;
+
+        fontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
+    }
+
     QVarLengthArray<QFixedPoint, 128> positions;
     for (int i=0; i<glyphCount; ++i) {
         QFixedPoint fp = QFixedPoint::fromPointF(positionArray[i]);
@@ -5757,19 +5772,24 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
 
 /*!
 
-    \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
-
+    \fn void QPainter::drawStaticText(const QPoint &topLeftPosition, const QStaticText &staticText)
     \since 4.7
-
     \overload
+
+    Draws the \a staticText at the \a topLeftPosition.
+
+    \note The y-position is used as the top of the font.
+
 */
 
 /*!
-    \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
-
+    \fn void QPainter::drawStaticText(int left, int top, const QStaticText &staticText)
     \since 4.7
-
     \overload
+
+    Draws the \a staticText at coordinates \a left and \a top.
+
+    \note The y-position is used as the top of the font.
 */
 
 /*!
@@ -5797,7 +5817,7 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 /*!
     \since 4.7
 
-    Draws the given \a staticText at the given \a position.
+    Draws the given \a staticText at the given \a topLeftPosition.
 
     The text will be drawn using the font and the transformation set on the painter. If the
     font and/or transformation set on the painter are different from the ones used to initialize
@@ -5805,15 +5825,17 @@ void QPainter::drawText(const QPointF &p, const QString &str)
     QStaticText::prepare() to initialize \a staticText with the font and transformation with which
     it will later be drawn.
 
-    If \a position is not the same as when \a staticText was initialized, or when it was last drawn,
-    then there will be a slight overhead when translating the text to its new position.
+    If \a topLeftPosition is not the same as when \a staticText was initialized, or when it was
+    last drawn, then there will be a slight overhead when translating the text to its new position.
 
-    \note If the painter's transformation is not affine, then \a staticText will be drawn using regular
-    calls to drawText(), losing any potential performance improvement.
+    \note If the painter's transformation is not affine, then \a staticText will be drawn using
+    regular calls to drawText(), losing any potential for performance improvement.
+
+    \note The y-position is used as the top of the font.
 
     \sa QStaticText
 */
-void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
+void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText)
 {
     Q_D(QPainter);
     if (!d->engine || staticText.text().isEmpty() || pen().style() == Qt::NoPen)
@@ -5822,16 +5844,21 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     QStaticTextPrivate *staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
+    if (font() != staticText_d->font) {
+        staticText_d->font = font();
+        staticText_d->needsRelayout = true;
+    }
+
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
-        staticText_d->paintText(position, this);
+        staticText_d->paintText(topLeftPosition, this);
         return;
     }
 
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF transformedPosition = position * d->state->matrix;
+    QPointF transformedPosition = topLeftPosition * d->state->matrix;
     QTransform matrix = d->state->matrix;
 
     // The translation has been applied to transformedPosition. Remove translation
@@ -5852,22 +5879,9 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     // If the transform is not identical to the text transform,
     // we have to relayout the text (for other transformations than plain translation)
-    bool staticTextNeedsReinit = false;
+    bool staticTextNeedsReinit = staticText_d->needsRelayout;
     if (staticText_d->matrix != d->state->matrix) {
         staticText_d->matrix = d->state->matrix;
-        staticTextNeedsReinit = true;
-    }
-
-    bool restoreWhenFinished = false;
-    if (staticText_d->needsClipRect) {
-        save();
-        setClipRect(QRectF(position, staticText_d->maximumSize));
-
-        restoreWhenFinished = true;
-    }
-
-    if (font() != staticText_d->font) {
-        staticText_d->font = font();
         staticTextNeedsReinit = true;
     }
 
@@ -5896,7 +5910,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     QColor currentColor = oldPen.color();
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        if (currentColor != item->color) {
+        if (item->color.isValid() && currentColor != item->color) {
             setPen(item->color);
             currentColor = item->color;
         }
@@ -5904,9 +5918,6 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     }
     if (currentColor != oldPen.color())
         setPen(oldPen);
-
-    if (restoreWhenFinished)
-        restore();
 
     if (matrix.isTranslating())
         d->state->matrix = matrix;
@@ -7994,10 +8005,11 @@ start_lengthVariant:
         for (int i = 0; i < textLayout.lineCount(); i++) {
             QTextLine line = textLayout.lineAt(i);
 
+            qreal advance = line.horizontalAdvance();
             if (tf & Qt::AlignRight)
-                xoff = r.width() - line.naturalTextWidth();
+                xoff = r.width() - advance;
             else if (tf & Qt::AlignHCenter)
-                xoff = (r.width() - line.naturalTextWidth())/2;
+                xoff = (r.width() - advance)/2;
 
             line.draw(painter, QPointF(r.x() + xoff + line.x(), r.y() + yoff));
         }
@@ -8914,11 +8926,11 @@ QTransform QPainter::combinedTransform() const
     This function is potentially faster than multiple calls to drawPixmap(),
     since the backend can optimize state changes.
 
-    \sa QPainter::Fragment, QPainter::FragmentHint
+    \sa QPainter::PixmapFragment, QPainter::PixmapFragmentHint
 */
 
-void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
-                                   const QPixmap &pixmap, FragmentHints hints)
+void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragmentCount,
+                                   const QPixmap &pixmap, PixmapFragmentHints hints)
 {
     Q_D(QPainter);
 
@@ -8933,8 +8945,15 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
 
         for (int i = 0; i < fragmentCount; ++i) {
             QTransform transform = oldTransform;
-            transform.translate(fragments[i].x, fragments[i].y);
-            transform.rotate(fragments[i].rotation);
+            qreal xOffset = 0;
+            qreal yOffset = 0;
+            if (fragments[i].rotation == 0) {
+                xOffset = fragments[i].x;
+                yOffset = fragments[i].y;
+            } else {
+                transform.translate(fragments[i].x, fragments[i].y);
+                transform.rotate(fragments[i].rotation);
+            }
             setOpacity(oldOpacity * fragments[i].opacity);
             setTransform(transform);
 
@@ -8942,7 +8961,7 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
             qreal h = fragments[i].scaleY * fragments[i].height;
             QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
                               fragments[i].width, fragments[i].height);
-            drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, sourceRect);
+            drawPixmap(QRectF(-0.5 * w + xOffset, -0.5 * h + yOffset, w, h), pixmap, sourceRect);
         }
 
         setOpacity(oldOpacity);
@@ -8952,7 +8971,7 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
 
 /*!
     \since 4.7
-    \class QPainter::Fragment
+    \class QPainter::PixmapFragment
 
     \brief This class is used in conjunction with the
     QPainter::drawPixmapFragments() function to specify how a pixmap, or
@@ -8973,73 +8992,73 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
 /*!
     \since 4.7
 
-    This is a convenience function that returns a QPainter::Fragment that is
+    This is a convenience function that returns a QPainter::PixmapFragment that is
     initialized with the \a pos, \a sourceRect, \a scaleX, \a scaleY, \a
     rotation, \a opacity parameters.
 */
 
-QPainter::Fragment QPainter::Fragment::create(const QPointF &pos, const QRectF &sourceRect,
+QPainter::PixmapFragment QPainter::PixmapFragment::create(const QPointF &pos, const QRectF &sourceRect,
                                               qreal scaleX, qreal scaleY, qreal rotation,
                                               qreal opacity)
 {
-    Fragment fragment = {pos.x(), pos.y(), sourceRect.x(), sourceRect.y(), sourceRect.width(),
-                         sourceRect.height(), scaleX, scaleY, rotation, opacity};
+    PixmapFragment fragment = {pos.x(), pos.y(), sourceRect.x(), sourceRect.y(), sourceRect.width(),
+                               sourceRect.height(), scaleX, scaleY, rotation, opacity};
     return fragment;
 }
 
 /*!
-    \variable QPainter::Fragment::x
+    \variable QPainter::PixmapFragment::x
     \brief the x coordinate of center point in the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::y
+    \variable QPainter::PixmapFragment::y
     \brief the y coordinate of the center point in the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::sourceLeft
+    \variable QPainter::PixmapFragment::sourceLeft
     \brief the left coordinate of the source rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::sourceTop
+    \variable QPainter::PixmapFragment::sourceTop
     \brief the top coordinate of the source rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::width
+    \variable QPainter::PixmapFragment::width
 
     \brief the width of the source rectangle and is used to calculate the width
     of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::height
+    \variable QPainter::PixmapFragment::height
 
     \brief the height of the source rectangle and is used to calculate the
     height of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::scaleX
+    \variable QPainter::PixmapFragment::scaleX
     \brief the horizontal scale of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::scaleY
+    \variable QPainter::PixmapFragment::scaleY
     \brief the vertical scale of the target rectangle.
 */
 
 /*!
-    \variable QPainter::Fragment::rotation
+    \variable QPainter::PixmapFragment::rotation
 
     \brief the rotation of the target rectangle in degrees. The target
     rectangle is rotated after it has been scaled.
 */
 
 /*!
-    \variable QPainter::Fragment::opacity
+    \variable QPainter::PixmapFragment::opacity
 
     \brief the opacity of the target rectangle, where 0.0 is fully transparent
     and 1.0 is fully opaque.
@@ -9048,12 +9067,12 @@ QPainter::Fragment QPainter::Fragment::create(const QPointF &pos, const QRectF &
 /*!
     \since 4.7
 
-    \enum QPainter::FragmentHint
+    \enum QPainter::PixmapFragmentHint
 
     \value OpaqueHint Indicates that the pixmap fragments to be drawn are
     opaque. Opaque fragments are potentially faster to draw.
 
-    \sa QPainter::drawPixmapFragments(), QPainter::Fragment
+    \sa QPainter::drawPixmapFragments(), QPainter::PixmapFragment
 */
 
 void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation)

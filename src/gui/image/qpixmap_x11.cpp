@@ -314,8 +314,8 @@ static int qt_pixmap_serial = 0;
 int Q_GUI_EXPORT qt_x11_preferred_pixmap_depth = 0;
 
 QX11PixmapData::QX11PixmapData(PixelType type)
-    : QPixmapData(type, X11Class), hd(0),
-      flags(Uninitialized), x11_mask(0), picture(0), mask_picture(0), hd2(0), gl_surface(0),
+    : QPixmapData(type, X11Class), gl_surface(0), hd(0),
+      flags(Uninitialized), x11_mask(0), picture(0), mask_picture(0), hd2(0),
       share_mode(QPixmap::ImplicitlyShared), pengine(0)
 {
 }
@@ -383,7 +383,7 @@ struct QX11AlphaDetector
             return has;
         // Will implicitly also check format and return quickly for opaque types...
         checked = true;
-        has = const_cast<QImage *>(image)->data_ptr()->checkForAlphaPixels();
+        has = image->isNull() ? false : const_cast<QImage *>(image)->data_ptr()->checkForAlphaPixels();
         return has;
     }
 

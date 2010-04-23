@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qanimation
+TARGET = tst_bench_qanimation
 DEPENDPATH += .
 INCLUDEPATH += .
 

@@ -52,26 +52,31 @@
 
 QT_BEGIN_NAMESPACE
 
-char         appFileName[MAX_PATH];                // application file name
-char         theAppName[MAX_PATH];                        // application name
-HINSTANCE appInst        = 0;                // handle to app instance
-HINSTANCE appPrevInst        = 0;                // handle to prev app instance
-int appCmdShow = 0;
 bool usingWinMain = false;  // whether the qWinMain() is used or not
+int appCmdShow = 0;
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
 {
-    return appInst;
+    return GetModuleHandle(0);
 }
 
 Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app handle
 {
-    return appPrevInst;
+    return 0;
 }
 
 Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
 {
+#if defined(Q_OS_WINCE)
     return appCmdShow;
+#else
+    STARTUPINFO startupInfo;
+    GetStartupInfo(&startupInfo);
+
+    return (startupInfo.dwFlags & STARTF_USESHOWWINDOW)
+        ? startupInfo.wShowWindow
+        : SW_SHOWDEFAULT;
+#endif
 }
 
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
@@ -113,25 +118,6 @@ Q_CORE_EXPORT QString qAppFileName()                // get application file name
     free(b);
 
     return res;
-}
-
-void set_winapp_name()
-{
-    static bool already_set = false;
-    if (!already_set) {
-        already_set = true;
-
-        QString moduleName = qAppFileName();
-
-        QByteArray filePath = moduleName.toLocal8Bit();
-        QByteArray fileName = QFileInfo(moduleName).baseName().toLocal8Bit();
-
-        memcpy(appFileName, filePath.constData(), filePath.length());
-        memcpy(theAppName, fileName.constData(), fileName.length());
-
-        if (appInst == 0)
-            appInst = GetModuleHandle(0);
-    }
 }
 
 QString QCoreApplicationPrivate::appName() const
@@ -198,20 +184,17 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     already_called = true;
     usingWinMain = true;
 
-  // Install default debug handler
-
+    // Install default debug handler
     qInstallMsgHandler(qWinMsgHandler);
 
-  // Create command line
-
+    // Create command line
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
-    // Get Windows parameters
 
-    appInst = instance;
-    appPrevInst = prevInstance;
     appCmdShow = cmdShow;
 
-    set_winapp_name();
+    // Ignore Windows parameters
+    Q_UNUSED(instance);
+    Q_UNUSED(prevInstance);
 }
 
 /*!
@@ -1022,12 +1005,12 @@ QString decodeMSG(const MSG& msg)
                 if (!winPos)
                     break;
                 QString hwndAfter = valueCheck(quint64(winPos->hwndInsertAfter),
-                                          FLAG_STRING((quintptr)HWND_BOTTOM,    "HWND_BOTTOM"),
-                                          FLAG_STRING((quintptr)HWND_NOTOPMOST, "HWND_NOTOPMOST"),
-                                          FLAG_STRING((quintptr)HWND_TOP,       "HWND_TOP"),
-                                          FLAG_STRING((quintptr)HWND_TOPMOST,   "HWND_TOPMOST"),
+                                          FLAG_STRING((qptrdiff)HWND_BOTTOM,    "HWND_BOTTOM"),
+                                          FLAG_STRING((qptrdiff)HWND_NOTOPMOST, "HWND_NOTOPMOST"),
+                                          FLAG_STRING((qptrdiff)HWND_TOP,       "HWND_TOP"),
+                                          FLAG_STRING((qptrdiff)HWND_TOPMOST,   "HWND_TOPMOST"),
                                           FLAG_STRING());
-                if (hwndAfter.size() == 0)
+                if (hwndAfter.isEmpty())
                     hwndAfter = QString::number((quintptr)winPos->hwndInsertAfter, 16);
                 QString flags = flagCheck(winPos->flags,
                                           FLGSTR(SWP_DRAWFRAME),

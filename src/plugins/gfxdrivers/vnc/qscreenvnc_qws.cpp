@@ -325,6 +325,36 @@ static const struct {
     { 0xffe8, Qt::Key_Meta      },
     { 0xffe9, Qt::Key_Alt       },
     { 0xffea, Qt::Key_Alt       },
+
+    { 0xffb0, Qt::Key_0         },
+    { 0xffb1, Qt::Key_1         },
+    { 0xffb2, Qt::Key_2         },
+    { 0xffb3, Qt::Key_3         },
+    { 0xffb4, Qt::Key_4         },
+    { 0xffb5, Qt::Key_5         },
+    { 0xffb6, Qt::Key_6         },
+    { 0xffb7, Qt::Key_7         },
+    { 0xffb8, Qt::Key_8         },
+    { 0xffb9, Qt::Key_9         },
+
+    { 0xff8d, Qt::Key_Return    },
+    { 0xffaa, Qt::Key_Asterisk  },
+    { 0xffab, Qt::Key_Plus      },
+    { 0xffad, Qt::Key_Minus     },
+    { 0xffae, Qt::Key_Period    },
+    { 0xffaf, Qt::Key_Slash     },
+
+    { 0xff95, Qt::Key_Home      },
+    { 0xff96, Qt::Key_Left      },
+    { 0xff97, Qt::Key_Up        },
+    { 0xff98, Qt::Key_Right     },
+    { 0xff99, Qt::Key_Down      },
+    { 0xff9a, Qt::Key_PageUp    },
+    { 0xff9b, Qt::Key_PageDown  },
+    { 0xff9c, Qt::Key_End       },
+    { 0xff9e, Qt::Key_Insert    },
+    { 0xff9f, Qt::Key_Delete    },
+
     { 0, 0 }
 };
 
@@ -483,6 +513,10 @@ bool QRfbKeyEvent::read(QTcpSocket *s)
             keycode = keyMap[i].keycode;
         i++;
     }
+
+    if (keycode >= ' ' && keycode <= '~')
+        unicode = keycode;
+
     if (!keycode) {
         if (key <= 0xff) {
             unicode = key;
@@ -2129,6 +2163,9 @@ bool QVNCScreen::connect(const QString &displaySpec)
     if (QScreenDriverFactory::keys().contains(driver, Qt::CaseInsensitive)) {
         const int id = getDisplayId(dspec);
         QScreen *s = qt_get_screen(id, dspec.toLatin1().constData());
+        if (s->pixelFormat() == QImage::Format_Indexed8
+            || s->pixelFormat() == QImage::Format_Invalid && s->depth() == 8)
+            qFatal("QVNCScreen: unsupported screen format");
         setScreen(s);
     } else { // create virtual screen
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN

@@ -154,6 +154,10 @@ char *qstrcpy(char *dst, const char *src)
     This function assumes that \a dst is at least \a len characters
     long.
 
+    \note When compiling with Visual C++ compiler version 14.00
+    (Visual C++ 2005) or later, internally the function strncpy_s
+    will be used.
+
     \sa qstrcpy()
 */
 

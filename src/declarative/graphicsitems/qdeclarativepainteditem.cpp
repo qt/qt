@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepainteditem_p.h"
-#include "qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativepainteditem_p.h"
+#include "private/qdeclarativepainteditem_p_p.h"
 
 #include <QDebug>
 #include <QPen>

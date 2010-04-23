@@ -33,32 +33,52 @@
     <name>QHelpCollectionHandler</name>
     <message>
         <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
-        <source>The collection file is not set up yet!</source>
-        <translation type="unfinished">Файл набора ещё не установлен!</translation>
+        <source>The collection file &apos;%1&apos; is not set up yet!</source>
+        <translation type="unfinished">Файл набора &apos;%1&apos; ещё не установлен!</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
         <source>Cannot load sqlite database driver!</source>
         <translation>Не удалось загрузить драйвер базы данных sqlite!</translation>
     </message>
     <message>
         <location line="+11"/>
-        <location line="+48"/>
+        <location line="+49"/>
         <source>Cannot open collection file: %1</source>
         <translation type="unfinished">Не удалось открыть файл набора: %1</translation>
     </message>
     <message>
-        <location line="-39"/>
+        <location line="-40"/>
         <source>Cannot create tables in file %1!</source>
         <translation>Не удалось создать таблицы в файле %1!</translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>The specified collection file already exists!</source>
-        <translation type="unfinished">Указанный файла набора уже существует!</translation>
+        <source>The collection file &apos;%1&apos; already exists!</source>
+        <translation type="unfinished">Файл набора &apos;%1&apos; уже существует!</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+148"/>
+        <source>Unknown filter &apos;%1&apos;!</source>
+        <translation>Неизвестный фильтр &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Invalid documentation file &apos;%1&apos;!</source>
+        <translation>Некорректный файл документации &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <location line="+167"/>
+        <source>Cannot register namespace &apos;%1&apos;!</source>
+        <translation>Не удалось зарегистрировать пространство имён %1!</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Cannot open database &apos;%1&apos; to optimize!</source>
+        <translation>Не удалось открыть базу данных &apos;%1&apos; для оптимизации!</translation>
+    </message>
+    <message>
+        <location line="-438"/>
         <source>Cannot create directory: %1</source>
         <translation>Не удалось создать каталог: %1</translation>
     </message>
@@ -68,12 +88,7 @@
         <translation type="unfinished">Не удалось скопировать файл набора: %1</translation>
     </message>
     <message>
-        <location line="+119"/>
-        <source>Unknown filter!</source>
-        <translation>Неизвестный фильтр!</translation>
-    </message>
-    <message>
-        <location line="+55"/>
+        <location line="+174"/>
         <source>Cannot register filter %1!</source>
         <translation>Не удалось зарегистрировать фильтр %1!</translation>
     </message>
@@ -83,12 +98,7 @@
         <translation>Не удалось открыть файл документации %1!</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Invalid documentation file!</source>
-        <translation>Некорректный файл документации!</translation>
-    </message>
-    <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>The namespace %1 was not registered!</source>
         <translation>Пространство имён %1 не зарегистрировано!</translation>
     </message>
@@ -96,16 +106,6 @@
         <location line="+120"/>
         <source>Namespace %1 already exists!</source>
         <translation>Пространство имён %1 уже существует!</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Cannot register namespace!</source>
-        <translation>Не удалось зарегистрировать пространство имён!</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Cannot open database to optimize!</source>
-        <translation>Не удалось открыть базу данных для оптимизации!</translation>
     </message>
 </context>
 <context>
@@ -120,7 +120,7 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+524"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+525"/>
         <source>The specified namespace does not exist!</source>
         <translation>Указанное пространство имён не существует!</translation>
     </message>
@@ -128,7 +128,7 @@
 <context>
     <name>QHelpEngineCorePrivate</name>
     <message>
-        <location line="-402"/>
+        <location line="-403"/>
         <source>Cannot open documentation file %1: %2!</source>
         <translation>Не удалось открыть файл документации %1: %2!</translation>
     </message>
@@ -249,52 +249,52 @@
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+411"/>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+125"/>
         <source>Search for:</source>
         <translation>Искать:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+1"/>
         <source>Previous search</source>
         <translation>Предыдущий запрос</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+1"/>
         <source>Next search</source>
         <translation>Следующий запрос</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+2"/>
         <source>Advanced search</source>
         <translation>Расширенный поиск</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+1"/>
         <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
         <translation>&lt;B&gt;похожие&lt;/B&gt; слова:</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
         <translation>&lt;B&gt;не содержит&lt;/B&gt; слов:</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
         <translation>содержит &lt;B&gt;точную фразу&lt;/B&gt;:</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
         <translation>содержит &lt;B&gt;все&lt;/B&gt; слова:</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+1"/>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
         <translation>содержит &lt;B&gt;хотя бы одно&lt;/B&gt; из слов:</translation>
     </message>
@@ -317,11 +317,6 @@
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/lib/qhelp_global.h" line="+83"/>
-        <source>Untitled</source>
-        <translation>Безымянный</translation>
-    </message>
     <message>
         <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
         <source>Unknown token.</source>

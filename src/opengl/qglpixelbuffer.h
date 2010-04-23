@@ -112,6 +112,7 @@ private:
     friend class QGLWindowSurface;
     friend class QGLPaintDevice;
     friend class QGLPBufferGLPaintDevice;
+    friend class QGLContextPrivate;
 };
 
 QT_END_NAMESPACE

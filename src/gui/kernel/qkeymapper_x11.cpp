@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
       (((KeySym)(keysym) >= 0x11000000) && ((KeySym)(keysym) <= 0x1100FFFF))
 #endif
 
-static void getLocaleAndDirection(QLocale *locale,
+void q_getLocaleAndDirection(QLocale *locale,
                                   Qt::LayoutDirection *direction,
                                   const QByteArray &layoutName,
                                   const QByteArray &variantName)
@@ -248,22 +248,17 @@ qt_XTranslateKey(register QXCoreDesc *dpy,
 
 
 QKeyMapperPrivate::QKeyMapperPrivate()
-    : keyboardInputDirection(Qt::LeftToRight), useXKB(false)
+    : keyboardInputDirection(Qt::LeftToRight), xkb_currentGroup(0)
 {
     memset(&coreDesc, 0, sizeof(coreDesc));
 
 #ifndef QT_NO_XKB
-    int opcode = -1;
-    int xkbEventBase = -1;
-    int xkbErrorBase = -1;
-    int xkblibMajor = XkbMajorVersion;
-    int xkblibMinor = XkbMinorVersion;
-    if (XkbQueryExtension(X11->display, &opcode, &xkbEventBase, &xkbErrorBase, &xkblibMajor, &xkblibMinor))
-        useXKB = true;
-#endif
-
-#if 0
-    qDebug() << "useXKB =" << useXKB;
+    if (X11->use_xkb) {
+        // get the current group
+        XkbStateRec xkbState;
+        if (XkbGetState(X11->display, XkbUseCoreKbd, &xkbState) == Success)
+            xkb_currentGroup = xkbState.group;
+    }
 #endif
 }
 
@@ -276,7 +271,7 @@ QKeyMapperPrivate::~QKeyMapperPrivate()
 QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *event)
 {
 #ifndef QT_NO_XKB
-    if (useXKB)
+    if (X11->use_xkb)
         return possibleKeysXKB(event);
 #endif
     return possibleKeysCore(event);
@@ -486,7 +481,7 @@ enum {
 void QKeyMapperPrivate::clearMappings()
 {
 #ifndef QT_NO_XKB
-    if (useXKB) {
+    if (X11->use_xkb) {
         // try to determine the layout name and input direction by reading the _XKB_RULES_NAMES property off
         // the root window
         QByteArray layoutName;
@@ -515,15 +510,20 @@ void QKeyMapperPrivate::clearMappings()
                 p += qstrlen(p) + 1;
             } while (p < end);
 
-            layoutName = QByteArray::fromRawData(names[2], qstrlen(names[2]));
-            variantName = QByteArray::fromRawData(names[3], qstrlen(names[3]));
+            // the layout names and variants are saved in the _XKB_RULES_NAMES property as a comma separated list
+            QList<QByteArray> layoutNames = QByteArray::fromRawData(names[2], qstrlen(names[2])).split(',');
+            if (uint(xkb_currentGroup) < uint(layoutNames.count()))
+                layoutName = layoutNames.at(xkb_currentGroup);
+            QList<QByteArray> variantNames = QByteArray::fromRawData(names[3], qstrlen(names[3])).split(',');
+            if (uint(xkb_currentGroup) < uint(variantNames.count()))
+                variantName = variantNames.at(xkb_currentGroup);
         }
 
         // ### ???
         // if (keyboardLayoutName.isEmpty())
         //     qWarning("Qt: unable to determine keyboard layout, please talk to qt-bugs@trolltech.com"); ?
 
-        getLocaleAndDirection(&keyboardInputLocale,
+        q_getLocaleAndDirection(&keyboardInputLocale,
                               &keyboardInputDirection,
                               layoutName,
                               variantName);
@@ -534,7 +534,6 @@ void QKeyMapperPrivate::clearMappings()
                  << "direction ="
                  << keyboardInputDirection;
 #endif
-
         if (data)
             XFree(data);
     } else
@@ -574,7 +573,7 @@ void QKeyMapperPrivate::clearMappings()
 
     // look at the modifier mapping, and get the correct masks for alt, meta, super, hyper, and mode_switch
 #ifndef QT_NO_XKB
-    if (useXKB) {
+    if (X11->use_xkb) {
         XkbDescPtr xkbDesc = XkbGetMap(X11->display, XkbAllClientInfoMask, XkbUseCoreKbd);
         for (int i = xkbDesc->min_key_code; i < xkbDesc->max_key_code; ++i) {
             const uint mask = xkbDesc->map->modmap ? xkbDesc->map->modmap[i] : 0;
@@ -1073,8 +1072,8 @@ static const unsigned int KeyTbl[] = {
     XF86XK_AudioNext,           Qt::Key_MediaNext,
     XF86XK_AudioRecord,         Qt::Key_MediaRecord,
     XF86XK_Mail,                Qt::Key_LaunchMail,
-    XF86XK_MyComputer,          Qt::Key_Launch0,
-    XF86XK_Calculator,          Qt::Key_Calculator,
+    XF86XK_MyComputer,          Qt::Key_Launch0,  // ### Qt 5: remap properly
+    XF86XK_Calculator,          Qt::Key_Launch1,
     XF86XK_Memo,                Qt::Key_Memo,
     XF86XK_ToDoList,            Qt::Key_ToDoList,
     XF86XK_Calendar,            Qt::Key_Calendar,
@@ -1172,7 +1171,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_Bluetooth,           Qt::Key_Bluetooth,
     XF86XK_Suspend,             Qt::Key_Suspend,
     XF86XK_Hibernate,           Qt::Key_Hibernate,
-    XF86XK_Launch0,             Qt::Key_Launch2,
+    XF86XK_Launch0,             Qt::Key_Launch2, // ### Qt 5: remap properly
     XF86XK_Launch1,             Qt::Key_Launch3,
     XF86XK_Launch2,             Qt::Key_Launch4,
     XF86XK_Launch3,             Qt::Key_Launch5,
@@ -1186,6 +1185,8 @@ static const unsigned int KeyTbl[] = {
     XF86XK_LaunchB,             Qt::Key_LaunchD,
     XF86XK_LaunchC,             Qt::Key_LaunchE,
     XF86XK_LaunchD,             Qt::Key_LaunchF,
+    XF86XK_LaunchE,             Qt::Key_LaunchG,
+    XF86XK_LaunchF,             Qt::Key_LaunchH,
 
     // Qtopia keys
     QTOPIAXK_Select,            Qt::Key_Select,

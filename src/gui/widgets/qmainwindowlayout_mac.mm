@@ -463,6 +463,8 @@ void QMainWindowLayout::removeFromMacToolbar(QToolBar *toolbar)
             NSToolbarItem *item = static_cast<NSToolbarItem *>(it.key());
             [[qt_mac_window_for(layoutState.mainWindow->window()) toolbar]
                 removeItemAtIndex:toolbarItemsCopy.indexOf(item)];
+             unifiedToolbarHash.remove(item);
+             qtoolbarsInUnifiedToolbarList.removeAll(toolbar);
 #endif
             break;
         }

@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    property alias x: item.x
+    property alias blah: item.x
     Item { id: item }
 
     function testFunction() { return 9; }

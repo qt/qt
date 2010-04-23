@@ -95,6 +95,7 @@ namespace WebCore {
         PassRefPtr<CSSValue> parseAnimationDelay();
         PassRefPtr<CSSValue> parseAnimationDirection();
         PassRefPtr<CSSValue> parseAnimationDuration();
+        PassRefPtr<CSSValue> parseAnimationFillMode();
         PassRefPtr<CSSValue> parseAnimationIterationCount();
         PassRefPtr<CSSValue> parseAnimationName();
         PassRefPtr<CSSValue> parseAnimationPlayState();
@@ -187,13 +188,18 @@ namespace WebCore {
         MediaQuery* createFloatingMediaQuery(Vector<MediaQueryExp*>*);
         MediaQuery* sinkFloatingMediaQuery(MediaQuery*);
 
+        void addNamespace(const AtomicString& prefix, const AtomicString& uri);
+
         bool addVariable(const CSSParserString&, CSSParserValueList*);
         bool addVariableDeclarationBlock(const CSSParserString&);
         bool checkForVariables(CSSParserValueList*);
         void addUnresolvedProperty(int propId, bool important);
-        
+        void invalidBlockHit();
+
         Vector<CSSSelector*>* reusableSelectorVector() { return &m_reusableSelectorVector; }
-        
+
+        void updateLastSelectorLine() { m_lastSelectorLine = m_line; }
+
         bool m_strict;
         bool m_important;
         int m_id;
@@ -212,6 +218,7 @@ namespace WebCore {
         bool m_implicitShorthand;
 
         bool m_hasFontFaceOnlyValues;
+        bool m_hadSyntacticallyValidCSSRule;
 
         Vector<String> m_variableNames;
         Vector<RefPtr<CSSValue> > m_variableValues;
@@ -222,9 +229,12 @@ namespace WebCore {
         int lex(void* yylval);
         int token() { return yyTok; }
         UChar* text(int* length);
+        void countLines();
         int lex();
         
     private:
+        void recheckAtKeyword(const UChar* str, int len);
+    
         void clearProperties();
 
         void setupParser(const char* prefix, const String&, const char* suffix);
@@ -246,6 +256,12 @@ namespace WebCore {
         int yyleng;
         int yyTok;
         int yy_start;
+        int m_line;
+        int m_lastSelectorLine;
+
+        bool m_allowImportRules;
+        bool m_allowVariablesRules;
+        bool m_allowNamespaceDeclarations;
 
         Vector<RefPtr<StyleBase> > m_parsedStyleObjects;
         Vector<RefPtr<CSSRuleList> > m_parsedRuleLists;
@@ -287,7 +303,7 @@ namespace WebCore {
     int cssPropertyID(const String&);
     int cssValueKeywordID(const CSSParserString&);
 
-    class ShorthandScope {
+    class ShorthandScope : public FastAllocBase {
     public:
         ShorthandScope(CSSParser* parser, int propId) : m_parser(parser)
         {

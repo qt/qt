@@ -91,6 +91,7 @@ public:
     inline bool isDirty() const
     {
         return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && !hasDirtyFromPreviousSync
+                 && !fullUpdatePending
 #if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
                  && !hasDirtyWindowDecoration()
 #endif
@@ -115,7 +116,8 @@ private:
 #ifdef Q_BACKINGSTORE_SUBSURFACES
     QList<QWindowSurface*> subSurfaces;
 #endif
-    bool hasDirtyFromPreviousSync;
+    uint hasDirtyFromPreviousSync : 1;
+    uint fullUpdatePending : 1;
 
     QPoint tlwOffset;
 

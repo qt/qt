@@ -46,11 +46,16 @@
 #ifndef WEBXMLGENERATOR_H
 #define WEBXMLGENERATOR_H
 
+#include <QtCore/qxmlstream.h>
+
 #include "codemarker.h"
 #include "config.h"
 #include "pagegenerator.h"
 
 QT_BEGIN_NAMESPACE
+
+class QXmlStreamReader;
+class QXmlStreamWriter;
 
 class WebXMLGenerator : public PageGenerator
 {

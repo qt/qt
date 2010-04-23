@@ -289,6 +289,10 @@ bool QGLBuffer::read(int offset, void *data, int count)
 */
 void QGLBuffer::write(int offset, const void *data, int count)
 {
+#ifndef QT_NO_DEBUG
+    if (!isCreated())
+        qWarning("QGLBuffer::allocate(): buffer not created");
+#endif
     Q_D(QGLBuffer);
     if (d->guard.id())
         glBufferSubData(d->type, offset, count, data);
@@ -305,6 +309,10 @@ void QGLBuffer::write(int offset, const void *data, int count)
 */
 void QGLBuffer::allocate(const void *data, int count)
 {
+#ifndef QT_NO_DEBUG
+    if (!isCreated())
+        qWarning("QGLBuffer::allocate(): buffer not created");
+#endif
     Q_D(QGLBuffer);
     if (d->guard.id())
         glBufferData(d->type, count, data, d->actualUsagePattern);
@@ -336,6 +344,10 @@ void QGLBuffer::allocate(const void *data, int count)
 */
 bool QGLBuffer::bind() const
 {
+#ifndef QT_NO_DEBUG
+    if (!isCreated())
+        qWarning("QGLBuffer::bind(): buffer not created");
+#endif
     Q_D(const QGLBuffer);
     GLuint bufferId = d->guard.id();
     if (bufferId) {
@@ -364,10 +376,38 @@ bool QGLBuffer::bind() const
 */
 void QGLBuffer::release() const
 {
+#ifndef QT_NO_DEBUG
+    if (!isCreated())
+        qWarning("QGLBuffer::release(): buffer not created");
+#endif
     Q_D(const QGLBuffer);
     if (d->guard.id())
         glBindBuffer(d->type, 0);
 }
+
+#undef ctx
+
+/*!
+    Releases the buffer associated with \a type in the current
+    QGLContext.
+
+    This function is a direct call to \c{glBindBuffer(type, 0)}
+    for use when the caller does not know which QGLBuffer has
+    been bound to the context but wants to make sure that it
+    is released.
+
+    \code
+    QGLBuffer::release(QGLBuffer::VertexBuffer);
+    \endcode
+*/
+void QGLBuffer::release(QGLBuffer::Type type)
+{
+    const QGLContext *ctx = QGLContext::currentContext();
+    if (ctx && qt_resolve_buffer_extensions(const_cast<QGLContext *>(ctx)))
+        glBindBuffer(GLenum(type), 0);
+}
+
+#define ctx d->guard.context()
 
 /*!
     Returns the GL identifier associated with this buffer; zero if
@@ -375,7 +415,7 @@ void QGLBuffer::release() const
 
     \sa isCreated()
 */
-uint QGLBuffer::bufferId() const
+GLuint QGLBuffer::bufferId() const
 {
     Q_D(const QGLBuffer);
     return d->guard.id();
@@ -421,6 +461,10 @@ int QGLBuffer::size() const
 void *QGLBuffer::map(QGLBuffer::Access access)
 {
     Q_D(QGLBuffer);
+#ifndef QT_NO_DEBUG
+    if (!isCreated())
+        qWarning("QGLBuffer::map(): buffer not created");
+#endif
     if (!d->guard.id())
         return 0;
     if (!glMapBufferARB)
@@ -444,6 +488,10 @@ void *QGLBuffer::map(QGLBuffer::Access access)
 bool QGLBuffer::unmap()
 {
     Q_D(QGLBuffer);
+#ifndef QT_NO_DEBUG
+    if (!isCreated())
+        qWarning("QGLBuffer::unmap(): buffer not created");
+#endif
     if (!d->guard.id())
         return false;
     if (!glUnmapBufferARB)

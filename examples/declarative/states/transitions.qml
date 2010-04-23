@@ -1,67 +1,87 @@
-import Qt 4.6
+import Qt 4.7
+
+/*
+    This is exactly the same as states.qml, except that we have appended
+    a set of transitions to apply animations when the item changes 
+    between each state.
+*/
 
 Rectangle {
     id: page
-    width: 640; height: 480; color: "#343434"
+    width: 640; height: 480
+    color: "#343434"
 
-    // A target region.  Clicking in here sets the state to the default state
+    Image { 
+        id: userIcon
+        x: topLeftRect.x; y: topLeftRect.y
+        source: "user.png"
+    }
+
     Rectangle {
-        id: initialPosition
+        id: topLeftRect
+
         anchors { left: parent.left; top: parent.top; leftMargin: 10; topMargin: 20 }
-        width: 64; height: 64; radius: 6
-        color: "Transparent"; border.color: "Gray"
+        width: 64; height: 64
+        color: "Transparent"; border.color: "Gray"; radius: 6
+
+        // Clicking in here sets the state to the default state, returning the image to
+        // its initial position
         MouseArea { anchors.fill: parent; onClicked: page.state = '' }
     }
 
-    // Another target region.  Clicking in here sets the state to 'Position1'
     Rectangle {
-        id: position1
+        id: middleRightRect
+
         anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 20 }
-        width: 64; height: 64; radius: 6
-        color: "Transparent"; border.color: "Gray"
-        MouseArea { anchors.fill: parent; onClicked: page.state = 'Position1' }
+        width: 64; height: 64
+        color: "Transparent"; border.color: "Gray"; radius: 6
+
+        // Clicking in here sets the state to 'middleRight'
+        MouseArea { anchors.fill: parent; onClicked: page.state = 'middleRight' }
     }
 
-    // Another target region.  Clicking in here sets the state to 'Position2'
     Rectangle {
-        id: position2
-        anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 20 }
-        width: 64; height: 64; radius: 6
-        color: "Transparent"; border.color: "Gray"
-        MouseArea { anchors.fill: parent; onClicked: page.state = 'Position2' }
-    }
+        id: bottomLeftRect
 
-    // The image which will be moved when my state changes
-    Image { id: user; source: "user.png"; x: initialPosition.x; y: initialPosition.y }
+        anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 20 }
+        width: 64; height: 64
+        color: "Transparent"; border.color: "Gray"; radius: 6
+
+        // Clicking in here sets the state to 'bottomLeft'
+        MouseArea { anchors.fill: parent; onClicked: page.state = 'bottomLeft' }
+    }
 
     states: [
-        // In state 'Position1', change the 'user' item position to rect2's position.
+        // In state 'middleRight', move the image to middleRightRect
         State {
-            name: "Position1"
-            PropertyChanges { target: user; x: position1.x; y: position1.y }
+            name: "middleRight"
+            PropertyChanges { target: userIcon; x: middleRightRect.x; y: middleRightRect.y }
         },
 
-        // In state 'Position2', change the 'user' item position to rect3's position.
+        // In state 'bottomLeft', move the image to bottomLeftRect
         State {
-            name: "Position2"
-            PropertyChanges { target: user; x: position2.x; y: position2.y  }
+            name: "bottomLeft"
+            PropertyChanges { target: userIcon; x: bottomLeftRect.x; y: bottomLeftRect.y  }
         }
     ]
 
-    // transitions define how the properties change.
+    // Transitions define how the properties change when the item moves between each state
     transitions: [
-        // When transitioning to 'Position1' move x,y over a duration of 1 second,
+
+        // When transitioning to 'middleRight' move x,y over a duration of 1 second,
         // with OutBounce easing function.
         Transition {
-            from: "*"; to: "Position1"
+            from: "*"; to: "middleRight"
             NumberAnimation { properties: "x,y"; easing.type: "OutBounce"; duration: 1000 }
         },
-        // When transitioning to 'Position2' move x,y over a duration of 2 seconds,
+
+        // When transitioning to 'bottomLeft' move x,y over a duration of 2 seconds,
         // with InOutQuad easing function.
         Transition {
-            from: "*"; to: "Position2"
+            from: "*"; to: "bottomLeft"
             NumberAnimation { properties: "x,y"; easing.type: "InOutQuad"; duration: 2000 }
         },
+
         // For any other state changes move x,y linearly over duration of 200ms.
         Transition {
             NumberAnimation { properties: "x,y"; duration: 200 }

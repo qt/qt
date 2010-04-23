@@ -40,8 +40,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLCollection);
 
 static const HashTableValue JSHTMLCollectionTableValues[3] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsHTMLCollectionLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLCollectionConstructor, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLCollectionLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLCollectionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,8 +103,8 @@ bool JSHTMLCollectionConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 static const HashTableValue JSHTMLCollectionPrototypeTableValues[3] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsHTMLCollectionPrototypeFunctionItem, (intptr_t)1 },
-    { "namedItem", DontDelete|Function, (intptr_t)jsHTMLCollectionPrototypeFunctionNamedItem, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLCollectionPrototypeFunctionItem), (intptr_t)1 },
+    { "namedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLCollectionPrototypeFunctionNamedItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -213,24 +213,25 @@ bool JSHTMLCollection::getOwnPropertySlot(ExecState* exec, unsigned propertyName
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsHTMLCollectionLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLCollectionLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLCollection* castedThis = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
+    JSHTMLCollection* castedThis = static_cast<JSHTMLCollection*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLCollection* imp = static_cast<HTMLCollection*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLCollectionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLCollection* domObject = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
+    JSHTMLCollection* domObject = static_cast<JSHTMLCollection*>(asObject(slotBase));
     return JSHTMLCollection::getConstructor(exec, domObject->globalObject());
 }
-void JSHTMLCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSHTMLCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<HTMLCollection*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSHTMLCollection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -257,10 +258,10 @@ JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionNamedItem(ExecState* exec
 }
 
 
-JSValue JSHTMLCollection::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSHTMLCollection::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSHTMLCollection* thisObj = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<HTMLCollection*>(thisObj->impl())->item(slot.index()));
+    JSHTMLCollection* thisObj = static_cast<JSHTMLCollection*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<HTMLCollection*>(thisObj->impl())->item(index));
 }
 HTMLCollection* toHTMLCollection(JSC::JSValue value)
 {

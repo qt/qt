@@ -108,3 +108,8 @@ int id = qRegisterMetaType<MyStruct>();
 int id = qMetaTypeId<QString>();    // id is now QMetaType::QString
 id = qMetaTypeId<MyStruct>();       // compile error if MyStruct not declared
 //! [8]
+
+//! [9]
+typedef QString CustomString;
+qRegisterMetaType<CustomString>("CustomString");
+//! [9]

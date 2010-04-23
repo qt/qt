@@ -43,7 +43,7 @@
 class BaseExtensionObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int baseExtendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged);
+    Q_PROPERTY(int baseExtendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged)
 public:
     BaseExtensionObject(QObject *parent) : QObject(parent), m_value(0) {}
 
@@ -59,7 +59,7 @@ private:
 class ExtensionObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int extendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged);
+    Q_PROPERTY(int extendedProperty READ extendedProperty WRITE setExtendedProperty NOTIFY extendedPropertyChanged)
 public:
     ExtensionObject(QObject *parent) : QObject(parent), m_value(0) {}
 
@@ -74,12 +74,13 @@ private:
 
 void registerTypes()
 {
-    QML_REGISTER_TYPE(Qt.test, 1,0, MyQmlObject,MyQmlObject);
-    QML_REGISTER_TYPE(Qt.test, 1,0, MyDeferredObject,MyDeferredObject);
-    QML_REGISTER_TYPE(Qt.test, 1,0, MyQmlContainer,MyQmlContainer);
-    QML_REGISTER_EXTENDED_TYPE(Qt.test, 1,0, MyBaseExtendedObject,MyBaseExtendedObject,BaseExtensionObject);
-    QML_REGISTER_EXTENDED_TYPE(Qt.test, 1,0, MyExtendedObject,MyExtendedObject,ExtensionObject);
-    QML_REGISTER_TYPE(Qt.test, 1,0, MyTypeObject, MyTypeObject);
+    qmlRegisterType<MyQmlObject>("Qt.test", 1,0, "MyQmlObject");
+    qmlRegisterType<MyDeferredObject>("Qt.test", 1,0, "MyDeferredObject");
+    qmlRegisterType<MyQmlContainer>("Qt.test", 1,0, "MyQmlContainer");
+    qmlRegisterExtendedType<MyBaseExtendedObject, BaseExtensionObject>("Qt.test", 1,0, "MyBaseExtendedObject");
+    qmlRegisterExtendedType<MyExtendedObject, ExtensionObject>("Qt.test", 1,0, "MyExtendedObject");
+    qmlRegisterType<MyTypeObject>("Qt.test", 1,0, "MyTypeObject");
+    qmlRegisterType<NumberAssignment>("Qt.test", 1,0, "NumberAssignment");
 }
 
 #include "testtypes.moc"

@@ -43,8 +43,8 @@
   node.cpp
 */
 
-#include <QtCore>
 #include "node.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -207,16 +207,33 @@ InnerNode::~InnerNode()
 }
 
 /*!
+  Find the node in this node's children that has the
+  given \a name. If this node is a QML class node, be
+  sure to also look in the children of its property
+  group nodes. Return the matching node or 0.
  */
 Node *InnerNode::findNode(const QString& name)
 {
     Node *node = childMap.value(name);
     if (node)
         return node;
+    if ((type() == Fake) && (subType() == QmlClass)) {
+        for (int i=0; i<children.size(); ++i) {
+            Node* n = children.at(i);
+            if (n->subType() == QmlPropertyGroup) {
+                node = static_cast<InnerNode*>(n)->findNode(name);
+                if (node)
+                    return node;
+            }
+        }
+    }
     return primaryFunctionMap.value(name);
 }
 
 /*!
+  Same as the other findNode(), but if the node with the
+  specified \a name is not of the specified \a type, return
+  0.
  */
 Node *InnerNode::findNode(const QString& name, Type type)
 {
@@ -398,7 +415,7 @@ void InnerNode::normalizeOverloads()
 
 /*!
  */
-void InnerNode::removeFromRelated() 
+void InnerNode::removeFromRelated()
 {
     while (!related.isEmpty()) {
         Node *p = static_cast<Node *>(related.takeFirst());
@@ -439,7 +456,7 @@ const Node *InnerNode::findNode(const QString& name, Type type) const
 }
 
 /*!
-  Find the function node in this node that has the given \a name. 
+  Find the function node in this node that has the given \a name.
  */
 const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 {
@@ -956,7 +973,7 @@ Parameter::Parameter(const Parameter& p)
 
 /*!
   Assigning Parameter \a p to this Parameter copies the
-  strings across. 
+  strings across.
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
@@ -1161,7 +1178,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug() << "QML METHOD" << name() << "rt" << rt << "pp" << pp;
+    qDebug("QML METHOD %s rt %s pp %s",
+            qPrintable(name()), qPrintable(rt), qPrintable(pp.join(" ")));
 }
 
 /*!
@@ -1257,7 +1275,7 @@ bool TargetNode::isInnerNode() const
 
 #ifdef QDOC_QML
 bool QmlClassNode::qmlOnly = false;
-QMultiMap<QString,QString> QmlClassNode::inheritedBy;
+QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
 
 /*!
   Constructs a Qml class node (i.e. a Fake node with the
@@ -1279,7 +1297,18 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
  */
 QmlClassNode::~QmlClassNode()
 {
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
     qDebug() << "Deleting QmlClassNode:" << name();
+#endif
+}
+
+/*!
+  Clear the multimap so that subsequent runs don't try to use
+  nodes from a previous run.
+ */
+void QmlClassNode::clear()
+{
+    inheritedBy.clear();
 }
 
 /*!
@@ -1290,7 +1319,7 @@ QmlClassNode::~QmlClassNode()
  */
 QString QmlClassNode::fileBase() const
 {
-#if 0    
+#if 0
     if (Node::fileBase() == "item")
         qDebug() << "FILEBASE: qmlitem" << name();
     return "qml_" + Node::fileBase();
@@ -1302,19 +1331,27 @@ QString QmlClassNode::fileBase() const
   Record the fact that QML class \a base is inherited by
   QML class \a sub.
  */
-void QmlClassNode::addInheritedBy(const QString& base, const QString& sub)
+void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 {
     inheritedBy.insert(base,sub);
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
+    qDebug() << "QmlClassNode::addInheritedBy(): insert" << base << sub->name() << inheritedBy.size();
+#endif
 }
 
 /*!
-  Loads the list \a subs with the names of all the subclasses of \a base.
+  Loads the list \a subs with the nodes of all the subclasses of \a base.
  */
-void QmlClassNode::subclasses(const QString& base, QStringList& subs)
+void QmlClassNode::subclasses(const QString& base, NodeList& subs)
 {
     subs.clear();
-    if (inheritedBy.contains(base))
+    if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
+#ifdef DEBUG_MULTIPLE_QDOCCONF_FILES
+        qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
+                 << "subs:" << subs.size() << "total size:" << inheritedBy.size();
+#endif
+    }
 }
 
 /*!
@@ -1331,7 +1368,7 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
 
 /*!
   Constructor for the Qml property group node. \a parent is
-  always a QmlClassNode. 
+  always a QmlClassNode.
  */
 QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
                                    const QString& name,

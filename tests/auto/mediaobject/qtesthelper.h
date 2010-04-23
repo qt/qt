@@ -215,7 +215,6 @@ namespace QTest
         default:
             return 0;
         }
-        return 0;
     }
 } // namespace QTest
 QT_END_NAMESPACE

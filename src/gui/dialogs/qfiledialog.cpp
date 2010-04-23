@@ -228,7 +228,8 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
 
     \value ReadOnly Indicates that the model is readonly.
 
-    \value HideNameFilterDetails Indicates if the is hidden or not.
+    \value HideNameFilterDetails Indicates if the file name filter details are
+    hidden or not.
 
     \value DontUseSheet In previous versions of Qt, the static
     functions would create a sheet by default if the static function
@@ -722,9 +723,19 @@ void QFileDialog::setVisible(bool visible)
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
             setAttribute(Qt::WA_DontShowOnScreen);
+#ifndef QT_NO_FSCOMPLETER
+            //So the completer don't try to complete and therefore to show a popup
+            d->completer->setModel(0);
+#endif
         } else {
             d->nativeDialogInUse = false;
             setAttribute(Qt::WA_DontShowOnScreen, false);
+#ifndef QT_NO_FSCOMPLETER
+            if (d->proxyModel != 0)
+                d->completer->setModel(d->proxyModel);
+            else
+                d->completer->setModel(d->model);
+#endif
         }
     }
 

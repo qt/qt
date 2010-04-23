@@ -39,20 +39,18 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include "qdeclarativepropertyvaluesource.h"
-#include "qdeclarativevme_p.h"
+#include "private/qdeclarativevme_p.h"
 #include "qdeclarative.h"
-#include "qdeclarativecomponent_p.h"
+#include "private/qdeclarativecomponent_p.h"
 #include "qdeclarativecomponent.h"
-#include "qmetaobjectbuilder_p.h"
-#include "qdeclarativevmemetaobject_p.h"
-#include "qdeclarativecompiler_p.h"
+#include "private/qmetaobjectbuilder_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativecompiler_p.h"
 #include "parser/qdeclarativejsast_p.h"
 #include "parser/qdeclarativejsengine_p.h"
-
-#include <qfxperf_p_p.h>
 
 #include <QStack>
 #include <QColor>
@@ -202,18 +200,19 @@ QDeclarativeParser::Object::DynamicSlot::DynamicSlot()
 }
 
 QDeclarativeParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
-: name(o.name), body(o.body), parameterNames(o.parameterNames)
+: name(o.name), body(o.body), parameterNames(o.parameterNames), location(o.location)
 {
 }
 
 QDeclarativeParser::Property::Property()
-: parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false)
+: parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false), 
+  isValueTypeSubProperty(false)
 {
 }
 
 QDeclarativeParser::Property::Property(const QByteArray &n)
 : parent(0), type(0), index(-1), value(0), name(n), isDefault(false), 
-  isDeferred(false)
+  isDeferred(false), isValueTypeSubProperty(false)
 {
 }
 
@@ -221,12 +220,14 @@ QDeclarativeParser::Property::~Property()
 { 
     foreach(Value *value, values)
         value->release();
+    foreach(Value *value, onValues)
+        value->release();
     if (value) value->release(); 
 }
 
-Object *QDeclarativeParser::Property::getValue()
+Object *QDeclarativeParser::Property::getValue(const LocationSpan &l)
 {
-    if (!value) value = new Object;
+    if (!value) { value = new Object; value->location = l; }
     return value;
 }
 
@@ -235,9 +236,14 @@ void QDeclarativeParser::Property::addValue(Value *v)
     values << v;
 }
 
+void QDeclarativeParser::Property::addOnValue(Value *v)
+{
+    onValues << v;
+}
+
 bool QDeclarativeParser::Property::isEmpty() const
 {
-    return !value && values.isEmpty();
+    return !value && values.isEmpty() && onValues.isEmpty();
 }
 
 QDeclarativeParser::Value::Value()

@@ -72,6 +72,7 @@ FindWidget::FindWidget(QWidget *parent)
     toolClose = setupToolButton(QLatin1String(""),
         resourcePath + QLatin1String("/closetab.png"));
     hboxLayout->addWidget(toolClose);
+    connect(toolClose, SIGNAL(clicked()), SLOT(hide()));
 
     editFind = new QLineEdit(this);
     hboxLayout->addWidget(editFind);

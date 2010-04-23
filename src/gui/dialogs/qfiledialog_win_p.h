@@ -82,7 +82,7 @@ typedef int GETPROPERTYSTOREFLAGS;
 #define GPS_BESTEFFORT            0x00000040
 #define GPS_MASK_VALID            0x0000007F
 
-typedef int (CALLBACK* BFFCALLBACK)(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
+typedef int (QT_WIN_CALLBACK* BFFCALLBACK)(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
 // message from browser
 #define BFFM_INITIALIZED        1
 #define BFFM_SELCHANGED         2

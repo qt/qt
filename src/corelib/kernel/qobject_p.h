@@ -60,7 +60,6 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qvariant.h"
-#include "private/qguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -85,11 +84,11 @@ extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class Q_CORE_EXPORT QDeclarativeData
+class Q_CORE_EXPORT QAbstractDeclarativeData
 {
 public:
-    virtual ~QDeclarativeData();
-    virtual void destroyed(QObject *) = 0;
+    static void (*destroyed)(QAbstractDeclarativeData *, QObject *);
+    static void (*parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
@@ -99,13 +98,12 @@ class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 public:
     struct ExtraData
     {
-        ExtraData() : objectGuards(0) {}
+        ExtraData() {}
 #ifndef QT_NO_USERDATA
         QVector<QObjectUserData *> userData;
 #endif
         QList<QByteArray> propertyNames;
         QList<QVariant> propertyValues;
-        QGuard<QObject> *objectGuards; //linked list handle of QGuards
     };
 
     struct Connection
@@ -196,7 +194,7 @@ public:
     QList<QPointer<QObject> > eventFilters;
     union {
         QObject *currentChildBeingDeleted;
-        QDeclarativeData *declarativeData; //extra data used by the DeclarativeUI project.
+        QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module
     };
 
     // these objects are all used to indicate that a QObject was deleted
@@ -222,33 +220,6 @@ inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
         || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f)));
 }
 
-
-inline void q_guard_addGuard(QGuard<QObject> *g)
-{
-    QObjectPrivate *p = QObjectPrivate::get(g->o);
-    if (p->wasDeleted) {
-        qWarning("QGuard: cannot add guard to deleted object");
-        g->o = 0;
-        return;
-    }
-
-    if (!p->extraData)
-        p->extraData = new QObjectPrivate::ExtraData;
-
-    g->next = p->extraData->objectGuards;
-    p->extraData->objectGuards = g;
-    g->prev = &p->extraData->objectGuards;
-    if (g->next)
-        g->next->prev = &g->next;
-}
-
-inline void q_guard_removeGuard(QGuard<QObject> *g)
-{
-    if (g->next) g->next->prev = g->prev;
-    *g->prev = g->next;
-    g->next = 0;
-    g->prev = 0;
-}
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);

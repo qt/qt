@@ -61,6 +61,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeAction
 public:
     QDeclarativeAction();
     QDeclarativeAction(QObject *, const QString &, const QVariant &);
+    QDeclarativeAction(QObject *, const QString &,
+                       QDeclarativeContext *, const QVariant &);
 
     bool restore:1;
     bool actionDone:1;
@@ -92,17 +94,15 @@ public:
     virtual bool isReversable();
     virtual void reverse();
     virtual void saveOriginals() {}
+    virtual void copyOriginals(QDeclarativeActionEvent *) {}
 
     virtual bool isRewindable() { return isReversable(); }
     virtual void rewind() {}
     virtual void saveCurrentValues() {}
-
-    //virtual bool hasExtraActions();
-    virtual QList<QDeclarativeAction> extraActions();
+    virtual void saveTargetValues() {}
 
     virtual bool changesBindings();
-    virtual void clearForwardBindings();
-    virtual void clearReverseBindings();
+    virtual void clearBindings();
     virtual bool override(QDeclarativeActionEvent*other);
 };
 

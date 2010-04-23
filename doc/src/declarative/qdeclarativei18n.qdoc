@@ -63,7 +63,7 @@ capabilities are described more fully in:
 \o \l {Qt Linguist Manual}
 \endlist
 
-You can test a translation in \l {qmlviewer} using the -translation option.
+You can test a translation with the \l {Qt Declarative UI Runtime}{qml} tool using the -translation option.
 
 \section1 Example
 
@@ -72,7 +72,7 @@ that needs to be translated is enclosed in a call to \c qsTr().
 
 hello.qml:
 \qml
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
  width: 200; height: 200
@@ -86,10 +86,10 @@ lupdate hello.qml -ts hello.ts
 \endcode
 
 Then we open \c hello.ts in \l{Qt Linguist Manual} {Linguist}, provide
-a translation and create the release file \c hello.qm.
+a translation and create the release file \c hello.qml.
 
-Finally, we can test the translation in qmlviewer:
+Finally, we can test the translation:
 \code
-qmlviewer -translation hello.qm hello.qml
+qml -translation hello.qm hello.qml
 \endcode
 */

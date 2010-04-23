@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qsvgrenderer
+TARGET = tst_bench_qsvgrenderer
 
 SOURCES += tst_qsvgrenderer.cpp
 RESOURCES += qsvgrenderer.qrc

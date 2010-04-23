@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestate_p_p.h"
-#include "qdeclarativestate_p.h"
+#include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativestate_p.h"
 
-#include "qdeclarativetransition_p.h"
-#include "qdeclarativestategroup_p.h"
-#include "qdeclarativestateoperations_p.h"
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativetransition_p.h"
+#include "private/qdeclarativestategroup_p.h"
+#include "private/qdeclarativestateoperations_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
@@ -74,6 +74,18 @@ QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyN
         fromValue = property.read();
 }
 
+QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
+               QDeclarativeContext *context, const QVariant &value)
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false),
+  property(target, propertyName, context), toValue(value),
+  fromBinding(0), toBinding(0), event(0),
+  specifiedObject(target), specifiedProperty(propertyName)
+{
+    if (property.isValid())
+        fromValue = property.read();
+}
+
+
 QDeclarativeActionEvent::~QDeclarativeActionEvent()
 {
 }
@@ -96,21 +108,12 @@ void QDeclarativeActionEvent::reverse()
 {
 }
 
-QList<QDeclarativeAction> QDeclarativeActionEvent::extraActions()
-{
-    return QList<QDeclarativeAction>();
-}
-
 bool QDeclarativeActionEvent::changesBindings()
 {
     return false;
 }
 
-void QDeclarativeActionEvent::clearForwardBindings()
-{
-}
-
-void QDeclarativeActionEvent::clearReverseBindings()
+void QDeclarativeActionEvent::clearBindings()
 {
 }
 
@@ -130,14 +133,13 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
 /*!
     \qmlclass State QDeclarativeState
-  \since 4.7
+    \since 4.7
     \brief The State element defines configurations of objects and properties.
 
     A state is specified as a set of batched changes from the default configuration.
 
-    Note that setting the state of an object from within another state of the same object is
-    inadvisible. Not only would this have the same effect as going directly to the second state
-    it may cause the program to crash.
+    \note setting the state of an object from within another state of the same object is
+    not allowed.
 
     \sa {qmlstates}{States}, {state-transitions}{Transitions}
 */
@@ -200,6 +202,17 @@ bool QDeclarativeState::isWhenKnown() const
 
     This should be set to an expression that evaluates to true when you want the state to
     be applied.
+
+    If multiple states in a group have \c when clauses that evaluate to true at the same time,
+    the first matching state will be applied. For example, in the following snippet
+    \c state1 will always be selected rather than \c state2 when sharedCondition becomes
+    \c true.
+    \qml
+    states: [
+        State { name: "state1"; when: sharedCondition },
+        State { name: "state2"; when: sharedCondition }
+    ]
+    \endqml
 */
 QDeclarativeBinding *QDeclarativeState::when() const
 {
@@ -368,47 +381,60 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
     for (int ii = 0; ii < applyList.count(); ++ii) {
         QDeclarativeAction &action = applyList[ii];
 
-        bool found = false;
-
-        int jj;
         if (action.event) {
             if (!action.event->isReversable())
                 continue;
-            for (jj = 0; jj < d->revertList.count(); ++jj) {
+            bool found = false;
+            for (int jj = 0; jj < d->revertList.count(); ++jj) {
                 QDeclarativeActionEvent *event = d->revertList.at(jj).event;
                 if (event && event->typeName() == action.event->typeName()) {
                     if (action.event->override(event)) {
                         found = true;
+
+                        if (action.event != d->revertList.at(jj).event) {
+                            action.event->copyOriginals(d->revertList.at(jj).event);
+
+                            QDeclarativeSimpleAction r(action);
+                            additionalReverts << r;
+                            d->revertList.removeAt(jj);
+                        } else if (action.event->isRewindable())    //###why needed?
+                            action.event->saveCurrentValues();
+
                         break;
                     }
                 }
             }
-            if (!found || action.event != d->revertList.at(jj).event)
+            if (!found) {
                 action.event->saveOriginals();
-            else if (action.event->isRewindable())
-                action.event->saveCurrentValues();
-        } else {
-            action.fromBinding = QDeclarativePropertyPrivate::binding(action.property);
-
-            for (jj = 0; jj < d->revertList.count(); ++jj) {
-                if (d->revertList.at(jj).property == action.property) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        if (!found) {
-            if (!action.restore) {
-                action.deleteFromBinding();
-            } else {
                 // Only need to revert the applyList action if the previous
                 // state doesn't have a higher priority revert already
                 QDeclarativeSimpleAction r(action);
                 additionalReverts << r;
             }
-        } else if (d->revertList.at(jj).binding != action.fromBinding) {
-            action.deleteFromBinding();
+        } else {
+            bool found = false;
+            action.fromBinding = QDeclarativePropertyPrivate::binding(action.property);
+
+            for (int jj = 0; jj < d->revertList.count(); ++jj) {
+                if (d->revertList.at(jj).property == action.property) {
+                    found = true;
+                    if (d->revertList.at(jj).binding != action.fromBinding) {
+                        action.deleteFromBinding();
+                    }
+                    break;
+                }
+            }
+
+            if (!found) {
+                if (!action.restore) {
+                    action.deleteFromBinding();
+                } else {
+                    // Only need to revert the applyList action if the previous
+                    // state doesn't have a higher priority revert already
+                    QDeclarativeSimpleAction r(action);
+                    additionalReverts << r;
+                }
+            }
         }
     }
 

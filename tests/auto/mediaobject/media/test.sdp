@@ -1,0 +1,32 @@
+v=0
+o=- 3476526279 2351211129 IN IP4 XXX.XXX.XXX.XXX
+s=SOME STRING
+e=support@localhost
+c=IN IP4 XXX.XXX.XXX.XXX
+t=0 0
+a=range:npt=now-
+a=random_access_denied
+a=control:rtsp://link
+m=video 0 RTP/AVP 96
+b=AS:100
+b=RR:2500
+b=RS:2500
+a=control:rtsp://link
+a=rtpmap:96 MP4V-ES/90000
+a=3GPP-Adaptation-Support:1
+a=cliprect:0,0,144,176
+a=mpeg4-esid:201
+a=x-envivio-verid:00022B15
+a=fmtp:96 profile-level-id=2;config=000001b002000001b50ea020202f000001000000012000c788ba9850584121463f
+a=framerate:15.0
+m=audio 0 RTP/AVP 97
+b=AS:14
+b=RR:350
+b=RS:350
+a=control:rtsp://link
+a=rtpmap:97 AMR/8000
+a=3GPP-Adaptation-Support:1
+a=mpeg4-esid:101
+a=x-envivio-verid:00022B15
+a=fmtp:97 octet-align=1
+a=maxptime:200

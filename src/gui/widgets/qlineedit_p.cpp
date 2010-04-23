@@ -134,7 +134,7 @@ void QLineEditPrivate::_q_selectionChanged()
         q->initStyleOption(&opt);
         bool showCursor = control->hasSelectedText() ?
                           q->style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, q):
-                          true;
+                          q->hasFocus();
         setCursorVisible(showCursor);
     }
 

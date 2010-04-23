@@ -75,17 +75,18 @@ public:
     };
 
     //exceptions
-    virtual void exception(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
+    virtual void exception(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, bool hasHandler)
     {
         Q_UNUSED(frame);
         Q_UNUSED(sourceID);
         Q_UNUSED(lineno);
+        Q_UNUSED(hasHandler);
     };
     virtual void exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler);
     virtual void exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID);
 
     //statements
-    virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column);
+    virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno/*, int column*/);
     virtual void callEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno)
     {
         Q_UNUSED(lineno);
@@ -107,7 +108,7 @@ public:
     };
     virtual void functionExit(const JSC::JSValue& returnValue, intptr_t sourceID);
     //others
-    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column);
+    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno/*, int column*/);
 
     virtual void evaluateStart(intptr_t sourceID)
     {

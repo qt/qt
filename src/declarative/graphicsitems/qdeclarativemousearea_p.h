@@ -55,7 +55,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDrag : public QObject
     Q_OBJECT
 
     Q_ENUMS(Axis)
-    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QGraphicsObject *target READ target WRITE setTarget NOTIFY targetChanged RESET resetTarget)
     Q_PROPERTY(Axis axis READ axis WRITE setAxis NOTIFY axisChanged)
     Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin NOTIFY minimumXChanged)
     Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax NOTIFY maximumXChanged)
@@ -67,8 +67,9 @@ public:
     QDeclarativeDrag(QObject *parent=0);
     ~QDeclarativeDrag();
 
-    QDeclarativeItem *target() const;
-    void setTarget(QDeclarativeItem *);
+    QGraphicsObject *target() const;
+    void setTarget(QGraphicsObject *);
+    void resetTarget();
 
     enum Axis { XAxis=0x01, YAxis=0x02, XandYAxis=0x03 };
     Axis axis() const;
@@ -92,7 +93,7 @@ Q_SIGNALS:
     void maximumYChanged();
 
 private:
-    QDeclarativeItem *_target;
+    QGraphicsObject *_target;
     Axis _axis;
     qreal _xmin;
     qreal _xmax;

@@ -53,19 +53,19 @@
 // We mean it.
 //
 
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
-#include <private/qdeclarativescriptclass_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
+#include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QScriptContext;
 class QScriptEngine;
-class QDeclarativeContext;
+class QDeclarativeContextData;
 
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
 class Q_AUTOTEST_EXPORT QDeclarativeObjectMethodScriptClass : public QScriptDeclarativeClass
 {
 public:
@@ -73,21 +73,32 @@ public:
     ~QDeclarativeObjectMethodScriptClass();
 
     QScriptValue newMethod(QObject *, const QDeclarativePropertyCache::Data *);
+
 protected:
     virtual Value call(Object *, QScriptContext *);
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, QScriptClass::QueryFlags flags);
+    virtual Value property(Object *, const Identifier &);
 
 private:
+    PersistentIdentifier m_connectId;
+    PersistentIdentifier m_disconnectId;
+    QScriptValue m_connect;
+    QScriptValue m_disconnect;
+
+    static QScriptValue connect(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue disconnect(QScriptContext *context, QScriptEngine *engine);
+
     QDeclarativeEngine *engine;
 };
-#endif
 
-class Q_AUTOTEST_EXPORT QDeclarativeObjectScriptClass : public QDeclarativeScriptClass
+class Q_AUTOTEST_EXPORT QDeclarativeObjectScriptClass : public QScriptDeclarativeClass
 {
 public:
     QDeclarativeObjectScriptClass(QDeclarativeEngine *);
     ~QDeclarativeObjectScriptClass();
 
     QScriptValue newQObject(QObject *, int type = QMetaType::QObjectStar);
+
     QObject *toQObject(const QScriptValue &) const;
     int objectType(const QScriptValue &) const;
 
@@ -99,28 +110,28 @@ public:
 
     QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
                                            QScriptClass::QueryFlags flags, 
-                                           QDeclarativeContext *evalContext,
+                                           QDeclarativeContextData *evalContext,
                                            QueryHints hints = 0);
 
-    ScriptValue property(QObject *, const Identifier &);
+    Value property(QObject *, const Identifier &);
 
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
-                     QDeclarativeContext *evalContext = 0);
+                     QScriptContext *context, QDeclarativeContextData *evalContext = 0);
     virtual QStringList propertyNames(Object *);
+    virtual bool compare(Object *, Object *);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual ScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
+    friend class QDeclarativeObjectMethodScriptClass;
     QDeclarativeObjectMethodScriptClass methods;
-#endif
 
     QDeclarativeTypeNameCache::Data *lastTNData;
     QDeclarativePropertyCache::Data *lastData;

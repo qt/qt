@@ -54,7 +54,8 @@
 
 #include <windows.h>
 
-#include <private/qegl_p.h>
+#include <private/qeglproperties_p.h>
+#include <private/qeglcontext_p.h>
 #include <private/qgl_egl_p.h>
 #include <private/qgl_cl_p.h>
 
@@ -121,16 +122,6 @@ QGLTemporaryContext::~QGLTemporaryContext()
   QGLFormat Win32/WGL-specific code
  *****************************************************************************/
 
-void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
-{
-    int devType = device->devType();
-    if (devType == QInternal::Image)
-        props.setPixelFormat(static_cast<QImage *>(device)->format());
-    else
-        props.setPixelFormat(QImage::Format_RGB16);
-}
-
-
 static bool opengl32dll = false;
 
 bool QGLFormat::hasOpenGLOverlays()
@@ -154,12 +145,14 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
+    d->ownsEglContext = true;
     d->eglContext->setApi(QEgl::OpenGL);
 
     // Construct the configuration we need for this surface.
     QEglProperties configProps;
-    qt_egl_add_platform_config(configProps, device());
-    qt_egl_set_format(configProps, devType, d->glFormat);
+    qt_eglproperties_set_glformat(configProps, d->glFormat);
+    configProps.setDeviceType(devType);
+    configProps.setPaintDeviceFormat(device());
     configProps.setRenderableType(QEgl::OpenGL);
 
     // Search for a matching configuration, reducing the complexity
@@ -171,7 +164,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }
 
     // Inform the higher layers about the actual format properties.
-    qt_egl_update_format(*(d->eglContext), d->glFormat);
+    qt_glformat_from_eglconfig(d->glFormat, d->eglContext->config());
 
     // Create a new context for the configuration.
     if (!d->eglContext->createContext

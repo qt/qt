@@ -982,7 +982,9 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
         icon = *cachedIcon;
     }
 
-    if (icon.availableSizes().isEmpty())
+    // Note the qapp check is to allow lazy loading of static icons
+    // Supporting fallbacks will not work for this case.
+    if (qApp && icon.availableSizes().isEmpty())
         return fallback;
 
     return icon;

@@ -362,6 +362,7 @@ QStringList ObjectDescriptionModelData::mimeTypes(ObjectDescriptionType type) co
     return QStringList(QLatin1String("application/x-phonon-objectdescription") + QString::number(static_cast<int>(type)));
 }
 
+#if !defined(Q_CC_MSVC) || _MSC_VER > 1300 || defined(Q_CC_INTEL) || defined(Q_CC_MINGW)
 #define INSTANTIATE_META_FUNCTIONS(type) \
 template const QMetaObject *ObjectDescriptionModel<type>::metaObject() const; \
 template void *ObjectDescriptionModel<type>::qt_metacast(const char *)
@@ -371,6 +372,7 @@ INSTANTIATE_META_FUNCTIONS(AudioCaptureDeviceType);
 INSTANTIATE_META_FUNCTIONS(EffectType);
 INSTANTIATE_META_FUNCTIONS(AudioChannelType);
 INSTANTIATE_META_FUNCTIONS(SubtitleType);
+#endif
 /*INSTANTIATE_META_FUNCTIONS(VideoOutputDeviceType);
 INSTANTIATE_META_FUNCTIONS(VideoCaptureDeviceType);
 INSTANTIATE_META_FUNCTIONS(AudioCodecType);

@@ -625,6 +625,11 @@ private:
     bool cdata;
     bool nsProcessing;
     QXmlLocator *locator;
+
+#ifdef Q_OS_SYMBIAN
+    // Workaround crash in elf2e32 under Wine.
+    virtual void dummy() {}
+#endif
 };
 
 /**************************************************************
@@ -3487,6 +3492,7 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
         if (p->isNotation())
             // Dont use normal insert function since we would create infinite recursion
             notations->map.insertMulti(p->nodeName(), p);
+        p = p->next;
     }
 }
 

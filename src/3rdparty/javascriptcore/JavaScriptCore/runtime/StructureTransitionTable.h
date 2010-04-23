@@ -42,7 +42,7 @@ namespace JSC {
         typedef std::pair<RefPtr<UString::Rep>, unsigned> Key;
         static unsigned hash(const Key& p)
         {
-            return p.first->computedHash();
+            return p.first->existingHash();
         }
 
         static bool equal(const Key& a, const Key& b)
@@ -143,14 +143,14 @@ namespace JSC {
             if (!specificValue) {
                 TransitionTable::iterator find = table()->find(key);
                 if (find == table()->end())
-                    table()->add(key, Transition(structure, 0));
+                    table()->add(key, Transition(structure, (Structure*)0));
                 else
                     find->second.first = structure;
             } else {
                 // If we're adding a transition to a specific value, then there cannot be
                 // an existing transition
                 ASSERT(!table()->contains(key));
-                table()->add(key, Transition(0, structure));
+                table()->add(key, Transition((Structure*)0, structure));
             }
         }
 

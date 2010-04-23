@@ -77,10 +77,11 @@ public:
     ~QNetworkReplyImpl();
     virtual void abort();
 
-    // reimplemented from QNetworkReply
+    // reimplemented from QNetworkReply / QIODevice
     virtual void close();
     virtual qint64 bytesAvailable() const;
     virtual void setReadBufferSize(qint64 size);
+    virtual bool canReadLine () const;
 
     virtual qint64 readData(char *data, qint64 maxlen);
     virtual bool event(QEvent *);
@@ -98,7 +99,10 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadChannelFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
-    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionOnline())
+#ifndef QT_NO_BEARERMANAGEMENT
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
+#endif
 };
 
 class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
@@ -131,7 +135,10 @@ public:
     void _q_copyReadChannelFinished();
     void _q_bufferOutgoingData();
     void _q_bufferOutgoingDataFinished();
-    void _q_networkSessionOnline();
+#ifndef QT_NO_BEARERMANAGEMENT
+    void _q_networkSessionConnected();
+    void _q_networkSessionFailed();
+#endif
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
@@ -193,6 +200,7 @@ public:
     Q_DECLARE_PUBLIC(QNetworkReplyImpl)
 };
 
+#ifndef QT_NO_BEARERMANAGEMENT
 class QDisabledNetworkReply : public QNetworkReply
 {
     Q_OBJECT
@@ -206,6 +214,7 @@ public:
 protected:
     qint64 readData(char *, qint64) { return -1; }
 };
+#endif
 
 QT_END_NAMESPACE
 

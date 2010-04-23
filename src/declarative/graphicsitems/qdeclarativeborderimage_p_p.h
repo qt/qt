@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativeimagebase_p_p.h"
-#include "qdeclarativescalegrid_p_p.h"
+#include "private/qdeclarativeimagebase_p_p.h"
+#include "private/qdeclarativescalegrid_p_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +68,8 @@ public:
       : border(0), sciReply(0),
         sciPendingPixmapCache(false),
         horizontalTileMode(QDeclarativeBorderImage::Stretch),
-        verticalTileMode(QDeclarativeBorderImage::Stretch)
+        verticalTileMode(QDeclarativeBorderImage::Stretch),
+        redirectCount(0)
     {
     }
 
@@ -90,6 +91,7 @@ public:
     bool sciPendingPixmapCache;
     QDeclarativeBorderImage::TileMode horizontalTileMode;
     QDeclarativeBorderImage::TileMode verticalTileMode;
+    int redirectCount;
 };
 
 QT_END_NAMESPACE

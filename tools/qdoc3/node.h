@@ -163,6 +163,7 @@ class Node
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
     virtual bool isFunction() const { return false; }
+    virtual bool isQmlNode() const { return false; }
     Type type() const { return typ; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode *parent() const { return par; }
@@ -380,15 +381,17 @@ class QmlClassNode : public FakeNode
                  const QString& name, 
                  const ClassNode* cn);
     virtual ~QmlClassNode();
+    virtual bool isQmlNode() const { return true; }
 
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
-    static void addInheritedBy(const QString& base, const QString& sub);
-    static void subclasses(const QString& base, QStringList& subs);
+    static void addInheritedBy(const QString& base, Node* sub);
+    static void subclasses(const QString& base, NodeList& subs);
+    static void clear();
 
  public:
     static bool qmlOnly;
-    static QMultiMap<QString,QString> inheritedBy;
+    static QMultiMap<QString,Node*> inheritedBy;
 
  private:
     const ClassNode*    cnode;
@@ -400,6 +403,7 @@ class QmlBasicTypeNode : public FakeNode
     QmlBasicTypeNode(InnerNode *parent, 
                      const QString& name);
     virtual ~QmlBasicTypeNode() { }
+    virtual bool isQmlNode() const { return true; }
 };
 
 class QmlPropGroupNode : public FakeNode
@@ -409,6 +413,7 @@ class QmlPropGroupNode : public FakeNode
                      const QString& name,
                      bool attached);
     virtual ~QmlPropGroupNode() { }
+    virtual bool isQmlNode() const { return true; }
 
     const QString& element() const { return parent()->name(); }
     void setDefault() { isdefault = true; }
@@ -440,6 +445,7 @@ class QmlPropertyNode : public LeafNode
     bool isDesignable() const { return fromTrool(des,false); }
     bool isWritable() const { return fromTrool(wri,true); }
     bool isAttached() const { return att; }
+    virtual bool isQmlNode() const { return true; }
 
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
 
@@ -608,6 +614,9 @@ class FunctionNode : public LeafNode
     QString signature(bool values = false) const;
     const QString& element() const { return parent()->name(); }
     bool isAttached() const { return att; }
+    virtual bool isQmlNode() const { 
+        return ((type() == QmlSignal) || (type() == QmlMethod)); 
+    }
 
     void debug() const;
 

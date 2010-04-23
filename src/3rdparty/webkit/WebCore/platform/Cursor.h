@@ -26,8 +26,6 @@
 #ifndef Cursor_h
 #define Cursor_h
 
-#include <wtf/Platform.h>
-
 #if PLATFORM(WIN)
 typedef struct HICON__* HICON;
 typedef HICON HCURSOR;
@@ -56,6 +54,11 @@ class NSCursor;
 class wxCursor;
 #endif
 
+#if PLATFORM(WIN)
+typedef struct HICON__ *HICON;
+typedef HICON HCURSOR;
+#endif
+
 namespace WebCore {
 
     class Image;
@@ -65,7 +68,7 @@ namespace WebCore {
     class SharedCursor : public RefCounted<SharedCursor> {
     public:
         static PassRefPtr<SharedCursor> create(HCURSOR nativeCursor) { return adoptRef(new SharedCursor(nativeCursor)); }
-        ~SharedCursor() { DestroyIcon(m_nativeCursor); }
+        ~SharedCursor();
         HCURSOR nativeCursor() const { return m_nativeCursor; }
     private:
         SharedCursor(HCURSOR nativeCursor) : m_nativeCursor(nativeCursor) { }
@@ -79,6 +82,9 @@ namespace WebCore {
 #elif PLATFORM(GTK)
     typedef GdkCursor* PlatformCursor;
     typedef GdkCursor* PlatformCursorHandle;
+#elif PLATFORM(EFL)
+    typedef const char* PlatformCursor;
+    typedef const char* PlatformCursorHandle;
 #elif PLATFORM(QT) && !defined(QT_NO_CURSOR)
     typedef QCursor PlatformCursor;
     typedef QCursor* PlatformCursorHandle;
@@ -99,7 +105,7 @@ namespace WebCore {
     class Cursor {
     public:
         Cursor()
-#if !PLATFORM(QT)
+#if !PLATFORM(QT) && !PLATFORM(EFL)
         : m_impl(0)
 #endif
         { }

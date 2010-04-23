@@ -50,6 +50,7 @@
 #include <QtCore/qstringlist.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/private/qcoreapplication_p.h>
 
 #ifdef Q_OS_WIN
 #include "../platformdefs_win.h"
@@ -63,8 +64,11 @@
 #include <unistd.h>
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_NETWORKINTERFACE
 static QString qGetInterfaceType(const QString &interface)
 {
 #ifdef Q_OS_WIN32
@@ -138,13 +142,11 @@ static QString qGetInterfaceType(const QString &interface)
 
     return QLatin1String("Unknown");
 }
+#endif
 
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
 {
-    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
-    pollTimer.setInterval(10000);
-    doRequestUpdate();
 }
 
 QGenericEngine::~QGenericEngine()
@@ -177,14 +179,12 @@ void QGenericEngine::disconnectFromId(const QString &id)
 
 void QGenericEngine::requestUpdate()
 {
-    QMutexLocker locker(&mutex);
-
-    pollTimer.stop();
-    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+    doRequestUpdate();
 }
 
 void QGenericEngine::doRequestUpdate()
 {
+#ifndef QT_NO_NETWORKINTERFACE
     QMutexLocker locker(&mutex);
 
     // Immediately after connecting with a wireless access point
@@ -208,7 +208,7 @@ void QGenericEngine::doRequestUpdate()
         if (interface.flags() & QNetworkInterface::IsLoopBack)
             continue;
 
-        // ignore WLAN interface handled in seperate engine
+        // ignore WLAN interface handled in separate engine
         if (qGetInterfaceType(interface.name()) == QLatin1String("WLAN"))
             continue;
 
@@ -226,14 +226,16 @@ void QGenericEngine::doRequestUpdate()
         if (name.isEmpty())
             name = interface.name();
 
-        QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Discovered;
-        if (interface.flags() & QNetworkInterface::IsUp)
+        QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
+        if((interface.flags() & QNetworkInterface::IsUp) && !interface.addressEntries().isEmpty())
             state |= QNetworkConfiguration::Active;
 
         if (accessPointConfigurations.contains(id)) {
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
             bool changed = false;
+
+            ptr->mutex.lock();
 
             if (!ptr->isValid) {
                 ptr->isValid = true;
@@ -255,8 +257,13 @@ void QGenericEngine::doRequestUpdate()
                 changed = true;
             }
 
-            if (changed)
+            ptr->mutex.unlock();
+
+            if (changed) {
+                locker.unlock();
                 emit configurationChanged(ptr);
+                locker.relock();
+            }
         } else {
             QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
@@ -270,7 +277,9 @@ void QGenericEngine::doRequestUpdate()
             accessPointConfigurations.insert(id, ptr);
             configurationInterface.insert(id, interface.name());
 
+            locker.unlock();
             emit configurationAdded(ptr);
+            locker.relock();
         }
     }
 
@@ -279,10 +288,14 @@ void QGenericEngine::doRequestUpdate()
             accessPointConfigurations.take(previous.takeFirst());
 
         configurationInterface.remove(ptr->id);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 
-    pollTimer.start();
+    locker.unlock();
+#endif
 
     emit updateCompleted();
 }
@@ -295,6 +308,8 @@ QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
 
     if (!ptr)
         return QNetworkSession::Invalid;
+
+    QMutexLocker configLocker(&ptr->mutex);
 
     if (!ptr->isValid) {
         return QNetworkSession::Invalid;
@@ -328,5 +343,12 @@ QNetworkConfigurationPrivatePointer QGenericEngine::defaultConfiguration()
     return QNetworkConfigurationPrivatePointer();
 }
 
+
+bool QGenericEngine::requiresPolling() const
+{
+    return true;
+}
+
 QT_END_NAMESPACE
 
+#endif // QT_NO_BEARERMANAGEMENT

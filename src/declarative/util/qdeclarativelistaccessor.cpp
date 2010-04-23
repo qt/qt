@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistaccessor_p.h"
+#include "private/qdeclarativelistaccessor_p.h"
 
 #include <qdeclarativemetatype_p.h>
 

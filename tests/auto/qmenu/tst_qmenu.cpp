@@ -105,6 +105,7 @@ private slots:
     void deleteActionInTriggered();
     void pushButtonPopulateOnAboutToShow();
     void QTBUG7907_submenus_autoselect();
+    void QTBUG7411_submenus_activate();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -947,6 +948,25 @@ void tst_QMenu::QTBUG7907_submenus_autoselect()
     QTest::qWait(500);
     QVERIFY(!subset.isVisible());
 }
+
+void tst_QMenu::QTBUG7411_submenus_activate()
+{
+    QMenu menu("Test Menu");
+    QAction *act = menu.addAction("foo");
+    QMenu sub1("&sub1");
+    sub1.addAction("foo");
+    sub1.setTitle("&sub1");
+    QAction *act1 = menu.addMenu(&sub1);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    menu.setActiveAction(act);
+    QTest::keyPress(&menu, Qt::Key_Down);
+    QCOMPARE(menu.activeAction(), act1);
+    QVERIFY(!sub1.isVisible());
+    QTest::keyPress(&menu, Qt::Key_S);
+    QTRY_VERIFY(sub1.isVisible());
+}
+
 
 
 QTEST_MAIN(tst_QMenu)

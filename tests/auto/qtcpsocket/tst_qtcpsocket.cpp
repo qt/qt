@@ -92,6 +92,8 @@
 #include <unistd.h>
 #endif
 
+#include "private/qhostinfo_p.h"
+
 #include "../network-settings.h"
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
@@ -316,6 +318,8 @@ void tst_QTcpSocket::init()
         }
         QNetworkProxy::setApplicationProxy(proxy);
     }
+
+    qt_qhostinfo_clear_cache();
 }
 
 QTcpSocket *tst_QTcpSocket::newSocket() const
@@ -1060,7 +1064,9 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
     // just connect and disconnect, then make sure nothing weird happened
     QTcpSocket *socket = newSocket();
     socket->connectToHost(QtNetworkSettings::serverName(), 21);
-    QVERIFY(socket->state() == QAbstractSocket::HostLookupState);
+
+    // check that connect is in progress
+    QVERIFY(socket->state() != QAbstractSocket::UnconnectedState);
 
     QFETCH(bool, doClose);
     if (doClose) {
@@ -1111,7 +1117,7 @@ void tst_QTcpSocket::downloadBigFile()
 
     QByteArray hostName = QtNetworkSettings::serverName().toLatin1();
     QVERIFY(tmpSocket->state() == QAbstractSocket::ConnectedState);
-    QVERIFY(tmpSocket->write("GET /mediumfile HTTP/1.0\r\n") > 0);
+    QVERIFY(tmpSocket->write("GET /qtest/mediumfile HTTP/1.0\r\n") > 0);
     QVERIFY(tmpSocket->write("HOST: ") > 0);
     QVERIFY(tmpSocket->write(hostName.data()) > 0);
     QVERIFY(tmpSocket->write("\r\n") > 0);
@@ -1666,7 +1672,10 @@ void tst_QTcpSocket::waitForConnectedInHostLookupSlot()
     connect(tmpSocket, SIGNAL(hostFound()), this, SLOT(hostLookupSlot()));
     tmpSocket->connectToHost(QtNetworkSettings::serverName(), 143);
 
-    loop.exec();
+    // only execute the loop if not already connected
+    if (tmpSocket->state() != QAbstractSocket::ConnectedState)
+        loop.exec();
+
     QCOMPARE(timerSpy.count(), 0);
 
     delete tmpSocket;

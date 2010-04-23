@@ -44,6 +44,8 @@
 #include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 void *qdbus_resolve_me(const char *name);
@@ -109,6 +111,8 @@ void *qdbus_resolve_me(const char *name)
 
 Q_DESTRUCTOR_FUNCTION(qdbus_unloadLibDBus)
 
+#endif // QT_LINKED_LIBDBUS
+
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_DBUS

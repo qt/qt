@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_containers-associative
+TARGET = tst_bench_containers-associative
 DEPENDPATH += .
 INCLUDEPATH += .
 

@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(GEOLOCATION)
+
 #include "JSPositionError.h"
 
 #include "KURL.h"
@@ -37,9 +40,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSPositionError);
 
 static const HashTableValue JSPositionErrorTableValues[4] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsPositionErrorCode, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsPositionErrorMessage, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsPositionErrorConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorCode), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -52,12 +55,11 @@ static JSC_CONST_HASHTABLE HashTable JSPositionErrorTable =
 
 /* Hash table for constructor */
 
-static const HashTableValue JSPositionErrorConstructorTableValues[5] =
+static const HashTableValue JSPositionErrorConstructorTableValues[4] =
 {
-    { "UNKNOWN_ERROR", DontDelete|ReadOnly, (intptr_t)jsPositionErrorUNKNOWN_ERROR, (intptr_t)0 },
-    { "PERMISSION_DENIED", DontDelete|ReadOnly, (intptr_t)jsPositionErrorPERMISSION_DENIED, (intptr_t)0 },
-    { "POSITION_UNAVAILABLE", DontDelete|ReadOnly, (intptr_t)jsPositionErrorPOSITION_UNAVAILABLE, (intptr_t)0 },
-    { "TIMEOUT", DontDelete|ReadOnly, (intptr_t)jsPositionErrorTIMEOUT, (intptr_t)0 },
+    { "PERMISSION_DENIED", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorPERMISSION_DENIED), (intptr_t)0 },
+    { "POSITION_UNAVAILABLE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorPOSITION_UNAVAILABLE), (intptr_t)0 },
+    { "TIMEOUT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorTIMEOUT), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -65,7 +67,7 @@ static JSC_CONST_HASHTABLE HashTable JSPositionErrorConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPositionErrorConstructorTableValues, 0 };
 #else
-    { 10, 7, JSPositionErrorConstructorTableValues, 0 };
+    { 9, 7, JSPositionErrorConstructorTableValues, 0 };
 #endif
 
 class JSPositionErrorConstructor : public DOMConstructorObject {
@@ -82,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,12 +105,11 @@ bool JSPositionErrorConstructor::getOwnPropertyDescriptor(ExecState* exec, const
 
 /* Hash table for prototype */
 
-static const HashTableValue JSPositionErrorPrototypeTableValues[5] =
+static const HashTableValue JSPositionErrorPrototypeTableValues[4] =
 {
-    { "UNKNOWN_ERROR", DontDelete|ReadOnly, (intptr_t)jsPositionErrorUNKNOWN_ERROR, (intptr_t)0 },
-    { "PERMISSION_DENIED", DontDelete|ReadOnly, (intptr_t)jsPositionErrorPERMISSION_DENIED, (intptr_t)0 },
-    { "POSITION_UNAVAILABLE", DontDelete|ReadOnly, (intptr_t)jsPositionErrorPOSITION_UNAVAILABLE, (intptr_t)0 },
-    { "TIMEOUT", DontDelete|ReadOnly, (intptr_t)jsPositionErrorTIMEOUT, (intptr_t)0 },
+    { "PERMISSION_DENIED", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorPERMISSION_DENIED), (intptr_t)0 },
+    { "POSITION_UNAVAILABLE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorPOSITION_UNAVAILABLE), (intptr_t)0 },
+    { "TIMEOUT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPositionErrorTIMEOUT), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -116,7 +117,7 @@ static JSC_CONST_HASHTABLE HashTable JSPositionErrorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSPositionErrorPrototypeTableValues, 0 };
 #else
-    { 10, 7, JSPositionErrorPrototypeTableValues, 0 };
+    { 9, 7, JSPositionErrorPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSPositionErrorPrototype::s_info = { "PositionErrorPrototype", 0, &JSPositionErrorPrototypeTable, 0 };
@@ -164,25 +165,27 @@ bool JSPositionError::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSPositionError, Base>(exec, &JSPositionErrorTable, this, propertyName, descriptor);
 }
 
-JSValue jsPositionErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPositionErrorCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPositionError* castedThis = static_cast<JSPositionError*>(asObject(slot.slotBase()));
+    JSPositionError* castedThis = static_cast<JSPositionError*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     PositionError* imp = static_cast<PositionError*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsPositionErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPositionErrorMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPositionError* castedThis = static_cast<JSPositionError*>(asObject(slot.slotBase()));
+    JSPositionError* castedThis = static_cast<JSPositionError*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     PositionError* imp = static_cast<PositionError*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
-JSValue jsPositionErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPositionErrorConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPositionError* domObject = static_cast<JSPositionError*>(asObject(slot.slotBase()));
+    JSPositionError* domObject = static_cast<JSPositionError*>(asObject(slotBase));
     return JSPositionError::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSPositionError::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -192,22 +195,17 @@ JSValue JSPositionError::getConstructor(ExecState* exec, JSGlobalObject* globalO
 
 // Constant getters
 
-JSValue jsPositionErrorUNKNOWN_ERROR(ExecState* exec, const Identifier&, const PropertySlot&)
-{
-    return jsNumber(exec, static_cast<int>(0));
-}
-
-JSValue jsPositionErrorPERMISSION_DENIED(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorPERMISSION_DENIED(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsPositionErrorPOSITION_UNAVAILABLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorPOSITION_UNAVAILABLE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsPositionErrorTIMEOUT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsPositionErrorTIMEOUT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
@@ -222,3 +220,5 @@ PositionError* toPositionError(JSC::JSValue value)
 }
 
 }
+
+#endif // ENABLE(GEOLOCATION)

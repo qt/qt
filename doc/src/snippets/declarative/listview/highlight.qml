@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     width: 180; height: 200; color: "white"
@@ -30,7 +30,7 @@ Rectangle {
                 }
             ]
             transitions: [
-                Transition { NumberAnimation { matchProperties: "x"; duration: 200 } }
+                Transition { NumberAnimation { properties: "x"; duration: 200 } }
             ]
         }
     }
@@ -44,8 +44,8 @@ Rectangle {
         Rectangle {
             width: 180; height: 40
             color: "lightsteelblue"; radius: 5
-            y: SpringFollow {
-                source: list.currentItem.y
+            SpringFollow on y {
+                to: list.currentItem.y
                 spring: 3
                 damping: 0.2
             }

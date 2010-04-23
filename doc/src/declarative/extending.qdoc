@@ -41,7 +41,7 @@
 
 /*!
 \page qml-extending.html
-\title Extending QML
+\title Extending QML in C++
 
 The QML syntax declaratively describes how to construct an in memory object
 tree.  In Qt, QML is mainly used to describe a visual scene graph, but it is
@@ -67,21 +67,23 @@ that derive from QObject.
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must define the C++ types, and their corresponding QML name.
 
-Custom C++ types are made available to QML using these two macros:
+Custom C++ types are declared QML types using a macro and a template function:
 
 \quotation
+
 \code
 #define QML_DECLARE_TYPE(T)
-#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,QDeclarativeName,T)
+template<typename T>
+int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 \endcode
 
-Register the C++ type \a T with the QML system, and make it available in QML
-under the name \a QDeclarativeName in library URI version VMAJ.VMIN.
-\a T and \a QDeclarativeName may be the same.
+Calling qmlRegisterType() registers the C++ type \a T with the QML system, and makes it available in QML
+under the name \a qmlName in library \a uri version \a versionMajor.versionMinor.
+The \a qmlName can be the same as the C++ type name.
 
 Generally the QML_DECLARE_TYPE() macro should be included immediately following
-the type declaration (usually in its header file), and the QML_REGISTER_TYPE()
-macro called by the implementation.
+the type declaration (usually in its header file), and the template function qmlRegisterType()
+called by the implementation.
 
 Type \a T must be a concrete type that inherits QObject and has a default
 constructor.
@@ -147,19 +149,20 @@ property can be assigned.
 QML also supports assigning Qt interfaces.  To assign to a property whose type
 is a Qt interface pointer, the interface must also be registered with QML.  As
 they cannot be instantiated directly, registering a Qt interface is different
-from registering a new QML type.  The following macros are used instead:
+from registering a new QML type.  The following macro and function are used instead:
 
 \quotation
 \code
-    #define QML_DECLARE_INTERFACE(T)
-    #define QML_REGISTER_INTERFACE(T)
+#define QML_DECLARE_INTERFACE(T)
+template<typename T>
+int qmlRegisterInterface(const char *typeName)
 \endcode
 
-Register the C++ interface \a T with the QML system.
+Registers the C++ interface \a T with the QML system as \a typeName.
 
 Generally the QML_DECLARE_INTERFACE() macro should be included immediately
 following the interface declaration (usually in its header file), and the
-QML_REGISTER_INTERFACE() macro called by the implementation.
+qmlRegisterInterface() template function called by the implementation.
 
 Following registration, QML can coerce objects that implement this interface
 for assignment to appropriately typed properties.
@@ -192,25 +195,26 @@ type used in the previous section, but the assignment is valid as both the Boy
 and Girl objects inherit from Person.
 
 To assign to a property, the property's type must have been registered with QML.
-Both the QML_REGISTER_TYPE() and QML_REGISTER_INTERFACE() macros already shown can
-be used to register a type with QML.  Additionally, if a type that acts purely
+Both the qmlRegisterType() and qmlRegisterInterface() template functions already
+shown can be used to register a type with QML.  Additionally, if a type that acts purely
 as a base class that cannot be instantiated from QML needs to be
-registered these macros can be used:
+registered these macro and function can be used:
 
 \quotation
 \code
     #define QML_DECLARE_TYPE(T)
-    #define QML_REGISTER_NOCREATE_TYPE(T)
+    template<typename T>
+    int qmlRegisterType()
 \endcode
 
-Register the C++ type \a T with the QML system. QML_REGISTER_NOCREATE_TYPE()
-differs from QML_REGISTER_TYPE() in that it does not define a mapping between the
+Registers the C++ type \a T with the QML system. The parameterless call to the template
+function qmlRegisterType() does not define a mapping between the
 C++ class and a QML element name, so the type is not instantiable from QML, but
 it is available for type coercion.
 
 Generally the QML_DECLARE_TYPE() macro should be included immediately following
 the type declaration (usually in its header file), and the
-QML_REGISTER_NOCREATE_TYPE() macro called from the implementation.
+qmlRegisterType() template function called from the implementation.
 
 Type \a T must inherit QObject, but there are no restrictions on whether it is
 concrete or the signature of its constructor.
@@ -623,7 +627,7 @@ public:
 \title Extending types from QML
 
 Many of the elements available for use in QML are implemented in
-\l {Extending QML}{C++}.  These types are know as "core types".  QML
+\l {Extending QML in C++}{C++}.  These types are know as "core types".  QML
 allows programmers to build new, fully functional elements without using C++.
 Existing core types can be extended, and new types defined entirely in the QML
 language.
@@ -650,8 +654,7 @@ declaring a new property, and the corresponding C++ type.
 \row \o string \o QString
 \row \o url \o QUrl
 \row \o color \o QColor
-\row \o date \o QDate
-\row \o var \o QVariant
+\row \o date \o QDateTime
 \row \o variant \o QVariant
 \endtable
 
@@ -688,6 +691,19 @@ it in two steps, like this:
     property int myProperty
     myProperty: 10
 \endcode
+
+If a default value is not supplied or set later in the file, each type has a
+default value for when none is explictly set. Below are the default values 
+of some of the types. For the remaining types the default values are undefined.
+
+\table
+\header \o QML Type \o Default Value
+\row \o bool \o false
+\row \o int \o 0
+\row \o double, real \o 0.0
+\row \o string, url \o "" (an empty string)
+\row \o color \o #000000 (black)
+\endtable
 
 If specified, the optional "default" attribute marks the new property as the
 types default property, overriding any existing default property.  Using the
@@ -836,7 +852,7 @@ Here are three examples of signal declarations:
     Item {
         signal clicked
         signal hovered()
-        signal performAction(string action, var actionArgument)
+        signal performAction(string action, variant actionArgument)
     }
 \endcode
 

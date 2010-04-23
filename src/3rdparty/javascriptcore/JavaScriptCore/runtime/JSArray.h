@@ -32,6 +32,7 @@ namespace JSC {
         unsigned m_numValuesInVector;
         SparseArrayValueMap* m_sparseValueMap;
         void* lazyCreationData; // A JSArray subclass can use this to fill the vector lazily.
+        size_t reportedMapCapacity;
         JSValue m_vector[1];
     };
 
@@ -40,9 +41,9 @@ namespace JSC {
         friend class Walker;
 
     public:
-        explicit JSArray(PassRefPtr<Structure>);
-        JSArray(PassRefPtr<Structure>, unsigned initialLength);
-        JSArray(PassRefPtr<Structure>, const ArgList& initialValues);
+        explicit JSArray(NonNullPassRefPtr<Structure>);
+        JSArray(NonNullPassRefPtr<Structure>, unsigned initialLength);
+        JSArray(NonNullPassRefPtr<Structure>, const ArgList& initialValues);
         virtual ~JSArray();
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
@@ -87,16 +88,17 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
         
         inline void markChildrenDirect(MarkStack& markStack);
 
     protected:
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesMarkChildren | OverridesGetPropertyNames | JSObject::StructureFlags;
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
-        virtual bool deleteProperty(ExecState*, unsigned propertyName, bool checkDontDelete = true);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
+        virtual bool deleteProperty(ExecState*, unsigned propertyName);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
         virtual void markChildren(MarkStack&);
 
         void* lazyCreationData();
@@ -120,11 +122,6 @@ namespace JSC {
     };
 
     JSArray* asArray(JSValue);
-
-    JSArray* constructEmptyArray(ExecState*);
-    JSArray* constructEmptyArray(ExecState*, unsigned initialLength);
-    JSArray* constructArray(ExecState*, JSValue singleItemValue);
-    JSArray* constructArray(ExecState*, const ArgList& values);
 
     inline JSArray* asArray(JSCell* cell)
     {
@@ -162,7 +159,7 @@ namespace JSC {
     inline void MarkStack::markChildren(JSCell* cell)
     {
         ASSERT(Heap::isCellMarked(cell));
-        if (cell->structure()->typeInfo().hasDefaultMark()) {
+        if (!cell->structure()->typeInfo().overridesMarkChildren()) {
 #ifdef NDEBUG
             asObject(cell)->markChildrenDirect(*this);
 #else

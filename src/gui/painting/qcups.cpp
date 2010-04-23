@@ -343,7 +343,8 @@ bool QCUPSSupport::printerHasPPD(const char *printerName)
     if (!isAvailable())
         return false;
     const char *ppdFile = _cupsGetPPD(printerName);
-    unlink(ppdFile);
+    if (ppdFile)
+        unlink(ppdFile);
     return (ppdFile != 0);
 }
 

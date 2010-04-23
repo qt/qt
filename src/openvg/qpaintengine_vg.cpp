@@ -45,7 +45,7 @@
 #include "qvgcompositionhelper_p.h"
 #include "qvgimagepool_p.h"
 #if !defined(QT_NO_EGL)
-#include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qeglcontext_p.h>
 #include "qwindowsurface_vgegl_p.h"
 #endif
 #include <QtCore/qvarlengtharray.h>
@@ -75,8 +75,8 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_DECL_IMPORT extern int qt_defaultDpiX();
+Q_DECL_IMPORT extern int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
 
@@ -130,9 +130,8 @@ public:
     void draw(VGPath path, const QPen& pen, const QBrush& brush, VGint rule = VG_EVEN_ODD);
     void stroke(VGPath path, const QPen& pen);
     void fill(VGPath path, const QBrush& brush, VGint rule = VG_EVEN_ODD);
-    inline void releasePath(VGPath path);
-    VGPath vectorPathToVGPath(const QVectorPath& path, bool forceNewPath = false);
-    VGPath painterPathToVGPath(const QPainterPath& path, bool forceNewPath = false);
+    VGPath vectorPathToVGPath(const QVectorPath& path);
+    VGPath painterPathToVGPath(const QPainterPath& path);
     VGPath roundedRectPath(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode);
     VGPaintType setBrush
         (VGPaint paint, const QBrush& brush, VGMatrixMode mode,
@@ -178,13 +177,12 @@ public:
     VGPath roundRectPath;   // Cached path for quick drawing of rounded rects.
 #endif
 
-    VGPath reusablePath;    // Reusable path for vectorPathToVGPath(), etc.
-
     QTransform transform;   // Currently active transform.
     bool simpleTransform;   // True if the transform is simple (non-projective).
     qreal penScale;         // Pen scaling factor from "transform".
 
     QTransform pathTransform;  // Calculated VG path transformation.
+    QTransform glyphTransform; // Calculated VG glyph transformation.
     QTransform imageTransform; // Calculated VG image transformation.
     bool pathTransformSet;  // True if path transform set in the VG context.
 
@@ -352,8 +350,6 @@ void QVGPaintEnginePrivate::init()
     roundRectPath = 0;
 #endif
 
-    reusablePath = 0;
-
     simpleTransform = true;
     pathTransformSet = false;
     penScale = 1.0;
@@ -450,15 +446,6 @@ void QVGPaintEnginePrivate::initObjects()
                             VG_PATH_CAPABILITY_ALL);
     vgAppendPathData(linePath, 2, segments, coords);
 #endif
-
-    // This path can be reused over and over by calling vgClearPath().
-    reusablePath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                                VG_PATH_DATATYPE_F,
-                                1.0f,        // scale
-                                0.0f,        // bias
-                                32 + 1,      // segmentCapacityHint
-                                32 * 2,      // coordCapacityHint
-                                VG_PATH_CAPABILITY_ALL);
 }
 
 void QVGPaintEnginePrivate::destroy()
@@ -478,8 +465,6 @@ void QVGPaintEnginePrivate::destroy()
     if (roundRectPath)
         vgDestroyPath(roundRectPath);
 #endif
-    if (reusablePath)
-        vgDestroyPath(reusablePath);
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
     QVGFontCache::Iterator it;
@@ -511,77 +496,71 @@ void QVGPaintEnginePrivate::setTransform
     vgLoadMatrix(mat);
 }
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_DECL_IMPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
 {
-    VGfloat devh = pdev->height() - 1;
+    VGfloat devh = pdev->height();
 
     // Construct the VG transform by combining the Qt transform with
     // the following viewport transformation:
-    //        | 1  0  0   |   | 1 0  0.5 |   | 1  0     0.5      |
-    //        | 0 -1 devh | * | 0 1 -0.5 | = | 0 -1 (0.5 + devh) |
-    //        | 0  0  1   |   | 0 0   1  |   | 0  0      1       |
+    //        | 1  0  0   |
+    //        | 0 -1 devh |
+    //        | 0  0  1   |
+    // The glyph transform uses a slightly different transformation:
+    //        | 1  0  0       |   | 1 0  0.5 |   | 1  0     0.5      |
+    //        | 0 -1 devh - 1 | * | 0 1 -0.5 | = | 0 -1 (devh - 0.5) |
+    //        | 0  0  1       |   | 0 0   1  |   | 0  0      1       |
     // The full VG transform is effectively:
     //      1. Apply the user's transformation matrix.
-    //      2. Translate by (0.5, -0.5) to correct for Qt and VG putting
-    //         the centre of the pixel at different positions.
+    //      2. Translate glyphs by an extra (0.5, -0.5).
     //      3. Flip the co-ordinate system upside down.
     QTransform viewport(1.0f, 0.0f, 0.0f,
                         0.0f, -1.0f, 0.0f,
-                        0.5f, devh + 0.5f, 1.0f);
+                        0.0f, devh, 1.0f);
+    QTransform gviewport(1.0f, 0.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f,
+                        0.5f, devh - 0.5f, 1.0f);
 
-    // The image transform is always the full transformation,
-    // because it can be projective.
-    imageTransform = transform * viewport;
-
-    // Determine if the transformation is projective.
-    bool projective = (imageTransform.m13() != 0.0f ||
-                       imageTransform.m23() != 0.0f ||
-                       imageTransform.m33() != 1.0f);
+    // Compute the path transform and determine if it is projective.
+    pathTransform = transform * viewport;
+    glyphTransform = transform * gviewport;
+    bool projective = (pathTransform.m13() != 0.0f ||
+                       pathTransform.m23() != 0.0f ||
+                       pathTransform.m33() != 1.0f);
     if (projective) {
         // The engine cannot do projective path transforms for us,
         // so we will have to convert the co-ordinates ourselves.
         // Change the matrix to just the viewport transformation.
         pathTransform = viewport;
+        glyphTransform = gviewport;
         simpleTransform = false;
     } else {
-        pathTransform = imageTransform;
         simpleTransform = true;
     }
     pathTransformSet = false;
+
+    // The image transform is always the full transformation,
+    imageTransform = transform * viewport;
 
     // Calculate the scaling factor to use for turning cosmetic pens
     // into ordinary non-cosmetic pens.
     qt_scaleForTransform(transform, &penScale);
 }
 
-inline void QVGPaintEnginePrivate::releasePath(VGPath path)
-{
-    if (path == reusablePath)
-        vgClearPath(path, VG_PATH_CAPABILITY_ALL);
-    else
-        vgDestroyPath(path);
-}
-
-VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path, bool forceNewPath)
+VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
 {
     int count = path.elementCount();
     const qreal *points = path.points();
     const QPainterPath::ElementType *elements = path.elements();
 
-    VGPath vgpath;
-    if (forceNewPath) {
-        vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                              VG_PATH_DATATYPE_F,
-                              1.0f,        // scale
-                              0.0f,        // bias
-                              count + 1,   // segmentCapacityHint
-                              count * 2,   // coordCapacityHint
-                              VG_PATH_CAPABILITY_ALL);
-    } else {
-        vgpath = reusablePath;
-    }
+    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                 VG_PATH_DATATYPE_F,
+                                 1.0f,        // scale
+                                 0.0f,        // bias
+                                 count + 1,   // segmentCapacityHint
+                                 count * 2,   // coordCapacityHint
+                                 VG_PATH_CAPABILITY_ALL);
 
     // Size is sufficient segments for drawRoundedRect() paths.
     QVarLengthArray<VGubyte, 20> segments;
@@ -753,22 +732,17 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path, bool f
     return vgpath;
 }
 
-VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path, bool forceNewPath)
+VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path)
 {
     int count = path.elementCount();
 
-    VGPath vgpath;
-    if (forceNewPath) {
-        vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                              VG_PATH_DATATYPE_F,
-                              1.0f,        // scale
-                              0.0f,        // bias
-                              count + 1,   // segmentCapacityHint
-                              count * 2,   // coordCapacityHint
-                              VG_PATH_CAPABILITY_ALL);
-    } else {
-        vgpath = reusablePath;
-    }
+    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                 VG_PATH_DATATYPE_F,
+                                 1.0f,        // scale
+                                 0.0f,        // bias
+                                 count + 1,   // segmentCapacityHint
+                                 count * 2,   // coordCapacityHint
+                                 VG_PATH_CAPABILITY_ALL);
 
     if (count == 0)
         return vgpath;
@@ -987,14 +961,20 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
         vgModifyPathCoords(vgpath, 0, 9, pts);
     }
 #else
-    VGPath vgpath = reusablePath;
+    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                 VG_PATH_DATATYPE_F,
+                                 1.0f,        // scale
+                                 0.0f,        // bias
+                                 10,          // segmentCapacityHint
+                                 17 * 2,      // coordCapacityHint
+                                 VG_PATH_CAPABILITY_ALL);
     vgAppendPathData(vgpath, 10, roundedrect_types, pts);
 #endif
 
     return vgpath;
 }
 
-extern QImage qt_imageForBrush(int style, bool invert);
+Q_DECL_IMPORT extern QImage qt_imageForBrush(int style, bool invert);
 
 static QImage colorizeBitmap(const QImage &image, const QColor &color)
 {
@@ -1540,7 +1520,7 @@ void QVGPaintEngine::draw(const QVectorPath &path)
         d->draw(vgpath, s->pen, s->brush, VG_EVEN_ODD);
     else
         d->draw(vgpath, s->pen, s->brush, VG_NON_ZERO);
-    d->releasePath(vgpath);
+    vgDestroyPath(vgpath);
 }
 
 void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
@@ -1551,7 +1531,7 @@ void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         d->fill(vgpath, brush, VG_EVEN_ODD);
     else
         d->fill(vgpath, brush, VG_NON_ZERO);
-    d->releasePath(vgpath);
+    vgDestroyPath(vgpath);
 }
 
 void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
@@ -1559,7 +1539,7 @@ void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     Q_D(QVGPaintEngine);
     VGPath vgpath = d->vectorPathToVGPath(path);
     d->stroke(vgpath, pen);
-    d->releasePath(vgpath);
+    vgDestroyPath(vgpath);
 }
 
 // Determine if a co-ordinate transform is simple enough to allow
@@ -1755,7 +1735,7 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
         default: break;
     }
-    d->releasePath(vgpath);
+    vgDestroyPath(vgpath);
 
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
@@ -2072,7 +2052,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 
         default: break;
     }
-    d->releasePath(vgpath);
+    vgDestroyPath(vgpath);
 
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
@@ -2086,6 +2066,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 void QVGPaintEnginePrivate::ensureMask
         (QVGPaintEngine *engine, int width, int height)
 {
+    scissorMask = false;
     if (maskIsSet) {
         vgMask(VG_INVALID_HANDLE, VG_FILL_MASK, 0, 0, width, height);
         maskRect = QRect();
@@ -2511,7 +2492,7 @@ void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad,
         VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
         d->draw(vgpath, s->pen, s->brush);
 #if defined(QVG_NO_MODIFY_PATH)
-        d->releasePath(vgpath);
+        vgDestroyPath(vgpath);
 #endif
     } else {
         QPaintEngineEx::drawRoundedRect(rect, xrad, yrad, mode);
@@ -2660,7 +2641,13 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
     Q_D(QVGPaintEngine);
     if (d->simpleTransform) {
         QVGPainterState *s = state();
-        VGPath path = d->reusablePath;
+        VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                   VG_PATH_DATATYPE_F,
+                                   1.0f, // scale
+                                   0.0f, // bias
+                                   4,    // segmentCapacityHint
+                                   12,   // coordCapacityHint
+                                   VG_PATH_CAPABILITY_ALL);
         static VGubyte segments[4] = {
             VG_MOVE_TO_ABS,
             VG_SCCWARC_TO_REL,
@@ -2684,7 +2671,7 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
         coords[11] = 0.0f;
         vgAppendPathData(path, 4, segments, coords);
         d->draw(path, s->pen, s->brush);
-        d->releasePath(path);
+        vgDestroyPath(path);
     } else {
         // The projective transform version of an ellipse is difficult.
         // Generate a QVectorPath containing cubic curves and transform that.
@@ -2708,7 +2695,7 @@ void QVGPaintEngine::drawPath(const QPainterPath &path)
         d->draw(vgpath, s->pen, s->brush, VG_EVEN_ODD);
     else
         d->draw(vgpath, s->pen, s->brush, VG_NON_ZERO);
-    d->releasePath(vgpath);
+    vgDestroyPath(vgpath);
 }
 
 void QVGPaintEngine::drawPoints(const QPointF *points, int pointCount)
@@ -2783,7 +2770,13 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
 {
     Q_D(QVGPaintEngine);
     QVGPainterState *s = state();
-    VGPath path = d->reusablePath;
+    VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                               VG_PATH_DATATYPE_F,
+                               1.0f,             // scale
+                               0.0f,             // bias
+                               pointCount + 1,   // segmentCapacityHint
+                               pointCount * 2,   // coordCapacityHint
+                               VG_PATH_CAPABILITY_ALL);
     QVarLengthArray<VGfloat, 16> coords;
     QVarLengthArray<VGubyte, 10> segments;
     for (int i = 0; i < pointCount; ++i, ++points) {
@@ -2817,14 +2810,20 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
             d->draw(path, s->pen, s->brush, VG_EVEN_ODD);
             break;
     }
-    d->releasePath(path);
+    vgDestroyPath(path);
 }
 
 void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QVGPaintEngine);
     QVGPainterState *s = state();
-    VGPath path = d->reusablePath;
+    VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                               VG_PATH_DATATYPE_F,
+                               1.0f,             // scale
+                               0.0f,             // bias
+                               pointCount + 1,   // segmentCapacityHint
+                               pointCount * 2,   // coordCapacityHint
+                               VG_PATH_CAPABILITY_ALL);
     QVarLengthArray<VGfloat, 16> coords;
     QVarLengthArray<VGubyte, 10> segments;
     for (int i = 0; i < pointCount; ++i, ++points) {
@@ -2858,7 +2857,7 @@ void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDr
             d->draw(path, s->pen, s->brush, VG_EVEN_ODD);
             break;
     }
-    d->releasePath(path);
+    vgDestroyPath(path);
 }
 
 void QVGPaintEnginePrivate::setImageOptions()
@@ -3045,8 +3044,8 @@ void QVGPaintEngine::drawTiledPixmap
 // (i.e. no opacity), no rotation or scaling, and drawing the full
 // pixmap rather than parts of the pixmap.  Even having just one of
 // these conditions will improve performance.
-void QVGPaintEngine::drawPixmapFragments(const QPainter::Fragment *drawingData, int dataCount,
-                                         const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints)
+void QVGPaintEngine::drawPixmapFragments(const QPainter::PixmapFragment *drawingData, int dataCount,
+                                         const QPixmap &pixmap, QFlags<QPainter::PixmapFragmentHint> hints)
 {
 #if !defined(QT_SHIVAVG)
     Q_D(QVGPaintEngine);
@@ -3255,7 +3254,7 @@ void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
         fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
         VGPath vgPath;
         if (!path.isEmpty()) {
-            vgPath = d->painterPathToVGPath(path, true);
+            vgPath = d->painterPathToVGPath(path);
         } else {
             // Probably a "space" character with no visible outline.
             vgPath = VG_INVALID_HANDLE;
@@ -3311,6 +3310,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
  bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
                                        QFontEngine *fontEngine, const QPointF &p)
  {
+#if !defined(QVG_NO_DRAW_GLYPHS)
     Q_D(QVGPaintEngine);
 
     // Find the glyph cache for this font.
@@ -3334,7 +3334,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     }
 
     // Set the transformation to use for drawing the current glyphs.
-    QTransform glyphTransform(d->pathTransform);
+    QTransform glyphTransform(d->glyphTransform);
     glyphTransform.translate(p.x(), p.y());
 #if defined(QVG_NO_IMAGE_GLYPHS)
     glyphTransform.scale(glyphCache->scaleX, glyphCache->scaleY);
@@ -3365,6 +3365,14 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
 
     return true;
+#else
+    Q_UNUSED(numGlyphs);
+    Q_UNUSED(glyphs);
+    Q_UNUSED(font);
+    Q_UNUSED(fontEngine);
+    Q_UNUSED(p);
+    return false;
+#endif
 }
 
 void QVGPaintEngine::setState(QPainterState *s)
@@ -3664,10 +3672,10 @@ void QVGCompositionHelper::fillBackground
 
     } else {
         // Set the path transform to the default viewport transformation.
-        VGfloat devh = screenSize.height() - 1;
+        VGfloat devh = screenSize.height();
         QTransform viewport(1.0f, 0.0f, 0.0f,
                             0.0f, -1.0f, 0.0f,
-                            -0.5f, devh + 0.5f, 1.0f);
+                            0.0f, devh, 1.0f);
         d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
 
         // Set the brush to use to fill the background.
@@ -3703,10 +3711,10 @@ void QVGCompositionHelper::drawCursorPixmap
     }
 
     // Set the image transformation and modes.
-    VGfloat devh = screenSize.height() - 1;
+    VGfloat devh = screenSize.height();
     QTransform transform(1.0f, 0.0f, 0.0f,
                          0.0f, -1.0f, 0.0f,
-                         -0.5f, devh + 0.5f, 1.0f);
+                         0.0f, devh, 1.0f);
     transform.translate(offset.x(), offset.y());
     d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
     d->setImageMode(VG_DRAW_IMAGE_NORMAL);

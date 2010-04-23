@@ -54,8 +54,9 @@
 //
 
 #include "qnetworkconfiguration.h"
+
 #include <QtCore/qshareddata.h>
-#include <QtNetwork/QNetworkInterface>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,12 +65,13 @@ class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
     QNetworkConfigurationPrivate ()
-    :   isValid(false), type(QNetworkConfiguration::Invalid),
-        roamingSupported(false), purpose(QNetworkConfiguration::UnknownPurpose), internet(false)
+    :   mutex(QMutex::Recursive), type(QNetworkConfiguration::Invalid),
+        purpose(QNetworkConfiguration::UnknownPurpose),
+        isValid(false), roamingSupported(false)
     {
     }
 
-    ~QNetworkConfigurationPrivate()
+    virtual ~QNetworkConfigurationPrivate()
     {
         //release pointers to member configurations
         serviceNetworkMembers.clear(); 
@@ -77,26 +79,27 @@ public:
 
     virtual QString bearerName() const
     {
+        QMutexLocker locker(&mutex);
+
         return bearer;
     }
 
-    QString bearer;
-
-    QString name;
-
-    bool isValid;
-    QString id;
-    QNetworkConfiguration::StateFlags state;
-    QNetworkConfiguration::Type type;
-    bool roamingSupported;
-    QNetworkConfiguration::Purpose purpose;
-
-    bool internet;
-
     QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
-private:
+    mutable QMutex mutex;
 
+    QString bearer;
+    QString name;
+    QString id;
+
+    QNetworkConfiguration::StateFlags state;
+    QNetworkConfiguration::Type type;
+    QNetworkConfiguration::Purpose purpose;
+
+    bool isValid;
+    bool roamingSupported;
+
+private:
     // disallow detaching
     QNetworkConfigurationPrivate &operator=(const QNetworkConfigurationPrivate &other);
     QNetworkConfigurationPrivate(const QNetworkConfigurationPrivate &other);

@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include "qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p.h"
 
-#include "qdeclarativenullablevalue_p_p.h"
-#include "qdeclarativetimeline_p_p.h"
+#include "private/qdeclarativenullablevalue_p_p.h"
+#include "private/qdeclarativetimeline_p_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativeitem.h>
@@ -100,17 +100,11 @@ class QActionAnimation : public QAbstractAnimation
 {
     Q_OBJECT
 public:
-    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped), running(false) {}
+    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped) {}
     QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
-        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped), running(false) {}
+        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped) {}
     ~QActionAnimation() { if (policy == DeleteWhenStopped) { delete animAction; animAction = 0; } }
     virtual int duration() const { return 0; }
-    void clearAnimAction()
-    {
-        if (policy == DeleteWhenStopped)
-            delete animAction;
-        animAction = 0;
-    }
     void setAnimAction(QAbstractAnimationAction *action, DeletionPolicy p)
     {
         if (state() == Running)
@@ -127,36 +121,35 @@ protected:
     {
         if (newState == Running) {
             if (animAction) {
-                running = true;
                 animAction->doAction();
-                running = false;
                 if (state() == Stopped && policy == DeleteWhenStopped) {
                     delete animAction;
                     animAction = 0;
                 }
             }
-        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
-            if (!running) {
-                delete animAction;
-                animAction = 0;
-            }
-        }*/
+        }
     }
 
 private:
     QAbstractAnimationAction *animAction;
     DeletionPolicy policy;
-    bool running;
 };
 
-//animates QDeclarativeTimeLineValue (assumes start and end values will be reals or compatible)
-class QDeclarativeTimeLineValueAnimator : public QVariantAnimation
+class QDeclarativeBulkValueUpdater
+{
+public:
+    virtual ~QDeclarativeBulkValueUpdater() {}
+    virtual void setValue(qreal value) = 0;
+};
+
+//animates QDeclarativeBulkValueUpdater (assumes start and end values will be reals or compatible)
+class QDeclarativeBulkValueAnimator : public QVariantAnimation
 {
     Q_OBJECT
 public:
-    QDeclarativeTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
-    ~QDeclarativeTimeLineValueAnimator() { if (policy == DeleteWhenStopped) { delete animValue; animValue = 0; } }
-    void setAnimValue(QDeclarativeTimeLineValue *value, DeletionPolicy p)
+    QDeclarativeBulkValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
+    ~QDeclarativeBulkValueAnimator() { if (policy == DeleteWhenStopped) { delete animValue; animValue = 0; } }
+    void setAnimValue(QDeclarativeBulkValueUpdater *value, DeletionPolicy p)
     {
         if (state() == Running)
             stop();
@@ -185,15 +178,11 @@ protected:
             //check for new from every loop
             if (fromSourced)
                 *fromSourced = false;
-        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
-            delete animValue;
-            animValue = 0;
-        }*/ //### we get a stop each loop if we are in a group
-        //### top-level animation is the only reliable one for this
+        }
     }
 
 private:
-    QDeclarativeTimeLineValue *animValue;
+    QDeclarativeBulkValueUpdater *animValue;
     bool *fromSourced;
     DeletionPolicy policy;
 };
@@ -218,18 +207,20 @@ class QDeclarativeAbstractAnimationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeAbstractAnimation)
 public:
     QDeclarativeAbstractAnimationPrivate()
-    : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
+    : running(false), paused(false), alwaysRunToEnd(false),
       connectedTimeLine(false), componentComplete(true),
-      avoidPropertyValueSourceStart(false), disableUserControl(false), group(0) {}
+      avoidPropertyValueSourceStart(false), disableUserControl(false),
+      loopCount(1), group(0) {}
 
     bool running:1;
     bool paused:1;
     bool alwaysRunToEnd:1;
-    bool repeat:1;
     bool connectedTimeLine:1;
     bool componentComplete:1;
     bool avoidPropertyValueSourceStart:1;
     bool disableUserControl:1;
+
+    int loopCount;
 
     void commence();
 
@@ -257,7 +248,7 @@ class QDeclarativeScriptActionPrivate : public QDeclarativeAbstractAnimationPriv
     Q_DECLARE_PUBLIC(QDeclarativeScriptAction)
 public:
     QDeclarativeScriptActionPrivate()
-        : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), proxy(this), rsa(0) {}
+        : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), reversing(false), proxy(this), rsa(0) {}
 
     void init();
 
@@ -265,6 +256,7 @@ public:
     QString name;
     QDeclarativeScriptString runScriptScript;
     bool hasRunScriptScript;
+    bool reversing;
 
     void execute();
 
@@ -293,22 +285,6 @@ public:
     QActionAnimation *spa;
 };
 
-class QDeclarativeParentActionPrivate : public QDeclarativeAbstractAnimationPrivate
-{
-    Q_DECLARE_PUBLIC(QDeclarativeParentAction)
-public:
-    QDeclarativeParentActionPrivate()
-    : QDeclarativeAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
-
-    void init();
-
-    QDeclarativeItem *pcTarget;
-    QDeclarativeItem *pcParent;
-
-    void doAction();
-    QActionAnimation *cpa;
-};
-
 class QDeclarativeAnimationGroupPrivate : public QDeclarativeAbstractAnimationPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeAnimationGroup)
@@ -328,7 +304,7 @@ class QDeclarativePropertyAnimationPrivate : public QDeclarativeAbstractAnimatio
 public:
     QDeclarativePropertyAnimationPrivate()
     : QDeclarativeAbstractAnimationPrivate(), target(0), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0) {}
+      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0), actions(0) {}
 
     void init();
 
@@ -352,7 +328,10 @@ public:
     int interpolatorType;
     QVariantAnimation::Interpolator interpolator;
 
-    QDeclarativeTimeLineValueAnimator *va;
+    QDeclarativeBulkValueAnimator *va;
+
+    // for animations that dont use the QDeclarativeBulkValueAnimator
+    QDeclarativeStateActions *actions;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, int type);
@@ -362,7 +341,7 @@ class QDeclarativeRotationAnimationPrivate : public QDeclarativePropertyAnimatio
 {
     Q_DECLARE_PUBLIC(QDeclarativeRotationAnimation)
 public:
-    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Shortest) {}
+    QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Numerical) {}
 
     QDeclarativeRotationAnimation::RotationDirection direction;
 };
@@ -384,6 +363,19 @@ public:
     QActionAnimation *endAction;
 
     QPointF computeTransformOrigin(QDeclarativeItem::TransformOrigin origin, qreal width, qreal height) const;
+};
+
+class QDeclarativeAnchorAnimationPrivate : public QDeclarativeAbstractAnimationPrivate
+{
+    Q_DECLARE_PUBLIC(QDeclarativeAnchorAnimation)
+public:
+    QDeclarativeAnchorAnimationPrivate() : rangeIsSet(false), va(0),
+        interpolator(QVariantAnimationPrivate::getInterpolator(QMetaType::QReal)) {}
+
+    bool rangeIsSet;
+    QDeclarativeBulkValueAnimator *va;
+    QVariantAnimation::Interpolator interpolator;
+    QList<QDeclarativeItem*> targets;
 };
 
 QT_END_NAMESPACE

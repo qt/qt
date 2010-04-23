@@ -80,21 +80,9 @@ public:
     QSvgArc(QSvgNode *parent, const QPainterPath &path);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
-    QPainterPath cubic;
-    QRectF m_cachedBounds;
-};
-
-class QSvgCircle : public QSvgNode
-{
-public:
-    QSvgCircle(QSvgNode *parent, const QRectF &rect);
-    virtual void draw(QPainter *p, QSvgExtraStates &states);
-    virtual Type type() const;
-    virtual QRectF bounds() const;
-private:
-    QRectF m_bounds;
+    QPainterPath m_path;
 };
 
 class QSvgEllipse : public QSvgNode
@@ -103,9 +91,16 @@ public:
     QSvgEllipse(QSvgNode *parent, const QRectF &rect);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
     QRectF m_bounds;
+};
+
+class QSvgCircle : public QSvgEllipse
+{
+public:
+    QSvgCircle(QSvgNode *parent, const QRectF &rect) : QSvgEllipse(parent, rect) { }
+    virtual Type type() const;
 };
 
 class QSvgImage : public QSvgNode
@@ -115,7 +110,7 @@ public:
               const QRect &bounds);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
     QImage m_image;
     QRect  m_bounds;
@@ -127,9 +122,9 @@ public:
     QSvgLine(QSvgNode *parent, const QLineF &line);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
-    QLineF m_bounds;
+    QLineF m_line;
 };
 
 class QSvgPath : public QSvgNode
@@ -138,14 +133,13 @@ public:
     QSvgPath(QSvgNode *parent, const QPainterPath &qpath);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 
     QPainterPath *qpath() {
         return &m_path;
     }
 private:
     QPainterPath m_path;
-    mutable QRectF m_cachedBounds;
 };
 
 class QSvgPolygon : public QSvgNode
@@ -154,7 +148,7 @@ public:
     QSvgPolygon(QSvgNode *parent, const QPolygonF &poly);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
     QPolygonF m_poly;
 };
@@ -165,7 +159,7 @@ public:
     QSvgPolyline(QSvgNode *parent, const QPolygonF &poly);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
     QPolygonF m_poly;
 };
@@ -176,7 +170,7 @@ public:
     QSvgRect(QSvgNode *paren, const QRectF &rect, int rx=0, int ry=0);
     virtual Type type() const;
     virtual void draw(QPainter *p, QSvgExtraStates &states);
-    virtual QRectF bounds() const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
     QRectF m_rect;
     int m_rx, m_ry;
@@ -205,7 +199,7 @@ public:
     void addLineBreak() {m_tspans.append(LINEBREAK);}
     void setWhitespaceMode(WhitespaceMode mode) {m_mode = mode;}
 
-    //virtual QRectF bounds() const;
+    //virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 private:
     static QSvgTspan * const LINEBREAK;
 
@@ -248,13 +242,11 @@ public:
     QSvgUse(const QPointF &start, QSvgNode *parent, QSvgNode *link);
     virtual void draw(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
-    virtual QRectF bounds() const;
-    virtual QRectF transformedBounds(const QTransform &transform) const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
 
 private:
     QSvgNode *m_link;
     QPointF   m_start;
-    mutable QRectF    m_bounds;
 };
 
 class QSvgVideo : public QSvgNode

@@ -999,10 +999,10 @@ void tst_QPainter::drawPixmapFragments()
 {
     QPixmap origPixmap(20, 20);
     QPixmap resPixmap(20, 20);
-    QPainter::Fragment fragments[4] = { {15, 15,  0,  0, 10, 10, 1, 1, 0, 1},
-                                        { 5, 15, 10,  0, 10, 10, 1, 1, 0, 1},
-                                        {15,  5,  0, 10, 10, 10, 1, 1, 0, 1},
-                                        { 5,  5, 10, 10, 10, 10, 1, 1, 0, 1} };
+    QPainter::PixmapFragment fragments[4] = { {15, 15,  0,  0, 10, 10, 1, 1, 0, 1},
+                                              { 5, 15, 10,  0, 10, 10, 1, 1, 0, 1},
+                                              {15,  5,  0, 10, 10, 10, 1, 1, 0, 1},
+                                              { 5,  5, 10, 10, 10, 10, 1, 1, 0, 1} };
     {
         QPainter p(&origPixmap);
         p.fillRect(0, 0, 10, 10, Qt::red);
@@ -1025,7 +1025,7 @@ void tst_QPainter::drawPixmapFragments()
     QVERIFY(resImage.pixel(15, 15) == origImage.pixel(5, 5));
 
 
-    QPainter::Fragment fragment = QPainter::Fragment::create(QPointF(20, 20), QRectF(30, 30, 2, 2));
+    QPainter::PixmapFragment fragment = QPainter::PixmapFragment::create(QPointF(20, 20), QRectF(30, 30, 2, 2));
     QVERIFY(fragment.x == 20);
     QVERIFY(fragment.y == 20);
     QVERIFY(fragment.sourceLeft == 30);

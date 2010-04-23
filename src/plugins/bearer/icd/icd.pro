@@ -3,16 +3,14 @@ include(../../qpluginbase.pri)
 
 QT += network dbus
 
-CONFIG += link_pkgconfig
-PKGCONFIG += glib-2.0 dbus-glib-1 gconf-2.0 osso-ic conninet
+QMAKE_CXXFLAGS += $$QT_CFLAGS_ICD
+LIBS += $$QT_LIBS_ICD
 
 HEADERS += qicdengine.h \
-           monitor.h \
            qnetworksession_impl.h
 
 SOURCES += main.cpp \
            qicdengine.cpp \
-           monitor.cpp \
            qnetworksession_impl.cpp
 
 #DEFINES += BEARER_MANAGEMENT_DEBUG

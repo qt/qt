@@ -66,6 +66,7 @@ private slots:
     void getSetWindowSurface();
     void flushOutsidePaintEvent();
     void grabWidget();
+    void staticContentsAndPartialUpdateSupport();
 };
 
 class MyWindowSurface : public QWindowSurface
@@ -81,6 +82,8 @@ public:
         /* nothing */
     }
 
+    using QWindowSurface::setStaticContentsSupport;
+    using QWindowSurface::setPartialUpdateSupport;
 private:
     QImage image;
 };
@@ -278,6 +281,51 @@ void tst_QWindowSurface::grabWidget()
     QVERIFY(QColor(childSubImage.pixel(0, 0)) == QColor(Qt::red));
 
     QVERIFY(QColor(childInvalidSubImage.pixel(0, 0)) == QColor(Qt::white));
+}
+
+void tst_QWindowSurface::staticContentsAndPartialUpdateSupport()
+{
+    QWidget widget;
+    MyWindowSurface surface(&widget);
+
+    // Default values.
+    QVERIFY(surface.hasPartialUpdateSupport());
+    QVERIFY(!surface.hasStaticContentsSupport());
+
+    // Partial: YES, Static: YES
+    surface.setStaticContentsSupport(true);
+    QVERIFY(surface.hasPartialUpdateSupport());
+    QVERIFY(surface.hasStaticContentsSupport());
+
+    // Static contents requires support for partial updates.
+    // We simply ingore bad combinations and spit out a warning.
+
+    // CONFLICT: Partial: NO, Static: YES
+    QTest::ignoreMessage(QtWarningMsg, "QWindowSurface::setPartialUpdateSupport: static contents support requires partial update support");
+    surface.setPartialUpdateSupport(false);
+    QVERIFY(surface.hasPartialUpdateSupport());
+    QVERIFY(surface.hasStaticContentsSupport());
+
+    // Partial: YES, Static: NO
+    surface.setStaticContentsSupport(false);
+    QVERIFY(surface.hasPartialUpdateSupport());
+    QVERIFY(!surface.hasStaticContentsSupport());
+
+    // Partial: NO, Static: NO
+    surface.setPartialUpdateSupport(false);
+    QVERIFY(!surface.hasPartialUpdateSupport());
+    QVERIFY(!surface.hasStaticContentsSupport());
+
+    // CONFLICT: Partial: NO, Static: YES
+    QTest::ignoreMessage(QtWarningMsg, "QWindowSurface::setStaticContentsSupport: static contents support requires partial update support");
+    surface.setStaticContentsSupport(true);
+    QVERIFY(!surface.hasPartialUpdateSupport());
+    QVERIFY(!surface.hasStaticContentsSupport());
+
+    // Partial: YES, Static: NO
+    surface.setPartialUpdateSupport(true);
+    QVERIFY(surface.hasPartialUpdateSupport());
+    QVERIFY(!surface.hasStaticContentsSupport());
 }
 
 QTEST_MAIN(tst_QWindowSurface)

@@ -1037,15 +1037,34 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
     return widgetPos;
 }
 
+static Qt::WindowStates effectiveState(Qt::WindowStates state)
+{
+    if (state & Qt::WindowMinimized)
+        return Qt::WindowMinimized;
+    else if (state & Qt::WindowFullScreen)
+        return Qt::WindowFullScreen;
+    else if (state & Qt::WindowMaximized)
+        return Qt::WindowMaximized;
+    return Qt::WindowNoState;
+}
+
 void QWidget::setWindowState(Qt::WindowStates newstate)
 {
     Q_D(QWidget);
 
     Qt::WindowStates oldstate = windowState();
-    if (oldstate == newstate)
+
+    const TBool isFullscreen = newstate & Qt::WindowFullScreen;
+    const TBool cbaRequested = windowFlags() & Qt::WindowSoftkeysVisibleHint;
+    const TBool cbaVisible = CEikButtonGroupContainer::Current() ? true : false;
+    const TBool softkeyVisibilityChange = isFullscreen && (cbaRequested != cbaVisible);
+
+    if (oldstate == newstate && !softkeyVisibilityChange)
         return;
 
     if (isWindow()) {
+        const bool wasResized = testAttribute(Qt::WA_Resized);
+        const bool wasMoved = testAttribute(Qt::WA_Moved);
 
         QSymbianControl *window = static_cast<QSymbianControl *>(effectiveWinId());
         if (window && newstate & Qt::WindowMinimized) {
@@ -1058,36 +1077,58 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
 #ifdef Q_WS_S60
         // Hide window decoration when switching to fullsccreen / minimized otherwise show decoration.
-        // The window decoration visibility has to be changed before doing actual window state 
-        // change since in that order the availableGeometry will return directly the right size and 
+        // The window decoration visibility has to be changed before doing actual window state
+        // change since in that order the availableGeometry will return directly the right size and
         // we will avoid unnecessarty redraws
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        TBool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized)); 
+        CEikStatusPane *statusPane = S60->statusPane();
+        CEikButtonGroupContainer *buttonGroup = S60->buttonGroupContainer();
+        TBool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
         if (statusPane)
             statusPane->MakeVisible(visible);
-        if (buttonGroup)
-            buttonGroup->MakeVisible(visible);
+        if (buttonGroup) {
+            // Visibility
+            buttonGroup->MakeVisible(visible || (isFullscreen && cbaRequested));
+
+            // Responsiviness
+            CEikCba *cba = static_cast<CEikCba *>( buttonGroup->ButtonGroup() ); // downcast from MEikButtonGroup
+            TUint cbaFlags = cba->ButtonGroupFlags();
+            if(windowFlags() & Qt::WindowSoftkeysRespondHint)
+                cbaFlags |= EAknCBAFlagRespondWhenInvisible;
+            else
+                cbaFlags &= ~EAknCBAFlagRespondWhenInvisible;
+            cba->SetButtonGroupFlags(cbaFlags);
+        }
 #endif // Q_WS_S60
 
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         // Ensure the initial size is valid, since we store it as normalGeometry below.
-        if (!testAttribute(Qt::WA_Resized) && !isVisible())
+        if (!wasResized && !isVisible())
             adjustSize();
 
         QTLWExtra *top = d->topData();
         const QRect normalGeometry = (top->normalGeometry.width() < 0) ? geometry() : top->normalGeometry;
 
-        if (newstate & Qt::WindowFullScreen)
+
+        const bool cbaVisibilityHint = windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        if (newstate & Qt::WindowFullScreen && !cbaVisibilityHint)
             setGeometry(qApp->desktop()->screenGeometry(this));
-        else if (newstate & Qt::WindowMaximized)
+        else if (newstate & Qt::WindowMaximized || ((newstate & Qt::WindowFullScreen) && cbaVisibilityHint))
             setGeometry(qApp->desktop()->availableGeometry(this));
         else
             setGeometry(normalGeometry);
 
         //restore normal geometry
         top->normalGeometry = normalGeometry;
+
+        // FixMe QTBUG-8977
+        // In some platforms, WA_Resized and WA_Moved are also not set when application window state is
+        // anything else than normal. In Symbian we can restore them only for normal window state since
+        // restoring for other modes, will make fluidlauncher to be launched in wrong size (200x100)
+        if (effectiveState(newstate) == Qt::WindowNoState) {
+            setAttribute(Qt::WA_Resized, wasResized);
+            setAttribute(Qt::WA_Moved, wasMoved);
+        }
     }
 
     data->window_state = newstate;
@@ -1220,8 +1261,10 @@ void QWidget::releaseMouse()
 {
     if (!qt_nograb() && QWidgetPrivate::mouseGrabber == this) {
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
-        WId id = effectiveWinId();
-        id->SetPointerCapture(false);
+        if(!window()->isModal()) {
+            WId id = effectiveWinId();
+            id->SetPointerCapture(false);
+        }
         QWidgetPrivate::mouseGrabber = 0;
 #ifndef QT_NO_CURSOR
         QApplication::restoreOverrideCursor();

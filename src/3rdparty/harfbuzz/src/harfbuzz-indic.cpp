@@ -1107,6 +1107,7 @@ static inline void splitMatra(unsigned short *reordered, int matra, int &len)
 
 #ifndef NO_OPENTYPE
 static const HB_OpenTypeFeature indic_features[] = {
+    { HB_MAKE_TAG('l', 'o', 'c', 'a'), LocaProperty },
     { HB_MAKE_TAG('c', 'c', 'm', 'p'), CcmpProperty },
     { HB_MAKE_TAG('i', 'n', 'i', 't'), InitProperty },
     { HB_MAKE_TAG('n', 'u', 'k', 't'), NuktaProperty },
@@ -1115,12 +1116,14 @@ static const HB_OpenTypeFeature indic_features[] = {
     { HB_MAKE_TAG('b', 'l', 'w', 'f'), BelowFormProperty },
     { HB_MAKE_TAG('h', 'a', 'l', 'f'), HalfFormProperty },
     { HB_MAKE_TAG('p', 's', 't', 'f'), PostFormProperty },
+    { HB_MAKE_TAG('c', 'j', 'c', 't'), ConjunctFormProperty },
     { HB_MAKE_TAG('v', 'a', 't', 'u'), VattuProperty },
     { HB_MAKE_TAG('p', 'r', 'e', 's'), PreSubstProperty },
     { HB_MAKE_TAG('b', 'l', 'w', 's'), BelowSubstProperty },
     { HB_MAKE_TAG('a', 'b', 'v', 's'), AboveSubstProperty },
     { HB_MAKE_TAG('p', 's', 't', 's'), PostSubstProperty },
     { HB_MAKE_TAG('h', 'a', 'l', 'n'), HalantProperty },
+    { HB_MAKE_TAG('c', 'a', 'l', 't'), IndicCaltProperty },
     { 0, 0 }
 };
 #endif
@@ -1148,6 +1151,8 @@ static QString propertiesToString(int properties)
 {
     QString res;
     properties = ~properties;
+    if (properties & LocaProperty)
+        res += "Loca ";
     if (properties & CcmpProperty)
         res += "Ccmp ";
     if (properties & InitProperty)
@@ -1168,6 +1173,8 @@ static QString propertiesToString(int properties)
         res += "HalfForm ";
     if (properties & PostFormProperty)
         res += "PostForm ";
+    if (properties & ConjunctFormProperty)
+        res += "PostForm ";
     if (properties & VattuProperty)
         res += "Vattu ";
     if (properties & PreSubstProperty)
@@ -1182,6 +1189,8 @@ static QString propertiesToString(int properties)
         res += "Halant ";
     if (properties & CligProperty)
         res += "Clig ";
+    if (properties & IndicCaltProperty)
+        res += "Calt ";
     return res;
 }
 #endif
@@ -1296,9 +1305,14 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
             }
             int skipped = 0;
             Position pos = Post;
-            for (i = len-1; i > base; i--) {
+            for (i = len-1; i >= base; i--) {
                 if (position[i] != Consonant && (position[i] != Control || script == HB_Script_Kannada))
                     continue;
+
+                if (i < len-1 && position[i] == Control && position[i+1] == Consonant) {
+                    base = i+1;
+                    break;
+                }
 
                 Position charPosition = indic_position(uc[i]);
                 if (pos == Post && charPosition == Post) {
@@ -1545,16 +1559,20 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
 
         // features we should always apply
         for (i = 0; i < len; ++i)
-            properties[i] = ~(CcmpProperty
+            properties[i] = ~(LocaProperty
+                              | CcmpProperty
                               | NuktaProperty
                               | VattuProperty
+                              | ConjunctFormProperty
                               | PreSubstProperty
                               | BelowSubstProperty
                               | AboveSubstProperty
                               | PostSubstProperty
                               | HalantProperty
+                              | IndicCaltProperty
                               | PositioningProperties);
 
+        // Loca always applies
         // Ccmp always applies
         // Init
         if (item->item.pos == 0
@@ -1611,6 +1629,7 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
         // abvs always applies
         // psts always applies
         // halant always applies
+        // calt always applies
 
 #ifdef INDIC_DEBUG
 //        {

@@ -25,26 +25,26 @@
 
 #include <wtf/Platform.h>
 
-#if !defined(JS_EXPORTDATA)
-#if PLATFORM(WIN_OS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
+#if !defined(QT_BUILD_SCRIPT_LIB) && OS(WINDOWS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
 #if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
 #define JS_EXPORTDATA __declspec(dllexport)
 #else
 #define JS_EXPORTDATA __declspec(dllimport)
 #endif
+#define JS_EXPORTCLASS JS_EXPORTDATA
 #else
 #define JS_EXPORTDATA
-#endif
+#define JS_EXPORTCLASS
 #endif
 
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
 
 // If we don't define these, they get defined in windef.h. 
 // We want to use std::min and std::max
 #define max max
 #define min min
 
-#if !COMPILER(MSVC7) && !PLATFORM(WINCE)
+#if !COMPILER(MSVC7) && !OS(WINCE)
 // We need to define this before the first #include of stdlib.h or it won't contain rand_s.
 #ifndef _CRT_RAND_S
 #define _CRT_RAND_S
@@ -53,13 +53,12 @@
 
 #endif
 
-#if PLATFORM(FREEBSD) || PLATFORM(OPENBSD)
+#if OS(FREEBSD) || OS(OPENBSD)
 #define HAVE_PTHREAD_NP_H 1
 #endif
 
 /* FIXME: if all platforms have these, do they really need #defines? */
 #define HAVE_STDINT_H 1
-#define HAVE_STRING_H 1
 
 #define WTF_CHANGES 1
 
@@ -76,3 +75,15 @@
 #include <wtf/DisallowCType.h>
 #endif
 
+#if PLATFORM(CHROMIUM)
+#if !defined(WTF_USE_V8)
+#define WTF_USE_V8 1
+#endif
+#endif /* PLATFORM(CHROMIUM) */
+
+#if !defined(WTF_USE_V8)
+#define WTF_USE_V8 0
+#endif /* !defined(WTF_USE_V8) */
+
+/* Using V8 implies not using JSC and vice versa */
+#define WTF_USE_JSC !WTF_USE_V8

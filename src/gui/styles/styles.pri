@@ -164,17 +164,17 @@ contains( styles, windowsmobile ) {
 }
 
 contains( styles, s60 ):contains(QT_CONFIG, s60) {
-	HEADERS += \
-		styles/qs60style.h \
-		styles/qs60style_p.h
-	SOURCES += styles/qs60style.cpp
-	symbian {
-		SOURCES += styles/qs60style_s60.cpp
-		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils -legul -lbmpanim
-	} else {
-		SOURCES += styles/qs60style_simulated.cpp
-		RESOURCES += styles/qstyle_s60_simulated.qrc
-	}
+    HEADERS += \
+        styles/qs60style.h \
+        styles/qs60style_p.h
+    SOURCES += styles/qs60style.cpp
+    symbian {
+        SOURCES += styles/qs60style_s60.cpp
+        LIBS += -lAknIcon -lAKNSKINS -lAKNSKINSRV -lFontUtils -legul -lbmpanim
+    } else {
+        SOURCES += styles/qs60style_simulated.cpp
+        RESOURCES += styles/qstyle_s60_simulated.qrc
+    }
 } else {
-	DEFINES += QT_NO_STYLE_S60
+    DEFINES += QT_NO_STYLE_S60
 }

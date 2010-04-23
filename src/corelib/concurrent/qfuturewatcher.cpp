@@ -505,7 +505,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
     finished signal will be emitted.
 
     To avoid a race condition, it is important to call this function
-    \i after doing the connections.
+    \e after doing the connections.
 */
 
 /*! \fn QFuture<T> QFutureWatcher::future() const

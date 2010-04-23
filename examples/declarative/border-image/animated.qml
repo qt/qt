@@ -1,9 +1,8 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
 
 Rectangle {
     id: page
-    color: "white"
     width: 1030; height: 540
 
     MyBorderImage {

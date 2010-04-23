@@ -46,7 +46,7 @@
 
 #ifdef Q_WS_S60
 
-#include <akndoc.h>
+#include <AknDoc.h>
 
 class CEikApplication;
 

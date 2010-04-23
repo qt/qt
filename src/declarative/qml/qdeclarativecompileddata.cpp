@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativecompiler_p.h"
 #include "qdeclarativeengine.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativecomponent_p.h"
+#include "private/qdeclarativecomponent_p.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativecontext_p.h"
+#include "private/qdeclarativecontext_p.h"
 
 #include <QtCore/qdebug.h>
 
@@ -197,20 +197,6 @@ void QDeclarativeCompiledData::clear()
         cachedClosures[ii] = 0;
     for (int ii = 0; ii < cachedPrograms.count(); ++ii)
         cachedPrograms[ii] = 0;
-}
-
-
-QObject *QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContext *ctxt, const QBitField &bindings) const
-{
-    if (type) {
-        QObject *rv = type->create();
-        if (rv)
-            QDeclarativeEngine::setContextForObject(rv, ctxt);
-        return rv;
-    } else {
-        Q_ASSERT(component);
-        return QDeclarativeComponentPrivate::get(component)->create(ctxt, bindings);
-    } 
 }
 
 const QMetaObject *QDeclarativeCompiledData::TypeReference::metaObject() const

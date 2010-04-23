@@ -36,7 +36,7 @@
 #include <QtCore/QChar>
 #include <QtCore/QString>
 
-#if !defined(_MSC_VER) && defined(_CL_HAVE_WCHAR_H) && defined(_CL_HAVE_WCHAR_T)
+#if !defined(_MSC_VER) && !defined(__MINGW32__) && defined(_CL_HAVE_WCHAR_H) && defined(_CL_HAVE_WCHAR_T)
 #   if !defined(TCHAR)
 #       define TCHAR wchar_t
 #   endif

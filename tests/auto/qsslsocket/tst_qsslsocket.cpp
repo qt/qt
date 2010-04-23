@@ -54,6 +54,8 @@
 #include <QNetworkProxy>
 #include <QAuthenticator>
 
+#include "private/qhostinfo_p.h"
+
 #include "../network-settings.h"
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
@@ -288,6 +290,8 @@ void tst_QSslSocket::init()
         }
         QNetworkProxy::setApplicationProxy(proxy);
     }
+
+    qt_qhostinfo_clear_cache();
 }
 
 void tst_QSslSocket::cleanup()
@@ -477,7 +481,7 @@ void tst_QSslSocket::simpleConnectWithIgnore()
 
     // Start connecting
     socket.connectToHost(QtNetworkSettings::serverName(), 993);
-    QCOMPARE(socket.state(), QAbstractSocket::HostLookupState);
+    QVERIFY(socket.state() != QAbstractSocket::UnconnectedState); // something must be in progress
     enterLoop(10);
 
     // Start handshake
@@ -662,6 +666,21 @@ void tst_QSslSocket::isEncrypted()
 
 void tst_QSslSocket::localCertificate()
 {
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    // This test does not make 100% sense yet. We just set some local CA/cert/key and use it
+    // to authenticate ourselves against the server. The server does not actually check this
+    // values. This test should just run the codepath inside qsslsocket_openssl.cpp
+
+    QSslSocketPtr socket = newSocket();
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    socket->setCaCertificates(localCert);
+    socket->setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
+    socket->setPrivateKey(QLatin1String(SRCDIR "certs/fluke.key"));
+
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    QVERIFY(socket->waitForEncrypted(5000));
 }
 
 void tst_QSslSocket::mode()
@@ -1267,7 +1286,7 @@ void tst_QSslSocket::setReadBufferSize_task_250027()
     connect(socket, SIGNAL(readyRead()), &setReadBufferSize_task_250027_handler, SLOT(readyReadSlot()));
 
     // provoke a response by sending a request
-    socket->write("GET /gif/fluke.gif HTTP/1.0\n"); // this file is 27 KB
+    socket->write("GET /qtest/fluke.gif HTTP/1.0\n"); // this file is 27 KB
     socket->write("Host: ");
     socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
     socket->write("\n");
@@ -1731,7 +1750,7 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->waitForConnected();
     socket->waitForEncrypted();
     // provoke a response by sending a request
-    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("GET /qtest/fluke.gif HTTP/1.1\n");
     socket->write("Host: ");
     socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
     socket->write("\n");

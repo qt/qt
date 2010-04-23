@@ -144,7 +144,12 @@ namespace QtMultimedia
         Contrast,
         Saturation,
         Sharpness,
-        DeviceSettingDescription
+        DeviceSettingDescription,
+
+        PosterImage,
+        CoverArtImage,
+        ThumbnailImage
+
     };
 
     enum SupportEstimate
@@ -152,7 +157,7 @@ namespace QtMultimedia
         NotSupported,
         MaybeSupported,
         ProbablySupported,
-        PreferedService
+        PreferredService
     };
 
     enum EncodingQuality

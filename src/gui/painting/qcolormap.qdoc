@@ -150,3 +150,13 @@
     Assigns the given \a colormap to \e this color map and returns
     a reference to \e this color map.
 */
+
+/*!
+   \fn void QColormap::initialize()
+   \internal
+*/
+
+/*!
+   \fn void QColormap::cleanup()
+   \internal
+*/

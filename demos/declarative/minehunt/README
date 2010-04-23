@@ -1,0 +1,3 @@
+To compile the C++ part, do 'qmake && make'. Minehunt will not run properly if the C++ plugin is not compiled.
+
+To run, simply load the minehunt.qml file with the qml runtime.

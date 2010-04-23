@@ -156,6 +156,16 @@
     is being encrypted and encryptedBytesWritten()
     will get emitted as soon as data has been written to the TCP socket.
 
+    \section1 Symbian Platform Security Requirements
+
+    On Symbian, processes which use this class must have the
+    \c NetworkServices platform security capability. If the client
+    process lacks this capability, operations will fail.
+
+    Platform security capabilities are added via the
+    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
+    qmake variable.
+
     \sa QSslCertificate, QSslCipher, QSslError
 */
 
@@ -286,8 +296,8 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
-#include <QtCore/qdatetime.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
 
@@ -1393,7 +1403,7 @@ bool QSslSocket::waitForEncrypted(int msecs)
     if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return false;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     if (d->plainSocket->state() != QAbstractSocket::ConnectedState) {
@@ -1433,7 +1443,7 @@ bool QSslSocket::waitForReadyRead(int msecs)
     bool *previousReadyReadEmittedPointer = d->readyReadEmittedPointer;
     d->readyReadEmittedPointer = &readyReadEmitted;
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     if (!d->connectionEncrypted) {
@@ -1470,7 +1480,7 @@ bool QSslSocket::waitForBytesWritten(int msecs)
     if (d->mode == UnencryptedMode)
         return d->plainSocket->waitForBytesWritten(msecs);
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     if (!d->connectionEncrypted) {
@@ -1508,7 +1518,7 @@ bool QSslSocket::waitForDisconnected(int msecs)
     if (d->mode == UnencryptedMode)
         return d->plainSocket->waitForDisconnected(msecs);
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     if (!d->connectionEncrypted) {

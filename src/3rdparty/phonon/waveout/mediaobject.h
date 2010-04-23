@@ -112,7 +112,7 @@ namespace Phonon
             void deleteValidWaveOutDevice();
             void playBuffer(WAVEHDR *waveHeader);
 
-            static void CALLBACK WaveOutCallBack(HWAVEOUT hWaveOut, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2);
+            static void QT_WIN_CALLBACK WaveOutCallBack(HWAVEOUT hWaveOut, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2);
 
              struct {
             WAVEHDR  *waveHeader;

@@ -42,15 +42,18 @@
 
 void registerTypes()
 {
-    QML_REGISTER_INTERFACE(MyInterface);
-    QML_REGISTER_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
-    QML_REGISTER_TYPE(Test,1,0,MyTypeObject,MyTypeObject);
-    QML_REGISTER_TYPE(Test,1,0,MyContainer,MyContainer);
-    QML_REGISTER_TYPE(Test,1,0,MyPropertyValueSource,MyPropertyValueSource);
-    QML_REGISTER_TYPE(Test,1,0,MyDotPropertyObject,MyDotPropertyObject);
-    QML_REGISTER_TYPE(Test,1,0,MyNamespacedType,MyNamespace::MyNamespacedType);
-    QML_REGISTER_TYPE(Test,1,0,MySecondNamespacedType,MyNamespace::MySecondNamespacedType);
-    QML_REGISTER_NOCREATE_TYPE(MyGroupedObject);
+    qmlRegisterInterface<MyInterface>("MyInterface");
+    qmlRegisterType<MyQmlObject>("Test",1,0,"MyQmlObject");
+    qmlRegisterType<MyTypeObject>("Test",1,0,"MyTypeObject");
+    qmlRegisterType<MyContainer>("Test",1,0,"MyContainer");
+    qmlRegisterType<MyPropertyValueSource>("Test",1,0,"MyPropertyValueSource");
+    qmlRegisterType<MyDotPropertyObject>("Test",1,0,"MyDotPropertyObject");
+    qmlRegisterType<MyNamespace::MyNamespacedType>("Test",1,0,"MyNamespacedType");
+    qmlRegisterType<MyNamespace::MySecondNamespacedType>("Test",1,0,"MySecondNamespacedType");
+    qmlRegisterType<MyGroupedObject>();
+
+    qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", "MyCustomParserType",
+                                                       new MyCustomParserTypeParser);
 }
 
 QVariant myCustomVariantTypeConverter(const QString &data)

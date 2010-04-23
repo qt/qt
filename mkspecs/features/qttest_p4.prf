@@ -27,7 +27,7 @@ embedded:  check.commands += -qws
 QMAKE_EXTRA_TARGETS += check
 
 !debug_and_release|build_pass {
-    check.depends = $(DESTDIR_TARGET)
+    check.depends = first
 } else {
     check.CONFIG = recursive
     # In debug and release mode, only run the test once.

@@ -24,6 +24,7 @@
 #include <algorithm>
 #include "AlwaysInline.h"
 #include "FastAllocBase.h"
+#include "PassRefPtr.h"
 
 namespace WTF {
 
@@ -50,13 +51,13 @@ namespace WTF {
         RefPtr(HashTableDeletedValueType) : m_ptr(hashTableDeletedValue()) { }
         bool isHashTableDeletedValue() const { return m_ptr == hashTableDeletedValue(); }
 
-        ~RefPtr() { T* ptr = m_ptr; derefIfNotNull(ptr); }
+        ~RefPtr() { derefIfNotNull(m_ptr); }
         
-        template <typename U> RefPtr(const RefPtr<U>& o) : m_ptr(static_cast<T*>(o.get())) { if (T* ptr = static_cast<T*>(m_ptr)) ptr->ref(); }
+        template <typename U> RefPtr(const RefPtr<U>& o) : m_ptr(o.get()) { T* ptr = m_ptr; refIfNotNull(ptr); }
         
         T* get() const { return m_ptr; }
         
-        void clear() { T* ptr = m_ptr; derefIfNotNull(ptr); m_ptr = 0; }
+        void clear() { derefIfNotNull(m_ptr); m_ptr = 0; }
         PassRefPtr<T> release() { PassRefPtr<T> tmp = adoptRef(m_ptr); m_ptr = 0; return tmp; }
 
         T& operator*() const { return *m_ptr; }
@@ -65,12 +66,8 @@ namespace WTF {
         bool operator!() const { return !m_ptr; }
     
         // This conversion operator allows implicit conversion to bool but not to other integer types.
-#if COMPILER(WINSCW)
-        operator bool() const { return m_ptr; }
-#else
-        typedef T* RefPtr::*UnspecifiedBoolType;
+        typedef T* (RefPtr::*UnspecifiedBoolType);
         operator UnspecifiedBoolType() const { return m_ptr ? &RefPtr::m_ptr : 0; }
-#endif
         
         RefPtr& operator=(const RefPtr&);
         RefPtr& operator=(T*);
@@ -139,8 +136,7 @@ namespace WTF {
     {
         T* ptr = m_ptr;
         m_ptr = o.releaseRef();
-        if (ptr)
-            ptr->deref();
+        derefIfNotNull(ptr);
         return *this;
     }
 
@@ -156,8 +152,7 @@ namespace WTF {
     {
         T* ptr = m_ptr;
         m_ptr = o.releaseRef();
-        if (ptr)
-            ptr->deref();
+        derefIfNotNull(ptr);
         return *this;
     }
 

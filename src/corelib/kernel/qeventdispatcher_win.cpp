@@ -308,7 +308,7 @@ typedef MMRESULT(WINAPI *ptimeKillEvent)(UINT);
 static ptimeSetEvent qtimeSetEvent = 0;
 static ptimeKillEvent qtimeKillEvent = 0;
 
-LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
+LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
 
 static void resolveTimerAPI()
 {
@@ -420,7 +420,7 @@ Q_CORE_EXPORT bool winGetMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
 }
 
 // This function is called by a workerthread
-void WINAPI CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_PTR user, DWORD_PTR /*reserved*/, DWORD_PTR /*reserved*/)
+void WINAPI QT_WIN_CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_PTR user, DWORD_PTR /*reserved*/, DWORD_PTR /*reserved*/)
 {
     if (!timerId) // sanity check
         return;
@@ -429,7 +429,7 @@ void WINAPI CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_P
     QCoreApplication::postEvent(t->dispatcher, new QTimerEvent(t->timerId));
 }
 
-LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
+LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 {
     if (message == WM_NCCREATE)
         return true;
@@ -506,7 +506,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
     return DefWindowProc(hwnd, message, wp, lp);
 }
 
-LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
+LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 {
     if (wp == PM_REMOVE) {
         QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());

@@ -314,8 +314,8 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 #  define _POSIX_MONOTONIC_CLOCK -1
 #endif
 
-bool qt_gettime_is_monotonic();
-timeval qt_gettime();
+timeval qt_gettime(); // in qelapsedtimer_mac.cpp or qtimestamp_unix.cpp
+
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
                                  const struct timeval *tv);
 

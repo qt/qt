@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: root
@@ -26,10 +26,10 @@ Item {
             id: needleRotation
             origin.x: 7; origin.y: 65
             angle: -130
-            angle: SpringFollow {
+            SpringFollow on angle {
                 spring: 1.4
                 damping: .15
-                source: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+                to: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
             }
         }
     }

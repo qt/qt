@@ -55,23 +55,25 @@
 
 #include "qdeclarative.h"
 #include "qdeclarativeerror.h"
-#include "qdeclarativeinstruction_p.h"
-#include "qdeclarativecompositetypemanager_p.h"
-#include "qdeclarativeparser_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qbitfield_p.h"
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativeintegercache_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativeinstruction_p.h"
+#include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativeparser_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qbitfield_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativeintegercache_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QDeclarativeComponent;
 class QDeclarativeContext;
+class QDeclarativeContextData;
 
 class QScriptProgram;
 class Q_AUTOTEST_EXPORT QDeclarativeCompiledData : public QDeclarativeRefCount, public QDeclarativeCleanup
@@ -95,7 +97,7 @@ public:
         QDeclarativeComponent *component;
 
         QDeclarativeRefCount *ref;
-        QObject *createInstance(QDeclarativeContext *, const QBitField &) const;
+        QObject *createInstance(QDeclarativeContextData *, const QBitField &) const;
         const QMetaObject *metaObject() const;
     };
     QList<TypeReference> types;
@@ -147,6 +149,7 @@ private:
 class QMetaObjectBuilder;
 class Q_DECLARATIVE_EXPORT QDeclarativeCompiler
 {
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativeCompiler)
 public:
     QDeclarativeCompiler();
 
@@ -155,11 +158,10 @@ public:
     bool isError() const;
     QList<QDeclarativeError> errors() const;
 
-    static bool isValidId(const QString &);
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
 
-    static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
+    int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
 
 private:
     static void reset(QDeclarativeCompiledData *);
@@ -219,6 +221,11 @@ private:
                                        QDeclarativeParser::Object *obj,
                                        QDeclarativeParser::Value *value,
                                        const BindingContext &ctxt);
+    bool buildPropertyOnAssignment(QDeclarativeParser::Property *prop,
+                                   QDeclarativeParser::Object *obj,
+                                   QDeclarativeParser::Object *baseObj,
+                                   QDeclarativeParser::Value *value,
+                                   const BindingContext &ctxt);
     bool buildPropertyLiteralAssignment(QDeclarativeParser::Property *prop,
                                         QDeclarativeParser::Object *obj,
                                         QDeclarativeParser::Value *value,
@@ -242,6 +249,7 @@ private:
                       QDeclarativeParser::Object *obj, 
                       const QDeclarativeParser::Object::DynamicProperty &);
     bool completeComponentBuild();
+    bool checkValidId(QDeclarativeParser::Value *, const QString &);
 
 
     void genObject(QDeclarativeParser::Object *obj);
@@ -302,6 +310,7 @@ private:
         QByteArray compiledBindingData;
 
         QHash<QDeclarativeParser::Value *, BindingReference> bindings;
+        QHash<QDeclarativeParser::Value *, BindingContext> signalExpressions;
         QList<QDeclarativeParser::Object *> aliasingObjects;
         QDeclarativeParser::Object *root;
     };
@@ -309,14 +318,13 @@ private:
 
     struct ComponentStat
     {
-        ComponentStat() 
-            : ids(0), scriptBindings(0), optimizedBindings(0), objects(0) {}
+        ComponentStat() : ids(0), objects(0) {}
 
         int lineNumber;
 
         int ids;
-        int scriptBindings;
-        int optimizedBindings;
+        QList<QDeclarativeParser::LocationSpan> scriptBindings;
+        QList<QDeclarativeParser::LocationSpan> optimizedBindings;
         int objects;
     };
     ComponentStat componentStat;

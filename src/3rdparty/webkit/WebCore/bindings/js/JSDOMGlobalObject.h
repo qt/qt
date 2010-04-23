@@ -54,29 +54,32 @@ namespace WebCore {
 
         virtual ScriptExecutionContext* scriptExecutionContext() const = 0;
 
-        // Creates a JS EventListener for an "onXXX" event attribute. These
-        // listeners cannot be removed through the removeEventListener API.
-        PassRefPtr<JSEventListener> createJSAttributeEventListener(JSC::JSValue);
-
         // Make binding code generation easier.
         JSDOMGlobalObject* globalObject() { return this; }
 
         void setCurrentEvent(Event*);
         Event* currentEvent() const;
 
+        void setInjectedScript(JSObject*);
+        JSObject* injectedScript() const;
+
         virtual void markChildren(JSC::MarkStack&);
+
+        DOMWrapperWorld* world() { return d()->m_world.get(); }
+
+        virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
+        static const JSC::ClassInfo s_info;
+
+    private:
+        static void destroyJSDOMGlobalObjectData(void*);
 
     protected:
         struct JSDOMGlobalObjectData : public JSC::JSGlobalObject::JSGlobalObjectData {
-            JSDOMGlobalObjectData()
-                : JSGlobalObjectData(destroyJSDOMGlobalObjectData)
-                , evt(0)
-            {
-            }
-
-            JSDOMGlobalObjectData(Destructor destructor)
+            JSDOMGlobalObjectData(DOMWrapperWorld* world, Destructor destructor = destroyJSDOMGlobalObjectData)
                 : JSGlobalObjectData(destructor)
                 , evt(0)
+                , m_world(world)
+                , m_injectedScript(0)
             {
             }
 
@@ -84,11 +87,11 @@ namespace WebCore {
             JSDOMConstructorMap constructors;
 
             Event* evt;
+            RefPtr<DOMWrapperWorld> m_world;
+            JSObject* m_injectedScript;
         };
 
     private:
-        static void destroyJSDOMGlobalObjectData(void*);
-
         JSDOMGlobalObjectData* d() const { return static_cast<JSDOMGlobalObjectData*>(JSC::JSVariableObject::d); }
     };
 

@@ -22,6 +22,7 @@
 #ifndef JSGlobalObject_h
 #define JSGlobalObject_h
 
+#include "JSArray.h"
 #include "JSGlobalData.h"
 #include "JSVariableObject.h"
 #include "NativeFunctionWrapper.h"
@@ -52,14 +53,22 @@ namespace JSC {
     struct HashTable;
 
     typedef Vector<ExecState*, 16> ExecStateStack;
-
+    
     class JSGlobalObject : public JSVariableObject {
     protected:
         using JSVariableObject::JSVariableObjectData;
 
         struct JSGlobalObjectData : public JSVariableObjectData {
-            JSGlobalObjectData()
+            // We use an explicit destructor function pointer instead of a
+            // virtual destructor because we want to avoid adding a vtable
+            // pointer to this struct. Adding a vtable pointer would force the
+            // compiler to emit costly pointer fixup code when casting from
+            // JSVariableObjectData* to JSGlobalObjectData*.
+            typedef void (*Destructor)(void*);
+
+            JSGlobalObjectData(Destructor destructor)
                 : JSVariableObjectData(&symbolTable, 0)
+                , destructor(destructor)
                 , registerArraySize(0)
                 , globalScopeChain(NoScopeChain())
                 , regExpConstructor(0)
@@ -85,10 +94,8 @@ namespace JSC {
             {
             }
             
-            virtual ~JSGlobalObjectData()
-            {
-            }
-
+            Destructor destructor;
+            
             size_t registerArraySize;
 
             JSGlobalObject* next;
@@ -153,13 +160,13 @@ namespace JSC {
         void* operator new(size_t, JSGlobalData*);
 
         explicit JSGlobalObject()
-            : JSVariableObject(JSGlobalObject::createStructure(jsNull()), new JSGlobalObjectData)
+            : JSVariableObject(JSGlobalObject::createStructure(jsNull()), new JSGlobalObjectData(destroyJSGlobalObjectData))
         {
             init(this);
         }
 
     protected:
-        JSGlobalObject(PassRefPtr<Structure> structure, JSGlobalObjectData* data, JSObject* thisValue)
+        JSGlobalObject(NonNullPassRefPtr<Structure> structure, JSGlobalObjectData* data, JSObject* thisValue)
             : JSVariableObject(structure, data)
         {
             init(thisValue);
@@ -229,10 +236,7 @@ namespace JSC {
         unsigned profileGroup() const { return d()->profileGroup; }
 
         Debugger* debugger() const { return d()->debugger; }
-        void setDebugger(Debugger* debugger)
-        {
-            d()->debugger = debugger;
-        }
+        void setDebugger(Debugger* debugger) { d()->debugger = debugger; }
         
         virtual bool supportsProfiling() const { return false; }
         
@@ -264,10 +268,13 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
     protected:
+
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesMarkChildren | OverridesGetPropertyNames | JSVariableObject::StructureFlags;
+
         struct GlobalPropertyInfo {
             GlobalPropertyInfo(const Identifier& i, JSValue v, unsigned a)
                 : identifier(i)
@@ -283,6 +290,8 @@ namespace JSC {
         void addStaticGlobals(GlobalPropertyInfo*, int count);
 
     private:
+        static void destroyJSGlobalObjectData(void*);
+
         // FIXME: Fold reset into init.
         void init(JSObject* thisValue);
         void reset(JSValue prototype);
@@ -347,14 +356,6 @@ namespace JSC {
         return symbolTableGet(propertyName, slot, slotIsWriteable);
     }
 
-    inline JSGlobalObject* ScopeChainNode::globalObject() const
-    {
-        const ScopeChainNode* n = this;
-        while (n->next)
-            n = n->next;
-        return asGlobalObject(n->object);
-    }
-
     inline JSValue Structure::prototypeForLookup(ExecState* exec) const
     {
         if (typeInfo().type() == ObjectType)
@@ -409,13 +410,46 @@ namespace JSC {
         return globalData().dynamicGlobalObject;
     }
 
+    inline JSObject* constructEmptyObject(ExecState* exec)
+    {
+        return new (exec) JSObject(exec->lexicalGlobalObject()->emptyObjectStructure());
+    }
+
+    inline JSArray* constructEmptyArray(ExecState* exec)
+    {
+        return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure());
+    }
+
+    inline JSArray* constructEmptyArray(ExecState* exec, unsigned initialLength)
+    {
+        return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure(), initialLength);
+    }
+
+    inline JSArray* constructArray(ExecState* exec, JSValue singleItemValue)
+    {
+        MarkedArgumentBuffer values;
+        values.append(singleItemValue);
+        return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure(), values);
+    }
+
+    inline JSArray* constructArray(ExecState* exec, const ArgList& values)
+    {
+        return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure(), values);
+    }
+
     class DynamicGlobalObjectScope : public Noncopyable {
     public:
         DynamicGlobalObjectScope(CallFrame* callFrame, JSGlobalObject* dynamicGlobalObject) 
             : m_dynamicGlobalObjectSlot(callFrame->globalData().dynamicGlobalObject)
             , m_savedDynamicGlobalObject(m_dynamicGlobalObjectSlot)
         {
-            m_dynamicGlobalObjectSlot = dynamicGlobalObject;
+            if (!m_dynamicGlobalObjectSlot) {
+                m_dynamicGlobalObjectSlot = dynamicGlobalObject;
+
+                // Reset the date cache between JS invocations to force the VM
+                // to observe time zone changes.
+                callFrame->globalData().resetDateCache();
+            }
         }
 
         ~DynamicGlobalObjectScope()

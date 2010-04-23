@@ -35,7 +35,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSVoidCallback);
 
 static const HashTableValue JSVoidCallbackPrototypeTableValues[2] =
 {
-    { "handleEvent", DontDelete|Function, (intptr_t)jsVoidCallbackPrototypeFunctionHandleEvent, (intptr_t)0 },
+    { "handleEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsVoidCallbackPrototypeFunctionHandleEvent), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 

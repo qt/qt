@@ -50,7 +50,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(int result READ result WRITE setResult);
     Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged);
     Q_PROPERTY(MyQmlObject *object READ object WRITE setObject NOTIFY objectChanged);
-    Q_PROPERTY(QDeclarativeList<QObject *> *data READ data);
+    Q_PROPERTY(QDeclarativeListProperty<QObject> data READ data);
     Q_CLASSINFO("DefaultProperty", "data");
 public:
     MyQmlObject() : m_result(0), m_value(0), m_object(0) {}
@@ -61,7 +61,7 @@ public:
     int value() const { return m_value; }
     void setValue(int v) { m_value = v; emit valueChanged(); }
 
-    QDeclarativeList<QObject *> *data() { return &m_data; }
+    QDeclarativeListProperty<QObject> data() { return QDeclarativeListProperty<QObject>(this, m_data); }
 
     MyQmlObject *object() const { return m_object; }
     void setObject(MyQmlObject *o) { m_object = o; emit objectChanged(); }
@@ -71,7 +71,7 @@ signals:
     void objectChanged();
 
 private:
-    QDeclarativeConcreteList<QObject *> m_data;
+    QList<QObject *> m_data;
     int m_result;
     int m_value;
     MyQmlObject *m_object;

@@ -1,5 +1,5 @@
 import Test 1.0
 MyTypeObject {
-    intProperty : MyCompositeValueSource {}
+    MyCompositeValueSource on intProperty {}
 }
 

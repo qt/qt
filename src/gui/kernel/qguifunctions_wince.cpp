@@ -278,7 +278,14 @@ int qt_wince_get_version()
 
 bool qt_wince_is_windows_mobile_65()
 {
-    return ((qt_wince_get_version() == 52) && (qt_wince_get_build() > 2000));
+    const DWORD dwFirstWM65BuildNumber = 21139;
+    OSVERSIONINFO osvi;
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (!GetVersionEx(&osvi))
+        return false;
+    return osvi.dwMajorVersion > 5
+        || (osvi.dwMajorVersion == 5 && (osvi.dwMinorVersion > 2 ||
+            (osvi.dwMinorVersion == 2 && osvi.dwBuildNumber >= dwFirstWM65BuildNumber)));
 }
 
 bool qt_wince_is_pocket_pc() {

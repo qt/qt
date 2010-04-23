@@ -1,4 +1,4 @@
-// Automatically generated from ../runtime/JSONObject.cpp using JavaScriptCore/create_hash_table. DO NOT EDIT!
+// Automatically generated from runtime/JSONObject.cpp using /home/khansen/dev/qtwebkit-qtscript-integration/JavaScriptCore/create_hash_table. DO NOT EDIT!
 
 #include "Lookup.h"
 

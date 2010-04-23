@@ -60,13 +60,8 @@
 QT_BEGIN_NAMESPACE
 
 const int MAX_NON_CUSTOM_PIXELMETRICS = 92;
-const int CUSTOMVALUESCOUNT = 4;
-enum {
-    PM_Custom_FrameCornerWidth = MAX_NON_CUSTOM_PIXELMETRICS,
-    PM_Custom_FrameCornerHeight,
-    PM_Custom_BoldLineWidth,
-    PM_Custom_ThinLineWidth
-    };
+const int CUSTOMVALUESCOUNT = 5;
+
 const int MAX_PIXELMETRICS = MAX_NON_CUSTOM_PIXELMETRICS + CUSTOMVALUESCOUNT;
 
 typedef struct {
@@ -298,6 +293,24 @@ public:
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
         SP_QsnFrButtonCenterInactive,
+        SP_QsnFrGridCornerTlPressed, // Pressed table item
+        SP_QsnFrGridCornerTrPressed,
+        SP_QsnFrGridCornerBlPressed,
+        SP_QsnFrGridCornerBrPressed,
+        SP_QsnFrGridSideTPressed,
+        SP_QsnFrGridSideBPressed,
+        SP_QsnFrGridSideLPressed,
+        SP_QsnFrGridSideRPressed,
+        SP_QsnFrGridCenterPressed,
+        SP_QsnFrListCornerTlPressed,  // Pressed list item
+        SP_QsnFrListCornerTrPressed,
+        SP_QsnFrListCornerBlPressed,
+        SP_QsnFrListCornerBrPressed,
+        SP_QsnFrListSideTPressed,
+        SP_QsnFrListSideBPressed,
+        SP_QsnFrListSideLPressed,
+        SP_QsnFrListSideRPressed,
+        SP_QsnFrListPressed,
     };
 
     enum ColorLists {
@@ -416,7 +429,7 @@ public:
         SE_TabBarTabWestActive,
         SE_TabBarTabWestInactive,
         SE_ListHighlight,
-        SE_OptionsMenu,
+        SE_PopupBackground,
         SE_SettingsList,
         SE_TableItem,
         SE_TableHeaderItem,
@@ -425,11 +438,13 @@ public:
         SE_ToolBarButton,
         SE_ToolBarButtonPressed,
         SE_PanelBackground,
-        SE_ScrollBarHandlePressedHorizontal, //only for 5.0+
+        SE_ScrollBarHandlePressedHorizontal,
         SE_ScrollBarHandlePressedVertical,
         SE_ButtonInactive,
         SE_Editor,
-        SE_DropArea
+        SE_DropArea,
+        SE_TableItemPressed,
+        SE_ListItemPressed,
     };
 
     enum SkinFrameElements {
@@ -437,7 +452,7 @@ public:
         SF_ButtonPressed,
         SF_FrameLineEdit,
         SF_ListHighlight,
-        SF_OptionsMenu,
+        SF_PopupBackground,
         SF_SettingsList,
         SF_TableItem,
         SF_TableHeaderItem,
@@ -447,6 +462,8 @@ public:
         SF_ToolBarButtonPressed,
         SF_PanelBackground,
         SF_ButtonInactive,
+        SF_TableItemPressed,
+        SF_ListItemPressed,
     };
 
     enum SkinElementFlag {
@@ -501,6 +518,7 @@ public:
     static bool isToolBarBackground();
     static bool hasSliderGrooveGraphic();
     static bool isSingleClickUi();
+    static bool isWidgetPressed(const QWidget *widget);
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
@@ -597,6 +615,8 @@ private:
 
     QPointer<QFocusFrame> m_focusFrame;
     static qint64 m_webPaletteKey;
+
+    static QPointer<QWidget> m_pressedWidget;
 
 #ifdef Q_WS_S60
     //list of progress bars having animation running

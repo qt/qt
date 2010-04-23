@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: root
@@ -25,6 +25,7 @@ Item {
         anchors.fill: parent
         model: VisualItemModel { id: visualModel }
 
+        highlightRangeMode: ListView.StrictlyEnforceRange
         snapMode: ListView.SnapOneItem
     }
 

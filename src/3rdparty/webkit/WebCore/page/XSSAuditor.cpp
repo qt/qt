@@ -105,7 +105,12 @@ bool XSSAuditor::canEvaluate(const String& code) const
     if (!isEnabled())
         return true;
 
-    if (findInRequest(code, false, true)) {
+    FindTask task;
+    task.string = code;
+    task.decodeEntities = false;
+    task.allowRequestIfNoIllegalURICharacters = true;
+
+    if (findInRequest(task)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
         m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
@@ -118,7 +123,11 @@ bool XSSAuditor::canEvaluateJavaScriptURL(const String& code) const
     if (!isEnabled())
         return true;
 
-    if (findInRequest(code, true, false, true)) {
+    FindTask task;
+    task.string = code;
+    task.decodeURLEscapeSequencesTwice = true;
+
+    if (findInRequest(task)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
         m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
@@ -131,7 +140,11 @@ bool XSSAuditor::canCreateInlineEventListener(const String&, const String& code)
     if (!isEnabled())
         return true;
 
-    if (findInRequest(code, true, true)) {
+    FindTask task;
+    task.string = code;
+    task.allowRequestIfNoIllegalURICharacters = true;
+
+    if (findInRequest(task)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
         m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
@@ -144,17 +157,14 @@ bool XSSAuditor::canLoadExternalScriptFromSrc(const String& context, const Strin
     if (!isEnabled())
         return true;
 
-    // If the script is loaded from the same URL as the enclosing page, it's
-    // probably not an XSS attack, so we reduce false positives by allowing the
-    // script. If the script has a query string, we're more suspicious,
-    // however, because that's pretty rare and the attacker might be able to
-    // trick a server-side script into doing something dangerous with the query
-    // string.
-    KURL scriptURL(m_frame->document()->url(), url);
-    if (m_frame->document()->url().host() == scriptURL.host() && scriptURL.query().isEmpty())
+    if (isSameOriginResource(url))
         return true;
 
-    if (findInRequest(context + url)) {
+    FindTask task;
+    task.context = context;
+    task.string = url;
+
+    if (findInRequest(task)) {
         DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request.\n"));
         m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
@@ -167,8 +177,15 @@ bool XSSAuditor::canLoadObject(const String& url) const
     if (!isEnabled())
         return true;
 
-    if (findInRequest(url)) {
-        DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request"));
+    if (isSameOriginResource(url))
+        return true;
+
+    FindTask task;
+    task.string = url;
+    task.allowRequestIfNoIllegalURICharacters = true;
+
+    if (findInRequest(task)) {
+        String consoleMessage = String::format("Refused to load an object. URL found within request: \"%s\".\n", url.utf8().data());
         m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
     }
@@ -179,10 +196,16 @@ bool XSSAuditor::canSetBaseElementURL(const String& url) const
 {
     if (!isEnabled())
         return true;
-    
-    KURL baseElementURL(m_frame->document()->url(), url);
-    if (m_frame->document()->url().host() != baseElementURL.host() && findInRequest(url)) {
-        DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute a JavaScript script. Source code of script found within request"));
+
+    if (isSameOriginResource(url))
+        return true;
+
+    FindTask task;
+    task.string = url;
+    task.allowRequestIfNoIllegalURICharacters = true;
+
+    if (findInRequest(task)) {
+        DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to load from document base URL. URL found within request.\n"));
         m_frame->domWindow()->console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, consoleMessage, 1, String());
         return false;
     }
@@ -255,20 +278,61 @@ String XSSAuditor::decodeHTMLEntities(const String& string, bool leaveUndecodabl
     return String::adopt(result);
 }
 
-bool XSSAuditor::findInRequest(const String& string, bool decodeEntities, bool allowRequestIfNoIllegalURICharacters, 
-                               bool decodeURLEscapeSequencesTwice) const
+bool XSSAuditor::isSameOriginResource(const String& url) const
+{
+    // If the resource is loaded from the same URL as the enclosing page, it's
+    // probably not an XSS attack, so we reduce false positives by allowing the
+    // request. If the resource has a query string, we're more suspicious,
+    // however, because that's pretty rare and the attacker might be able to
+    // trick a server-side script into doing something dangerous with the query
+    // string.
+    KURL resourceURL(m_frame->document()->url(), url);
+    return (m_frame->document()->url().host() == resourceURL.host() && resourceURL.query().isEmpty());
+}
+
+XSSProtectionDisposition XSSAuditor::xssProtection() const
+{
+    DEFINE_STATIC_LOCAL(String, XSSProtectionHeader, ("X-XSS-Protection"));
+
+    Frame* frame = m_frame;
+    if (frame->document()->url() == blankURL())
+        frame = m_frame->tree()->parent();
+
+    return parseXSSProtectionHeader(frame->loader()->documentLoader()->response().httpHeaderField(XSSProtectionHeader));
+}
+
+bool XSSAuditor::findInRequest(const FindTask& task) const
 {
     bool result = false;
     Frame* parentFrame = m_frame->tree()->parent();
+    Frame* blockFrame = parentFrame;
     if (parentFrame && m_frame->document()->url() == blankURL())
-        result = findInRequest(parentFrame, string, decodeEntities, allowRequestIfNoIllegalURICharacters, decodeURLEscapeSequencesTwice);
+        result = findInRequest(parentFrame, task);
+    if (!result) {
+        result = findInRequest(m_frame, task);
+        blockFrame = m_frame;
+    }
     if (!result)
-        result = findInRequest(m_frame, string, decodeEntities, allowRequestIfNoIllegalURICharacters, decodeURLEscapeSequencesTwice);
-    return result;
+        return false;
+
+    switch (xssProtection()) {
+    case XSSProtectionDisabled:
+        return false;
+    case XSSProtectionEnabled:
+        break;
+    case XSSProtectionBlockEnabled:
+        if (blockFrame) {
+            blockFrame->loader()->stopAllLoaders();
+            blockFrame->redirectScheduler()->scheduleLocationChange(blankURL(), String());
+        }
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return true;
 }
 
-bool XSSAuditor::findInRequest(Frame* frame, const String& string, bool decodeEntities, bool allowRequestIfNoIllegalURICharacters, 
-                               bool decodeURLEscapeSequencesTwice) const
+bool XSSAuditor::findInRequest(Frame* frame, const FindTask& task) const
 {
     ASSERT(frame->document());
 
@@ -277,17 +341,19 @@ bool XSSAuditor::findInRequest(Frame* frame, const String& string, bool decodeEn
         return false;
     }
 
-    if (string.isEmpty())
+    if (task.string.isEmpty())
         return false;
 
     FormData* formDataObj = frame->loader()->documentLoader()->originalRequest().httpBody();
+    const bool hasFormData = formDataObj && !formDataObj->isEmpty();
     String pageURL = frame->document()->url().string();
 
-    if (!formDataObj && string.length() >= 2 * pageURL.length()) {
+    String canonicalizedString;
+    if (!hasFormData && task.string.length() > 2 * pageURL.length()) {
         // Q: Why do we bother to do this check at all?
         // A: Canonicalizing large inline scripts can be expensive.  We want to
-        //    bail out before the call to canonicalize below, which could
-        //    result in an unneeded allocation and memcpy.
+        //    reduce the size of the string before we call canonicalize below,
+        //    since it could result in an unneeded allocation and memcpy.
         //
         // Q: Why do we multiply by two here?
         // A: We attempt to detect reflected XSS even when the server
@@ -295,39 +361,32 @@ bool XSSAuditor::findInRequest(Frame* frame, const String& string, bool decodeEn
         //    attacker can do get the server to inflate his/her input by a
         //    factor of two by sending " characters, which the server
         //    transforms to \".
-        return false;
-    }
+        canonicalizedString = task.string.substring(0, 2 * pageURL.length());
+    } else
+        canonicalizedString = task.string;
 
     if (frame->document()->url().protocolIs("data"))
         return false;
 
-    String canonicalizedString = canonicalize(string);
+    canonicalizedString = canonicalize(canonicalizedString);
     if (canonicalizedString.isEmpty())
         return false;
 
-    if (string.length() < pageURL.length()) {
-        // The string can actually fit inside the pageURL.
-        String decodedPageURL = m_cache.canonicalizeURL(pageURL, frame->document()->decoder()->encoding(), decodeEntities, decodeURLEscapeSequencesTwice);
+    if (!task.context.isEmpty())
+        canonicalizedString = task.context + canonicalizedString;
 
-        if (allowRequestIfNoIllegalURICharacters && (!formDataObj || formDataObj->isEmpty()) 
-            && decodedPageURL.find(&isIllegalURICharacter, 0) == -1)
-            return false; // Injection is impossible because the request does not contain any illegal URI characters. 
+    String decodedPageURL = m_pageURLCache.canonicalizeURL(pageURL, frame->document()->decoder()->encoding(), task.decodeEntities, task.decodeURLEscapeSequencesTwice);
 
-        if (decodedPageURL.find(canonicalizedString, 0, false) != -1)
-            return true;  // We've found the smoking gun.
-    }
+    if (task.allowRequestIfNoIllegalURICharacters && !hasFormData && decodedPageURL.find(&isIllegalURICharacter, 0) == -1)
+        return false; // Injection is impossible because the request does not contain any illegal URI characters.
 
-    if (formDataObj && !formDataObj->isEmpty()) {
-        String formData = formDataObj->flattenToString();
-        if (string.length() < formData.length()) {
-            // Notice it is sufficient to compare the length of the string to
-            // the url-encoded POST data because the length of the url-decoded
-            // code is less than or equal to the length of the url-encoded
-            // string.
-            String decodedFormData = m_cache.canonicalizeURL(formData, frame->document()->decoder()->encoding(), decodeEntities, decodeURLEscapeSequencesTwice);
-            if (decodedFormData.find(canonicalizedString, 0, false) != -1)
-                return true;  // We found the string in the POST data.
-        }
+    if (decodedPageURL.find(canonicalizedString, 0, false) != -1)
+        return true; // We've found the string in the GET data.
+
+    if (hasFormData) {
+        String decodedFormData = m_formDataCache.canonicalizeURL(formDataObj->flattenToString(), frame->document()->decoder()->encoding(), task.decodeEntities, task.decodeURLEscapeSequencesTwice);
+        if (decodedFormData.find(canonicalizedString, 0, false) != -1)
+            return true; // We found the string in the POST data.
     }
 
     return false;

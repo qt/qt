@@ -8,7 +8,7 @@ VERSION = 1.0.0
 SOURCES += plugin.cpp
 
 qdeclarativesources.files += \
-    com/nokia/TimeExample/qdeclarativedir \
+    com/nokia/TimeExample/qmldir \
     com/nokia/TimeExample/center.png \
     com/nokia/TimeExample/clock.png \
     com/nokia/TimeExample/Clock.qml \
@@ -17,10 +17,15 @@ qdeclarativesources.files += \
 
 qdeclarativesources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
 
-sources.files += plugins.pro plugin.cpp plugins.qml
+sources.files += plugins.pro plugin.cpp plugins.qml README
 sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
 
 target.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
+
+symbian:{
+    TARGET.EPOCALLOWDLLDATA=1
+}
+
 
 INSTALLS += qdeclarativesources sources target
 

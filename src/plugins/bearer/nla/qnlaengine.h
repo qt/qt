@@ -90,7 +90,7 @@ public:
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
-    void requestUpdate();
+    Q_INVOKABLE void requestUpdate();
 
     QNetworkSession::State sessionStateForId(const QString &id);
 

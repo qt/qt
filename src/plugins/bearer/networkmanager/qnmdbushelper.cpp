@@ -43,7 +43,7 @@
 
 #include "qnmdbushelper.h"
 
-#include <NetworkManager/NetworkManager.h>
+#include "qnetworkmanagerservice.h"
 
 #include <QDBusError>
 #include <QDBusInterface>
@@ -52,7 +52,18 @@
 
 #include <QDebug>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
+
+QNmDBusHelper::QNmDBusHelper(QObject * parent)
+        : QObject(parent)
+{
+}
+
+QNmDBusHelper::~QNmDBusHelper()
+{
+}
 
 void QNmDBusHelper::deviceStateChanged(quint32 state)
  {
@@ -115,3 +126,5 @@ void QNmDBusHelper::slotSettingsRemoved()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

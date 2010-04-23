@@ -1,13 +1,13 @@
-import Qt 4.6
+import Qt 4.7
+import "itemCreation.js" as Code
 
 GenericItem {
     id: itemButton
     property string file
-    Script { source: "itemCreation.js" }
     MouseArea { 
         anchors.fill: parent; 
-        onPressed: startDrag(mouse);
-        onPositionChanged: moveDrag(mouse);
-        onReleased: endDrag(mouse);
+        onPressed: Code.startDrag(mouse);
+        onPositionChanged: Code.moveDrag(mouse);
+        onReleased: Code.endDrag(mouse);
     }
 }

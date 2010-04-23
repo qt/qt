@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Item {
     id: page
@@ -10,7 +10,7 @@ Item {
     signal released
     signal clicked
 
-    isPressed: SequentialAnimation {
+    SequentialAnimation on isPressed {
         running: false
         id: autoRepeat
         PropertyAction { target: page; property: "isPressed"; value: true }
@@ -18,7 +18,7 @@ Item {
         ScriptAction { script: page.clicked() }
         PauseAnimation { duration: repeatdelay }
         SequentialAnimation {
-            repeat: true
+            loops: Animation.Infinite
             ScriptAction { script: page.clicked() }
             PauseAnimation { duration: repeatperiod }
         }

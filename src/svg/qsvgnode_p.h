@@ -118,16 +118,17 @@ public:
     QSvgNode *parent() const;
 
     void appendStyleProperty(QSvgStyleProperty *prop, const QString &id);
-    void applyStyle(QPainter *p, QSvgExtraStates &states);
-    void revertStyle(QPainter *p, QSvgExtraStates &states);
+    void applyStyle(QPainter *p, QSvgExtraStates &states) const;
+    void revertStyle(QPainter *p, QSvgExtraStates &states) const;
     QSvgStyleProperty *styleProperty(QSvgStyleProperty::Type type) const;
     QSvgFillStyleProperty *styleProperty(const QString &id) const;
 
     QSvgTinyDocument *document() const;
 
     virtual Type type() const =0;
-    virtual QRectF bounds() const;
-    virtual QRectF transformedBounds(const QTransform &transform) const;
+    virtual QRectF bounds(QPainter *p, QSvgExtraStates &states) const;
+    virtual QRectF transformedBounds(QPainter *p, QSvgExtraStates &states) const;
+    QRectF transformedBounds() const;
 
     void setRequiredFeatures(const QStringList &lst);
     const QStringList & requiredFeatures() const;
@@ -156,9 +157,9 @@ public:
     QString xmlClass() const;
     void setXmlClass(const QString &str);
 protected:
-    QSvgStyle   m_style;
+    mutable QSvgStyle m_style;
 
-    qreal strokeWidth() const;
+    static qreal strokeWidth(QPainter *p);
 private:
     QSvgNode   *m_parent;
 
@@ -174,6 +175,7 @@ private:
     QString m_class;
 
     DisplayMode m_displayMode;
+    mutable QRectF m_cachedBounds;
 
     friend class QSvgTinyDocument;
 };

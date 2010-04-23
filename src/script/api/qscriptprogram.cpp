@@ -63,6 +63,10 @@ QScriptProgramPrivate::QScriptProgramPrivate(const QString &src,
 
 QScriptProgramPrivate::~QScriptProgramPrivate()
 {
+    if (engine) {
+        QScript::APIShim shim(engine);
+        _executable.clear();
+    }
 }
 
 QScriptProgramPrivate *QScriptProgramPrivate::get(const QScriptProgram &q)
@@ -120,7 +124,7 @@ QScriptProgram::QScriptProgram(const QScriptProgram &other)
 */
 QScriptProgram::~QScriptProgram()
 {
-    Q_D(QScriptProgram);
+    //    Q_D(QScriptProgram);
     //    if (d->engine && (d->ref == 1))
     //      d->engine->unregisterScriptProgram(d);
 }

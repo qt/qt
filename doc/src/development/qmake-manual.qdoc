@@ -1329,9 +1329,13 @@
     \target DEF_FILE
     \section1 DEF_FILE
 
-    \e {This is only used on Windows when using the \c app template}.
+    \e {This is only used on Windows when using the \c app template,
+    and on Symbian when building a shared DLL}.
 
-    Specifies a \c .def file to be included in the project.
+    Specifies a \c .def file to be included in the project. On Symbian
+    a directory may be specified instead, in which case the real files
+    will be located under the standard Symbian directories \c bwins and
+    \c eabi.
 
     \target DEPENDPATH
     \section1 DEPENDPATH
@@ -1421,12 +1425,20 @@ is the application private directory on the drive it is installed to.
     attention that also other statements stay valid. For example if you
     override languages statement, you must override also package-header
     statement and all other statements which are language specific.
+
+    On the Symbian platform, the \c default_deployment item specifies
+    default platform and package dependencies. Those dependencies can be
+    selectively disabled if alternative dependencies need to be defined
+    - e.g. if a specific device is required to run the application or
+    more languages need to be supported by the package file. The supported
+    \c default_deployment rules that can be disabled are:
     
-    On the Symbian platform, the \c default_deployment item specifies 
-    default platform dependencies. It can be overwritten if a more 
-    restrictive set is needed - e.g. if a specific
-    device is required to run the application.
-    
+    \list
+    \o pkg_depends_qt
+    \o pkg_depends_webkit
+    \o pkg_platform_dependencies
+    \endlist
+
     For example:
     
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 141
@@ -2601,7 +2613,7 @@ For example:
 
     \section1 QMAKE_LIBS_THREAD
 
-    \e {This is used on Unix platforms only.}
+    \e {This is used on Unix and Symbian platforms only.}
 
     This variable contains all libraries that need to be linked against
     when building a multi-threaded application.  The
@@ -2884,9 +2896,9 @@ For example:
     
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 144
     
-    This will add the specified statement to the end of the generated 
-    registration resource file. As an impact of this statement, the application
-    will not be visible in application shell.
+    This will add the specified statement to the end of the \c APP_REGISTRATION_INFO
+    resource struct in the generated registration resource file.
+    As an impact of this statement, the application will not be visible in application shell.
     
     It is also possible to add multiple rows in a single block. Each double
     quoted string will be placed on a new row in the registration resource file.
@@ -2899,16 +2911,36 @@ For example:
     platform application shell. In addition it will make the application to
     be launched in background.
 
-    For detailed list of possible RSS statements, please refer to the
-    Symbian platform help.    
+    For detailed list of possible \c APP_REGISTRATION_INFO statements, please refer to the
+    Symbian platform help.
 
     \note You should not use \c RSS_RULES variable to set the following RSS statements:
-    
-    app_file
-    localisable_resource_file
-    localisable_resource_id
+    \c app_file, \c localisable_resource_file, and \c localisable_resource_id.
 
-    These statements are internally handled by qmake.     
+    These statements are internally handled by qmake.
+
+    There is a number of special modifiers you can attach to \c RSS_RULES to specify where
+    in the application registration file the rule will be written:
+
+    \table
+    \header \o Modifier \o Location of the rule
+    \row \o <no modifier>        \o Inside \c APP_REGISTRATION_INFO resource struct.
+    \row \o .header              \o Before \c APP_REGISTRATION_INFO resource struct.
+    \row \o .footer              \o After \c APP_REGISTRATION_INFO resource struct.
+    \row \o .service_list        \o Inside a \c SERVICE_INFO item in the \c service_list
+                                 of \c APP_REGISTRATION_INFO
+    \row \o .file_ownership_list \o Inside a \c FILE_OWNERSHIP_INFO item in the
+                                 \c file_ownership_list of \c APP_REGISTRATION_INFO
+    \row \o .datatype_list       \o Inside a \c DATATYPE item in the \c datatype_list of
+                                 \c APP_REGISTRATION_INFO
+    \endtable
+
+    For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 151
+
+    This example will define service information for a fictional service that requires
+    an icon to be supplied via the \c opaque_data of the service information.
 
     \target S60_VERSION
     \section1 S60_VERSION
@@ -2967,6 +2999,34 @@ For example:
     include the \c ordered option:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 51
+
+    It is possible to modify this default behavior of \c SUBDIRS by giving
+    additional modifiers to \c SUBDIRS elements. Supported modifiers are:
+
+    \table
+    \header \o Modifier \o Effect
+    \row \o .subdir     \o Use the specified subdirectory instead of \c SUBDIRS value.
+    \row \o .file       \o Specify the subproject \c pro file explicitly. Cannot be
+                        used in conjunction with \c .subdir modifier.
+    \row \o .condition  \o Specifies a \c bld.inf define that must be true for
+                        subproject to be built. Available only on Symbian platform.
+    \row \o .depends    \o This subproject depends on specified subproject.
+                        Available only on platforms that use makefiles.
+    \row \o .makefile   \o The makefile of subproject.
+                        Available only on platforms that use makefiles.
+    \row \o .target     \o Base string used for makefile targets related to this
+                        subproject.
+                        Available only on platforms that use makefiles.
+    \endtable
+
+    For example, define two subdirectories, both of which reside in a different directory
+    than the \c SUBDIRS value, and one of the subdirectories must be built before the other:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 149
+
+    For example, define a subdirectory that is only build for emulator builds in Qt for Symbian:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 150
 
     \target TARGET
     \section1 TARGET

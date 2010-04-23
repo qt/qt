@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 static const char *qt_inherit_text = "inherit";
 #define QT_INHERIT QLatin1String(qt_inherit_text)
 
-double qstrtod(const char *s00, char const **se, bool *ok);
+Q_DECL_IMPORT double qstrtod(const char *s00, char const **se, bool *ok);
 
 // ======== duplicated from qcolor_p
 
@@ -2962,9 +2962,9 @@ static QSvgNode *createRectNode(QSvgNode *parent,
     if (nry > bounds.height()/2)
         nry = bounds.height()/2;
 
-    if (nrx && !nry)
+    if (!rx.isEmpty() && ry.isEmpty())
         nry = nrx;
-    else if (nry && !nrx)
+    else if (!ry.isEmpty() && rx.isEmpty())
         nrx = nry;
 
     //we draw rounded rect from 0...99

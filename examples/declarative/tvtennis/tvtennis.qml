@@ -1,4 +1,5 @@
-import Qt 4.6
+import Qt 4.7
+import Qt.multimedia 4.7
 
 Rectangle {
     id: page
@@ -7,35 +8,39 @@ Rectangle {
 
     // Make a ball to bounce
     Rectangle {
+        id: ball
+
         // Add a property for the target y coordinate
         property int targetY : page.height - 10
-        property var direction : "right"
+        property variant direction : "right"
 
-        id: ball
-        color: "Lime"
         x: 20; width: 20; height: 20; z: 1
+        color: "Lime"
+
+        SoundEffect { id: paddle; source: "paddle.wav" }
+        SoundEffect { id: wall; source: "click.wav" }
 
         // Move the ball to the right and back to the left repeatedly
-        x: SequentialAnimation {
-            repeat: true
+        SequentialAnimation on x {
+            loops: Animation.Infinite
             NumberAnimation { to: page.width - 40; duration: 2000 }
-            ScriptAction { script: Qt.playSound('paddle.wav') }
+            ScriptAction { script: paddle.play() }
             PropertyAction { target: ball; property: "direction"; value: "left" }
             NumberAnimation { to: 20; duration: 2000 }
-            ScriptAction { script: Qt.playSound('paddle.wav') }
+            ScriptAction { script: paddle.play() }
             PropertyAction { target: ball; property: "direction"; value: "right" }
         }
 
         // Make y follow the target y coordinate, with a velocity of 200
-        y: SpringFollow { source: ball.targetY; velocity: 200 }
+        SpringFollow on y { to: ball.targetY; velocity: 200 }
 
         // Detect the ball hitting the top or bottom of the view and bounce it
         onYChanged: {
             if (y <= 0) {
-                Qt.playSound('click.wav');
+                wall.play();
                 targetY = page.height - 20;
             } else if (y >= page.height - 20) {
-                Qt.playSound('click.wav');
+                wall.play();
                 targetY = 0;
             }
         }
@@ -47,8 +52,8 @@ Rectangle {
         id: leftBat
         color: "Lime"
         x: 2; width: 20; height: 90
-        y: SpringFollow {
-            source: ball.y - 45; velocity: 300
+        SpringFollow on y {
+            to: ball.y - 45; velocity: 300
             enabled: ball.direction == 'left'
         }
     }
@@ -56,8 +61,8 @@ Rectangle {
         id: rightBat
         color: "Lime"
         x: page.width - 22; width: 20; height: 90
-        y: SpringFollow {
-            source: ball.y-45; velocity: 300
+        SpringFollow on y {
+            to: ball.y-45; velocity: 300
             enabled: ball.direction == 'right'
         }
     }

@@ -45,9 +45,11 @@ import sys
 import enumdata
 import xpathlite
 from  xpathlite import DraftResolution
+from dateconverter import convert_date
 import re
 
 findEntry = xpathlite.findEntry
+findEntryInFile = xpathlite._findEntryInFile
 
 def ordStr(c):
     if len(c) == 1:
@@ -73,13 +75,23 @@ def fixOrdStrList(c):
 def generateLocaleInfo(path):
     (dir_name, file_name) = os.path.split(path)
 
-    exp = re.compile(r"([a-z]+)_([A-Z]{2})\.xml")
-    m = exp.match(file_name)
-    if not m:
+    if not path.endswith(".xml"):
+        return {}
+    language_code = findEntryInFile(path, "identity/language", attribute="type")[0]
+    if language_code == 'root':
+        # just skip it
+        return {}
+    country_code = findEntryInFile(path, "identity/territory", attribute="type")[0]
+    script_code = findEntryInFile(path, "identity/script", attribute="type")[0]
+    variant_code = findEntryInFile(path, "identity/variant", attribute="type")[0]
+
+    # we should handle fully qualified names with the territory
+    if not country_code:
         return {}
 
-    language_code = m.group(1)
-    country_code = m.group(2)
+    # we do not support scripts and variants
+    if variant_code or script_code:
+        return {}
 
     language_id = enumdata.languageCodeToId(language_code)
     if language_id == -1:
@@ -88,184 +100,205 @@ def generateLocaleInfo(path):
     language = enumdata.language_list[language_id][0]
 
     country_id = enumdata.countryCodeToId(country_code)
-    if country_id == -1:
+    country = ""
+    if country_id != -1:
+        country = enumdata.country_list[country_id][0]
+    if country == "":
         sys.stderr.write("unnknown country code \"" + country_code + "\"\n")
         return {}
-    country = enumdata.country_list[country_id][0]
 
-    base = dir_name + "/" + language_code + "_" + country_code
+    # So we say we accept only those values that have "contributed" or
+    # "approved" resolution. see http://www.unicode.org/cldr/process.html
+    # But we only respect the resolution for new datas for backward
+    # compatibility.
+    draft = DraftResolution.contributed
 
     result = {}
-    result['base'] = base
-
     result['language'] = language
     result['country'] = country
+    result['language_code'] = language_code
+    result['country_code'] = country_code
+    result['script_code'] = script_code
+    result['variant_code'] = variant_code
     result['language_id'] = language_id
     result['country_id'] = country_id
-    result['decimal'] = findEntry(base, "numbers/symbols/decimal")
-    result['group'] = findEntry(base, "numbers/symbols/group")
-    result['list'] = findEntry(base, "numbers/symbols/list")
-    result['percent'] = findEntry(base, "numbers/symbols/percentSign")
-    result['zero'] = findEntry(base, "numbers/symbols/nativeZeroDigit")
-    result['minus'] = findEntry(base, "numbers/symbols/minusSign")
-    result['plus'] = findEntry(base, "numbers/symbols/plusSign")
-    result['exp'] = findEntry(base, "numbers/symbols/exponential").lower()
-    result['am'] = findEntry(base, "dates/calendars/calendar[gregorian]/am", draft=DraftResolution.approved)
-    result['pm'] = findEntry(base, "dates/calendars/calendar[gregorian]/pm", draft=DraftResolution.approved)
-    result['longDateFormat'] = findEntry(base, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern")
-    result['shortDateFormat'] = findEntry(base, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[short]/dateFormat/pattern")
-    result['longTimeFormat'] = findEntry(base, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern")
-    result['shortTimeFormat'] = findEntry(base, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[short]/timeFormat/pattern")
+
+    numberingSystem = None
+    try:
+        numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
+    except:
+        pass
+    def get_number_in_system(path, xpath, numbering_system):
+        if numbering_system:
+            try:
+                return findEntry(path, xpath + "[numberSystem=" + numbering_system + "]")
+            except xpathlite.Error:
+                pass
+        return findEntry(path, xpath)
+    result['decimal'] = get_number_in_system(path, "numbers/symbols/decimal", numbering_system)
+    result['group'] = get_number_in_system(path, "numbers/symbols/group", numbering_system)
+    result['list'] = get_number_in_system(path, "numbers/symbols/list", numbering_system)
+    result['percent'] = get_number_in_system(path, "numbers/symbols/percentSign", numbering_system)
+    result['zero'] = get_number_in_system(path, "numbers/symbols/nativeZeroDigit", numbering_system)
+    result['minus'] = get_number_in_system(path, "numbers/symbols/minusSign", numbering_system)
+    result['plus'] = get_number_in_system(path, "numbers/symbols/plusSign", numbering_system)
+    result['exp'] = get_number_in_system(path, "numbers/symbols/exponential", numbering_system).lower()
+    result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[am]", draft)
+    result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/dayPeriod[pm]", draft)
+    result['longDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern"))
+    result['shortDateFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[short]/dateFormat/pattern"))
+    result['longTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern"))
+    result['shortTimeFormat'] = convert_date(findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[short]/timeFormat/pattern"))
 
     standalone_long_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[wide]/month"
     result['standaloneLongMonths'] \
-        = findEntry(base, standalone_long_month_path + "[1]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[2]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[3]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[4]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[5]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[6]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[7]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[8]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[9]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[10]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[11]") + ";" \
-        + findEntry(base, standalone_long_month_path + "[12]") + ";"
+        = findEntry(path, standalone_long_month_path + "[1]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[2]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[3]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[4]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[5]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[6]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[7]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[8]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[9]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[10]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[11]") + ";" \
+        + findEntry(path, standalone_long_month_path + "[12]") + ";"
 
     standalone_short_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[abbreviated]/month"
     result['standaloneShortMonths'] \
-        = findEntry(base, standalone_short_month_path + "[1]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[2]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[3]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[4]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[5]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[6]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[7]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[8]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[9]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[10]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[11]") + ";" \
-        + findEntry(base, standalone_short_month_path + "[12]") + ";"
+        = findEntry(path, standalone_short_month_path + "[1]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[2]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[3]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[4]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[5]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[6]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[7]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[8]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[9]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[10]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[11]") + ";" \
+        + findEntry(path, standalone_short_month_path + "[12]") + ";"
 
     standalone_narrow_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[narrow]/month"
     result['standaloneNarrowMonths'] \
-        = findEntry(base, standalone_narrow_month_path + "[1]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[2]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[3]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[4]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[5]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[6]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[7]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[8]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[9]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[10]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[11]") + ";" \
-        + findEntry(base, standalone_narrow_month_path + "[12]") + ";"
+        = findEntry(path, standalone_narrow_month_path + "[1]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[2]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[3]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[4]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[5]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[6]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[7]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[8]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[9]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[10]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[11]") + ";" \
+        + findEntry(path, standalone_narrow_month_path + "[12]") + ";"
 
     long_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[format]/monthWidth[wide]/month"
     result['longMonths'] \
-        = findEntry(base, long_month_path + "[1]") + ";" \
-        + findEntry(base, long_month_path + "[2]") + ";" \
-        + findEntry(base, long_month_path + "[3]") + ";" \
-        + findEntry(base, long_month_path + "[4]") + ";" \
-        + findEntry(base, long_month_path + "[5]") + ";" \
-        + findEntry(base, long_month_path + "[6]") + ";" \
-        + findEntry(base, long_month_path + "[7]") + ";" \
-        + findEntry(base, long_month_path + "[8]") + ";" \
-        + findEntry(base, long_month_path + "[9]") + ";" \
-        + findEntry(base, long_month_path + "[10]") + ";" \
-        + findEntry(base, long_month_path + "[11]") + ";" \
-        + findEntry(base, long_month_path + "[12]") + ";"
+        = findEntry(path, long_month_path + "[1]") + ";" \
+        + findEntry(path, long_month_path + "[2]") + ";" \
+        + findEntry(path, long_month_path + "[3]") + ";" \
+        + findEntry(path, long_month_path + "[4]") + ";" \
+        + findEntry(path, long_month_path + "[5]") + ";" \
+        + findEntry(path, long_month_path + "[6]") + ";" \
+        + findEntry(path, long_month_path + "[7]") + ";" \
+        + findEntry(path, long_month_path + "[8]") + ";" \
+        + findEntry(path, long_month_path + "[9]") + ";" \
+        + findEntry(path, long_month_path + "[10]") + ";" \
+        + findEntry(path, long_month_path + "[11]") + ";" \
+        + findEntry(path, long_month_path + "[12]") + ";"
 
     short_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[format]/monthWidth[abbreviated]/month"
     result['shortMonths'] \
-        = findEntry(base, short_month_path + "[1]") + ";" \
-        + findEntry(base, short_month_path + "[2]") + ";" \
-        + findEntry(base, short_month_path + "[3]") + ";" \
-        + findEntry(base, short_month_path + "[4]") + ";" \
-        + findEntry(base, short_month_path + "[5]") + ";" \
-        + findEntry(base, short_month_path + "[6]") + ";" \
-        + findEntry(base, short_month_path + "[7]") + ";" \
-        + findEntry(base, short_month_path + "[8]") + ";" \
-        + findEntry(base, short_month_path + "[9]") + ";" \
-        + findEntry(base, short_month_path + "[10]") + ";" \
-        + findEntry(base, short_month_path + "[11]") + ";" \
-        + findEntry(base, short_month_path + "[12]") + ";"
+        = findEntry(path, short_month_path + "[1]") + ";" \
+        + findEntry(path, short_month_path + "[2]") + ";" \
+        + findEntry(path, short_month_path + "[3]") + ";" \
+        + findEntry(path, short_month_path + "[4]") + ";" \
+        + findEntry(path, short_month_path + "[5]") + ";" \
+        + findEntry(path, short_month_path + "[6]") + ";" \
+        + findEntry(path, short_month_path + "[7]") + ";" \
+        + findEntry(path, short_month_path + "[8]") + ";" \
+        + findEntry(path, short_month_path + "[9]") + ";" \
+        + findEntry(path, short_month_path + "[10]") + ";" \
+        + findEntry(path, short_month_path + "[11]") + ";" \
+        + findEntry(path, short_month_path + "[12]") + ";"
 
     narrow_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[format]/monthWidth[narrow]/month"
     result['narrowMonths'] \
-        = findEntry(base, narrow_month_path + "[1]") + ";" \
-        + findEntry(base, narrow_month_path + "[2]") + ";" \
-        + findEntry(base, narrow_month_path + "[3]") + ";" \
-        + findEntry(base, narrow_month_path + "[4]") + ";" \
-        + findEntry(base, narrow_month_path + "[5]") + ";" \
-        + findEntry(base, narrow_month_path + "[6]") + ";" \
-        + findEntry(base, narrow_month_path + "[7]") + ";" \
-        + findEntry(base, narrow_month_path + "[8]") + ";" \
-        + findEntry(base, narrow_month_path + "[9]") + ";" \
-        + findEntry(base, narrow_month_path + "[10]") + ";" \
-        + findEntry(base, narrow_month_path + "[11]") + ";" \
-        + findEntry(base, narrow_month_path + "[12]") + ";"
+        = findEntry(path, narrow_month_path + "[1]") + ";" \
+        + findEntry(path, narrow_month_path + "[2]") + ";" \
+        + findEntry(path, narrow_month_path + "[3]") + ";" \
+        + findEntry(path, narrow_month_path + "[4]") + ";" \
+        + findEntry(path, narrow_month_path + "[5]") + ";" \
+        + findEntry(path, narrow_month_path + "[6]") + ";" \
+        + findEntry(path, narrow_month_path + "[7]") + ";" \
+        + findEntry(path, narrow_month_path + "[8]") + ";" \
+        + findEntry(path, narrow_month_path + "[9]") + ";" \
+        + findEntry(path, narrow_month_path + "[10]") + ";" \
+        + findEntry(path, narrow_month_path + "[11]") + ";" \
+        + findEntry(path, narrow_month_path + "[12]") + ";"
 
     long_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[format]/dayWidth[wide]/day"
     result['longDays'] \
-        = findEntry(base, long_day_path + "[sun]") + ";" \
-        + findEntry(base, long_day_path + "[mon]") + ";" \
-        + findEntry(base, long_day_path + "[tue]") + ";" \
-        + findEntry(base, long_day_path + "[wed]") + ";" \
-        + findEntry(base, long_day_path + "[thu]") + ";" \
-        + findEntry(base, long_day_path + "[fri]") + ";" \
-        + findEntry(base, long_day_path + "[sat]") + ";"
+        = findEntry(path, long_day_path + "[sun]") + ";" \
+        + findEntry(path, long_day_path + "[mon]") + ";" \
+        + findEntry(path, long_day_path + "[tue]") + ";" \
+        + findEntry(path, long_day_path + "[wed]") + ";" \
+        + findEntry(path, long_day_path + "[thu]") + ";" \
+        + findEntry(path, long_day_path + "[fri]") + ";" \
+        + findEntry(path, long_day_path + "[sat]") + ";"
 
     short_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[format]/dayWidth[abbreviated]/day"
     result['shortDays'] \
-        = findEntry(base, short_day_path + "[sun]") + ";" \
-        + findEntry(base, short_day_path + "[mon]") + ";" \
-        + findEntry(base, short_day_path + "[tue]") + ";" \
-        + findEntry(base, short_day_path + "[wed]") + ";" \
-        + findEntry(base, short_day_path + "[thu]") + ";" \
-        + findEntry(base, short_day_path + "[fri]") + ";" \
-        + findEntry(base, short_day_path + "[sat]") + ";"
+        = findEntry(path, short_day_path + "[sun]") + ";" \
+        + findEntry(path, short_day_path + "[mon]") + ";" \
+        + findEntry(path, short_day_path + "[tue]") + ";" \
+        + findEntry(path, short_day_path + "[wed]") + ";" \
+        + findEntry(path, short_day_path + "[thu]") + ";" \
+        + findEntry(path, short_day_path + "[fri]") + ";" \
+        + findEntry(path, short_day_path + "[sat]") + ";"
 
     narrow_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[format]/dayWidth[narrow]/day"
     result['narrowDays'] \
-        = findEntry(base, narrow_day_path + "[sun]") + ";" \
-        + findEntry(base, narrow_day_path + "[mon]") + ";" \
-        + findEntry(base, narrow_day_path + "[tue]") + ";" \
-        + findEntry(base, narrow_day_path + "[wed]") + ";" \
-        + findEntry(base, narrow_day_path + "[thu]") + ";" \
-        + findEntry(base, narrow_day_path + "[fri]") + ";" \
-        + findEntry(base, narrow_day_path + "[sat]") + ";"
+        = findEntry(path, narrow_day_path + "[sun]") + ";" \
+        + findEntry(path, narrow_day_path + "[mon]") + ";" \
+        + findEntry(path, narrow_day_path + "[tue]") + ";" \
+        + findEntry(path, narrow_day_path + "[wed]") + ";" \
+        + findEntry(path, narrow_day_path + "[thu]") + ";" \
+        + findEntry(path, narrow_day_path + "[fri]") + ";" \
+        + findEntry(path, narrow_day_path + "[sat]") + ";"
 
     standalone_long_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[stand-alone]/dayWidth[wide]/day"
     result['standaloneLongDays'] \
-        = findEntry(base, standalone_long_day_path + "[sun]") + ";" \
-        + findEntry(base, standalone_long_day_path + "[mon]") + ";" \
-        + findEntry(base, standalone_long_day_path + "[tue]") + ";" \
-        + findEntry(base, standalone_long_day_path + "[wed]") + ";" \
-        + findEntry(base, standalone_long_day_path + "[thu]") + ";" \
-        + findEntry(base, standalone_long_day_path + "[fri]") + ";" \
-        + findEntry(base, standalone_long_day_path + "[sat]") + ";"
+        = findEntry(path, standalone_long_day_path + "[sun]") + ";" \
+        + findEntry(path, standalone_long_day_path + "[mon]") + ";" \
+        + findEntry(path, standalone_long_day_path + "[tue]") + ";" \
+        + findEntry(path, standalone_long_day_path + "[wed]") + ";" \
+        + findEntry(path, standalone_long_day_path + "[thu]") + ";" \
+        + findEntry(path, standalone_long_day_path + "[fri]") + ";" \
+        + findEntry(path, standalone_long_day_path + "[sat]") + ";"
 
     standalone_short_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[stand-alone]/dayWidth[abbreviated]/day"
     result['standaloneShortDays'] \
-        = findEntry(base, standalone_short_day_path + "[sun]") + ";" \
-        + findEntry(base, standalone_short_day_path + "[mon]") + ";" \
-        + findEntry(base, standalone_short_day_path + "[tue]") + ";" \
-        + findEntry(base, standalone_short_day_path + "[wed]") + ";" \
-        + findEntry(base, standalone_short_day_path + "[thu]") + ";" \
-        + findEntry(base, standalone_short_day_path + "[fri]") + ";" \
-        + findEntry(base, standalone_short_day_path + "[sat]") + ";"
+        = findEntry(path, standalone_short_day_path + "[sun]") + ";" \
+        + findEntry(path, standalone_short_day_path + "[mon]") + ";" \
+        + findEntry(path, standalone_short_day_path + "[tue]") + ";" \
+        + findEntry(path, standalone_short_day_path + "[wed]") + ";" \
+        + findEntry(path, standalone_short_day_path + "[thu]") + ";" \
+        + findEntry(path, standalone_short_day_path + "[fri]") + ";" \
+        + findEntry(path, standalone_short_day_path + "[sat]") + ";"
 
     standalone_narrow_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[stand-alone]/dayWidth[narrow]/day"
     result['standaloneNarrowDays'] \
-        = findEntry(base, standalone_narrow_day_path + "[sun]") + ";" \
-        + findEntry(base, standalone_narrow_day_path + "[mon]") + ";" \
-        + findEntry(base, standalone_narrow_day_path + "[tue]") + ";" \
-        + findEntry(base, standalone_narrow_day_path + "[wed]") + ";" \
-        + findEntry(base, standalone_narrow_day_path + "[thu]") + ";" \
-        + findEntry(base, standalone_narrow_day_path + "[fri]") + ";" \
-        + findEntry(base, standalone_narrow_day_path + "[sat]") + ";"
+        = findEntry(path, standalone_narrow_day_path + "[sun]") + ";" \
+        + findEntry(path, standalone_narrow_day_path + "[mon]") + ";" \
+        + findEntry(path, standalone_narrow_day_path + "[tue]") + ";" \
+        + findEntry(path, standalone_narrow_day_path + "[wed]") + ";" \
+        + findEntry(path, standalone_narrow_day_path + "[thu]") + ";" \
+        + findEntry(path, standalone_narrow_day_path + "[fri]") + ";" \
+        + findEntry(path, standalone_narrow_day_path + "[sat]") + ";"
 
 
     return result
@@ -306,7 +339,7 @@ for file in cldr_files:
         sys.stderr.write("skipping file \"" + file + "\"\n")
         continue
 
-    locale_database[(l['language_id'], l['country_id'])] = l
+    locale_database[(l['language_id'], l['country_id'], l['script_code'], l['variant_code'])] = l
 
 locale_keys = locale_database.keys()
 locale_keys.sort()
@@ -465,9 +498,10 @@ for key in locale_keys:
     l = locale_database[key]
 
     print "        <locale>"
-#    print "            <source>"   + l['base']            + "</source>"
     print "            <language>" + l['language']        + "</language>"
     print "            <country>"  + l['country']         + "</country>"
+    print "            <languagecode>" + l['language_code']        + "</languagecode>"
+    print "            <countrycode>"  + l['country_code']         + "</countrycode>"
     print "            <decimal>"  + ordStr(l['decimal']) + "</decimal>"
     print "            <group>"    + ordStr(l['group'])   + "</group>"
     print "            <list>"     + fixOrdStrList(l['list'])    + "</list>"

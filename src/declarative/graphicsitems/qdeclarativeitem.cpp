@@ -39,18 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeitem_p.h"
+#include "private/qdeclarativeitem_p.h"
 #include "qdeclarativeitem.h"
 
-#include "qdeclarativeevents_p_p.h"
+#include "private/qdeclarativeevents_p_p.h"
+#include <private/qdeclarativeengine_p.h>
 
-#include <qfxperf_p_p.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeopenmetaobject_p.h>
 #include <qdeclarativestate_p.h>
 #include <qdeclarativeview.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativecomponent.h>
+#include <qdeclarativeinfo.h>
 
 #include <QDebug>
 #include <QPen>
@@ -76,13 +77,57 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Transform elements provide a way of building advanced transformations on Items.
 
+    The Transform element is a base type which cannot be instantiated directly.
+    The following concrete Transform types are available:
+
+    \list
+    \o \l Rotation
+    \o \l Scale
+    \o \l Translate
+    \endlist
+
     The Transform elements let you create and control advanced transformations that can be configured
     independently using specialized properties.
 
     You can assign any number of Transform elements to an Item. Each Transform is applied in order,
     one at a time, to the Item it's assigned to.
+*/
 
-    \sa Rotation, Scale
+/*!
+    \qmlclass Translate QGraphicsTranslate
+    \since 4.7
+    \brief The Translate object provides a way to move an Item without changing its x or y properties.
+
+    The Translate object provides independent control over position in addition to the Item's x and y properties.
+
+    The following example moves the Y axis of the Rectangles while still allowing the Row element
+    to lay the items out as if they had not been transformed:
+    \qml
+    Row {
+        Rectangle {
+            width: 100; height: 100
+            color: "blue"
+            transform: Translate { y: 20 }
+        }
+        Rectangle {
+            width: 100; height: 100
+            color: "red"
+            transform: Translate { y: -20 }
+        }
+    }
+    \endqml
+*/
+
+/*!
+    \qmlproperty real Translate::x
+
+    The translation along the X axis.
+*/
+
+/*!
+    \qmlproperty real Translate::y
+
+    The translation along the Y axis.
 */
 
 /*!
@@ -271,7 +316,7 @@ void QDeclarativeContents::calcHeight()
     m_height = qMax(bottom - top, qreal(0.0));
 
     if (m_height != oldheight || m_y != oldy)
-        emit rectChanged();
+        emit rectChanged(rectF());
 }
 
 //TODO: optimization: only check sender(), if there is one
@@ -299,7 +344,7 @@ void QDeclarativeContents::calcWidth()
     m_width = qMax(right - left, qreal(0.0));
 
     if (m_width != oldwidth || m_x != oldx)
-        emit rectChanged();
+        emit rectChanged(rectF());
 }
 
 void QDeclarativeContents::setItem(QDeclarativeItem *item)
@@ -315,7 +360,7 @@ void QDeclarativeContents::setItem(QDeclarativeItem *item)
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
         connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
-        connect(this, SIGNAL(rectChanged()), m_item, SIGNAL(childrenRectChanged()));
+        connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
     }
 
     calcHeight();
@@ -498,6 +543,32 @@ void QDeclarativeKeyNavigationAttached::setDown(QDeclarativeItem *i)
     emit changed();
 }
 
+QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
+{
+    Q_D(const QDeclarativeKeyNavigationAttached);
+    return d->tab;
+}
+
+void QDeclarativeKeyNavigationAttached::setTab(QDeclarativeItem *i)
+{
+    Q_D(QDeclarativeKeyNavigationAttached);
+    d->tab = i;
+    emit changed();
+}
+
+QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
+{
+    Q_D(const QDeclarativeKeyNavigationAttached);
+    return d->backtab;
+}
+
+void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
+{
+    Q_D(QDeclarativeKeyNavigationAttached);
+    d->backtab = i;
+    emit changed();
+}
+
 void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
@@ -526,6 +597,18 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
     case Qt::Key_Down:
         if (d->down) {
             d->down->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Tab:
+        if (d->tab) {
+            d->tab->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Backtab:
+        if (d->backtab) {
+            d->backtab->setFocus(true);
             event->accept();
         }
         break;
@@ -560,6 +643,16 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
         break;
     case Qt::Key_Down:
         if (d->down) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Tab:
+        if (d->tab) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Backtab:
+        if (d->backtab) {
             event->accept();
         }
         break;
@@ -902,6 +995,8 @@ const QDeclarativeKeysAttached::SigMap QDeclarativeKeysAttached::sigMap[] = {
     { Qt::Key_Right, "rightPressed" },
     { Qt::Key_Up, "upPressed" },
     { Qt::Key_Down, "downPressed" },
+    { Qt::Key_Tab, "tabPressed" },
+    { Qt::Key_Backtab, "backtabPressed" },
     { Qt::Key_Asterisk, "asteriskPressed" },
     { Qt::Key_NumberSign, "numberSignPressed" },
     { Qt::Key_Escape, "escapePressed" },
@@ -1172,7 +1267,7 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
     See the \l {Keys}{Keys} attached property for detailed documentation.
 
-    \section 1 Property Change Signals
+    \section1 Property Change Signals
 
     Most properties on Item and Item derivatives have a signal
     emitted when they change. By convention, the signals are
@@ -1212,22 +1307,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenRectChanged()
+    \fn void QDeclarativeItem::childrenRectChanged(const QRectF &)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::baselineOffsetChanged()
-    \internal
-*/
-
-/*!
-    \fn void QDeclarativeItem::widthChanged()
-    \internal
-*/
-
-/*!
-    \fn void QDeclarativeItem::heightChanged()
+    \fn void QDeclarativeItem::baselineOffsetChanged(qreal)
     \internal
 */
 
@@ -1237,7 +1322,17 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::parentChanged()
+    \fn void QDeclarativeItem::parentChanged(QDeclarativeItem *)
+    \internal
+*/
+
+/*!
+    \fn void QDeclarativeItem::smoothChanged(bool)
+    \internal
+*/
+
+/*!
+    \fn void QDeclarativeItem::clipChanged(bool)
     \internal
 */
 
@@ -1251,12 +1346,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::focusChanged()
+    \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::wantsFocusChanged()
+    \fn void QDeclarativeItem::wantsFocusChanged(bool)
     \internal
 */
 
@@ -1350,20 +1445,8 @@ QDeclarativeItem::~QDeclarativeItem()
 */
 void QDeclarativeItem::setParentItem(QDeclarativeItem *parent)
 {
-    QDeclarativeItem *oldParent = parentItem();
-    if (parent == oldParent || !parent) return;
-
-    QObject::setParent(parent);
     QGraphicsObject::setParentItem(parent);
 }
-
-/*!
-    \fn void QDeclarativeItem::setParent(QDeclarativeItem *parent)
-    \overload
-    Sets both the parent object and parent item to \a parent. This
-    function avoids the programming error of calling setParent()
-    when you mean setParentItem().
-*/
 
 /*!
     Returns the QDeclarativeItem parent of this item.
@@ -1401,11 +1484,6 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 */
 
 /*!
-    \property QDeclarativeItem::children
-    \internal
-*/
-
-/*!
     \property QDeclarativeItem::resources
     \internal
 */
@@ -1439,11 +1517,20 @@ QDeclarativeAnchors *QDeclarativeItem::anchors()
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
-    QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(o);
-    if (i) 
-        i->setParentItem(static_cast<QDeclarativeItem *>(prop->object));
-    else
-        o->setParent(static_cast<QDeclarativeItem *>(prop->object));
+    if (!o)
+        return;
+
+    QDeclarativeItem *that = static_cast<QDeclarativeItem *>(prop->object);
+
+    // This test is measurably (albeit only slightly) faster than qobject_cast<>()
+    const QMetaObject *mo = o->metaObject();
+    while (mo && mo != &QGraphicsObject::staticMetaObject) mo = mo->d.superdata;
+
+    if (mo) {
+        QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(o))->setParentItemHelper(that, 0, 0);
+    } else {
+        o->setParent(that);
+    }
 }
 
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
@@ -1465,27 +1552,6 @@ int QDeclarativeItemPrivate::resources_count(QDeclarativeListProperty<QObject> *
     return prop->object->children().count();
 }
 
-QDeclarativeItem *QDeclarativeItemPrivate::children_at(QDeclarativeListProperty<QDeclarativeItem> *prop, int index)
-{
-    QList<QGraphicsItem *> children = static_cast<QDeclarativeItem*>(prop->object)->childItems();
-
-    if (index < children.count())
-        return qobject_cast<QDeclarativeItem *>(children.at(index));
-    else
-        return 0;
-}
-
-void QDeclarativeItemPrivate::children_append(QDeclarativeListProperty<QDeclarativeItem> *prop, QDeclarativeItem *i)
-{
-    if (i)
-        i->setParentItem(static_cast<QDeclarativeItem*>(prop->object));
-}
-
-int QDeclarativeItemPrivate::children_count(QDeclarativeListProperty<QDeclarativeItem> *prop)
-{
-    return static_cast<QDeclarativeItem*>(prop->object)->childItems().count();
-}
-
 int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsTransform> *list)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
@@ -1500,8 +1566,8 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object)
-        QGraphicsItemPrivate::get(object)->appendGraphicsTransform(item);
+    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+        QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
 QGraphicsTransform *QDeclarativeItemPrivate::transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int idx)
@@ -1528,6 +1594,14 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
     }
 }
 
+void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeNotifierEndpoint *e) 
+{
+    QDeclarativeItem *item = static_cast<QDeclarativeItem*>(o);
+    if (e) 
+        e->connect(&item->d_func()->parentNotifier);
+    *((QDeclarativeItem **)rv) = item->parentItem();
+}
+
 /*!
     \qmlproperty list<Object> Item::data
     \default
@@ -1541,7 +1615,7 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
     Item {
         Text {}
         Rectangle {}
-        Script {}
+        Timer {}
     }
     \endqml
 
@@ -1553,7 +1627,7 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
             Rectangle {}
         ]
         resources: [
-            Script {}
+            Timer {}
         ]
     }
     \endqml
@@ -1568,7 +1642,7 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
 */
 
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::data() 
+QDeclarativeListProperty<QObject> QDeclarativeItem::data()
 {
     return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::data_append);
 }
@@ -1584,7 +1658,7 @@ QRectF QDeclarativeItem::childrenRect()
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
         d->_contents = new QDeclarativeContents;
-        d->_contents->setParent(this);
+        QDeclarative_setParent_noEvent(d->_contents, this);
         d->_contents->setItem(this);
     }
     return d->_contents->rectF();
@@ -1600,7 +1674,7 @@ void QDeclarativeItem::setClip(bool c)
     if (clip() == c)
         return;
     setFlag(ItemClipsChildrenToShape, c);
-    emit clipChanged();
+    emit clipChanged(c);
 }
 
 /*!
@@ -1614,18 +1688,6 @@ void QDeclarativeItem::setClip(bool c)
   \qml
   Item { x: 100; y: 100; width: 100; height: 100 }
   \endqml
- */
-
-/*!
-  \property QDeclarativeItem::width
-
-  Defines the item's width relative to its parent.
- */
-
-/*!
-  \property QDeclarativeItem::height
-
-  Defines the item's height relative to its parent.
  */
 
 /*!
@@ -1730,8 +1792,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
     if (d->_anchors)
         d->_anchors->d_func()->updateMe();
 
-    if (transformOrigin() != QDeclarativeItem::TopLeft)
-        setTransformOriginPoint(d->computeTransformOrigin());
+    if (transformOrigin() != QDeclarativeItem::TopLeft
+        && (newGeometry.width() != oldGeometry.width() || newGeometry.height() != oldGeometry.height())) {
+        QPointF origin = d->computeTransformOrigin();
+        if (transformOriginPoint() != origin)
+            setTransformOriginPoint(origin);
+    }
 
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
@@ -2002,7 +2068,6 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
         return;
 
     d->_baselineOffset = offset;
-    emit baselineOffsetChanged();
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2012,6 +2077,7 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
                 anchor->updateVerticalAnchors();
         }
     }
+    emit baselineOffsetChanged(offset);
 }
 
 /*!
@@ -2158,33 +2224,69 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
 }
 
 /*!
-  \internal
+    \qmlmethod object Item::mapFromItem(Item item, real x, real y)
 
-  This function emits the \e focusChanged signal.
+    Maps the point (\a x, \a y), which is in \a item's coordinate system, to
+    this item's coordinate system, and returns an object with \c x and \c y
+    properties matching the mapped cooordinate.
 
-  Subclasses overriding this function should call up
-  to their base class.
+    If \a item is a \c null value, this maps the point from the coordinate
+    system of the root QML view.
 */
-void QDeclarativeItem::focusChanged(bool flag)
+QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, qreal x, qreal y) const
 {
-    Q_UNUSED(flag);
-    emit focusChanged();
+    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
+    QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
+    if (!itemObj && !item.isNull()) {
+        qWarning().nospace() << "mapFromItem() given argument " << item.toString() << " which is neither null nor an Item";
+        return 0;
+    }
+
+    // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
+    QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
+    sv.setProperty(QLatin1String("x"), p.x());
+    sv.setProperty(QLatin1String("y"), p.y());
+    return sv;
 }
 
-/*! \internal */
-QDeclarativeListProperty<QDeclarativeItem> QDeclarativeItem::fxChildren()
+/*!
+    \qmlmethod object Item::mapToItem(Item item, real x, real y)
+
+    Maps the point (\a x, \a y), which is in this item's coordinate system, to
+    \a item's coordinate system, and returns an object with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps \a x and \a y to the coordinate
+    system of the root QML view.
+*/
+QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qreal y) const
 {
-    return QDeclarativeListProperty<QDeclarativeItem>(this, 0, QDeclarativeItemPrivate::children_append,
-                                                     QDeclarativeItemPrivate::children_count, 
-                                                     QDeclarativeItemPrivate::children_at); 
+    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
+    QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
+    if (!itemObj && !item.isNull()) {
+        qWarning().nospace() << "mapToItem() given argument " << item.toString() << " which is neither null nor an Item";
+        return 0;
+    }
+
+    // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
+    QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
+    sv.setProperty(QLatin1String("x"), p.x());
+    sv.setProperty(QLatin1String("y"), p.y());
+    return sv;
+}
+
+void QDeclarativeItemPrivate::focusChanged(bool flag)
+{
+    Q_Q(QDeclarativeItem);
+    emit q->focusChanged(flag);
 }
 
 /*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append, 
-                                             QDeclarativeItemPrivate::resources_count, 
-                                             QDeclarativeItemPrivate::resources_at); 
+    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append,
+                                             QDeclarativeItemPrivate::resources_count,
+                                             QDeclarativeItemPrivate::resources_at);
 }
 
 /*!
@@ -2294,13 +2396,11 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
   example:
 
   \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
+    function toggle() {
+        if (button.state == 'On')
+            button.state = 'Off';
+        else
+            button.state = 'On';
     }
   \endqml
 
@@ -2381,10 +2481,6 @@ void QDeclarativeItem::classBegin()
 */
 void QDeclarativeItem::componentComplete()
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::ItemComponentComplete> cc;
-#endif
-
     Q_D(QDeclarativeItem);
     d->_componentComplete = true;
     if (d->_stateGroup)
@@ -2411,7 +2507,7 @@ QDeclarativeStateGroup *QDeclarativeItemPrivate::states()
     return _stateGroup;
 }
 
-QDeclarativeItemPrivate::AnchorLines::AnchorLines(QDeclarativeItem *q)
+QDeclarativeItemPrivate::AnchorLines::AnchorLines(QGraphicsObject *q)
 {
     left.item = q;
     left.anchorLine = QDeclarativeAnchorLine::Left;
@@ -2461,28 +2557,39 @@ QPointF QDeclarativeItemPrivate::computeTransformOrigin() const
 /*! \internal */
 bool QDeclarativeItem::sceneEvent(QEvent *event)
 {
-    bool rv = QGraphicsItem::sceneEvent(event);
+    Q_D(QDeclarativeItem);
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *k = static_cast<QKeyEvent *>(event);
+        if ((k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) &&
+            !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
+            keyPressEvent(static_cast<QKeyEvent *>(event));
+            if (!event->isAccepted())
+                return QGraphicsItem::sceneEvent(event);
+            else
+                return true;
+        } else {
+            return QGraphicsItem::sceneEvent(event);
+        }
+    } else {
+        bool rv = QGraphicsItem::sceneEvent(event);
 
-    if (event->type() == QEvent::FocusIn ||
-        event->type() == QEvent::FocusOut) {
-        focusChanged(hasFocus());
+        if (event->type() == QEvent::FocusIn ||
+            event->type() == QEvent::FocusOut) {
+            d->focusChanged(hasFocus());
+        }
+        return rv;
     }
-
-    return rv;
 }
 
 /*! \internal */
 QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
-    Q_D(const QDeclarativeItem);
+    Q_D(QDeclarativeItem);
     switch (change) {
     case ItemParentHasChanged:
-        emit parentChanged();
-        break;
-    case ItemChildAddedChange:
-    case ItemChildRemovedChange:
-        emit childrenChanged();
+        emit parentChanged(parentItem());
+        d->parentNotifier.notify();
         break;
     case ItemVisibleHasChanged: {
             for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
@@ -2513,7 +2620,7 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
 QRectF QDeclarativeItem::boundingRect() const
 {
     Q_D(const QDeclarativeItem);
-    return QRectF(0, 0, d->width, d->height);
+    return QRectF(0, 0, d->mWidth, d->mHeight);
 }
 
 /*!
@@ -2591,40 +2698,57 @@ void QDeclarativeItem::setSmooth(bool smooth)
     if (d->smooth == smooth)
         return;
     d->smooth = smooth;
-    emit smoothChanged();
+    emit smoothChanged(smooth);
     update();
 }
 
 qreal QDeclarativeItem::width() const
 {
     Q_D(const QDeclarativeItem);
-    return d->width;
+    return d->width();
 }
 
 void QDeclarativeItem::setWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
-    if (qIsNaN(w))
-        return;
-
-    d->widthValid = true;
-    if (d->width == w)
-        return;
-
-    qreal oldWidth = d->width;
-
-    prepareGeometryChange();
-    d->width = w;
-
-    geometryChanged(QRectF(x(), y(), width(), height()),
-                    QRectF(x(), y(), oldWidth, height()));
+    d->setWidth(w);
 }
 
 void QDeclarativeItem::resetWidth()
 {
     Q_D(QDeclarativeItem);
-    d->widthValid = false;
-    setImplicitWidth(implicitWidth());
+    d->resetWidth();
+}
+
+qreal QDeclarativeItemPrivate::width() const
+{
+    return mWidth;
+}
+
+void QDeclarativeItemPrivate::setWidth(qreal w)
+{
+    Q_Q(QDeclarativeItem);
+    if (qIsNaN(w))
+        return;
+
+    widthValid = true;
+    if (mWidth == w)
+        return;
+
+    qreal oldWidth = mWidth;
+
+    q->prepareGeometryChange();
+    mWidth = w;
+
+    q->geometryChanged(QRectF(q->x(), q->y(), width(), height()),
+                    QRectF(q->x(), q->y(), oldWidth, height()));
+}
+
+void QDeclarativeItemPrivate    ::resetWidth()
+{
+    Q_Q(QDeclarativeItem);
+    widthValid = false;
+    q->setImplicitWidth(q->implicitWidth());
 }
 
 /*!
@@ -2644,13 +2768,13 @@ void QDeclarativeItem::setImplicitWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
     d->implicitWidth = w;
-    if (d->width == w || widthValid())
+    if (d->mWidth == w || widthValid())
         return;
 
-    qreal oldWidth = d->width;
+    qreal oldWidth = d->mWidth;
 
     prepareGeometryChange();
-    d->width = w;
+    d->mWidth = w;
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
@@ -2668,33 +2792,50 @@ bool QDeclarativeItem::widthValid() const
 qreal QDeclarativeItem::height() const
 {
     Q_D(const QDeclarativeItem);
-    return d->height;
+    return d->height();
 }
 
 void QDeclarativeItem::setHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
-    if (qIsNaN(h))
-        return;
-
-    d->heightValid = true;
-    if (d->height == h)
-        return;
-
-    qreal oldHeight = d->height;
-
-    prepareGeometryChange();
-    d->height = h;
-
-    geometryChanged(QRectF(x(), y(), width(), height()),
-                    QRectF(x(), y(), width(), oldHeight));
+    d->setHeight(h);
 }
 
 void QDeclarativeItem::resetHeight()
 {
     Q_D(QDeclarativeItem);
-    d->heightValid = false;
-    setImplicitHeight(implicitHeight());
+    d->resetHeight();
+}
+
+qreal QDeclarativeItemPrivate::height() const
+{
+    return mHeight;
+}
+
+void QDeclarativeItemPrivate::setHeight(qreal h)
+{
+    Q_Q(QDeclarativeItem);
+    if (qIsNaN(h))
+        return;
+
+    heightValid = true;
+    if (mHeight == h)
+        return;
+
+    qreal oldHeight = mHeight;
+
+    q->prepareGeometryChange();
+    mHeight = h;
+
+    q->geometryChanged(QRectF(q->x(), q->y(), width(), height()),
+                    QRectF(q->x(), q->y(), width(), oldHeight));
+}
+
+void QDeclarativeItemPrivate::resetHeight()
+{
+    Q_Q(QDeclarativeItem);
+    heightValid = false;
+    q->setImplicitHeight(q->implicitHeight());
 }
 
 /*!
@@ -2714,13 +2855,13 @@ void QDeclarativeItem::setImplicitHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
     d->implicitHeight = h;
-    if (d->height == h || heightValid())
+    if (d->mHeight == h || heightValid())
         return;
 
-    qreal oldHeight = d->height;
+    qreal oldHeight = d->mHeight;
 
     prepareGeometryChange();
-    d->height = h;
+    d->mHeight = h;
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
@@ -2733,6 +2874,27 @@ bool QDeclarativeItem::heightValid() const
 {
     Q_D(const QDeclarativeItem);
     return d->heightValid;
+}
+
+/*! \internal */
+void QDeclarativeItem::setSize(const QSizeF &size)
+{
+    Q_D(QDeclarativeItem);
+    d->heightValid = true;
+    d->widthValid = true;
+
+    if (d->height() == size.height() && d->width() == size.width())
+        return;
+
+    qreal oldHeight = d->height();
+    qreal oldWidth = d->width();
+
+    prepareGeometryChange();
+    d->setHeight(size.height());
+    d->setWidth(size.width());
+
+    geometryChanged(QRectF(x(), y(), width(), height()),
+                    QRectF(x(), y(), oldWidth, oldHeight));
 }
 
 /*!

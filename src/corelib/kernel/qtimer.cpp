@@ -339,8 +339,20 @@ QT_END_INCLUDE_NAMESPACE
 
 void QTimer::singleShot(int msec, QObject *receiver, const char *member)
 {
-    if (receiver && member)
+    if (receiver && member) {
+        if (msec == 0) {
+            // special code shortpath for 0-timers
+            const char* bracketPosition = strchr(member, '(');
+            if (!bracketPosition || !(member[0] >= '0' && member[0] <= '3')) {
+                qWarning("QTimer::singleShot: Invalid slot specification");
+                return;
+            }
+            QByteArray methodName(member+1, bracketPosition - 1 - member); // extract method name
+            QMetaObject::invokeMethod(receiver, methodName.constData(), Qt::QueuedConnection);
+            return;
+        }
         (void) new QSingleShotTimer(msec, receiver, member);
+    }
 }
 
 /*!

@@ -133,7 +133,7 @@ GlobalActions::GlobalActions(QObject *parent) : QObject(parent)
     connect(m_findAction, SIGNAL(triggered()), centralWidget, SLOT(showTextSearch()));
     m_actionList << m_findAction;
 
-    #ifdef Q_WS_X11
+#ifdef Q_WS_X11
     m_backAction->setIcon(QIcon::fromTheme("go-previous" , m_backAction->icon()));
     m_nextAction->setIcon(QIcon::fromTheme("go-next" , m_nextAction->icon()));
     m_zoomInAction->setIcon(QIcon::fromTheme("zoom-in" , m_zoomInAction->icon()));

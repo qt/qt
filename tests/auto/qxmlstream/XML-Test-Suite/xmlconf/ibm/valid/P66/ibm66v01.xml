@@ -11,6 +11,6 @@ Test all valid Charater references for P66:
 &#67; &#x43; &#x5f;
 &#x20; &#xD7A3; &#xAC00;
 &#xF900; &#xFFFD;
-&#x10000; &#x10FFFF;
+&#x10000; &#x10FFFD;
 </root>
 <!--* a valid test for P66 *-->

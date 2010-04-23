@@ -47,7 +47,7 @@ const char errorMsg[] = "A generic error";
 class TestObject: public QObject, protected QDBusContext
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.tst_QDBusContext.TestObject");
+    Q_CLASSINFO("D-Bus Interface", "com.trolltech.tst_QDBusContext.TestObject")
 public:
     inline TestObject(QObject *parent) : QObject(parent) { }
 public Q_SLOTS:

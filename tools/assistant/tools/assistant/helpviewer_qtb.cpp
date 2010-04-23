@@ -40,8 +40,6 @@
 ****************************************************************************/
 #include "helpviewer_qtb.h"
 
-#if defined(QT_NO_WEBKIT)
-
 #include "globalactions.h"
 #include "helpenginewrapper.h"
 #include "openpagesmanager.h"
@@ -127,6 +125,20 @@ void HelpViewer::resetScale()
         forceFont = false;
     }
     zoomCount = 0;
+}
+
+bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *e)
+{
+    if (e->button() == Qt::XButton1) {
+        QTextBrowser::backward();
+        return true;
+    }
+
+    if (e->button() == Qt::XButton2) {
+        QTextBrowser::forward();
+        return true;
+    }
+    return false;
 }
 
 void HelpViewer::setSource(const QUrl &url)
@@ -232,15 +244,10 @@ void HelpViewer::contextMenuEvent(QContextMenuEvent *e)
 void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 {
     TRACE_OBJ
-    if (e->button() == Qt::XButton1) {
-        QTextBrowser::backward();
+#ifndef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(e))
         return;
-    }
-
-    if (e->button() == Qt::XButton2) {
-        QTextBrowser::forward();
-        return;
-    }
+#endif
 
     controlPressed = e->modifiers() & Qt::ControlModifier;
     if ((controlPressed && hasAnchorAt(e->pos())) ||
@@ -250,6 +257,15 @@ void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
     }
 
     QTextBrowser::mouseReleaseEvent(e);
+}
+
+void HelpViewer::mousePressEvent(QMouseEvent *e)
+{
+#ifdef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(e))
+        return;
+#endif
+    QTextBrowser::mousePressEvent(e);
 }
 
 void HelpViewer::keyPressEvent(QKeyEvent *e)
@@ -290,5 +306,3 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 }
 
 QT_END_NAMESPACE
-
-#endif  // QT_NO_WEBKIT

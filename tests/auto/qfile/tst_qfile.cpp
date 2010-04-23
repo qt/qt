@@ -196,6 +196,7 @@ private slots:
     void miscWithUncPathAsCurrentDir();
     void standarderror();
     void handle();
+    void nativeHandleLeaks();
 
     void readEof_data();
     void readEof();
@@ -392,6 +393,7 @@ void tst_QFile::cleanupTestCase()
     QFile::remove("resources");
     QFile::remove("qfile_map_testfile");
     QFile::remove("readAllBuffer.txt");
+    QFile::remove("qt_file.tmp");
 }
 
 //------------------------------------------
@@ -480,7 +482,7 @@ void tst_QFile::open_data()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
                                         << (bool)TRUE << QFile::NoError;
-    QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testsharewritable/test.pri" << int(QIODevice::ReadOnly)
+    QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
 #endif
 }
@@ -552,7 +554,7 @@ void tst_QFile::size_data()
     QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << (qint64)245;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
-    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testsharewritable/test.pri") << (qint64)34;
+    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
 #endif
 }
 
@@ -2473,7 +2475,7 @@ void tst_QFile::miscWithUncPathAsCurrentDir()
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString current = QDir::currentPath();
-    QVERIFY(QDir::setCurrent("//" + QtNetworkSettings::winServerName() + "/testsharewritable"));
+    QVERIFY(QDir::setCurrent("//" + QtNetworkSettings::winServerName() + "/testshare"));
     QFile file("test.pri");
     QVERIFY(file.exists());
     QCOMPARE(int(file.size()), 34);
@@ -2535,6 +2537,51 @@ void tst_QFile::handle()
     file3.open(fd, QIODevice::ReadOnly);
     QCOMPARE(int(file3.handle()), fd);
     QT_CLOSE(fd);
+#endif
+}
+
+void tst_QFile::nativeHandleLeaks()
+{
+    int fd1, fd2;
+
+#ifdef Q_OS_WIN
+    HANDLE handle1, handle2;
+#endif
+
+    {
+        QFile file("qt_file.tmp");
+        QVERIFY( file.open(QIODevice::ReadWrite) );
+
+        fd1 = file.handle();
+        QVERIFY( -1 != fd1 );
+    }
+
+#ifdef Q_OS_WIN
+    handle1 = ::CreateFileA("qt_file.tmp", GENERIC_READ, 0, NULL,
+            OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    QVERIFY( INVALID_HANDLE_VALUE != handle1 );
+    QVERIFY( ::CloseHandle(handle1) );
+#endif
+
+    {
+        QFile file("qt_file.tmp");
+        QVERIFY( file.open(QIODevice::ReadOnly) );
+
+        fd2 = file.handle();
+        QVERIFY( -1 != fd2 );
+    }
+
+#ifdef Q_OS_WIN
+    handle2 = ::CreateFileA("qt_file.tmp", GENERIC_READ, 0, NULL,
+            OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    QVERIFY( INVALID_HANDLE_VALUE != handle2 );
+    QVERIFY( ::CloseHandle(handle2) );
+#endif
+
+    QCOMPARE( fd2, fd1 );
+
+#ifdef Q_OS_WIN
+    QCOMPARE( handle2, handle1 );
 #endif
 }
 

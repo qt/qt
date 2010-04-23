@@ -6,7 +6,7 @@ Rectangle {
         id: rect
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
-        x: Behavior {
+        Behavior on x {
             objectName: "MyBehavior";
             NumberAnimation { target: rect; property: "x"; duration: 500; }
         }

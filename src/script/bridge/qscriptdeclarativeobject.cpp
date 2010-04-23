@@ -66,7 +66,6 @@ bool DeclarativeObjectDelegate::getOwnPropertySlot(QScriptObject* object,
                                                    const JSC::Identifier &propertyName,
                                                    JSC::PropertySlot &slot)
 {
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptDeclarativeClass::Identifier identifier = (void *)propertyName.ustring().rep();
 
     QScriptDeclarativeClassPrivate *p = QScriptDeclarativeClassPrivate::get(m_class);
@@ -106,43 +105,14 @@ void DeclarativeObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
 }
 
 bool DeclarativeObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *exec,
-                                               const JSC::Identifier &propertyName,
-                                               bool checkDontDelete)
+                                               const JSC::Identifier &propertyName)
 {
-    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName, checkDontDelete);
-}
-
-bool DeclarativeObjectDelegate::getPropertyAttributes(const QScriptObject* object, 
-                                                      JSC::ExecState *exec,
-                                                      const JSC::Identifier &propertyName,
-                                                      unsigned &attribs) const
-{
-    QScriptDeclarativeClass::Identifier identifier = (void *)propertyName.ustring().rep();
-
-    QScriptClass::QueryFlags flags = 
-        m_class->queryProperty(m_object, identifier, QScriptClass::HandlesReadAccess);
-    if (flags & QScriptClass::HandlesReadAccess) {
-        QScriptValue::PropertyFlags flags = m_class->propertyFlags(m_object, identifier);
-        attribs = 0;
-        if (flags & QScriptValue::ReadOnly)
-            attribs |= JSC::ReadOnly;
-        if (flags & QScriptValue::SkipInEnumeration)
-            attribs |= JSC::DontEnum;
-        if (flags & QScriptValue::Undeletable)
-            attribs |= JSC::DontDelete;
-        if (flags & QScriptValue::PropertyGetter)
-            attribs |= JSC::Getter;
-        if (flags & QScriptValue::PropertySetter)
-            attribs |= JSC::Setter;
-        attribs |= flags & QScriptValue::UserRange;
-        return true;
-    }
-    return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attribs);
+    return QScriptObjectDelegate::deleteProperty(object, exec, propertyName);
 }
 
 void DeclarativeObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecState *exec,
                                                     JSC::PropertyNameArray &propertyNames,
-                                                    bool includeNonEnumerable)
+                                                    JSC::EnumerationMode mode)
 {
     QStringList properties = m_class->propertyNames(m_object);
     for (int ii = 0; ii < properties.count(); ++ii) {
@@ -150,7 +120,7 @@ void DeclarativeObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::
         propertyNames.add(JSC::Identifier(exec, name));
     }
 
-    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, mode);
 }
 
 JSC::CallType DeclarativeObjectDelegate::getCallData(QScriptObject *object, JSC::CallData &callData)
@@ -196,6 +166,23 @@ bool DeclarativeObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecStat
                                             JSC::JSValue value, JSC::JSValue proto)
 {
     return QScriptObjectDelegate::hasInstance(object, exec, value, proto);
+}
+
+bool DeclarativeObjectDelegate::compareToObject(QScriptObject *o, JSC::ExecState *exec, JSC::JSObject *o2)
+{
+    if (!o2->inherits(&QScriptObject::info))
+        return false;
+    
+    QScriptObject *scriptObject = static_cast<QScriptObject*>(o2);
+    QScriptObjectDelegate *delegate = scriptObject->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
+        return false;
+
+    DeclarativeObjectDelegate *other = static_cast<DeclarativeObjectDelegate*>(delegate);
+    if (m_class != other->m_class)
+        return false;
+    else
+        return m_class->compare(m_object, other->m_object);
 }
 
 } // namespace QScript

@@ -142,7 +142,7 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_call_post_routines();
+Q_DECL_IMPORT extern void qt_call_post_routines();
 
 int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
 
@@ -498,9 +498,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#if defined(Q_WS_MAC) // Fake alien behavior on the Mac :)
-    return !widget->isWindow() && widget->window()->testAttribute(Qt::WA_DontShowOnScreen);
-#elif defined(Q_WS_QWS)
+#if defined(Q_WS_QWS)
     return !widget->isWindow()
 # ifdef Q_BACKINGSTORE_SUBSURFACES
         && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
@@ -905,6 +903,14 @@ void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
+
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
+    // initialize the graphics system - on X11 this is initialized inside
+    // qt_init() in qapplication_x11.cpp because of several reasons.
+    // On QWS, the graphics system is set by the QScreen plugin.
+    graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
+#endif
+
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
@@ -938,13 +944,7 @@ void QApplicationPrivate::initialize()
 
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
-    
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
-    // initialize the graphics system - on X11 this is initialized inside
-    // qt_init() in qapplication_x11.cpp because of several reasons.
-    // On QWS, the graphics system is set by the QScreen plugin.
-    graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
-#endif
+
 #ifndef QT_NO_WHEELEVENT
     QApplicationPrivate::wheel_scroll_lines = 3;
 #endif
@@ -2311,6 +2311,22 @@ static bool qt_detectRTLLanguage()
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
+#if defined(Q_WS_MAC)
+static const char *application_menu_strings[] = {
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
+    };
+QString qt_mac_applicationmenu_string(int type)
+{
+    return qApp->translate("MAC_APPLICATION_MENU",
+                           application_menu_strings[type]);
+}
+#endif
 #endif
 
 /*!\reimp
@@ -2338,6 +2354,9 @@ bool QApplication::event(QEvent *e)
     } else if(e->type() == QEvent::LanguageChange) {
 #ifndef QT_NO_TRANSLATION
         setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+#endif
+#if defined(QT_MAC_USE_COCOA)
+        qt_mac_post_retranslateAppMenu();
 #endif
         QWidgetList list = topLevelWidgets();
         for (int i = 0; i < list.size(); ++i) {
@@ -3013,7 +3032,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -3073,7 +3092,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }
-#endif // Q_WS_WIN || Q_WS_X11
+#endif // Q_WS_WIN || Q_WS_X11 || Q_WS_MAC
 
 /*!
     Returns the desktop widget (also called the root window).
@@ -5273,9 +5292,9 @@ QInputContext *QApplication::inputContext() const
         QApplication *that = const_cast<QApplication *>(this);
         const QStringList keys = QInputContextFactory::keys();
         // Try hbim and coefep first, then try others.
-        if (keys.contains("hbim")) {
+        if (keys.contains(QLatin1String("hbim"))) {
             that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
-        } else if (keys.contains("coefep")) {
+        } else if (keys.contains(QLatin1String("coefep"))) {
             that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
         } else {
             for (int c = 0; c < keys.size() && !d->inputContext; ++c) {
@@ -5917,6 +5936,7 @@ static const char * const link_xpm[] = {
 
 QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 {
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
     if (!move_cursor) {
         move_cursor = new QPixmap((const char **)move_xpm);
         copy_cursor = new QPixmap((const char **)copy_xpm);
@@ -5940,6 +5960,7 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     default:
         break;
     }
+#endif
     return QPixmap();
 }
 

@@ -72,7 +72,7 @@ namespace QT7
             AudioUnit m_audioUnit;
 
             // Only the following methods needs to
-            // be overidden by only_one-audio-unit nodes:
+            // be overridden by only_one-audio-unit nodes:
             virtual ComponentDescription getAudioNodeDescription() const;
             virtual void initializeAudioUnit();
 

@@ -320,6 +320,16 @@ static bool qIsBlob(int t)
            || t == MYSQL_TYPE_LONG_BLOB;
 }
 
+static bool qIsInteger(int t)
+{
+    return t == MYSQL_TYPE_TINY
+           || t == MYSQL_TYPE_SHORT
+           || t == MYSQL_TYPE_LONG
+           || t == MYSQL_TYPE_LONGLONG
+           || t == MYSQL_TYPE_INT24;
+}
+
+
 void QMYSQLResultPrivate::bindBlobs()
 {
     int i;
@@ -368,6 +378,13 @@ bool QMYSQLResultPrivate::bindInValues()
             fieldInfo->length = 0;
             hasBlobs = true;
         } else {
+            // fieldInfo->length specifies the display width, which may be too
+            // small to hold valid integer values (see
+            // http://dev.mysql.com/doc/refman/5.0/en/numeric-types.html ), so
+            // always use the MAX_BIGINT_WIDTH for integer types
+            if (qIsInteger(fieldInfo->type)) {
+                fieldInfo->length = MAX_BIGINT_WIDTH;
+            }
             fieldInfo->type = MYSQL_TYPE_STRING;
         }
         bind = &inBinds[i];

@@ -42,8 +42,8 @@
 #ifndef QDECLARATIVETEXTEDIT_H
 #define QDECLARATIVETEXTEDIT_H
 
-#include "qdeclarativetext_p.h"
-#include "qdeclarativepainteditem_p.h"
+#include "private/qdeclarativetext_p.h"
+#include "private/qdeclarativepainteditem_p.h"
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
@@ -64,6 +64,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_ENUMS(VAlignment)
     Q_ENUMS(HAlignment)
     Q_ENUMS(TextFormat)
+    Q_ENUMS(WrapMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
@@ -72,7 +73,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapChanged) //### other wrap modes
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapChanged) //### deprecated
+    Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
@@ -107,6 +109,12 @@ public:
         AutoText = Qt::AutoText
     };
 
+    enum WrapMode { NoWrap = QTextOption::NoWrap,
+                    WordWrap = QTextOption::WordWrap,
+                    WrapAnywhere = QTextOption::WrapAnywhere,
+                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere
+                  };
+
     QString text() const;
     void setText(const QString &);
 
@@ -133,6 +141,8 @@ public:
 
     bool wrap() const;
     void setWrap(bool w);
+    WrapMode wrapMode() const;
+    void setWrapMode(WrapMode w);
 
     bool isCursorVisible() const;
     void setCursorVisible(bool on);
@@ -185,7 +195,7 @@ Q_SIGNALS:
     void fontChanged(const QFont &font);
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
-    void wrapChanged(bool isWrapped);
+    void wrapModeChanged();
     void textFormatChanged(TextFormat textFormat);
     void readOnlyChanged(bool isReadOnly);
     void cursorVisibleChanged(bool isCursorVisible);
@@ -214,8 +224,6 @@ protected:
     bool event(QEvent *);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
-
-    void focusChanged(bool);
 
     // mouse filter?
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

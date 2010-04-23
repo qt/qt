@@ -232,6 +232,11 @@ void QPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality)
 
 void QPageSetupDialogPrivate::closeCocoaPageLayout()
 {
+    // NSPageLayout can change the session behind our back and then our
+    // d->ep->session object will become a dangling pointer. Update it
+    // based on the "current" session
+    ep->session = static_cast<PMPrintSession>([ep->printInfo PMPrintSession]);
+
     [pageLayout release];
     pageLayout = 0;
 }

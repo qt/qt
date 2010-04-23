@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -34,7 +32,6 @@ SVGDefsElement::SVGDefsElement(const QualifiedName& tagName, Document* doc)
     , SVGTests()
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
 {
 }
 
@@ -50,6 +47,14 @@ bool SVGDefsElement::isValid() const
 RenderObject* SVGDefsElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
     return new (arena) RenderSVGHiddenContainer(this);
+}
+
+void SVGDefsElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledTransformableElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
 }
 
 }

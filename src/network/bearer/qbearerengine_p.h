@@ -65,6 +65,8 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qmutex.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfiguration;
@@ -73,7 +75,7 @@ class Q_NETWORK_EXPORT QBearerEngine : public QObject
 {
     Q_OBJECT
 
-    friend class QNetworkConfigurationManager;
+    friend class QNetworkConfigurationManagerPrivate;
 
 public:
     QBearerEngine(QObject *parent = 0);
@@ -81,13 +83,14 @@ public:
 
     virtual bool hasIdentifier(const QString &id) = 0;
 
-    virtual void requestUpdate() = 0;
-
     virtual QNetworkConfigurationManager::Capabilities capabilities() const = 0;
 
     virtual QNetworkSessionPrivate *createSessionBackend() = 0;
 
     virtual QNetworkConfigurationPrivatePointer defaultConfiguration() = 0;
+
+    virtual bool requiresPolling() const;
+    bool configurationsInUse() const;
 
 Q_SIGNALS:
     void configurationAdded(QNetworkConfigurationPrivatePointer config);
@@ -108,5 +111,7 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif

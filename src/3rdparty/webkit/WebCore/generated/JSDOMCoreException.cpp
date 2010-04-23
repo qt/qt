@@ -38,10 +38,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMCoreException);
 
 static const HashTableValue JSDOMCoreExceptionTableValues[5] =
 {
-    { "code", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionCode, (intptr_t)0 },
-    { "name", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionName, (intptr_t)0 },
-    { "message", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionMessage, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsDOMCoreExceptionConstructor, (intptr_t)0 },
+    { "code", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionCode), (intptr_t)0 },
+    { "name", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionName), (intptr_t)0 },
+    { "message", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionMessage), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -56,28 +56,28 @@ static JSC_CONST_HASHTABLE HashTable JSDOMCoreExceptionTable =
 
 static const HashTableValue JSDOMCoreExceptionConstructorTableValues[23] =
 {
-    { "INDEX_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINDEX_SIZE_ERR, (intptr_t)0 },
-    { "DOMSTRING_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionDOMSTRING_SIZE_ERR, (intptr_t)0 },
-    { "HIERARCHY_REQUEST_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionHIERARCHY_REQUEST_ERR, (intptr_t)0 },
-    { "WRONG_DOCUMENT_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionWRONG_DOCUMENT_ERR, (intptr_t)0 },
-    { "INVALID_CHARACTER_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_CHARACTER_ERR, (intptr_t)0 },
-    { "NO_DATA_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNO_DATA_ALLOWED_ERR, (intptr_t)0 },
-    { "NO_MODIFICATION_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR, (intptr_t)0 },
-    { "NOT_FOUND_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNOT_FOUND_ERR, (intptr_t)0 },
-    { "NOT_SUPPORTED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNOT_SUPPORTED_ERR, (intptr_t)0 },
-    { "INUSE_ATTRIBUTE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR, (intptr_t)0 },
-    { "INVALID_STATE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_STATE_ERR, (intptr_t)0 },
-    { "SYNTAX_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionSYNTAX_ERR, (intptr_t)0 },
-    { "INVALID_MODIFICATION_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_MODIFICATION_ERR, (intptr_t)0 },
-    { "NAMESPACE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNAMESPACE_ERR, (intptr_t)0 },
-    { "INVALID_ACCESS_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_ACCESS_ERR, (intptr_t)0 },
-    { "VALIDATION_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionVALIDATION_ERR, (intptr_t)0 },
-    { "TYPE_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionTYPE_MISMATCH_ERR, (intptr_t)0 },
-    { "SECURITY_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionSECURITY_ERR, (intptr_t)0 },
-    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNETWORK_ERR, (intptr_t)0 },
-    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionABORT_ERR, (intptr_t)0 },
-    { "URL_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionURL_MISMATCH_ERR, (intptr_t)0 },
-    { "QUOTA_EXCEEDED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionQUOTA_EXCEEDED_ERR, (intptr_t)0 },
+    { "INDEX_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINDEX_SIZE_ERR), (intptr_t)0 },
+    { "DOMSTRING_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionDOMSTRING_SIZE_ERR), (intptr_t)0 },
+    { "HIERARCHY_REQUEST_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionHIERARCHY_REQUEST_ERR), (intptr_t)0 },
+    { "WRONG_DOCUMENT_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionWRONG_DOCUMENT_ERR), (intptr_t)0 },
+    { "INVALID_CHARACTER_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_CHARACTER_ERR), (intptr_t)0 },
+    { "NO_DATA_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNO_DATA_ALLOWED_ERR), (intptr_t)0 },
+    { "NO_MODIFICATION_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR), (intptr_t)0 },
+    { "NOT_FOUND_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNOT_FOUND_ERR), (intptr_t)0 },
+    { "NOT_SUPPORTED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNOT_SUPPORTED_ERR), (intptr_t)0 },
+    { "INUSE_ATTRIBUTE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR), (intptr_t)0 },
+    { "INVALID_STATE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_STATE_ERR), (intptr_t)0 },
+    { "SYNTAX_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionSYNTAX_ERR), (intptr_t)0 },
+    { "INVALID_MODIFICATION_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_MODIFICATION_ERR), (intptr_t)0 },
+    { "NAMESPACE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNAMESPACE_ERR), (intptr_t)0 },
+    { "INVALID_ACCESS_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_ACCESS_ERR), (intptr_t)0 },
+    { "VALIDATION_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionVALIDATION_ERR), (intptr_t)0 },
+    { "TYPE_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionTYPE_MISMATCH_ERR), (intptr_t)0 },
+    { "SECURITY_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionSECURITY_ERR), (intptr_t)0 },
+    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNETWORK_ERR), (intptr_t)0 },
+    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionABORT_ERR), (intptr_t)0 },
+    { "URL_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionURL_MISMATCH_ERR), (intptr_t)0 },
+    { "QUOTA_EXCEEDED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionQUOTA_EXCEEDED_ERR), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -102,7 +102,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -125,29 +125,29 @@ bool JSDOMCoreExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 static const HashTableValue JSDOMCoreExceptionPrototypeTableValues[24] =
 {
-    { "INDEX_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINDEX_SIZE_ERR, (intptr_t)0 },
-    { "DOMSTRING_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionDOMSTRING_SIZE_ERR, (intptr_t)0 },
-    { "HIERARCHY_REQUEST_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionHIERARCHY_REQUEST_ERR, (intptr_t)0 },
-    { "WRONG_DOCUMENT_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionWRONG_DOCUMENT_ERR, (intptr_t)0 },
-    { "INVALID_CHARACTER_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_CHARACTER_ERR, (intptr_t)0 },
-    { "NO_DATA_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNO_DATA_ALLOWED_ERR, (intptr_t)0 },
-    { "NO_MODIFICATION_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR, (intptr_t)0 },
-    { "NOT_FOUND_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNOT_FOUND_ERR, (intptr_t)0 },
-    { "NOT_SUPPORTED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNOT_SUPPORTED_ERR, (intptr_t)0 },
-    { "INUSE_ATTRIBUTE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR, (intptr_t)0 },
-    { "INVALID_STATE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_STATE_ERR, (intptr_t)0 },
-    { "SYNTAX_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionSYNTAX_ERR, (intptr_t)0 },
-    { "INVALID_MODIFICATION_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_MODIFICATION_ERR, (intptr_t)0 },
-    { "NAMESPACE_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNAMESPACE_ERR, (intptr_t)0 },
-    { "INVALID_ACCESS_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionINVALID_ACCESS_ERR, (intptr_t)0 },
-    { "VALIDATION_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionVALIDATION_ERR, (intptr_t)0 },
-    { "TYPE_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionTYPE_MISMATCH_ERR, (intptr_t)0 },
-    { "SECURITY_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionSECURITY_ERR, (intptr_t)0 },
-    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionNETWORK_ERR, (intptr_t)0 },
-    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionABORT_ERR, (intptr_t)0 },
-    { "URL_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionURL_MISMATCH_ERR, (intptr_t)0 },
-    { "QUOTA_EXCEEDED_ERR", DontDelete|ReadOnly, (intptr_t)jsDOMCoreExceptionQUOTA_EXCEEDED_ERR, (intptr_t)0 },
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsDOMCoreExceptionPrototypeFunctionToString, (intptr_t)0 },
+    { "INDEX_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINDEX_SIZE_ERR), (intptr_t)0 },
+    { "DOMSTRING_SIZE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionDOMSTRING_SIZE_ERR), (intptr_t)0 },
+    { "HIERARCHY_REQUEST_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionHIERARCHY_REQUEST_ERR), (intptr_t)0 },
+    { "WRONG_DOCUMENT_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionWRONG_DOCUMENT_ERR), (intptr_t)0 },
+    { "INVALID_CHARACTER_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_CHARACTER_ERR), (intptr_t)0 },
+    { "NO_DATA_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNO_DATA_ALLOWED_ERR), (intptr_t)0 },
+    { "NO_MODIFICATION_ALLOWED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR), (intptr_t)0 },
+    { "NOT_FOUND_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNOT_FOUND_ERR), (intptr_t)0 },
+    { "NOT_SUPPORTED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNOT_SUPPORTED_ERR), (intptr_t)0 },
+    { "INUSE_ATTRIBUTE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR), (intptr_t)0 },
+    { "INVALID_STATE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_STATE_ERR), (intptr_t)0 },
+    { "SYNTAX_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionSYNTAX_ERR), (intptr_t)0 },
+    { "INVALID_MODIFICATION_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_MODIFICATION_ERR), (intptr_t)0 },
+    { "NAMESPACE_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNAMESPACE_ERR), (intptr_t)0 },
+    { "INVALID_ACCESS_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionINVALID_ACCESS_ERR), (intptr_t)0 },
+    { "VALIDATION_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionVALIDATION_ERR), (intptr_t)0 },
+    { "TYPE_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionTYPE_MISMATCH_ERR), (intptr_t)0 },
+    { "SECURITY_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionSECURITY_ERR), (intptr_t)0 },
+    { "NETWORK_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionNETWORK_ERR), (intptr_t)0 },
+    { "ABORT_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionABORT_ERR), (intptr_t)0 },
+    { "URL_MISMATCH_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionURL_MISMATCH_ERR), (intptr_t)0 },
+    { "QUOTA_EXCEEDED_ERR", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMCoreExceptionQUOTA_EXCEEDED_ERR), (intptr_t)0 },
+    { "toString", DontDelete|DontEnum|Function, (intptr_t)static_cast<NativeFunction>(jsDOMCoreExceptionPrototypeFunctionToString), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -203,33 +203,36 @@ bool JSDOMCoreException::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSDOMCoreException, Base>(exec, &JSDOMCoreExceptionTable, this, propertyName, descriptor);
 }
 
-JSValue jsDOMCoreExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
+    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
-JSValue jsDOMCoreExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionName(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
+    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
-JSValue jsDOMCoreExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionMessage(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
+    JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
-JSValue jsDOMCoreExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMCoreExceptionConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSDOMCoreException* domObject = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
+    JSDOMCoreException* domObject = static_cast<JSDOMCoreException*>(asObject(slotBase));
     return JSDOMCoreException::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSDOMCoreException::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -252,112 +255,112 @@ JSValue JSC_HOST_CALL jsDOMCoreExceptionPrototypeFunctionToString(ExecState* exe
 
 // Constant getters
 
-JSValue jsDOMCoreExceptionINDEX_SIZE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINDEX_SIZE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsDOMCoreExceptionDOMSTRING_SIZE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionDOMSTRING_SIZE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsDOMCoreExceptionHIERARCHY_REQUEST_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionHIERARCHY_REQUEST_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsDOMCoreExceptionWRONG_DOCUMENT_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionWRONG_DOCUMENT_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsDOMCoreExceptionINVALID_CHARACTER_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_CHARACTER_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValue jsDOMCoreExceptionNO_DATA_ALLOWED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNO_DATA_ALLOWED_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSValue jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNO_MODIFICATION_ALLOWED_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(7));
 }
 
-JSValue jsDOMCoreExceptionNOT_FOUND_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNOT_FOUND_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValue jsDOMCoreExceptionNOT_SUPPORTED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNOT_SUPPORTED_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(9));
 }
 
-JSValue jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINUSE_ATTRIBUTE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(10));
 }
 
-JSValue jsDOMCoreExceptionINVALID_STATE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_STATE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(11));
 }
 
-JSValue jsDOMCoreExceptionSYNTAX_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionSYNTAX_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(12));
 }
 
-JSValue jsDOMCoreExceptionINVALID_MODIFICATION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_MODIFICATION_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(13));
 }
 
-JSValue jsDOMCoreExceptionNAMESPACE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNAMESPACE_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(14));
 }
 
-JSValue jsDOMCoreExceptionINVALID_ACCESS_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionINVALID_ACCESS_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(15));
 }
 
-JSValue jsDOMCoreExceptionVALIDATION_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionVALIDATION_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(16));
 }
 
-JSValue jsDOMCoreExceptionTYPE_MISMATCH_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionTYPE_MISMATCH_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(17));
 }
 
-JSValue jsDOMCoreExceptionSECURITY_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionSECURITY_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(18));
 }
 
-JSValue jsDOMCoreExceptionNETWORK_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionNETWORK_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(19));
 }
 
-JSValue jsDOMCoreExceptionABORT_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionABORT_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(20));
 }
 
-JSValue jsDOMCoreExceptionURL_MISMATCH_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionURL_MISMATCH_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(21));
 }
 
-JSValue jsDOMCoreExceptionQUOTA_EXCEEDED_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMCoreExceptionQUOTA_EXCEEDED_ERR(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(22));
 }

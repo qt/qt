@@ -168,9 +168,9 @@ QTipLabel *QTipLabel::instance = 0;
 
 QTipLabel::QTipLabel(const QString &text, QWidget *w)
 #ifndef QT_NO_STYLE_STYLESHEET
-    : QLabel(w, Qt::ToolTip), styleSheetParent(0), widget(0)
+    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), styleSheetParent(0), widget(0)
 #else
-    : QLabel(w, Qt::ToolTip), widget(0)
+    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), widget(0)
 #endif
 {
     delete instance;
@@ -368,7 +368,16 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 
 
 #ifdef Q_WS_MAC
-    QRect screen = QApplication::desktop()->availableGeometry(getTipScreen(pos, w));
+    // When in full screen mode, there is no Dock nor Menu so we can use
+    // the whole screen for displaying the tooltip. However when not in
+    // full screen mode we need to save space for the dock, so we use
+    // availableGeometry instead.
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
+    QRect screen;
+    if(qt_mac_app_fullscreen)
+        screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
+    else
+        screen = QApplication::desktop()->availableGeometry(getTipScreen(pos, w));
 #else
     QRect screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
 #endif

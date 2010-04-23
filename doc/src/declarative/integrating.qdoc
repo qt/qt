@@ -43,44 +43,56 @@
 \page qml-integration.html
 \title Integrating QML with existing Qt UI code
 
-If you have existing Qt UI code which does not use QML you can still
-add QML to your UI, without having to rewrite it.
+There are a number of ways to integrate QML into QWidget-based UI applications,
+depending on the characteristics of your existing UI code.
 
-\section1 Adding QML to a \l{QWidget} based UI
-If you have an existing QWidget based UI you can simply write new custom
-widgets in QML. To integrate them into your application you can create a
-QDeclarativeView widget, and load the QML file into that. You'll then have a new widget
-containing your declarative UI, and you can interact with it through the
-QDeclarativeView interface. The one drawback of this approach is that QDeclarativeView is a lot
-heavier than a QWidget in terms of memory consumption and initialization speed,
-and so having large numbers of them may lead to performance degredation.
 
-For a smooth transition from a QWidget based UI to a QML based UI, simply
-rewrite your widgets in QML one at a time, using the above method. When
-all of your widgets are written in QML you can rewrite your main widget in
-QML, so as to load the other widgets in QML instead of using QDeclarativeViews. Then
-you just load the main QML file on startup.
+\section1 Integrating with a \l{QWidget}-based UI
 
-Keep in mind that QWidgets were designed for different sorts of UIs than QML
-was, and so it is not always a good idea to switch. QWidgets are a better
-choice if your UI is comprised of a small number of complex and static
-elements, and QML is a better choice if your UI is comprised of a large number
-of simple and dynamic elements.
-
-\section1 Adding QML to a QGraphicsView based UI
-
-If you have an existing Graphics View based UI you can create new
-items in QML, and use \l{QDeclarativeComponent} to create \l{QGraphicsObject}s
-from the QML files. These \l{QGraphicsObject}s can then be placed into
-your \l{QGraphicsScene} using \l{QGraphicsScene::addItem()} or by
-reparenting them to an item already in the \l{QGraphicsScene}.
-
-Example, for local QML files:
+If you have an existing QWidget-based UI, QML widgets can be integrated into
+it using QDeclarativeView. QDeclarativeView is a subclass of QWidget so you
+can add it to your user interface like any other QWidget. Use 
+QDeclarativeView::setSource() to load a QML file into the view, then add the 
+view to your UI:
 
 \code
-QGraphicsScene* scene = new QGraphicsScene;
+QDeclarativeView *qmlView = new QDeclarativeView;
+qmlView->setSource(QUrl::fromLocalFile("myqml.qml"));
+
+QWidget *widget = myExistingWidget();
+QVBoxLayout *layout = new QVBoxLayout(widget);
+widget->addWidget(qmlView);
+\endcode
+
+The one drawback to this approach is that QDeclarativeView is slower to initialize
+and uses more memory than a QWidget, and creating large numbers of QDeclarativeView
+objects may lead to performance degradation. If this is the case, it may be 
+better to rewrite your widgets in QML, and load the widgets from a main QML widget
+instead of using QDeclarativeView.
+
+Keep in mind that QWidgets were designed for a different type of user interface
+than QML, so it is not always a good idea to port a QWidget-based application to
+QML. QWidgets are a better choice if your UI is comprised of a small number of
+complex and static elements, and QML is a better choice if your UI is comprised of a large number
+of simple and dynamic elements.
+
+
+\section1 Integrating with a QGraphicsView-based UI
+
+\section2 Adding QML widgets to a QGraphicsScene
+
+If you have an existing UI based on the \l{The Graphics View Framework}{Graphics View Framework},
+you can integrate QML widgets directly into your QGraphicsScene. Use
+QDeclarativeComponent to create a QGraphicsObject from a QML file, and
+place the graphics object into your scene using \l{QGraphicsScene::addItem()}, or 
+reparent it to an item already in the \l{QGraphicsScene}.
+
+For example:
+
+\code
+QGraphicsScene* scene = myExistingGraphicsScene();
 QDeclarativeEngine *engine = new QDeclarativeEngine;
-QDeclarativeComponent component(engine, QUrl::fromLocalFile(filename));
+QDeclarativeComponent component(engine, QUrl::fromLocalFile("myqml.qml"));
 QGraphicsObject *object =
     qobject_cast<QGraphicsObject *>(component.create());
 scene->addItem(object);
@@ -90,26 +102,60 @@ The following QGraphicsView options are recommended for optimal performance
 of QML UIs:
 
 \list
-\o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState);
-\o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-\o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex);
+\o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState)
+\o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate)
+\o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex)
 \endlist
 
-\section1 Using existing QGraphicsWidgets in QML
-Another way of integrating with a QGraphicsView based UI is to expose your
-existing QGraphicsWidgets to QML, and constructing your scene in QML. Note that
-this approach will not work with QGraphicsItems which are not QGraphicsWidgets,
-and that this approach allows you to integrate new items written in QML
-without using the above method.
+\section2 Loading QGraphicsWidget objects in QML
 
-You can make custom C++ types 
-available in QML using the pair of macros listed in \l{Extending QML}.
-While this is normally only useful for
-types that were designed for QML use, in conjunction with the
-\l{GraphicsObjectContainer} element QGraphicsWidget subclasses can also be
-used effectively (if they were designed, like QGraphicsWidget, to be controllable through Qt's property system).
-This way you can write your UI using QML, without having to rewrite your existing items.
+An alternative approach is to expose your existing QGraphicsWidget objects to 
+QML and construct your scene in QML instead. To do this, you need to register
+any custom C++ types and create a plugin that registers the custom types
+so that they can be used from your QML file.
 
-For details on implementing this approach see \l{Extending QML} page for details on exposing your C++ types,
-and the \l{GraphicsObjectContainer} documentation for details about using it to wrap QGraphicsWidgets. 
+Here is an example. Suppose you have two classes, \c RedSquare and \c BlueCircle,
+that both inherit from QGraphicsWidget. First, you need to register these two types
+using the \c QML_DECLARE_TYPE macro from \c <QtDeclarative/qdeclarative.h>, like this:
+
+\c [graphicswidgets/redsquare.h]
+\snippet doc/src/declarative/snippets/integrating/graphicswidgets/redsquare.h 0
+
+\c [graphicswidgets/bluecircle.h]
+\snippet doc/src/declarative/snippets/integrating/graphicswidgets/bluecircle.h 0
+
+Then, create a plugin by subclassing QDeclarativeExtensionPlugin, and register the
+types by calling qmlRegisterType(). Also export the plugin with Q_EXPORT_PLUGIN2.
+
+\c [graphicswidgets/shapesplugin.cpp]
+\snippet doc/src/declarative/snippets/integrating/graphicswidgets/shapesplugin.cpp 0
+
+Now write a project file that creates the plugin:
+
+\c [graphicswidgets/graphicswidgets.pro]
+\quotefile doc/src/declarative/snippets/integrating/graphicswidgets/graphicswidgets.pro
+
+And add a \c qmldir file that includes the \c graphicswidgets plugin from the \c lib
+subdirectory (as defined in the project file):
+
+\c [graphicswidgets/qmldir]
+\quotefile doc/src/declarative/snippets/integrating/graphicswidgets/qmldir
+
+Now, we can write a QML file that uses the \c RedSquare and \c BlueCircle widgets.
+(As an example, we can also create \c QGraphicsWidget items if we import the \c Qt.widgets
+module.)
+
+\c [main.qml]
+\quotefile doc/src/declarative/snippets/integrating/graphicswidgets/main.qml
+
+Here is a screenshot of the result:
+
+\image declarative-integrating-graphicswidgets.png 
+
+
+Note this approach of creating your graphics widgets from QML does not work 
+with QGraphicsItem objects that are not QGraphicsWidget-based, since they are not QObjects.
+
+See \l{Extending QML in C++} for further information on using C++ types.
+
 */

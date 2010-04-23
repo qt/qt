@@ -72,8 +72,19 @@ public:
         isGroup = true;
     }
 
-    virtual void animationInsertedAt(int index) { Q_UNUSED(index) };
-    virtual void animationRemovedAt(int index);
+    virtual void animationInsertedAt(int) { }
+    virtual void animationRemoved(int, QAbstractAnimation *);
+
+    void disconnectUncontrolledAnimation(QAbstractAnimation *anim)
+    {
+        //0 for the signal here because we might be called from the animation destructor
+        QObject::disconnect(anim, 0, q_func(), SLOT(_q_uncontrolledAnimationFinished()));
+    }
+
+    void connectUncontrolledAnimation(QAbstractAnimation *anim)
+    {
+        QObject::connect(anim, SIGNAL(finished()), q_func(), SLOT(_q_uncontrolledAnimationFinished()));
+    }
 
     QList<QAbstractAnimation *> animations;
 };

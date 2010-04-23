@@ -909,6 +909,7 @@ static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QMacMenuAction *act
 static QString qt_mac_menu_merge_text(QMacMenuAction *action)
 {
     QString ret;
+    extern QString qt_mac_applicationmenu_string(int type);
 #ifdef QT_MAC_USE_COCOA
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
 #endif
@@ -916,22 +917,26 @@ static QString qt_mac_menu_merge_text(QMacMenuAction *action)
         ret = action->action->text();
 #ifndef QT_MAC_USE_COCOA
     else if (action->command == kHICommandAbout)
-        ret = QMenuBar::tr("About %1").arg(qAppName());
+        ret = qt_mac_applicationmenu_string(6).arg(qAppName());
     else if (action->command == kHICommandAboutQt)
         ret = QMenuBar::tr("About Qt");
     else if (action->command == kHICommandPreferences)
-        ret = QMenuBar::tr("Preferences");
+        ret = qt_mac_applicationmenu_string(4);
     else if (action->command == kHICommandQuit)
-        ret = QMenuBar::tr("Quit %1").arg(qAppName());
+        ret = qt_mac_applicationmenu_string(5).arg(qAppName());
 #else
-    else if (action->menuItem == [loader aboutMenuItem])
-        ret = QMenuBar::tr("About %1").arg(qAppName());
-    else if (action->menuItem == [loader aboutQtMenuItem])
-        ret = QMenuBar::tr("About Qt");
-    else if (action->menuItem == [loader preferencesMenuItem])
-        ret = QMenuBar::tr("Preferences");
-    else if (action->menuItem == [loader quitMenuItem])
-        ret = QMenuBar::tr("Quit %1").arg(qAppName());
+    else if (action->menuItem == [loader aboutMenuItem]) {
+        ret = qt_mac_applicationmenu_string(6).arg(qAppName());
+    } else if (action->menuItem == [loader aboutQtMenuItem]) {
+        if (action->action->text() == QString("About Qt"))
+            ret = QMenuBar::tr("About Qt");
+        else
+            ret = action->action->text();
+    } else if (action->menuItem == [loader preferencesMenuItem]) {
+        ret = qt_mac_applicationmenu_string(4);
+    } else if (action->menuItem == [loader quitMenuItem]) {
+        ret = qt_mac_applicationmenu_string(5).arg(qAppName());
+    }
 #endif
     return ret;
 }
@@ -1386,7 +1391,11 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     } else {
         [item setTitle: qt_mac_QStringToNSString(finalString)];
     }
-    [item setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(text))];
+
+    if (action->action->menuRole() == QAction::AboutRole || action->action->menuRole() == QAction::QuitRole)
+        [item setTitle:qt_mac_QStringToNSString(text)];
+    else
+        [item setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(text))];
 
     // Cocoa Enabled
     [item setEnabled: action->action->isEnabled()];
@@ -1922,7 +1931,7 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar)
         if (w->isVisible() && w->windowModality() == Qt::ApplicationModal) {
             for (int i=0; i<topLevelWidgets.size(); ++i) {
                 QWidget *top = topLevelWidgets.at(i);
-                if (w != top && [qt_mac_window_for(top) isVisible]) {
+                if (w != top && top->isVisible()) {
                     // INVARIANT: we found another visible window
                     // on screen other than our modalWidget. We therefore
                     // disable the menu bar to follow normal modality logic:
@@ -2046,6 +2055,22 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
     cancelAllMenuTracking();
     QWidget *w = findWindowThatShouldDisplayMenubar();
     QMenuBar *mb = findMenubarForWindow(w);
+
+    // We need to see if we are in full screen mode, if so we need to
+    // switch the full screen mode to be able to show or hide the menubar.
+    if(w && mb) {
+        // This case means we are creating a menubar, check if full screen
+        if(w->isFullScreen()) {
+            // Ok, switch to showing the menubar when hovering over it.
+            SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
+        }
+    } else if(w) {
+        // Removing a menubar
+        if(w->isFullScreen()) {
+            // Ok, switch to not showing the menubar when hovering on it
+            SetSystemUIMode(kUIModeAllHidden, 0);
+        }
+    }
 
     if (mb && mb->isNativeMenuBar()) {
         bool modal = QApplicationPrivate::modalState();
@@ -2180,3 +2205,4 @@ static OSMenuRef qt_mac_create_menu(QWidget *w)
 
 
 QT_END_NAMESPACE
+

@@ -74,7 +74,10 @@ WidgetBox::WidgetBox(QDesignerFormEditorInterface *core, QWidget *parent, Qt::Wi
     FilterWidget *filterWidget = new FilterWidget(0, FilterWidget::LayoutAlignNone);
     filterWidget->setRefuseFocus(true);
     connect(filterWidget, SIGNAL(filterChanged(QString)), m_view, SLOT(filter(QString)));
-    l->addWidget(filterWidget);
+
+    QToolBar *toolBar = new QToolBar(this);
+    toolBar->addWidget(filterWidget);
+    l->addWidget(toolBar);
 
     // View
     connect(m_view, SIGNAL(pressed(QString,QString,QPoint)),

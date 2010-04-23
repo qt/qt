@@ -55,17 +55,21 @@ QT_BEGIN_NAMESPACE
     applications using the QDeclarativeEngine class.
 
     Writing a QML extension plugin is achieved by subclassing this
-    base class, reimplementing the pure virtual initialize()
+    base class, reimplementing the pure virtual registerTypes()
     function, and exporting the class using the Q_EXPORT_PLUGIN2()
-    macro. See \l {How to Create Qt Plugins} for details.
+    macro.
 
-    \sa QDeclarativeEngine::importExtension()
+    See \l {Extending QML in C++} for details how to write a QML extension plugin.
+    See \l {How to Create Qt Plugins} for general Qt plugin documentation.
+
+    \sa QDeclarativeEngine::importPlugin()
 */
 
 /*!
     \fn void QDeclarativeExtensionPlugin::registerTypes(const char *uri)
 
-    Registers the QML types in the given \a uri.
+    Registers the QML types in the given \a uri. Here you call qmlRegisterType() for
+    all types which are provided by the extension plugin.
 */
 
 /*!
@@ -80,6 +84,9 @@ QDeclarativeExtensionPlugin::QDeclarativeExtensionPlugin(QObject *parent)
 {
 }
 
+/*!
+  Destructor.
+ */
 QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 {
 }
@@ -87,7 +94,7 @@ QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 /*!
     \fn void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
 
-    Initializes the extension specified in the given \a engine.
+    Initializes the extension from the \a uri using the \a engine.
 */
 
 void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)

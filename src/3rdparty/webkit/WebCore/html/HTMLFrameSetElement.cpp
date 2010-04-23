@@ -135,6 +135,10 @@ void HTMLFrameSetElement::parseMappedAttribute(MappedAttribute *attr)
         document()->setWindowAttributeEventListener(eventNames().blurEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onfocusAttr)
         document()->setWindowAttributeEventListener(eventNames().focusEvent, createAttributeEventListener(document()->frame(), attr));
+    else if (attr->name() == onfocusinAttr)
+        document()->setWindowAttributeEventListener(eventNames().focusinEvent, createAttributeEventListener(document()->frame(), attr));
+    else if (attr->name() == onfocusoutAttr)
+        document()->setWindowAttributeEventListener(eventNames().focusoutEvent, createAttributeEventListener(document()->frame(), attr));
 #if ENABLE(ORIENTATION_EVENTS)
     else if (attr->name() == onorientationchangeAttr)
         document()->setWindowAttributeEventListener(eventNames().orientationchangeEvent, createAttributeEventListener(document()->frame(), attr));
@@ -151,6 +155,8 @@ void HTMLFrameSetElement::parseMappedAttribute(MappedAttribute *attr)
         document()->setWindowAttributeEventListener(eventNames().onlineEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onofflineAttr)
         document()->setWindowAttributeEventListener(eventNames().offlineEvent, createAttributeEventListener(document()->frame(), attr));
+    else if (attr->name() == onpopstateAttr)
+        document()->setWindowAttributeEventListener(eventNames().popstateEvent, createAttributeEventListener(document()->frame(), attr));
     else
         HTMLElement::parseMappedAttribute(attr);
 }

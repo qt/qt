@@ -54,7 +54,7 @@ function startNewGame()
         } else {
             if(linkComponent.isReady == false){
                 if(linkComponent.isError == true)
-                    print(linkComponent.errorString());
+                    print(linkComponent.errorsString());
                 else
                     print("Still loading linkComponent");
                 continue;//TODO: Better error handling?
@@ -295,7 +295,7 @@ function createCookie(value) {
 
     if(cookieComponent.isReady == false){
         if(cookieComponent.isError == true)
-            print(cookieComponent.errorString());
+            print(cookieComponent.errorsString());
         else
             print("Still loading cookieComponent");
         return;//TODO: Better error handling?

@@ -35,8 +35,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSTextMetrics);
 
 static const HashTableValue JSTextMetricsTableValues[3] =
 {
-    { "width", DontDelete|ReadOnly, (intptr_t)jsTextMetricsWidth, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsTextMetricsConstructor, (intptr_t)0 },
+    { "width", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTextMetricsWidth), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTextMetricsConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -75,7 +75,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,17 +143,18 @@ bool JSTextMetrics::getOwnPropertyDescriptor(ExecState* exec, const Identifier& 
     return getStaticValueDescriptor<JSTextMetrics, Base>(exec, &JSTextMetricsTable, this, propertyName, descriptor);
 }
 
-JSValue jsTextMetricsWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextMetricsWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSTextMetrics* castedThis = static_cast<JSTextMetrics*>(asObject(slot.slotBase()));
+    JSTextMetrics* castedThis = static_cast<JSTextMetrics*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TextMetrics* imp = static_cast<TextMetrics*>(castedThis->impl());
-    return jsNumber(exec, imp->width());
+    JSValue result = jsNumber(exec, imp->width());
+    return result;
 }
 
-JSValue jsTextMetricsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTextMetricsConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSTextMetrics* domObject = static_cast<JSTextMetrics*>(asObject(slot.slotBase()));
+    JSTextMetrics* domObject = static_cast<JSTextMetrics*>(asObject(slotBase));
     return JSTextMetrics::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSTextMetrics::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

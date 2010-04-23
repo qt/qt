@@ -43,11 +43,11 @@ win32-g++:isEmpty(QMAKE_SH) {
 
 # Build rules:
 adp_docs.commands = ($$QDOC $$ADP_DOCS_QDOCCONF_FILE)
-adp_docs.depends += sub-tools # qdoc3
+adp_docs.depends += sub-qdoc3 # qdoc3
 qch_docs.commands = $$QT_DOCUMENTATION
-qch_docs.depends += sub-tools
+qch_docs.depends += sub-qdoc3
 
-docs.depends = adp_docs qch_docs
+docs.depends = sub-qdoc3 adp_docs qch_docs
 
 docs_zh_CN.depends = docs
 docs_zh_CN.commands = $$QT_ZH_CN_DOCUMENTATION
@@ -64,5 +64,8 @@ qchdocs.CONFIG += no_check_exist
 docimages.files = $$QT_BUILD_TREE/doc/src/images
 docimages.path = $$[QT_INSTALL_DOCS]/src
 
-QMAKE_EXTRA_TARGETS += qdoc adp_docs qch_docs docs docs_zh_CN
+sub-qdoc3.depends = sub-corelib sub-xml
+sub-qdoc3.commands += (cd tools/qdoc3 && $(MAKE))
+
+QMAKE_EXTRA_TARGETS += sub-qdoc3 adp_docs qch_docs docs docs_zh_CN
 INSTALLS += htmldocs qchdocs docimages

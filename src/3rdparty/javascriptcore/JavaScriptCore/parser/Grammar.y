@@ -27,6 +27,7 @@
 
 #include "JSObject.h"
 #include "JSString.h"
+#include "Lexer.h"
 #include "NodeConstructors.h"
 #include "NodeInfo.h"
 #include <stdlib.h>
@@ -42,13 +43,12 @@
 // Default values for bison.
 #define YYDEBUG 0 // Set to 1 to debug a parse error.
 #define jscyydebug 0 // Set to 1 to debug a parse error.
-#if !PLATFORM(DARWIN)
+#if !OS(DARWIN)
 // Avoid triggering warnings in older bison by not setting this on the Darwin platform.
 // FIXME: Is this still needed?
 #define YYERROR_VERBOSE
 #endif
 
-int jscyylex(void* lvalp, void* llocp, void* globalPtr);
 int jscyyerror(const char*);
 
 static inline bool allowAutomaticSemicolon(JSC::Lexer&, int);
@@ -179,7 +179,7 @@ static inline void appendToVarDeclarationList(JSGlobalData* globalData, ParserAr
 
 template <typename T> inline void setStatementLocation(StatementNode* statement, const T& start, const T& end)
 {
-    statement->setLoc(start.first_line, end.last_line, start.first_column);
+    statement->setLoc(start.first_line, end.last_line);
 }
 
 static inline void setExceptionLocation(ThrowableExpressionData* node, unsigned start, unsigned divot, unsigned end)
@@ -1987,12 +1987,9 @@ static PropertyNode* makeGetterOrSetterPropertyNode(JSGlobalData* globalData, co
 static ExpressionNode* makeNegateNode(JSGlobalData* globalData, ExpressionNode* n)
 {
     if (n->isNumber()) {
-        NumberNode* number = static_cast<NumberNode*>(n);
-
-        if (number->value() > 0.0) {
-            number->setValue(-number->value());
-            return number;
-        }
+        NumberNode* numberNode = static_cast<NumberNode*>(n);
+        numberNode->setValue(-numberNode->value());
+        return numberNode;
     }
 
     return new (globalData) NegateNode(globalData, n);

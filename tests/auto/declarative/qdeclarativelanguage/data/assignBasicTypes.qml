@@ -10,8 +10,6 @@ MyTypeObject {
     floatProperty: 8.5
     colorProperty: "red"
     dateProperty: "1982-11-25"
-    timeProperty: "11:11:31"
-    timeProperty: "11:11:32"
     timeProperty: "11:11:32" 
     dateTimeProperty: "2009-05-12T13:22:01"
     pointProperty: "99,13"

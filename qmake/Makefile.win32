@@ -77,9 +77,7 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj \
               msvc_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
-              registry.obj \
-              epocroot.obj \
-              symmake_abld.obj symmake_sbsv2.obj
+              symmake_abld.obj symmake_sbsv2.obj symbiancommon.obj registry.obj epocroot.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
 CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION
@@ -200,6 +198,7 @@ clean::
 	-del symmake.obj
 	-del symmake_abld.obj
 	-del symmake_sbsv2.obj
+        -del symbiancommon.obj
 	-del initprojectdeploy_symbian.obj
 	-del registry.obj
 	-del epocroot.obj
@@ -396,6 +395,9 @@ symmake_abld.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_abld.cpp
 symmake_sbsv2.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
 
+symbiancommon.obj: $(SOURCE_PATH)/qmake/generators/symbian/symbiancommon.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symbiancommon.cpp
+
 initprojectdeploy_symbian.obj: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
 
@@ -432,7 +434,7 @@ pbuilder_pbx.obj: $(SOURCE_PATH)/qmake/generators/mac/pbuilder_pbx.cpp
 makefiledeps.obj: $(SOURCE_PATH)/qmake/generators/makefiledeps.cpp
 	$(CXX) $(CXXFLAGS) generators/makefiledeps.cpp
 
-metamakefile.obj: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp
+metamakefile.obj: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp $(SOURCE_PATH)/qmake/generators/symbian/symbiancommon.obj
 	$(CXX) $(CXXFLAGS) generators/metamakefile.cpp
 
 xmloutput.obj: $(SOURCE_PATH)/qmake/generators/xmloutput.cpp

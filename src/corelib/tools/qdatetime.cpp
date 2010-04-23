@@ -98,18 +98,23 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
+static inline uint julianDayFromGregorianDate(int year, int month, int day)
+{
+    // Gregorian calendar starting from October 15, 1582
+    // Algorithm from Henry F. Fliegel and Thomas C. Van Flandern
+    return (1461 * (year + 4800 + (month - 14) / 12)) / 4
+           + (367 * (month - 2 - 12 * ((month - 14) / 12))) / 12
+           - (3 * ((year + 4900 + (month - 14) / 12) / 100)) / 4
+           + day - 32075;
+}
+
 static uint julianDayFromDate(int year, int month, int day)
 {
     if (year < 0)
         ++year;
 
     if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) {
-        // Gregorian calendar starting from October 15, 1582
-        // Algorithm from Henry F. Fliegel and Thomas C. Van Flandern
-        return (1461 * (year + 4800 + (month - 14) / 12)) / 4
-               + (367 * (month - 2 - 12 * ((month - 14) / 12))) / 12
-               - (3 * ((year + 4900 + (month - 14) / 12) / 100)) / 4
-               + day - 32075;
+        return julianDayFromGregorianDate(year, month, day);
     } else if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day <= 4)))) {
         // Julian calendar until October 4, 1582
         // Algorithm from Frequently Asked Questions about Calendars by Claus Toendering
@@ -1118,45 +1123,11 @@ int QDate::daysTo(const QDate &d) const
 */
 
 /*!
-    \overload
+    \fn QDate::currentDate()
     Returns the current date, as reported by the system clock.
 
     \sa QTime::currentTime(), QDateTime::currentDateTime()
 */
-
-QDate QDate::currentDate()
-{
-    QDate d;
-#if defined(Q_OS_WIN)
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    GetLocalTime(&st);
-    d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
-#elif defined(Q_OS_SYMBIAN)
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1 );
-#else
-    // posix compliant system
-    time_t ltime;
-    time(&ltime);
-    tm *t = 0;
-
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-    // use the reentrant version of localtime() where available
-    tzset();
-    tm res;
-    t = localtime_r(&ltime, &res);
-#else
-    t = localtime(&ltime);
-#endif // !QT_NO_THREAD && _POSIX_THREAD_SAFE_FUNCTIONS
-
-    d.jd = julianDayFromDate(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
-#endif
-    return d;
-}
 
 #ifndef QT_NO_DATESTRING
 /*!
@@ -1365,7 +1336,10 @@ bool QDate::isValid(int year, int month, int day)
 bool QDate::isLeapYear(int y)
 {
     if (y < 1582) {
-        return qAbs(y) % 4 == 0;
+        if ( y < 1) {  // No year 0 in Julian calendar, so -1, -5, -9 etc are leap years
+            ++y;
+        }
+        return y % 4 == 0;
     } else {
         return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
     }
@@ -1637,6 +1611,7 @@ QString QTime::toString(Qt::DateFormat format) const
          \i use AM/PM display. \e AP will be replaced by either "AM" or "PM".
     \row \i ap or a
          \i use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \row \i t \i the timezone (for example "CEST")
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
@@ -1812,60 +1787,13 @@ int QTime::msecsTo(const QTime &t) const
 */
 
 /*!
-    \overload
+    \fn QTime::currentTime()
 
     Returns the current time as reported by the system clock.
 
     Note that the accuracy depends on the accuracy of the underlying
     operating system; not all systems provide 1-millisecond accuracy.
 */
-
-QTime QTime::currentTime()
-{
-    QTime ct;
-
-#if defined(Q_OS_WIN)
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    GetLocalTime(&st);
-    ct.mds = MSECS_PER_HOUR * st.wHour + MSECS_PER_MIN * st.wMinute + 1000 * st.wSecond
-             + st.wMilliseconds;
-#if defined(Q_OS_WINCE)
-    ct.startTick = GetTickCount() % MSECS_PER_DAY;
-#endif
-#elif defined(Q_OS_SYMBIAN)
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    ct.mds = MSECS_PER_HOUR * localDateTime.Hour() + MSECS_PER_MIN * localDateTime.Minute()
-                 + 1000 * localDateTime.Second() + (localDateTime.MicroSecond() / 1000);
-#elif defined(Q_OS_UNIX)
-    // posix compliant system
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    time_t ltime = tv.tv_sec;
-    tm *t = 0;
-
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-    // use the reentrant version of localtime() where available
-    tzset();
-    tm res;
-    t = localtime_r(&ltime, &res);
-#else
-    t = localtime(&ltime);
-#endif
-    Q_CHECK_PTR(t);
-
-    ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec
-             + tv.tv_usec / 1000;
-#else
-    time_t ltime; // no millisecond resolution
-    ::time(&ltime);
-    const tm *const t = localtime(&ltime);
-    ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec;
-#endif
-    return ct;
-}
 
 #ifndef QT_NO_DATESTRING
 /*!
@@ -2391,17 +2319,35 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
     }
 }
 
-static uint toTime_tHelper(const QDate &utcDate, const QTime &utcTime)
+qint64 toMSecsSinceEpoch_helper(qint64 jd, int msecs)
 {
-    int days = QDate(1970, 1, 1).daysTo(utcDate);
-    int secs = QTime().secsTo(utcTime);
-    if (days < 0 || (days == 0 && secs < 0))
-        return uint(-1);
+    int days = jd - julianDayFromGregorianDate(1970, 1, 1);
+    qint64 retval = (qlonglong(days) * MSECS_PER_DAY) + msecs;
+    return retval;
+}
 
-    qlonglong retval = (qlonglong(days) * SECS_PER_DAY) + secs;
-    if (retval >= Q_INT64_C(0xFFFFFFFF))
-        return uint(-1);
-    return uint(retval);
+/*!
+    \since 4.7
+
+    Returns the datetime as the number of milliseconds that have passed
+    since 1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
+
+    On systems that do not support time zones, this function will
+    behave as if local time were Qt::UTC.
+
+    The behavior for this function is undefined if the datetime stored in
+    this object is not valid. However, for all valid dates, this function
+    returns a unique value.
+
+    \sa toTime_t(), setMSecsSinceEpoch()
+*/
+qint64 QDateTime::toMSecsSinceEpoch() const
+{
+    QDate utcDate;
+    QTime utcTime;
+    d->getUTC(utcDate, utcTime);
+
+    return toMSecsSinceEpoch_helper(utcDate.jd, utcTime.ds());
 }
 
 /*!
@@ -2411,16 +2357,63 @@ static uint toTime_tHelper(const QDate &utcDate, const QTime &utcTime)
     On systems that do not support time zones, this function will
     behave as if local time were Qt::UTC.
 
-    \sa setTime_t()
+    \note This function returns a 32-bit unsigned integer, so it does not
+    support dates before 1970, but it does support dates after
+    2038-01-19T03:14:06, which may not be valid time_t values. Be careful
+    when passing those time_t values to system functions, which could
+    interpret them as negative dates.
+
+    If the date is outside the range 1970-01-01T00:00:00 to
+    2106-02-07T06:28:14, this function returns -1 cast to an unsigned integer
+    (i.e., 0xFFFFFFFF).
+
+    To get an extended range, use toMSecsSinceEpoch().
+
+    \sa toMSecsSinceEpoch(), setTime_t()
 */
 
 uint QDateTime::toTime_t() const
 {
-    QDate utcDate;
-    QTime utcTime;
-    d->getUTC(utcDate, utcTime);
+    qint64 retval = toMSecsSinceEpoch() / 1000;
+    if (quint64(retval) >= Q_UINT64_C(0xFFFFFFFF))
+        return uint(-1);
+    return uint(retval);
+}
 
-    return toTime_tHelper(utcDate, utcTime);
+/*!
+    \since 4.7
+
+    Sets the date and time given the number of \a mulliseconds that have
+    passed since 1970-01-01T00:00:00.000, Coordinated Universal Time
+    (Qt::UTC). On systems that do not support time zones this function
+    will behave as if local time were Qt::UTC.
+
+    Note that there are possible values for \a msecs that lie outside the
+    valid range of QDateTime, both negative and positive. The behavior of
+    this function is undefined for those values.
+
+    \sa toMSecsSinceEpoch(), setTime_t()
+*/
+void QDateTime::setMSecsSinceEpoch(qint64 msecs)
+{
+    detach();
+
+    QDateTimePrivate::Spec oldSpec = d->spec;
+
+    int ddays = msecs / MSECS_PER_DAY;
+    msecs %= MSECS_PER_DAY;
+    if (msecs < 0) {
+        // negative
+        --ddays;
+        msecs += MSECS_PER_DAY;
+    }
+
+    d->date = QDate(1970, 1, 1).addDays(ddays);
+    d->time = QTime().addMSecs(msecs);
+    d->spec = QDateTimePrivate::UTC;
+
+    if (oldSpec != QDateTimePrivate::UTC)
+        d->spec = d->getLocal(d->date, d->time);
 }
 
 /*!
@@ -2872,62 +2865,279 @@ bool QDateTime::operator<(const QDateTime &other) const
 */
 
 /*!
+    \fn QDateTime QDateTime::currentDateTime()
     Returns the current datetime, as reported by the system clock, in
     the local time zone.
 
-    \sa QDate::currentDate(), QTime::currentTime(), toTimeSpec()
+    \sa currentDateTimeUtc(), QDate::currentDate(), QTime::currentTime(), toTimeSpec()
 */
+
+/*!
+    \fn QDateTime QDateTime::currentDateTimeUtc()
+    \since 4.7
+    Returns the current datetime, as reported by the system clock, in
+    UTC.
+
+    \sa currentDateTime(), QDate::currentDate(), QTime::currentTime(), toTimeSpec()
+*/
+
+/*!
+    \fn qint64 QDateTime::currentMSecsSinceEpoch()
+    \since 4.7
+
+    Returns the number of milliseconds since 1970-01-01T00:00:00 Universal
+    Coordinated Time. This number is like the POSIX time_t variable, but
+    expressed in milliseconds instead.
+
+    \sa currentDateTime(), currentDateTimeUtc(), toTime_t(), toTimeSpec()
+*/
+
+static inline uint msecsFromDecomposed(int hour, int minute, int sec, int msec = 0)
+{
+    return MSECS_PER_HOUR * hour + MSECS_PER_MIN * minute + 1000 * sec + msec;
+}
+
+#if defined(Q_OS_WIN)
+QDate QDate::currentDate()
+{
+    QDate d;
+    SYSTEMTIME st;
+    memset(&st, 0, sizeof(SYSTEMTIME));
+    GetLocalTime(&st);
+    d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
+    return d;
+}
+
+QTime QTime::currentTime()
+{
+    QTime ct;
+    SYSTEMTIME st;
+    memset(&st, 0, sizeof(SYSTEMTIME));
+    GetLocalTime(&st);
+    ct.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+#if defined(Q_OS_WINCE)
+    ct.startTick = GetTickCount() % MSECS_PER_DAY;
+#endif
+    return ct;
+}
 
 QDateTime QDateTime::currentDateTime()
 {
-#if defined(Q_OS_WIN)
     QDate d;
     QTime t;
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetLocalTime(&st);
     d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
-    t.mds = MSECS_PER_HOUR * st.wHour + MSECS_PER_MIN * st.wMinute + 1000 * st.wSecond
-            + st.wMilliseconds;
+    t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
     return QDateTime(d, t);
+}
+
+QDateTime QDateTime::currentDateTimeUtc()
+{
+    QDate d;
+    QTime t;
+    SYSTEMTIME st;
+    memset(&st, 0, sizeof(SYSTEMTIME));
+    GetSystemTime(&st);
+    d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
+    t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+    return QDateTime(d, t, Qt::UTC);
+}
+
+qint64 QDateTime::currentMSecsSinceEpoch()
+{
+    QDate d;
+    QTime t;
+    SYSTEMTIME st;
+    memset(&st, 0, sizeof(SYSTEMTIME));
+    GetSystemTime(&st);
+
+    return msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds) +
+            qint64(julianDayFromGregorianDate(st.wYear, st.wMonth, st.wDay)
+                   - julianDayFromGregorianDate(1970, 1, 1)) * Q_INT64_C(86400000);
+}
+
 #elif defined(Q_OS_SYMBIAN)
-    return QDateTime(QDate::currentDate(), QTime::currentTime());
+QDate QDate::currentDate()
+{
+    QDate d;
+    TTime localTime;
+    localTime.HomeTime();
+    TDateTime localDateTime = localTime.DateTime();
+    // months and days are zero indexed
+    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1 );
+    return d;
+}
+
+QTime QTime::currentTime()
+{
+    QTime ct;
+    TTime localTime;
+    localTime.HomeTime();
+    TDateTime localDateTime = localTime.DateTime();
+    ct.mds = msecsFromDecomposed(localDateTime.Hour(), localDateTime.Minute(),
+                                 localDateTime.Second(), localDateTime.MicroSecond() / 1000);
+    return ct;
+}
+
+QDateTime QDateTime::currentDateTime()
+{
+    QDate d;
+    QTime ct;
+    TTime localTime;
+    localTime.HomeTime();
+    TDateTime localDateTime = localTime.DateTime();
+    // months and days are zero indexed
+    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1);
+    ct.mds = msecsFromDecomposed(localDateTime.Hour(), localDateTime.Minute(),
+                                 localDateTime.Second(), localDateTime.MicroSecond() / 1000);
+    return QDateTime(d, ct);
+}
+
+QDateTime QDateTime::currentDateTimeUtc()
+{
+    QDate d;
+    QTime ct;
+    TTime gmTime;
+    gmTime.UniversalTime();
+    TDateTime gmtDateTime = gmTime.DateTime();
+    // months and days are zero indexed
+    d.jd = julianDayFromDate(gmtDateTime.Year(), gmtDateTime.Month() + 1, gmtDateTime.Day() + 1);
+    ct.mds = msecsFromDecomposed(gmtDateTime.Hour(), gmtDateTime.Minute(),
+                                 gmtDateTime.Second(), gmtDateTime.MicroSecond() / 1000);
+    return QDateTime(d, ct, Qt::UTC);
+}
+
+qint64 QDateTime::currentMSecsSinceEpoch()
+{
+    QDate d;
+    QTime ct;
+    TTime gmTime;
+    gmTime.UniversalTime();
+    TDateTime gmtDateTime = gmTime.DateTime();
+
+    // according to the documentation, the value is:
+    // "a date and time as a number of microseconds since midnight, January 1st, 0 AD nominal Gregorian"
+    qint64 value = gmTime.Int64();
+
+    // whereas 1970-01-01T00:00:00 is (in the same representation):
+    //   ((1970 * 365) + (1970 / 4) - (1970 / 100) + (1970 / 400) - 13) * 86400 * 1000000
+    static const qint64 unixEpoch = Q_INT64_C(0xdcddb30f2f8000);
+
+    return (value - unixEpoch) / 1000;
+}
+
+#elif defined(Q_OS_UNIX)
+QDate QDate::currentDate()
+{
+    QDate d;
+    // posix compliant system
+    time_t ltime;
+    time(&ltime);
+    struct tm *t = 0;
+
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    // use the reentrant version of localtime() where available
+    tzset();
+    struct tm res;
+    t = localtime_r(&ltime, &res);
 #else
-#if defined(Q_OS_UNIX)
+    t = localtime(&ltime);
+#endif // !QT_NO_THREAD && _POSIX_THREAD_SAFE_FUNCTIONS
+
+    d.jd = julianDayFromDate(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
+    return d;
+}
+
+QTime QTime::currentTime()
+{
+    QTime ct;
+    // posix compliant system
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    time_t ltime = tv.tv_sec;
+    struct tm *t = 0;
+
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    // use the reentrant version of localtime() where available
+    tzset();
+    struct tm res;
+    t = localtime_r(&ltime, &res);
+#else
+    t = localtime(&ltime);
+#endif
+    Q_CHECK_PTR(t);
+
+    ct.mds = msecsFromDecomposed(t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000);
+    return ct;
+}
+
+QDateTime QDateTime::currentDateTime()
+{
     // posix compliant system
     // we have milliseconds
     struct timeval tv;
     gettimeofday(&tv, 0);
     time_t ltime = tv.tv_sec;
-    tm *t = 0;
+    struct tm *t = 0;
 
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
     tzset();
-    tm res;
+    struct tm res;
     t = localtime_r(&ltime, &res);
 #else
     t = localtime(&ltime);
 #endif
 
     QDateTime dt;
-    dt.d->time.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec
-                     + tv.tv_usec / 1000;
-#else
-    time_t ltime; // no millisecond resolution
-    ::time(&ltime);
-    tm *t = 0;
-    localtime(&ltime);
-    dt.d->time.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec;
-#endif // Q_OS_UNIX
+    dt.d->time.mds = msecsFromDecomposed(t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000);
 
     dt.d->date.jd = julianDayFromDate(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
     dt.d->spec = t->tm_isdst > 0  ? QDateTimePrivate::LocalDST :
                  t->tm_isdst == 0 ? QDateTimePrivate::LocalStandard :
                  QDateTimePrivate::LocalUnknown;
     return dt;
-#endif
 }
+
+QDateTime QDateTime::currentDateTimeUtc()
+{
+    // posix compliant system
+    // we have milliseconds
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    time_t ltime = tv.tv_sec;
+    struct tm *t = 0;
+
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    // use the reentrant version of localtime() where available
+    struct tm res;
+    t = gmtime_r(&ltime, &res);
+#else
+    t = gmtime(&ltime);
+#endif
+
+    QDateTime dt;
+    dt.d->time.mds = msecsFromDecomposed(t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000);
+
+    dt.d->date.jd = julianDayFromDate(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday);
+    dt.d->spec = QDateTimePrivate::UTC;
+    return dt;
+}
+
+qint64 QDateTime::currentMSecsSinceEpoch()
+{
+    // posix compliant system
+    // we have milliseconds
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    return qint64(tv.tv_sec) * Q_INT64_C(1000) + tv.tv_usec / 1000;
+}
+
+#else
+#error "What system is this?"
+#endif
 
 /*!
   \since 4.2
@@ -2943,6 +3153,27 @@ QDateTime QDateTime::fromTime_t(uint seconds)
 {
     QDateTime d;
     d.setTime_t(seconds);
+    return d;
+}
+
+/*!
+  \since 4.7
+
+  Returns a datetime whose date and time are the number of milliseconds \a msec
+  that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
+  Time (Qt::UTC). On systems that do not support time zones, the time
+  will be set as if local time were Qt::UTC.
+
+  Note that there are possible values for \a msecs that lie outside the valid
+  range of QDateTime, both negative and positive. The behavior of this
+  function is undefined for those values.
+
+  \sa toTime_t(), setTime_t()
+*/
+QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
+{
+    QDateTime d;
+    d.setMSecsSinceEpoch(msecs);
     return d;
 }
 
@@ -3700,7 +3931,8 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
 {
     QDate fakeDate = adjustDate(date);
 
-    time_t secsSince1Jan1970UTC = toTime_tHelper(fakeDate, time);
+    // won't overflow because of fakeDate
+    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000;
     tm *brokenDown = 0;
 
 #if defined(Q_OS_WINCE)
@@ -3785,7 +4017,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     localTM.tm_year = fakeDate.year() - 1900;
     localTM.tm_isdst = (int)isdst;
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    time_t secsSince1Jan1970UTC = toTime_tHelper(fakeDate, time);
+    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time));
 #else
 #if defined(Q_OS_WIN)
     _tzset();

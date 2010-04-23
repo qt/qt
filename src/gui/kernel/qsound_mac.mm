@@ -174,6 +174,7 @@ NSSound *QAuServerMac::createNSSound(const QString &fileName, QSound *qSound)
     NSSound * const nsSound = [[NSSound alloc] initWithContentsOfFile: nsFileName byReference:YES];
     QMacSoundDelegate * const delegate = [[QMacSoundDelegate alloc] initWithQSound:qSound:this];
     [nsSound setDelegate:delegate];
+    [nsFileName release];
     return nsSound;
 }
 

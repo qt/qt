@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativerefcount_p.h"
-#include "qdeclarativecleanup_p.h"
+#include "private/qdeclarativerefcount_p.h"
+#include "private/qdeclarativecleanup_p.h"
 
 #include <QtCore/qhash.h>
 
@@ -73,6 +73,7 @@ public:
     inline int count() const;
     void add(const QString &, int);
     int value(const QString &);
+    QString findId(int value) const;
     inline int value(const QScriptDeclarativeClass::Identifier &id) const;
 
 protected:

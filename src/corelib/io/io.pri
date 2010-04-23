@@ -74,7 +74,7 @@ win32 {
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
         }
 
-        linux-*:{
+        linux-*:!symbian {
             SOURCES += \
                     io/qfilesystemwatcher_inotify.cpp \
                     io/qfilesystemwatcher_dnotify.cpp

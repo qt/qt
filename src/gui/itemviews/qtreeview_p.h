@@ -55,6 +55,7 @@
 
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qvariantanimation.h>
+#include <QtCore/qabstractitemmodel.h>
 
 #ifndef QT_NO_TREEVIEW
 
@@ -62,9 +63,10 @@ QT_BEGIN_NAMESPACE
 
 struct QTreeViewItem
 {
-    QTreeViewItem() : expanded(false), spanning(false), hasChildren(false),
+    QTreeViewItem() : parentItem(-1), expanded(false), spanning(false), hasChildren(false),
                       hasMoreSiblings(false), total(0), level(0), height(0) {}
     QModelIndex index; // we remove items whenever the indexes are invalidated
+    int parentItem; // parent item index in viewItems
     uint expanded : 1;
     uint spanning : 1;
     uint hasChildren : 1; // if the item has visible children (even if collapsed)
@@ -73,6 +75,8 @@ struct QTreeViewItem
     uint level : 16; // indentation
     int height : 16; // row height
 };
+
+Q_DECLARE_TYPEINFO(QTreeViewItem, Q_MOVABLE_TYPE);
 
 class QTreeViewPrivate : public QAbstractItemViewPrivate
 {
@@ -87,7 +91,7 @@ public:
           expandsOnDoubleClick(true),
           allColumnsShowFocus(false), current(0), spanning(false),
           animationsEnabled(false), columnResizeTimerID(0),
-          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false) {}
+          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false) {}
 
     ~QTreeViewPrivate() {}
     void initialize();
@@ -123,7 +127,7 @@ public:
     void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
     void _q_modelDestroyed();
 
-    void layout(int item);
+    void layout(int item, bool recusiveExpanding = false, bool afterIsUninitialized = false);
 
     int pageUp(int item) const;
     int pageDown(int item) const;
@@ -136,11 +140,16 @@ public:
     int viewIndex(const QModelIndex &index) const;
     QModelIndex modelIndex(int i, int column = 0) const;
 
+    void insertViewItems(int pos, int count, const QTreeViewItem &viewItem);
+    void removeViewItems(int pos, int count);
+#if 0
+    bool checkViewItems() const;
+#endif
+
     int firstVisibleItem(int *offset = 0) const;
     int columnAt(int x) const;
     bool hasVisibleChildren( const QModelIndex& parent) const;
 
-    void relayout(const QModelIndex &parent);
     bool expandOrCollapseItemAtPos(const QPoint &pos);
 
     void updateScrollBars();
@@ -155,8 +164,6 @@ public:
     QPair<int,int> startAndEndColumns(const QRect &rect) const;
 
     void updateChildCount(const int parentItem, const int delta);
-    void rowsRemoved(const QModelIndex &parent,
-                     int start, int end, bool before);
 
     void paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItemV4 *option, int y, int bottom) const;
 
@@ -232,6 +239,9 @@ public:
 
     // used for blocking recursion when calling setViewportMargins from updateGeometries
     bool geometryRecursionBlock;
+
+    // If we should clean the set
+    bool hasRemovedItems;
 };
 
 QT_END_NAMESPACE

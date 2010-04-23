@@ -68,6 +68,8 @@
 #include "QtCore/qrunnable.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qqueue.h"
+#include <QTime>
+#include <QCache>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -111,6 +113,34 @@ public:
 };
 
 #ifndef QT_NO_THREAD
+// These functions are outside of the QHostInfo class and strictly internal.
+// Do NOT use them outside of QAbstractSocket.
+QHostInfo Q_NETWORK_EXPORT qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char *member, bool *valid, int *id);
+void Q_NETWORK_EXPORT qt_qhostinfo_clear_cache();
+void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e);
+
+class QHostInfoCache
+{
+public:
+    QHostInfoCache();
+    const int max_age; // seconds
+
+    QHostInfo get(const QString &name, bool *valid);
+    void put(const QString &name, const QHostInfo &info);
+    void clear();
+
+    bool isEnabled();
+    void setEnabled(bool e);
+private:
+    bool enabled;
+    struct QHostInfoCacheElement {
+        QHostInfo info;
+        QTime age;
+    };
+    QCache<QString,QHostInfoCacheElement> cache;
+    QMutex mutex;
+};
+
 // the following classes are used for the (normal) case: We use multiple threads to lookup DNS
 
 class QHostInfoRunnable : public QRunnable
@@ -141,6 +171,7 @@ public:
     void lookupFinished(QHostInfoRunnable *r);
     bool wasAborted(int id);
 
+    QHostInfoCache cache;
 protected:
     QList<QHostInfoRunnable*> currentLookups; // in progress
     QList<QHostInfoRunnable*> postponedLookups; // postponed because in progress for same host
@@ -153,7 +184,11 @@ protected:
     QMutex mutex;
 
     bool wasDeleted;
+
+private slots:
+    void waitForThreadPoolDone() { threadPool.waitForDone(); }
 };
+
 #endif
 
 QT_END_NAMESPACE

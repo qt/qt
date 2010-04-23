@@ -39,14 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepositioners_p.h"
-#include "qdeclarativepositioners_p_p.h"
+#include "private/qdeclarativepositioners_p.h"
+#include "private/qdeclarativepositioners_p_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativestate_p.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativestateoperations_p.h>
-#include <qfxperf_p_p.h>
 #include <QtCore/qmath.h>
 
 #include <QDebug>
@@ -164,9 +163,6 @@ void QDeclarativeBasePositioner::componentComplete()
 {
     Q_D(QDeclarativeBasePositioner);
     QDeclarativeItem::componentComplete();
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BasepositionerComponentComplete> cc;
-#endif
     positionedItems.reserve(d->QGraphicsItemPrivate::children.count());
     prePositioning();
 }
@@ -212,57 +208,56 @@ void QDeclarativeBasePositioner::prePositioning()
     QList<QGraphicsItem *> children = d->QGraphicsItemPrivate::children;
     qSort(children.begin(), children.end(), d->insertionOrder);
 
+    QPODVector<PositionedItem,8> oldItems;
+    positionedItems.copyAndClear(oldItems);
     for (int ii = 0; ii < children.count(); ++ii) {
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(ii));
         if (!child)
             continue;
         PositionedItem *item = 0;
         PositionedItem posItem(child);
-        int wIdx = positionedItems.find(posItem);
+        int wIdx = oldItems.find(posItem);
         if (wIdx < 0) {
             d->watchChanges(child);
             positionedItems.append(posItem);
             item = &positionedItems[positionedItems.count()-1];
-        } else {
-            item = &positionedItems[wIdx];
-        }
-        if (child->opacity() <= 0.0 || !child->isVisible()) {
-            item->isVisible = false;
-            continue;
-        }
-        if (!item->isVisible) {
-            item->isVisible = true;
             item->isNew = true;
+            if (child->opacity() <= 0.0 || !child->isVisible())
+                item->isVisible = false;
         } else {
-            item->isNew = false;
+            item = &oldItems[wIdx];
+            if (child->opacity() <= 0.0 || !child->isVisible()) {
+                item->isVisible = false;
+            } else if (!item->isVisible) {
+                item->isVisible = true;
+                item->isNew = true;
+            } else {
+                item->isNew = false;
+            }
+            positionedItems.append(*item);
         }
     }
-    doPositioning();
+    QSizeF contentSize;
+    doPositioning(&contentSize);
     if(d->addTransition || d->moveTransition)
         finishApplyTransitions();
     //Set implicit size to the size of its children
-    qreal h = 0.0f;
-    qreal w = 0.0f;
-    for (int i = 0; i < positionedItems.count(); ++i) {
-        const PositionedItem &posItem = positionedItems.at(i);
-        if (posItem.isVisible) {
-            h = qMax(h, posItem.item->y() + posItem.item->height());
-            w = qMax(w, posItem.item->x() + posItem.item->width());
-        }
-    }
-    setImplicitHeight(h);
-    setImplicitWidth(w);
+    setImplicitHeight(contentSize.height());
+    setImplicitWidth(contentSize.width());
 }
 
 void QDeclarativeBasePositioner::positionX(int x, const PositionedItem &target)
 {
     Q_D(QDeclarativeBasePositioner);
     if(d->type == Horizontal || d->type == Both){
-        if(!d->addTransition && !d->moveTransition){
-            target.item->setX(x);
-        }else{
-            if(target.isNew)
+        if (target.isNew) {
+            if (!d->addTransition)
+                target.item->setX(x);
+            else
                 d->addActions << QDeclarativeAction(target.item, QLatin1String("x"), QVariant(x));
+        } else if (x != target.item->x()) {
+            if (!d->moveTransition)
+                target.item->setX(x);
             else
                 d->moveActions << QDeclarativeAction(target.item, QLatin1String("x"), QVariant(x));
         }
@@ -273,11 +268,14 @@ void QDeclarativeBasePositioner::positionY(int y, const PositionedItem &target)
 {
     Q_D(QDeclarativeBasePositioner);
     if(d->type == Vertical || d->type == Both){
-        if(!d->addTransition && !d->moveTransition){
-            target.item->setY(y);
-        }else{
-            if(target.isNew)
+        if (target.isNew) {
+            if (!d->addTransition)
+                target.item->setY(y);
+            else
                 d->addActions << QDeclarativeAction(target.item, QLatin1String("y"), QVariant(y));
+        } else if (y != target.item->y()) {
+            if (!d->moveTransition)
+                target.item->setY(y);
             else
                 d->moveActions << QDeclarativeAction(target.item, QLatin1String("y"), QVariant(y));
         }
@@ -379,7 +377,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            easing: "easeOutBounce"
+            easing.type: "OutBounce"
         }
     }
 }
@@ -417,7 +415,7 @@ static inline bool isInvisible(QDeclarativeItem *child)
     return child->opacity() == 0.0 || !child->isVisible() || !child->width() || !child->height();
 }
 
-void QDeclarativeColumn::doPositioning()
+void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
 {
     int voffset = 0;
 
@@ -429,9 +427,13 @@ void QDeclarativeColumn::doPositioning()
         if(child.item->y() != voffset)
             positionY(voffset, child);
 
+        contentSize->setWidth(qMax(contentSize->width(), child.item->width()));
+
         voffset += child.item->height();
         voffset += spacing();
     }
+
+    contentSize->setHeight(voffset - spacing());
 }
 
 /*!
@@ -528,7 +530,7 @@ QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 {
 }
 
-void QDeclarativeRow::doPositioning()
+void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 {
     int hoffset = 0;
 
@@ -540,9 +542,13 @@ void QDeclarativeRow::doPositioning()
         if(child.item->x() != hoffset)
             positionX(hoffset, child);
 
+        contentSize->setHeight(qMax(contentSize->height(), child.item->height()));
+
         hoffset += child.item->width();
         hoffset += spacing();
     }
+
+    contentSize->setWidth(hoffset - spacing());
 }
 
 
@@ -596,7 +602,9 @@ Grid {
     \qmlproperty Transition Grid::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition is only applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
+    Positioner transitions will only affect the position (x,y) of items,
+    as that is all the positioners affect. To animate other property change
+    you will have to do so based on how you have changed those properties.
 
     Added can mean that either the object has been created or
     reparented, and thus is now a child or the positioner, or that the
@@ -648,10 +656,8 @@ Grid {
 
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
-    QDeclarativeBasePositioner(Both, parent)
+    QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
 {
-    _columns=-1;
-    _rows=-1;
 }
 
 /*!
@@ -674,54 +680,101 @@ QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
 
 void QDeclarativeGrid::setColumns(const int columns)
 {
-    if (columns == _columns)
+    if (columns == m_columns)
         return;
-    _columns = columns;
+    m_columns = columns;
     prePositioning();
     emit columnsChanged();
 }
 
 void QDeclarativeGrid::setRows(const int rows)
 {
-    if (rows == _rows)
+    if (rows == m_rows)
         return;
-    _rows = rows;
+    m_rows = rows;
     prePositioning();
     emit rowsChanged();
 }
 
-void QDeclarativeGrid::doPositioning()
+/*!
+    \qmlproperty enumeration Flow::flow
+    This property holds the flow of the layout.
+
+    Possible values are \c LeftToRight (default) and \c TopToBottom.
+
+    If \a flow is \c LeftToRight, the items are positioned next to
+    to each other from left to right, then wrapped to the next line.
+    If \a flow is \c TopToBottom, the items are positioned next to each
+    other from top to bottom, then wrapped to the next column.
+*/
+QDeclarativeGrid::Flow QDeclarativeGrid::flow() const
 {
-    int c=_columns,r=_rows;//Actual number of rows/columns
+    return m_flow;
+}
+
+void QDeclarativeGrid::setFlow(Flow flow)
+{
+    if (m_flow != flow) {
+        m_flow = flow;
+        prePositioning();
+        emit flowChanged();
+    }
+}
+
+void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
+{
+    int c = m_columns;
+    int r = m_rows;
     int numVisible = positionedItems.count();
-    if (_columns==-1 && _rows==-1){
+    if (m_columns <= 0 && m_rows <= 0){
         c = 4;
         r = (numVisible+3)/4;
-    }else if (_rows==-1){
-        r = (numVisible+(_columns-1))/_columns;
-    }else if (_columns==-1){
-        c = (numVisible+(_rows-1))/_rows;
+    } else if (m_rows <= 0){
+        r = (numVisible+(m_columns-1))/m_columns;
+    } else if (m_columns <= 0){
+        c = (numVisible+(m_rows-1))/m_rows;
     }
 
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
-    for (int i=0; i<r; i++){
-        for (int j=0; j<c; j++){
-            if (j==0)
-                maxRowHeight << 0;
-            if (i==0)
-                maxColWidth << 0;
+    if (m_flow == LeftToRight) {
+        for (int i=0; i < r; i++){
+            for (int j=0; j < c; j++){
+                if (j==0)
+                    maxRowHeight << 0;
+                if (i==0)
+                    maxColWidth << 0;
 
-            if (childIndex == positionedItems.count())
-                continue;
-            const PositionedItem &child = positionedItems.at(childIndex++);
-            if (!child.item || isInvisible(child.item))
-                continue;
-            if (child.item->width() > maxColWidth[j])
-                maxColWidth[j] = child.item->width();
-            if (child.item->height() > maxRowHeight[i])
-                maxRowHeight[i] = child.item->height();
+                if (childIndex == positionedItems.count())
+                    continue;
+                const PositionedItem &child = positionedItems.at(childIndex++);
+                if (!child.item || isInvisible(child.item))
+                    continue;
+                if (child.item->width() > maxColWidth[j])
+                    maxColWidth[j] = child.item->width();
+                if (child.item->height() > maxRowHeight[i])
+                    maxRowHeight[i] = child.item->height();
+            }
+        }
+    } else {
+        for (int j=0; j < c; j++){
+            for (int i=0; i < r; i++){
+                if (j==0)
+                    maxRowHeight << 0;
+                if (i==0)
+                    maxColWidth << 0;
+
+                if (childIndex == positionedItems.count())
+                    continue;
+                const PositionedItem &child = positionedItems.at(childIndex++);
+                if (!child.item || isInvisible(child.item))
+                    continue;
+                if (child.item->width() > maxColWidth[j])
+                    maxColWidth[j] = child.item->width();
+                if (child.item->height() > maxRowHeight[i])
+                    maxRowHeight[i] = child.item->height();
+            }
         }
     }
 
@@ -737,15 +790,35 @@ void QDeclarativeGrid::doPositioning()
             positionX(xoffset, child);
             positionY(yoffset, child);
         }
-        xoffset+=maxColWidth[curCol]+spacing();
-        curCol++;
-        curCol%=c;
-        if (!curCol){
+
+        if (m_flow == LeftToRight) {
+            contentSize->setWidth(qMax(contentSize->width(), xoffset + child.item->width()));
+            contentSize->setHeight(yoffset + maxRowHeight[curRow]);
+
+            xoffset+=maxColWidth[curCol]+spacing();
+            curCol++;
+            curCol%=c;
+            if (!curCol){
+                yoffset+=maxRowHeight[curRow]+spacing();
+                xoffset=0;
+                curRow++;
+                if (curRow>=r)
+                    break;
+            }
+        } else {
+            contentSize->setHeight(qMax(contentSize->height(), yoffset + child.item->height()));
+            contentSize->setWidth(xoffset + maxColWidth[curCol]);
+
             yoffset+=maxRowHeight[curRow]+spacing();
-            xoffset=0;
             curRow++;
-            if (curRow>=r)
-                break;
+            curRow%=r;
+            if (!curRow){
+                xoffset+=maxColWidth[curCol]+spacing();
+                yoffset=0;
+                curCol++;
+                if (curCol>=c)
+                    break;
+            }
         }
     }
 }
@@ -812,6 +885,9 @@ public:
 QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(*(new QDeclarativeFlowPrivate), Both, parent)
 {
+    Q_D(QDeclarativeFlow);
+    // Flow layout requires relayout if its own size changes too.
+    d->addItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
 }
 
 /*!
@@ -843,7 +919,7 @@ void QDeclarativeFlow::setFlow(Flow flow)
     }
 }
 
-void QDeclarativeFlow::doPositioning()
+void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
 {
     Q_D(QDeclarativeFlow);
 
@@ -874,6 +950,9 @@ void QDeclarativeFlow::doPositioning()
             positionX(hoffset, child);
             positionY(voffset, child);
         }
+
+        contentSize->setWidth(qMax(contentSize->width(), hoffset + child.item->width()));
+        contentSize->setHeight(qMax(contentSize->height(), voffset + child.item->height()));
 
         if (d->flow == LeftToRight)  {
             hoffset += child.item->width();

@@ -19,7 +19,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_BACKEND_H
 #define PHONON_MMF_BACKEND_H
 
+#ifndef PHONON_MMF_VIDEO_SURFACES
 #include "ancestormovemonitor.h"
+#endif
+
 #include "effectfactory.h"
 
 #include <phonon/mediasource.h>
@@ -53,7 +56,9 @@ Q_SIGNALS:
     void objectDescriptionChanged(ObjectDescriptionType);
 
 private:
+#ifndef PHONON_MMF_VIDEO_SURFACES
     QScopedPointer<AncestorMoveMonitor> m_ancestorMoveMonitor;
+#endif
     QScopedPointer<EffectFactory>       m_effectFactory;
 
 };

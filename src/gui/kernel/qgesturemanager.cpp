@@ -45,6 +45,7 @@
 #include "private/qgesture_p.h"
 #include "private/qgraphicsitem_p.h"
 #include "private/qevent_p.h"
+#include "private/qapplication_p.h"
 #include "qgesture.h"
 #include "qevent.h"
 #include "qgraphicsitem.h"
@@ -86,7 +87,8 @@ QGestureManager::QGestureManager(QObject *parent)
 #endif
 #if defined(Q_OS_WIN)
   #if !defined(QT_NO_NATIVE_GESTURES)
-    registerGestureRecognizer(new QWinNativePanGestureRecognizer);
+    if (QApplicationPrivate::HasTouchSupport)
+        registerGestureRecognizer(new QWinNativePanGestureRecognizer);
   #endif
 #else
     registerGestureRecognizer(new QTapAndHoldGestureRecognizer);

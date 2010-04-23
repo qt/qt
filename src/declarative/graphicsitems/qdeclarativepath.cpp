@@ -39,12 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativepath_p.h"
-#include "qdeclarativepath_p_p.h"
-
-#include <qfxperf_p_p.h>
+#include "private/qdeclarativepath_p.h"
+#include "private/qdeclarativepath_p_p.h"
 
 #include <QSet>
+#include <QTime>
 
 #include <private/qbezier_p.h>
 
@@ -114,7 +113,10 @@ qreal QDeclarativePath::startX() const
 void QDeclarativePath::setStartX(qreal x)
 {
     Q_D(QDeclarativePath);
+    if (qFuzzyCompare(x, d->startX))
+        return;
     d->startX = x;
+    emit startXChanged();
 }
 
 qreal QDeclarativePath::startY() const
@@ -126,7 +128,10 @@ qreal QDeclarativePath::startY() const
 void QDeclarativePath::setStartY(qreal y)
 {
     Q_D(QDeclarativePath);
+    if (qFuzzyCompare(y, d->startY))
+        return;
     d->startY = y;
+    emit startYChanged();
 }
 
 /*!
@@ -308,7 +313,6 @@ QStringList QDeclarativePath::attributes() const
     Q_D(const QDeclarativePath);
     return d->_attributes;
 }
-#include <QTime>
 
 static inline QBezier nextBezier(const QPainterPath &path, int *from, qreal *bezLength)
 {
@@ -350,9 +354,6 @@ static inline QBezier nextBezier(const QPainterPath &path, int *from, qreal *bez
 void QDeclarativePath::createPointCache() const
 {
     Q_D(const QDeclarativePath);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::QDeclarativePathViewPathCache> pc;
-#endif
     qreal pathLength = d->_path.length();
     const int points = int(pathLength*2);
     const int lastElement = d->_path.elementCount() - 1;
@@ -522,7 +523,10 @@ QString QDeclarativePathAttribute::name() const
 
 void QDeclarativePathAttribute::setName(const QString &name)
 {
-    _name = name;
+    if (_name == name)
+        return;
+     _name = name;
+    emit nameChanged();
 }
 
 /*!

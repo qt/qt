@@ -49,6 +49,8 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtTest/QtTest>
 
+#define DEFINE_TEST_VALUE(expr) m_values.insert(QString::fromLatin1(#expr), expr)
+
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QScriptValue)
 

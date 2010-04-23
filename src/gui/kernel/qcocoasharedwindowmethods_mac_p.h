@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
-extern bool qt_blockCocoaSettingModalWindowLevel; // qeventdispatcher_mac_p.h
 
 Q_GLOBAL_STATIC(QPointer<QWidget>, currentDragTarget);
 
@@ -102,54 +101,10 @@ QT_END_NAMESPACE
     return !(isPopup || isToolTip || isTool);
 }
 
-- (void)orderWindow:(NSWindowOrderingMode)orderingMode relativeTo:(NSInteger)otherWindowNumber
-{
-    if (qt_blockCocoaSettingModalWindowLevel) {
-        // To avoid windows popping in front while restoring modal sessions
-        // in the event dispatcher, we block cocoa from ordering this window
-        // to front. The result of not doing this can be seen if executing
-        // a native color dialog on top of another executing dialog.
-        return;
-    }
-    [super orderWindow:orderingMode relativeTo:otherWindowNumber];
-}
-
-- (void)setLevel:(NSInteger)windowLevel
-{
-    if (qt_blockCocoaSettingModalWindowLevel) {
-        // To avoid windows popping in front while restoring modal sessions
-        // in the event dispatcher, we block cocoa from ordering this window
-        // to front. The result of not doing this can be seen if executing
-        // a native color dialog on top of another executing dialog.
-        return;
-    }
-    [super setLevel:windowLevel];
-}
-
 - (void)toggleToolbarShown:(id)sender
 {
     macSendToolbarChangeEvent([self QT_MANGLE_NAMESPACE(qt_qwidget)]);
     [super toggleToolbarShown:sender];
-}
-
-/*
-    The methods keyDown, keyUp, and flagsChanged... These really shouldn't ever
-    get hit. We automatically say we can be first responder if we are a window.
-    So, the handling should get handled by the view. This is here more as a
-    last resort (i.e., this is code that can potentially be removed).
- */
-- (void)keyDown:(NSEvent *)theEvent
-{
-    bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
-    if (!keyOK)
-        [super keyDown:theEvent];
-}
-
-- (void)keyUp:(NSEvent *)theEvent
-{
-    bool keyOK = qt_dispatchKeyEvent(theEvent, [self QT_MANGLE_NAMESPACE(qt_qwidget)]);
-    if (!keyOK)
-        [super keyUp:theEvent];
 }
 
 - (void)flagsChanged:(NSEvent *)theEvent

@@ -125,6 +125,7 @@ public:
         ExcludeSuperClassContents = 0x0006,
         SkipMethodsInEnumeration = 0x0008,
         ExcludeDeleteLater = 0x0010,
+        ExcludeSlots = 0x0020,
 
         AutoCreateDynamicProperties = 0x0100,
         PreferExistingWrapperObject = 0x0200
@@ -232,6 +233,7 @@ public:
     QStringList importedExtensions() const;
 
     void collectGarbage();
+    void reportAdditionalMemoryCost(int size);
 
     void setProcessEventsInterval(int interval);
     int processEventsInterval() const;

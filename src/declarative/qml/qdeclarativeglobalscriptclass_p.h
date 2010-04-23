@@ -54,6 +54,7 @@
 //
 
 #include <QtScript/qscriptclass.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,8 +75,12 @@ public:
 
     void explicitSetProperty(const QString &, const QScriptValue &);
 
+    const QScriptValue &globalObject() const { return m_globalObject; }
+    const QSet<QString> &illegalNames() const { return m_illegalNames; }
+
 private:
-    QScriptValue globalObject;
+    QSet<QString> m_illegalNames;
+    QScriptValue m_globalObject;
 };
 
 QT_END_NAMESPACE

@@ -63,7 +63,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
                            int tf, const QString &text, QRectF *brect,
                            int tabStops, int *tabArray, int tabArrayLen,
                            QPainter *painter);
-extern int qt_defaultDpi();
+Q_GUI_EXPORT extern int qt_defaultDpi();
 
 /*****************************************************************************
   QFontMetrics member functions
@@ -328,7 +328,7 @@ int QFontMetrics::height() const
 {
     QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
     Q_ASSERT(engine != 0);
-    return qRound(engine->ascent() + engine->descent()) + 1;
+    return qRound(engine->ascent()) + qRound(engine->descent()) + 1;
 }
 
 /*!
@@ -356,7 +356,7 @@ int QFontMetrics::lineSpacing() const
 {
     QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
     Q_ASSERT(engine != 0);
-    return qRound(engine->leading() + engine->ascent() + engine->descent()) + 1;
+    return qRound(engine->leading()) + qRound(engine->ascent()) + qRound(engine->descent()) + 1;
 }
 
 /*!
@@ -472,8 +472,9 @@ int QFontMetrics::leftBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return qRound(gi.x);
+    qreal lb;
+    engine->getGlyphBearings(glyphs.glyphs[0], &lb);
+    return qRound(lb);
 }
 
 /*!
@@ -506,8 +507,9 @@ int QFontMetrics::rightBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return qRound(gi.xoff - gi.x - gi.width);
+    qreal rb;
+    engine->getGlyphBearings(glyphs.glyphs[0], 0, &rb);
+    return qRound(rb);
 }
 
 /*!
@@ -533,7 +535,7 @@ int QFontMetrics::width(const QString &text, int len) const
     if (len == 0)
         return 0;
 
-    QTextEngine layout(text, d.data());
+    QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     return qRound(layout.width(0, len));
 }
@@ -609,7 +611,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
         int from = qMax(0, pos - 8);
         int to = qMin(text.length(), pos + 8);
         QString cstr = QString::fromRawData(text.unicode() + from, to - from);
-        QTextEngine layout(cstr, d.data());
+        QStackTextEngine layout(cstr, d.data());
         layout.ignoreBidi = true;
         layout.itemize();
         width = qRound(layout.width(pos-from, 1));
@@ -658,7 +660,7 @@ QRect QFontMetrics::boundingRect(const QString &text) const
     if (text.length() == 0)
         return QRect();
 
-    QTextEngine layout(text, d.data());
+    QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, text.length());
@@ -828,7 +830,7 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     if (text.length() == 0)
         return QRect();
 
-    QTextEngine layout(text, d.data());
+    QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
@@ -1317,8 +1319,9 @@ qreal QFontMetricsF::leftBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return gi.x.toReal();
+    qreal lb;
+    engine->getGlyphBearings(glyphs.glyphs[0], &lb);
+    return lb;
 }
 
 /*!
@@ -1351,8 +1354,10 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
     int nglyphs = 9;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
     // ### can nglyphs != 1 happen at all? Not currently I think
-    glyph_metrics_t gi = engine->boundingBox(glyphs.glyphs[0]);
-    return (gi.xoff - gi.x - gi.width).toReal();
+    qreal rb;
+    engine->getGlyphBearings(glyphs.glyphs[0], 0, &rb);
+    return rb;
+
 }
 
 /*!
@@ -1370,7 +1375,7 @@ qreal QFontMetricsF::width(const QString &text) const
     int pos = text.indexOf(QLatin1Char('\x9c'));
     int len = (pos != -1) ? pos : text.length();
 
-    QTextEngine layout(text, d.data());
+    QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     return layout.width(0, len).toReal();
@@ -1447,7 +1452,7 @@ QRectF QFontMetricsF::boundingRect(const QString &text) const
     if (len == 0)
         return QRectF();
 
-    QTextEngine layout(text, d.data());
+    QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, len);
@@ -1620,7 +1625,7 @@ QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
     if (text.length() == 0)
         return QRect();
 
-    QTextEngine layout(text, d.data());
+    QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());

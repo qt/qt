@@ -81,6 +81,22 @@ Player::Player(QWidget *parent)
 
     connect(playlistView, SIGNAL(activated(QModelIndex)), this, SLOT(jump(QModelIndex)));
 
+    playbackModeBox = new QComboBox;
+    playbackModeBox->addItem(tr("Linear"),
+                             QVariant::fromValue<QMediaPlaylist::PlaybackMode>(QMediaPlaylist::Linear));
+    playbackModeBox->addItem(tr("Loop"),
+                             QVariant::fromValue<QMediaPlaylist::PlaybackMode>(QMediaPlaylist::Loop));
+    playbackModeBox->addItem(tr("Random"),
+                             QVariant::fromValue<QMediaPlaylist::PlaybackMode>(QMediaPlaylist::Random));
+    playbackModeBox->addItem(tr("Current Item Once"),
+                             QVariant::fromValue<QMediaPlaylist::PlaybackMode>(QMediaPlaylist::CurrentItemOnce));
+    playbackModeBox->addItem(tr("Current Item In Loop"),
+                             QVariant::fromValue<QMediaPlaylist::PlaybackMode>(QMediaPlaylist::CurrentItemInLoop));
+    playbackModeBox->setCurrentIndex(0);
+
+    connect(playbackModeBox, SIGNAL(activated(int)), SLOT(updatePlaybackMode()));
+    updatePlaybackMode();
+
     slider = new QSlider(Qt::Horizontal);
     slider->setRange(0, player->duration() / 1000);
 
@@ -126,12 +142,16 @@ Player::Player(QWidget *parent)
     else
         colorButton->setEnabled(false);
 
+    QBoxLayout *playlistLayout = new QVBoxLayout;
+    playlistLayout->addWidget(playlistView);
+    playlistLayout->addWidget(playbackModeBox);
+
     QBoxLayout *displayLayout = new QHBoxLayout;
     if (videoWidget)
         displayLayout->addWidget(videoWidget, 2);
     else
         displayLayout->addWidget(coverLabel, 2);
-    displayLayout->addWidget(playlistView);
+    displayLayout->addLayout(playlistLayout);
 
     QBoxLayout *controlLayout = new QHBoxLayout;
     controlLayout->setMargin(0);
@@ -332,4 +352,10 @@ void Player::showColorDialog()
         colorDialog->setLayout(layout);
     }
     colorDialog->show();
+}
+
+void Player::updatePlaybackMode()
+{
+    playlist->setPlaybackMode(
+            playbackModeBox->itemData(playbackModeBox->currentIndex()).value<QMediaPlaylist::PlaybackMode>());
 }

@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.7.0"
+#define QT_VERSION_STR   "4.8.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040700
+#define QT_VERSION 0x040800
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -1062,6 +1062,16 @@ redefine to built-in booleans to make autotests work properly */
 #  endif
 #else
 #  define QT_FASTCALL
+#endif
+
+//defines the type for the WNDPROC on windows
+//the alignment needs to be forced for sse2 to not crash with mingw
+#if defined(Q_WS_WIN)
+#  if defined(Q_CC_MINGW)
+#    define QT_WIN_CALLBACK CALLBACK __attribute__ ((force_align_arg_pointer))
+#  else
+#    define QT_WIN_CALLBACK CALLBACK
+#  endif
 #endif
 
 typedef int QNoImplicitBoolCast;
@@ -2419,12 +2429,15 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define Q_SYMBIAN_FIXED_POINTER_CURSORS
 #define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
 #define Q_SYMBIAN_WINDOW_SIZE_CACHE
-//enabling new graphics resources
-#define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
 
+//enabling new graphics resources
+#ifdef SYMBIAN_GRAPHICS_EGL_SGIMAGELITE
+#  define QT_SYMBIAN_SUPPORTS_SGIMAGE
+#endif
+
 #ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-#define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+#  define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
 #endif
 #endif
 

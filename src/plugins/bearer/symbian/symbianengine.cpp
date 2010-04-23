@@ -45,6 +45,16 @@
 #include <commdb.h>
 #include <cdbcols.h>
 #include <d32dbms.h>
+#include <QEventLoop>
+#include <QTimer>
+#include <QTime>  // For randgen seeding
+#include <QtCore> // For randgen seeding
+
+// #define QT_BEARERMGMT_CONFIGMGR_DEBUG
+
+#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
+#include <QDebug>
+#endif
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     #include <cmdestination.h>
@@ -58,6 +68,8 @@
     #include <apdatahandler.h>
     #include <aputils.h> 
 #endif
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
@@ -75,6 +87,8 @@ SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
 
 QString SymbianNetworkConfigurationPrivate::bearerName() const
 {
+    QMutexLocker locker(&mutex);
+
     switch (bearer) {
     case BearerEthernet:
         return QLatin1String("Ethernet");
@@ -98,9 +112,14 @@ QString SymbianNetworkConfigurationPrivate::bearerName() const
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
-:   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iInitOk(true)
+:   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iFirstUpdate(true), iInitOk(true),
+    iIgnoringUpdates(false), iTimeToWait(0), iIgnoreEventLoop(0)
 {
     CActiveScheduler::Add(this);
+
+    // Seed the randomgenerator
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()) + QCoreApplication::applicationPid());
+    iIgnoreEventLoop = new QEventLoop(this);
 
     TRAPD(error, ipCommsDB = CCommsDatabase::NewL(EDatabaseTypeIAP));
     if (error != KErrNone) {
@@ -136,9 +155,10 @@ SymbianEngine::SymbianEngine(QObject *parent)
 
     updateConfigurations();
     updateStatesToSnaps();
-    
+    updateAvailableAccessPoints(); // On first time updates synchronously (without WLAN scans)
     // Start monitoring IAP and/or SNAP changes in Symbian CommsDB
     startCommsDatabaseNotifications();
+    iFirstUpdate = false;
 }
 
 SymbianEngine::~SymbianEngine()
@@ -153,7 +173,14 @@ SymbianEngine::~SymbianEngine()
 #endif
     
     delete ipAccessPointsAvailabilityScanner;
+
+    // CCommsDatabase destructor uses cleanup stack. Since QNetworkConfigurationManager
+    // is a global static, but the time we are here, E32Main() has been exited already and
+    // the thread's default cleanup stack has been deleted. Without this line, a
+    // 'E32USER-CBase 69' -panic will occur.
+    CTrapCleanup* cleanup = CTrapCleanup::New();
     delete ipCommsDB;
+    delete cleanup;
 }
 
 bool SymbianEngine::hasIdentifier(const QString &id)
@@ -172,7 +199,8 @@ QNetworkConfigurationManager::Capabilities SymbianEngine::capabilities() const
     capFlags = QNetworkConfigurationManager::CanStartAndStopInterfaces |
                QNetworkConfigurationManager::DirectConnectionRouting |
                QNetworkConfigurationManager::SystemSessionSupport |
-               QNetworkConfigurationManager::DataStatistics;
+               QNetworkConfigurationManager::DataStatistics |
+               QNetworkConfigurationManager::NetworkSessionRequired;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     capFlags |= QNetworkConfigurationManager::ApplicationLevelRoaming |
@@ -218,7 +246,7 @@ void SymbianEngine::updateConfigurationsL()
 
     QList<QString> knownConfigs = accessPointConfigurations.keys();
     QList<QString> knownSnapConfigs = snapConfigurations.keys();
-    
+
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE    
     // S60 version is >= Series60 3rd Edition Feature Pack 2
     TInt error = KErrNone;
@@ -240,7 +268,10 @@ void SymbianEngine::updateConfigurationsL()
             if (error == KErrNone) {
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ptr->id, ptr);
+
+                locker.unlock();
                 emit configurationAdded(ptr);
+                locker.relock();
             }
         }
         CleanupStack::PopAndDestroy(&connectionMethod);
@@ -278,7 +309,10 @@ void SymbianEngine::updateConfigurationsL()
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
+
+            locker.unlock();
             emit configurationAdded(ptr);
+            locker.relock();
             
             CleanupStack::Pop(cpPriv);
         }
@@ -299,7 +333,11 @@ void SymbianEngine::updateConfigurationsL()
                     QNetworkConfigurationPrivatePointer ptr(cpPriv);
                     toSymbianConfig(ptr)->serviceNetworkPtr = privSNAP;
                     accessPointConfigurations.insert(ptr->id, ptr);
+
+                    locker.unlock();
                     emit configurationAdded(ptr);
+                    locker.relock();
+
                     privSNAP->serviceNetworkMembers.append(ptr);
                 }
             } else {
@@ -348,7 +386,9 @@ void SymbianEngine::updateConfigurationsL()
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
 
+                locker.unlock();
                 emit configurationAdded(ptr);
+                locker.relock();
             } else {
                 delete cpPriv;
             }
@@ -362,7 +402,10 @@ void SymbianEngine::updateConfigurationsL()
     foreach (const QString &oldIface, knownConfigs) {
         //remove non existing IAP
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
 
         // Remove non existing IAP from SNAPs
         foreach (const QString &iface, snapConfigurations.keys()) {
@@ -381,7 +424,10 @@ void SymbianEngine::updateConfigurationsL()
     foreach (const QString &oldIface, knownSnapConfigs) {
         //remove non existing SNAPs
         QNetworkConfigurationPrivatePointer ptr = snapConfigurations.take(oldIface);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 }
 
@@ -586,7 +632,7 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
     }
 #endif
     
-    if (!ptr->isValid) {
+    if (!ptr || !ptr->isValid) {
         QString iface = QString::number(qHash(KUserChoiceIAPId));
         ptr = userChoiceConfigurations.value(iface);
     }
@@ -641,7 +687,9 @@ void SymbianEngine::updateActiveAccessPoints()
 
     if (iOnline != online) {
         iOnline = online;
+        locker.unlock();
         emit this->onlineStateChanged(iOnline);
+        locker.relock();
     }
 }
 
@@ -692,9 +740,12 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
 
     updateStatesToSnaps();
     
-    startCommsDatabaseNotifications();
-    
-    emit updateCompleted();
+    if (!iFirstUpdate) {
+        startCommsDatabaseNotifications();
+        locker.unlock();
+        emit updateCompleted();
+        locker.relock();
+    }
 }
 
 void SymbianEngine::updateStatesToSnaps()
@@ -702,8 +753,7 @@ void SymbianEngine::updateStatesToSnaps()
     QMutexLocker locker(&mutex);
 
     // Go through SNAPs and set correct state to SNAPs
-    QList<QString> snapConfigIdents = snapConfigurations.keys();
-    foreach (QString iface, snapConfigIdents) {
+    foreach (const QString &iface, snapConfigurations.keys()) {
         bool discovered = false;
         bool active = false;
         QNetworkConfigurationPrivatePointer ptr = snapConfigurations.value(iface);
@@ -735,10 +785,18 @@ bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePoint
 {
     QMutexLocker locker(&mutex);
 
+    ptr->mutex.lock();
     if (newState != ptr->state) {
         ptr->state = newState;
+        ptr->mutex.unlock();
+
+        locker.unlock();
         emit configurationChanged(ptr);
+        locker.relock();
+
         return true;
+    } else {
+        ptr->mutex.unlock();
     }
     return false;
 }
@@ -752,10 +810,18 @@ bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivate
 {
     QMutexLocker locker(&mutex);
 
+    ptr->mutex.lock();
     if ((newState | ptr->state) != ptr->state) {
         ptr->state = (ptr->state | newState);
+        ptr->mutex.unlock();
+
+        locker.unlock();
         emit configurationChanged(ptr);
+        locker.relock();
+
         return true;
+    } else {
+        ptr->mutex.unlock();
     }
     return false;
 }
@@ -770,10 +836,18 @@ bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivate
 {
     QMutexLocker locker(&mutex);
 
+    ptr->mutex.lock();
     if ((newState & ptr->state) != ptr->state) {
         ptr->state = (newState & ptr->state);
+        ptr->mutex.unlock();
+
+        locker.unlock();
         emit configurationChanged(ptr);
+        locker.relock();
+
         return true;
+    } else {
+        ptr->mutex.unlock();
     }
     return false;
 }
@@ -814,6 +888,13 @@ void SymbianEngine::RunL()
 {
     QMutexLocker locker(&mutex);
 
+    if (iIgnoringUpdates) {
+#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
+        qDebug("CommsDB event handling postponed (postpone-timer running because IAPs/SNAPs were updated very recently).");
+#endif
+        return;
+    }
+
     if (iStatus != KErrCancel) {
         RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
         switch (event) {
@@ -821,16 +902,32 @@ void SymbianEngine::RunL()
         case RDbNotifier::ECommit:   /** A transaction has been committed.  */ 
         case RDbNotifier::ERollback: /** A transaction has been rolled back */
         case RDbNotifier::ERecover:  /** The database has been recovered    */
-            // Note that if further database events occur while a client is handling
-            // a request completion, the notifier records the most significant database
-            // event and this is signalled as soon as the client issues the next
-            // RequestNotification() request.
-            // => Stop recording notifications
-            stopCommsDatabaseNotifications();
-            TRAPD(error, updateConfigurationsL());
-            if (error == KErrNone) {
-                updateStatesToSnaps();
+#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
+            qDebug("CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
+#endif
+            iIgnoringUpdates = true;
+            // Other events than ECommit get lower priority. In practice with those events,
+            // we delay_before_updating methods, whereas
+            // with ECommit we _update_before_delaying the reaction to next event.
+            // Few important notes: 1) listening to only ECommit does not seem to be adequate,
+            // but updates will be missed. Hence other events are reacted upon too.
+            // 2) RDbNotifier records the most significant event, and that will be returned once
+            // we issue new RequestNotification, and hence updates will not be missed even
+            // when we are 'not reacting to them' for few seconds.
+            if (event == RDbNotifier::ECommit) {
+                TRAPD(error, updateConfigurationsL());
+                if (error == KErrNone) {
+                    updateStatesToSnaps();
+                }
+                waitRandomTime();
+            } else {
+                waitRandomTime();
+                TRAPD(error, updateConfigurationsL());
+                if (error == KErrNone) {
+                    updateStatesToSnaps();
+                }   
             }
+            iIgnoringUpdates = false; // Wait time done, allow updating again
             iWaitingCommsDatabaseNotifications = true;
             break;
         default:
@@ -882,7 +979,10 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
             if (!iOnline) {
                 iOnline = true;
+
+                locker.unlock();
                 emit this->onlineStateChanged(iOnline);
+                locker.relock();
             }
         }
         }
@@ -912,7 +1012,10 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         }
         if (iOnline != online) {
             iOnline = online;
+
+            locker.unlock();
             emit this->onlineStateChanged(iOnline);
+            locker.relock();
         }
         }
         break;
@@ -947,6 +1050,20 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         // For unrecognized events
         break;
     }
+}
+
+// Waits for 1..4 seconds.
+void SymbianEngine::waitRandomTime()
+{
+    iTimeToWait = (qAbs(qrand()) % 5) * 1000;
+    if (iTimeToWait < 1000) {
+        iTimeToWait = 1000;
+    }
+#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
+    qDebug("QNetworkConfigurationManager waiting random time: %d ms", iTimeToWait);
+#endif
+    QTimer::singleShot(iTimeToWait, iIgnoreEventLoop, SLOT(quit()));
+    iIgnoreEventLoop->exec();
 }
 
 QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aConnectionId)
@@ -987,11 +1104,22 @@ void AccessPointsAvailabilityScanner::DoCancel()
 
 void AccessPointsAvailabilityScanner::StartScanning()
 {
-    iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
-    if (!IsActive()) {
-        SetActive();
+    if (iOwner.iFirstUpdate) {
+        // On first update (the mgr is being instantiated) update only those bearers who
+        // don't need time-consuming scans (WLAN).
+        // Note: EBearerIdWCDMA covers also GPRS bearer
+        iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
+        User::WaitForRequest(iStatus);
+        if (iStatus.Int() == KErrNone) {
+            iOwner.accessPointScanningReady(true,iIapBuf());
+        }
+    } else {
+        iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
+        if (!IsActive()) {
+            SetActive();
+        }
     }
-}    
+}
 
 void AccessPointsAvailabilityScanner::RunL()
 {
@@ -1004,3 +1132,5 @@ void AccessPointsAvailabilityScanner::RunL()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

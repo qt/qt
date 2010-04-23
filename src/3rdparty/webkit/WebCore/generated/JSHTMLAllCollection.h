@@ -21,7 +21,6 @@
 #ifndef JSHTMLAllCollection_h
 #define JSHTMLAllCollection_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/CallData.h>
 #include <runtime/JSGlobalObject.h>
@@ -45,12 +44,12 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual JSC::CallType getCallData(JSC::CallData&);
 
-    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     virtual bool toBoolean(JSC::ExecState*) const { return false; };
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
@@ -63,10 +62,10 @@ private:
     RefPtr<HTMLAllCollection> m_impl;
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetPropertyNames | JSC::OverridesGetOwnPropertySlot | JSC::MasqueradesAsUndefined | Base::StructureFlags;
-    static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+    static JSC::JSValue indexGetter(JSC::ExecState*, JSC::JSValue, unsigned);
 private:
     static bool canGetItemsForName(JSC::ExecState*, HTMLAllCollection*, const JSC::Identifier&);
-    static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+    static JSC::JSValue nameGetter(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, HTMLAllCollection*);
@@ -82,7 +81,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLAllCollectionPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -96,8 +95,8 @@ JSC::JSValue JSC_HOST_CALL jsHTMLAllCollectionPrototypeFunctionNamedItem(JSC::Ex
 JSC::JSValue JSC_HOST_CALL jsHTMLAllCollectionPrototypeFunctionTags(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsHTMLAllCollectionLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsHTMLAllCollectionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLAllCollectionLength(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsHTMLAllCollectionConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -219,7 +219,7 @@ QHttpNetworkReplyPrivate::~QHttpNetworkReplyPrivate()
 {
 }
 
-void QHttpNetworkReplyPrivate::clear()
+void QHttpNetworkReplyPrivate::clearHttpLayerInformation()
 {
     state = NothingDoneState;
     statusCode = 100;
@@ -229,16 +229,22 @@ void QHttpNetworkReplyPrivate::clear()
     currentChunkSize = 0;
     currentChunkRead = 0;
     connectionCloseEnabled = true;
-    connection = 0;
-    connectionChannel = 0;
 #ifndef QT_NO_COMPRESS
     if (initInflate)
         inflateEnd(&inflateStrm);
 #endif
     initInflate = false;
     streamEnd = false;
-    autoDecompress = false;
     fields.clear();
+}
+
+// TODO: Isn't everything HTTP layer related? We don't need to set connection and connectionChannel to 0 at all
+void QHttpNetworkReplyPrivate::clear()
+{
+    connection = 0;
+    connectionChannel = 0;
+    autoDecompress = false;
+    clearHttpLayerInformation();
 }
 
 // QHttpNetworkReplyPrivate
@@ -538,6 +544,11 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
                 if (fragment.endsWith("\r\n\r\n")
                     || fragment.endsWith("\r\n\n")
                     || fragment.endsWith("\n\n"))
+                    allHeaders = true;
+
+                // there is another case: We have no headers. Then the fragment equals just the line ending
+                if ((fragment.length() == 2 && fragment.endsWith("\r\n"))
+                    || (fragment.length() == 1 && fragment.endsWith("\n")))
                     allHeaders = true;
             }
         }

@@ -4760,7 +4760,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
             int margins = 0;
             // we add 4 pixels for label margins
-            if (btn->icon.isNull() || !btn->text.isEmpty())
+            if (!btn->icon.isNull() || !btn->text.isEmpty())
                 margins = 4 + proxy()->pixelMetric(isRadio ? PM_RadioButtonLabelSpacing
                                                   : PM_CheckBoxLabelSpacing, opt, widget);
             sz += QSize(w + margins, 4);

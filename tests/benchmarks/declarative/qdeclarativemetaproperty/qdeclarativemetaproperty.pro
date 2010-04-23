@@ -6,3 +6,5 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativemetaproperty.cpp 
 
+# Define SRCDIR equal to test's source directory
+DEFINES += SRCDIR=\\\"$$PWD\\\"

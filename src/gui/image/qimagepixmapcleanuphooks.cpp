@@ -96,6 +96,11 @@ void QImagePixmapCleanupHooks::removeImageHook(_qt_image_cleanup_hook_64 hook)
 void QImagePixmapCleanupHooks::executePixmapDataModificationHooks(QPixmapData* pmd)
 {
     QImagePixmapCleanupHooks *h = qt_image_and_pixmap_cleanup_hooks();
+    // the global destructor for the pixmap and image hooks might have
+    // been called already if the app is "leaking" global
+    // pixmaps/images
+    if (!h)
+        return;
     for (int i = 0; i < h->pixmapModificationHooks.count(); ++i)
         h->pixmapModificationHooks[i](pmd);
 
@@ -106,6 +111,11 @@ void QImagePixmapCleanupHooks::executePixmapDataModificationHooks(QPixmapData* p
 void QImagePixmapCleanupHooks::executePixmapDataDestructionHooks(QPixmapData* pmd)
 {
     QImagePixmapCleanupHooks *h = qt_image_and_pixmap_cleanup_hooks();
+    // the global destructor for the pixmap and image hooks might have
+    // been called already if the app is "leaking" global
+    // pixmaps/images
+    if (!h)
+        return;
     for (int i = 0; i < h->pixmapDestructionHooks.count(); ++i)
         h->pixmapDestructionHooks[i](pmd);
 

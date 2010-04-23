@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeopenmetaobject_p.h"
-#include "qdeclarativepropertycache_p.h"
-#include "qdeclarativedeclarativedata_p.h"
+#include "private/qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativepropertycache_p.h"
+#include "private/qdeclarativedata_p.h"
 #include <qmetaobjectbuilder_p.h>
 #include <qdebug.h>
 
@@ -222,9 +222,10 @@ int QDeclarativeOpenMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
             propertyRead(propId);
             *reinterpret_cast<QVariant *>(a[0]) = d->getData(propId);
         } else if (c == QMetaObject::WriteProperty) {
-            if (d->data[propId].first != *reinterpret_cast<QVariant *>(a[0]))  {
+            if (propId <= d->data.count() || d->data[propId].first != *reinterpret_cast<QVariant *>(a[0]))  {
                 propertyWrite(propId);
                 d->writeData(propId, *reinterpret_cast<QVariant *>(a[0]));
+                propertyWritten(propId);
                 activate(d->object, d->type->d->signalOffset + propId, 0);
             }
         } 
@@ -270,6 +271,11 @@ QVariant &QDeclarativeOpenMetaObject::operator[](const QByteArray &name)
     return d->getData(*iter);
 }
 
+QVariant &QDeclarativeOpenMetaObject::operator[](int id)
+{
+    return d->getData(id);
+}
+
 void QDeclarativeOpenMetaObject::setValue(const QByteArray &name, const QVariant &val)
 {
     QHash<QByteArray, int>::ConstIterator iter = d->type->d->names.find(name);
@@ -296,7 +302,7 @@ void QDeclarativeOpenMetaObject::setCached(bool c)
 
     d->cacheProperties = c;
 
-    QDeclarativeDeclarativeData *qmldata = QDeclarativeDeclarativeData::get(d->object, true);
+    QDeclarativeData *qmldata = QDeclarativeData::get(d->object, true);
     if (d->cacheProperties) {
         if (!d->type->d->cache)
             d->type->d->cache = QDeclarativePropertyCache::create(d->type->d->engine, this);
@@ -323,6 +329,10 @@ void QDeclarativeOpenMetaObject::propertyRead(int)
 }
 
 void QDeclarativeOpenMetaObject::propertyWrite(int)
+{
+}
+
+void QDeclarativeOpenMetaObject::propertyWritten(int)
 {
 }
 

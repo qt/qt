@@ -44,7 +44,7 @@ namespace JSC { namespace Yarr {
 class RegexGenerator : private MacroAssembler {
     friend void jitCompileRegex(JSGlobalData* globalData, RegexCodeBlock& jitObject, const UString& pattern, unsigned& numSubpatterns, const char*& error, bool ignoreCase, bool multiline);
 
-#if PLATFORM(ARM)
+#if CPU(ARM)
     static const RegisterID input = ARMRegisters::r0;
     static const RegisterID index = ARMRegisters::r1;
     static const RegisterID length = ARMRegisters::r2;
@@ -54,7 +54,7 @@ class RegexGenerator : private MacroAssembler {
     static const RegisterID regT1 = ARMRegisters::r6;
 
     static const RegisterID returnRegister = ARMRegisters::r0;
-#elif PLATFORM(X86)
+#elif CPU(X86)
     static const RegisterID input = X86Registers::eax;
     static const RegisterID index = X86Registers::edx;
     static const RegisterID length = X86Registers::ecx;
@@ -64,7 +64,7 @@ class RegexGenerator : private MacroAssembler {
     static const RegisterID regT1 = X86Registers::esi;
 
     static const RegisterID returnRegister = X86Registers::eax;
-#elif PLATFORM(X86_64)
+#elif CPU(X86_64)
     static const RegisterID input = X86Registers::edi;
     static const RegisterID index = X86Registers::esi;
     static const RegisterID length = X86Registers::edx;
@@ -1264,7 +1264,7 @@ class RegexGenerator : private MacroAssembler {
         // complex here in compilation, and in the common case we should end up coallescing the checks.
         //
         // FIXME: a nice improvement here may be to stop trying to match sooner, based on the least
-        // of the minimum-alterantive-lengths.  E.g. if I have two alternatives of length 200 and 150,
+        // of the minimum-alternative-lengths.  E.g. if I have two alternatives of length 200 and 150,
         // and a string of length 100, we'll end up looping index from 0 to 100, checking whether there
         // is sufficient input to run either alternative (constantly failing).  If there had been only
         // one alternative, or if the shorter alternative had come first, we would have terminated
@@ -1288,11 +1288,11 @@ class RegexGenerator : private MacroAssembler {
 
     void generateEnter()
     {
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
         push(X86Registers::ebp);
         move(stackPointerRegister, X86Registers::ebp);
         push(X86Registers::ebx);
-#elif PLATFORM(X86)
+#elif CPU(X86)
         push(X86Registers::ebp);
         move(stackPointerRegister, X86Registers::ebp);
         // TODO: do we need spill registers to fill the output pointer if there are no sub captures?
@@ -1308,10 +1308,7 @@ class RegexGenerator : private MacroAssembler {
     #else
         loadPtr(Address(X86Registers::ebp, 2 * sizeof(void*)), output);
     #endif
-#elif PLATFORM(ARM)
-#if PLATFORM(ARM_TRADITIONAL)
-        push(ARMRegisters::lr);
-#endif
+#elif CPU(ARM)
         push(ARMRegisters::r4);
         push(ARMRegisters::r5);
         push(ARMRegisters::r6);
@@ -1321,15 +1318,15 @@ class RegexGenerator : private MacroAssembler {
 
     void generateReturn()
     {
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
         pop(X86Registers::ebx);
         pop(X86Registers::ebp);
-#elif PLATFORM(X86)
+#elif CPU(X86)
         pop(X86Registers::esi);
         pop(X86Registers::edi);
         pop(X86Registers::ebx);
         pop(X86Registers::ebp);
-#elif PLATFORM(ARM)
+#elif CPU(ARM)
         pop(ARMRegisters::r6);
         pop(ARMRegisters::r5);
         pop(ARMRegisters::r4);
@@ -1398,14 +1395,6 @@ void jitCompileRegex(JSGlobalData* globalData, RegexCodeBlock& jitObject, const 
         JSRegExpMultilineOption multilineOption = multiline ? JSRegExpMultiline : JSRegExpSingleLine;
         jitObject.setFallback(jsRegExpCompile(reinterpret_cast<const UChar*>(patternString.data()), patternString.size(), ignoreCaseOption, multilineOption, &numSubpatterns, &error));
     }
-}
-
-int executeRegex(RegexCodeBlock& jitObject, const UChar* input, unsigned start, unsigned length, int* output, int outputArraySize)
-{
-    if (JSRegExp* fallback = jitObject.getFallback())
-        return (jsRegExpExecute(fallback, input, length, start, output, outputArraySize) < 0) ? -1 : output[0];
-
-    return jitObject.execute(input, start, length, output);
 }
 
 }}

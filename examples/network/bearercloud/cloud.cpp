@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -253,10 +253,12 @@ void Cloud::stateChanged(QNetworkSession::State state)
     else
         tooltip += tr("<b>%1</b><br>").arg(configuration.name());
 
+#ifndef QT_NO_NETWORKINTERFACE
     const QNetworkInterface interface = session->interface();
     if (interface.isValid())
         tooltip += tr("<br>Interface: %1").arg(interface.humanReadableName());
     tooltip += tr("<br>Id: %1").arg(configuration.identifier());
+#endif
 
     const QString bearerName = configuration.bearerName();
     if (!bearerName.isEmpty())

@@ -228,6 +228,7 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/QMetaMethod>
 #include <QtGui/qapplication.h>
 #include <QtGui/qdesktopwidget.h>
 #include <QtGui/qevent.h>
@@ -276,8 +277,6 @@ static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraph
     hover->setModifiers(mouseEvent->modifiers());
     hover->setAccepted(mouseEvent->isAccepted());
 }
-
-int QGraphicsScenePrivate::changedSignalIndex;
 
 /*!
     \internal
@@ -329,9 +328,10 @@ void QGraphicsScenePrivate::init()
     index = new QGraphicsSceneBspTreeIndex(q);
 
     // Keep this index so we can check for connected slots later on.
-    if (!changedSignalIndex) {
-        changedSignalIndex = signalIndex("changed(QList<QRectF>)");
-    }
+    changedSignalIndex = signalIndex("changed(QList<QRectF>)");
+    processDirtyItemsIndex = q->metaObject()->indexOfSlot("_q_processDirtyItems()");
+    polishItemsIndex = q->metaObject()->indexOfSlot("_q_polishItems()");
+
     qApp->d_func()->scene_list.append(q);
     q->update();
 }
@@ -2537,8 +2537,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         return;
     }
 
-    if (d->unpolishedItems.isEmpty())
-        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+    if (d->unpolishedItems.isEmpty()) {
+        QMetaMethod method = metaObject()->method(d->polishItemsIndex);
+        method.invoke(this, Qt::QueuedConnection);
+    }
     d->unpolishedItems.append(item);
     item->d_ptr->pendingPolish = true;
 
@@ -3784,6 +3786,12 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
     QGraphicsItem *toolTipItem = 0;
     for (int i = 0; i < itemsAtPos.size(); ++i) {
         QGraphicsItem *tmp = itemsAtPos.at(i);
+        if (tmp->d_func()->isProxyWidget()) {
+            // if the item is a proxy widget, the event is forwarded to it
+            sendEvent(tmp, helpEvent);
+            if (helpEvent->isAccepted())
+                return;
+        }
         if (!tmp->toolTip().isEmpty()) {
             toolTipItem = tmp;
             break;
@@ -4299,6 +4307,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     if (!subPix.isNull()) {
         // Blit the subpixmap into the main pixmap.
         pixmapPainter.begin(pix);
+        pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
         pixmapPainter.setClipRegion(pixmapExposed);
         pixmapPainter.drawPixmap(br.topLeft(), subPix);
         pixmapPainter.end();
@@ -4464,6 +4473,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         // Create or reuse offscreen pixmap, possibly scroll/blit from the old one.
+        // If the world transform is rotated we always recreate the cache to avoid
+        // wrong blending.
         bool pixModified = false;
         QGraphicsItemCache::DeviceData *deviceData = &itemCache->deviceData[widget];
         bool invertable = true;
@@ -4471,7 +4482,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         if (invertable)
             diff *= painter->worldTransform();
         deviceData->lastTransform = painter->worldTransform();
-        if (!invertable || diff.type() > QTransform::TxTranslate) {
+        if (!invertable
+            || diff.type() > QTransform::TxTranslate
+            || painter->worldTransform().type() > QTransform::TxScale) {
             pixModified = true;
             itemCache->allExposed = true;
             itemCache->exposed.clear();
@@ -4713,7 +4726,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
-                                    painter, opacity, wasDirtyParentSceneTransform, drawItem);
+                                    painter, opacity, wasDirtyParentSceneTransform, itemHasContents && !itemIsFullyTransparent);
         QGraphicsEffectSource *source = item->d_ptr->graphicsEffect->d_func()->source;
         QGraphicsItemEffectSourcePrivate *sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
                                                     (source->d_func());
@@ -4728,31 +4741,18 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (sourced->currentCachedSystem() != Qt::LogicalCoordinates
             && sourced->lastEffectTransform != painter->worldTransform())
         {
-            bool unclipped = false;
             if (sourced->lastEffectTransform.type() <= QTransform::TxTranslate
                 && painter->worldTransform().type() <= QTransform::TxTranslate)
             {
-                QRectF itemRect = item->boundingRect();
-                if (!item->d_ptr->children.isEmpty())
-                    itemRect |= item->childrenBoundingRect();
+                QRectF sourceRect = sourced->boundingRect(Qt::DeviceCoordinates);
+                QRect effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect);
 
-                QRectF oldSourceRect = sourced->lastEffectTransform.mapRect(itemRect);
-                QRectF newSourceRect = painter->worldTransform().mapRect(itemRect);
-
-                QRect oldEffectRect = sourced->paddedEffectRect(sourced->currentCachedSystem(), sourced->currentCachedMode(), oldSourceRect);
-                QRect newEffectRect = sourced->paddedEffectRect(sourced->currentCachedSystem(), sourced->currentCachedMode(), newSourceRect);
-
-                QRect deviceRect(0, 0, painter->device()->width(), painter->device()->height());
-                if (deviceRect.contains(oldEffectRect) && deviceRect.contains(newEffectRect)) {
-                    sourced->setCachedOffset(newEffectRect.topLeft());
-                    unclipped = true;
-                }
+                sourced->setCachedOffset(effectRect.topLeft());
+            } else {
+                sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
             }
 
             sourced->lastEffectTransform = painter->worldTransform();
-
-            if (!unclipped)
-                sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
         }
 
         item->d_ptr->graphicsEffect->draw(painter);
@@ -4892,7 +4892,9 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
 
     if (!processDirtyItemsEmitted) {
-        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
+        QMetaMethod method = q_ptr->metaObject()->method(processDirtyItemsIndex);
+        method.invoke(q_ptr, Qt::QueuedConnection);
+//        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
         processDirtyItemsEmitted = true;
     }
 
@@ -6003,7 +6005,8 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         cachedTargetItems = cachedItemGestures.keys();
         qSort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);
         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
-                << "Conflicting gestures:" <<  conflictedGestures;
+                << "Normal gestures:" << normalGestures
+                << "Conflicting gestures:" << conflictedGestures;
 
         // deliver conflicted gestures as override events AND remember
         // initial gesture targets
@@ -6080,6 +6083,10 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             const Qt::GestureFlags flags = d->gestureContext.value(gesture->gestureType());
             if (flags & Qt::IgnoredGesturesPropagateToParent)
                 parentPropagatedGestures.insert(gesture);
+        } else {
+            DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                    << "no target for" << gesture << "at"
+                    << gesture->hotSpot() << gesture->d_func()->sceneHotSpot;
         }
     }
     qSort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);

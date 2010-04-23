@@ -1,7 +1,7 @@
 import Qt 4.6
 
 PathView {
-    id: photoPathView; model: rssModel; delegate: photoDelegate
+    id: photoPathView
     y: 100; width: 800; height: 330; pathItemCount: 10; z: 1
 
     path: Path {

@@ -50,6 +50,8 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 static void resolveLibrary()
@@ -137,3 +139,5 @@ Q_EXPORT_STATIC_PLUGIN(QNativeWifiEnginePlugin)
 Q_EXPORT_PLUGIN2(qnativewifibearer, QNativeWifiEnginePlugin)
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

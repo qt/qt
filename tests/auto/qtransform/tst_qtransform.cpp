@@ -610,6 +610,11 @@ void tst_QTransform::types()
     m4.rotate(45);
 
     QCOMPARE(m4.type(), QTransform::TxRotate);
+
+    QTransform m5;
+    m5.scale(5, 5);
+    m5 = m5.adjoint() / m5.determinant();
+    QCOMPARE(m5.type(), QTransform::TxScale);
 }
 
 

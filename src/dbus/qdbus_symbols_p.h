@@ -57,6 +57,8 @@
 #include <QtCore/qglobal.h>
 #include <dbus/dbus.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 #if !defined QT_LINKED_LIBDBUS
@@ -367,4 +369,5 @@ DEFINEFUNC(dbus_bool_t     , dbus_threads_init_default, (), (), return)
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_DBUS
+#endif // QDBUS_SYMBOLS_P_H

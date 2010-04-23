@@ -21,8 +21,6 @@
 
 #include <QObject>
 
-#if QT_VERSION >= 0x040400
-
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
 
@@ -64,6 +62,7 @@ private slots:
     void sendResponseIfNeeded();
     void forwardData();
     void sendQueuedItems();
+    void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
 private:
     void start();
@@ -112,7 +111,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif // QNETWORKREPLYHANDLER_H

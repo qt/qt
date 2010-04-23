@@ -34,6 +34,11 @@
 namespace JSC {
 static const unsigned numCharactersToStore = 0x100;
 
+static inline bool isMarked(JSString* string)
+{
+    return string && Heap::isCellMarked(string);
+}
+
 class SmallStringsStorage : public Noncopyable {
 public:
     SmallStringsStorage();
@@ -41,41 +46,23 @@ public:
     UString::Rep* rep(unsigned char character) { return &m_reps[character]; }
 
 private:
-    UChar m_characters[numCharactersToStore];
-    UString::BaseString m_base;
     UString::Rep m_reps[numCharactersToStore];
 };
 
 SmallStringsStorage::SmallStringsStorage()
-    : m_base(m_characters, numCharactersToStore)
 {
-    m_base.rc = numCharactersToStore + 1;
-    // make sure UString doesn't try to reuse the buffer by pretending we have one more character in it
-    m_base.usedCapacity = numCharactersToStore + 1;
-    m_base.capacity = numCharactersToStore + 1;
-    m_base.checkConsistency();
-
-    for (unsigned i = 0; i < numCharactersToStore; ++i)
-        m_characters[i] = i;
-
-    memset(&m_reps, 0, sizeof(m_reps));
+    UChar* characterBuffer = 0;
+    RefPtr<UStringImpl> baseString = UStringImpl::createUninitialized(numCharactersToStore, characterBuffer);
     for (unsigned i = 0; i < numCharactersToStore; ++i) {
-        m_reps[i].offset = i;
-        m_reps[i].len = 1;
-        m_reps[i].rc = 1;
-        m_reps[i].setBaseString(&m_base);
-        m_reps[i].checkConsistency();
+        characterBuffer[i] = i;
+        new (&m_reps[i]) UString::Rep(&characterBuffer[i], 1, PassRefPtr<UStringImpl>(baseString));
     }
 }
 
 SmallStrings::SmallStrings()
-    : m_emptyString(0)
-    , m_storage(0)
 {
     COMPILE_ASSERT(numCharactersToStore == sizeof(m_singleCharacterStrings) / sizeof(m_singleCharacterStrings[0]), IsNumCharactersConstInSyncWithClassUsage);
-
-    for (unsigned i = 0; i < numCharactersToStore; ++i)
-        m_singleCharacterStrings[i] = 0;
+    clear();
 }
 
 SmallStrings::~SmallStrings()
@@ -84,12 +71,38 @@ SmallStrings::~SmallStrings()
 
 void SmallStrings::markChildren(MarkStack& markStack)
 {
+    /*
+       Our hypothesis is that small strings are very common. So, we cache them
+       to avoid GC churn. However, in cases where this hypothesis turns out to
+       be false -- including the degenerate case where all JavaScript execution
+       has terminated -- we don't want to waste memory.
+
+       To test our hypothesis, we check if any small string has been marked. If
+       so, it's probably reasonable to mark the rest. If not, we clear the cache.
+     */
+
+    bool isAnyStringMarked = isMarked(m_emptyString);
+    for (unsigned i = 0; i < numCharactersToStore && !isAnyStringMarked; ++i)
+        isAnyStringMarked = isMarked(m_singleCharacterStrings[i]);
+    
+    if (!isAnyStringMarked) {
+        clear();
+        return;
+    }
+    
     if (m_emptyString)
         markStack.append(m_emptyString);
     for (unsigned i = 0; i < numCharactersToStore; ++i) {
         if (m_singleCharacterStrings[i])
             markStack.append(m_singleCharacterStrings[i]);
     }
+}
+
+void SmallStrings::clear()
+{
+    m_emptyString = 0;
+    for (unsigned i = 0; i < numCharactersToStore; ++i)
+        m_singleCharacterStrings[i] = 0;
 }
 
 unsigned SmallStrings::count() const

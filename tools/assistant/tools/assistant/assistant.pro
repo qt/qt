@@ -17,7 +17,7 @@ INCLUDEPATH += .
 
 # ## Work around a qmake issue when statically linking to
 # ## not-yet-installed plugins
-LIBS += -L$$QT_BUILD_TREE/plugins/sqldrivers
+QMAKE_LIBDIR += $$QT_BUILD_TREE/plugins/sqldrivers
 HEADERS += aboutdialog.h \
     bookmarkdialog.h \
     bookmarkfiltermodel.h \
@@ -32,8 +32,6 @@ HEADERS += aboutdialog.h \
     filternamedialog.h \
     helpenginewrapper.h \
     helpviewer.h \
-    helpviewer_qtb.h \
-    helpviewer_qwv.h \
     indexwindow.h \
     installdialog.h \
     mainwindow.h \
@@ -49,6 +47,12 @@ HEADERS += aboutdialog.h \
     globalactions.h \
     openpageswidget.h \
     openpagesmanager.h
+
+contains(QT_CONFIG, webkit) {
+    HEADERS += helpviewer_qwv.h
+} else {
+    HEADERS += helpviewer_qtb.h
+ }
 win32:HEADERS += remotecontrol_win.h
 
 SOURCES += aboutdialog.cpp \
@@ -65,8 +69,6 @@ SOURCES += aboutdialog.cpp \
     filternamedialog.cpp \
     helpenginewrapper.cpp \
     helpviewer.cpp \
-    helpviewer_qtb.cpp \
-    helpviewer_qwv.cpp \
     indexwindow.cpp \
     installdialog.cpp \
     main.cpp \
@@ -82,6 +84,11 @@ SOURCES += aboutdialog.cpp \
     globalactions.cpp \
     openpageswidget.cpp \
     openpagesmanager.cpp
+ contains(QT_CONFIG, webkit) {
+    SOURCES += helpviewer_qwv.cpp
+} else {
+    SOURCES += helpviewer_qtb.cpp
+}
 
 FORMS += bookmarkdialog.ui \
     bookmarkmanagerwidget.ui \

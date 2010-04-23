@@ -90,13 +90,13 @@ void tst_qmlcomponent::creation_data()
 {
     QTest::addColumn<QString>("file");
 
-    QTest::newRow("Object") << "data/object.qml";
-    QTest::newRow("Object - Id") << "data/object_id.qml";
-    QTest::newRow("MyQmlObject") << "data/myqmlobject.qml";
-    QTest::newRow("MyQmlObject: basic binding") << "data/myqmlobject_binding.qml";
-    QTest::newRow("Synthesized properties") << "data/synthesized_properties.qml";
-    QTest::newRow("Synthesized properties.2") << "data/synthesized_properties.2.qml";
-    QTest::newRow("SameGame - BoomBlock") << "data/samegame/BoomBlock.qml";
+    QTest::newRow("Object") << SRCDIR "/data/object.qml";
+    QTest::newRow("Object - Id") << SRCDIR "/data/object_id.qml";
+    QTest::newRow("MyQmlObject") << SRCDIR "/data/myqmlobject.qml";
+    QTest::newRow("MyQmlObject: basic binding") << SRCDIR "/data/myqmlobject_binding.qml";
+    QTest::newRow("Synthesized properties") << SRCDIR "/data/synthesized_properties.qml";
+    QTest::newRow("Synthesized properties.2") << SRCDIR "/data/synthesized_properties.2.qml";
+    QTest::newRow("SameGame - BoomBlock") << SRCDIR "/data/samegame/BoomBlock.qml";
 }
 
 void tst_qmlcomponent::creation()

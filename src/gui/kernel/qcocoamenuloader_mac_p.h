@@ -67,7 +67,9 @@
     IBOutlet NSMenuItem *aboutQtItem;
     IBOutlet NSMenuItem *hideItem;
     NSMenuItem *lastAppSpecificItem;
-
+    NSMenuItem *servicesItem;
+    NSMenuItem *hideAllOthersItem;
+    NSMenuItem *showAllItem;
 }
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
 - (void)removeActionsFromAppMenu;

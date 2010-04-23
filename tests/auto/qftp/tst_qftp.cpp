@@ -123,6 +123,8 @@ private slots:
     void doneSignal();
     void queueMoreCommandsInDoneSlot();
 
+    void qtbug7359Crash();
+
 protected slots:
     void stateChanged( int );
     void listInfo( const QUrlInfo & );
@@ -308,7 +310,7 @@ void tst_QFtp::connectToUnresponsiveHost()
     if (setProxy)
         QSKIP( "This test takes too long if we test with proxies too", SkipSingle );
 
-    QString host = "1.2.3.4";
+    QString host = "192.0.2.42"; // IP out of TEST-NET, should be unreachable
     uint port = 21;
 
     ftp = newFtp();
@@ -2050,6 +2052,30 @@ void tst_QFtp::cdUpSlot(bool error)
         ftp->cd("..");
         ftp->cd("qt");
     }
+}
+
+void tst_QFtp::qtbug7359Crash()
+{
+    QFtp ftp;
+    ftp.connectToHost("127.0.0.1");
+
+    QTime t;
+    int elapsed;
+
+    t.start();
+    while ((elapsed = t.elapsed()) < 200)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 200 - elapsed);
+
+    ftp.close();
+    t.restart();
+    while ((elapsed = t.elapsed()) < 1000)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000 - elapsed);
+
+    ftp.connectToHost("127.0.0.1");
+
+    t.restart();
+    while ((elapsed = t.elapsed()) < 2000)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 2000 - elapsed);
 }
 
 QTEST_MAIN(tst_QFtp)

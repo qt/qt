@@ -647,7 +647,8 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
 
     // Connect
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QCOMPARE(socket.state(), QTcpSocket::HostLookupState);
+    QVERIFY(socket.state() == QTcpSocket::HostLookupState ||
+            socket.state() == QTcpSocket::ConnectingState);
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout()) {
@@ -779,7 +780,7 @@ void tst_QSocks5SocketEngine::downloadBigFile()
 
     QByteArray hostName = QtNetworkSettings::serverName().toLatin1();
     QVERIFY(tmpSocket->state() == QAbstractSocket::ConnectedState);
-    QVERIFY(tmpSocket->write("GET /mediumfile HTTP/1.0\r\n") > 0);
+    QVERIFY(tmpSocket->write("GET /qtest/mediumfile HTTP/1.0\r\n") > 0);
     QVERIFY(tmpSocket->write("HOST: ") > 0);
     QVERIFY(tmpSocket->write(hostName.data()) > 0);
     QVERIFY(tmpSocket->write("\r\n") > 0);

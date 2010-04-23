@@ -589,8 +589,7 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
 
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 {
-    static const int vid = qRegisterMetaType<QVariant>("QVariant");
-    if (vid == v.userType())
+    if (v.userType() == QMetaType::QVariant)
         return *reinterpret_cast<const QVariant *>(v.constData());
     return v;
 }

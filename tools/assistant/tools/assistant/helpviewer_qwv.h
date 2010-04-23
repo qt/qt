@@ -42,10 +42,6 @@
 #ifndef HELPVIEWERQWV_H
 #define HELPVIEWERQWV_H
 
-#include <QtCore/qglobal.h>
-
-#if !defined(QT_NO_WEBKIT)
-
 #include "helpviewer.h"
 
 #include <QtGui/QAction>
@@ -71,6 +67,8 @@ public:
     void scaleDown();
     void resetScale();
     qreal scale() const { return textSizeMultiplier(); }
+
+    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
 
     void setSource(const QUrl &url);
     inline QUrl source() const { return url(); }
@@ -118,7 +116,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif  // !QT_NO_WEBKIT
 
 #endif  // HELPVIEWERQWV_H

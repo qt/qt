@@ -160,7 +160,7 @@ public:
     void createMenu(QMenuBar *menuBar);
     void removeMenu();
 
-    static LRESULT CALLBACK ActiveXProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    static LRESULT QT_WIN_CALLBACK ActiveXProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Object registration with OLE
     void registerActiveObject(IUnknown *object);
@@ -764,7 +764,7 @@ private:
 };
 
 // callback for DLL server to hook into non-Qt eventloop
-LRESULT CALLBACK axs_FilterProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK axs_FilterProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (qApp && !invokeCount)
         qApp->sendPostedEvents();
@@ -1350,7 +1350,7 @@ class HackWidget : public QWidget
 
     The semantics of \a wParam and \a lParam depend on the value of \a uMsg.
 */
-LRESULT CALLBACK QAxServerBase::ActiveXProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT QT_WIN_CALLBACK QAxServerBase::ActiveXProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_CREATE) {
         CREATESTRUCT *cs = (CREATESTRUCT*)lParam;

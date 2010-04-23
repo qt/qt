@@ -39,9 +39,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSCharacterData);
 
 static const HashTableValue JSCharacterDataTableValues[4] =
 {
-    { "data", DontDelete, (intptr_t)jsCharacterDataData, (intptr_t)setJSCharacterDataData },
-    { "length", DontDelete|ReadOnly, (intptr_t)jsCharacterDataLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCharacterDataConstructor, (intptr_t)0 },
+    { "data", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCharacterDataData), (intptr_t)setJSCharacterDataData },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCharacterDataLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCharacterDataConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,11 +103,11 @@ bool JSCharacterDataConstructor::getOwnPropertyDescriptor(ExecState* exec, const
 
 static const HashTableValue JSCharacterDataPrototypeTableValues[6] =
 {
-    { "substringData", DontDelete|Function, (intptr_t)jsCharacterDataPrototypeFunctionSubstringData, (intptr_t)2 },
-    { "appendData", DontDelete|Function, (intptr_t)jsCharacterDataPrototypeFunctionAppendData, (intptr_t)1 },
-    { "insertData", DontDelete|Function, (intptr_t)jsCharacterDataPrototypeFunctionInsertData, (intptr_t)2 },
-    { "deleteData", DontDelete|Function, (intptr_t)jsCharacterDataPrototypeFunctionDeleteData, (intptr_t)2 },
-    { "replaceData", DontDelete|Function, (intptr_t)jsCharacterDataPrototypeFunctionReplaceData, (intptr_t)3 },
+    { "substringData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCharacterDataPrototypeFunctionSubstringData), (intptr_t)2 },
+    { "appendData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCharacterDataPrototypeFunctionAppendData), (intptr_t)1 },
+    { "insertData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCharacterDataPrototypeFunctionInsertData), (intptr_t)2 },
+    { "deleteData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCharacterDataPrototypeFunctionDeleteData), (intptr_t)2 },
+    { "replaceData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCharacterDataPrototypeFunctionReplaceData), (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
@@ -157,25 +157,27 @@ bool JSCharacterData::getOwnPropertyDescriptor(ExecState* exec, const Identifier
     return getStaticValueDescriptor<JSCharacterData, Base>(exec, &JSCharacterDataTable, this, propertyName, descriptor);
 }
 
-JSValue jsCharacterDataData(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCharacterDataData(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
+    JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CharacterData* imp = static_cast<CharacterData*>(castedThis->impl());
-    return jsString(exec, imp->data());
+    JSValue result = jsString(exec, imp->data());
+    return result;
 }
 
-JSValue jsCharacterDataLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCharacterDataLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
+    JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CharacterData* imp = static_cast<CharacterData*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsCharacterDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCharacterDataConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCharacterData* domObject = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
+    JSCharacterData* domObject = static_cast<JSCharacterData*>(asObject(slotBase));
     return JSCharacterData::getConstructor(exec, domObject->globalObject());
 }
 void JSCharacterData::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -185,7 +187,8 @@ void JSCharacterData::put(ExecState* exec, const Identifier& propertyName, JSVal
 
 void setJSCharacterDataData(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CharacterData* imp = static_cast<CharacterData*>(static_cast<JSCharacterData*>(thisObject)->impl());
+    JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(thisObject);
+    CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setData(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

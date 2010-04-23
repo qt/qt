@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeimagebase_p.h"
-#include "qdeclarativeimagebase_p_p.h"
+#include "private/qdeclarativeimagebase_p.h"
+#include "private/qdeclarativeimagebase_p_p.h"
 
 #include <qdeclarativeengine.h>
+#include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
 
 #include <QFile>
@@ -52,7 +53,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QDeclarativeImageBase::~QDeclarativeImageBase()
@@ -117,6 +117,23 @@ void QDeclarativeImageBase::setSource(const QUrl &url)
         load();
 }
 
+void QDeclarativeImageBase::setSourceSize(const QSize& size)
+{
+    Q_D(QDeclarativeImageBase);
+    if (d->sourcesize == size)
+        return;
+    d->sourcesize = size;
+    emit sourceSizeChanged();
+    if (isComponentComplete())
+        load();
+}
+
+QSize QDeclarativeImageBase::sourceSize() const
+{
+    Q_D(const QDeclarativeImageBase);
+    return d->sourcesize.isValid() ? d->sourcesize : QSize(implicitWidth(),implicitHeight());
+}
+
 void QDeclarativeImageBase::load()
 {
     Q_D(QDeclarativeImageBase);
@@ -131,13 +148,17 @@ void QDeclarativeImageBase::load()
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
-        emit pixmapChanged();
+        pixmapChange();
         update();
     } else {
         d->status = Loading;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, d->async);
+        int reqwidth = d->sourcesize.width();
+        int reqheight = d->sourcesize.height();
+        QSize impsize;
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async, reqwidth, reqheight);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
-            QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
+            QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url, reqwidth, reqheight);
             d->pendingPixmapCache = true;
 
             static int replyDownloadProgress = -1;
@@ -145,35 +166,39 @@ void QDeclarativeImageBase::load()
             static int thisRequestProgress = -1;
             static int thisRequestFinished = -1;
             if (replyDownloadProgress == -1) {
-                replyDownloadProgress = 
+                replyDownloadProgress =
                     QDeclarativePixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-                replyFinished = 
+                replyFinished =
                     QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");
-                thisRequestProgress = 
+                thisRequestProgress =
                     QDeclarativeImageBase::staticMetaObject.indexOfSlot("requestProgress(qint64,qint64)");
                 thisRequestFinished =
                     QDeclarativeImageBase::staticMetaObject.indexOfSlot("requestFinished()");
             }
 
-            QMetaObject::connect(reply, replyFinished, this, 
+            QMetaObject::connect(reply, replyFinished, this,
                                  thisRequestFinished, Qt::DirectConnection);
-            QMetaObject::connect(reply, replyDownloadProgress, this, 
+            QMetaObject::connect(reply, replyDownloadProgress, this,
                                  thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
             if (status == QDeclarativePixmapReply::Ready) {
-                setImplicitWidth(d->pix.width());
-                setImplicitHeight(d->pix.height());
+                setImplicitWidth(impsize.width());
+                setImplicitHeight(impsize.height());
 
                 if (d->status == Loading)
                     d->status = Ready;
+
+                if (!d->sourcesize.isValid())
+                    emit sourceSizeChanged();
             } else {
                 d->status = Error;
+                qmlInfo(this) << errorString;
             }
             d->progress = 1.0;
             emit statusChanged(d->status);
             emit progressChanged(d->progress);
-            emit pixmapChanged();
+            pixmapChange();
             update();
         }
     }
@@ -187,17 +212,23 @@ void QDeclarativeImageBase::requestFinished()
 
     d->pendingPixmapCache = false;
 
-    if (QDeclarativePixmapCache::get(d->url, &d->pix, d->async) != QDeclarativePixmapReply::Ready)
+    QSize impsize;
+    QString errorString;
+    if (QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async, d->sourcesize.width(), d->sourcesize.height()) != QDeclarativePixmapReply::Ready) {
         d->status = Error;
-    setImplicitWidth(d->pix.width());
-    setImplicitHeight(d->pix.height());
+        qmlInfo(this) << errorString;
+    }
+    setImplicitWidth(impsize.width());
+    setImplicitHeight(impsize.height());
 
     if (d->status == Loading)
         d->status = Ready;
     d->progress = 1.0;
     emit statusChanged(d->status);
     emit progressChanged(1.0);
-    emit pixmapChanged();
+    if (!d->sourcesize.isValid())
+        emit sourceSizeChanged();
+    pixmapChange();
     update();
 }
 
@@ -216,6 +247,10 @@ void QDeclarativeImageBase::componentComplete()
     QDeclarativeItem::componentComplete();
     if (d->url.isValid())
         load();
+}
+
+void QDeclarativeImageBase::pixmapChange()
+{
 }
 
 QT_END_NAMESPACE

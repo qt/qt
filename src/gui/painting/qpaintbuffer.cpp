@@ -54,8 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 extern void qt_format_text(const QFont &font,
                            const QRectF &_r, int tf, const QTextOption *option, const QString& str, QRectF *brect,
                            int tabstops, int* tabarray, int tabarraylen,
@@ -269,24 +269,302 @@ void QPaintBuffer::draw(QPainter *painter, int frame) const
     printf("\n");
 #endif
 
-    if (painter && !painter->isActive())
-        return;
-
-    QPaintEngineEx *xengine = painter->paintEngine()->isExtended()
-                              ? (QPaintEngineEx *) painter->paintEngine() : 0;
-    if (xengine) {
-        QPaintEngineExReplayer player;
-        player.draw(*this, painter, frame);
-    } else {
-        QPainterReplayer player;
-        player.draw(*this, painter, frame);
-    }
+    processCommands(painter, frameStartIndex(frame), frameEndIndex(frame));
 
 #ifdef QPAINTBUFFER_DEBUG_DRAW
     qDebug() << "QPaintBuffer::draw() -------------------------------- DONE!";
 #endif
 }
 
+int QPaintBuffer::frameStartIndex(int frame) const
+{
+    return (frame == 0) ? 0 : d_ptr->frames.at(frame - 1);
+}
+
+int QPaintBuffer::frameEndIndex(int frame) const
+{
+    return (frame == d_ptr->frames.size()) ? d_ptr->commands.size() : d_ptr->frames.at(frame);
+}
+
+int QPaintBuffer::processCommands(QPainter *painter, int begin, int end) const
+{
+    if (!painter || !painter->isActive())
+        return 0;
+
+    QPaintEngineEx *xengine = painter->paintEngine()->isExtended()
+                              ? (QPaintEngineEx *) painter->paintEngine() : 0;
+    if (xengine) {
+        QPaintEngineExReplayer player;
+        player.processCommands(*this, painter, begin, end);
+    } else {
+        QPainterReplayer player;
+        player.processCommands(*this, painter, begin, end);
+    }
+
+    int depth = 0;
+    for (int i = begin; i < end; ++i) {
+        const QPaintBufferCommand &cmd = d_ptr->commands.at(i);
+        if (cmd.id == QPaintBufferPrivate::Cmd_Save)
+            ++depth;
+        else if (cmd.id == QPaintBufferPrivate::Cmd_Restore)
+            --depth;
+    }
+    return depth;
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QString QPaintBuffer::commandDescription(int command) const
+{
+    QString desc;
+    QDebug debug(&desc);
+
+    const QPaintBufferCommand &cmd = d_ptr->commands.at(command);
+
+    switch (cmd.id) {
+    case QPaintBufferPrivate::Cmd_Save: {
+        debug << "Cmd_Save";
+        break; }
+
+    case QPaintBufferPrivate::Cmd_Restore: {
+        debug << "Cmd_Restore";
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetBrush: {
+        QBrush brush = qVariantValue<QBrush>(d_ptr->variants.at(cmd.offset));
+        debug << "Cmd_SetBrush: " << brush;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetBrushOrigin: {
+        debug << "Cmd_SetBrushOrigin: " << d_ptr->variants.at(cmd.offset).toPointF();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetCompositionMode: {
+        QPainter::CompositionMode mode = (QPainter::CompositionMode) cmd.extra;
+        debug << "ExCmd_SetCompositionMode, mode: " << mode;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetOpacity: {
+        debug << "ExCmd_SetOpacity: " << d_ptr->variants.at(cmd.offset).toDouble();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawVectorPath: {
+        debug << "ExCmd_DrawVectorPath: size: " << cmd.size
+//                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
+                 << "pts/elms:" << cmd.offset << cmd.offset2;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_StrokeVectorPath: {
+        QPen pen = qVariantValue<QPen>(d_ptr->variants.at(cmd.extra));
+        debug << "ExCmd_StrokeVectorPath: size: " << cmd.size
+//                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
+                 << "pts/elms:" << cmd.offset << cmd.offset2 << pen;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_FillVectorPath: {
+        QBrush brush = qVariantValue<QBrush>(d_ptr->variants.at(cmd.extra));
+        debug << "ExCmd_FillVectorPath: size: " << cmd.size
+//                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
+                 << "pts/elms:" << cmd.offset << cmd.offset2 << brush;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_FillRectBrush: {
+        QBrush brush = qVariantValue<QBrush>(d_ptr->variants.at(cmd.extra));
+        QRectF *rect = (QRectF *)(d_ptr->floats.constData() + cmd.offset);
+        debug << "ExCmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " brush: " << brush;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_FillRectColor: {
+        QColor color = qVariantValue<QColor>(d_ptr->variants.at(cmd.extra));
+        QRectF *rect = (QRectF *)(d_ptr->floats.constData() + cmd.offset);
+        debug << "ExCmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " color: " << color;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPolygonF: {
+        debug << "ExCmd_DrawPolygonF, offset: " << cmd.offset << " size: " << cmd.size
+                 << " mode: " << cmd.extra
+                 << d_ptr->floats.at(cmd.offset)
+                 << d_ptr->floats.at(cmd.offset+1);
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPolygonI: {
+        debug << "ExCmd_DrawPolygonI, offset: " << cmd.offset << " size: " << cmd.size
+                 << " mode: " << cmd.extra
+                 << d_ptr->ints.at(cmd.offset)
+                 << d_ptr->ints.at(cmd.offset+1);
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawEllipseF: {
+        debug << "ExCmd_DrawEllipseF, offset: " << cmd.offset;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawLineF: {
+        debug << "ExCmd_DrawLineF, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawLineI: {
+        debug << "ExCmd_DrawLineI, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPointsF: {
+        debug << "ExCmd_DrawPointsF, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPointsI: {
+        debug << "ExCmd_DrawPointsI, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPolylineF: {
+        debug << "ExCmd_DrawPolylineF, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPolylineI: {
+        debug << "ExCmd_DrawPolylineI, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawRectF: {
+        debug << "ExCmd_DrawRectF, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawRectI: {
+        debug << "ExCmd_DrawRectI, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetClipEnabled: {
+        bool clipEnabled = d_ptr->variants.at(cmd.offset).toBool();
+        debug << "ExCmd_SetClipEnabled:" << clipEnabled;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_ClipVectorPath: {
+        QVectorPathCmd path(d_ptr, cmd);
+        debug << "ExCmd_ClipVectorPath:" << path().elementCount();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_ClipRect: {
+        QRect rect(QPoint(d_ptr->ints.at(cmd.offset), d_ptr->ints.at(cmd.offset + 1)),
+                   QPoint(d_ptr->ints.at(cmd.offset + 2), d_ptr->ints.at(cmd.offset + 3)));
+        debug << "ExCmd_ClipRect:" << rect << cmd.extra;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_ClipRegion: {
+        QRegion region(d_ptr->variants.at(cmd.offset).value<QRegion>());
+        debug << "ExCmd_ClipRegion:" << region.boundingRect() << cmd.extra;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetPen: {
+        QPen pen = qVariantValue<QPen>(d_ptr->variants.at(cmd.offset));
+        debug << "Cmd_SetPen: " << pen;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetTransform: {
+        QTransform xform = qVariantValue<QTransform>(d_ptr->variants.at(cmd.offset));
+        debug << "Cmd_SetTransform, offset: " << cmd.offset << xform;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetRenderHints: {
+        debug << "Cmd_SetRenderHints, hints: " << cmd.extra;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_SetBackgroundMode: {
+        debug << "Cmd_SetBackgroundMode: " << cmd.extra;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawConvexPolygonF: {
+        debug << "Cmd_DrawConvexPolygonF, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawConvexPolygonI: {
+        debug << "Cmd_DrawConvexPolygonI, offset: " << cmd.offset << " size: " << cmd.size;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawEllipseI: {
+        debug << "Cmd_DrawEllipseI, offset: " << cmd.offset;
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPixmapRect: {
+        QPixmap pm(d_ptr->variants.at(cmd.offset).value<QPixmap>());
+        QRectF r(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1),
+                 d_ptr->floats.at(cmd.extra+2), d_ptr->floats.at(cmd.extra+3));
+
+        QRectF sr(d_ptr->floats.at(cmd.extra+4), d_ptr->floats.at(cmd.extra+5),
+                  d_ptr->floats.at(cmd.extra+6), d_ptr->floats.at(cmd.extra+7));
+        debug << "Cmd_DrawPixmapRect:" << r << sr << pm.size();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawPixmapPos: {
+        QPixmap pm(d_ptr->variants.at(cmd.offset).value<QPixmap>());
+        QPointF pos(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
+        debug << "Cmd_DrawPixmapPos:" << pos << pm.size();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawTiledPixmap: {
+        QPixmap pm(d_ptr->variants.at(cmd.offset).value<QPixmap>());
+        QRectF r(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1),
+                 d_ptr->floats.at(cmd.extra+2), d_ptr->floats.at(cmd.extra+3));
+
+        QPointF offset(d_ptr->floats.at(cmd.extra+4), d_ptr->floats.at(cmd.extra+5));
+        debug << "Cmd_DrawTiledPixmap:" << r << offset << pm.size();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawImageRect: {
+        QImage image(d_ptr->variants.at(cmd.offset).value<QImage>());
+        QRectF r(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1),
+                 d_ptr->floats.at(cmd.extra+2), d_ptr->floats.at(cmd.extra+3));
+        QRectF sr(d_ptr->floats.at(cmd.extra+4), d_ptr->floats.at(cmd.extra+5),
+                  d_ptr->floats.at(cmd.extra+6), d_ptr->floats.at(cmd.extra+7));
+        debug << "Cmd_DrawImageRect:" << r << sr << image.size();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawImagePos: {
+        QImage image(d_ptr->variants.at(cmd.offset).value<QImage>());
+        QPointF pos(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
+        debug << "Cmd_DrawImagePos:" << pos << image.size();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawText: {
+        QPointF pos(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
+        QList<QVariant> variants(d_ptr->variants.at(cmd.offset).value<QList<QVariant> >());
+
+        QFont font(variants.at(0).value<QFont>());
+        QString text(variants.at(1).value<QString>());
+
+        debug << "Cmd_DrawText:" << pos << text << font.family();
+        break; }
+
+    case QPaintBufferPrivate::Cmd_DrawTextItem: {
+        QPointF pos(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
+        QTextItemIntCopy *tiCopy = reinterpret_cast<QTextItemIntCopy *>(qVariantValue<void *>(d_ptr->variants.at(cmd.offset)));
+        QTextItemInt &ti = (*tiCopy)();
+        QString text(ti.text());
+
+        QFont font(ti.font());
+        font.setUnderline(false);
+        font.setStrikeOut(false);
+        font.setOverline(false);
+
+        const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
+        qreal justificationWidth = 0;
+        if (si.justified)
+            justificationWidth = si.width.toReal();
+
+        debug << "Cmd_DrawTextItem:" << pos << " " << text;
+        break; }
+    case QPaintBufferPrivate::Cmd_SystemStateChanged: {
+        QRegion systemClip(d_ptr->variants.at(cmd.offset).value<QRegion>());
+
+        debug << "Cmd_SystemStateChanged:" << systemClip;
+        break; }
+    case QPaintBufferPrivate::Cmd_Translate: {
+        QPointF delta(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
+        debug << "Cmd_Translate:" << delta;
+        break; }
+    case QPaintBufferPrivate::Cmd_DrawStaticText: {
+        debug << "Cmd_DrawStaticText";
+        break; }
+    }
+
+    return desc;
+}
+#endif
 
 QRectF QPaintBuffer::boundingRect() const
 {
@@ -992,13 +1270,14 @@ void QPaintBufferEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
 void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
-    QString text = QString(staticTextItem->chars, staticTextItem->numChars);
-
-    QStaticText staticText(text);
-    staticText.prepare(state()->matrix, staticTextItem->font);
-
     QVariantList variants;
-    variants << QVariant(staticTextItem->font) << QVariant::fromValue(staticText);
+
+    variants << QVariant(staticTextItem->font);
+    for (int i=0; i<staticTextItem->numGlyphs; ++i) {
+        variants.append(staticTextItem->glyphs[i]);
+        variants.append(staticTextItem->glyphPositions[i].toPointF());
+    }
+
     buffer->addCommand(QPaintBufferPrivate::Cmd_DrawStaticText, QVariant(variants));
 }
 
@@ -1110,15 +1389,12 @@ void QPainterReplayer::setupTransform(QPainter *_painter)
     painter->setTransform(m_world_matrix);
 }
 
-void QPainterReplayer::draw(const QPaintBuffer &buffer, QPainter *_painter, int frame)
+void QPainterReplayer::processCommands(const QPaintBuffer &buffer, QPainter *p, int begin, int end)
 {
     d = buffer.d_ptr;
-    setupTransform(_painter);
+    painter = p;
 
-    int frameStart = (frame == 0) ? 0 : d->frames.at(frame-1);
-    int frameEnd = (frame == d->frames.size()) ? d->commands.size() : d->frames.at(frame);
-
-    for (int cmdIndex=frameStart; cmdIndex<frameEnd; ++cmdIndex) {
+    for (int cmdIndex = begin; cmdIndex < end; ++cmdIndex) {
         const QPaintBufferCommand &cmd = d->commands.at(cmdIndex);
         process(cmd);
     }
@@ -1484,11 +1760,19 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             
             QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
             
-            QFont font(variants.at(0).value<QFont>());
-            QStaticText text(variants.at(0).value<QStaticText>());
-            
+            QFont font = variants.at(0).value<QFont>();
+
+            QVector<quint32> glyphs;
+            QVector<QPointF> positions;
+
+            for (int i=0; i<(variants.size() - 1) / 2; ++i) {
+                glyphs.append(variants.at(i*2 + 1).toUInt());
+                positions.append(variants.at(i*2 + 2).toPointF());
+            }
+
             painter->setFont(font);
-            painter->drawStaticText(QPointF(0, 0), text);
+
+            qt_draw_glyphs(painter, glyphs.constData(), positions.constData(), glyphs.size());
             
         break;
     }

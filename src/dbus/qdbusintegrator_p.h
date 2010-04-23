@@ -69,6 +69,8 @@
 #include "qdbusmessage.h"
 #include "qdbusconnection_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class QDBusConnectionPrivate;
@@ -157,4 +159,5 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusSlotCache)
 
+#endif // QT_NO_DBUS
 #endif

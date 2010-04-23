@@ -184,7 +184,8 @@ bool qt_mac_app_fullscreen = false;
 bool qt_scrollbar_jump_to_pos = false;
 static bool qt_mac_collapse_on_dblclick = true;
 extern int qt_antialiasing_threshold; // from qapplication.cpp
-QPointer<QWidget> qt_button_down;                // widget got last button-down
+QWidget * qt_button_down;                // widget got last button-down
+QPointer<QWidget> qt_last_mouse_receiver;
 #ifndef QT_MAC_USE_COCOA
 static bool qt_button_down_in_content; // whether the button_down was in the content area.
 static bool qt_mac_previous_press_in_popup_mode = false;
@@ -1220,11 +1221,18 @@ void qt_init(QApplicationPrivate *priv, int)
         }
 
 #endif
-        if (!app_proc_ae_handlerUPP) {
+        if (!app_proc_ae_handlerUPP && !QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
-            for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
-                AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
-                        app_proc_ae_handlerUPP, SRefCon(qApp), false);
+            for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i) {
+                // Install apple event handler, but avoid overwriting an already
+                // existing handler (it means a 3rd party application has installed one):
+                SRefCon refCon = 0;
+                AEEventHandlerUPP current_handler = NULL;
+                AEGetEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id, &current_handler, &refCon, false);
+                if (!current_handler)
+                    AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
+                            app_proc_ae_handlerUPP, SRefCon(qApp), false);
+            }
         }
 
         if (QApplicationPrivate::app_style) {
@@ -1751,14 +1759,19 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             // (actually two events; one for horizontal and one for vertical).
             // As a results of this, and to make sure we dont't receive duplicate events,
             // we try to detect when this happend by checking the 'compatibilityEvent'.
+            // Since delta is delivered as pixels rather than degrees, we need to
+            // convert from pixels to degrees in a sensible manner.
+            // It looks like 1/4 degrees per pixel behaves most native.
+            // (NB: Qt expects the unit for delta to be 8 per degree):
+            const int pixelsToDegrees = 2;
             SInt32 mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaX = mdelt;
+            wheel_deltaX = mdelt * pixelsToDegrees;
             mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothVerticalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaY = mdelt;
+            wheel_deltaY = mdelt * pixelsToDegrees;
             GetEventParameter(event, kEventParamEventRef, typeEventRef, 0,
                               sizeof(compatibilityEvent), 0, &compatibilityEvent);
         } else if (ekind == kEventMouseWheelMoved) {
@@ -2433,25 +2446,30 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             }
             if(!handled_event) {
                 if(cmd.commandID == kHICommandQuit) {
-                    handled_event = true;
-                    HiliteMenu(0);
-                    bool handle_quit = true;
-                    if(QApplicationPrivate::modalState()) {
-                        int visible = 0;
-                        const QWidgetList tlws = QApplication::topLevelWidgets();
-                        for(int i = 0; i < tlws.size(); ++i) {
-                            if(tlws.at(i)->isVisible())
-                                ++visible;
+                    // Quitting the application is not Qt's responsibility if
+                    // used in a plugin or just embedded into a native application.
+                    // In that case, let the event pass down to the native apps event handler.
+                    if (!QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+                        handled_event = true;
+                        HiliteMenu(0);
+                        bool handle_quit = true;
+                        if(QApplicationPrivate::modalState()) {
+                            int visible = 0;
+                            const QWidgetList tlws = QApplication::topLevelWidgets();
+                            for(int i = 0; i < tlws.size(); ++i) {
+                                if(tlws.at(i)->isVisible())
+                                    ++visible;
+                            }
+                            handle_quit = (visible <= 1);
                         }
-                        handle_quit = (visible <= 1);
-                    }
-                    if(handle_quit) {
-                        QCloseEvent ev;
-                        QApplication::sendSpontaneousEvent(app, &ev);
-                        if(ev.isAccepted())
-                            app->quit();
-                    } else {
-                        QApplication::beep();
+                        if(handle_quit) {
+                            QCloseEvent ev;
+                            QApplication::sendSpontaneousEvent(app, &ev);
+                            if(ev.isAccepted())
+                                app->quit();
+                        } else {
+                            QApplication::beep();
+                        }
                     }
                 } else if(cmd.commandID == kHICommandSelectWindow) {
                     if((GetCurrentKeyModifiers() & cmdKey))
@@ -2495,6 +2513,13 @@ void QApplicationPrivate::setupAppleEvents()
     // finished initialization, which appears to be just after [NSApplication run] has
     // started to execute. By setting up our apple events handlers this late, we override
     // the ones set up by NSApplication.
+
+    // If Qt is used as a plugin, we let the 3rd party application handle events
+    // like quit and open file events. Otherwise, if we install our own handlers, we
+    // easily end up breaking functionallity the 3rd party application depend on:
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
     QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
     [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)

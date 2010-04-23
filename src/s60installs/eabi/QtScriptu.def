@@ -192,13 +192,13 @@ EXPORTS
 	_ZN24QScriptSyntaxCheckResultD1Ev @ 191 NONAME
 	_ZN24QScriptSyntaxCheckResultD2Ev @ 192 NONAME
 	_ZN24QScriptSyntaxCheckResultaSERKS_ @ 193 NONAME
-	_ZN25QScriptEngineAgentPrivate11atStatementERKN5QTJSC17DebuggerCallFrameEiii @ 194 NONAME
+	_ZN25QScriptEngineAgentPrivate11atStatementERKN5QTJSC17DebuggerCallFrameEiii @ 194 NONAME ABSENT
 	_ZN25QScriptEngineAgentPrivate11returnEventERKN5QTJSC17DebuggerCallFrameEii @ 195 NONAME
 	_ZN25QScriptEngineAgentPrivate12evaluateStopERKN5QTJSC7JSValueEi @ 196 NONAME
 	_ZN25QScriptEngineAgentPrivate12functionExitERKN5QTJSC7JSValueEi @ 197 NONAME
 	_ZN25QScriptEngineAgentPrivate14exceptionCatchERKN5QTJSC17DebuggerCallFrameEi @ 198 NONAME
 	_ZN25QScriptEngineAgentPrivate14exceptionThrowERKN5QTJSC17DebuggerCallFrameEib @ 199 NONAME
-	_ZN25QScriptEngineAgentPrivate18didReachBreakpointERKN5QTJSC17DebuggerCallFrameEiii @ 200 NONAME
+	_ZN25QScriptEngineAgentPrivate18didReachBreakpointERKN5QTJSC17DebuggerCallFrameEiii @ 200 NONAME ABSENT
 	_ZN25QScriptEngineAgentPrivate6attachEv @ 201 NONAME
 	_ZN25QScriptEngineAgentPrivate6detachEv @ 202 NONAME
 	_ZN28QScriptClassPropertyIteratorC2ERK12QScriptValue @ 203 NONAME
@@ -394,4 +394,49 @@ EXPORTS
 	_ZTI23QScriptDeclarativeClass @ 393 NONAME
 	_ZTV23QScriptDeclarativeClass @ 394 NONAME
 	_ZNK23QScriptDeclarativeClass9isQObjectEv @ 395 NONAME
+	_ZN23QScriptDeclarativeClass13functionValueERK12QScriptValueRKPv @ 396 NONAME
+	_ZN23QScriptDeclarativeClass13propertyValueERK12QScriptValueRKPv @ 397 NONAME
+	_ZN23QScriptDeclarativeClass14newObjectValueEP13QScriptEnginePS_PNS_6ObjectE @ 398 NONAME
+	_ZN23QScriptDeclarativeClass15setSupportsCallEb @ 399 NONAME
+	_ZN23QScriptDeclarativeClass4callEPNS_6ObjectEP14QScriptContext @ 400 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEngineRK12QScriptValue @ 401 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEngineRK7QString @ 402 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEngineb @ 403 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEngined @ 404 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEnginef @ 405 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEnginei @ 406 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP13QScriptEnginej @ 407 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContextRK12QScriptValue @ 408 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContextRK7QString @ 409 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContextb @ 410 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContextd @ 411 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContextf @ 412 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContexti @ 413 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1EP14QScriptContextj @ 414 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1ERKS0_ @ 415 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC1Ev @ 416 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEngineRK12QScriptValue @ 417 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEngineRK7QString @ 418 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEngineb @ 419 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEngined @ 420 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEnginef @ 421 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEnginei @ 422 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP13QScriptEnginej @ 423 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContextRK12QScriptValue @ 424 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContextRK7QString @ 425 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContextb @ 426 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContextd @ 427 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContextf @ 428 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContexti @ 429 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2EP14QScriptContextj @ 430 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2ERKS0_ @ 431 NONAME
+	_ZN23QScriptDeclarativeClass5ValueC2Ev @ 432 NONAME
+	_ZN23QScriptDeclarativeClass5ValueD1Ev @ 433 NONAME
+	_ZN23QScriptDeclarativeClass5ValueD2Ev @ 434 NONAME
+	_ZNK23QScriptDeclarativeClass12supportsCallEv @ 435 NONAME
+	_ZNK23QScriptDeclarativeClass5Value13toScriptValueEP13QScriptEngine @ 436 NONAME
+	_ZN13QScriptEngine26reportAdditionalMemoryCostEi @ 437 NONAME
+	_ZN23QScriptDeclarativeClass7compareEPNS_6ObjectES1_ @ 438 NONAME
+	_ZN25QScriptEngineAgentPrivate11atStatementERKN5QTJSC17DebuggerCallFrameEii @ 439 NONAME
+	_ZN25QScriptEngineAgentPrivate18didReachBreakpointERKN5QTJSC17DebuggerCallFrameEii @ 440 NONAME
 

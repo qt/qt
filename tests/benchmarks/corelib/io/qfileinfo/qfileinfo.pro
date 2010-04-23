@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qfileinfo
+TARGET = tst_bench_qfileinfo
 DEPENDPATH += .
 INCLUDEPATH += .
 

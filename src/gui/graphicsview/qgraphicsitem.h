@@ -139,7 +139,13 @@ public:
         ItemZValueHasChanged,
         ItemOpacityChange,
         ItemOpacityHasChanged,
-        ItemScenePositionHasChanged
+        ItemScenePositionHasChanged,
+        ItemRotationChange,
+        ItemRotationHasChanged,
+        ItemScaleChange,
+        ItemScaleHasChanged,
+        ItemTransformOriginPointChange,
+        ItemTransformOriginPointHasChanged
     };
 
     enum CacheMode {
@@ -418,6 +424,7 @@ public:
     void removeSceneEventFilter(QGraphicsItem *filterItem);
 
 protected:
+    void updateMicroFocus();
     virtual bool sceneEventFilter(QGraphicsItem *watched, QEvent *event);
     virtual bool sceneEvent(QEvent *event);
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -540,13 +547,20 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged FINAL)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged FINAL)
-    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
-    Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged)
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos FINAL)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged FINAL)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged FINAL)
+    Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged FINAL)
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint WRITE setTransformOriginPoint)
+#ifndef QT_NO_GRAPHICSEFFECT
+    Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
+#endif
+    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), QDeclarativeListProperty<QGraphicsObject> children READ childrenList DESIGNABLE false NOTIFY childrenChanged)
+    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
+    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
+    Q_CLASSINFO("DefaultProperty", "children")
     Q_INTERFACES(QGraphicsItem)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
@@ -561,6 +575,9 @@ public:
     void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
     void ungrabGesture(Qt::GestureType type);
 
+protected Q_SLOTS:
+    void updateMicroFocus();
+
 Q_SIGNALS:
     void parentChanged();
     void opacityChanged();
@@ -571,6 +588,9 @@ Q_SIGNALS:
     void zChanged();
     void rotationChanged();
     void scaleChanged();
+    void childrenChanged();
+    void widthChanged();
+    void heightChanged();
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);

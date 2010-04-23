@@ -128,9 +128,6 @@ namespace Phonon
                   int oldSize = m_buffer.size();
                   while (m_buffer.size() < int(length)) {
                       needData();
-                      if (m_mediaGraph->isStopping()) {
-                          return VFW_E_WRONG_STATE;
-                      }
 
                       if (oldSize == m_buffer.size()) {
                           break; //we didn't get any data

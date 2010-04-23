@@ -9,8 +9,8 @@ Rectangle {
         id: redRect
         width: 100; height: 100
         color: Qt.rgba(1,0,0)
-        x: Behavior {
-            NumberAnimation { objectName: "MyAnim"; running: true }
+        Behavior on x {
+            NumberAnimation {id: myAnim; objectName: "MyAnim"; running: true }
         }
 
     }

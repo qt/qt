@@ -644,6 +644,7 @@ protected:
     void paintEvent(QPaintEvent*);
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
+    void resizeEvent(QResizeEvent *);
 
 private:
     int hue;
@@ -654,7 +655,7 @@ private:
     int satPt(const QPoint &pt);
     void setCol(const QPoint &pt);
 
-    QPixmap *pix;
+    QPixmap pix;
 };
 
 static int pWidth = 220;
@@ -790,13 +791,27 @@ void QColorLuminancePicker::setCol(int h, int s , int v)
 }
 
 QPoint QColorPicker::colPt()
-{ return QPoint((360-hue)*(pWidth-1)/360, (255-sat)*(pHeight-1)/255); }
+{
+    QRect r = contentsRect();
+    return QPoint((360 - hue) * (r.width() - 1) / 360, (255 - sat) * (r.height() - 1) / 255);
+}
+
 int QColorPicker::huePt(const QPoint &pt)
-{ return 360 - pt.x()*360/(pWidth-1); }
+{
+    QRect r = contentsRect();
+    return 360 - pt.x() * 360 / (r.width() - 1);
+}
+
 int QColorPicker::satPt(const QPoint &pt)
-{ return 255 - pt.y()*255/(pHeight-1) ; }
+{
+    QRect r = contentsRect();
+    return 255 - pt.y() * 255 / (r.height() - 1);
+}
+
 void QColorPicker::setCol(const QPoint &pt)
-{ setCol(huePt(pt), satPt(pt)); }
+{
+    setCol(huePt(pt), satPt(pt));
+}
 
 QColorPicker::QColorPicker(QWidget* parent)
     : QFrame(parent)
@@ -804,29 +819,12 @@ QColorPicker::QColorPicker(QWidget* parent)
     hue = 0; sat = 0;
     setCol(150, 255);
 
-    QImage img(pWidth, pHeight, QImage::Format_RGB32);
-    int x, y;
-    uint *pixel = (uint *) img.scanLine(0);
-    for (y = 0; y < pHeight; y++) {
-        const uint *end = pixel + pWidth;
-        x = 0;
-        while (pixel < end) {
-            QPoint p(x, y);
-            QColor c;
-            c.setHsv(huePt(p), satPt(p), 200);
-            *pixel = c.rgb();
-            ++pixel;
-            ++x;
-        }
-    }
-    pix = new QPixmap(QPixmap::fromImage(img));
     setAttribute(Qt::WA_NoSystemBackground);
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed) );
 }
 
 QColorPicker::~QColorPicker()
 {
-    delete pix;
 }
 
 QSize QColorPicker::sizeHint() const
@@ -869,7 +867,7 @@ void QColorPicker::paintEvent(QPaintEvent* )
     drawFrame(&p);
     QRect r = contentsRect();
 
-    p.drawPixmap(r.topLeft(), *pix);
+    p.drawPixmap(r.topLeft(), pix);
     QPoint pt = colPt() + r.topLeft();
     p.setPen(Qt::black);
 
@@ -877,6 +875,31 @@ void QColorPicker::paintEvent(QPaintEvent* )
     p.fillRect(pt.x(), pt.y()-9, 2, 20, Qt::black);
 
 }
+
+void QColorPicker::resizeEvent(QResizeEvent *ev)
+{
+    QFrame::resizeEvent(ev);
+
+    int w = width() - frameWidth() * 2;
+    int h = height() - frameWidth() * 2;
+    QImage img(w, h, QImage::Format_RGB32);
+    int x, y;
+    uint *pixel = (uint *) img.scanLine(0);
+    for (y = 0; y < h; y++) {
+        const uint *end = pixel + w;
+        x = 0;
+        while (pixel < end) {
+            QPoint p(x, y);
+            QColor c;
+            c.setHsv(huePt(p), satPt(p), 200);
+            *pixel = c.rgb();
+            ++pixel;
+            ++x;
+        }
+    }
+    pix = QPixmap::fromImage(img);
+}
+
 
 class QColSpinBox : public QSpinBox
 {

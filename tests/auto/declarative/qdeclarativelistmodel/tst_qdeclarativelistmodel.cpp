@@ -39,16 +39,28 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtDeclarative/private/qdeclarativeitem_p.h>
+#include <QtDeclarative/private/qdeclarativetext_p.h>
+#include <QtDeclarative/private/qdeclarativeengine_p.h>
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include <QtDeclarative/private/qdeclarativeexpression_p.h>
 #include <QDeclarativeComponent>
-#include <QDebug>
+
+#include <QtCore/qtimer.h>
+#include <QtCore/qdebug.h>
+
+#include "../../../shared/util.h"
 
 class tst_QDeclarativeListModel : public QObject
 {
     Q_OBJECT
 public:
     tst_QDeclarativeListModel() {}
+
+private:
+    QScriptValue nestedListValue(QScriptEngine *eng) const;
+    QDeclarativeItem *createWorkerTest(QDeclarativeEngine *eng, QDeclarativeComponent *component, QDeclarativeListModel *model);
+    void waitForWorker(QDeclarativeItem *item);
 
 private slots:
     void static_types();
@@ -58,14 +70,55 @@ private slots:
     void static_nestedElements_data();
     void dynamic_data();
     void dynamic();
+    void dynamic_worker_data();
+    void dynamic_worker();
+    void convertNestedToFlat_fail();
+    void convertNestedToFlat_fail_data();
+    void convertNestedToFlat_ok();
+    void convertNestedToFlat_ok_data();
     void error_data();
     void error();
+    void set();
 };
+
+QScriptValue tst_QDeclarativeListModel::nestedListValue(QScriptEngine *eng) const
+{
+    QScriptValue list = eng->newArray();
+    list.setProperty(0, eng->newObject());
+    list.setProperty(1, eng->newObject());
+    QScriptValue sv = eng->newObject();
+    sv.setProperty("foo", list);
+    return sv;
+}
+
+QDeclarativeItem *tst_QDeclarativeListModel::createWorkerTest(QDeclarativeEngine *eng, QDeclarativeComponent *component, QDeclarativeListModel *model)
+{
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component->create());
+    QDeclarativeEngine::setContextForObject(model, eng->rootContext());
+    if (item)
+        item->setProperty("model", qVariantFromValue(model)); 
+    return item;
+}
+
+void tst_QDeclarativeListModel::waitForWorker(QDeclarativeItem *item)
+{
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    QDeclarativeProperty prop(item, "done");
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.connectNotifySignal(&loop, SLOT(quit())));
+    timer.start(10000);
+    loop.exec();
+    QVERIFY(timer.isActive());
+}
 
 void tst_QDeclarativeListModel::static_i18n()
 {
     QString expect = QString::fromUtf8("na\303\257ve");
-    QString componentStr = "import Qt 4.6\nListModel { ListElement { prop1: \""+expect+"\" } }";
+    QString componentStr = "import Qt 4.7\nListModel { ListElement { prop1: \""+expect+"\" } }";
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toUtf8(), QUrl::fromLocalFile(""));
@@ -86,7 +139,7 @@ void tst_QDeclarativeListModel::static_nestedElements()
     QString elementsStr = elements.join(",\n") + "\n";
 
     QString componentStr = 
-        "import Qt 4.6\n"
+        "import Qt 4.7\n"
         "ListModel {\n"
         "   ListElement {\n"
         "       attributes: [\n";
@@ -142,17 +195,17 @@ void tst_QDeclarativeListModel::dynamic_data()
 
     QTest::newRow("clear1") << "{append({'foo':456});clear();count}" << 0 << "";
     QTest::newRow("clear2") << "{append({'foo':123});append({'foo':456});clear();count}" << 0 << "";
-    QTest::newRow("clear2") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("clear3") << "{append({'foo':123});clear();get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
 
     QTest::newRow("remove1") << "{append({'foo':123});remove(0);count}" << 0 << "";
     QTest::newRow("remove2a") << "{append({'foo':123});append({'foo':456});remove(0);count}" << 1 << "";
     QTest::newRow("remove2b") << "{append({'foo':123});append({'foo':456});remove(0);get(0).foo}" << 456 << "";
     QTest::newRow("remove2c") << "{append({'foo':123});append({'foo':456});remove(1);get(0).foo}" << 123 << "";
     QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
-    QTest::newRow("remove3a") << "{append({'foo':123});remove(-1)}" << 0 << "QML ListModel (unknown location) remove: index -1 out of range";
+    QTest::newRow("remove3a") << "{append({'foo':123});remove(-1);count}" << 1 << "QML ListModel (unknown location) remove: index -1 out of range";
     QTest::newRow("remove4a") << "{remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
-    QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
-    QTest::newRow("remove4c") << "{append({'foo':123});remove(1)}" << 0 << "QML ListModel (unknown location) remove: index 1 out of range";
+    QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0);count}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
+    QTest::newRow("remove4c") << "{append({'foo':123});remove(1);count}" << 1 << "QML ListModel (unknown location) remove: index 1 out of range";
 
     QTest::newRow("insert1") << "{insert(0,{'foo':123});count}" << 1 << "";
     QTest::newRow("insert2") << "{insert(1,{'foo':123});count}" << 0 << "QML ListModel (unknown location) insert: index 1 out of range";
@@ -161,7 +214,7 @@ void tst_QDeclarativeListModel::dynamic_data()
     QTest::newRow("insert3c") << "{append({'foo':123});insert(1,{'foo':456});get(1).foo}" << 456 << "";
     QTest::newRow("insert3d") << "{append({'foo':123});insert(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("insert3e") << "{append({'foo':123});insert(0,{'foo':456});get(1).foo}" << 123 << "";
-    QTest::newRow("insert4") << "{append({'foo':123});insert(-1,{'foo':456})}" << 0 << "QML ListModel (unknown location) insert: index -1 out of range";
+    QTest::newRow("insert4") << "{append({'foo':123});insert(-1,{'foo':456});count}" << 1 << "QML ListModel (unknown location) insert: index -1 out of range";
     QTest::newRow("insert5a") << "{insert(0,123)}" << 0 << "QML ListModel (unknown location) insert: value is not an object";
     QTest::newRow("insert5b") << "{insert(0,[1,2,3])}" << 0 << "QML ListModel (unknown location) insert: value is not an object";
 
@@ -171,8 +224,8 @@ void tst_QDeclarativeListModel::dynamic_data()
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
     QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
     QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
-    QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123)}" << 0 << "QML ListModel (unknown location) set: value is not an object";
-    QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3])}" << 0 << "QML ListModel (unknown location) set: value is not an object";
+    QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123);count}" << 1 << "QML ListModel (unknown location) set: value is not an object";
+    QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3]);count}" << 1 << "QML ListModel (unknown location) set: value is not an object";
     QTest::newRow("set6") << "{append({'foo':123});set(1,{'foo':456});count}" << 2 << "";
 
     QTest::newRow("setprop1") << "{append({'foo':123});setProperty(0,'foo',456);count}" << 1 << "";
@@ -181,7 +234,7 @@ void tst_QDeclarativeListModel::dynamic_data()
     QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).bar}" << 456 << "";
     QTest::newRow("setprop4a") << "{setProperty(0,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
     QTest::newRow("setprop4b") << "{setProperty(-1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
-    QTest::newRow("setprop4c") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 1 out of range";
+    QTest::newRow("setprop4c") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456);count}" << 1 << "QML ListModel (unknown location) set: index 1 out of range";
     QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});setProperty(1,'bar',222);get(1).bar}" << 222 << "";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";
@@ -193,16 +246,22 @@ void tst_QDeclarativeListModel::dynamic_data()
     QTest::newRow("move2b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(0).foo}" << 789 << "";
     QTest::newRow("move2c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(1).foo}" << 123 << "";
     QTest::newRow("move2d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(2).foo}" << 456 << "";
-    QTest::newRow("move3a") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,3)}" << 0 << "QML ListModel (unknown location) move: out of range";
-    QTest::newRow("move3b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,-1,1)}" << 0 << "QML ListModel (unknown location) move: out of range";
-    QTest::newRow("move3c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,-1)}" << 0 << "QML ListModel (unknown location) move: out of range";
-    QTest::newRow("move3d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,3,1)}" << 0 << "QML ListModel (unknown location) move: out of range";
+    QTest::newRow("move3a") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,3);count}" << 3 << "QML ListModel (unknown location) move: out of range";
+    QTest::newRow("move3b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,-1,1);count}" << 3 << "QML ListModel (unknown location) move: out of range";
+    QTest::newRow("move3c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,-1);count}" << 3 << "QML ListModel (unknown location) move: out of range";
+    QTest::newRow("move3d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,3,1);count}" << 3 << "QML ListModel (unknown location) move: out of range";
 
-    // Structured model
+    // Nested models
 
-    QTest::newRow("listprop1a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});count}" << 1 << "";
-    QTest::newRow("listprop1b") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.get(1).a}" << 2 << "";
-    QTest::newRow("listprop2a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.append({'a':4});get(0).bars.get(3).a}" << 4 << "";
+    QTest::newRow("nested-append1") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});count}" << 1 << "";
+    QTest::newRow("nested-append2") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.get(1).a}" << 2 << "";
+    QTest::newRow("nested-append3") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.append({'a':4});get(0).bars.get(3).a}" << 4 << "";
+
+    QTest::newRow("nested-insert") << "{append({'foo':123});insert(0,{'bars':[{'a':1},{'b':2},{'c':3}]});get(0).bars.get(0).a}" << 1 << "";
+    QTest::newRow("nested-set") << "{append({'foo':123});set(0,{'foo':[{'x':123}]});get(0).foo.get(0).x}" << 123 << "";
+
+    // XXX
+    //QTest::newRow("nested-setprop") << "{append({'foo':123});setProperty(0,'foo',[{'x':123}]);get(0).foo.get(0).x}" << 123 << "";
 }
 
 void tst_QDeclarativeListModel::dynamic()
@@ -214,15 +273,164 @@ void tst_QDeclarativeListModel::dynamic()
     QDeclarativeEngine engine;
     QDeclarativeListModel model;
     QDeclarativeEngine::setContextForObject(&model,engine.rootContext());
-    engine.rootContext()->addDefaultObject(&model);
+    engine.rootContext()->setContextObject(&model);
     QDeclarativeExpression e(engine.rootContext(), script, &model);
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
+
     int actual = e.value().toInt();
     if (e.hasError())
         qDebug() << e.error(); // errors not expected
     QVERIFY(!e.hasError());
     QCOMPARE(actual,result);
+}
+
+void tst_QDeclarativeListModel::dynamic_worker_data()
+{
+    dynamic_data();
+}
+
+void tst_QDeclarativeListModel::dynamic_worker()
+{
+    QFETCH(QString, script);
+    QFETCH(int, result);
+    QFETCH(QString, warning);
+
+    QDeclarativeListModel model;
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeItem *item = createWorkerTest(&eng, &component, &model);
+    QVERIFY(item != 0);
+
+    if (script[0] == QLatin1Char('{') && script[script.length()-1] == QLatin1Char('}'))
+        script = script.mid(1, script.length() - 2);
+    QVariantList operations;
+    foreach (const QString &s, script.split(';')) {
+        if (!s.isEmpty())
+            operations << s;
+    }
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
+
+    if (operations.count() == 1) {
+        // test count(), get() return the correct default values in the worker list model
+        QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker",
+                Q_ARG(QVariant, operations)));
+        waitForWorker(item);
+        QCOMPARE(QDeclarativeProperty(item, "result").read().toInt(), result);
+    } else {
+        // execute a set of commands on the worker list model, then check the
+        // changes are reflected in the list model in the main thread
+        if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
+            QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script");
+
+        QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
+                Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
+        waitForWorker(item);
+
+        QDeclarativeExpression e(eng.rootContext(), operations.last().toString(), &model);
+        if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
+            QVERIFY(e.value().toInt() != result);
+        else
+            QCOMPARE(e.value().toInt(), result);
+    }
+
+    delete item;
+    qApp->processEvents();
+}
+
+void tst_QDeclarativeListModel::convertNestedToFlat_fail()
+{
+    // If a model has nested data, it cannot be used at all from a worker script
+
+    QFETCH(QString, script);
+
+    QDeclarativeListModel model;
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeItem *item = createWorkerTest(&eng, &component, &model);
+    QVERIFY(item != 0);
+
+    QScriptEngine s_eng;
+    QScriptValue plainData = s_eng.newObject();
+    plainData.setProperty("foo", QScriptValue(123));
+    model.append(plainData);
+    model.append(nestedListValue(&s_eng));
+    QCOMPARE(model.count(), 2);
+
+    QTest::ignoreMessage(QtWarningMsg, "QML ListModel (unknown location) List contains nested list values and cannot be used from a worker script");
+    QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", Q_ARG(QVariant, script)));
+    waitForWorker(item);
+
+    QCOMPARE(model.count(), 2);
+
+    delete item;
+    qApp->processEvents();
+}
+
+void tst_QDeclarativeListModel::convertNestedToFlat_fail_data()
+{
+    QTest::addColumn<QString>("script");
+
+    QTest::newRow("clear") << "clear()";
+    QTest::newRow("remove") << "remove(0)";
+    QTest::newRow("append") << "append({'x':1})";
+    QTest::newRow("insert") << "insert(0, {'x':1})";
+    QTest::newRow("set") << "set(0, {'foo':1})";
+    QTest::newRow("setProperty") << "setProperty(0, 'foo', 1})";
+    QTest::newRow("move") << "move(0, 1, 1})";
+    QTest::newRow("get") << "get(0)";
+}
+
+void tst_QDeclarativeListModel::convertNestedToFlat_ok()
+{
+    // If a model only has plain data, it can be modified from a worker script. However,
+    // once the model is used from a worker script, it no longer accepts nested data
+
+    QFETCH(QString, script);
+
+    QDeclarativeListModel model;
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeItem *item = createWorkerTest(&eng, &component, &model);
+    QVERIFY(item != 0);
+
+    QScriptEngine s_eng;
+    QScriptValue plainData = s_eng.newObject();
+    plainData.setProperty("foo", QScriptValue(123));
+    model.append(plainData);
+    QCOMPARE(model.count(), 1);
+
+    QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", Q_ARG(QVariant, script)));
+    waitForWorker(item);
+
+    // can still add plain data
+    int count = model.count();
+    model.append(plainData);
+    QCOMPARE(model.count(), count+1);
+
+    QScriptValue nested = nestedListValue(&s_eng);
+    const char *warning = "QML ListModel (unknown location) Cannot add nested list values when modifying or after modification from a worker script";
+
+    QTest::ignoreMessage(QtWarningMsg, warning);
+    model.append(nested);
+
+    QTest::ignoreMessage(QtWarningMsg, warning);
+    model.insert(0, nested);
+
+    QTest::ignoreMessage(QtWarningMsg, warning);
+    model.set(0, nested);
+
+    QCOMPARE(model.count(), count+1);
+
+    delete item;
+    qApp->processEvents();
+}
+
+void tst_QDeclarativeListModel::convertNestedToFlat_ok_data()
+{
+    convertNestedToFlat_fail_data();
 }
 
 void tst_QDeclarativeListModel::static_types_data()
@@ -252,7 +460,7 @@ void tst_QDeclarativeListModel::static_types_data()
 
     QTest::newRow("enum")
         << "ListElement { foo: Text.AlignHCenter }"
-        << QVariant("QTBUG-5974:ListElement: constant script support for property value");
+        << QVariant(double(QDeclarativeText::AlignHCenter));
 }
 
 void tst_QDeclarativeListModel::static_types()
@@ -260,7 +468,7 @@ void tst_QDeclarativeListModel::static_types()
     QFETCH(QString, qml);
     QFETCH(QVariant, value);
 
-    qml = "import Qt 4.6\nListModel { " + qml + " }";
+    qml = "import Qt 4.7\nListModel { " + qml + " }";
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -292,32 +500,36 @@ void tst_QDeclarativeListModel::error_data()
     QTest::addColumn<QString>("error");
 
     QTest::newRow("id not allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { id: fred } }"
+        << "import Qt 4.7\nListModel { ListElement { id: fred } }"
         << "ListElement: cannot use reserved \"id\" property";
 
     QTest::newRow("id allowed in ListModel")
-        << "import Qt 4.6\nListModel { id:model }"
+        << "import Qt 4.7\nListModel { id:model }"
         << "";
 
     QTest::newRow("random properties not allowed in ListModel")
-        << "import Qt 4.6\nListModel { foo:123 }"
+        << "import Qt 4.7\nListModel { foo:123 }"
         << "ListModel: undefined property 'foo'";
 
     QTest::newRow("random properties allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { foo:123 } }"
+        << "import Qt 4.7\nListModel { ListElement { foo:123 } }"
         << "";
 
     QTest::newRow("bindings not allowed in ListElement")
-        << "import Qt 4.6\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
-        << "ListElement: cannot use script for property value"; // but note QTBUG-5974
+        << "import Qt 4.7\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
+        << "ListElement: cannot use script for property value";
 
     QTest::newRow("random object list properties allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
+        << "import Qt 4.7\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
         << "";
 
     QTest::newRow("default properties not allowed in ListElement")
-        << "import Qt 4.6\nListModel { ListElement { Item { } } }"
-        << "QTBUG-6082 ListElement should not allow child objects";
+        << "import Qt 4.7\nListModel { ListElement { Item { } } }"
+        << "ListElement: cannot contain nested elements";
+
+    QTest::newRow("QML elements not allowed in ListElement")
+        << "import Qt 4.7\nListModel { ListElement { a: Item { } } }"
+        << "ListElement: cannot contain nested elements";
 }
 
 void tst_QDeclarativeListModel::error()
@@ -332,14 +544,36 @@ void tst_QDeclarativeListModel::error()
     if (error.isEmpty()) {
         QVERIFY(!component.isError());
     } else {
-        if (error.startsWith(QLatin1String("QTBUG-")))
-            QEXPECT_FAIL("",error.toLatin1(),Abort);
         QVERIFY(component.isError());
         QList<QDeclarativeError> errors = component.errors();
         QCOMPARE(errors.count(),1);
         QCOMPARE(errors.at(0).description(),error);
     }
 }
+
+void tst_QDeclarativeListModel::set()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeListModel model;
+    QDeclarativeEngine::setContextForObject(&model,engine.rootContext());
+    engine.rootContext()->setContextObject(&model);
+    QScriptEngine *seng = QDeclarativeEnginePrivate::getScriptEngine(&engine);
+
+    QScriptValue sv = seng->newObject();
+    sv.setProperty("test", QScriptValue(false));
+    model.append(sv);
+
+    sv.setProperty("test", QScriptValue(true));
+    model.set(0, sv);
+    QCOMPARE(model.get(0).property("test").toBool(), true); // triggers creation of model cache
+    QCOMPARE(model.data(0, model.roles()[0]), qVariantFromValue(true)); 
+
+    sv.setProperty("test", QScriptValue(false));
+    model.set(0, sv);
+    QCOMPARE(model.get(0).property("test").toBool(), false); // tests model cache is updated
+    QCOMPARE(model.data(0, model.roles()[0]), qVariantFromValue(false)); 
+}
+
 
 QTEST_MAIN(tst_QDeclarativeListModel)
 

@@ -5,9 +5,9 @@ Rectangle {
     height: 480
     Text {
         id: theText
-        width: 50
-        wrap: true
-        text: "a text string that is longer than 50 pixels"
+        width: 40
+        wrapMode: Text.WordWrap
+        text: "a text string that is longer than 40 pixels"
     }
 
     states: State {

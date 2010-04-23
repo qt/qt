@@ -237,12 +237,14 @@ void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt)
 
         // fill body
         if (active) {
-            p->fillRect(rect, QColor(151, 151, 151));
+            int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 16 : 0;
+            p->fillRect(rect, QColor(151 + d, 151 + d, 151 + d));
         } else {
+            int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 9 : 0;
             QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
-            gradient.setColorAt(0, QColor(207, 207, 207));
-            gradient.setColorAt(0.5, QColor(206, 206, 206));
-            gradient.setColorAt(1, QColor(201, 201, 201));
+            gradient.setColorAt(0, QColor(207 + d, 207 + d, 207 + d));
+            gradient.setColorAt(0.5, QColor(206 + d, 206 + d, 206 + d));
+            gradient.setColorAt(1, QColor(201 + d, 201 + d, 201 + d));
             p->fillRect(rect, gradient);
         }
 
@@ -432,13 +434,13 @@ static inline bool isTreeView(const QWidget *widget)
 
 QString qt_mac_removeMnemonics(const QString &original)
 {
-    // copied from qt_format_text (to be bug-for-bug compatible).
     QString returnText(original.size(), 0);
     int finalDest = 0;
     int currPos = 0;
     int l = original.length();
     while (l) {
-        if (original.at(currPos) == QLatin1Char('&')) {
+        if (original.at(currPos) == QLatin1Char('&')
+            && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
             ++currPos;
             --l;
             if (l == 0)
@@ -5613,6 +5615,57 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case QStyle::CT_SpinBox:
          // hack to work around horrible sizeHint() code in QAbstractSpinBox
         sz.setHeight(sz.height() - 3);
+        break;
+	case QStyle::CT_TabWidget:
+        // the size between the pane and the "contentsRect" (+4,+4)
+        // (the "contentsRect" is on the inside of the pane)
+        sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
+        /**
+            This is supposed to show the relationship between the tabBar and
+            the stack widget of a QTabWidget.
+            Unfortunately ascii is not a good way of representing graphics.....
+            PS: The '=' line is the painted frame.
+
+               top    ---+
+                         |
+                         |
+                         |
+                         |                vvv just outside the painted frame is the "pane"
+                      - -|- - - - - - - - - - <-+
+            TAB BAR      +=====^============    | +2 pixels
+                    - - -|- - -|- - - - - - - <-+
+                         |     |      ^   ^^^ just inside the painted frame is the "contentsRect"
+                         |     |      |
+                         |   overlap  |
+                         |     |      |
+            bottom ------+   <-+     +14 pixels
+                                      |
+                                      v
+                ------------------------------  <- top of stack widget
+
+
+        To summarize: 
+             * 2 is the distance between the pane and the contentsRect 
+             * The 14 and the 1's are the distance from the contentsRect to the stack widget.
+               (same value as used in SE_TabWidgetTabContents)
+             * overlap is how much the pane should overlap the tab bar
+        */	
+        // then add the size between the stackwidget and the "contentsRect"
+
+        if (const QStyleOptionTabWidgetFrame *twf
+                = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
+            QSize extra(0,0);
+            const int overlap = pixelMetric(PM_TabBarBaseOverlap, opt, widget);
+            const int gapBetweenTabbarAndStackWidget = 2 + 14 - overlap;
+
+            if (getTabDirection(twf->shape) == kThemeTabNorth || getTabDirection(twf->shape) == kThemeTabSouth) {
+                extra = QSize(2, gapBetweenTabbarAndStackWidget + 1);
+            } else {
+                extra = QSize(gapBetweenTabbarAndStackWidget + 1, 2);
+            }
+            sz+= extra;
+        }
+
         break;
     case QStyle::CT_TabBarTab:
         if (const QStyleOptionTabV3 *tab = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {

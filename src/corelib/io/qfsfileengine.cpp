@@ -126,7 +126,9 @@ void QFSFileEnginePrivate::init()
     fileAttrib = INVALID_FILE_ATTRIBUTES;
     fileHandle = INVALID_HANDLE_VALUE;
     mapHandle = INVALID_HANDLE_VALUE;
+#ifndef Q_OS_WINCE
     cachedFd = -1;
+#endif
 #endif
 }
 
@@ -147,6 +149,8 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         return path;
 #endif
 #if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN) || defined(Q_OS_MAC)
+    // ... but Linux with uClibc does not have it
+#if !defined(__UCLIBC__)
     char *ret = 0;
 #if defined(Q_OS_MAC)
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
@@ -172,6 +176,7 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         free(ret);
         return canonicalPath;
     }
+#endif
 #endif
 
     QFileInfo fi;
@@ -203,6 +208,8 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
             fi.setFile(prefix);
             if (fi.isSymLink()) {
                 QString target = fi.symLinkTarget();
+                if(QFileInfo(target).isRelative())
+                    target = fi.absolutePath() + slash + target;
                 if (separatorPos != -1) {
                     if (fi.isDir() && !target.endsWith(slash))
                         target.append(slash);
@@ -1028,6 +1035,10 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 /*! \fn QString QFSFileEngine::tempPath()
   Returns the temporary path (i.e., a path in which it is safe
   to store temporary files).
+*/
+
+/*! \fn QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
+    \internal
 */
 
 QT_END_NAMESPACE

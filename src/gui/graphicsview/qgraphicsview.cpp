@@ -3360,12 +3360,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
             if (viewTransformed)
                 backgroundPainter.setTransform(viewTransform);
-#ifdef Q_WS_X11
-#undef X11
-            if (backgroundPainter.paintEngine()->type() != QPaintEngine::X11)
-#define X11 qt_x11Data
-#endif
-                backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             QRectF backgroundExposedSceneRect = mapToScene(d->backgroundPixmapExposed.boundingRect()).boundingRect();
             drawBackground(&backgroundPainter, backgroundExposedSceneRect);
             d->backgroundPixmapExposed = QRegion();

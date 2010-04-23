@@ -180,7 +180,21 @@ public:
         FT_Matrix transformationMatrix;
         unsigned long id; // server sided id, GlyphSet for X11
         bool outline_drawing;
+
+        void removeGlyphFromCache(int index);
+        void clear();
+        inline Glyph *getGlyph(int index) const
+        {
+            if (index < 256)
+                return fast_glyph_data[index];
+            return glyph_data.value(index);
+        }
+        void setGlyph(int index, Glyph *glyph);
+
+private:
         mutable QHash<int, Glyph *> glyph_data; // maps from glyph index to glyph data
+        mutable Glyph *fast_glyph_data[256]; // for fast lookup of glyphs < 256
+        mutable int fast_glyph_count;
     };
 
     virtual QFontEngine::FaceId faceId() const;
@@ -252,7 +266,7 @@ public:
     QGlyphSet *defaultGlyphs() { return &defaultGlyphSet; }
     GlyphFormat defaultGlyphFormat() const { return defaultFormat; }
 
-    inline Glyph *cachedGlyph(glyph_t g) const { return defaultGlyphSet.glyph_data.value(g); }
+    inline Glyph *cachedGlyph(glyph_t g) const { return defaultGlyphSet.getGlyph(g); }
 
     QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
     bool loadGlyphs(QGlyphSet *gs, glyph_t *glyphs, int num_glyphs, GlyphFormat format = Format_Render);

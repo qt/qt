@@ -89,7 +89,7 @@ static inline void markIfNeeded(MarkStack& markStack, JSValue v)
 static inline void markIfNeeded(MarkStack& markStack, const RefPtr<Structure>& s)
 {
     if (s)
-        s->markAggregate(markStack);
+        markIfNeeded(markStack, s->storedPrototype());
 }
 
 JSGlobalObject::~JSGlobalObject()
@@ -121,15 +121,17 @@ JSGlobalObject::~JSGlobalObject()
         registerFile.setGlobalObject(0);
         registerFile.setNumGlobals(0);
     }
-    delete d();
+    d()->destructor(d());
 }
 
 void JSGlobalObject::init(JSObject* thisValue)
 {
     ASSERT(JSLock::currentThreadIsHoldingLock());
 
+    structure()->disableSpecificFunctionTracking();
+
     d()->globalData = Heap::heap(this)->globalData();
-    d()->globalScopeChain = ScopeChain(this, d()->globalData.get(), thisValue);
+    d()->globalScopeChain = ScopeChain(this, d()->globalData.get(), this, thisValue);
 
     JSGlobalObject::globalExec()->init(0, 0, d()->globalScopeChain.node(), CallFrame::noCaller(), 0, 0, 0);
 
@@ -396,6 +398,21 @@ void JSGlobalObject::markChildren(MarkStack& markStack)
     markIfNeeded(markStack, d()->methodCallDummy);
 
     markIfNeeded(markStack, d()->errorStructure);
+    markIfNeeded(markStack, d()->argumentsStructure);
+    markIfNeeded(markStack, d()->arrayStructure);
+    markIfNeeded(markStack, d()->booleanObjectStructure);
+    markIfNeeded(markStack, d()->callbackConstructorStructure);
+    markIfNeeded(markStack, d()->callbackFunctionStructure);
+    markIfNeeded(markStack, d()->callbackObjectStructure);
+    markIfNeeded(markStack, d()->dateStructure);
+    markIfNeeded(markStack, d()->emptyObjectStructure);
+    markIfNeeded(markStack, d()->errorStructure);
+    markIfNeeded(markStack, d()->functionStructure);
+    markIfNeeded(markStack, d()->numberObjectStructure);
+    markIfNeeded(markStack, d()->prototypeFunctionStructure);
+    markIfNeeded(markStack, d()->regExpMatchesArrayStructure);
+    markIfNeeded(markStack, d()->regExpStructure);
+    markIfNeeded(markStack, d()->stringObjectStructure);
 
     // No need to mark the other structures, because their prototypes are all
     // guaranteed to be referenced elsewhere.
@@ -450,11 +467,12 @@ void JSGlobalObject::copyGlobalsTo(RegisterFile& registerFile)
 
 void* JSGlobalObject::operator new(size_t size, JSGlobalData* globalData)
 {
-#ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-    return globalData->heap.inlineAllocate(size);
-#else
     return globalData->heap.allocate(size);
-#endif
+}
+
+void JSGlobalObject::destroyJSGlobalObjectData(void* jsGlobalObjectData)
+{
+    delete static_cast<JSGlobalObjectData*>(jsGlobalObjectData);
 }
 
 } // namespace JSC

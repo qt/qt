@@ -60,8 +60,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlipable : public QDeclarativeItem
     Q_OBJECT
 
     Q_ENUMS(Side)
-    Q_PROPERTY(QDeclarativeItem *front READ front WRITE setFront)
-    Q_PROPERTY(QDeclarativeItem *back READ back WRITE setBack)
+    Q_PROPERTY(QGraphicsObject *front READ front WRITE setFront)
+    Q_PROPERTY(QGraphicsObject *back READ back WRITE setBack)
     Q_PROPERTY(Side side READ side NOTIFY sideChanged)
     //### flipAxis
     //### flipRotation
@@ -69,11 +69,11 @@ public:
     QDeclarativeFlipable(QDeclarativeItem *parent=0);
     ~QDeclarativeFlipable();
 
-    QDeclarativeItem *front();
-    void setFront(QDeclarativeItem *);
+    QGraphicsObject *front();
+    void setFront(QGraphicsObject *);
 
-    QDeclarativeItem *back();
-    void setBack(QDeclarativeItem *);
+    QGraphicsObject *back();
+    void setBack(QGraphicsObject *);
 
     enum Side { Front, Back };
     Side side() const;

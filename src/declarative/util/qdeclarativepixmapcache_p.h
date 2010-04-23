@@ -45,6 +45,7 @@
 #include <QtCore/QString>
 #include <QtGui/QPixmap>
 #include <QtCore/qurl.h>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_HEADER
 
@@ -64,8 +65,12 @@ public:
 
     enum Status { Ready, Error, Unrequested, Loading };
     Status status() const;
+    QString errorString() const;
 
     const QUrl &url() const;
+    int forcedWidth() const;
+    int forcedHeight() const;
+    QSize implicitSize() const;
 
 Q_SIGNALS:
     void finished();
@@ -81,7 +86,7 @@ private:
     void setLoading();
 
 private:
-    QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url);
+    QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url, int req_width, int req_height);
     Q_DISABLE_COPY(QDeclarativePixmapReply)
     Q_DECLARE_PRIVATE(QDeclarativePixmapReply)
     friend class QDeclarativeImageRequestHandler;
@@ -91,9 +96,10 @@ private:
 
 class Q_DECLARATIVE_EXPORT QDeclarativePixmapCache
 {
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativePixmapCache)
 public:
-    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, bool async=false);
-    static QDeclarativePixmapReply *request(QDeclarativeEngine *, const QUrl& url);
+    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, QString *errorString, QSize *impsize=0, bool async=false, int req_width=0, int req_height=0);
+    static QDeclarativePixmapReply *request(QDeclarativeEngine *, const QUrl& url, int req_width=0, int req_height=0);
     static void cancel(const QUrl& url, QObject *obj);
     static int pendingRequests();
 };

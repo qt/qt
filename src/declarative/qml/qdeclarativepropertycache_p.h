@@ -53,17 +53,18 @@
 // We mean it.
 //
 
-#include "qdeclarativerefcount_p.h"
-#include "qdeclarativecleanup_p.h"
+#include "private/qdeclarativerefcount_p.h"
+#include "private/qdeclarativecleanup_p.h"
+#include "private/qdeclarativenotifier_p.h"
 
 #include <QtCore/qvector.h>
 
 #include <QtScript/private/qscriptdeclarativeclass_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeEngine;
 class QMetaProperty;
+
 class QDeclarativePropertyCache : public QDeclarativeRefCount, public QDeclarativeCleanup
 {
 public:
@@ -83,9 +84,9 @@ public:
                     IsResettable      = 0x00000004,
 
                     // These are mutualy exclusive
-                    IsFunction        = 0x00000008,
-                    IsQObjectDerived  = 0x00000010,
-                    IsEnumType        = 0x00000020,
+                    IsFunction        = 0x00000010,
+                    IsQObjectDerived  = 0x00000020,
+                    IsEnumType        = 0x00000040,
                     IsQList           = 0x00000080,
                     IsQmlBinding      = 0x00000100,
                     IsQScriptValue    = 0x00000200,
@@ -96,7 +97,7 @@ public:
 
         };
         Q_DECLARE_FLAGS(Flags, Flag)
-                        
+
         bool isValid() const { return coreIndex != -1; } 
 
         Flags flags;
@@ -114,9 +115,9 @@ public:
     struct ValueTypeData {
         inline ValueTypeData();
         inline bool operator==(const ValueTypeData &);
-        Data::Flags flags;     // flags on the value type wrapper
-        int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
-        int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
+        Data::Flags flags;     // flags of the access property on the value type proxy object
+        int valueTypeCoreIdx;  // The prop index of the access property on the value type proxy object
+        int valueTypePropType; // The QVariant::Type of access property on the value type proxy object
     };
 
     void update(QDeclarativeEngine *, const QMetaObject *);

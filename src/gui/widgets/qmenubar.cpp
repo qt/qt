@@ -71,6 +71,10 @@
 extern bool qt_wince_is_mobile(); //defined in qguifunctions_wce.cpp
 #endif
 
+#ifdef QT_SOFTKEYS_ENABLED
+#include <private/qsoftkeymanager_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMenuBarExtension : public QToolButton
@@ -264,19 +268,15 @@ void QMenuBarPrivate::updateGeometries()
 
 QRect QMenuBarPrivate::actionRect(QAction *act) const
 {
-    Q_Q(const QMenuBar);
     const int index = actions.indexOf(act);
-    if (index == -1)
-        return QRect();
 
     //makes sure the geometries are up-to-date
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
 
-    if (index >= actionRects.count())
+    if (index < 0 || index >= actionRects.count())
         return QRect(); // that can happen in case of native menubar
 
-    QRect ret = actionRects.at(index);
-    return QStyle::visualRect(q->layoutDirection(), q->rect(), ret);
+    return actionRects.at(index);
 }
 
 void QMenuBarPrivate::focusFirstAction()
@@ -501,6 +501,9 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
 
         //keep moving along..
         x += rect.width() + itemSpacing;
+
+        //make sure we follow the layout direction
+        rect = QStyle::visualRect(q->layoutDirection(), q->rect(), rect);
     }
 }
 
@@ -740,16 +743,13 @@ void QMenuBarPrivate::init()
         QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
     }
 #endif
-#ifdef Q_WS_S60
-    symbianCreateMenuBar(q->parentWidget());
-    if(symbian_menubar)
-        q->hide();
-#endif
-
     q->setBackgroundRole(QPalette::Button);
     oldWindow = oldParent = 0;
 #ifdef QT3_SUPPORT
     doAutoResize = false;
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+    menuBarAction = 0;
 #endif
     handleReparent();
     q->setMouseTracking(q->style()->styleHint(QStyle::SH_MenuBar_MouseTracking, 0, q));
@@ -1384,10 +1384,37 @@ void QMenuBarPrivate::handleReparent()
         wce_menubar->rebuild();
 #endif
 #ifdef Q_WS_S60
-    if (symbian_menubar)
-        symbian_menubar->rebuild();
-#endif
 
+    // Construct symbian_menubar when this code path is entered first time
+    // and when newParent != NULL
+    if (!symbian_menubar)
+        symbianCreateMenuBar(newParent);
+
+    // Reparent and rebuild menubar when parent is changed
+    if (symbian_menubar) {
+        if (oldParent != newParent)
+            reparentMenuBar(oldParent, newParent);
+        q->hide();
+        symbian_menubar->rebuild();
+    }
+
+#ifdef QT_SOFTKEYS_ENABLED
+    // Constuct menuBarAction when this code path is entered first time
+    if (!menuBarAction) {
+        if (newParent) {
+            menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, newParent);
+            newParent->addAction(menuBarAction);
+        }
+    } else {
+        // If reparenting i.e. we already have menuBarAction, remove it from old parent
+        // and add for a new parent
+        if (oldParent)
+            oldParent->removeAction(menuBarAction);
+        if (newParent)
+            newParent->addAction(menuBarAction);
+    }
+#endif // QT_SOFTKEYS_ENABLED
+#endif // Q_WS_S60
 }
 
 #ifdef QT3_SUPPORT
@@ -1440,7 +1467,13 @@ void QMenuBar::changeEvent(QEvent *e)
                || e->type() == QEvent::ApplicationFontChange) {
         d->itemsDirty = true;
         d->updateGeometries();
+#ifdef QT_SOFTKEYS_ENABLED
+    } else if (e->type() == QEvent::LanguageChange) {
+        if (d->menuBarAction)
+            d->menuBarAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::MenuSoftKey));
+#endif
     }
+
     QWidget::changeEvent(e);
 }
 
@@ -1898,9 +1931,9 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
             d->macCreateMenuBar(parentWidget());
         }
         macUpdateMenuBar();
-        updateGeometry();
-        setVisible(false);
-        setVisible(true);
+	updateGeometry();
+	if (!d->nativeMenuBar && parentWidget())
+	    setVisible(true);
 #endif
     }
 }

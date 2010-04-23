@@ -410,6 +410,7 @@ Option::init(int argc, char **argv)
     Option::res_ext = ".res";
 #else
     Option::dirlist_sep = ":";
+    Option::shellPath = QStringList("sh");
 #endif
     Option::sysenv_mod = "QMAKE_ENV_";
     Option::field_sep = ' ';
@@ -525,6 +526,17 @@ Option::init(int argc, char **argv)
             }
 #endif
         }
+    } else if (Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
+#if defined(Q_OS_MAC)
+        Option::host_mode = Option::HOST_MACX_MODE;
+        Option::target_mode = Option::TARG_MACX_MODE;
+#elif defined(Q_OS_UNIX)
+        Option::host_mode = Option::HOST_UNIX_MODE;
+        Option::target_mode = Option::TARG_UNIX_MODE;
+#else
+        Option::host_mode = Option::HOST_WIN_MODE;
+        Option::target_mode = Option::TARG_WIN_MODE;
+#endif
     }
 
     //defaults for globals
@@ -601,7 +613,7 @@ bool Option::postProcessProject(QMakeProject *project)
 QString
 Option::fixString(QString string, uchar flags)
 {
-    const QString orig_string = string;
+    //const QString orig_string = string;
     static QHash<FixStringCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FixStringCacheKey, QString>;

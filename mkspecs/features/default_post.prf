@@ -17,5 +17,9 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
         check.recurse = $$SUBDIRS
         check.recurse_target = check
     }
+    # `make check' should imply building the project
+    else {
+        check.depends = first
+    }
     QMAKE_EXTRA_TARGETS += check
 }

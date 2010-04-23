@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qnetworkreply
+TARGET = tst_bench_qnetworkreply
 DEPENDPATH += .
 INCLUDEPATH += .
 

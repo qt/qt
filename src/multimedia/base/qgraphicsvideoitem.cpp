@@ -52,6 +52,8 @@
 #include <QtOpenGL/qgl.h>
 #endif
 
+#ifndef QT_NO_GRAPHICSVIEW
+
 QT_BEGIN_NAMESPACE
 
 
@@ -410,9 +412,31 @@ void QGraphicsVideoItem::paint(
 */
 QVariant QGraphicsVideoItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    return QGraphicsItem::itemChange(change, value);
+    return QGraphicsObject::itemChange(change, value);
+}
+
+/*!
+    \reimp
+
+    \internal
+*/
+bool QGraphicsVideoItem::event(QEvent *event)
+{
+    return QGraphicsObject::event(event);
+}
+
+/*!
+    \reimp
+
+    \internal
+*/
+bool QGraphicsVideoItem::sceneEvent(QEvent *event)
+{
+    return QGraphicsObject::sceneEvent(event);
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GRAPHICSVIEW
 
 #include "moc_qgraphicsvideoitem.cpp"

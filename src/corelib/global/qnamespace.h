@@ -146,7 +146,8 @@ public:
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
-        MidButton        = 0x00000004,
+        MidButton        = 0x00000004, // ### Qt 5: remove me
+        MiddleButton     = MidButton,
         XButton1         = 0x00000008,
         XButton2         = 0x00000010,
         MouseButtonMask  = 0x000000ff
@@ -299,7 +300,9 @@ public:
         MacWindowToolBarButtonHint = 0x10000000,
         BypassGraphicsProxyWidget = 0x20000000,
         WindowOkButtonHint = 0x00080000,
-        WindowCancelButtonHint = 0x00100000
+        WindowCancelButtonHint = 0x00100000,
+        WindowSoftkeysVisibleHint = 0x40000000,
+        WindowSoftkeysRespondHint = 0x80000000
 
 #ifdef QT3_SUPPORT
         ,
@@ -499,6 +502,17 @@ public:
 
         WA_MergeSoftkeys =  124,
         WA_MergeSoftkeysRecursively =  125,
+
+#if 0 // these values are reserved for Maemo5 - do not re-use them
+        WA_Maemo5NonComposited = 126,
+        WA_Maemo5StackedWindow = 127,
+        WA_Maemo5PortraitOrientation = 128,
+        WA_Maemo5LandscapeOrientation = 129,
+        WA_Maemo5AutoOrientation = 130,
+        WA_Maemo5ShowProgressIndicator = 131,
+#endif
+
+        WA_X11DoNotAcceptFocus = 132,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -1049,6 +1063,9 @@ public:
         Key_Suspend = 0x0100010c,
         Key_ContrastAdjust = 0x0100010d,
 
+        Key_LaunchG  = 0x0100010e,
+        Key_LaunchH  = 0x0100010f,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys
@@ -1075,6 +1092,8 @@ public:
         Key_Call = 0x01100004,
         Key_Hangup = 0x01100005,
         Key_Flip = 0x01100006,
+        Key_Camera = 0x01100007,
+        Key_CameraFocus = 0x01100008,
 
         Key_unknown = 0x01ffffff
     };

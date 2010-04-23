@@ -57,6 +57,7 @@ class QAbstractItemView;
 class QLabel;
 class QModelIndex;
 class QSlider;
+class QComboBox;
 class QMediaPlayer;
 class QVideoWidget;
 class PlaylistModel;
@@ -87,6 +88,7 @@ private slots:
     void bufferingProgress(int progress);
 
     void showColorDialog();
+    void updatePlaybackMode();
 
 private:
     void setTrackInfo(const QString &info);
@@ -97,6 +99,7 @@ private:
     QVideoWidget *videoWidget;
     QLabel *coverLabel;
     QSlider *slider;
+    QComboBox *playbackModeBox;
     PlaylistModel *playlistModel;
     QAbstractItemView *playlistView;
     QDialog *colorDialog;

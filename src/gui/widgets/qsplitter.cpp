@@ -227,6 +227,33 @@ QSize QSplitterHandle::sizeHint() const
 /*!
     \reimp
 */
+void QSplitterHandle::resizeEvent(QResizeEvent *event)
+{
+    Q_D(const QSplitterHandle);
+
+    // When splitters are only 1 pixel large we increase the
+    // actual grab area to five pixels
+
+    // Note that QSplitter uses contentsRect for layouting
+    // and ensures that handles are drawn on top of widgets
+    // We simply use the contents margins for draggin and only
+    // paint the mask area
+    bool useTinyMode = (d->s->handleWidth() == 1);
+    setAttribute(Qt::WA_MouseNoMask, useTinyMode);
+    if (useTinyMode) {
+        if (orientation() == Qt::Horizontal)
+            setContentsMargins(2, 0, 2, 0);
+        else
+            setContentsMargins(0, 2, 0, 2);
+        setMask(QRegion(contentsRect()));
+    }
+
+    QWidget::resizeEvent(event);
+}
+
+/*!
+    \reimp
+*/
 bool QSplitterHandle::event(QEvent *event)
 {
     Q_D(QSplitterHandle);
@@ -301,7 +328,7 @@ void QSplitterHandle::paintEvent(QPaintEvent *)
     Q_D(QSplitterHandle);
     QPainter p(this);
     QStyleOption opt(0);
-    opt.rect = rect();
+    opt.rect = contentsRect();
     opt.palette = palette();
     if (orientation() == Qt::Horizontal)
         opt.state = QStyle::State_Horizontal;
@@ -1276,7 +1303,6 @@ void QSplitter::childEvent(QChildEvent *c)
     if (!c->child()->isWidgetType())
         return;
     QWidget *w = static_cast<QWidget*>(c->child());
-
     if (c->added() && !d->blockChildAdd && !w->isWindow() && !d->findWidget(w)) {
         d->insertWidget_helper(d->list.count(), w, false);
     } else if (c->polished() && !d->blockChildAdd) {
@@ -1306,25 +1332,23 @@ void QSplitter::setRubberBand(int pos)
     Q_D(QSplitter);
     if (pos < 0) {
         if (d->rubberBand)
-            QTimer::singleShot(0, d->rubberBand, SLOT(deleteLater()));
+            d->rubberBand->deleteLater();
         return;
     }
     QRect r = contentsRect();
     const int rBord = 3; // customizable?
     int hw = handleWidth();
     if (!d->rubberBand) {
-        d->rubberBand = new QRubberBand(QRubberBand::Line);
+        QBoolBlocker b(d->blockChildAdd);
+        d->rubberBand = new QRubberBand(QRubberBand::Line, this);
         // For accessibility to identify this special widget.
         d->rubberBand->setObjectName(QLatin1String("qt_rubberband"));
     }
-    if (d->orient == Qt::Horizontal)
-        d->rubberBand->setGeometry(QRect(QPoint(pos + hw / 2 - rBord, r.y()),
-                                         QSize(2 * rBord, r.height())).translated(mapToGlobal(QPoint())));
-    else
-        d->rubberBand->setGeometry(QRect(QPoint(r.x(), pos + hw / 2 - rBord),
-                                   QSize(r.width(), 2 * rBord)).translated(mapToGlobal(QPoint())));
-    if (!d->rubberBand->isVisible())
-        d->rubberBand->show();
+
+    const QRect newGeom = d->orient == Qt::Horizontal ? QRect(QPoint(pos + hw / 2 - rBord, r.y()), QSize(2 * rBord, r.height()))
+                                                      : QRect(QPoint(r.x(), pos + hw / 2 - rBord), QSize(r.width(), 2 * rBord));
+    d->rubberBand->setGeometry(newGeom);
+    d->rubberBand->show();
 }
 
 /*!
@@ -1555,16 +1579,14 @@ QSize QSplitter::sizeHint() const
     ensurePolished();
     int l = 0;
     int t = 0;
-    QObjectList childList = children();
-    for (int i = 0; i < childList.size(); ++i) {
-        if (QWidget *w = qobject_cast<QWidget *>(childList.at(i))) {
-            if (w->isHidden())
-                continue;
-            QSize s = w->sizeHint();
-            if (s.isValid()) {
-                l += d->pick(s);
-                t = qMax(t, d->trans(s));
-            }
+    for (int i = 0; i < d->list.size(); ++i) {
+        QWidget *w = d->list.at(i)->widget;
+        if (w->isHidden())
+            continue;
+        QSize s = w->sizeHint();
+        if (s.isValid()) {
+            l += d->pick(s);
+            t = qMax(t, d->trans(s));
         }
     }
     return orientation() == Qt::Horizontal ? QSize(l, t) : QSize(t, l);
@@ -1667,6 +1689,9 @@ void QSplitter::setSizes(const QList<int> &list)
 
     By default, this property contains a value that depends on the user's platform
     and style preferences.
+
+    If you set handleWidth to 1, the actual grab area will grow to overlap a
+    few pixels of it's respective widgets.
 */
 
 int QSplitter::handleWidth() const

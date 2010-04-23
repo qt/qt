@@ -32,41 +32,41 @@
 <context>
     <name>BookmarkDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkdialog.ui" line="+19"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkdialog.ui"/>
         <source>Add Bookmark</source>
         <translation>Добавление закладки</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Bookmark:</source>
         <translation>Закладка:</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Add in Folder:</source>
         <translation>Добавить в папку:</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location/>
         <source>+</source>
         <translation>+</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location/>
         <source>New Folder</source>
         <translation>Новая папка</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+184"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+187"/>
         <location line="+18"/>
         <location line="+39"/>
         <location line="+18"/>
-        <location line="+30"/>
+        <location line="+33"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-64"/>
         <source>Delete Folder</source>
         <translation>Удалить папку</translation>
     </message>
@@ -79,7 +79,7 @@
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+434"/>
+        <location line="+452"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
@@ -103,7 +103,7 @@
 <context>
     <name>BookmarkWidget</name>
     <message>
-        <location line="-462"/>
+        <location line="-474"/>
         <source>Delete Folder</source>
         <translation>Удалить папку</translation>
     </message>
@@ -151,7 +151,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+238"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+239"/>
         <source>Add new page</source>
         <translation>Открыть новую страницу</translation>
     </message>
@@ -166,7 +166,7 @@
         <translation>Печать документа</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+130"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>безымянная вкладка</translation>
@@ -192,7 +192,7 @@
         <translation>Добавить закладку для этой страницы...</translation>
     </message>
     <message>
-        <location line="+255"/>
+        <location line="+248"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
@@ -213,12 +213,12 @@
 <context>
     <name>FilterNameDialogClass</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/filternamedialog.ui" line="+13"/>
+        <location filename="../tools/assistant/tools/assistant/filternamedialog.ui"/>
         <source>Add Filter Name</source>
         <translation>Добавление фильтра</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Filter Name:</source>
         <translation>Название фильтра:</translation>
     </message>
@@ -226,7 +226,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-955"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-931"/>
         <source>Previous</source>
         <translation>Предыдущее</translation>
     </message>
@@ -282,7 +282,7 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+284"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+283"/>
         <source>Open Link in New Tab</source>
         <translation>Открыть ссылку в новой вкладке</translation>
     </message>
@@ -327,7 +327,7 @@
         <translation>&amp;Искать:</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+72"/>
         <source>Open Link</source>
         <translation>Открыть ссылку</translation>
     </message>
@@ -340,7 +340,7 @@
 <context>
     <name>InstallDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.ui" line="+13"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
         <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+76"/>
         <source>Install Documentation</source>
         <translation>Установка документации</translation>
@@ -407,32 +407,32 @@
 %1</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.ui" line="+6"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
         <source>Available Documentation:</source>
         <translation>Доступная документация:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Installation Path:</source>
         <translation>Путь установки:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -441,31 +441,31 @@
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
-        <location line="+391"/>
+        <location line="+383"/>
         <source>Index</source>
         <translation>Указатель</translation>
     </message>
     <message>
-        <location line="-385"/>
-        <location line="+383"/>
+        <location line="-377"/>
+        <location line="+375"/>
         <source>Contents</source>
         <translation>Содержание</translation>
     </message>
     <message>
-        <location line="-378"/>
-        <location line="+382"/>
+        <location line="-370"/>
+        <location line="+374"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
     <message>
-        <location line="-370"/>
-        <location line="+215"/>
-        <location line="+512"/>
+        <location line="-362"/>
+        <location line="+207"/>
+        <location line="+514"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-544"/>
+        <location line="-546"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Без фильтрации</translation>
@@ -526,7 +526,12 @@
         <translation>П&amp;оиск в тексте...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>&amp;Find</source>
+        <translation>&amp;Поиск</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Find &amp;Next</source>
         <translation>Найти &amp;следующее</translation>
     </message>
@@ -621,7 +626,12 @@
         <translation>Синхронизировать с оглавлением</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+2"/>
+        <source>Sync</source>
+        <translation>Синхронизировать</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Next Page</source>
         <translation>Следующая страница</translation>
     </message>
@@ -706,7 +716,7 @@
         <translation>Отфильтровано по:</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+25"/>
         <source>Address Toolbar</source>
         <translation>Панель адреса</translation>
     </message>
@@ -783,118 +793,117 @@
 <context>
     <name>PreferencesDialogClass</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.ui" line="+14"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.ui"/>
         <source>Preferences</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Fonts</source>
         <translation>Шрифты</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Font settings:</source>
         <translation>Настройки шрифта:</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Browser</source>
         <translation>Обозреватель</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Application</source>
         <translation>Приложение</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Filters</source>
         <translation>Фильтры</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Filter:</source>
         <translation>Фильтр:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Attributes:</source>
         <translation>Атрибуты:</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+51"/>
+        <location/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location/>
         <source>Documentation</source>
         <translation>Документация</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Registered Documentation:</source>
         <translation>Зарегистрированная документация:</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location/>
         <source>Add...</source>
         <translation>Добавить...</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location/>
         <source>Options</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location/>
         <source>Homepage</source>
         <translation>Стартовая страница</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location/>
         <source>Current Page</source>
         <translation>Текущая страница</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Restore to default</source>
         <translation>Страница по умолчанию</translation>
     </message>
     <message>
-        <location line="-97"/>
+        <location/>
         <source>On help start:</source>
         <translation>При запуске:</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Show my home page</source>
         <translation>Отобразить стартовую страницу</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Show a blank page</source>
         <translation>Отобразить пустую страницу</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Show my tabs from last session</source>
         <translation>Восстановить предыдущую сессиию</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location/>
         <source>Blank Page</source>
         <translation>Пустая страница</translation>
     </message>
@@ -964,7 +973,7 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+217"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+228"/>
         <source>Could not register documentation file
 %1
 
@@ -1026,7 +1035,7 @@ Reason:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+195"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+196"/>
         <source>&amp;Copy</source>
         <translation>&amp;Копировать</translation>
     </message>
@@ -1054,22 +1063,22 @@ Reason:
         <translation>Выберите раздел для &lt;b&gt;%1&lt;/b&gt;:</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/topicchooser.ui" line="+16"/>
+        <location filename="../tools/assistant/tools/assistant/topicchooser.ui"/>
         <source>Choose Topic</source>
         <translation>Выбор раздела</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location/>
         <source>&amp;Topics</source>
         <translation>&amp;Разделы</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location/>
         <source>&amp;Display</source>
         <translation>&amp;Показать</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>&amp;Close</source>
         <translation>&amp;Закрыть</translation>
     </message>

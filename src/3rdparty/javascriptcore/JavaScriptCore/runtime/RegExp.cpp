@@ -65,7 +65,6 @@ inline RegExp::RegExp(JSGlobalData* globalData, const UString& pattern)
 
 inline RegExp::RegExp(JSGlobalData* globalData, const UString& pattern, const UString& flags)
     : m_pattern(pattern)
-    , m_flags(flags)
     , m_flagBits(0)
     , m_constructionError(0)
     , m_numSubpatterns(0)
@@ -212,7 +211,7 @@ int RegExp::match(const UString& s, int startOffset, Vector<int, 32>* ovector)
     if (ovector)
         ovector->clear();
 
-    if (startOffset > s.size() || s.isNull())
+    if (static_cast<unsigned>(startOffset) > s.size() || s.isNull())
         return -1;
 
 #if ENABLE(WREC)

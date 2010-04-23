@@ -45,8 +45,8 @@
 #include "qfontengine_s60_p.h"
 #include "qabstractfileengine.h"
 #include "qdesktopservices.h"
-#include "qpixmap_s60_p.h"
-#include "qt_s60_p.h"
+#include <private/qpixmap_s60_p.h>
+#include <private/qt_s60_p.h>
 #include "qendian.h"
 #include <private/qcore_symbian_p.h>
 #if defined(QT_NO_FREETYPE)
@@ -329,6 +329,11 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 bool QFontDatabase::removeApplicationFont(int handle)
 {
     Q_UNUSED(handle);
+    return false;
+}
+
+bool QFontDatabase::removeAllApplicationFonts()
+{
     return false;
 }
 

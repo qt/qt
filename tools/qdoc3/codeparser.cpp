@@ -43,11 +43,11 @@
   codeparser.cpp
 */
 
-#include <QtCore>
 #include "codeparser.h"
 #include "node.h"
 #include "tree.h"
 #include "config.h"
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 

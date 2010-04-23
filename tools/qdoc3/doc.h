@@ -48,6 +48,7 @@
 
 #include <QSet>
 #include <QString>
+#include <QMap>
 
 #include "location.h"
 

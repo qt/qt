@@ -355,7 +355,7 @@ void MainWindow::lookForNewQtDocumentation()
 
     m_qtDocInstaller = new QtDocInstaller(qtDocInfos);
     connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
-        SLOT(qtDocumentationInstalled(bool)));
+        SLOT(qtDocumentationInstalled()));
     connect(m_qtDocInstaller, SIGNAL(qchFileNotFound(QString)), this,
             SLOT(resetQtDocInfo(QString)));
     connect(m_qtDocInstaller, SIGNAL(registerDocumentation(QString, QString)),
@@ -365,7 +365,7 @@ void MainWindow::lookForNewQtDocumentation()
     m_qtDocInstaller->installDocs();
 }
 
-void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
+void MainWindow::qtDocumentationInstalled()
 {
     TRACE_OBJ
     statusBar()->clearMessage();
@@ -375,6 +375,7 @@ void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
 void MainWindow::checkInitState()
 {
     TRACE_OBJ
+    HelpEngineWrapper::instance().initialDocSetupDone();
     if (!m_cmdLine->enableRemoteControl())
         return;
 
@@ -395,7 +396,6 @@ void MainWindow::checkInitState()
         }
         emit initDone();
     }
-    HelpEngineWrapper::instance().initialDocSetupDone();
 }
 
 void MainWindow::insertLastPages()
@@ -418,6 +418,11 @@ void MainWindow::setupActions()
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
+    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
+    m_newTabAction->setShortcut(QKeySequence::AddTab);
+
+    menu->addSeparator();
+
     m_pageSetupAction = menu->addAction(tr("Page Set&up..."), m_centralWidget,
         SLOT(pageSetup()));
     m_printPreviewAction = menu->addAction(tr("Print Preview..."), m_centralWidget,
@@ -435,7 +440,8 @@ void MainWindow::setupActions()
                                           openPages, SLOT(closeCurrentPage()));
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
-    QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
+    QAction *tmp = menu->addAction(QIcon::fromTheme("application-exit"),
+                                   tr("&Quit"), this, SLOT(close()));
     tmp->setMenuRole(QAction::QuitRole);
 #ifdef Q_OS_WIN
     tmp->setShortcut(QKeySequence(tr("CTRL+Q")));

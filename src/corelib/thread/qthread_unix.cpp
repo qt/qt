@@ -92,9 +92,16 @@
 # endif
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(SCHED_IDLE)
+// from linux/sched.h
+# define SCHED_IDLE    5
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_THREAD
+
+enum { ThreadPriorityResetFlag = 0x80000000 };
 
 static pthread_once_t current_thread_data_once = PTHREAD_ONCE_INIT;
 static pthread_key_t current_thread_data_key;
@@ -128,6 +135,12 @@ static void create_current_thread_data_key()
 {
     pthread_key_create(&current_thread_data_key, destroy_current_thread_data);
 }
+
+static void destroy_current_thread_data_key()
+{
+    pthread_key_delete(current_thread_data_key);
+}
+Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 
 QThreadData *QThreadData::current()
 {
@@ -220,6 +233,11 @@ void *QThreadPrivate::start(void *arg)
 
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
+
+    // do we need to reset the thread priority?
+    if (int(thr->d_func()->priority) & ThreadPriorityResetFlag) {
+        thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
+    }
 
 #ifdef Q_OS_SYMBIAN
     // Because Symbian Open C does not provide a way to convert between
@@ -436,6 +454,37 @@ void QThread::usleep(unsigned long usecs)
     thread_sleep(&ti);
 }
 
+// Does some magic and calculate the Unix scheduler priorities
+// sched_policy is IN/OUT: it must be set to a valid policy before calling this function
+// sched_priority is OUT only
+static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_priority)
+{
+#ifdef SCHED_IDLE
+    if (priority == QThread::IdlePriority) {
+        *sched_policy = SCHED_IDLE;
+        *sched_priority = 0;
+        return true;
+    }
+    const int lowestPriority = QThread::LowestPriority;
+#else
+    const int lowestPriority = QThread::IdlePriority;
+#endif
+    const int highestPriority = QThread::TimeCriticalPriority;
+
+    int prio_min = sched_get_priority_min(*sched_policy);
+    int prio_max = sched_get_priority_max(*sched_policy);
+    if (prio_min == -1 || prio_max == -1)
+        return false;
+
+    int prio;
+    // crudely scale our priority enum values to the prio_min/prio_max
+    prio = ((priority - lowestPriority) * (prio_max - prio_min) / highestPriority) + prio_min;
+    prio = qMax(prio_min, qMin(prio_max, prio));
+
+    *sched_priority = prio;
+    return true;
+}
+
 void QThread::start(Priority priority)
 {
     Q_D(QThread);
@@ -472,29 +521,11 @@ void QThread::start(Priority priority)
                 break;
             }
 
-            int prio_min = sched_get_priority_min(sched_policy);
-            int prio_max = sched_get_priority_max(sched_policy);
-            if (prio_min == -1 || prio_max == -1) {
+            int prio;
+            if (!calculateUnixPriority(priority, &sched_policy, &prio)) {
                 // failed to get the scheduling parameters, don't
                 // bother setting the priority
                 qWarning("QThread::start: Cannot determine scheduler priority range");
-                break;
-            }
-
-            int prio;
-            switch (priority) {
-            case IdlePriority:
-                prio = prio_min;
-                break;
-
-            case TimeCriticalPriority:
-                prio = prio_max;
-                break;
-
-            default:
-                // crudely scale our priority enum values to the prio_min/prio_max
-                prio = (priority * (prio_max - prio_min) / TimeCriticalPriority) + prio_min;
-                prio = qMax(prio_min, qMin(prio_max, prio));
                 break;
             }
 
@@ -505,7 +536,9 @@ void QThread::start(Priority priority)
                 || pthread_attr_setschedpolicy(&attr, sched_policy) != 0
                 || pthread_attr_setschedparam(&attr, &sp) != 0) {
                 // could not set scheduling hints, fallback to inheriting them
+                // we'll try again from inside the thread
                 pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
+                d->priority = Priority(priority | ThreadPriorityResetFlag);
             }
             break;
         }
@@ -672,38 +705,28 @@ void QThread::setPriority(Priority priority)
         return;
     }
 
-    int prio_min = sched_get_priority_min(sched_policy);
-    int prio_max = sched_get_priority_max(sched_policy);
-    if (prio_min == -1 || prio_max == -1) {
+    int prio;
+    if (!calculateUnixPriority(priority, &sched_policy, &prio)) {
         // failed to get the scheduling parameters, don't
         // bother setting the priority
         qWarning("QThread::setPriority: Cannot determine scheduler priority range");
         return;
     }
 
-    int prio;
-    switch (priority) {
-    case InheritPriority:
-        qWarning("QThread::setPriority: Argument cannot be InheritPriority");
-        return;
-
-    case IdlePriority:
-        prio = prio_min;
-        break;
-
-    case TimeCriticalPriority:
-        prio = prio_max;
-        break;
-
-    default:
-        // crudely scale our priority enum values to the prio_min/prio_max
-        prio = (priority * (prio_max - prio_min) / TimeCriticalPriority) + prio_min;
-        prio = qMax(prio_min, qMin(prio_max, prio));
-        break;
-    }
-
     param.sched_priority = prio;
-    pthread_setschedparam(d->thread_id, sched_policy, &param);
+    int status = pthread_setschedparam(d->thread_id, sched_policy, &param);
+
+# ifdef SCHED_IDLE
+    // were we trying to set to idle priority and failed?
+    if (status == -1 && sched_policy == SCHED_IDLE && errno == EINVAL) {
+        // reset to lowest priority possible
+        pthread_getschedparam(d->thread_id, &sched_policy, &param);
+        param.sched_priority = sched_get_priority_min(sched_policy);
+        pthread_setschedparam(d->thread_id, sched_policy, &param);
+    }
+# else
+    Q_UNUSED(status);
+# endif // SCHED_IDLE
 #endif
 }
 

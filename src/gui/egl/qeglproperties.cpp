@@ -39,15 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qeglproperties_p.h"
-
-QT_BEGIN_NAMESPACE
-
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
-#include "qegl_p.h"
+#include "qeglproperties_p.h"
+#include "qeglcontext_p.h"
 
+QT_BEGIN_NAMESPACE
 
 // Initialize a property block.
 QEglProperties::QEglProperties()
@@ -60,7 +58,7 @@ QEglProperties::QEglProperties(EGLConfig cfg)
     props.append(EGL_NONE);
     for (int name = 0x3020; name <= 0x304F; ++name) {
         EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(QEglContext::display(), cfg, name, &value))
+        if (name != EGL_NONE && eglGetConfigAttrib(QEgl::display(), cfg, name, &value))
             setValue(name, value);
     }
     eglGetError();  // Clear the error state.
@@ -82,19 +80,19 @@ int QEglProperties::value(int name) const
     case EGL_GREEN_SIZE: return 0;
     case EGL_BLUE_SIZE: return 0;
     case EGL_ALPHA_SIZE: return 0;
-#if defined(EGL_LUMINANCE_SIZE)
+#ifdef EGL_LUMINANCE_SIZE
     case EGL_LUMINANCE_SIZE: return 0;
 #endif
-#if defined(EGL_ALPHA_MASK_SIZE)
+#ifdef EGL_ALPHA_MASK_SIZE
     case EGL_ALPHA_MASK_SIZE: return 0;
 #endif
-#if defined(EGL_BIND_TO_TEXTURE_RGB)
+#ifdef EGL_BIND_TO_TEXTURE_RGB
     case EGL_BIND_TO_TEXTURE_RGB: return EGL_DONT_CARE;
 #endif
-#if defined(EGL_BIND_TO_TEXTURE_RGBA)
+#ifdef EGL_BIND_TO_TEXTURE_RGBA
     case EGL_BIND_TO_TEXTURE_RGBA: return EGL_DONT_CARE;
 #endif
-#if defined(EGL_COLOR_BUFFER_TYPE)
+#ifdef EGL_COLOR_BUFFER_TYPE
     case EGL_COLOR_BUFFER_TYPE: return EGL_RGB_BUFFER;
 #endif
     case EGL_CONFIG_CAVEAT: return EGL_DONT_CARE;
@@ -105,7 +103,7 @@ int QEglProperties::value(int name) const
     case EGL_NATIVE_VISUAL_TYPE: return EGL_DONT_CARE;
     case EGL_MAX_SWAP_INTERVAL: return EGL_DONT_CARE;
     case EGL_MIN_SWAP_INTERVAL: return EGL_DONT_CARE;
-#if defined(EGL_RENDERABLE_TYPE)
+#ifdef EGL_RENDERABLE_TYPE
     case EGL_RENDERABLE_TYPE: return EGL_OPENGL_ES_BIT;
 #endif
     case EGL_SAMPLE_BUFFERS: return 0;
@@ -117,7 +115,7 @@ int QEglProperties::value(int name) const
     case EGL_TRANSPARENT_GREEN_VALUE: return EGL_DONT_CARE;
     case EGL_TRANSPARENT_BLUE_VALUE: return EGL_DONT_CARE;
 
-#if defined(EGL_VERSION_1_3)
+#ifdef EGL_VERSION_1_3
     case EGL_CONFORMANT: return 0;
     case EGL_MATCH_NATIVE_PIXMAP: return EGL_NONE;
 #endif
@@ -166,6 +164,17 @@ bool QEglProperties::removeValue(int name)
     return false;
 }
 
+void QEglProperties::setDeviceType(int devType)
+{
+    if (devType == QInternal::Pixmap || devType == QInternal::Image)
+        setValue(EGL_SURFACE_TYPE, EGL_PIXMAP_BIT);
+    else if (devType == QInternal::Pbuffer)
+        setValue(EGL_SURFACE_TYPE, EGL_PBUFFER_BIT);
+    else
+        setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
+}
+
+
 // Sets the red, green, blue, and alpha sizes based on a pixel format.
 // Normally used to match a configuration request to the screen format.
 void QEglProperties::setPixelFormat(QImage::Format pixelFormat)
@@ -206,15 +215,18 @@ void QEglProperties::setPixelFormat(QImage::Format pixelFormat)
 
 void QEglProperties::setRenderableType(QEgl::API api)
 {
-#if defined(EGL_RENDERABLE_TYPE)
+#ifdef EGL_RENDERABLE_TYPE
 #if defined(QT_OPENGL_ES_2)
     if (api == QEgl::OpenGL)
         setValue(EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT);
 #elif defined(QT_OPENGL_ES)
     if (api == QEgl::OpenGL)
         setValue(EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT);
+#elif defined(EGL_OPENGL_BIT)
+    if (api == QEgl::OpenGL)
+        setValue(EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT);
 #endif
-#if defined(EGL_OPENVG_BIT)
+#ifdef EGL_OPENVG_BIT
     if (api == QEgl::OpenVG)
         setValue(EGL_RENDERABLE_TYPE, EGL_OPENVG_BIT);
 #endif
@@ -229,6 +241,19 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+    if (value(EGL_SWAP_BEHAVIOR) != EGL_DONT_CARE)
+        removeValue(EGL_SWAP_BEHAVIOR);
+
+#ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
+    // For OpenVG, we sometimes try to create a surface using a pre-multiplied format. If we can't
+    // find a config which supports pre-multiplied formats, remove the flag on the surface type:
+    EGLint surfaceType = value(EGL_SURFACE_TYPE);
+    if (surfaceType & EGL_VG_ALPHA_FORMAT_PRE_BIT) {
+        surfaceType ^= EGL_VG_ALPHA_FORMAT_PRE_BIT;
+        setValue(EGL_SURFACE_TYPE, surfaceType);
+        return true;
+    }
+#endif
     // EGL chooses configs with the highest color depth over
     // those with smaller (but faster) lower color depths. One
     // way around this is to set EGL_BUFFER_SIZE to 16, which
@@ -253,7 +278,7 @@ bool QEglProperties::reduceConfiguration()
         return true;
     if (removeValue(EGL_DEPTH_SIZE))
         return true;
-#if defined(EGL_BIND_TO_TEXTURE_RGB)
+#ifdef EGL_BIND_TO_TEXTURE_RGB
     if (removeValue(EGL_BIND_TO_TEXTURE_RGB))
         return true;
 #endif
@@ -268,20 +293,6 @@ static void addTag(QString& str, const QString& tag)
     if ((str.length() - lastnl) >= 50)
         str += QLatin1String("\n   ");
     str += tag;
-}
-
-void QEglProperties::dumpAllConfigs()
-{
-    EGLint count = 0;
-    eglGetConfigs(QEglContext::display(), 0, 0, &count);
-    if (count < 1)
-        return;
-
-    EGLConfig *configs = new EGLConfig [count];
-    eglGetConfigs(QEglContext::display(), configs, count, &count);
-    for (EGLint index = 0; index < count; ++index)
-        qWarning() << QEglProperties(configs[index]).toString();
-    delete [] configs;
 }
 
 // Convert a property list to a string suitable for debug output.
@@ -307,6 +318,10 @@ QString QEglProperties::toString() const
 #ifdef EGL_OPENGL_ES2_BIT
         if ((val & EGL_OPENGL_ES2_BIT) != 0)
             types += QLatin1String("es2");
+#endif
+#ifdef EGL_OPENGL_BIT
+        if ((val & EGL_OPENGL_BIT) != 0)
+            types += QLatin1String("gl");
 #endif
         if ((val & EGL_OPENVG_BIT) != 0)
             types += QLatin1String("vg");

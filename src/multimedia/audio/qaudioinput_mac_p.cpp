@@ -54,17 +54,16 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qdebug.h>
 
-#include <QtMultimedia/qaudiodeviceinfo.h>
 #include <QtMultimedia/qaudioinput.h>
 
 #include "qaudio_mac_p.h"
 #include "qaudioinput_mac_p.h"
-
+#include "qaudiodeviceinfo_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 
 
-namespace
+namespace QtMultimediaInternal
 {
 
 static const int default_buffer_size = 4 * 1024;
@@ -169,8 +168,10 @@ public:
 
     void reset()
     {
-        for (UInt32 i = 0; i < bfs->mNumberBuffers; ++i)
+        for (UInt32 i = 0; i < bfs->mNumberBuffers; ++i) {
             bfs->mBuffers[i].mDataByteSize = dataSize;
+            bfs->mBuffers[i].mData = 0;
+        }
     }
 
 private:
@@ -227,6 +228,7 @@ public:
                         QObject* parent):
         QObject(parent),
         m_deviceError(false),
+        m_audioConverter(0),
         m_inputFormat(inputFormat),
         m_outputFormat(outputFormat)
     {
@@ -238,7 +240,7 @@ public:
         m_flushTimer = new QTimer(this);
         connect(m_flushTimer, SIGNAL(timeout()), SLOT(flushBuffer()));
 
-        if (inputFormat.mSampleRate != outputFormat.mSampleRate) {
+        if (toQAudioFormat(inputFormat) != toQAudioFormat(outputFormat)) {
             if (AudioConverterNew(&m_inputFormat, &m_outputFormat, &m_audioConverter) != noErr) {
                 qWarning() << "QAudioInput: Unable to create an Audio Converter";
                 m_audioConverter = 0;
@@ -517,13 +519,14 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray& device, QAudioFormat co
     if (QAudio::Mode(mode) == QAudio::AudioOutput)
         errorCode = QAudio::OpenError;
     else {
+        audioDeviceInfo = new QAudioDeviceInfoInternal(device, QAudio::AudioInput);
         isOpen = false;
         audioDeviceId = AudioDeviceID(did);
         audioUnit = 0;
         startTime = 0;
         totalFrames = 0;
         audioBuffer = 0;
-        internalBufferSize = default_buffer_size;
+        internalBufferSize = QtMultimediaInternal::default_buffer_size;
         clockFrequency = AudioGetHostClockFrequency() / 1000;
         errorCode = QAudio::NoError;
         stateCode = QAudio::StoppedState;
@@ -537,6 +540,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray& device, QAudioFormat co
 QAudioInputPrivate::~QAudioInputPrivate()
 {
     close();
+    delete audioDeviceInfo;
 }
 
 bool QAudioInputPrivate::open()
@@ -574,7 +578,7 @@ bool QAudioInputPrivate::open()
                                1,
                                &enable,
                                sizeof(enable)) != noErr) {
-        qWarning() << "QAudioInput: Unabled to switch to input mode (Enable Input)";
+        qWarning() << "QAudioInput: Unable to switch to input mode (Enable Input)";
         return false;
     }
 
@@ -585,7 +589,7 @@ bool QAudioInputPrivate::open()
                             0,
                             &enable,
                             sizeof(enable)) != noErr) {
-        qWarning() << "QAudioInput: Unabled to switch to input mode (Disable output)";
+        qWarning() << "QAudioInput: Unable to switch to input mode (Disable output)";
         return false;
     }
 
@@ -616,35 +620,40 @@ bool QAudioInputPrivate::open()
     }
 
     // Set format
+    // Wanted
     streamFormat = toAudioStreamBasicDescription(audioFormat);
 
-    size = sizeof(deviceFormat);
-    if (AudioUnitGetProperty(audioUnit,
-                                kAudioUnitProperty_StreamFormat,
-                                kAudioUnitScope_Input,
-                                1,
-                                &deviceFormat,
-                                &size) != noErr) {
-        qWarning() << "QAudioInput: Unable to retrieve device format";
-        return false;
-    }
-
-    // If the device frequency is different to the requested use a converter
-    if (deviceFormat.mSampleRate != streamFormat.mSampleRate) {
-         AudioUnitSetProperty(audioUnit,
-                               kAudioUnitProperty_StreamFormat,
-                               kAudioUnitScope_Output,
-                               1,
-                               &deviceFormat,
-                               sizeof(streamFormat));
-    }
-    else {
+    // Required on unit
+    if (audioFormat == audioDeviceInfo->preferredFormat()) {
+        deviceFormat = streamFormat;
         AudioUnitSetProperty(audioUnit,
                                kAudioUnitProperty_StreamFormat,
                                kAudioUnitScope_Output,
                                1,
-                               &streamFormat,
-                               sizeof(streamFormat));
+                               &deviceFormat,
+                               sizeof(deviceFormat));
+    }
+    else {
+        size = sizeof(deviceFormat);
+        if (AudioUnitGetProperty(audioUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Input,
+                                    1,
+                                    &deviceFormat,
+                                    &size) != noErr) {
+            qWarning() << "QAudioInput: Unable to retrieve device format";
+            return false;
+        }
+
+        if (AudioUnitSetProperty(audioUnit,
+                                   kAudioUnitProperty_StreamFormat,
+                                   kAudioUnitScope_Output,
+                                   1,
+                                   &deviceFormat,
+                                   sizeof(deviceFormat)) != noErr) {
+            qWarning() << "QAudioInput: Unable to set device format";
+            return false;
+        }
     }
 
     // Setup buffers
@@ -661,20 +670,20 @@ bool QAudioInputPrivate::open()
     }
 
     // Allocate buffer
-    periodSizeBytes = (numberOfFrames * streamFormat.mSampleRate / deviceFormat.mSampleRate) *
-                        streamFormat.mBytesPerFrame;
+    periodSizeBytes = numberOfFrames * streamFormat.mBytesPerFrame;
+
     if (internalBufferSize < periodSizeBytes * 2)
         internalBufferSize = periodSizeBytes * 2;
     else
         internalBufferSize -= internalBufferSize % streamFormat.mBytesPerFrame;
 
-    audioBuffer = new QAudioInputBuffer(internalBufferSize,
+    audioBuffer = new QtMultimediaInternal::QAudioInputBuffer(internalBufferSize,
                                         periodSizeBytes,
                                         deviceFormat,
                                         streamFormat,
                                         this);
 
-    audioIO = new MacInputDevice(audioBuffer, this);
+    audioIO = new QtMultimediaInternal::MacInputDevice(audioBuffer, this);
 
     // Init
     if (AudioUnitInitialize(audioUnit) != noErr) {
@@ -707,7 +716,7 @@ QIODevice* QAudioInputPrivate::start(QIODevice* device)
 {
     QIODevice*  op = device;
 
-    if (!open()) {
+    if (!audioFormat.isValid() || !open()) {
         stateCode = QAudio::StoppedState;
         errorCode = QAudio::OpenError;
         return audioIO;
@@ -804,6 +813,12 @@ int QAudioInputPrivate::bufferSize() const
 
 void QAudioInputPrivate::setNotifyInterval(int milliSeconds)
 {
+    if (intervalTimer->interval() == milliSeconds)
+        return;
+
+    if (milliSeconds <= 0)
+        milliSeconds = 0;
+
     intervalTimer->setInterval(milliSeconds);
 }
 
@@ -883,7 +898,8 @@ void QAudioInputPrivate::audioDeviceError()
 void QAudioInputPrivate::startTimers()
 {
     audioBuffer->startFlushTimer();
-    intervalTimer->start();
+    if (intervalTimer->interval() > 0)
+        intervalTimer->start();
 }
 
 void QAudioInputPrivate::stopTimers()

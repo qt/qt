@@ -70,7 +70,7 @@
 QT_BEGIN_NAMESPACE
 
 
-namespace
+namespace QtMultimediaInternal
 {
 
 static const int default_buffer_size = 8 * 1024;
@@ -237,7 +237,7 @@ class MacOutputDevice : public QIODevice
     Q_OBJECT
 
 public:
-    MacOutputDevice(QAudioOutputBuffer* audioBuffer, QObject* parent):
+    MacOutputDevice(QtMultimediaInternal::QAudioOutputBuffer* audioBuffer, QObject* parent):
         QIODevice(parent),
         m_audioBuffer(audioBuffer)
     {
@@ -263,7 +263,7 @@ public:
     }
 
 private:
-    QAudioOutputBuffer*    m_audioBuffer;
+    QtMultimediaInternal::QAudioOutputBuffer*    m_audioBuffer;
 };
 
 
@@ -285,7 +285,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray& device, const QAudioF
         startTime = 0;
         totalFrames = 0;
         audioBuffer = 0;
-        internalBufferSize = default_buffer_size;
+        internalBufferSize = QtMultimediaInternal::default_buffer_size;
         clockFrequency = AudioGetHostClockFrequency() / 1000;
         errorCode = QAudio::NoError;
         stateCode = QAudio::StoppedState;
@@ -399,7 +399,7 @@ bool QAudioOutputPrivate::open()
     else
         internalBufferSize -= internalBufferSize % streamFormat.mBytesPerFrame;
 
-    audioBuffer = new QAudioOutputBuffer(internalBufferSize, periodSizeBytes, audioFormat);
+    audioBuffer = new QtMultimediaInternal::QAudioOutputBuffer(internalBufferSize, periodSizeBytes, audioFormat);
     connect(audioBuffer, SIGNAL(readyRead()), SLOT(inputReady()));  // Pull
 
     audioIO = new MacOutputDevice(audioBuffer, this);
@@ -435,7 +435,7 @@ QIODevice* QAudioOutputPrivate::start(QIODevice* device)
 {
     QIODevice*  op = device;
 
-    if (!open()) {
+    if (!audioFormat.isValid() || !open()) {
         stateCode = QAudio::StoppedState;
         errorCode = QAudio::OpenError;
         return audioIO;
@@ -536,6 +536,12 @@ int QAudioOutputPrivate::bufferSize() const
 
 void QAudioOutputPrivate::setNotifyInterval(int milliSeconds)
 {
+    if (intervalTimer->interval() == milliSeconds)
+        return;
+
+    if (milliSeconds <= 0)
+        milliSeconds = 0;
+
     intervalTimer->setInterval(milliSeconds);
 }
 
@@ -622,7 +628,8 @@ void QAudioOutputPrivate::audioDeviceError()
 void QAudioOutputPrivate::startTimers()
 {
     audioBuffer->startFillTimer();
-    intervalTimer->start();
+    if (intervalTimer->interval() > 0)
+        intervalTimer->start();
 }
 
 void QAudioOutputPrivate::stopTimers()

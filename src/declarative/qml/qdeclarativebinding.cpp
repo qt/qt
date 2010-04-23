@@ -39,17 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebinding_p.h"
-#include "qdeclarativebinding_p_p.h"
+#include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativebinding_p_p.h"
 
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "qdeclarativeinfo.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativestringconverters_p.h"
-
-#include <qfxperf_p_p.h>
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativedata_p.h"
+#include "private/qdeclarativestringconverters_p.h"
 
 #include <QVariant>
 #include <QtCore/qdebug.h>
@@ -79,14 +77,25 @@ QDeclarativeBindingPrivate::QDeclarativeBindingPrivate()
 {
 }
 
-QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, QObject *obj, QDeclarativeContext *ctxt, const QString &url, int lineNumber, QObject *parent)
+QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, QObject *obj, 
+                                         QDeclarativeContextData *ctxt, const QString &url, int lineNumber, 
+                                         QObject *parent)
 : QDeclarativeExpression(ctxt, data, rc, obj, url, lineNumber, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
     setNotifyOnValueChanged(true);
 }
 
-QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, QObject *parent)
+QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, 
+                                         QObject *parent)
+: QDeclarativeExpression(QDeclarativeContextData::get(ctxt), str, obj, *new QDeclarativeBindingPrivate)
+{
+    setParent(parent);
+    setNotifyOnValueChanged(true);
+}
+
+QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContextData *ctxt, 
+                                         QObject *parent)
 : QDeclarativeExpression(ctxt, str, obj, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
@@ -115,12 +124,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::BindableValueUpdate> bu;
-#endif
     QDeclarativeBindingData *data = d->bindingData();
 
-    if (!data->enabled)
+    if (!data->enabled || !data->context() || !data->context()->isValid())
         return;
 
     data->addref();
@@ -142,14 +148,37 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                   idx, a);
 
         } else {
-            bool isUndefined = false;
-            QVariant value = this->value(&isUndefined);
+            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context()->engine);
 
-            if (isUndefined && !data->error.isValid() && data->property.isResettable()) {
+            bool isUndefined = false;
+            QVariant value;
+
+            QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
+            if (data->property.propertyTypeCategory() == QDeclarativeProperty::List) {
+                value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
+            } else {
+                value = ep->scriptValueToVariant(scriptValue, data->property.propertyType());
+                if (value.userType() == QMetaType::QObjectStar && !qvariant_cast<QObject*>(value)) {
+                    // If the object is null, we extract the predicted type.  While this isn't
+                    // 100% reliable, in many cases it gives us better error messages if we
+                    // assign this null-object to an incompatible property
+                    int type = ep->objectClass->objectType(scriptValue);
+                    QObject *o = 0;
+                    value = QVariant(type, (void *)&o);
+                }
+            }
+
+            if (data->error.isValid()) {
+
+            } else if (isUndefined && data->property.isResettable()) {
 
                 data->property.reset();
 
-            } else if (isUndefined && !data->error.isValid()) {
+            } else if (isUndefined && data->property.propertyType() == qMetaTypeId<QVariant>()) {
+
+                QDeclarativePropertyPrivate::write(data->property, QVariant(), flags);
+
+            } else if (isUndefined) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -160,7 +189,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setColumn(-1);
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
-            } else if (!isUndefined && data->property.object() && 
+            } else if (data->property.object() && 
                        !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);
@@ -181,9 +210,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-                QDeclarativeEnginePrivate *p = (data->context() && data->context()->engine())?
-                    QDeclarativeEnginePrivate::get(data->context()->engine()):0;
-               if (!data->addError(p)) 
+               if (!data->addError(ep)) 
                    qWarning().nospace() << qPrintable(this->error().toString());
             } else {
                 data->removeError();
@@ -223,7 +250,7 @@ void QDeclarativeBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteF
 int QDeclarativeBinding::propertyIndex()
 {
     Q_D(QDeclarativeBinding);
-    return d->bindingData()->property.index();
+    return QDeclarativePropertyPrivate::bindingIndex(d->bindingData()->property);
 }
 
 bool QDeclarativeBinding::enabled() const
@@ -259,23 +286,57 @@ void QDeclarativeAbstractBinding::addToObject(QObject *object)
 {
     Q_ASSERT(object);
 
+    if (m_object == object)
+        return;
+
+    int index = propertyIndex();
+
     removeFromObject();
 
     Q_ASSERT(!m_prevBinding);
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, true);
-    m_nextBinding = data->bindings;
-    if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
-    m_prevBinding = &data->bindings;
-    data->bindings = this;
     m_object = object;
+    QDeclarativeData *data = QDeclarativeData::get(object, true);
 
-    data->setBindingBit(m_object, propertyIndex());
+    if (index & 0xFF000000) {
+        // Value type
+
+        int coreIndex = index & 0xFFFFFF;
+
+        // Find the value type proxy (if there is one)
+        QDeclarativeValueTypeProxyBinding *proxy = 0;
+        if (data->hasBindingBit(coreIndex)) {
+            QDeclarativeAbstractBinding *b = data->bindings;
+            while (b && b->propertyIndex() != coreIndex)
+                b = b->m_nextBinding;
+            Q_ASSERT(b && b->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy);
+            proxy = static_cast<QDeclarativeValueTypeProxyBinding *>(b);
+        }
+
+        if (!proxy) 
+            proxy = new QDeclarativeValueTypeProxyBinding(object, coreIndex);
+        proxy->addToObject(object);
+
+        m_nextBinding = proxy->m_bindings;
+        if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
+        m_prevBinding = &proxy->m_bindings;
+        proxy->m_bindings = this;
+
+    } else {
+        m_nextBinding = data->bindings;
+        if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
+        m_prevBinding = &data->bindings;
+        data->bindings = this;
+
+        data->setBindingBit(m_object, index);
+    }
 }
 
 void QDeclarativeAbstractBinding::removeFromObject()
 {
     if (m_prevBinding) {
+        int index = propertyIndex();
+
         Q_ASSERT(m_object);
 
         *m_prevBinding = m_nextBinding;
@@ -283,8 +344,14 @@ void QDeclarativeAbstractBinding::removeFromObject()
         m_prevBinding = 0;
         m_nextBinding = 0;
 
-        QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(m_object, false);
-        if (data) data->clearBindingBit(propertyIndex());
+        if (index & 0xFF000000) {
+            // Value type - we don't remove the proxy from the object.  It will sit their happily
+            // doing nothing for ever more.
+        } else {
+            QDeclarativeData *data = QDeclarativeData::get(m_object, false);
+            if (data) data->clearBindingBit(index);
+        }
+
         m_object = 0;
     }
 }
@@ -303,6 +370,90 @@ QString QDeclarativeAbstractBinding::expression() const
 void QDeclarativeAbstractBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags)
 {
     if (e) m_mePtr = 0;
+}
+
+QDeclarativeValueTypeProxyBinding::QDeclarativeValueTypeProxyBinding(QObject *o, int index)
+: m_object(o), m_index(index), m_bindings(0)
+{
+}
+
+QDeclarativeValueTypeProxyBinding::~QDeclarativeValueTypeProxyBinding()
+{
+    while (m_bindings) {
+        QDeclarativeAbstractBinding *binding = m_bindings;
+        binding->setEnabled(false, 0);
+        binding->destroy();
+    }
+}
+
+void QDeclarativeValueTypeProxyBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    if (e) {
+        addToObject(m_object);
+
+        QDeclarativeAbstractBinding *bindings = m_bindings;
+        m_bindings = 0;
+        recursiveEnable(bindings, flags);
+    } else {
+        removeFromObject();
+
+        QDeclarativeAbstractBinding *bindings = m_bindings;
+        m_bindings = 0;
+        recursiveDisable(bindings);
+    }
+}
+
+void QDeclarativeValueTypeProxyBinding::recursiveEnable(QDeclarativeAbstractBinding *b, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    if (!b)
+        return;
+
+    QDeclarativeAbstractBinding *next = b->m_nextBinding;
+    b->m_prevBinding = 0;
+    b->m_nextBinding = 0;
+    Q_ASSERT(b->m_mePtr == 0);
+    b->m_mePtr = &b;
+
+    recursiveEnable(next, flags);
+
+    if (b)
+        b->setEnabled(true, flags);
+}
+
+void QDeclarativeValueTypeProxyBinding::recursiveDisable(QDeclarativeAbstractBinding *b)
+{
+    if (!b)
+        return;
+
+    recursiveDisable(b->m_nextBinding);
+
+    b->setEnabled(false, 0);
+
+    Q_ASSERT(b->m_prevBinding == 0);
+    Q_ASSERT(b->m_nextBinding == 0);
+    b->m_nextBinding = m_bindings;
+    if (b->m_nextBinding) b->m_nextBinding->m_prevBinding = &b->m_nextBinding;
+    b->m_prevBinding = &m_bindings;
+    m_bindings = b;
+}
+
+int QDeclarativeValueTypeProxyBinding::propertyIndex()
+{
+    return m_index;
+}
+
+void QDeclarativeValueTypeProxyBinding::update(QDeclarativePropertyPrivate::WriteFlags)
+{
+}
+
+QDeclarativeAbstractBinding *QDeclarativeValueTypeProxyBinding::binding(int propertyIndex)
+{
+    QDeclarativeAbstractBinding *binding = m_bindings;
+    
+    while (binding && binding->propertyIndex() != propertyIndex) 
+        binding = binding->m_nextBinding;
+
+    return binding;
 }
 
 QT_END_NAMESPACE

@@ -114,6 +114,7 @@ private:
 
     DFBSurfaceFlipFlags flipFlags;
     bool boundingRectFlip;
+    bool flushPending;
 #ifdef QT_DIRECTFB_TIMING
     int frames;
     QTime timer;

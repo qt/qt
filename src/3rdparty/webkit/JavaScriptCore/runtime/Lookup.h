@@ -144,7 +144,7 @@ namespace JSC {
         {
             ASSERT(table);
 
-            const HashEntry* entry = &table[identifier.ustring().rep()->computedHash() & compactHashSizeMask];
+            const HashEntry* entry = &table[identifier.ustring().rep()->existingHash() & compactHashSizeMask];
 
             if (!entry->key())
                 return 0;
@@ -181,7 +181,7 @@ namespace JSC {
         if (entry->attributes() & Function)
             setUpStaticFunctionSlot(exec, entry, thisObj, propertyName, slot);
         else
-            slot.setCustom(thisObj, entry->propertyGetter());
+            slot.setCacheableCustom(thisObj, entry->propertyGetter());
 
         return true;
     }
@@ -258,7 +258,7 @@ namespace JSC {
 
         ASSERT(!(entry->attributes() & Function));
 
-        slot.setCustom(thisObj, entry->propertyGetter());
+        slot.setCacheableCustom(thisObj, entry->propertyGetter());
         return true;
     }
 

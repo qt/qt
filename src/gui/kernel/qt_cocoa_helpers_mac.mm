@@ -139,7 +139,7 @@ void QMacWindowFader::performFade()
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
 extern QWidget * mac_mouse_grabber;
-extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+extern QWidget *qt_button_down; //qapplication_mac.cpp
 
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds)
 {
@@ -373,7 +373,7 @@ QMacTabletHash *qt_mac_tablet_hash()
 // Clears the QWidget pointer that each QCocoaView holds.
 void qt_mac_clearCocoaViewQWidgetPointers(QWidget *widget)
 {
-    QCocoaView *cocoaView = reinterpret_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    QT_MANGLE_NAMESPACE(QCocoaView) *cocoaView = reinterpret_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     if (cocoaView && [cocoaView respondsToSelector:@selector(qt_qwidget)]) {
         [cocoaView qt_clearQWidget];
     }
@@ -652,8 +652,7 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
     UInt32 macScanCode = 1;
     QKeyEventEx ke(cocoaEvent2QtEvent([event type]), qtKey, keyMods, text, [event isARepeat], qMax(1, keyLength),
                    macScanCode, [event keyCode], [event modifierFlags]);
-    qt_sendSpontaneousEvent(widgetToGetEvent, &ke);
-    return ke.isAccepted();
+    return qt_sendSpontaneousEvent(widgetToGetEvent, &ke) && ke.isAccepted();
 }
 #endif
 
@@ -684,8 +683,16 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     EventRef key_event = static_cast<EventRef>(const_cast<void *>([event eventRef]));
     Q_ASSERT(key_event);
     if ([event type] == NSKeyDown) {
-        qt_keymapper_private()->updateKeyMap(0, key_event, 0);
+        NSString *characters = [event characters];
+        unichar value = [characters characterAtIndex:0];
+        qt_keymapper_private()->updateKeyMap(0, key_event, (void *)&value);
     }
+
+    // Redirect keys to alien widgets.
+    if (widgetToGetEvent->testAttribute(Qt::WA_NativeWindow) == false) {
+        widgetToGetEvent = qApp->focusWidget();
+    }
+
     if (widgetToGetEvent == 0)
         return false;
 
@@ -695,8 +702,8 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     if (mustUseCocoaKeyEvent())
         return qt_dispatchKeyEventWithCocoa(keyEvent, widgetToGetEvent);
     bool isAccepted;
-    qt_keymapper_private()->translateKeyEvent(widgetToGetEvent, 0, key_event, &isAccepted, true);
-    return isAccepted;
+    bool consumed = qt_keymapper_private()->translateKeyEvent(widgetToGetEvent, 0, key_event, &isAccepted, true);
+    return consumed && isAccepted;
 #endif
 }
 
@@ -875,7 +882,15 @@ void qt_mac_dispatchNCMouseMessage(void * /* NSWindow* */eventWindow, void * /* 
         }
     }
 
-    QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, button, keyMods);
+    Qt::MouseButtons buttons = 0;
+    {
+        UInt32 mac_buttons;
+        if (GetEventParameter((EventRef)[event eventRef], kEventParamMouseChord, typeUInt32, 0,
+                              sizeof(mac_buttons), 0, &mac_buttons) == noErr)
+            buttons = qt_mac_get_buttons(mac_buttons);
+    }
+
+    QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, buttons, keyMods);
     qt_sendSpontaneousEvent(widgetToGetEvent, &qme);
 
     // We don't need to set the implicit grab widget here because we won't
@@ -940,7 +955,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
                 [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(tmpView) qt_qwidget];
         }
     } else {
-        extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+        extern QWidget * qt_button_down; //qapplication_mac.cpp
         QPoint pos;
         widgetToGetMouse = QApplicationPrivate::pickMouseReceiver(qwidget, qglobalPoint,
                                                                   pos, eventType,
@@ -952,7 +967,20 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
         return false;
 
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
-    QPoint qlocalPoint(localPoint.x, localPoint.y);
+    QPoint qlocalPoint = QPoint(localPoint.x, localPoint.y);
+
+    // Search for alien child widgets (either on this qwidget or on the popup)
+    if (widgetToGetMouse->testAttribute(Qt::WA_NativeWindow) == false || qt_widget_private(widgetToGetMouse)->hasAlienChildren) {
+        QPoint qScreenPoint = flipPoint(globalPoint).toPoint();
+#ifdef ALIEN_DEBUG
+        qDebug() << "alien mouse event" << qScreenPoint << possibleAlien;
+#endif
+        QWidget *possibleAlien =  widgetToGetMouse->childAt(qlocalPoint);
+        if (possibleAlien) {
+            qlocalPoint = possibleAlien->mapFromGlobal(widgetToGetMouse->mapToGlobal(qlocalPoint));
+            widgetToGetMouse = possibleAlien;
+        }
+    }
 
     EventRef carbonEvent = static_cast<EventRef>(const_cast<void *>([theEvent eventRef]));
     if (qt_mac_sendMacEventToWidget(widgetToGetMouse, carbonEvent))
@@ -997,7 +1025,19 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     }
     [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->localPoint = localPoint;
     QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, buttons, keyMods);
-    qt_sendSpontaneousEvent(widgetToGetMouse, &qme);
+
+#ifdef ALIEN_DEBUG
+    qDebug() << "sending mouse event to" << widgetToGetMouse;
+#endif
+    extern QWidget *qt_button_down;
+    extern QPointer<QWidget> qt_last_mouse_receiver;
+
+    if (qwidget->testAttribute(Qt::WA_NativeWindow) && qt_widget_private(qwidget)->hasAlienChildren == false)
+        qt_sendSpontaneousEvent(widgetToGetMouse, &qme);
+    else
+        QApplicationPrivate::sendMouseEvent(widgetToGetMouse, &qme, widgetToGetMouse, qwidget, &qt_button_down,
+                                            qt_last_mouse_receiver);
+
     if (eventType == QEvent::MouseButtonPress && button == Qt::RightButton) {
         QContextMenuEvent qcme(QContextMenuEvent::Mouse, qlocalPoint, qglobalPoint, keyMods);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qcme);
@@ -1353,6 +1393,14 @@ QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
 QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
 {
     [(NSAutoreleasePool*)pool release];
+}
+
+void qt_mac_post_retranslateAppMenu()
+{
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    qt_cocoaPostMessage([NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)], @selector(qtTranslateApplicationMenu));
+#endif
 }
 
 QT_END_NAMESPACE

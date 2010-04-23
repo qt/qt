@@ -39,18 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativescriptparser_p.h"
+#include "private/qdeclarativescriptparser_p.h"
 
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 #include "parser/qdeclarativejsengine_p.h"
 #include "parser/qdeclarativejsparser_p.h"
 #include "parser/qdeclarativejslexer_p.h"
 #include "parser/qdeclarativejsnodepool_p.h"
 #include "parser/qdeclarativejsastvisitor_p.h"
 #include "parser/qdeclarativejsast_p.h"
-#include "qdeclarativerewrite_p.h"
-
-#include <qfxperf_p_p.h>
+#include "private/qdeclarativerewrite_p.h"
 
 #include <QStack>
 #include <QCoreApplication>
@@ -85,8 +83,8 @@ class ProcessAST: protected AST::Visitor
         {
             const State &state = top();
             if (state.property) {
-                State s(state.property->getValue(),
-                        state.property->getValue()->getProperty(name.toUtf8()));
+                State s(state.property->getValue(location),
+                        state.property->getValue(location)->getProperty(name.toUtf8()));
                 s.property->location = location;
                 push(s);
             } else {
@@ -106,12 +104,12 @@ public:
     void operator()(const QString &code, AST::Node *node);
 
 protected:
-    Object *defineObjectBinding(AST::UiQualifiedId *propertyName,
+    Object *defineObjectBinding(AST::UiQualifiedId *propertyName, bool onAssignment,
                                 AST::UiQualifiedId *objectTypeName,
                                 LocationSpan location,
                                 AST::UiObjectInitializer *initializer = 0);
 
-    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName, bool onAssignment,
                                        const QString &objectType,
                                        AST::SourceLocation typeLocation,
                                        LocationSpan location,
@@ -243,6 +241,7 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 
 Object *
 ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+                                       bool onAssignment,
                                        const QString &objectType,
                                        AST::SourceLocation typeLocation,
                                        LocationSpan location,
@@ -254,10 +253,19 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
                         (lastTypeDot >= 0 && objectType.at(lastTypeDot+1).isUpper()));
 
     int propertyCount = 0;
-    for (; propertyName; propertyName = propertyName->next){
+    for (AST::UiQualifiedId *name = propertyName; name; name = name->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(),
-                                 this->location(propertyName));
+        _stateStack.pushProperty(name->name->asString(),
+                                 this->location(name));
+    }
+
+    if (!onAssignment && propertyCount && currentProperty() && currentProperty()->values.count()) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Property value set multiple times"));
+        error.setLine(this->location(propertyName).start.line);
+        error.setColumn(this->location(propertyName).start.column);
+        _parser->_errors << error;
+        return 0;
     }
 
     if (!isType) {
@@ -327,7 +335,10 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
             Value *v = new Value;
             v->object = obj;
             v->location = obj->location;
-            prop->addValue(v);
+            if (onAssignment)
+                prop->addOnValue(v);
+            else
+                prop->addValue(v);
 
             while (propertyCount--)
                 _stateStack.pop();
@@ -363,7 +374,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
     }
 }
 
-Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
+Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId, bool onAssignment,
                                         AST::UiQualifiedId *objectTypeName,
                                         LocationSpan location,
                                         AST::UiObjectInitializer *initializer)
@@ -386,7 +397,7 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
                     if (string.isStringList()) {
                         QStringList urls = string.asStringList();
                         // We need to add this as a resource
-                        for (int ii = 0; ii < urls.count(); ++ii) 
+                        for (int ii = 0; ii < urls.count(); ++ii)
                             _parser->_refUrls << QUrl(urls.at(ii));
                     }
                 }
@@ -395,7 +406,7 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
 
     }
 
-    return defineObjectBinding_helper(qualifiedId, objectType, typeLocation, location, initializer);
+    return defineObjectBinding_helper(qualifiedId, onAssignment, objectType, typeLocation, location, initializer);
 }
 
 LocationSpan ProcessAST::location(AST::UiQualifiedId *id)
@@ -430,8 +441,14 @@ bool ProcessAST::visit(AST::UiImport *node)
     QDeclarativeScriptParser::Import import;
 
     if (node->fileName) {
-        import.type = QDeclarativeScriptParser::Import::File;
         uri = node->fileName->asString();
+
+        if (uri.endsWith(QLatin1String(".js"))) {
+            import.type = QDeclarativeScriptParser::Import::Script;
+            _parser->_refUrls << QUrl(uri);
+        } else {
+            import.type = QDeclarativeScriptParser::Import::File;
+        }
     } else {
         import.type = QDeclarativeScriptParser::Import::Library;
         uri = asString(node->importUri);
@@ -440,6 +457,7 @@ bool ProcessAST::visit(AST::UiImport *node)
     AST::SourceLocation startLoc = node->importToken;
     AST::SourceLocation endLoc = node->semicolonToken;
 
+    // Qualifier
     if (node->importId) {
         import.qualifier = node->importId->asString();
         if (!import.qualifier.at(0).isUpper()) {
@@ -450,10 +468,35 @@ bool ProcessAST::visit(AST::UiImport *node)
             _parser->_errors << error;
             return false;
         }
+
+        // Check for script qualifier clashes
+        bool isScript = import.type == QDeclarativeScriptParser::Import::Script;
+        for (int ii = 0; ii < _parser->_imports.count(); ++ii) {
+            const QDeclarativeScriptParser::Import &other = _parser->_imports.at(ii);
+            bool otherIsScript = other.type == QDeclarativeScriptParser::Import::Script;
+
+            if ((isScript || otherIsScript) && import.qualifier == other.qualifier) {
+                QDeclarativeError error;
+                error.setDescription(QCoreApplication::translate("QDeclarativeParser","Script import qualifiers must be unique."));
+                error.setLine(node->importIdToken.startLine);
+                error.setColumn(node->importIdToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+        }
+
+    } else if (import.type == QDeclarativeScriptParser::Import::Script) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Script import requires a qualifier"));
+        error.setLine(node->fileNameToken.startLine);
+        error.setColumn(node->fileNameToken.startColumn);
+        _parser->_errors << error;
+        return false;
     }
-    if (node->versionToken.isValid())
+
+    if (node->versionToken.isValid()) {
         import.version = textAt(node->versionToken);
-    else if (import.type == QDeclarativeScriptParser::Import::Library) {
+    } else if (import.type == QDeclarativeScriptParser::Import::Library) {
         QDeclarativeError error;
         error.setDescription(QCoreApplication::translate("QDeclarativeParser","Library import requires a version"));
         error.setLine(node->importIdToken.startLine);
@@ -461,6 +504,7 @@ bool ProcessAST::visit(AST::UiImport *node)
         _parser->_errors << error;
         return false;
     }
+
 
     import.location = location(startLoc, endLoc);
     import.uri = uri;
@@ -484,7 +528,13 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         { "string", Object::DynamicProperty::String, "QString" },
         { "url", Object::DynamicProperty::Url, "QUrl" },
         { "color", Object::DynamicProperty::Color, "QColor" },
-        { "date", Object::DynamicProperty::Date, "QDate" },
+        // Internally QTime, QDate and QDateTime are all supported.
+        // To be more consistent with JavaScript we expose only
+        // QDateTime as it matches closely with the Date JS type.
+        // We also call it "date" to match.
+        // { "time", Object::DynamicProperty::Time, "QTime" },
+        // { "date", Object::DynamicProperty::Date, "QDate" },
+        { "date", Object::DynamicProperty::DateTime, "QDateTime" },
         { "var", Object::DynamicProperty::Variant, "QVariant" },
         { "variant", Object::DynamicProperty::Variant, "QVariant" }
     };
@@ -514,7 +564,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
                 _parser->_errors << error;
                 return false;
             }
-
+            
             signal.parameterTypes << qtType;
             signal.parameterNames << p->name->asString().toUtf8();
             p = p->finish();
@@ -588,7 +638,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;
         if (type >= Object::DynamicProperty::Custom) {
-            QDeclarativeScriptParser::TypeReference *typeRef = 
+            QDeclarativeScriptParser::TypeReference *typeRef =
                 _parser->findOrCreateType(memberType);
             typeRef->refObjects.append(_stateStack.top().object);
         }
@@ -596,6 +646,11 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
+
+        if (memberType == QLatin1String("var")) 
+            qWarning().nospace() << qPrintable(_parser->_scriptFile) << ":" << property.location.start.line << ":" 
+                                 << property.location.start.column << ": var type has been replaced by variant.  "
+                                 << "Support will be removed entirely shortly.";
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
@@ -611,9 +666,12 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         }
 
         _stateStack.top().object->dynamicProperties << property;
+
+        // process QML-like initializers (e.g. property Object o: Object {})
+        accept(node->binding);
     }
 
-    return true;
+    return false;
 }
 
 
@@ -623,7 +681,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
     LocationSpan l = location(node->firstSourceLocation(),
                               node->lastSourceLocation());
 
-    defineObjectBinding(/*propertyName = */ 0,
+    defineObjectBinding(/*propertyName = */ 0, false,
                         node->qualifiedTypeNameId,
                         l,
                         node->initializer);
@@ -638,7 +696,7 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     LocationSpan l = location(node->qualifiedTypeNameId->identifierToken,
                               node->initializer->rbraceToken);
 
-    defineObjectBinding(node->qualifiedId,
+    defineObjectBinding(node->qualifiedId, node->hasOnToken,
                         node->qualifiedTypeNameId,
                         l,
                         node->initializer);
@@ -674,13 +732,22 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
 {
     int propertyCount = 0;
     AST::UiQualifiedId *propertyName = node->qualifiedId;
-    for (; propertyName; propertyName = propertyName->next){
+    for (AST::UiQualifiedId *name = propertyName; name; name = name->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(),
-                                 location(propertyName));
+        _stateStack.pushProperty(name->name->asString(),
+                                 location(name));
     }
 
     Property *prop = currentProperty();
+
+    if (prop->values.count()) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Property value set multiple times"));
+        error.setLine(this->location(propertyName).start.line);
+        error.setColumn(this->location(propertyName).start.column);
+        _parser->_errors << error;
+        return 0;
+    }
 
     QDeclarativeParser::Variant primitive;
 
@@ -724,16 +791,26 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 {
     int propertyCount = 0;
     AST::UiQualifiedId *propertyName = node->qualifiedId;
-    for (; propertyName; propertyName = propertyName->next){
+    for (AST::UiQualifiedId *name = propertyName; name; name = name->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(),
-                                 location(propertyName));
+        _stateStack.pushProperty(name->name->asString(),
+                                 location(name));
+    }
+
+    Property* prop = currentProperty();
+
+    if (prop->values.count()) {
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","Property value set multiple times"));
+        error.setLine(this->location(propertyName).start.line);
+        error.setColumn(this->location(propertyName).start.column);
+        _parser->_errors << error;
+        return 0;
     }
 
     accept(node->members);
 
     // For the DOM, store the position of the T_LBRACKET upto the T_RBRACKET as the range:
-    Property* prop = currentProperty();
     prop->listValueRange.offset = node->lbracketToken.offset;
     prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
 
@@ -757,6 +834,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
 
             Object::DynamicSlot slot;
+            slot.location = location(funDecl->firstSourceLocation(), funDecl->lastSourceLocation());
 
             AST::FormalParameterList *f = funDecl->formals;
             while (f) {
@@ -834,12 +912,10 @@ public:
 
 bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QDeclarativePerfTimer<QDeclarativePerf::QDeclarativeParsing> pt;
-#endif
     clear();
 
     const QString fileName = url.toString();
+    _scriptFile = fileName;
 
     QTextStream stream(qmldata, QIODevice::ReadOnly);
     stream.setCodec("UTF-8");
@@ -905,6 +981,95 @@ QList<QDeclarativeScriptParser::Import> QDeclarativeScriptParser::imports() cons
 QList<QDeclarativeError> QDeclarativeScriptParser::errors() const
 {
     return _errors;
+}
+
+/*
+Searches for ".pragma <value>" declarations within \a script.  Currently supported pragmas
+are:
+    library
+*/
+QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extractPragmas(QString &script)
+{
+    QDeclarativeParser::Object::ScriptBlock::Pragmas rv = QDeclarativeParser::Object::ScriptBlock::None;
+
+    const QChar forwardSlash(QLatin1Char('/'));
+    const QChar star(QLatin1Char('*'));
+    const QChar newline(QLatin1Char('\n'));
+    const QChar dot(QLatin1Char('.'));
+    const QChar semicolon(QLatin1Char(';'));
+    const QChar space(QLatin1Char(' '));
+    const QString pragma(QLatin1String(".pragma "));
+
+    const QChar *pragmaData = pragma.constData();
+
+    const QChar *data = script.constData();
+    const int length = script.count();
+    for (int ii = 0; ii < length; ++ii) {
+        const QChar &c = data[ii];
+
+        if (c.isSpace())
+            continue;
+
+        if (c == forwardSlash) {
+            ++ii;
+            if (ii >= length)
+                return rv;
+
+            const QChar &c = data[ii];
+            if (c == forwardSlash) {
+                // Find next newline
+                while (ii < length && data[++ii] != newline) {};
+            } else if (c == star) {
+                // Find next star
+                while (true) {
+                    while (ii < length && data[++ii] != star) {};
+                    if (ii + 1 >= length)
+                        return rv;
+
+                    if (data[ii + 1] == forwardSlash) {
+                        ++ii;
+                        break;
+                    }
+                }
+            } else {
+                return rv;
+            }
+        } else if (c == dot) {
+            // Could be a pragma!
+            if (ii + pragma.length() >= length ||
+                0 != ::memcmp(data + ii, pragmaData, sizeof(QChar) * pragma.length()))
+                return rv;
+
+            int pragmaStatementIdx = ii;
+
+            ii += pragma.length();
+
+            while (ii < length && data[ii].isSpace()) { ++ii; }
+
+            int startIdx = ii;
+
+            while (ii < length && data[ii].isLetter()) { ++ii; }
+
+            int endIdx = ii;
+
+            if (ii != length && data[ii] != forwardSlash && !data[ii].isSpace() && data[ii] != semicolon)
+                return rv;
+
+            QString p(data + startIdx, endIdx - startIdx);
+
+            if (p == QLatin1String("library"))
+                rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
+            else
+                return rv;
+
+            for (int jj = pragmaStatementIdx; jj < endIdx; ++jj) script[jj] = space;
+
+        } else {
+            return rv;
+        }
+    }
+
+    return rv;
 }
 
 void QDeclarativeScriptParser::clear()

@@ -119,9 +119,7 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
     if (!bio)
         return;
 
-    void *phrase = passPhrase.isEmpty()
-        ? (void *)0
-        : (void *)passPhrase.constData();
+    void *phrase = (void *)passPhrase.constData();
 
     if (algorithm == QSsl::Rsa) {
         RSA *result = (type == QSsl::PublicKey)

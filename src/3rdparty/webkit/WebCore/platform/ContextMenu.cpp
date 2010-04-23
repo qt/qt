@@ -40,6 +40,7 @@
 #include "Editor.h"
 #include "Frame.h"
 #include "FrameLoader.h"
+#include "InspectorController.h"
 #include "KURL.h"
 #include "LocalizedStrings.h"
 #include "Node.h"
@@ -48,7 +49,6 @@
 #include "SelectionController.h"
 #include "Settings.h"
 #include "TextIterator.h"
-#include <memory>
 
 using namespace std;
 using namespace WTF;
@@ -65,9 +65,9 @@ ContextMenuController* ContextMenu::controller() const
     return 0;
 }
 
-static auto_ptr<ContextMenuItem> separatorItem()
+static PassOwnPtr<ContextMenuItem> separatorItem()
 {
-    return auto_ptr<ContextMenuItem>(new ContextMenuItem(SeparatorType, ContextMenuItemTagNoAction, String()));
+    return new ContextMenuItem(SeparatorType, ContextMenuItemTagNoAction, String());
 }
 
 static void createAndAppendFontSubMenu(const HitTestResult& result, ContextMenuItem& fontMenuItem)
@@ -275,7 +275,9 @@ void ContextMenu::populate()
     ContextMenuItem LookInDictionaryItem(ActionType, ContextMenuItemTagLookUpInDictionary, 
         contextMenuItemTagLookUpInDictionary());
 #endif
+#if !PLATFORM(GTK)
     ContextMenuItem SearchWebItem(ActionType, ContextMenuItemTagSearchWeb, contextMenuItemTagSearchWeb());
+#endif
     ContextMenuItem CopyItem(ActionType, ContextMenuItemTagCopy, contextMenuItemTagCopy());
     ContextMenuItem BackItem(ActionType, ContextMenuItemTagGoBack, contextMenuItemTagGoBack());
     ContextMenuItem ForwardItem(ActionType, ContextMenuItemTagGoForward,  contextMenuItemTagGoForward());
@@ -340,8 +342,10 @@ void ContextMenu::populate()
 #if PLATFORM(MAC)
                     appendItem(SearchSpotlightItem);
 #endif
+#if !PLATFORM(GTK)
                     appendItem(SearchWebItem);
                     appendItem(*separatorItem());
+#endif
 #if PLATFORM(MAC)
                     appendItem(LookInDictionaryItem);
                     appendItem(*separatorItem());
@@ -355,6 +359,9 @@ void ContextMenu::populate()
                 appendItem(SpeechMenuItem);
 #endif                
             } else {
+#if ENABLE(INSPECTOR)
+                if (!(frame->page() && frame->page()->inspectorController()->hasInspectorFrontendClient())) {
+#endif
 #if PLATFORM(GTK)
                 appendItem(BackItem);
                 appendItem(ForwardItem);
@@ -373,6 +380,9 @@ void ContextMenu::populate()
                     appendItem(StopItem);
                 else
                     appendItem(ReloadItem);
+#endif
+#if ENABLE(INSPECTOR)
+                }
 #endif
 
                 if (frame->page() && frame != frame->page()->mainFrame())
@@ -444,8 +454,10 @@ void ContextMenu::populate()
 #if PLATFORM(MAC)
             appendItem(SearchSpotlightItem);
 #endif
+#if !PLATFORM(GTK)
             appendItem(SearchWebItem);
             appendItem(*separatorItem());
+#endif
      
 #if PLATFORM(MAC)
             appendItem(LookInDictionaryItem);
@@ -465,10 +477,12 @@ void ContextMenu::populate()
         if (!inPasswordField) {
             appendItem(*separatorItem());
 #ifndef BUILDING_ON_TIGER
+#if !PLATFORM(GTK)
             ContextMenuItem SpellingAndGrammarMenuItem(SubmenuType, ContextMenuItemTagSpellingMenu, 
                 contextMenuItemTagSpellingMenu());
             createAndAppendSpellingAndGrammarSubMenu(m_hitTestResult, SpellingAndGrammarMenuItem);
             appendItem(SpellingAndGrammarMenuItem);
+#endif
 #else
             ContextMenuItem SpellingMenuItem(SubmenuType, ContextMenuItemTagSpellingMenu, 
                 contextMenuItemTagSpellingMenu());
@@ -485,10 +499,17 @@ void ContextMenu::populate()
             createAndAppendTransformationsSubMenu(m_hitTestResult, transformationsMenuItem);
             appendItem(transformationsMenuItem);
 #endif
-            ContextMenuItem  FontMenuItem(SubmenuType, ContextMenuItemTagFontMenu, 
-                contextMenuItemTagFontMenu());
-            createAndAppendFontSubMenu(m_hitTestResult, FontMenuItem);
-            appendItem(FontMenuItem);
+#if PLATFORM(GTK)
+            bool shouldShowFontMenu = frame->editor()->canEditRichly();
+#else
+            bool shouldShowFontMenu = true;
+#endif
+            if (shouldShowFontMenu) {
+                ContextMenuItem FontMenuItem(SubmenuType, ContextMenuItemTagFontMenu, 
+                    contextMenuItemTagFontMenu());
+                createAndAppendFontSubMenu(m_hitTestResult, FontMenuItem);
+                appendItem(FontMenuItem);
+            }
 #if PLATFORM(MAC)
             ContextMenuItem SpeechMenuItem(SubmenuType, ContextMenuItemTagSpeechMenu, contextMenuItemTagSpeechMenu());
             createAndAppendSpeechSubMenu(m_hitTestResult, SpeechMenuItem);
@@ -535,7 +556,6 @@ void ContextMenu::addInspectElementItem()
         return;
 
     ContextMenuItem InspectElementItem(ActionType, ContextMenuItemTagInspectElement, contextMenuItemTagInspectElement());
-    appendItem(*separatorItem());
     appendItem(InspectElementItem);
 }
 #endif // ENABLE(INSPECTOR)
@@ -779,6 +799,7 @@ void ContextMenu::checkOrEnableIfNeeded(ContextMenuItem& item) const
 #if ENABLE(INSPECTOR)
         case ContextMenuItemTagInspectElement:
 #endif
+        case ContextMenuItemBaseCustomTag:
         case ContextMenuItemBaseApplicationTag:
             break;
     }

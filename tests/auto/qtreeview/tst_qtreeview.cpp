@@ -215,6 +215,7 @@ private slots:
     void addRowsWhileSectionsAreHidden();
     void filterProxyModelCrash();
     void styleOptionViewItem();
+    void keyboardNavigationWithDisabled();
 
     // task-specific tests:
     void task174627_moveLeftToRoot();
@@ -237,6 +238,7 @@ private slots:
     void task245654_changeModelAndExpandAll();
     void doubleClickedWithSpans();
     void taskQTBUG_6450_selectAllWith1stColumnHidden();
+    void taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -246,7 +248,7 @@ public:
        fetched(false), rows(0), cols(0), levels(INT_MAX), wrongIndex(false) { init(); }
 
     QtTestModel(int _rows, int _cols, QObject *parent = 0): QAbstractItemModel(parent),
-       rows(_rows), cols(_cols), levels(INT_MAX), wrongIndex(false) { init(); }
+       fetched(false), rows(_rows), cols(_cols), levels(INT_MAX), wrongIndex(false) { init(); }
 
     void init() {
         decorationsEnabled = false;
@@ -3712,6 +3714,75 @@ void tst_QTreeView::taskQTBUG_6450_selectAllWith1stColumnHidden()
     QVERIFY(tree.selectionModel()->hasSelection());
     for (int i = 0; i < nrRows; ++i)
         QVERIFY(tree.selectionModel()->isRowSelected(i, QModelIndex()));
+}
+
+class TreeViewQTBUG_9216 : public QTreeView
+{
+    Q_OBJECT
+public:
+    void paintEvent(QPaintEvent *event)
+    {
+        if (doCompare)
+            QCOMPARE(event->rect(), viewport()->rect());
+        QTreeView::paintEvent(event);
+        painted++;
+    }
+    int painted;
+    bool doCompare;
+};
+
+void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
+{
+    QStandardItemModel model(10, 10, this);
+    for (int row = 0; row < 10; row++)
+        for (int col = 0; col < 10; col++)
+            model.setItem(row, col, new QStandardItem(QString("row %0, col %1").arg(row).arg(col)));
+    TreeViewQTBUG_9216 view;
+    view.setUniformRowHeights(true);
+    view.setModel(&model);
+    view.painted = 0;
+    view.doCompare = false;
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.painted > 0);
+
+    QTest::qWait(100);  // This one is needed to make the test fail before the patch.
+    view.painted = 0;
+    view.doCompare = true;
+    model.setData(model.index(0, 0), QVariant(QSize(50, 50)), Qt::SizeHintRole);
+    QTest::qWait(100);
+    QTRY_VERIFY(view.painted > 0);
+}
+
+void tst_QTreeView::keyboardNavigationWithDisabled()
+{
+    QTreeView view;
+    QStandardItemModel model(90, 0);
+    for (int i = 0; i < 90; i ++) {
+        model.setItem(i, new QStandardItem(QString::number(i)));
+        model.item(i)->setEnabled(i%6 == 0);
+    }
+    view.setModel(&model);
+
+    view.resize(200, view.visualRect(model.index(0,0)).height()*10);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.isActiveWindow());
+
+    view.setCurrentIndex(model.index(1, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_Up);
+    QCOMPARE(view.currentIndex(), model.index(0, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_Down);
+    QCOMPARE(view.currentIndex(), model.index(6, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_PageDown);
+    QCOMPARE(view.currentIndex(), model.index(18, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_Down);
+    QCOMPARE(view.currentIndex(), model.index(24, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_PageUp);
+    QCOMPARE(view.currentIndex(), model.index(12, 0));
+    QTest::keyClick(view.viewport(), Qt::Key_Up);
+    QCOMPARE(view.currentIndex(), model.index(6, 0));
 }
 
 QTEST_MAIN(tst_QTreeView)

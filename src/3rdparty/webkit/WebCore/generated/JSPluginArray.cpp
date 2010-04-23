@@ -40,8 +40,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSPluginArray);
 
 static const HashTableValue JSPluginArrayTableValues[3] =
 {
-    { "length", DontDelete|ReadOnly, (intptr_t)jsPluginArrayLength, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsPluginArrayConstructor, (intptr_t)0 },
+    { "length", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginArrayLength), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsPluginArrayConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -103,9 +103,9 @@ bool JSPluginArrayConstructor::getOwnPropertyDescriptor(ExecState* exec, const I
 
 static const HashTableValue JSPluginArrayPrototypeTableValues[4] =
 {
-    { "item", DontDelete|Function, (intptr_t)jsPluginArrayPrototypeFunctionItem, (intptr_t)1 },
-    { "namedItem", DontDelete|Function, (intptr_t)jsPluginArrayPrototypeFunctionNamedItem, (intptr_t)1 },
-    { "refresh", DontDelete|Function, (intptr_t)jsPluginArrayPrototypeFunctionRefresh, (intptr_t)1 },
+    { "item", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsPluginArrayPrototypeFunctionItem), (intptr_t)1 },
+    { "namedItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsPluginArrayPrototypeFunctionNamedItem), (intptr_t)1 },
+    { "refresh", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsPluginArrayPrototypeFunctionRefresh), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -206,24 +206,25 @@ bool JSPluginArray::getOwnPropertySlot(ExecState* exec, unsigned propertyName, P
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValue jsPluginArrayLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginArrayLength(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPluginArray* castedThis = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
+    JSPluginArray* castedThis = static_cast<JSPluginArray*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     PluginArray* imp = static_cast<PluginArray*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
-JSValue jsPluginArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsPluginArrayConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSPluginArray* domObject = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
+    JSPluginArray* domObject = static_cast<JSPluginArray*>(asObject(slotBase));
     return JSPluginArray::getConstructor(exec, domObject->globalObject());
 }
-void JSPluginArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSPluginArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<PluginArray*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSPluginArray::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -273,10 +274,10 @@ JSValue JSC_HOST_CALL jsPluginArrayPrototypeFunctionRefresh(ExecState* exec, JSO
 }
 
 
-JSValue JSPluginArray::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSPluginArray::indexGetter(ExecState* exec, JSValue slotBase, unsigned index)
 {
-    JSPluginArray* thisObj = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->globalObject(), static_cast<PluginArray*>(thisObj->impl())->item(slot.index()));
+    JSPluginArray* thisObj = static_cast<JSPluginArray*>(asObject(slotBase));
+    return toJS(exec, thisObj->globalObject(), static_cast<PluginArray*>(thisObj->impl())->item(index));
 }
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, PluginArray* object)
 {

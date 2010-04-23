@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qscriptengine
+TARGET = tst_bench_qscriptengine
 
 SOURCES += tst_qscriptengine.cpp
 

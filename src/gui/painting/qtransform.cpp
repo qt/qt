@@ -47,6 +47,7 @@
 #include "qpainterpath.h"
 #include "qvariant.h"
 #include <qmath.h>
+#include <qnumeric.h>
 
 #include <private/qbezier_p.h>
 
@@ -410,6 +411,12 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
 {
     if (dx == 0 && dy == 0)
         return *this;
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(dx) | qIsNaN(dy)) {
+        qWarning() << "QTransform::translate with NaN called";
+        return *this;
+    }
+#endif
 
     switch(inline_type()) {
     case TxNone:
@@ -447,6 +454,12 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
 */
 QTransform QTransform::fromTranslate(qreal dx, qreal dy)
 {
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(dx) | qIsNaN(dy)) {
+        qWarning() << "QTransform::fromTranslate with NaN called";
+        return QTransform();
+}
+#endif
     QTransform transform(1, 0, 0, 0, 1, 0, dx, dy, 1, true);
     if (dx == 0 && dy == 0)
         transform.m_type = TxNone;
@@ -466,6 +479,12 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
 {
     if (sx == 1 && sy == 1)
         return *this;
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(sx) | qIsNaN(sy)) {
+        qWarning() << "QTransform::scale with NaN called";
+        return *this;
+    }
+#endif
 
     switch(inline_type()) {
     case TxNone:
@@ -501,6 +520,12 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
 */
 QTransform QTransform::fromScale(qreal sx, qreal sy)
 {
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(sx) | qIsNaN(sy)) {
+        qWarning() << "QTransform::fromScale with NaN called";
+        return QTransform();
+}
+#endif
     QTransform transform(sx, 0, 0, 0, sy, 0, 0, 0, 1, true);
     if (sx == 1. && sy == 1.)
         transform.m_type = TxNone;
@@ -520,6 +545,12 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
 {
     if (sh == 0 && sv == 0)
         return *this;
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(sh) | qIsNaN(sv)) {
+        qWarning() << "QTransform::shear with NaN called";
+        return *this;
+    }
+#endif
 
     switch(inline_type()) {
     case TxNone:
@@ -575,6 +606,12 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
 {
     if (a == 0)
         return *this;
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(a)) {
+        qWarning() << "QTransform::rotate with NaN called";
+        return *this;
+    }
+#endif
 
     qreal sina = 0;
     qreal cosa = 0;
@@ -660,6 +697,12 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
 */
 QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
 {
+#ifndef QT_NO_DEBUG
+    if (qIsNaN(a)) {
+        qWarning() << "QTransform::rotateRadians with NaN called";
+        return *this;
+    }
+#endif
     qreal sina = qSin(a);
     qreal cosa = qCos(a);
 
@@ -1037,8 +1080,18 @@ QDataStream & operator>>(QDataStream &s, QTransform &t)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QTransform &m)
 {
-    dbg.nospace() << "QTransform("
-                  << "11="  << m.m11()
+    static const char *typeStr[] =
+    {
+        "TxNone",
+        "TxTranslate",
+        "TxScale",
+        "TxRotate",
+        "TxShear",
+        "TxProject"
+    };
+
+    dbg.nospace() << "QTransform(type=" << typeStr[m.type()] << ','
+                  << " 11=" << m.m11()
                   << " 12=" << m.m12()
                   << " 13=" << m.m13()
                   << " 21=" << m.m21()
@@ -1048,6 +1101,7 @@ QDebug operator<<(QDebug dbg, const QTransform &m)
                   << " 32=" << m.m32()
                   << " 33=" << m.m33()
                   << ')';
+
     return dbg.space();
 }
 #endif

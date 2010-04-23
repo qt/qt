@@ -61,6 +61,13 @@ namespace JSC {
         FinallyContext finallyContext;
     };
 
+    struct ForInContext {
+        RefPtr<RegisterID> expectedSubscriptRegister;
+        RefPtr<RegisterID> iterRegister;
+        RefPtr<RegisterID> indexRegister;
+        RefPtr<RegisterID> propertyRegister;
+    };
+
     class BytecodeGenerator : public FastAllocBase {
     public:
         typedef DeclarationStacks::VarStack VarStack;
@@ -183,6 +190,19 @@ namespace JSC {
         RegisterID* emitNode(Node* n)
         {
             return emitNode(0, n);
+        }
+
+        void emitNodeInConditionContext(ExpressionNode* n, Label* trueTarget, Label* falseTarget, bool fallThroughMeansTrue)
+        {
+            if (!m_codeBlock->numberOfLineInfos() || m_codeBlock->lastLineInfo().lineNumber != n->lineNo()) {
+                LineInfo info = { instructions().size(), n->lineNo() };
+                m_codeBlock->addLineInfo(info);
+            }
+            if (m_emitNodeDepth >= s_maxEmitNodeDepth)
+                emitThrowExpressionTooDeepException();
+            ++m_emitNodeDepth;
+            n->emitBytecodeInConditionContext(*this, trueTarget, falseTarget, fallThroughMeansTrue);
+            --m_emitNodeDepth;
         }
 
         void emitExpressionInfo(unsigned divot, unsigned startOffset, unsigned endOffset)
@@ -312,8 +332,8 @@ namespace JSC {
         PassRefPtr<Label> emitJumpSubroutine(RegisterID* retAddrDst, Label*);
         void emitSubroutineReturn(RegisterID* retAddrSrc);
 
-        RegisterID* emitGetPropertyNames(RegisterID* dst, RegisterID* base) { return emitUnaryOp(op_get_pnames, dst, base); }
-        RegisterID* emitNextPropertyName(RegisterID* dst, RegisterID* iter, Label* target);
+        RegisterID* emitGetPropertyNames(RegisterID* dst, RegisterID* base, RegisterID* i, RegisterID* size, Label* breakTarget);
+        RegisterID* emitNextPropertyName(RegisterID* dst, RegisterID* base, RegisterID* i, RegisterID* size, RegisterID* iter, Label* target);
 
         RegisterID* emitCatch(RegisterID*, Label* start, Label* end);
         void emitThrow(RegisterID* exc) { emitUnaryNoDstOp(op_throw, exc); }
@@ -323,13 +343,24 @@ namespace JSC {
         RegisterID* emitPushScope(RegisterID* scope);
         void emitPopScope();
 
-        void emitDebugHook(DebugHookID, int firstLine, int lastLine, int column );
+        void emitDebugHook(DebugHookID, int firstLine, int lastLine);
 
         int scopeDepth() { return m_dynamicScopeDepth + m_finallyDepth; }
         bool hasFinaliser() { return m_finallyDepth != 0; }
 
         void pushFinallyContext(Label* target, RegisterID* returnAddrDst);
         void popFinallyContext();
+
+        void pushOptimisedForIn(RegisterID* expectedBase, RegisterID* iter, RegisterID* index, RegisterID* propertyRegister)
+        {
+            ForInContext context = { expectedBase, iter, index, propertyRegister };
+            m_forInContextStack.append(context);
+        }
+
+        void popOptimisedForIn()
+        {
+            m_forInContextStack.removeLast();
+        }
 
         LabelScope* breakTarget(const Identifier&);
         LabelScope* continueTarget(const Identifier&);
@@ -467,6 +498,7 @@ namespace JSC {
 
         Vector<ControlFlowContext> m_scopeContextStack;
         Vector<SwitchInfo> m_switchContextStack;
+        Vector<ForInContext> m_forInContextStack;
 
         int m_nextGlobalIndex;
         int m_nextParameterIndex;

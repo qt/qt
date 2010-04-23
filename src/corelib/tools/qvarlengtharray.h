@@ -107,6 +107,10 @@ public:
         Q_ASSERT(idx >= 0 && idx < s);
         return ptr[idx];
     }
+    inline const T &at(int idx) const { return operator[](idx); }
+
+    T value(int i) const;
+    T value(int i, const T &defaultValue) const;
 
     inline void append(const T &t) {
         if (s == a)   // i.e. s != 0
@@ -222,7 +226,6 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
                 }
             } else {
                 qMemCopy(ptr, oldPtr, qMin(asize, osize) * sizeof(T));
-                s = asize;
             }
         } else {
             ptr = oldPtr;
@@ -233,7 +236,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
     if (QTypeInfo<T>::isComplex) {
         while (osize > asize)
             (oldPtr+(--osize))->~T();
-        if( oldPtr == ptr )
+        if (!QTypeInfo<T>::isStatic)
             s = osize;
     }
 
@@ -248,6 +251,21 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
         s = asize;
     }
 }
+
+template <class T, int Prealloc>
+Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(int i) const
+{
+    if (i < 0 || i >= size()) {
+        return T();
+    }
+    return at(i);
+}
+template <class T, int Prealloc>
+Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(int i, const T &defaultValue) const
+{
+    return (i < 0 || i >= size()) ? defaultValue : at(i);
+}
+
 
 QT_END_NAMESPACE
 

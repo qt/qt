@@ -34,17 +34,20 @@ public:
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
+    virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
-    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
+    static const unsigned StructureFlags = JSC::OverridesGetPropertyNames | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
+    static JSC::JSValue indexGetter(JSC::ExecState*, JSC::JSValue, unsigned);
 };
 
 
@@ -58,7 +61,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSWebKitCSSTransformValuePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -67,31 +70,31 @@ protected:
 
 // Attributes
 
-JSC::JSValue jsWebKitCSSTransformValueOperationType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWebKitCSSTransformValueOperationType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATEX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATEY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SCALE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SCALEX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SCALEY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SKEW(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SKEWX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SKEWY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_MATRIX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATEZ(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATE3D(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATEX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATEY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATEZ(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATE3D(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SCALEZ(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_SCALE3D(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_PERSPECTIVE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWebKitCSSTransformValueCSS_MATRIX3D(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATEX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATEY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SCALE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SCALEX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SCALEY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SKEW(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SKEWX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SKEWY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_MATRIX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATEZ(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_TRANSLATE3D(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATEX(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATEY(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATEZ(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_ROTATE3D(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SCALEZ(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_SCALE3D(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_PERSPECTIVE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWebKitCSSTransformValueCSS_MATRIX3D(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

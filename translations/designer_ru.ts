@@ -32,17 +32,17 @@
 <context>
     <name>AddLinkDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/addlinkdialog.ui" line="+5"/>
+        <location filename="../tools/designer/src/lib/shared/addlinkdialog.ui"/>
         <source>Insert Link</source>
         <translation>Вставить ссылку</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Title:</source>
         <translation>Заголовок:</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>URL:</source>
         <translation>URL:</translation>
     </message>
@@ -149,12 +149,12 @@
 <context>
     <name>AppearanceOptionsWidget</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_appearanceoptions.ui" line="+14"/>
+        <location filename="../tools/designer/src/designer/qdesigner_appearanceoptions.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>User Interface Mode</source>
         <translation>Режим пользовательского интерфейса</translation>
     </message>
@@ -585,7 +585,7 @@
         <translation>Изменить компоновку &apos;%1&apos; с %2 на %3</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1195"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1194"/>
         <source>Set action text</source>
         <translation>Установить текст действия</translation>
     </message>
@@ -596,12 +596,12 @@
     </message>
     <message>
         <location line="+89"/>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+907"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+915"/>
         <source>Move action</source>
         <translation>Переместить действие</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-424"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-432"/>
         <source>Change Title</source>
         <translation>Изменить заголовок</translation>
     </message>
@@ -680,24 +680,22 @@
 <context>
     <name>ConnectDialog</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/connectdialog.ui" line="+13"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/connectdialog.ui"/>
         <source>Configure Connection</source>
         <translation>Настройка соединения</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+40"/>
+        <location/>
         <source>GroupBox</source>
         <translation>GroupBox</translation>
     </message>
     <message>
-        <location line="-25"/>
-        <location line="+40"/>
+        <location/>
         <source>Edit...</source>
         <translation>Изменить...</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location/>
         <source>Show signals and slots inherited from QWidget</source>
         <translation>Показывать сигналы и слоты, унаследованные от QWidget</translation>
     </message>
@@ -705,7 +703,7 @@
 <context>
     <name>ConnectionDelegate</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+643"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+644"/>
         <source>&lt;object&gt;</source>
         <translation>&lt;объект&gt;</translation>
     </message>
@@ -761,12 +759,12 @@
     <message>
         <location line="+173"/>
         <source>Invalid UI file: The root element &lt;ui&gt; is missing.</source>
-        <translation type="unfinished">Некорректный файл UI: Отсутствует корневой элемент &lt;ui&gt;.</translation>
+        <translation>Некорректный файл UI: Отсутствует корневой элемент &lt;ui&gt;.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>An error has occurred while reading the UI file at line %1, column %2: %3</source>
-        <translation type="unfinished">При чтении файла UI в строке %1 позиции %2 возникла ошибка: %3</translation>
+        <translation>При чтении файла UI в строке %1 позиции %2 возникла ошибка: %3</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -808,7 +806,7 @@
     <message>
         <location line="+31"/>
         <source>This file cannot be read because the extra info extension failed to load.</source>
-        <translation type="unfinished">Не удалось прочитать файл, так как возникла ошибка при загрузке расширения дополнительной информации.</translation>
+        <translation>Не удалось прочитать файл, так как возникла ошибка при загрузке расширения дополнительной информации.</translation>
     </message>
     <message>
         <location filename="../tools/designer/src/lib/shared/qsimpleresource.cpp" line="+339"/>
@@ -869,27 +867,27 @@
 <context>
     <name>DeviceProfileDialog</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/deviceprofiledialog.ui" line="+20"/>
+        <location filename="../tools/designer/src/components/formeditor/deviceprofiledialog.ui"/>
         <source>&amp;Family</source>
         <translation>&amp;Шрифт</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>&amp;Point Size</source>
         <translation>&amp;Размер</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Style</source>
         <translation>Начертание</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Device DPI</source>
         <translation>DPI устройства</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Name</source>
         <translation>Название</translation>
     </message>
@@ -1030,7 +1028,7 @@
 <context>
     <name>FormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+359"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+375"/>
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values</extracomment>
         <translation>Некорректный коэффициент растяжения для &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1074,38 +1072,38 @@
 <context>
     <name>FormLayoutRowDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/formlayoutrowdialog.ui" line="+6"/>
+        <location filename="../tools/designer/src/lib/shared/formlayoutrowdialog.ui"/>
         <source>Add Form Layout Row</source>
         <translatorcomment>нелепица какая-то</translatorcomment>
         <translation type="unfinished">Добавление строки компоновки компоновщика формы</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Label text:</source>
         <translation>Текст &amp;метки:</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location/>
         <source>Field &amp;type:</source>
         <translation>&amp;Тип поля:</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>&amp;Field name:</source>
         <translation>Имя п&amp;оля:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Buddy:</source>
         <translation>П&amp;артнёр:</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>&amp;Row:</source>
         <translation>&amp;Строка:</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>Label &amp;name:</source>
         <translation>Имя м&amp;етки:</translation>
     </message>
@@ -1126,62 +1124,62 @@
 <context>
     <name>FormWindowSettings</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowsettings.ui" line="+54"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowsettings.ui"/>
         <source>Form Settings</source>
         <translation>Настройки формы</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Layout &amp;Default</source>
         <translation>Компоновка по &amp;умолчанию</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location/>
         <source>&amp;Spacing:</source>
         <translation>&amp;Отступ:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Margin:</source>
         <translation>&amp;Границы:</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>&amp;Layout Function</source>
         <translation>&amp;Функция компоновки</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location/>
         <source>Ma&amp;rgin:</source>
         <translation>Г&amp;раницы:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Spa&amp;cing:</source>
         <translation>О&amp;тступ:</translation>
     </message>
     <message>
-        <location line="+117"/>
+        <location/>
         <source>&amp;Author</source>
         <translation>&amp;Автор</translation>
     </message>
     <message>
-        <location line="-41"/>
+        <location/>
         <source>&amp;Include Hints</source>
         <translation>&amp;Подключить подсказки</translation>
     </message>
     <message>
-        <location line="-53"/>
+        <location/>
         <source>&amp;Pixmap Function</source>
         <translation type="unfinished">&amp;Загрузчик изображений</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location/>
         <source>Grid</source>
         <translation>Сетка</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Embedded Design</source>
         <translation type="unfinished">Оформление портативных устройств</translation>
     </message>
@@ -1329,12 +1327,12 @@
 <context>
     <name>PluginDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/plugindialog.ui" line="+54"/>
+        <location filename="../tools/designer/src/lib/shared/plugindialog.ui"/>
         <source>Plugin Information</source>
         <translation>Информация о модуле</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location/>
         <source>1</source>
         <translation>1</translation>
     </message>
@@ -1342,7 +1340,7 @@
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/designer/src/designer/preferencesdialog.ui" line="+20"/>
+        <location filename="../tools/designer/src/designer/preferencesdialog.ui"/>
         <source>Preferences</source>
         <translation>Настройки</translation>
     </message>
@@ -1350,34 +1348,32 @@
 <context>
     <name>PreviewConfigurationWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.ui" line="+5"/>
+        <location filename="../tools/designer/src/lib/shared/previewconfigurationwidget.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Print/Preview Configuration</source>
         <translation>Настройка печати/предпросмотра</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>Style</source>
         <translation>Стиль</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Style sheet</source>
         <translation>Таблица стилей</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+7"/>
-        <location line="+21"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location line="-12"/>
+        <location/>
         <source>Device skin</source>
         <translation>Обложка устройства</translation>
     </message>
@@ -1410,15 +1406,15 @@
     <message>
         <location line="+5"/>
         <source>An error has occurred while reading the UI file at line %1, column %2: %3</source>
-        <translation type="unfinished">Возникла ошибка при чтении файла UI в строке %1 позиции %2: %3</translation>
+        <translation>Возникла ошибка при чтении файла UI в строке %1 позиции %2: %3</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Invalid UI file: The root element &lt;ui&gt; is missing.</source>
-        <translation type="unfinished">Неверный файл UI: Отсутствует корневой элемент &lt;ui&gt;.</translation>
+        <translation>Некорректный файл UI: отсутствует корневой элемент &lt;ui&gt;.</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+104"/>
         <source>The creation of a widget of the class &apos;%1&apos; failed.</source>
         <translation>Не удалось создание виджета класса &apos;%1&apos;.</translation>
     </message>
@@ -1932,7 +1928,7 @@ Would you like to retry?</source>
     <message>
         <location filename="../tools/designer/src/plugins/activeqt/qaxwidgettaskmenu.cpp" line="-71"/>
         <source>Reset control</source>
-        <translation>Сбросить элемент управления</translation>
+        <translation type="unfinished">Сбросить элемент управления</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1994,7 +1990,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1181"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1179"/>
         <source>Type Here</source>
         <translation>Пишите здесь</translation>
     </message>
@@ -2020,7 +2016,7 @@ Would you like to retry?</source>
     </message>
     <message>
         <location line="+25"/>
-        <location line="+650"/>
+        <location line="+648"/>
         <source>Add separator</source>
         <translation>Добавить разделитель</translation>
     </message>
@@ -2283,7 +2279,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+163"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+168"/>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method</extracomment>
         <translation>Методу %1 (объекта &apos;%2&apos;) было передано пустое имя класса.</translation>
@@ -2322,6 +2318,16 @@ Container pages should only be added by specifying them in XML returned by the d
         <location line="+266"/>
         <source>The property %1 could not be written. The type %2 is not supported yet.</source>
         <translation>Не удалось записать свойство %1. Тип %2 ещё не поддерживается.</translation>
+    </message>
+    <message>
+        <location filename="../tools/designer/src/lib/uilib/properties_p.h" line="+132"/>
+        <source>The enumeration-value &apos;%1&apos; is invalid. The default value &apos;%2&apos; will be used instead.</source>
+        <translation>Значение &apos;%1&apos; перечисляемого типа некорректно. Будет использовано значение &apos;%2&apos;.</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>The flag-value &apos;%1&apos; is invalid. Zero will be used instead.</source>
+        <translation>Значение флага &apos;%1&apos; перечисляемого типа некорректно. Будет использовано значение &apos;0&apos; (нуль).</translation>
     </message>
 </context>
 <context>
@@ -2456,36 +2462,36 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+226"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+255"/>
         <location line="+10"/>
         <location line="+25"/>
         <source>True</source>
-        <translation>Вкл.</translation>
+        <translation type="unfinished">Вкл.</translation>
     </message>
     <message>
         <location line="-25"/>
         <location line="+25"/>
         <source>False</source>
-        <translation>Выкл.</translation>
+        <translation type="unfinished">Выкл.</translation>
     </message>
 </context>
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1469"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1507"/>
         <source>True</source>
-        <translation type="unfinished">Да</translation>
+        <translation type="unfinished">Вкл.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>False</source>
-        <translation type="unfinished">Нет</translation>
+        <translation type="unfinished">Выкл.</translation>
     </message>
 </context>
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1581"/>
+        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1584"/>
         <source>Clear Char</source>
         <translation>Стереть символ</translation>
     </message>
@@ -2501,7 +2507,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4743"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4718"/>
         <source>Red</source>
         <translation>Красный</translation>
     </message>
@@ -2524,7 +2530,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtCursorDatabase</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-206"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-234"/>
         <source>Arrow</source>
         <translation>Arrow</translation>
     </message>
@@ -2673,7 +2679,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtGradientDialog</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientdialog.ui" line="+53"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientdialog.ui"/>
         <source>Edit Gradient</source>
         <translation>Правка градиента</translation>
     </message>
@@ -2763,234 +2769,222 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="unfinished">Зеркальная</translation>
     </message>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.ui" line="+53"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradienteditor.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location/>
         <source>Gradient Editor</source>
         <translation>Редактор градиента</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient&apos;s type such as start and final point, radius, etc. by drag &amp; drop.</source>
         <translation>Эта область отображает предварительный вариант настраиваемого градиента. Также она позволяет менять с помощью перетаскивания характерные для градиента параметры, такие как: начальная и конечная точки, радиус и пр.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>5</source>
         <translation>5</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>Gradient Stops Editor</source>
         <translation>Редактор опорных точек градиента</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>This area allows you to edit gradient stops. Double click on the existing stop handle to duplicate it. Double click outside of the existing stop handles to create a new stop. Drag &amp; drop the handle to reposition it. Use right mouse button to popup context menu with extra actions.</source>
         <translation>Эта область позволяет редактировать опорные точки градиента. Двойной щелчок на существующей точке создаст её копию. Двойной клик вне существующей точки создаст новую. Точки можно перемещать путем удерживания левой кнопки. По правой кнопке можно получить контекстное меню дополнительных действий.</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Zoom</source>
         <translation>Масштаб</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+3"/>
+        <location/>
         <source>Reset Zoom</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Position</source>
         <translation>Положение</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+49"/>
-        <location line="+22"/>
+        <location/>
         <source>Hue</source>
         <translation>Оттенок</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location/>
         <source>H</source>
         <translation>H</translation>
     </message>
     <message>
-        <location line="+87"/>
-        <location line="+49"/>
+        <location/>
         <source>Saturation</source>
         <translation>Насыщенность</translation>
     </message>
     <message>
-        <location line="-46"/>
+        <location/>
         <source>S</source>
         <translation>S</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location/>
         <source>Sat</source>
         <translation>Насыщение</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+49"/>
+        <location/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
     <message>
-        <location line="-46"/>
+        <location/>
         <source>V</source>
         <translation>V</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location/>
         <source>Val</source>
         <translation>Значение</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+49"/>
-        <location line="+22"/>
+        <location/>
         <source>Alpha</source>
         <translation>Альфа</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Spread</source>
         <translation>Заливка</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Color</source>
         <translation>Цвет</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Current stop&apos;s color</source>
         <translation>Цвет текущей точки</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Show HSV specification</source>
         <translation>Настройки в виде HSV</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>HSV</source>
         <translation>HSV</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Show RGB specification</source>
         <translation>Настройки в виде RGB</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>RGB</source>
         <translation>RGB</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location/>
         <source>Current stop&apos;s position</source>
         <translation>Положение текущей точки</translation>
     </message>
     <message>
-        <location line="+188"/>
+        <location/>
         <source>%</source>
         <translation>%</translation>
     </message>
     <message>
-        <location line="+111"/>
+        <location/>
         <source>Zoom In</source>
         <translation>Увеличить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Zoom Out</source>
         <translation>Уменьшить</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>Toggle details extension</source>
         <translation>Показать/скрыть детальные настройки</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&gt;</source>
         <translation>&gt;</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Linear Type</source>
         <translation>Линейный тип</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+22"/>
-        <location line="+22"/>
-        <location line="+22"/>
-        <location line="+22"/>
-        <location line="+22"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location line="-91"/>
+        <location/>
         <source>Radial Type</source>
         <translation>Радиальный тип</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Conical Type</source>
         <translation>Конический тип</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Pad Spread</source>
         <translation>Равномерная заливка</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Repeat Spread</source>
         <translation>Цикличная заливка</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Reflect Spread</source>
         <translation>Зеркальная заливка</translation>
     </message>
@@ -3015,7 +3009,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location line="+1"/>
         <source>Select All</source>
-        <translation>Выделить все</translation>
+        <translation>Выделить всё</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3038,7 +3032,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+107"/>
         <source>Grad</source>
-        <translation type="unfinished">Градиент</translation>
+        <translation>Градиент</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -3051,31 +3045,31 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>Вы действительно желаете удалить выбранный градиент?</translation>
     </message>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui" line="+39"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientview.ui"/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+74"/>
         <source>New...</source>
         <translation>Новый...</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Edit...</source>
         <translation>Правка...</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Rename</source>
         <translation>Переименовать</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-83"/>
+        <location/>
         <source>Gradient View</source>
         <translation>Просмотр градиента</translation>
     </message>
@@ -3083,7 +3077,8 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtGradientViewDialog</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.ui" line="+53"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.ui"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.h" line="+62"/>
         <source>Select Gradient</source>
         <translation>Выбрать градиент</translation>
     </message>
@@ -3091,7 +3086,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtKeySequenceEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+221"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+249"/>
         <source>Clear Shortcut</source>
         <translation>Удалить комбинацию горячих клавиш</translation>
     </message>
@@ -3153,7 +3148,7 @@ Container pages should only be added by specifying them in XML returned by the d
 <context>
     <name>QtPropertyBrowserUtils</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-136"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-156"/>
         <source>[%1, %2, %3] (%4)</source>
         <translation>[%1, %2, %3] (%4)</translation>
     </message>
@@ -3269,7 +3264,7 @@ Do you want to replace it?</source>
     <message>
         <location line="+112"/>
         <source>newPrefix</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">newPrefix</translation>
     </message>
     <message>
         <location line="+16"/>
@@ -3460,49 +3455,47 @@ to
         <translation type="unfinished">Предупреждение</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.ui" line="+13"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.ui"/>
         <source>Dialog</source>
         <translation>Диалог</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location/>
         <source>New File</source>
         <translation>Новый файл</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+50"/>
+        <location/>
         <source>N</source>
         <translation>N</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location/>
         <source>Remove File</source>
         <translation>Удалить файл</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+57"/>
+        <location/>
         <source>R</source>
         <translation>R</translation>
     </message>
     <message>
-        <location line="-34"/>
+        <location/>
         <source>I</source>
         <translation>I</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>New Resource</source>
         <translation>Новый ресурс</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Remove Resource or File</source>
         <translation>Удалить ресурс или файл</translation>
     </message>
@@ -3623,97 +3616,97 @@ to
         <translation>&lt; Р А З Д Е Л И Т Е Л Ь &gt;</translation>
     </message>
     <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.ui" line="+13"/>
+        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.ui"/>
         <source>Customize Toolbars</source>
         <translation>Настройка панелей инструментов</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Actions</source>
         <translation>Действия</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location/>
         <source>Toolbars</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Add new toolbar</source>
         <translation>Добавить новую панель инструментов</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>New</source>
         <translation>Новая</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Remove selected toolbar</source>
         <translation>Удалить выбранную панель инструментов</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Rename toolbar</source>
         <translation>Переименовать панель инструментов</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Rename</source>
         <translation>Переименовать</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location/>
         <source>Move action up</source>
         <translation>Переместить действие вверх</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Up</source>
         <translation>Вверх</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Remove action from toolbar</source>
         <translation>Удалить действие из панели инструментов</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&lt;-</source>
         <translation>&lt;-</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Add action to toolbar</source>
         <translation>Добавить действие на панель инструментов</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>-&gt;</source>
         <translation>-&gt;</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Move action down</source>
         <translation>Переместить действие вниз</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Down</source>
         <translation>Вниз</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location/>
         <source>Current Toolbar Actions</source>
         <translation>Текущие действия панели инструментов</translation>
     </message>
@@ -3781,17 +3774,17 @@ Do you want overwrite the template?</source>
         <translation>Выберите каталог для сохранения шаблонов</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/designer/saveformastemplate.ui" line="+45"/>
+        <location filename="../tools/designer/src/designer/saveformastemplate.ui"/>
         <source>Save Form As Template</source>
         <translation>Сохранить форму как шаблон</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location/>
         <source>&amp;Category:</source>
         <translation>&amp;Категория:</translation>
     </message>
     <message>
-        <location line="-35"/>
+        <location/>
         <source>&amp;Name:</source>
         <translation>&amp;Имя:</translation>
     </message>
@@ -3809,22 +3802,22 @@ Do you want overwrite the template?</source>
 <context>
     <name>SelectSignalDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/selectsignaldialog.ui" line="+14"/>
+        <location filename="../tools/designer/src/lib/shared/selectsignaldialog.ui"/>
         <source>Go to slot</source>
         <translation>Переход к слоту</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Select signal</source>
         <translation>Выбор сигнала</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>signal</source>
         <translation>сигнал</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>class</source>
         <translation>класс</translation>
     </message>
@@ -3840,37 +3833,32 @@ Do you want overwrite the template?</source>
 <context>
     <name>SignalSlotDialogClass</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/signalslotdialog.ui" line="+13"/>
+        <location filename="../tools/designer/src/lib/shared/signalslotdialog.ui"/>
         <source>Signals and slots</source>
         <translation>Сигналы и слоты</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Slots</source>
         <translation>Слоты</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <location line="+49"/>
+        <location/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location line="-46"/>
-        <location line="+10"/>
-        <location line="+39"/>
-        <location line="+10"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location line="-52"/>
-        <location line="+49"/>
+        <location/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="-21"/>
+        <location/>
         <source>Signals</source>
         <translation>Сигналы</translation>
     </message>
@@ -3934,7 +3922,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>VersionDialog</name>
     <message>
-        <location filename="../tools/designer/src/designer/versiondialog.cpp" line="+171"/>
+        <location filename="../tools/designer/src/designer/versiondialog.cpp" line="+170"/>
         <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;&lt;br/&gt;Version %2</source>
         <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;&lt;br/&gt;Версия %2</translation>
     </message>
@@ -4053,7 +4041,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::ActionModel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/actionrepository.cpp" line="+95"/>
+        <location filename="../tools/designer/src/lib/shared/actionrepository.cpp" line="+89"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
@@ -4609,57 +4597,57 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::Dialog</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/stringlisteditor.ui" line="+53"/>
+        <location filename="../tools/designer/src/components/propertyeditor/stringlisteditor.ui"/>
         <source>Dialog</source>
         <translation>Диалог</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>StringList</source>
         <translation>Список строк</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location/>
         <source>New String</source>
         <translation>Новая строка</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;New</source>
         <translation>&amp;Новая</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Delete String</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Delete</source>
         <translation>&amp;Удалить</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location/>
         <source>&amp;Value:</source>
         <translation>&amp;Значение:</translation>
     </message>
     <message>
-        <location line="+38"/>
+        <location/>
         <source>Move String Up</source>
         <translation>Переместить строку вверх</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Up</source>
         <translation>Вверх</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move String Down</source>
         <translation>Переместить строку вниз</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Down</source>
         <translation> Вниз </translation>
     </message>
@@ -4828,7 +4816,7 @@ Do you want overwrite the template?</source>
         <translation>Выбрать предка</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+46"/>
         <source>Lay out</source>
         <translation>Компоновка</translation>
     </message>
@@ -4860,7 +4848,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FormWindowManager</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+364"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+365"/>
         <source>Cu&amp;t</source>
         <translation>&amp;Вырезать</translation>
     </message>
@@ -5074,38 +5062,37 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::GridPanel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/gridpanel.ui" line="+13"/>
+        <location filename="../tools/designer/src/lib/shared/gridpanel.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Grid</source>
         <translation>Сетка</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Visible</source>
         <translation>Видимая</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Grid &amp;X</source>
         <translation>Сетка &amp;X</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <location line="+57"/>
+        <location/>
         <source>Snap</source>
         <translation>Прилипать</translation>
     </message>
     <message>
-        <location line="-48"/>
+        <location/>
         <source>Reset</source>
         <translation>Сбросить</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>Grid &amp;Y</source>
         <translation>Сетка &amp;Y</translation>
     </message>
@@ -5227,53 +5214,53 @@ Do you want overwrite the template?</source>
         <translation>Свойства &amp;&lt;&lt;</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.ui" line="+143"/>
+        <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.ui"/>
         <location filename="../tools/designer/src/components/taskmenu/itemlisteditor.cpp" line="+2"/>
         <source>Properties &amp;&gt;&gt;</source>
         <translation>Свойства &amp;&gt;&gt;</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location/>
         <source>Items List</source>
         <translation>Список элементов</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>New Item</source>
         <translation>Новый элемент</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;New</source>
         <translation>&amp;Новый</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Delete Item</source>
         <translation>Удалить элемент</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Delete</source>
         <translation>&amp;Удалить</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Move Item Up</source>
         <translation>Переместить элемент вверх</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>U</source>
         <translation>U</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move Item Down</source>
         <translation>Переместить элемент вниз</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>D</source>
         <translation>D</translation>
     </message>
@@ -5380,43 +5367,42 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::NewActionDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/newactiondialog.ui" line="+46"/>
+        <location filename="../tools/designer/src/lib/shared/newactiondialog.ui"/>
         <source>New Action...</source>
         <translation>Новое действие...</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;Text:</source>
         <translation>&amp;Текст:</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Object &amp;name:</source>
         <translation>&amp;Имя объекта:</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>&amp;Icon:</source>
         <translation>&amp;Значок:</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location/>
         <source>Shortcut:</source>
         <translation>Горячая клавиша:</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Checkable:</source>
         <translation>Триггерное:</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>ToolTip:</source>
         <translation>Подсказка:</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+21"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -5443,22 +5429,22 @@ Please select another name.</source>
 Укажите другое имя.</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.ui" line="+13"/>
+        <location filename="../tools/designer/src/components/propertyeditor/newdynamicpropertydialog.ui"/>
         <source>Create Dynamic Property</source>
         <translation>Создание динамического свойства</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location/>
         <source>Property Name</source>
         <translation>Имя свойства</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>horizontalSpacer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location/>
         <source>Property Type</source>
         <translation>Тип свойства</translation>
     </message>
@@ -5522,27 +5508,27 @@ Please select another name.</source>
         <translation>Внутренняя ошибка: Шаблон не выбран.</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/newformwidget.ui" line="+82"/>
+        <location filename="../tools/designer/src/lib/shared/newformwidget.ui"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Choose a template for a preview</source>
         <translation>Выберите шаблон для предпросмотра</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location/>
         <source>Embedded Design</source>
         <translation type="unfinished">Оформление портативных устройств</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Device:</source>
         <translation>Устройство:</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Screen Size:</source>
         <translation>Размер экрана:</translation>
     </message>
@@ -5592,9 +5578,6 @@ Please select another name.</source>
         <source>&amp;Find in Text...</source>
         <translation>&amp;Найти в тексте...</translation>
     </message>
-</context>
-<context>
-    <name>qdesigner_internal::ObjectInspector::ObjectInspectorPrivate</name>
     <message>
         <location line="-438"/>
         <source>Change Current Page</source>
@@ -5614,22 +5597,22 @@ Please select another name.</source>
         <translation>%1 %2</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/orderdialog.ui" line="+53"/>
+        <location filename="../tools/designer/src/lib/shared/orderdialog.ui"/>
         <source>Change Page Order</source>
         <translation>Изменение порядка страниц</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Page Order</source>
         <translation>Порядок страниц</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location/>
         <source>Move page up</source>
         <translation>Переместить страницу выше</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move page down</source>
         <translation>Переместить страницу ниже</translation>
     </message>
@@ -5637,47 +5620,47 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::PaletteEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.ui" line="+61"/>
+        <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.ui"/>
         <source>Edit Palette</source>
         <translation>Правка палитры</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location/>
         <source>Tune Palette</source>
         <translation>Настройка палитры</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location/>
         <source>Show Details</source>
         <translation type="unfinished">Показывать детали</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Compute Details</source>
         <translation type="unfinished">Расчитывать детали</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Quick</source>
         <translation type="unfinished">Быстрый</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Preview</source>
         <translation>Предпросмотр</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Disabled</source>
         <translation>Выключенная</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Inactive</source>
         <translation>Неактивная</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Active</source>
         <translation>Активная</translation>
     </message>
@@ -5813,9 +5796,6 @@ Please select another name.</source>
         <source>Browse...</source>
         <translation>Обзор...</translation>
     </message>
-</context>
-<context>
-    <name>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate</name>
     <message>
         <location line="+118"/>
         <source>Load Custom Device Skin</source>
@@ -5895,57 +5875,57 @@ ate the goose who was loose.</source>
 <context>
     <name>qdesigner_internal::PreviewWidget</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/previewwidget.ui" line="+61"/>
+        <location filename="../tools/designer/src/components/propertyeditor/previewwidget.ui"/>
         <source>Preview Window</source>
         <translation>Окно предпросмотра</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>LineEdit</source>
         <translation>LineEdit</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>ComboBox</source>
         <translation>ComboBox</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>PushButton</source>
         <translation>PushButton</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location/>
         <source>ButtonGroup2</source>
         <translation>ButtonGroup2</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>CheckBox1</source>
         <translation>CheckBox1</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>CheckBox2</source>
         <translation>CheckBox2</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>ButtonGroup</source>
         <translation>ButtonGroup</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>RadioButton1</source>
         <translation>RadioButton1</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>RadioButton2</source>
         <translation>RadioButton2</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>RadioButton3</source>
         <translation>RadioButton3</translation>
     </message>
@@ -6628,23 +6608,23 @@ Class: %2</source>
 <context>
     <name>qdesigner_internal::TableWidgetEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.ui" line="+97"/>
+        <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.ui"/>
         <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.cpp" line="+218"/>
         <source>Properties &amp;&gt;&gt;</source>
         <translation>Свойства &amp;&gt;&gt;</translation>
     </message>
     <message>
-        <location line="-44"/>
+        <location/>
         <source>Edit Table Widget</source>
         <translation>Правка табличного виджета</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Items</source>
         <translation>&amp;Элементы</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Table Items</source>
         <translation>Элементы таблицы</translation>
     </message>
@@ -6690,18 +6670,17 @@ Class: %2</source>
         <translation>Выберите каталог для сохранения шаблонов</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/templateoptionspage.ui" line="+13"/>
+        <location filename="../tools/designer/src/components/formeditor/templateoptionspage.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Additional Template Paths</source>
         <translation>Дополнительные пути к шаблонам</translation>
     </message>
     <message>
-        <location line="+9"/>
-        <location line="+7"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -6803,13 +6782,13 @@ Class: %2</source>
         <translation>Общие свойства</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui" line="+101"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+53"/>
         <source>New Item</source>
         <translation>Новый элемент</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+19"/>
         <source>New Subitem</source>
         <translation>Новый дочерний элемент</translation>
@@ -6820,88 +6799,88 @@ Class: %2</source>
         <translation>Свойства &amp;&lt;&lt;</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui" line="+86"/>
+        <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.cpp" line="+2"/>
         <source>Properties &amp;&gt;&gt;</source>
         <translation>Свойства &amp;&gt;&gt;</translation>
     </message>
     <message>
-        <location line="-144"/>
+        <location/>
         <source>Edit Tree Widget</source>
-        <translation type="unfinished">Изменение виджета Tree</translation>
+        <translation type="unfinished">Изменение виджета Дерево</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Items</source>
         <translation>&amp;Элементы</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location/>
         <source>Tree Items</source>
         <translation>Элементы дерева</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>&amp;New</source>
         <translation>&amp;Новый</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>New &amp;Subitem</source>
         <translation>Новый &amp;дочерний элемент</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Delete Item</source>
         <translation>Удалить элемент</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Delete</source>
         <translation>&amp;Удалить</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Move Item Left (before Parent Item)</source>
         <translation>Переместить элемент влево (перед родительским)</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>L</source>
         <translation>L</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move Item Right (as a First Subitem of the Next Sibling Item)</source>
         <translation>Переместить элемент вправо (сделать первым дочерним элементом соседнего элемента)</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>R</source>
         <translation></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move Item Up</source>
         <translation>Переместить элемент вверх</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>U</source>
         <translation>U</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move Item Down</source>
         <translation>Переместить элемент вниз</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>D</source>
         <translation>D</translation>
     </message>

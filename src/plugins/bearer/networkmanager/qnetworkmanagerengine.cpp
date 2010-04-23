@@ -49,13 +49,15 @@
 
 #include <QtCore/qdebug.h>
 
-#include <NetworkManager/NetworkManager.h>
 #include <QtDBus>
 #include <QDBusConnection>
 #include <QDBusError>
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDBusReply>
+
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 
@@ -92,6 +94,15 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
     connect(userSettings, SIGNAL(newConnection(QDBusObjectPath)),
             this, SLOT(newConnection(QDBusObjectPath)));
 
+    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
+}
+
+QNetworkManagerEngine::~QNetworkManagerEngine()
+{
+}
+
+void QNetworkManagerEngine::init()
+{
     // Get current list of access points.
     foreach (const QDBusObjectPath &devicePath, interface->getDevices())
         deviceAdded(devicePath);
@@ -112,10 +123,6 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
         connect(activeConnection, SIGNAL(propertiesChanged(QString,QMap<QString,QVariant>)),
                 this, SLOT(activeConnectionPropertiesChanged(QString,QMap<QString,QVariant>)));
     }
-}
-
-QNetworkManagerEngine::~QNetworkManagerEngine()
-{
 }
 
 bool QNetworkManagerEngine::networkManagerAvailable() const
@@ -147,7 +154,7 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
                 continue;
 
             QNetworkManagerInterfaceDevice device(devices.at(0).path());
-            return device.interface().name();
+            return device.networkInterface();
         }
     }
 
@@ -298,10 +305,17 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
 
                 QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
                 if (ptr) {
+                    ptr->mutex.lock();
                     if (activeConnection->state() == 2 &&
                         ptr->state != QNetworkConfiguration::Active) {
                         ptr->state = QNetworkConfiguration::Active;
+                        ptr->mutex.unlock();
+
+                        locker.unlock();
                         emit configurationChanged(ptr);
+                        locker.relock();
+                    } else {
+                        ptr->mutex.unlock();
                     }
                 }
             }
@@ -314,9 +328,16 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
                 QNetworkConfigurationPrivatePointer ptr =
                     accessPointConfigurations.value(identifiers.takeFirst());
 
+                ptr->mutex.lock();
                 if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
                     ptr->state = QNetworkConfiguration::Discovered;
+                    ptr->mutex.unlock();
+
+                    locker.unlock();
                     emit configurationChanged(ptr);
+                    locker.relock();
+                } else {
+                    ptr->mutex.unlock();
                 }
             }
         }
@@ -340,10 +361,17 @@ void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &pat
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
     if (ptr) {
+        ptr->mutex.lock();
         if (activeConnection->state() == 2 &&
             ptr->state != QNetworkConfiguration::Active) {
             ptr->state = QNetworkConfiguration::Active;
+            ptr->mutex.unlock();
+
+            locker.unlock();
             emit configurationChanged(ptr);
+            locker.relock();
+        } else {
+            ptr->mutex.unlock();
         }
     }
 }
@@ -425,6 +453,8 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
 
     QNetworkConfigurationPrivatePointer ptr(cpPriv);
     accessPointConfigurations.insert(ptr->id, ptr);
+
+    locker.unlock();
     emit configurationAdded(ptr);
 }
 
@@ -445,7 +475,8 @@ void QNetworkManagerEngine::removeConnection(const QString &path)
                                              connection->connectionInterface()->path()));
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(id);
-    ptr->isValid = false;
+
+    locker.unlock();
     emit configurationRemoved(ptr);
 }
 
@@ -477,11 +508,16 @@ void QNetworkManagerEngine::updateConnection(const QNmSettingsMap &settings)
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(cpPriv->id);
 
+    ptr->mutex.lock();
+
     ptr->isValid = cpPriv->isValid;
     ptr->name = cpPriv->name;
     ptr->id = cpPriv->id;
     ptr->state = cpPriv->state;
 
+    ptr->mutex.unlock();
+
+    locker.unlock();
     emit configurationChanged(ptr);
     delete cpPriv;
 }
@@ -501,10 +537,17 @@ void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
         if (ptr) {
+            ptr->mutex.lock();
             if (activeConnection.state() == 2 &&
                 ptr->state != QNetworkConfiguration::Active) {
                 ptr->state = QNetworkConfiguration::Active;
+                ptr->mutex.unlock();
+
+                locker.unlock();
                 emit configurationChanged(ptr);
+                locker.relock();
+            } else {
+                ptr->mutex.unlock();
             }
         }
     }
@@ -544,7 +587,11 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
 
                 QNetworkConfigurationPrivatePointer ptr =
                     accessPointConfigurations.value(connectionId);
+                ptr->mutex.lock();
                 ptr->state = QNetworkConfiguration::Discovered;
+                ptr->mutex.unlock();
+
+                locker.unlock();
                 emit configurationChanged(ptr);
                 return;
             }
@@ -558,11 +605,17 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
     ptr->isValid = true;
     ptr->id = QString::number(qHash(objectPath.path()));
     ptr->type = QNetworkConfiguration::InternetAccessPoint;
-    ptr->purpose = QNetworkConfiguration::PublicPurpose;
+    if(accessPoint->flags() == NM_802_11_AP_FLAGS_PRIVACY) {
+        ptr->purpose = QNetworkConfiguration::PrivatePurpose;
+    } else {
+        ptr->purpose = QNetworkConfiguration::PublicPurpose;
+    }
     ptr->state = QNetworkConfiguration::Undefined;
     ptr->bearer = QLatin1String("WLAN");
 
     accessPointConfigurations.insert(ptr->id, ptr);
+
+    locker.unlock();
     emit configurationAdded(ptr);
 }
 
@@ -593,7 +646,11 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
 
                         QNetworkConfigurationPrivatePointer ptr =
                             accessPointConfigurations.value(connectionId);
+                        ptr->mutex.lock();
                         ptr->state = QNetworkConfiguration::Defined;
+                        ptr->mutex.unlock();
+
+                        locker.unlock();
                         emit configurationChanged(ptr);
                         return;
                     }
@@ -602,8 +659,11 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
                 QNetworkConfigurationPrivatePointer ptr =
                     accessPointConfigurations.take(QString::number(qHash(objectPath.path())));
 
-                if (ptr)
+                if (ptr) {
+                    locker.unlock();
                     emit configurationRemoved(ptr);
+                    locker.relock();
+                }
             }
 
             delete accessPoint;
@@ -634,7 +694,11 @@ void QNetworkManagerEngine::updateAccessPoint(const QMap<QString, QVariant> &map
 
             QNetworkConfigurationPrivatePointer ptr =
                 accessPointConfigurations.value(connectionId);
+            ptr->mutex.lock();
             ptr->state = QNetworkConfiguration::Discovered;
+            ptr->mutex.unlock();
+
+            locker.unlock();
             emit configurationChanged(ptr);
             return;
         }
@@ -661,6 +725,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
     if (connectionType == QLatin1String("802-3-ethernet")) {
         cpPriv->bearer = QLatin1String("Ethernet");
+        cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
 
         foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
             QNetworkManagerInterfaceDevice device(devicePath.path());
@@ -677,7 +742,12 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
         cpPriv->bearer = QLatin1String("WLAN");
 
         const QString connectionSsid = map.value("802-11-wireless").value("ssid").toString();
-
+        const QString connectionSecurity = map.value("802-11-wireless").value("security").toString();
+        if(!connectionSecurity.isEmpty()) {
+            cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
+        } else {
+            cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
+        }
         for (int i = 0; i < accessPoints.count(); ++i) {
             if (connectionSsid == accessPoints.at(i)->ssid()) {
                 cpPriv->state |= QNetworkConfiguration::Discovered;
@@ -688,7 +758,10 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                         QString::number(qHash(accessPoints.at(i)->connectionInterface()->path()));
                     QNetworkConfigurationPrivatePointer ptr =
                         accessPointConfigurations.take(accessPointId);
+
+                    locker.unlock();
                     emit configurationRemoved(ptr);
+                    locker.relock();
                 }
                 break;
             }
@@ -845,3 +918,5 @@ QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration(
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT

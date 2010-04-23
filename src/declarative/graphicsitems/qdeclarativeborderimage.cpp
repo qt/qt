@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeborderimage_p.h"
-#include "qdeclarativeborderimage_p_p.h"
+#include "private/qdeclarativeborderimage_p.h"
+#include "private/qdeclarativeborderimage_p_p.h"
 
 #include <qdeclarativeengine.h>
+#include <qdeclarativeinfo.h>
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -191,7 +192,7 @@ void QDeclarativeBorderImage::load()
         update();
     } else {
         d->status = Loading;
-        if (d->url.path().endsWith(QLatin1String(".sci"))) {
+        if (d->url.path().endsWith(QLatin1String("sci"))) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
             QString lf = toLocalFileOrQrc(d->url);
             if (!lf.isEmpty()) {
@@ -217,7 +218,9 @@ void QDeclarativeBorderImage::load()
                                      thisSciRequestFinished, Qt::DirectConnection);
             }
         } else {
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, d->async);
+            QSize impsize;
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async);
             if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
                 d->pendingPixmapCache = true;
@@ -226,11 +229,13 @@ void QDeclarativeBorderImage::load()
                         this, SLOT(requestProgress(qint64,qint64)));
             } else {
                 //### should be unified with requestFinished
-                setImplicitWidth(d->pix.width());
-                setImplicitHeight(d->pix.height());
+                setImplicitWidth(impsize.width());
+                setImplicitHeight(impsize.height());
 
-                if (d->pix.isNull())
+                if (d->pix.isNull()) {
                     d->status = Error;
+                    qmlInfo(this) << errorString;
+                }
                 if (d->status == Loading)
                     d->status = Ready;
                 d->progress = 1.0;
@@ -336,7 +341,9 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, d->async);
+        QSize impsize;
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, &errorString, &impsize, d->async);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->sciurl);
             d->sciPendingPixmapCache = true;
@@ -362,11 +369,13 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
                                  thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
-            setImplicitWidth(d->pix.width());
-            setImplicitHeight(d->pix.height());
+            setImplicitWidth(impsize.width());
+            setImplicitHeight(impsize.height());
 
-            if (d->pix.isNull())
+            if (d->pix.isNull()) {
                 d->status = Error;
+                qmlInfo(this) << errorString;
+            }
             if (d->status == Loading)
                 d->status = Ready;
             d->progress = 1.0;
@@ -381,16 +390,24 @@ void QDeclarativeBorderImage::requestFinished()
 {
     Q_D(QDeclarativeBorderImage);
 
+    QSize impsize;
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QDeclarativePixmapCache::get(d->sciurl, &d->pix, d->async);
+        QString errorString;
+        if (QDeclarativePixmapCache::get(d->sciurl, &d->pix, &errorString, &impsize, d->async) != QDeclarativePixmapReply::Ready) {
+            d->status = Error;
+            qmlInfo(this) << errorString;
+        }
     } else {
         d->pendingPixmapCache = false;
-        if (QDeclarativePixmapCache::get(d->url, &d->pix, d->async) != QDeclarativePixmapReply::Ready)
+        QString errorString;
+        if (QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async) != QDeclarativePixmapReply::Ready) {
             d->status = Error;
+            qmlInfo(this) << errorString;
+        }
     }
-    setImplicitWidth(d->pix.width());
-    setImplicitHeight(d->pix.height());
+    setImplicitWidth(impsize.width());
+    setImplicitHeight(impsize.height());
 
     if (d->status == Loading)
         d->status = Ready;
@@ -400,9 +417,23 @@ void QDeclarativeBorderImage::requestFinished()
     update();
 }
 
+#define BORDERIMAGE_MAX_REDIRECT 16
+
 void QDeclarativeBorderImage::sciRequestFinished()
 {
     Q_D(QDeclarativeBorderImage);
+
+    d->redirectCount++;
+    if (d->redirectCount < BORDERIMAGE_MAX_REDIRECT) {
+        QVariant redirect = d->sciReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = d->sciReply->url().resolved(redirect.toUrl());
+            setSource(url);
+            return;
+        }
+    }
+    d->redirectCount=0;
+
     if (d->sciReply->error() != QNetworkReply::NoError) {
         d->status = Error;
         d->sciReply->deleteLater();
@@ -430,7 +461,7 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
     const QDeclarativeScaleGrid *border = d->getScaleGrid();
     QMargins margins(border->left(), border->top(), border->right(), border->bottom());
     QTileRules rules((Qt::TileRule)d->horizontalTileMode, (Qt::TileRule)d->verticalTileMode);
-    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, d->pix, d->pix.rect(), margins, rules);
+    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width(), (int)d->height()), margins, d->pix, d->pix.rect(), margins, rules);
     if (d->smooth) {
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);

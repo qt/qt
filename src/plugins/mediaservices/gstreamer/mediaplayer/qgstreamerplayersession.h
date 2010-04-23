@@ -71,7 +71,6 @@ public:
     QUrl url() const;
 
     QMediaPlayer::State state() const { return m_state; }
-    QMediaPlayer::MediaStatus mediaStatus() const { return m_mediaStatus; }
 
     qint64 duration() const;
     qint64 position() const;
@@ -100,16 +99,16 @@ public:
 //    int activeStream(QMediaStreamsControl::StreamType streamType) const;
 //    void setActiveStream(QMediaStreamsControl::StreamType streamType, int streamNumber);
 
-    bool processSyncMessage(const QGstreamerMessage &message);
+    bool processSyncMessage(const QGstreamerMessage &message);    
 
 public slots:
     void load(const QUrl &url);
 
-    void play();
-    void pause();
+    bool play();
+    bool pause();
     void stop();
 
-    void seek(qint64 pos);
+    bool seek(qint64 pos);
 
     void setVolume(int volume);
     void setMuted(bool muted);
@@ -118,7 +117,6 @@ signals:
     void durationChanged(qint64 duration);
     void positionChanged(qint64 position);
     void stateChanged(QMediaPlayer::State state);
-    void mediaStatusChanged(QMediaPlayer::MediaStatus mediaStatus);
     void volumeChanged(int volume);
     void mutedStateChanged(bool muted);
     void audioAvailableChanged(bool audioAvailable);
@@ -135,16 +133,22 @@ private slots:
     void busMessage(const QGstreamerMessage &message);
     void getStreamsInfo();
     void setSeekable(bool);
+    void finishVideoOutputChange();
 
 private:
-    void setMediaStatus(QMediaPlayer::MediaStatus);
-
     QUrl m_url;
     QMediaPlayer::State m_state;
-    QMediaPlayer::MediaStatus m_mediaStatus;
     QGstreamerBusHelper* m_busHelper;
     GstElement* m_playbin;
-    GstElement* m_nullVideoOutput;
+
+    GstElement* m_videoOutputBin;
+    GstElement* m_videoIdentity;
+    GstElement* m_colorSpace;
+    GstElement* m_videoScale;
+    GstElement* m_videoSink;
+    GstElement* m_pendingVideoSink;
+    GstElement* m_nullVideoSink;
+
     GstBus* m_bus;
     QGstreamerVideoRendererInterface *m_renderer;
 

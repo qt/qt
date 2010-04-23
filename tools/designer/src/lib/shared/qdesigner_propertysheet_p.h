@@ -176,7 +176,8 @@ public:
                         PropertyWindowIconText,
                         PropertyWindowModality,
                         PropertyWindowModified,
-                        PropertyStyleSheet
+                        PropertyStyleSheet,
+                        PropertyText
     };
 
     enum ObjectType { ObjectNone, ObjectLabel, ObjectLayout, ObjectLayoutWidget, ObjectQ3GroupBox };

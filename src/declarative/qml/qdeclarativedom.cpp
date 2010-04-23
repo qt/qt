@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativedom_p.h"
-#include "qdeclarativedom_p_p.h"
+#include "private/qdeclarativedom_p.h"
+#include "private/qdeclarativedom_p_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
-#include "qdeclarativecompiler_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativescriptparser_p.h"
-#include "qdeclarativeglobal_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativescriptparser_p.h"
+#include "private/qdeclarativeglobal_p.h"
 
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
@@ -374,7 +374,10 @@ QDeclarativeDomValue QDeclarativeDomProperty::value() const
     QDeclarativeDomValue rv;
     if (d->property) {
         rv.d->property = d->property;
-        rv.d->value = d->property->values.at(0);
+        if (d->property->values.count())
+            rv.d->value = d->property->values.at(0);
+        else
+            rv.d->value = d->property->onValues.at(0);
         rv.d->property->addref();
         rv.d->value->addref();
     }
@@ -477,8 +480,14 @@ int QDeclarativeDomDynamicProperty::propertyType() const
             case QDeclarativeParser::Object::DynamicProperty::Color:
                 return QMetaType::type("QColor");
 
+            case QDeclarativeParser::Object::DynamicProperty::Time:
+                return QMetaType::type("QTime");
+
             case QDeclarativeParser::Object::DynamicProperty::Date:
                 return QMetaType::type("QDate");
+
+            case QDeclarativeParser::Object::DynamicProperty::DateTime:
+                return QMetaType::type("QDateTime");
 
             case QDeclarativeParser::Object::DynamicProperty::Int:
                 return QMetaType::type("int");
@@ -505,7 +514,7 @@ int QDeclarativeDomDynamicProperty::propertyType() const
 
 QByteArray QDeclarativeDomDynamicProperty::propertyTypeName() const
 {
-    if (isValid()) 
+    if (isValid())
         return d->property.customType;
 
     return QByteArray();
@@ -1104,8 +1113,7 @@ Rectangle {
     x: NumberAnimation {
         from: 0
         to: 100
-        repeat: true
-        running: true
+        loops: Animation.Infinite
     }
 }
     \endqml
@@ -1153,8 +1161,7 @@ Rectangle {
     x: NumberAnimation {
         from: 0
         to: 100
-        repeat: true
-        running: true
+        loops: Animation.Infinite
     }
 }
     \endqml
@@ -1181,7 +1188,7 @@ QDeclarativeDomObject QDeclarativeDomValueValueSource::object() const
 
     \qml
 Rectangle {
-    x: Behavior { NumberAnimation { duration: 500 } }
+    Behavior on x { NumberAnimation { duration: 500 } }
 }
     \endqml
 */
@@ -1225,7 +1232,7 @@ QDeclarativeDomValueValueInterceptor &QDeclarativeDomValueValueInterceptor::oper
     returned.
     \qml
 Rectangle {
-    x: Behavior { NumberAnimation { duration: 500 } }
+    Behavior on x { NumberAnimation { duration: 500 } }
 }
     \endqml
 */
@@ -1346,7 +1353,7 @@ QDeclarativeDomValue::Type QDeclarativeDomValue::type() const
 {
     if (d->property)
         if (QDeclarativeMetaType::isList(d->property->type) ||
-           (d->property && d->property->values.count() > 1))
+           (d->property && (d->property->values.count() + d->property->onValues.count()) > 1))
             return List;
 
     QDeclarativeParser::Value *value = d->value;
@@ -1624,6 +1631,13 @@ QList<QDeclarativeDomValue> QDeclarativeDomList::values() const
     for (int ii = 0; ii < d->property->values.count(); ++ii) {
         QDeclarativeDomValue v;
         v.d->value = d->property->values.at(ii);
+        v.d->value->addref();
+        rv << v;
+    }
+
+    for (int ii = 0; ii < d->property->onValues.count(); ++ii) {
+        QDeclarativeDomValue v;
+        v.d->value = d->property->onValues.at(ii);
         v.d->value->addref();
         rv << v;
     }

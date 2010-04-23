@@ -248,7 +248,7 @@ static const Keyword keywords[] = {
     { "Q_SIGNAL", "Q_SIGNAL_TOKEN" },
     { "Q_SLOT", "Q_SLOT_TOKEN" },
     { "Q_SCRIPTABLE", "Q_SCRIPTABLE_TOKEN" },
-
+    { "Q_PRIVATE_PROPERTY", "Q_PRIVATE_PROPERTY_TOKEN" },
     { "\n", "NEWLINE" },
     { "\"", "QUOTE" },
     { "\'", "SINGLEQUOTE" },

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativerectangle_p.h"
-#include "qdeclarativerectangle_p_p.h"
+#include "private/qdeclarativerectangle_p.h"
+#include "private/qdeclarativerectangle_p_p.h"
 
 #include <QPainter>
 #include <QtCore/qmath.h>
@@ -180,9 +180,6 @@ void QDeclarativeGradient::doUpdate()
 QDeclarativeRectangle::QDeclarativeRectangle(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRectanglePrivate), parent)
 {
-    Q_D(QDeclarativeRectangle);
-    d->init();
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 void QDeclarativeRectangle::doUpdate()
@@ -231,13 +228,12 @@ QDeclarativePen *QDeclarativeRectangle::border()
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    Rectangle { rotation: 90; x: 80; y: 200; width: 80; height: 80
+    Rectangle { rotation: 90; y: 200; width: 80; height: 80
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    // The x offset is needed because the rotation is from the top left corner
     \endqml
     \endtable
 
@@ -393,9 +389,10 @@ void QDeclarativeRectangle::paint(QPainter *p, const QStyleOptionGraphicsItem *,
 void QDeclarativeRectangle::drawRect(QPainter &p)
 {
     Q_D(QDeclarativeRectangle);
-    if (d->gradient && d->gradient->gradient()) {
+    if ((d->gradient && d->gradient->gradient())
+        || d->radius > width()/2 || d->radius > height()/2) {
         // XXX This path is still slower than the image path
-        // Image path won't work for gradients though
+        // Image path won't work for gradients or invalid radius though
         bool oldAA = p.testRenderHint(QPainter::Antialiasing);
         if (d->smooth)
             p.setRenderHint(QPainter::Antialiasing);
@@ -405,11 +402,23 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
         } else {
             p.setPen(Qt::NoPen);
         }
-        p.setBrush(*d->gradient->gradient());
-        if (d->radius > 0.)
-            p.drawRoundedRect(0, 0, width(), height(), d->radius, d->radius);
+        if (d->gradient && d->gradient->gradient())
+            p.setBrush(*d->gradient->gradient());
         else
-            p.drawRect(0, 0, width(), height());
+            p.setBrush(d->color);
+        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
+        QRectF rect;
+        if (pw%2)
+            rect = QRectF(0.5, 0.5, width()-1, height()-1);
+        else
+            rect = QRectF(0, 0, width(), height());
+        qreal radius = d->radius;
+        if (radius > width()/2 || radius > height()/2)
+            radius = qMin(width()/2, height()/2);
+        if (radius > 0.)
+            p.drawRoundedRect(rect, radius, radius);
+        else
+            p.drawRect(rect);
         if (d->smooth)
             p.setRenderHint(QPainter::Antialiasing, oldAA);
     } else {
@@ -455,12 +464,13 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
     filtering at the beginning of the animation and reenable it at the conclusion.
 
     \image rect-smooth.png
+    On this image, smooth is turned off on the top half and on on the bottom half.
 */
 
 QRectF QDeclarativeRectangle::boundingRect() const
 {
     Q_D(const QDeclarativeRectangle);
-    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width()+d->paintmargin*2, d->height()+d->paintmargin*2);
 }
 
 QT_END_NAMESPACE

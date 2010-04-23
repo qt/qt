@@ -81,7 +81,7 @@ public:
     void generate(int start, int length, QFont::Capitalization caps)
     {
         if ((int)caps == (int)QFont::SmallCaps)
-            generateScriptItemsSmallCaps(m_string.utf16(), start, length);
+            generateScriptItemsSmallCaps(reinterpret_cast<const ushort *>(m_string.unicode()), start, length);
         else if(caps == QFont::Capitalize)
             generateScriptItemsCapitalize(start, length);
         else if(caps != QFont::MixedCase) {
@@ -856,7 +856,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-extern int qt_defaultDpiY(); // in qfont.cpp
+Q_GUI_EXPORT extern int qt_defaultDpiY(); // in qfont.cpp
 
 void QTextEngine::shapeText(int item) const
 {
@@ -1124,14 +1124,13 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     bool kerningEnabled = this->font(si).d->kerning;
 
     HB_ShaperItem entire_shaper_item;
-    entire_shaper_item.kerning_applied = false;
+    qMemSet(&entire_shaper_item, 0, sizeof(entire_shaper_item));
     entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData());
     entire_shaper_item.stringLength = layoutData->string.length();
     entire_shaper_item.item.script = (HB_Script)si.analysis.script;
     entire_shaper_item.item.pos = si.position;
     entire_shaper_item.item.length = length(item);
     entire_shaper_item.item.bidiLevel = si.analysis.bidiLevel;
-    entire_shaper_item.glyphIndicesPresent = false;
 
     HB_UChar16 upperCased[256]; // XXX what about making this 4096, so we don't have to extend it ever.
     if (si.analysis.flags == QScriptAnalysis::SmallCaps || si.analysis.flags == QScriptAnalysis::Uppercase
@@ -1299,10 +1298,10 @@ QTextEngine::QTextEngine()
 }
 
 QTextEngine::QTextEngine(const QString &str, const QFont &f)
-    : fnt(f)
+    : text(str),
+      fnt(f)
 {
     init(this);
-    text = str;
 }
 
 QTextEngine::~QTextEngine()
@@ -1434,9 +1433,7 @@ void QTextEngine::itemize() const
         layoutData->hasBidi = bidiItemize(const_cast<QTextEngine *>(this), analysis, control);
     }
 
-    const ushort *unicode = layoutData->string.utf16();
-    // correctly assign script, isTab and isObject to the script analysis
-    const ushort *uc = unicode;
+    const ushort *uc = reinterpret_cast<const ushort *>(layoutData->string.unicode());
     const ushort *e = uc + length;
     int lastScript = QUnicodeTables::Common;
     while (uc < e) {
@@ -1650,7 +1647,7 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                 }
             }
 
-            glyph_t glyph = glyphs.glyphs[logClusters[pos + ilen - 1]];
+            glyph_t glyph = glyphs.glyphs[logClusters[ilen - 1]];
             glyph_metrics_t gi = fe->boundingBox(glyph);
             if (gi.isValid())
                 gm.width -= qRound(gi.xoff - gi.x - gi.width);
@@ -2469,7 +2466,7 @@ void QTextEngine::splitItem(int item, int pos) const
     if (pos <= 0)
         return;
 
-    layoutData->items.insert(item + 1, QScriptItem(layoutData->items[item]));
+    layoutData->items.insert(item + 1, layoutData->items[item]);
     QScriptItem &oldItem = layoutData->items[item];
     QScriptItem &newItem = layoutData->items[item+1];
     newItem.position += pos;
@@ -2497,7 +2494,7 @@ void QTextEngine::splitItem(int item, int pos) const
 //     qDebug("split at position %d itempos=%d", pos, item);
 }
 
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 {
@@ -2612,10 +2609,9 @@ void QTextEngine::resolveAdditionalFormats() const
 }
 
 QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
-    : _layoutData(string, _memory, MemSize)
+    : QTextEngine(string, f),
+      _layoutData(string, _memory, MemSize)
 {
-    fnt = f;
-    text = string;
     stackEngine = true;
     layoutData = &_layoutData;
 }

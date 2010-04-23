@@ -26,6 +26,7 @@
 
 #include "HTMLVideoElement.h"
 #include "KURL.h"
+#include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -38,14 +39,16 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLVideoElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLVideoElementTableValues[7] =
+static const HashTableValue JSHTMLVideoElementTableValues[9] =
 {
-    { "width", DontDelete, (intptr_t)jsHTMLVideoElementWidth, (intptr_t)setJSHTMLVideoElementWidth },
-    { "height", DontDelete, (intptr_t)jsHTMLVideoElementHeight, (intptr_t)setJSHTMLVideoElementHeight },
-    { "videoWidth", DontDelete|ReadOnly, (intptr_t)jsHTMLVideoElementVideoWidth, (intptr_t)0 },
-    { "videoHeight", DontDelete|ReadOnly, (intptr_t)jsHTMLVideoElementVideoHeight, (intptr_t)0 },
-    { "poster", DontDelete, (intptr_t)jsHTMLVideoElementPoster, (intptr_t)setJSHTMLVideoElementPoster },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLVideoElementConstructor, (intptr_t)0 },
+    { "width", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementWidth), (intptr_t)setJSHTMLVideoElementWidth },
+    { "height", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementHeight), (intptr_t)setJSHTMLVideoElementHeight },
+    { "videoWidth", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementVideoWidth), (intptr_t)0 },
+    { "videoHeight", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementVideoHeight), (intptr_t)0 },
+    { "poster", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementPoster), (intptr_t)setJSHTMLVideoElementPoster },
+    { "webkitSupportsFullscreen", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementWebkitSupportsFullscreen), (intptr_t)0 },
+    { "webkitDisplayingFullscreen", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementWebkitDisplayingFullscreen), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLVideoElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -53,7 +56,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLVideoElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLVideoElementTableValues, 0 };
 #else
-    { 17, 15, JSHTMLVideoElementTableValues, 0 };
+    { 18, 15, JSHTMLVideoElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -84,7 +87,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -105,16 +108,20 @@ bool JSHTMLVideoElementConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 /* Hash table for prototype */
 
-static const HashTableValue JSHTMLVideoElementPrototypeTableValues[1] =
+static const HashTableValue JSHTMLVideoElementPrototypeTableValues[5] =
 {
+    { "webkitEnterFullscreen", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLVideoElementPrototypeFunctionWebkitEnterFullscreen), (intptr_t)0 },
+    { "webkitExitFullscreen", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLVideoElementPrototypeFunctionWebkitExitFullscreen), (intptr_t)0 },
+    { "webkitEnterFullScreen", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLVideoElementPrototypeFunctionWebkitEnterFullScreen), (intptr_t)0 },
+    { "webkitExitFullScreen", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsHTMLVideoElementPrototypeFunctionWebkitExitFullScreen), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSHTMLVideoElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSHTMLVideoElementPrototypeTableValues, 0 };
+    { 3, JSHTMLVideoElementPrototypeTableValues, 0 };
 #else
-    { 1, 0, JSHTMLVideoElementPrototypeTableValues, 0 };
+    { 8, 7, JSHTMLVideoElementPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSHTMLVideoElementPrototype::s_info = { "HTMLVideoElementPrototype", 0, &JSHTMLVideoElementPrototypeTable, 0 };
@@ -122,6 +129,16 @@ const ClassInfo JSHTMLVideoElementPrototype::s_info = { "HTMLVideoElementPrototy
 JSObject* JSHTMLVideoElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMPrototype<JSHTMLVideoElement>(exec, globalObject);
+}
+
+bool JSHTMLVideoElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticFunctionSlot<JSObject>(exec, &JSHTMLVideoElementPrototypeTable, this, propertyName, slot);
+}
+
+bool JSHTMLVideoElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLVideoElementPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSHTMLVideoElement::s_info = { "HTMLVideoElement", &JSHTMLMediaElement::s_info, &JSHTMLVideoElementTable, 0 };
@@ -146,49 +163,72 @@ bool JSHTMLVideoElement::getOwnPropertyDescriptor(ExecState* exec, const Identif
     return getStaticValueDescriptor<JSHTMLVideoElement, Base>(exec, &JSHTMLVideoElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLVideoElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()));
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
-    return jsNumber(exec, imp->width());
+    JSValue result = jsNumber(exec, imp->width());
+    return result;
 }
 
-JSValue jsHTMLVideoElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementHeight(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()));
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
-    return jsNumber(exec, imp->height());
+    JSValue result = jsNumber(exec, imp->height());
+    return result;
 }
 
-JSValue jsHTMLVideoElementVideoWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementVideoWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()));
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
-    return jsNumber(exec, imp->videoWidth());
+    JSValue result = jsNumber(exec, imp->videoWidth());
+    return result;
 }
 
-JSValue jsHTMLVideoElementVideoHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementVideoHeight(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()));
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
-    return jsNumber(exec, imp->videoHeight());
+    JSValue result = jsNumber(exec, imp->videoHeight());
+    return result;
 }
 
-JSValue jsHTMLVideoElementPoster(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementPoster(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()));
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
-    return jsString(exec, imp->poster());
+    JSValue result = jsString(exec, imp->poster());
+    return result;
 }
 
-JSValue jsHTMLVideoElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLVideoElementWebkitSupportsFullscreen(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLVideoElement* domObject = static_cast<JSHTMLVideoElement*>(asObject(slot.slotBase()));
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
+    UNUSED_PARAM(exec);
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
+    JSValue result = jsBoolean(imp->webkitSupportsFullscreen());
+    return result;
+}
+
+JSValue jsHTMLVideoElementWebkitDisplayingFullscreen(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSHTMLVideoElement* castedThis = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
+    UNUSED_PARAM(exec);
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThis->impl());
+    JSValue result = jsBoolean(imp->webkitDisplayingFullscreen());
+    return result;
+}
+
+JSValue jsHTMLVideoElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSHTMLVideoElement* domObject = static_cast<JSHTMLVideoElement*>(asObject(slotBase));
     return JSHTMLVideoElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLVideoElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -198,25 +238,80 @@ void JSHTMLVideoElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLVideoElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(thisObject)->impl());
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(thisObject);
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
     imp->setWidth(value.toInt32(exec));
 }
 
 void setJSHTMLVideoElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(thisObject)->impl());
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(thisObject);
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
     imp->setHeight(value.toInt32(exec));
 }
 
 void setJSHTMLVideoElementPoster(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(static_cast<JSHTMLVideoElement*>(thisObject)->impl());
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(thisObject);
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
     imp->setPoster(valueToStringWithNullCheck(exec, value));
 }
 
 JSValue JSHTMLVideoElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMConstructor<JSHTMLVideoElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+}
+
+JSValue JSC_HOST_CALL jsHTMLVideoElementPrototypeFunctionWebkitEnterFullscreen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLVideoElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(asObject(thisValue));
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+
+    imp->webkitEnterFullscreen(processingUserGesture(exec), ec);
+    setDOMException(exec, ec);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsHTMLVideoElementPrototypeFunctionWebkitExitFullscreen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLVideoElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(asObject(thisValue));
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
+
+    imp->webkitExitFullscreen();
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsHTMLVideoElementPrototypeFunctionWebkitEnterFullScreen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLVideoElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(asObject(thisValue));
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+
+    imp->webkitEnterFullScreen(processingUserGesture(exec), ec);
+    setDOMException(exec, ec);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsHTMLVideoElementPrototypeFunctionWebkitExitFullScreen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLVideoElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLVideoElement* castedThisObj = static_cast<JSHTMLVideoElement*>(asObject(thisValue));
+    HTMLVideoElement* imp = static_cast<HTMLVideoElement*>(castedThisObj->impl());
+
+    imp->webkitExitFullScreen();
+    return jsUndefined();
 }
 
 

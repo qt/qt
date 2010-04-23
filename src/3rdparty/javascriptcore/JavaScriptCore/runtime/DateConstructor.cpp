@@ -35,7 +35,7 @@
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
 
-#if PLATFORM(WINCE) && !PLATFORM(QT)
+#if OS(WINCE) && !PLATFORM(QT)
 extern "C" time_t time(time_t* timer); // Provided by libce.
 #endif
 
@@ -57,7 +57,7 @@ static JSValue JSC_HOST_CALL dateParse(ExecState*, JSObject*, JSValue, const Arg
 static JSValue JSC_HOST_CALL dateNow(ExecState*, JSObject*, JSValue, const ArgList&);
 static JSValue JSC_HOST_CALL dateUTC(ExecState*, JSObject*, JSValue, const ArgList&);
 
-DateConstructor::DateConstructor(ExecState* exec, PassRefPtr<Structure> structure, Structure* prototypeFunctionStructure, DatePrototype* datePrototype)
+DateConstructor::DateConstructor(ExecState* exec, NonNullPassRefPtr<Structure> structure, Structure* prototypeFunctionStructure, DatePrototype* datePrototype)
     : InternalFunction(&exec->globalData(), structure, Identifier(exec, datePrototype->classInfo()->className))
 {
       putDirectWithoutTransition(exec->propertyNames().prototype, datePrototype, DontEnum|DontDelete|ReadOnly);
@@ -77,14 +77,14 @@ JSObject* constructDate(ExecState* exec, const ArgList& args)
     double value;
 
     if (numArgs == 0) // new Date() ECMA 15.9.3.3
-        value = getCurrentUTCTime();
+        value = jsCurrentTime();
     else if (numArgs == 1) {
         if (args.at(0).inherits(&DateInstance::info))
             value = asDateInstance(args.at(0))->internalNumber();
         else {
             JSValue primitive = args.at(0).toPrimitive(exec);
             if (primitive.isString())
-                value = parseDate(primitive.getString());
+                value = parseDate(exec, primitive.getString(exec));
             else
                 value = primitive.toNumber(exec);
         }
@@ -108,13 +108,11 @@ JSObject* constructDate(ExecState* exec, const ArgList& args)
             t.second = args.at(5).toInt32(exec);
             t.isDST = -1;
             double ms = (numArgs >= 7) ? args.at(6).toNumber(exec) : 0;
-            value = gregorianDateTimeToMS(t, ms, false);
+            value = gregorianDateTimeToMS(exec, t, ms, false);
         }
     }
 
-    DateInstance* result = new (exec) DateInstance(exec->lexicalGlobalObject()->dateStructure());
-    result->setInternalValue(jsNumber(exec, timeClip(value)));
-    return result;
+    return new (exec) DateInstance(exec, value);
 }
     
 static JSObject* constructWithDateConstructor(ExecState* exec, JSObject*, const ArgList& args)
@@ -134,8 +132,12 @@ static JSValue JSC_HOST_CALL callDate(ExecState* exec, JSObject*, JSValue, const
     time_t localTime = time(0);
     tm localTM;
     getLocalTime(&localTime, &localTM);
-    GregorianDateTime ts(localTM);
-    return jsNontrivialString(exec, formatDate(ts) + " " + formatTime(ts, false));
+    GregorianDateTime ts(exec, localTM);
+    DateConversionBuffer date;
+    DateConversionBuffer time;
+    formatDate(ts, date);
+    formatTime(ts, time);
+    return jsNontrivialString(exec, makeString(date, " ", time));
 }
 
 CallType DateConstructor::getCallData(CallData& callData)
@@ -146,12 +148,12 @@ CallType DateConstructor::getCallData(CallData& callData)
 
 static JSValue JSC_HOST_CALL dateParse(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, parseDate(args.at(0).toString(exec)));
+    return jsNumber(exec, parseDate(exec, args.at(0).toString(exec)));
 }
 
 static JSValue JSC_HOST_CALL dateNow(ExecState* exec, JSObject*, JSValue, const ArgList&)
 {
-    return jsNumber(exec, getCurrentUTCTime());
+    return jsNumber(exec, jsCurrentTime());
 }
 
 static JSValue JSC_HOST_CALL dateUTC(ExecState* exec, JSObject*, JSValue, const ArgList& args) 
@@ -175,7 +177,7 @@ static JSValue JSC_HOST_CALL dateUTC(ExecState* exec, JSObject*, JSValue, const 
     t.minute = args.at(4).toInt32(exec);
     t.second = args.at(5).toInt32(exec);
     double ms = (n >= 7) ? args.at(6).toNumber(exec) : 0;
-    return jsNumber(exec, gregorianDateTimeToMS(t, ms, true));
+    return jsNumber(exec, timeClip(gregorianDateTimeToMS(exec, t, ms, true)));
 }
 
 } // namespace JSC

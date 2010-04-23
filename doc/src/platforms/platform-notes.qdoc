@@ -494,6 +494,31 @@
     For information about mixing exceptions with Symbian leaves, see
     \l{Exception Safety with Symbian}.
 
+    \section1 Required Capabilities
+
+    Distributions of Qt are typically signed with \c{All -TCB}. What your
+    application needs to be signed with in order to function with Qt depends
+    on what functionality it uses:
+
+    \table
+    \header \o Technology
+            \o Required Symbian Capability
+    \row    \o QtCore
+            \o \c PowerMgmt if applications are terminated using QProcess.
+    \row    \o QtNetwork
+            \o NetworkServices
+    \row    \o QtMultiMedia
+            \o \c UserEnvironment if QAudioInput is used.
+    \endtable
+
+    Depending on what file paths that are accessed and how AllFiles may be
+    required. Similarly, if the network is accessed indirectly through
+    components such as QtXmlPatterns, QtWebkit or QtScript, the capabilities
+    needs to match accordingly.
+
+    See individual classes' documentation for specifics. If a class does not
+    mention Symbian capabilities, it requires none.
+
     \section1 Multimedia and Phonon Support
 
     Qt provides a backend for Qt's Phonon module, which supports

@@ -19,8 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_VIDEOWIDGET_H
 #define PHONON_MMF_VIDEOWIDGET_H
 
+#include "abstractvideooutput.h"
 #include "mmf_medianode.h"
-#include "videooutput.h"
 
 #include <QtGui/QWidget>
 #include <phonon/videowidget.h>
@@ -32,8 +32,9 @@ namespace Phonon
 {
 namespace MMF
 {
+#ifndef PHONON_MMF_VIDEO_SURFACES
 class AncestorMoveMonitor;
-class VideoOutput;
+#endif
 
 class VideoWidget       :   public MediaNode
                         ,   public Phonon::VideoWidgetInterface
@@ -42,8 +43,12 @@ class VideoWidget       :   public MediaNode
     Q_INTERFACES(Phonon::VideoWidgetInterface)
 
 public:
-    VideoWidget(AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent);
+    VideoWidget(QWidget* parent);
     ~VideoWidget();
+
+#ifndef PHONON_MMF_VIDEO_SURFACES
+    void setAncestorMoveMonitor(AncestorMoveMonitor *ancestorMoveMonitor);
+#endif
 
     // VideoWidgetInterface
     virtual Phonon::VideoWidget::AspectRatio aspectRatio() const;
@@ -66,7 +71,7 @@ protected:
     void disconnectMediaObject(MediaObject *mediaObject);
 
 private:
-    QScopedPointer<VideoOutput>             m_videoOutput;
+    QScopedPointer<AbstractVideoOutput>     m_videoOutput;
 
     qreal                                   m_brightness;
     qreal                                   m_contrast;

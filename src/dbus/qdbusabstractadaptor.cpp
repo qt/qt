@@ -53,6 +53,8 @@
 #include "qdbusabstractadaptor_p.h"
 #include "qdbusmetatype_p.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
@@ -378,3 +380,5 @@ void QDBusAdaptorConnector::relaySignal(QObject * _t1, const QMetaObject * _t2, 
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

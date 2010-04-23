@@ -33,7 +33,7 @@
 #ifndef TCMALLOC_INTERNAL_SPINLOCK_H__
 #define TCMALLOC_INTERNAL_SPINLOCK_H__
 
-#if (PLATFORM(X86) || PLATFORM(PPC)) && (COMPILER(GCC) || COMPILER(MSVC))
+#if (CPU(X86) || CPU(X86_64) || CPU(PPC)) && (COMPILER(GCC) || COMPILER(MSVC))
 
 #include <time.h>       /* For nanosleep() */
 
@@ -47,7 +47,7 @@
 #include <sys/types.h>
 #endif
 
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -62,7 +62,7 @@ struct TCMalloc_SpinLock {
   inline void Lock() {
     int r;
 #if COMPILER(GCC)
-#if PLATFORM(X86)
+#if CPU(X86) || CPU(X86_64)
     __asm__ __volatile__
       ("xchgl %0, %1"
        : "=r"(r), "=m"(lockword_)
@@ -92,7 +92,7 @@ struct TCMalloc_SpinLock {
 
   inline void Unlock() {
 #if COMPILER(GCC)
-#if PLATFORM(X86)
+#if CPU(X86) || CPU(X86_64)
     __asm__ __volatile__
       ("movl $0, %0"
        : "=m"(lockword_)
@@ -103,7 +103,7 @@ struct TCMalloc_SpinLock {
       ("isync\n\t"
        "eieio\n\t"
        "stw %1, %0"
-#if PLATFORM(DARWIN) || PLATFORM(PPC)
+#if OS(DARWIN) || CPU(PPC)
        : "=o" (lockword_)
 #else
        : "=m" (lockword_) 
@@ -138,7 +138,7 @@ static void TCMalloc_SlowLock(volatile unsigned int* lockword) {
   while (true) {
     int r;
 #if COMPILER(GCC)
-#if PLATFORM(X86)
+#if CPU(X86) || CPU(X86_64)
     __asm__ __volatile__
       ("xchgl %0, %1"
        : "=r"(r), "=m"(*lockword)
@@ -178,7 +178,7 @@ static void TCMalloc_SlowLock(volatile unsigned int* lockword) {
     // from taking 30 seconds to 16 seconds.
 
     // Sleep for a few milliseconds
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
     Sleep(2);
 #else
     struct timespec tm;

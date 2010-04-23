@@ -115,8 +115,6 @@ BorlandMakefileGenerator::init()
             project->values("QMAKE_INSTALL_DIR").append("$(COPY_DIR)");
         if(project->values("MAKEFILE").isEmpty())
             project->values("MAKEFILE").append("Makefile");
-        if(project->values("QMAKE_QMAKE").isEmpty())
-            project->values("QMAKE_QMAKE").append("qmake");
         return;
     }
 

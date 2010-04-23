@@ -33,7 +33,6 @@ Rectangle {
         height: 320
         model: testModel
         delegate: delegate
-        snapPosition: 0.01
         path: Path {
             startY: 120
             startX: 160

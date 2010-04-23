@@ -107,11 +107,18 @@ private Q_SLOTS:
     void writeFifo();
     void fifoReadyWrite(int socket);
 
+    void updateState(QMediaPlayer::State);
+    void processEOS();
+    void setBufferProgress(int progress);
+
 private:
     bool openFifo();
     void closeFifo();
 
     QGstreamerPlayerSession *m_session;
+    QMediaPlayer::State m_state;
+    QMediaPlayer::MediaStatus m_mediaStatus;
+    int m_bufferProgress;
     QMediaContent m_currentResource;
     QIODevice *m_stream;
     QSocketNotifier *m_fifoNotifier;

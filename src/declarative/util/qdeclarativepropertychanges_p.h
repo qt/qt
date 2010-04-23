@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEPROPERTYCHANGES_H
 #define QDECLARATIVEPROPERTYCHANGES_H
 
-#include "qdeclarativestateoperations_p.h"
+#include "private/qdeclarativestateoperations_p.h"
 #include <private/qdeclarativecustomparser_p.h>
 
 QT_BEGIN_HEADER

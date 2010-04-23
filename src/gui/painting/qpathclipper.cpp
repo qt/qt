@@ -935,10 +935,9 @@ qreal QWingedEdge::delta(int vertex, int a, int b) const
 
     qreal result = b_angle - a_angle;
 
-    if (qFuzzyIsNull(result) || qFuzzyCompare(result, 128))
-        return 0;
-
-    if (result < 0)
+    if (result >= 128.)
+        return result - 128.;
+    else if (result < 0)
         return result + 128.;
     else
         return result;

@@ -3,7 +3,8 @@
 // Note that to open windows from JavaScript, you will need to
 // allow it on WebView with settings.javascriptCanOpenWindows: true
 
-import Qt 4.6
+import Qt 4.7
+import org.webkit 1.0
 
 Grid {
     columns: 3

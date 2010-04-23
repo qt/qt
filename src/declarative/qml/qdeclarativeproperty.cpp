@@ -40,20 +40,20 @@
 ****************************************************************************/
 
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
-#include "qdeclarativecompositetypedata_p.h"
+#include "private/qdeclarativecompositetypedata_p.h"
 #include "qdeclarative.h"
-#include "qdeclarativebinding_p.h"
+#include "private/qdeclarativebinding_p.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativeboundsignal_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativedeclarativedata_p.h"
-#include "qdeclarativestringconverters_p.h"
-#include "qdeclarativelist_p.h"
-#include "qdeclarativecompiler_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativedata_p.h"
+#include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativelist_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
 #include <QStringList>
 #include <QtCore/qdebug.h>
@@ -115,24 +115,28 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj)
 }
 
 /*!
-    Creates a QDeclarativeProperty for the default property of \a obj. If there is no
-    default property, an invalid QDeclarativeProperty will be created.
+    Creates a QDeclarativeProperty for the default property of \a obj
+    using the \l{QDeclarativeContext} {context} \a ctxt. If there is
+    no default property, an invalid QDeclarativeProperty will be
+    created.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
 {
     d->q = this;
-    d->context = ctxt;
+    d->context = ctxt?QDeclarativeContextData::get(ctxt):0;
     d->engine = ctxt?ctxt->engine():0;
     d->initDefault(obj);
 }
 
 /*!
-    Creates a QDeclarativeProperty for the default property of \a obj. If there is no
-    default property, an invalid QDeclarativeProperty will be created.
+    Creates a QDeclarativeProperty for the default property of \a obj
+    using the environment for instantiating QML components that is
+    provided by \a engine.  If there is no default property, an
+    invalid QDeclarativeProperty will be created.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeEngine *engine)
-: d(new QDeclarativePropertyPrivate)
+  : d(new QDeclarativePropertyPrivate)
 {
     d->q = this;
     d->context = 0;
@@ -166,20 +170,23 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 }
 
 /*!
-    Creates a QDeclarativeProperty for the property \a name of \a obj.
- */
+    Creates a QDeclarativeProperty for the property \a name of \a obj
+    using the \l{QDeclarativeContext} {context} \a ctxt.
+*/
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
 {
     d->q = this;
-    d->context = ctxt;
+    d->context = ctxt?QDeclarativeContextData::get(ctxt):0;
     d->engine = ctxt?ctxt->engine():0;
     d->initProperty(obj, name);
     if (!isValid()) { d->object = 0; d->context = 0; d->engine = 0; }
 }
 
 /*!
-    Creates a QDeclarativeProperty for the property \a name of \a obj.
+    Creates a QDeclarativeProperty for the property \a name of \a obj
+    using the environment for instantiating QML components that is
+    provided by \a engine.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeEngine *engine)
 : d(new QDeclarativePropertyPrivate)
@@ -197,7 +204,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
 {
     if (!obj) return;
 
-    QDeclarativeTypeNameCache *typeNameCache = context?QDeclarativeContextPrivate::get(context)->imports:0;
+    QDeclarativeTypeNameCache *typeNameCache = context?context->imports:0;
 
     QStringList path = name.split(QLatin1Char('.'));
     if (path.isEmpty()) return;
@@ -238,10 +245,10 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
             if (property->flags & QDeclarativePropertyCache::Data::IsFunction) 
                 return; // Not an object property 
 
-            if (ii == (path.count() - 2) && property->propType < (int)QVariant::UserType) {
+            if (ii == (path.count() - 2) && QDeclarativeValueTypeFactory::isValueType(property->propType)) {
                 // We're now at a value type property.  We can use a global valuetypes array as we 
                 // never actually use the objects, just look up their properties.
-                QObject *typeObject = qmlValueTypes()->valueTypes[property->propType];
+                QObject *typeObject = (*qmlValueTypes())[property->propType];
                 if (!typeObject) return; // Not a value type
 
                 int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
@@ -279,7 +286,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
         QString signalName = terminal.mid(2);
         signalName[0] = signalName.at(0).toLower();
 
-        QMetaMethod method = QDeclarativeCompiler::findSignalByName(currentObject->metaObject(), signalName.toLatin1().constData());
+        QMetaMethod method = findSignalByName(currentObject->metaObject(), signalName.toLatin1().constData());
         if (method.signature()) {
             object = currentObject;
             core.load(method);
@@ -346,7 +353,7 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
         int type = propertyType();
         if (type == QVariant::Invalid)
             return QDeclarativeProperty::InvalidCategory;
-        else if ((uint)type < QVariant::UserType)
+        else if (QDeclarativeValueTypeFactory::isValueType((uint)type))
             return QDeclarativeProperty::Normal;
         else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived)
             return QDeclarativeProperty::Object;
@@ -487,15 +494,13 @@ QDeclarativeProperty &QDeclarativeProperty::operator=(const QDeclarativeProperty
 */
 bool QDeclarativeProperty::isWritable() const
 {
-    QDeclarativeProperty::PropertyTypeCategory category = propertyTypeCategory();
-
     if (!d->object)
         return false;
-    if (category == List)
+    if (d->core.flags & QDeclarativePropertyCache::Data::IsQList)           //list
         return true;
-    else if (type() & SignalProperty)
+    else if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)   //signal handler
         return false;
-    else if (d->core.isValid() && d->object)
+    else if (d->core.isValid())                                             //normal property
         return d->core.flags & QDeclarativePropertyCache::Data::IsWritable;
     else
         return false;
@@ -591,7 +596,6 @@ QMetaMethod QDeclarativeProperty::method() const
         return QMetaMethod();
 }
 
-
 /*!
     Returns the binding associated with this property, or 0 if no binding 
     exists.
@@ -602,7 +606,7 @@ QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that)
     if (!that.isProperty() || !that.d->object)
         return 0;
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(that.d->object);
+    QDeclarativeData *data = QDeclarativeData::get(that.d->object);
     if (!data) 
         return 0;
 
@@ -610,13 +614,18 @@ QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that)
         return 0;
 
     QDeclarativeAbstractBinding *binding = data->bindings;
-    while (binding) {
-        // ### This wont work for value types
-        if (binding->propertyIndex() == that.d->core.coreIndex)
-            return binding; 
+    while (binding && binding->propertyIndex() != that.d->core.coreIndex) 
         binding = binding->m_nextBinding;
+
+    if (binding && that.d->valueType.valueTypeCoreIdx != -1) {
+        if (binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
+            QDeclarativeValueTypeProxyBinding *proxy = static_cast<QDeclarativeValueTypeProxyBinding *>(binding);
+
+            binding = proxy->binding(bindingIndex(that));
+        }
     }
-    return 0;
+
+    return binding;
 }
 
 /*!
@@ -643,36 +652,36 @@ QDeclarativePropertyPrivate::setBinding(const QDeclarativeProperty &that,
         return 0;
     }
 
-    return that.d->setBinding(that.d->object, that.d->core, newBinding, flags);
+    return that.d->setBinding(that.d->object, that.d->core.coreIndex, 
+                              that.d->valueType.valueTypeCoreIdx, newBinding, flags);
 }
 
 QDeclarativeAbstractBinding *
-QDeclarativePropertyPrivate::setBinding(QObject *object, const QDeclarativePropertyCache::Data &core, 
-                                   QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
+QDeclarativePropertyPrivate::setBinding(QObject *object, int coreIndex, int valueTypeIndex,
+                                        QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
 {
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, 0 != newBinding);
+    QDeclarativeData *data = QDeclarativeData::get(object, 0 != newBinding);
+    QDeclarativeAbstractBinding *binding = 0;
 
-    if (data && data->hasBindingBit(core.coreIndex)) {
-        QDeclarativeAbstractBinding *binding = data->bindings;
-        while (binding) {
-            // ### This wont work for value types
-            if (binding->propertyIndex() == core.coreIndex) {
-                binding->setEnabled(false);
+    if (data && data->hasBindingBit(coreIndex)) {
+        binding = data->bindings;
 
-                if (newBinding) 
-                    newBinding->setEnabled(true, flags);
-
-                return binding; // ### QDeclarativeAbstractBinding;
-            }
-
+        while (binding && binding->propertyIndex() != coreIndex) 
             binding = binding->m_nextBinding;
-        }
-    } 
+    }
 
-    if (newBinding)
+    if (binding && valueTypeIndex != -1 && binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
+        int index = coreIndex | (valueTypeIndex << 24);
+        binding = static_cast<QDeclarativeValueTypeProxyBinding *>(binding)->binding(index);
+    }
+
+    if (binding) 
+        binding->setEnabled(false);
+
+    if (newBinding) 
         newBinding->setEnabled(true, flags);
 
-    return 0;
+    return binding;
 }
 
 /*!
@@ -766,11 +775,14 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name)
 }
 
 /*!
-Return the \a name property value of \a object.  This method is equivalent to:
-\code
+  Return the \a name property value of \a object using the
+  \l{QDeclarativeContext} {context} \a ctxt.  This method is
+  equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, context);
     p.read();
-\endcode
+  \endcode
 */
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeContext *ctxt)
 {
@@ -779,11 +791,15 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDecla
 }
 
 /*!
-Return the \a name property value of \a object.  This method is equivalent to:
-\code
+  
+  Return the \a name property value of \a object using the environment
+  for instantiating QML components that is provided by \a engine. .
+  This method is equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, engine);
     p.read();
-\endcode
+  \endcode
 */
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeEngine *engine)
 {
@@ -793,7 +809,7 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDecla
 
 QVariant QDeclarativePropertyPrivate::readValueProperty()
 {
-    if(isValueType()) {
+    if (isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -809,12 +825,19 @@ QVariant QDeclarativePropertyPrivate::readValueProperty()
         if (!ep) delete valueType;
         return rv;
 
-    } else if(core.flags & QDeclarativePropertyCache::Data::IsQList) {
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQList) {
 
         QDeclarativeListProperty<QObject> prop;
         void *args[] = { &prop, 0 };
         QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
         return QVariant::fromValue(QDeclarativeListReferencePrivate::init(prop, core.propType, engine)); 
+
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived) {
+
+        QObject *rv = 0;
+        void *args[] = { &rv, 0 };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
+        return QVariant::fromValue(rv);
 
     } else {
 
@@ -901,7 +924,7 @@ bool QDeclarativePropertyPrivate::writeValueProperty(const QVariant &value, Writ
 }
 
 bool QDeclarativePropertyPrivate::write(QObject *object, const QDeclarativePropertyCache::Data &property, 
-                                            const QVariant &value, QDeclarativeContext *context, 
+                                            const QVariant &value, QDeclarativeContextData *context, 
                                             WriteFlags flags)
 {
     int coreIdx = property.coreIndex;
@@ -1066,19 +1089,23 @@ const QMetaObject *QDeclarativePropertyPrivate::rawMetaObjectForType(QDeclarativ
 }
 
 /*!
-    Set the property value to \a value.
-*/
+    Sets the property value to \a value and returns true.
+    Returns false if the property can't be set because the
+    \a value is the wrong type, for example.
+ */
 bool QDeclarativeProperty::write(const QVariant &value) const
 {
     return QDeclarativePropertyPrivate::write(*this, value, 0);
 }
 
 /*!
-Writes \a value to the \a name property of \a object.  This method is equivalent to:
-\code
+  Writes \a value to the \a name property of \a object.  This method
+  is equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name);
     p.write(value);
-\endcode
+  \endcode
 */
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value)
 {
@@ -1087,13 +1114,18 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
 }
 
 /*!
-Writes \a value to the \a name property of \a object.  This method is equivalent to:
-\code
+  Writes \a value to the \a name property of \a object using the
+  \l{QDeclarativeContext} {context} \a ctxt.  This method is
+  equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, ctxt);
     p.write(value);
-\endcode
+  \endcode
 */
-bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
+bool QDeclarativeProperty::write(QObject *object,
+                                 const QString &name,
+                                 const QVariant &value, 
                                  QDeclarativeContext *ctxt)
 {
     QDeclarativeProperty p(object, name, ctxt);
@@ -1101,11 +1133,15 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
 }
 
 /*!
-Writes \a value to the \a name property of \a object.  This method is equivalent to:
-\code
+  
+  Writes \a value to the \a name property of \a object using the
+  environment for instantiating QML components that is provided by
+  \a engine.  This method is equivalent to:
+
+  \code
     QDeclarativeProperty p(object, name, engine);
     p.write(value);
-\endcode
+  \endcode
 */
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
                                  QDeclarativeEngine *engine)
@@ -1115,7 +1151,9 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
 }
 
 /*!
-    Resets the property value.
+    Resets the property and returns true if the property is
+    resettable.  If the property is not resettable, nothing happens
+    and false is returned.
 */
 bool QDeclarativeProperty::reset() const
 {
@@ -1217,6 +1255,18 @@ int QDeclarativePropertyPrivate::valueTypeCoreIndex(const QDeclarativeProperty &
     return that.d->valueType.valueTypeCoreIdx;
 }
 
+/*!
+    Returns the "property index" for use in bindings.  The top 8 bits are the value type
+    offset, and 0 otherwise.  The bottom 24-bits are the regular property index.
+*/
+int QDeclarativePropertyPrivate::bindingIndex(const QDeclarativeProperty &that)
+{
+    int rv = that.d->core.coreIndex;
+    if (rv != -1 && that.d->valueType.valueTypeCoreIdx != -1)
+        rv = rv | (that.d->valueType.valueTypeCoreIdx << 24);
+    return rv;
+}
+
 struct SerializedData {
     bool isValueType;
     QDeclarativePropertyCache::Data core;
@@ -1255,7 +1305,7 @@ QByteArray QDeclarativePropertyPrivate::saveProperty(const QMetaObject *metaObje
 }
 
 QDeclarativeProperty 
-QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QDeclarativeContext *ctxt)
+QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QDeclarativeContextData *ctxt)
 {
     QDeclarativeProperty prop;
 
@@ -1264,7 +1314,7 @@ QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QD
 
     prop.d->object = object;
     prop.d->context = ctxt;
-    prop.d->engine = ctxt?ctxt->engine():0;
+    prop.d->engine = ctxt->engine;
 
     const SerializedData *sd = (const SerializedData *)data.constData();
     if (sd->isValueType) {
@@ -1301,6 +1351,38 @@ bool QDeclarativePropertyPrivate::canConvert(const QMetaObject *from, const QMet
     }
     
     return false;
+}
+
+/*!
+    Return the signal corresponding to \a name
+*/
+QMetaMethod QDeclarativePropertyPrivate::findSignalByName(const QMetaObject *mo, const QByteArray &name)
+{
+    Q_ASSERT(mo);
+    int methods = mo->methodCount();
+    for (int ii = methods - 1; ii >= 2; --ii) { // >= 2 to block the destroyed signal
+        QMetaMethod method = mo->method(ii);
+        QByteArray methodName = method.signature();
+        int idx = methodName.indexOf('(');
+        methodName = methodName.left(idx);
+
+        if (methodName == name)
+            return method;
+    }
+
+    // If no signal is found, but the signal is of the form "onBlahChanged",
+    // return the notify signal for the property "Blah"
+    if (name.endsWith("Changed")) {
+        QByteArray propName = name.mid(0, name.length() - 7);
+        int propIdx = mo->indexOfProperty(propName.constData());
+        if (propIdx >= 0) {
+            QMetaProperty prop = mo->property(propIdx);
+            if (prop.hasNotifySignal())
+                return prop.notifySignal();
+        }
+    }
+
+    return QMetaMethod();
 }
 
 QT_END_NAMESPACE

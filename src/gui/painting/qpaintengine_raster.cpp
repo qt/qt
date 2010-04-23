@@ -103,7 +103,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 #define qreal_to_fixed_26_6(f) (int(f * 64))
 #define qt_swap_int(x, y) { int tmp = (x); (x) = (y); (y) = tmp; }
@@ -1725,9 +1725,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         if (patternLength > 0) {
             int n = qFloor(dashOffset / patternLength);
             dashOffset -= n * patternLength;
-            while (dashOffset > pattern.at(dashIndex)) {
+            while (dashOffset >= pattern.at(dashIndex)) {
                 dashOffset -= pattern.at(dashIndex);
-                dashIndex = (dashIndex + 1) % pattern.size();
+                if (++dashIndex >= pattern.size())
+                    dashIndex = 0;
                 inDash = !inDash;
             }
         }
@@ -1738,7 +1739,6 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -3390,7 +3390,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     };
 
     for(int i = 0; i < glyphs.size(); i++) {
-        QFontEngineFT::Glyph *glyph = gset->glyph_data.value(glyphs[i]);
+        QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i]);
 
         if (!glyph || glyph->format != neededFormat) {
             if (!lockedFace)
@@ -3626,13 +3626,14 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
         } else {
             *dashOffset = 0;
             *inDash = !(*inDash);
-            *dashIndex = (*dashIndex + 1) % pattern.size();
+            if (++*dashIndex >= pattern.size())
+                *dashIndex = 0;
             length -= dash;
             l.setLength(dash);
             line.setP1(l.p2());
         }
 
-        if (rasterize && dash != 0)
+        if (rasterize && dash > 0)
             rasterizer->rasterizeLine(l.p1(), l.p2(), width / dash, squareCap);
     }
 }
@@ -4995,7 +4996,7 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
     clip = pe ? pe->d_func()->clip() : 0;
 }
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_GUI_EXPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
 {

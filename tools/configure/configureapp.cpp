@@ -973,6 +973,10 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
+            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                dictionary[ "QT_INSTALL_PLUGINS" ] =
+                    QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
+            }
         } else if( configCmdLine.at(i) == "-D" ) {
             ++i;
             if (i==argCount)
@@ -1495,6 +1499,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_INSTALL_PREFIX" ]   = "";
         dictionary[ "QT_INSTALL_PLUGINS" ]  = "\\resource\\qt\\plugins";
         dictionary[ "QT_INSTALL_IMPORTS" ]  = "\\resource\\qt\\imports";
+        dictionary[ "QT_INSTALL_TRANSLATIONS" ]  = "\\resource\\qt\\translations";
         dictionary[ "ARM_FPU_TYPE" ]        = "softvfp";
         dictionary[ "SQL_SQLITE" ]          = "yes";
         dictionary[ "SQL_SQLITE_LIB" ]      = "system";
@@ -1522,7 +1527,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
-        dictionary[ "QMAKEADDITIONALARGS" ] = "-unix";
     }
 }
 
@@ -1881,7 +1885,7 @@ bool Configure::findFile( const QString &fileName )
     const QString file = fileName.toLower();
     const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
     const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
-        findFileInPaths("mingw32-g++.exe", pathEnvVar) : QString();
+        findFileInPaths("g++.exe", pathEnvVar) : QString();
 
     QString paths;
     if (file.endsWith(".h")) {
@@ -1973,7 +1977,7 @@ bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
     if (part == "STYLE_WINDOWSXP")
-        available = (findFile("uxtheme.h"));
+        available = findFile("uxtheme.h");
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
@@ -2081,12 +2085,10 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
-    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
+    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "DECLARATIVE") {
         available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
-    } else if (part == "DECLARATIVE") {
-        available = QFile::exists(sourcePath + "/src/declarative/qml/qdeclarativecomponent.h");
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
@@ -2212,7 +2214,7 @@ void Configure::autoDetection()
     if (dictionary["SCRIPT"] == "auto")
         dictionary["SCRIPT"] = checkAvailability("SCRIPT") ? "yes" : "no";
     if (dictionary["SCRIPTTOOLS"] == "auto")
-        dictionary["SCRIPTTOOLS"] = checkAvailability("SCRIPTTOOLS") ? "yes" : "no";
+        dictionary["SCRIPTTOOLS"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
     if (dictionary["XMLPATTERNS"] == "auto")
         dictionary["XMLPATTERNS"] = checkAvailability("XMLPATTERNS") ? "yes" : "no";
     if (dictionary["PHONON"] == "auto")
@@ -2220,7 +2222,7 @@ void Configure::autoDetection()
     if (dictionary["WEBKIT"] == "auto")
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
     if (dictionary["DECLARATIVE"] == "auto")
-        dictionary["DECLARATIVE"] = checkAvailability("DECLARATIVE") ? "yes" : "no";
+        dictionary["DECLARATIVE"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
     if (dictionary["MEDIASERVICE"] == "auto")
@@ -2270,15 +2272,23 @@ bool Configure::verifyConfiguration()
         if(_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
             exit(0);      // Exit cleanly for Ctrl+C
     }
-	if (0 != dictionary["ARM_FPU_TYPE"].size())
-	{
-		QStringList l= QStringList()
-			<< "softvfp"
-			<< "softvfp+vfpv2"
-			<< "vfpv2";
-		if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
-			cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
-	}
+    if (0 != dictionary["ARM_FPU_TYPE"].size()) {
+            QStringList l= QStringList()
+                    << "softvfp"
+                    << "softvfp+vfpv2"
+                    << "vfpv2";
+            if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
+                    cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
+    }
+    if (dictionary["DECLARATIVE"] == "yes" && dictionary["SCRIPT"] == "no") {
+        cout << "WARNING: To be able to compile QtDeclarative we need to also compile the" << endl
+             << "QtScript module. If you continue, we will turn on the QtScript module." << endl
+             << "(Press any key to continue..)";
+        if(_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+            exit(0);      // Exit cleanly for Ctrl+C
+
+        dictionary["SCRIPT"] = "yes";
+    }
 
     return true;
 }
@@ -2627,8 +2637,14 @@ void Configure::generateOutputVars()
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
 
-    if (dictionary["DECLARATIVE"] == "yes")
+    if (dictionary["DECLARATIVE"] == "yes") {
+        if (dictionary[ "SCRIPT" ] == "no") {
+            cout << "QtDeclarative was requested, but it can't be built due to QtScript being "
+                    "disabled." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
         qtConfig += "declarative";
+    }
 
     if( dictionary[ "NATIVE_GESTURES" ] == "yes" )
         qtConfig += "native-gestures";
@@ -3024,6 +3040,10 @@ void Configure::generateConfigfiles()
         if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
         if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
+        if(dictionary["OPENGL_ES_CM"] == "no" &&
+           dictionary["OPENGL_ES_2"]  == "no" &&
+           dictionary["OPENVG"]       == "no")      qconfigList += "QT_NO_EGL";
+
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
@@ -3050,6 +3070,8 @@ void Configure::generateConfigfiles()
             qconfigList += "QT_NO_CRASHHANDLER";
             qconfigList += "QT_NO_PRINTER";
             qconfigList += "QT_NO_SYSTEMTRAYICON";
+            if (dictionary.contains("QT_LIBINFIX"))
+                tmpStream << QString("#define QT_LIBINFIX \"%1\"").arg(dictionary["QT_LIBINFIX"]) << endl;
         }
 
         qconfigList.sort();
@@ -3489,14 +3511,15 @@ void Configure::buildQmake()
         args += makefile;
 
         cout << "Creating qmake..." << endl;
-        int exitCode = 0;
-        if( exitCode = Environment::execute(args, QStringList(), QStringList()) ) {
+        int exitCode = Environment::execute(args, QStringList(), QStringList());
+        if( exitCode ) {
             args.clear();
             args += dictionary[ "MAKE" ];
             args += "-f";
             args += makefile;
             args += "clean";
-            if( exitCode = Environment::execute(args, QStringList(), QStringList())) {
+            exitCode = Environment::execute(args, QStringList(), QStringList());
+            if(exitCode) {
                 cout << "Cleaning qmake failed, return code " << exitCode << endl << endl;
                 dictionary[ "DONE" ] = "error";
             } else {
@@ -3504,7 +3527,8 @@ void Configure::buildQmake()
                 args += dictionary[ "MAKE" ];
                 args += "-f";
                 args += makefile;
-                if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                exitCode = Environment::execute(args, QStringList(), QStringList());
+                if (exitCode) {
                     cout << "Building qmake failed, return code " << exitCode << endl << endl;
                     dictionary[ "DONE" ] = "error";
                 }
@@ -3548,8 +3572,8 @@ void Configure::buildHostTools()
 
         QDir().mkpath(toolBuildPath);
         QDir::setCurrent(toolSourcePath);
-        int exitCode = 0;
-        if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+        int exitCode = Environment::execute(args, QStringList(), QStringList());
+        if (exitCode) {
             cout << "qmake failed, return code " << exitCode << endl << endl;
             dictionary["DONE"] = "error";
             break;
@@ -3559,18 +3583,21 @@ void Configure::buildHostTools()
         args.clear();
         args += dictionary["MAKE"];
         QDir::setCurrent(toolBuildPath);
-        if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+        exitCode = Environment::execute(args, QStringList(), QStringList());
+        if (exitCode) {
             args.clear();
             args += dictionary["MAKE"];
             args += "clean";
-            if(exitCode = Environment::execute(args, QStringList(), QStringList())) {
+            exitCode = Environment::execute(args, QStringList(), QStringList());
+            if(exitCode) {
                 cout << "Cleaning " << hostToolsDirs.at(i) << " failed, return code " << exitCode << endl << endl;
                 dictionary["DONE"] = "error";
                 break;
             } else {
                 args.clear();
                 args += dictionary["MAKE"];
-                if (exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                exitCode = Environment::execute(args, QStringList(), QStringList());
+                if (exitCode) {
                     cout << "Building " << hostToolsDirs.at(i) << " failed, return code " << exitCode << endl << endl;
                     dictionary["DONE"] = "error";
                     break;

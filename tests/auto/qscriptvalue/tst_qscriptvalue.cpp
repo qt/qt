@@ -2047,7 +2047,9 @@ void tst_QScriptValue::getSetProperty()
     }
     // should still be deletable from C++
     object.setProperty("undeletableProperty", QScriptValue());
+    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QVERIFY(!object.property("undeletableProperty").isValid());
+    QEXPECT_FAIL("", "With JSC-based back-end, undeletable properties can't be deleted from C++", Continue);
     QCOMPARE(object.propertyFlags("undeletableProperty"), 0);
 
   // SkipInEnumeration
@@ -2082,11 +2084,11 @@ void tst_QScriptValue::getSetProperty()
     object.setProperty("flagProperty", str, QScriptValue::ReadOnly);
     QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::ReadOnly);
 
-    object.setProperty("flagProperty", str, object.propertyFlags("flagProperty") | QScriptValue::Undeletable);
-    QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+    object.setProperty("flagProperty", str, object.propertyFlags("flagProperty") | QScriptValue::SkipInEnumeration);
+    QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
 
     object.setProperty("flagProperty", str, QScriptValue::KeepExistingFlags);
-    QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+    QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
 
     object.setProperty("flagProperty", str, QScriptValue::UserRange);
     QCOMPARE(object.propertyFlags("flagProperty"), QScriptValue::UserRange);
@@ -2571,6 +2573,10 @@ void tst_QScriptValue::call()
         // call with something else as arguments
         QScriptValue ret5 = fun.call(QScriptValue(), QScriptValue(&eng, 123.0));
         QCOMPARE(ret5.isError(), true);
+        // call with a non-array object as arguments
+        QScriptValue ret6 = fun.call(QScriptValue(), eng.globalObject());
+        QVERIFY(ret6.isError());
+        QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
     }
 
     // calling things that are not functions
@@ -2703,6 +2709,10 @@ void tst_QScriptValue::construct()
         // construct with something else as arguments
         QScriptValue ret5 = fun.construct(QScriptValue(&eng, 123.0));
         QCOMPARE(ret5.isError(), true);
+        // construct with a non-array object as arguments
+        QScriptValue ret6 = fun.construct(eng.globalObject());
+        QVERIFY(ret6.isError());
+        QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
     }
 
     // construct on things that are not functions

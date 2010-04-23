@@ -96,7 +96,7 @@ Text {
 An \l Item requests focus by setting the \c {Item::focus} property to true.
 
 For very simple cases simply setting the \c {Item::focus} property is sometimes
-sufficient.  If we run the following example in the \c qmlviewer, we see that
+sufficient.  If we run the following example with the \l {Qt Declarative UI Runtime}{qml} tool, we see that
 the \c {keyHandler} element has \e {active focus} and pressing the 'A', 'B'
 or 'C' keys modifies the text appropriately.
 

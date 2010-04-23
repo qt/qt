@@ -131,6 +131,11 @@ private:
 };
 typedef QList<QDeclarativeProperty> QDeclarativeProperties;
 
+inline uint qHash (const QDeclarativeProperty &key)
+{
+    return qHash(key.object()) + qHash(key.name());
+}
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

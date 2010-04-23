@@ -3853,7 +3853,7 @@ EXPORTS
 	?draw@QLineControl@@QAEXPAVQPainter@@ABVQPoint@@ABVQRect@@H@Z @ 3852 NONAME ; void QLineControl::draw(class QPainter *, class QPoint const &, class QRect const &, int)
 	?draw@QPaintBuffer@@QBEXPAVQPainter@@H@Z @ 3853 NONAME ; void QPaintBuffer::draw(class QPainter *, int) const
 	?draw@QPaintEngineEx@@UAEXABVQVectorPath@@@Z @ 3854 NONAME ; void QPaintEngineEx::draw(class QVectorPath const &)
-	?draw@QPainterReplayer@@QAEXABVQPaintBuffer@@PAVQPainter@@H@Z @ 3855 NONAME ; void QPainterReplayer::draw(class QPaintBuffer const &, class QPainter *, int)
+	?draw@QPainterReplayer@@QAEXABVQPaintBuffer@@PAVQPainter@@H@Z @ 3855 NONAME ABSENT ; void QPainterReplayer::draw(class QPaintBuffer const &, class QPainter *, int)
 	?draw@QPixmapBlurFilter@@UBEXPAVQPainter@@ABVQPointF@@ABVQPixmap@@ABVQRectF@@@Z @ 3856 NONAME ; void QPixmapBlurFilter::draw(class QPainter *, class QPointF const &, class QPixmap const &, class QRectF const &) const
 	?draw@QPixmapColorizeFilter@@UBEXPAVQPainter@@ABVQPointF@@ABVQPixmap@@ABVQRectF@@@Z @ 3857 NONAME ; void QPixmapColorizeFilter::draw(class QPainter *, class QPointF const &, class QPixmap const &, class QRectF const &) const
 	?draw@QPixmapConvolutionFilter@@UBEXPAVQPainter@@ABVQPointF@@ABVQPixmap@@ABVQRectF@@@Z @ 3858 NONAME ; void QPixmapConvolutionFilter::draw(class QPainter *, class QPointF const &, class QPixmap const &, class QRectF const &) const
@@ -3961,7 +3961,7 @@ EXPORTS
 	?drawPixmap@QPainter@@QAEXHHABVQPixmap@@HHHH@Z @ 3960 NONAME ; void QPainter::drawPixmap(int, int, class QPixmap const &, int, int, int, int)
 	?drawPixmap@QPainter@@QAEXHHHHABVQPixmap@@@Z @ 3961 NONAME ; void QPainter::drawPixmap(int, int, int, int, class QPixmap const &)
 	?drawPixmap@QPainter@@QAEXHHHHABVQPixmap@@HHHH@Z @ 3962 NONAME ; void QPainter::drawPixmap(int, int, int, int, class QPixmap const &, int, int, int, int)
-	?drawPixmaps@QPaintEngineEx@@UAEXPBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 3963 NONAME ; void QPaintEngineEx::drawPixmaps(struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
+	?drawPixmaps@QPaintEngineEx@@UAEXPBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 3963 NONAME ABSENT ; void QPaintEngineEx::drawPixmaps(struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
 	?drawPoint@QPainter@@QAEXABVQPoint@@@Z @ 3964 NONAME ; void QPainter::drawPoint(class QPoint const &)
 	?drawPoint@QPainter@@QAEXABVQPointF@@@Z @ 3965 NONAME ; void QPainter::drawPoint(class QPointF const &)
 	?drawPoint@QPainter@@QAEXHH@Z @ 3966 NONAME ; void QPainter::drawPoint(int, int)
@@ -7206,10 +7206,10 @@ EXPORTS
 	?parseTerm@Parser@QCss@@QAE_NPAUValue@2@@Z @ 7205 NONAME ; bool QCss::Parser::parseTerm(struct QCss::Value *)
 	?passwordCharacter@QLineControl@@QBE?AVQChar@@XZ @ 7206 NONAME ; class QChar QLineControl::passwordCharacter(void) const
 	?passwordEchoEditing@QLineControl@@QBE_NXZ @ 7207 NONAME ; bool QLineControl::passwordEchoEditing(void) const
-	?paste@QLineControl@@QAEXXZ @ 7208 NONAME ; void QLineControl::paste(void)
+	?paste@QLineControl@@QAEXXZ @ 7208 NONAME ABSENT ; void QLineControl::paste(void)
 	?paste@QLineEdit@@QAEXXZ @ 7209 NONAME ; void QLineEdit::paste(void)
 	?paste@QPlainTextEdit@@QAEXXZ @ 7210 NONAME ; void QPlainTextEdit::paste(void)
-	?paste@QTextControl@@QAEXXZ @ 7211 NONAME ; void QTextControl::paste(void)
+	?paste@QTextControl@@QAEXXZ @ 7211 NONAME ABSENT ; void QTextControl::paste(void)
 	?paste@QTextEdit@@QAEXXZ @ 7212 NONAME ; void QTextEdit::paste(void)
 	?path@QGraphicsPathItem@@QBE?AVQPainterPath@@XZ @ 7213 NONAME ; class QPainterPath QGraphicsPathItem::path(void) const
 	?pathFromIndex@QCompleter@@UBE?AVQString@@ABVQModelIndex@@@Z @ 7214 NONAME ; class QString QCompleter::pathFromIndex(class QModelIndex const &) const
@@ -7291,7 +7291,7 @@ EXPORTS
 	?polishEvent@QGraphicsWidget@@MAEXXZ @ 7290 NONAME ; void QGraphicsWidget::polishEvent(void)
 	?polygon@QGraphicsPolygonItem@@QBE?AVQPolygonF@@XZ @ 7291 NONAME ; class QPolygonF QGraphicsPolygonItem::polygon(void) const
 	?polygonFlags@QVectorPath@@SAIW4PolygonDrawMode@QPaintEngine@@@Z @ 7292 NONAME ; unsigned int QVectorPath::polygonFlags(enum QPaintEngine::PolygonDrawMode)
-	?populate@QTextureGlyphCache@@QAEXABVQTextItemInt@@ABV?$QVarLengthArray@I$0BAA@@@ABV?$QVarLengthArray@UQFixedPoint@@$0BAA@@@@Z @ 7293 NONAME ; void QTextureGlyphCache::populate(class QTextItemInt const &, class QVarLengthArray<unsigned int, 256> const &, class QVarLengthArray<struct QFixedPoint, 256> const &)
+	?populate@QTextureGlyphCache@@QAEXABVQTextItemInt@@ABV?$QVarLengthArray@I$0BAA@@@ABV?$QVarLengthArray@UQFixedPoint@@$0BAA@@@@Z @ 7293 NONAME ABSENT ; void QTextureGlyphCache::populate(class QTextItemInt const &, class QVarLengthArray<unsigned int, 256> const &, class QVarLengthArray<struct QFixedPoint, 256> const &)
 	?popup@QCompleter@@QBEPAVQAbstractItemView@@XZ @ 7294 NONAME ; class QAbstractItemView * QCompleter::popup(void) const
 	?popup@QMenu@@QAEXABVQPoint@@PAVQAction@@@Z @ 7295 NONAME ; void QMenu::popup(class QPoint const &, class QAction *)
 	?popupMode@QToolButton@@QBE?AW4ToolButtonPopupMode@1@XZ @ 7296 NONAME ; enum QToolButton::ToolButtonPopupMode QToolButton::popupMode(void) const
@@ -7389,7 +7389,7 @@ EXPORTS
 	?qAlpha@@YAHI@Z @ 7388 NONAME ; int qAlpha(unsigned int)
 	?qBlue@@YAHI@Z @ 7389 NONAME ; int qBlue(unsigned int)
 	?qDrawBorderPixmap@@YAXPAVQPainter@@ABVQRect@@ABVQMargins@@ABVQPixmap@@12ABUQTileRules@@V?$QFlags@W4DrawingHint@QDrawBorderPixmap@@@@@Z @ 7390 NONAME ; void qDrawBorderPixmap(class QPainter *, class QRect const &, class QMargins const &, class QPixmap const &, class QRect const &, class QMargins const &, struct QTileRules const &, class QFlags<enum QDrawBorderPixmap::DrawingHint>)
-	?qDrawPixmaps@@YAXPAVQPainter@@PBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 7391 NONAME ; void qDrawPixmaps(class QPainter *, struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
+	?qDrawPixmaps@@YAXPAVQPainter@@PBUData@QDrawPixmaps@@HABVQPixmap@@V?$QFlags@W4DrawingHint@QDrawPixmaps@@@@@Z @ 7391 NONAME ABSENT ; void qDrawPixmaps(class QPainter *, struct QDrawPixmaps::Data const *, int, class QPixmap const &, class QFlags<enum QDrawPixmaps::DrawingHint>)
 	?qDrawPlainRect@@YAXPAVQPainter@@ABVQRect@@ABVQColor@@HPBVQBrush@@@Z @ 7392 NONAME ; void qDrawPlainRect(class QPainter *, class QRect const &, class QColor const &, int, class QBrush const *)
 	?qDrawPlainRect@@YAXPAVQPainter@@HHHHABVQColor@@HPBVQBrush@@@Z @ 7393 NONAME ; void qDrawPlainRect(class QPainter *, int, int, int, int, class QColor const &, int, class QBrush const *)
 	?qDrawShadeLine@@YAXPAVQPainter@@ABVQPoint@@1ABVQPalette@@_NHH@Z @ 7394 NONAME ; void qDrawShadeLine(class QPainter *, class QPoint const &, class QPoint const &, class QPalette const &, bool, int, int)
@@ -8995,7 +8995,7 @@ EXPORTS
 	?setFocus@QTextControl@@QAEX_NW4FocusReason@Qt@@@Z @ 8994 NONAME ; void QTextControl::setFocus(bool, enum Qt::FocusReason)
 	?setFocus@QWidget@@QAEXW4FocusReason@Qt@@@Z @ 8995 NONAME ; void QWidget::setFocus(enum Qt::FocusReason)
 	?setFocus@QWidget@@QAEXXZ @ 8996 NONAME ; void QWidget::setFocus(void)
-	?setFocusHelper@QGraphicsItemPrivate@@QAEXW4FocusReason@Qt@@_N@Z @ 8997 NONAME ; void QGraphicsItemPrivate::setFocusHelper(enum Qt::FocusReason, bool)
+	?setFocusHelper@QGraphicsItemPrivate@@QAEXW4FocusReason@Qt@@_N@Z @ 8997 NONAME ABSENT ; void QGraphicsItemPrivate::setFocusHelper(enum Qt::FocusReason, bool)
 	?setFocusItem@QGraphicsScene@@QAEXPAVQGraphicsItem@@W4FocusReason@Qt@@@Z @ 8998 NONAME ; void QGraphicsScene::setFocusItem(class QGraphicsItem *, enum Qt::FocusReason)
 	?setFocusPolicy@QGraphicsWidget@@QAEXW4FocusPolicy@Qt@@@Z @ 8999 NONAME ; void QGraphicsWidget::setFocusPolicy(enum Qt::FocusPolicy)
 	?setFocusPolicy@QWidget@@QAEXW4FocusPolicy@Qt@@@Z @ 9000 NONAME ; void QWidget::setFocusPolicy(enum Qt::FocusPolicy)
@@ -11922,7 +11922,7 @@ EXPORTS
 	?updateCachedClipPathFromSetPosHelper@QGraphicsItemPrivate@@QAEXABVQPointF@@@Z @ 11921 NONAME ABSENT ; void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(class QPointF const &)
 	?updateCell@QCalendarWidget@@IAEXABVQDate@@@Z @ 11922 NONAME ; void QCalendarWidget::updateCell(class QDate const &)
 	?updateCells@QCalendarWidget@@IAEXXZ @ 11923 NONAME ; void QCalendarWidget::updateCells(void)
-	?updateDisplayText@QLineControl@@AAEXXZ @ 11924 NONAME ; void QLineControl::updateDisplayText(void)
+	?updateDisplayText@QLineControl@@AAEXXZ @ 11924 NONAME ABSENT ; void QLineControl::updateDisplayText(void)
 	?updateEditorData@QAbstractItemView@@MAEXXZ @ 11925 NONAME ; void QAbstractItemView::updateEditorData(void)
 	?updateEditorGeometries@QAbstractItemView@@MAEXXZ @ 11926 NONAME ; void QAbstractItemView::updateEditorGeometries(void)
 	?updateEditorGeometry@QAbstractItemDelegate@@UBEXPAVQWidget@@ABVQStyleOptionViewItem@@ABVQModelIndex@@@Z @ 11927 NONAME ; void QAbstractItemDelegate::updateEditorGeometry(class QWidget *, class QStyleOptionViewItem const &, class QModelIndex const &) const
@@ -12601,4 +12601,196 @@ EXPORTS
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
+	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @ 12603 NONAME ; bool QFontDatabase::removeAllApplicationFonts()
+	??0FileInfo@QZipReader@@QAE@XZ @ 12604 NONAME ; QZipReader::FileInfo::FileInfo(void)
+	??0QAbstractScrollAreaPrivate@@QAE@XZ @ 12605 NONAME ; QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate(void)
+	??0QGraphicsViewPrivate@@QAE@XZ @ 12606 NONAME ; QGraphicsViewPrivate::QGraphicsViewPrivate(void)
+	??0QKeySequence@@QAE@ABVQString@@W4SequenceFormat@0@@Z @ 12607 NONAME ; QKeySequence::QKeySequence(class QString const &, enum QKeySequence::SequenceFormat)
+	??0QStaticText@@QAE@ABV0@@Z @ 12608 NONAME ; QStaticText::QStaticText(class QStaticText const &)
+	??0QStaticText@@QAE@ABVQString@@ABVQSizeF@@@Z @ 12609 NONAME ABSENT ; QStaticText::QStaticText(class QString const &, class QSizeF const &)
+	??0QStaticText@@QAE@XZ @ 12610 NONAME ; QStaticText::QStaticText(void)
+	??0QStaticTextItem@@QAE@XZ @ 12611 NONAME ; QStaticTextItem::QStaticTextItem(void)
+	??0QZipReader@@QAE@ABVQString@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 12612 NONAME ; QZipReader::QZipReader(class QString const &, class QFlags<enum QIODevice::OpenModeFlag>)
+	??0QZipReader@@QAE@PAVQIODevice@@@Z @ 12613 NONAME ; QZipReader::QZipReader(class QIODevice *)
+	??1FileInfo@QZipReader@@QAE@XZ @ 12614 NONAME ; QZipReader::FileInfo::~FileInfo(void)
+	??1QAbstractScrollAreaPrivate@@UAE@XZ @ 12615 NONAME ; QAbstractScrollAreaPrivate::~QAbstractScrollAreaPrivate(void)
+	??1QGraphicsViewPrivate@@UAE@XZ @ 12616 NONAME ; QGraphicsViewPrivate::~QGraphicsViewPrivate(void)
+	??1QStaticText@@QAE@XZ @ 12617 NONAME ; QStaticText::~QStaticText(void)
+	??1QStaticTextItem@@QAE@XZ @ 12618 NONAME ; QStaticTextItem::~QStaticTextItem(void)
+	??1QZipReader@@QAE@XZ @ 12619 NONAME ; QZipReader::~QZipReader(void)
+	??4FileInfo@QZipReader@@QAEAAU01@ABU01@@Z @ 12620 NONAME ; struct QZipReader::FileInfo & QZipReader::FileInfo::operator=(struct QZipReader::FileInfo const &)
+	??4QStaticText@@QAEAAV0@ABV0@@Z @ 12621 NONAME ; class QStaticText & QStaticText::operator=(class QStaticText const &)
+	??8QStaticText@@QBE_NABV0@@Z @ 12622 NONAME ; bool QStaticText::operator==(class QStaticText const &) const
+	??9QStaticText@@QBE_NABV0@@Z @ 12623 NONAME ; bool QStaticText::operator!=(class QStaticText const &) const
+	??_EQAbstractScrollAreaPrivate@@UAE@I@Z @ 12624 NONAME ; QAbstractScrollAreaPrivate::~QAbstractScrollAreaPrivate(unsigned int)
+	??_EQGraphicsViewPrivate@@UAE@I@Z @ 12625 NONAME ; QGraphicsViewPrivate::~QGraphicsViewPrivate(unsigned int)
+	?_q_hslide@QAbstractScrollAreaPrivate@@QAEXH@Z @ 12626 NONAME ; void QAbstractScrollAreaPrivate::_q_hslide(int)
+	?_q_setViewportCursor@QGraphicsViewPrivate@@QAEXABVQCursor@@@Z @ 12627 NONAME ; void QGraphicsViewPrivate::_q_setViewportCursor(class QCursor const &)
+	?_q_showOrHideScrollBars@QAbstractScrollAreaPrivate@@QAEXXZ @ 12628 NONAME ; void QAbstractScrollAreaPrivate::_q_showOrHideScrollBars(void)
+	?_q_unsetViewportCursor@QGraphicsViewPrivate@@QAEXXZ @ 12629 NONAME ; void QGraphicsViewPrivate::_q_unsetViewportCursor(void)
+	?_q_vslide@QAbstractScrollAreaPrivate@@QAEXH@Z @ 12630 NONAME ; void QAbstractScrollAreaPrivate::_q_vslide(int)
+	?allocStyleOptionsArray@QGraphicsViewPrivate@@QAEPAVQStyleOptionGraphicsItem@@H@Z @ 12631 NONAME ; class QStyleOptionGraphicsItem * QGraphicsViewPrivate::allocStyleOptionsArray(int)
+	?anchorAt@QPlainTextEdit@@QBE?AVQString@@ABVQPoint@@@Z @ 12632 NONAME ; class QString QPlainTextEdit::anchorAt(class QPoint const &) const
+	?assign@QKeySequence@@AAEHABVQString@@W4SequenceFormat@1@@Z @ 12633 NONAME ; int QKeySequence::assign(class QString const &, enum QKeySequence::SequenceFormat)
+	?autoFillBackground@QGraphicsWidget@@QBE_NXZ @ 12634 NONAME ; bool QGraphicsWidget::autoFillBackground(void) const
+	?canKeypadNavigate@QWidgetPrivate@@SA_NW4Orientation@Qt@@@Z @ 12635 NONAME ; bool QWidgetPrivate::canKeypadNavigate(enum Qt::Orientation)
+	?centerView@QGraphicsViewPrivate@@QAEXW4ViewportAnchor@QGraphicsView@@@Z @ 12636 NONAME ; void QGraphicsViewPrivate::centerView(enum QGraphicsView::ViewportAnchor)
+	?clearUndoRedoStacks@QTextDocument@@QAEXW4Stacks@1@@Z @ 12637 NONAME ; void QTextDocument::clearUndoRedoStacks(enum QTextDocument::Stacks)
+	?close@QZipReader@@QAEXXZ @ 12638 NONAME ; void QZipReader::close(void)
+	?constBits@QImage@@QBEPBEXZ @ 12639 NONAME ; unsigned char const * QImage::constBits(void) const
+	?constScanLine@QImage@@QBEPBEH@Z @ 12640 NONAME ; unsigned char const * QImage::constScanLine(int) const
+	?contentsOffset@QAbstractScrollAreaPrivate@@UBE?AVQPoint@@XZ @ 12641 NONAME ; class QPoint QAbstractScrollAreaPrivate::contentsOffset(void) const
+	?convertFromImage@QPixmap@@QAE_NABVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12642 NONAME ; bool QPixmap::convertFromImage(class QImage const &, class QFlags<enum Qt::ImageConversionFlag>)
+	?count@QZipReader@@QBEHXZ @ 12643 NONAME ; int QZipReader::count(void) const
+	?create@Fragment@QPainter@@SA?AV12@ABVQPointF@@ABVQRectF@@MMMM@Z @ 12644 NONAME ABSENT ; class QPainter::Fragment QPainter::Fragment::create(class QPointF const &, class QRectF const &, float, float, float, float)
+	?detach@QStaticText@@AAEXXZ @ 12645 NONAME ; void QStaticText::detach(void)
+	?directoryLoaded@QFileSystemModel@@IAEXABVQString@@@Z @ 12646 NONAME ; void QFileSystemModel::directoryLoaded(class QString const &)
+	?dispatchPendingUpdateRequests@QGraphicsViewPrivate@@QAEXXZ @ 12647 NONAME ; void QGraphicsViewPrivate::dispatchPendingUpdateRequests(void)
+	?drawPixmapFragments@QPaintEngineEx@@UAEXPBVFragment@QPainter@@HABVQPixmap@@V?$QFlags@W4FragmentHint@QPainter@@@@@Z @ 12648 NONAME ABSENT ; void QPaintEngineEx::drawPixmapFragments(class QPainter::Fragment const *, int, class QPixmap const &, class QFlags<enum QPainter::FragmentHint>)
+	?drawPixmapFragments@QPainter@@QAEXPBVFragment@1@HABVQPixmap@@V?$QFlags@W4FragmentHint@QPainter@@@@@Z @ 12649 NONAME ABSENT ; void QPainter::drawPixmapFragments(class QPainter::Fragment const *, int, class QPixmap const &, class QFlags<enum QPainter::FragmentHint>)
+	?drawStaticText@QPainter@@QAEXABVQPoint@@ABVQStaticText@@@Z @ 12650 NONAME ; void QPainter::drawStaticText(class QPoint const &, class QStaticText const &)
+	?drawStaticText@QPainter@@QAEXABVQPointF@@ABVQStaticText@@@Z @ 12651 NONAME ; void QPainter::drawStaticText(class QPointF const &, class QStaticText const &)
+	?drawStaticText@QPainter@@QAEXHHABVQStaticText@@@Z @ 12652 NONAME ; void QPainter::drawStaticText(int, int, class QStaticText const &)
+	?entryInfoAt@QZipReader@@QBE?AUFileInfo@1@H@Z @ 12653 NONAME ; struct QZipReader::FileInfo QZipReader::entryInfoAt(int) const
+	?exists@QZipReader@@QBE_NXZ @ 12654 NONAME ; bool QZipReader::exists(void) const
+	?extractAll@QZipReader@@QBE_NABVQString@@@Z @ 12655 NONAME ; bool QZipReader::extractAll(class QString const &) const
+	?fileData@QZipReader@@QBE?AVQByteArray@@ABVQString@@@Z @ 12656 NONAME ; class QByteArray QZipReader::fileData(class QString const &) const
+	?fileInfoList@QZipReader@@QBE?AV?$QList@UFileInfo@QZipReader@@@@XZ @ 12657 NONAME ; class QList<struct QZipReader::FileInfo> QZipReader::fileInfoList(void) const
+	?findItems@QGraphicsViewPrivate@@QBE?AV?$QList@PAVQGraphicsItem@@@@ABVQRegion@@PA_NABVQTransform@@@Z @ 12658 NONAME ; class QList<class QGraphicsItem *> QGraphicsViewPrivate::findItems(class QRegion const &, bool *, class QTransform const &) const
+	?fixup@QIntValidator@@UBEXAAVQString@@@Z @ 12659 NONAME ; void QIntValidator::fixup(class QString &) const
+	?freeStyleOptionsArray@QGraphicsViewPrivate@@QAEXPAVQStyleOptionGraphicsItem@@@Z @ 12660 NONAME ; void QGraphicsViewPrivate::freeStyleOptionsArray(class QStyleOptionGraphicsItem *)
+	?getPixmapCursor@QApplicationPrivate@@QAE?AVQPixmap@@W4CursorShape@Qt@@@Z @ 12661 NONAME ; class QPixmap QApplicationPrivate::getPixmapCursor(enum Qt::CursorShape)
+	?getSubRange@QBezier@@QBE?AV1@MM@Z @ 12662 NONAME ; class QBezier QBezier::getSubRange(float, float) const
+	?hasSelectedText@QLabel@@QBE_NXZ @ 12663 NONAME ; bool QLabel::hasSelectedText(void) const
+	?horizontalScroll@QGraphicsViewPrivate@@QBE_JXZ @ 12664 NONAME ; long long QGraphicsViewPrivate::horizontalScroll(void) const
+	?inTabWidget@QWidgetPrivate@@SA_NPAVQWidget@@@Z @ 12665 NONAME ; bool QWidgetPrivate::inTabWidget(class QWidget *)
+	?init@QAbstractScrollAreaPrivate@@QAEXXZ @ 12666 NONAME ; void QAbstractScrollAreaPrivate::init(void)
+	?isImageCached@QImagePixmapCleanupHooks@@SA_NABVQImage@@@Z @ 12667 NONAME ; bool QImagePixmapCleanupHooks::isImageCached(class QImage const &)
+	?isPixmapCached@QImagePixmapCleanupHooks@@SA_NABVQPixmap@@@Z @ 12668 NONAME ; bool QImagePixmapCleanupHooks::isPixmapCached(class QPixmap const &)
+	?isReadable@QZipReader@@QBE_NXZ @ 12669 NONAME ; bool QZipReader::isReadable(void) const
+	?isValidColor@QColor@@SA_NABVQString@@@Z @ 12670 NONAME ; bool QColor::isValidColor(class QString const &)
+	?layoutChildren@QAbstractScrollAreaPrivate@@QAEXXZ @ 12671 NONAME ; void QAbstractScrollAreaPrivate::layoutChildren(void)
+	?mapBy@QBezier@@QBE?AV1@ABVQTransform@@@Z @ 12672 NONAME ; class QBezier QBezier::mapBy(class QTransform const &) const
+	?mapRectFromScene@QGraphicsViewPrivate@@QBE?AVQRectF@@ABV2@@Z @ 12673 NONAME ; class QRectF QGraphicsViewPrivate::mapRectFromScene(class QRectF const &) const
+	?mapRectToScene@QGraphicsViewPrivate@@QBE?AVQRectF@@ABVQRect@@@Z @ 12674 NONAME ; class QRectF QGraphicsViewPrivate::mapRectToScene(class QRect const &) const
+	?mapToScene@QGraphicsViewPrivate@@QBE?AVQPointF@@ABV2@@Z @ 12675 NONAME ; class QPointF QGraphicsViewPrivate::mapToScene(class QPointF const &) const
+	?mapToScene@QGraphicsViewPrivate@@QBE?AVQRectF@@ABV2@@Z @ 12676 NONAME ; class QRectF QGraphicsViewPrivate::mapToScene(class QRectF const &) const
+	?mapToViewRect@QGraphicsViewPrivate@@QBE?AVQRect@@PBVQGraphicsItem@@ABVQRectF@@@Z @ 12677 NONAME ; class QRect QGraphicsViewPrivate::mapToViewRect(class QGraphicsItem const *, class QRectF const &) const
+	?mapToViewRegion@QGraphicsViewPrivate@@QBE?AVQRegion@@PBVQGraphicsItem@@ABVQRectF@@@Z @ 12678 NONAME ; class QRegion QGraphicsViewPrivate::mapToViewRegion(class QGraphicsItem const *, class QRectF const &) const
+	?maximumSize@QStaticText@@QBE?AVQSizeF@@XZ @ 12679 NONAME ABSENT ; class QSizeF QStaticText::maximumSize(void) const
+	?mouseMoveEventHandler@QGraphicsViewPrivate@@QAEXPAVQMouseEvent@@@Z @ 12680 NONAME ; void QGraphicsViewPrivate::mouseMoveEventHandler(class QMouseEvent *)
+	?performanceHint@QStaticText@@QBE?AW4PerformanceHint@1@XZ @ 12681 NONAME ; enum QStaticText::PerformanceHint QStaticText::performanceHint(void) const
+	?populate@QTextureGlyphCache@@QAEXPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12682 NONAME ; void QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
+	?populateSceneDragDropEvent@QGraphicsViewPrivate@@QAEXPAVQGraphicsSceneDragDropEvent@@PAVQDropEvent@@@Z @ 12683 NONAME ; void QGraphicsViewPrivate::populateSceneDragDropEvent(class QGraphicsSceneDragDropEvent *, class QDropEvent *)
+	?positionInBlock@QTextCursor@@QBEHXZ @ 12684 NONAME ; int QTextCursor::positionInBlock(void) const
+	?prepare@QStaticText@@QAEXABVQTransform@@ABVQFont@@@Z @ 12685 NONAME ; void QStaticText::prepare(class QTransform const &, class QFont const &)
+	?processPendingUpdates@QGraphicsViewPrivate@@QAEXXZ @ 12686 NONAME ; void QGraphicsViewPrivate::processPendingUpdates(void)
+	?q_func@QAbstractScrollAreaPrivate@@AAEPAVQAbstractScrollArea@@XZ @ 12687 NONAME ; class QAbstractScrollArea * QAbstractScrollAreaPrivate::q_func(void)
+	?q_func@QAbstractScrollAreaPrivate@@ABEPBVQAbstractScrollArea@@XZ @ 12688 NONAME ; class QAbstractScrollArea const * QAbstractScrollAreaPrivate::q_func(void) const
+	?q_func@QGraphicsViewPrivate@@AAEPAVQGraphicsView@@XZ @ 12689 NONAME ; class QGraphicsView * QGraphicsViewPrivate::q_func(void)
+	?q_func@QGraphicsViewPrivate@@ABEPBVQGraphicsView@@XZ @ 12690 NONAME ; class QGraphicsView const * QGraphicsViewPrivate::q_func(void) const
+	?qt_draw_glyphs@@YAXPAVQPainter@@PBIPBVQPointF@@H@Z @ 12691 NONAME ; void qt_draw_glyphs(class QPainter *, unsigned int const *, class QPointF const *, int)
+	?recalculateContentSize@QGraphicsViewPrivate@@QAEXXZ @ 12692 NONAME ; void QGraphicsViewPrivate::recalculateContentSize(void)
+	?render@QWidgetPrivate@@QAEXPAVQPaintDevice@@ABVQPoint@@ABVQRegion@@V?$QFlags@W4RenderFlag@QWidget@@@@_N@Z @ 12693 NONAME ; void QWidgetPrivate::render(class QPaintDevice *, class QPoint const &, class QRegion const &, class QFlags<enum QWidget::RenderFlag>, bool)
+	?replaceScrollBar@QAbstractScrollAreaPrivate@@QAEXPAVQScrollBar@@W4Orientation@Qt@@@Z @ 12694 NONAME ; void QAbstractScrollAreaPrivate::replaceScrollBar(class QScrollBar *, enum Qt::Orientation)
+	?replayLastMouseEvent@QGraphicsViewPrivate@@QAEXXZ @ 12695 NONAME ; void QGraphicsViewPrivate::replayLastMouseEvent(void)
+	?rubberBandRegion@QGraphicsViewPrivate@@QBE?AVQRegion@@PBVQWidget@@ABVQRect@@@Z @ 12696 NONAME ; class QRegion QGraphicsViewPrivate::rubberBandRegion(class QWidget const *, class QRect const &) const
+	?scrollBarPolicyChanged@QAbstractScrollAreaPrivate@@UAEXW4Orientation@Qt@@W4ScrollBarPolicy@3@@Z @ 12697 NONAME ; void QAbstractScrollAreaPrivate::scrollBarPolicyChanged(enum Qt::Orientation, enum Qt::ScrollBarPolicy)
+	?selectedText@QLabel@@QBE?AVQString@@XZ @ 12698 NONAME ; class QString QLabel::selectedText(void) const
+	?selectionStart@QLabel@@QBEHXZ @ 12699 NONAME ; int QLabel::selectionStart(void) const
+	?setAutoFillBackground@QGraphicsWidget@@QAEX_N@Z @ 12700 NONAME ; void QGraphicsWidget::setAutoFillBackground(bool)
+	?setColorFromString@QColor@@AAE_NABVQString@@@Z @ 12701 NONAME ; bool QColor::setColorFromString(class QString const &)
+	?setMaximumSize@QStaticText@@QAEXABVQSizeF@@@Z @ 12702 NONAME ABSENT ; void QStaticText::setMaximumSize(class QSizeF const &)
+	?setPerformanceHint@QStaticText@@QAEXW4PerformanceHint@1@@Z @ 12703 NONAME ; void QStaticText::setPerformanceHint(enum QStaticText::PerformanceHint)
+	?setSelection@QLabel@@QAEXHH@Z @ 12704 NONAME ; void QLabel::setSelection(int, int)
+	?setText@QStaticText@@QAEXABVQString@@@Z @ 12705 NONAME ; void QStaticText::setText(class QString const &)
+	?setTextFormat@QStaticText@@QAEXW4TextFormat@Qt@@@Z @ 12706 NONAME ; void QStaticText::setTextFormat(enum Qt::TextFormat)
+	?setUserData@QStaticTextItem@@QAEXPAVQStaticTextUserData@@@Z @ 12707 NONAME ; void QStaticTextItem::setUserData(class QStaticTextUserData *)
+	?size@QStaticText@@QBE?AVQSizeF@@XZ @ 12708 NONAME ; class QSizeF QStaticText::size(void) const
+	?status@QZipReader@@QBE?AW4Status@1@XZ @ 12709 NONAME ; enum QZipReader::Status QZipReader::status(void) const
+	?storeDragDropEvent@QGraphicsViewPrivate@@QAEXPBVQGraphicsSceneDragDropEvent@@@Z @ 12710 NONAME ; void QGraphicsViewPrivate::storeDragDropEvent(class QGraphicsSceneDragDropEvent const *)
+	?storeMouseEvent@QGraphicsViewPrivate@@QAEXPAVQMouseEvent@@@Z @ 12711 NONAME ; void QGraphicsViewPrivate::storeMouseEvent(class QMouseEvent *)
+	?text@QStaticText@@QBE?AVQString@@XZ @ 12712 NONAME ; class QString QStaticText::text(void) const
+	?textFormat@QStaticText@@QBE?AW4TextFormat@Qt@@XZ @ 12713 NONAME ; enum Qt::TextFormat QStaticText::textFormat(void) const
+	?translateTouchEvent@QGraphicsViewPrivate@@SAXPAV1@PAVQTouchEvent@@@Z @ 12714 NONAME ; void QGraphicsViewPrivate::translateTouchEvent(class QGraphicsViewPrivate *, class QTouchEvent *)
+	?updateAll@QGraphicsViewPrivate@@QAEXXZ @ 12715 NONAME ; void QGraphicsViewPrivate::updateAll(void)
+	?updateInputMethodSensitivity@QGraphicsViewPrivate@@QAEXXZ @ 12716 NONAME ; void QGraphicsViewPrivate::updateInputMethodSensitivity(void)
+	?updateLastCenterPoint@QGraphicsViewPrivate@@QAEXXZ @ 12717 NONAME ; void QGraphicsViewPrivate::updateLastCenterPoint(void)
+	?updateRect@QGraphicsViewPrivate@@QAE_NABVQRect@@@Z @ 12718 NONAME ; bool QGraphicsViewPrivate::updateRect(class QRect const &)
+	?updateRegion@QGraphicsViewPrivate@@QAE_NABVQRegion@@@Z @ 12719 NONAME ; bool QGraphicsViewPrivate::updateRegion(class QRegion const &)
+	?updateScroll@QGraphicsViewPrivate@@QAEXXZ @ 12720 NONAME ; void QGraphicsViewPrivate::updateScroll(void)
+	?verticalScroll@QGraphicsViewPrivate@@QBE_JXZ @ 12721 NONAME ; long long QGraphicsViewPrivate::verticalScroll(void) const
+	?viewportEvent@QAbstractScrollAreaPrivate@@QAE_NPAVQEvent@@@Z @ 12722 NONAME ; bool QAbstractScrollAreaPrivate::viewportEvent(class QEvent *)
+	?visibilityChanged@QToolBar@@IAEX_N@Z @ 12723 NONAME ; void QToolBar::visibilityChanged(bool)
+	??0FileInfo@QZipReader@@QAE@ABU01@@Z @ 12724 NONAME ; QZipReader::FileInfo::FileInfo(struct QZipReader::FileInfo const &)
+	??0QStaticText@@QAE@ABVQString@@@Z @ 12725 NONAME ; QStaticText::QStaticText(class QString const &)
+	?append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12726 NONAME ABSENT ; void QGraphicsItemPrivate::append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
+	?bitPlaneCount@QImage@@QBEHXZ @ 12727 NONAME ; int QImage::bitPlaneCount(void) const
+	?childrenChanged@QGraphicsObject@@IAEXXZ @ 12728 NONAME ; void QGraphicsObject::childrenChanged(void)
+	?childrenList@QGraphicsItemPrivate@@QAE?AV?$QDeclarativeListProperty@VQGraphicsObject@@@@XZ @ 12729 NONAME ; class QDeclarativeListProperty<class QGraphicsObject> QGraphicsItemPrivate::childrenList(void)
+	?clearFocusHelper@QGraphicsItemPrivate@@QAEX_N@Z @ 12730 NONAME ; void QGraphicsItemPrivate::clearFocusHelper(bool)
+	?commandDescription@QPaintBuffer@@QBE?AVQString@@H@Z @ 12731 NONAME ; class QString QPaintBuffer::commandDescription(int) const
+	?create@PixmapFragment@QPainter@@SA?AV12@ABVQPointF@@ABVQRectF@@MMMM@Z @ 12732 NONAME ; class QPainter::PixmapFragment QPainter::PixmapFragment::create(class QPointF const &, class QRectF const &, float, float, float, float)
+	?device@QZipReader@@QBEPAVQIODevice@@XZ @ 12733 NONAME ; class QIODevice * QZipReader::device(void) const
+	?drawPixmapFragments@QPaintEngineEx@@UAEXPBVPixmapFragment@QPainter@@HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 12734 NONAME ; void QPaintEngineEx::drawPixmapFragments(class QPainter::PixmapFragment const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
+	?drawPixmapFragments@QPainter@@QAEXPBVPixmapFragment@1@HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 12735 NONAME ; void QPainter::drawPixmapFragments(class QPainter::PixmapFragment const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
+	?frameEndIndex@QPaintBuffer@@QBEHH@Z @ 12736 NONAME ; int QPaintBuffer::frameEndIndex(int) const
+	?frameStartIndex@QPaintBuffer@@QBEHH@Z @ 12737 NONAME ; int QPaintBuffer::frameStartIndex(int) const
+	?geometryChanged@QGraphicsWidget@@IAEXXZ @ 12738 NONAME ; void QGraphicsWidget::geometryChanged(void)
+	?getGlyphBearings@QFontEngine@@UAEXIPAM0@Z @ 12739 NONAME ; void QFontEngine::getGlyphBearings(unsigned int, float *, float *)
+	?height@QGraphicsItemPrivate@@UBEMXZ @ 12740 NONAME ; float QGraphicsItemPrivate::height(void) const
+	?heightChanged@QGraphicsObject@@IAEXXZ @ 12741 NONAME ; void QGraphicsObject::heightChanged(void)
+	?horizontalAdvance@QTextLine@@QBEMXZ @ 12742 NONAME ; float QTextLine::horizontalAdvance(void) const
+	?isValid@FileInfo@QZipReader@@QBE_NXZ @ 12743 NONAME ; bool QZipReader::FileInfo::isValid(void) const
+	?layoutChanged@QGraphicsWidget@@IAEXXZ @ 12744 NONAME ; void QGraphicsWidget::layoutChanged(void)
+	?pageAdded@QWizard@@IAEXH@Z @ 12745 NONAME ; void QWizard::pageAdded(int)
+	?pageRemoved@QWizard@@IAEXH@Z @ 12746 NONAME ; void QWizard::pageRemoved(int)
+	?paste@QLineControl@@QAEXW4Mode@QClipboard@@@Z @ 12747 NONAME ; void QLineControl::paste(enum QClipboard::Mode)
+	?paste@QTextControl@@QAEXW4Mode@QClipboard@@@Z @ 12748 NONAME ; void QTextControl::paste(enum QClipboard::Mode)
+	?placeholderText@QLineEdit@@QBE?AVQString@@XZ @ 12749 NONAME ; class QString QLineEdit::placeholderText(void) const
+	?prependGraphicsTransform@QGraphicsItemPrivate@@QAEXPAVQGraphicsTransform@@@Z @ 12750 NONAME ; void QGraphicsItemPrivate::prependGraphicsTransform(class QGraphicsTransform *)
+	?processCommands@QPaintBuffer@@QBEHPAVQPainter@@HH@Z @ 12751 NONAME ; int QPaintBuffer::processCommands(class QPainter *, int, int) const
+	?processCommands@QPainterReplayer@@QAEXABVQPaintBuffer@@PAVQPainter@@HH@Z @ 12752 NONAME ; void QPainterReplayer::processCommands(class QPaintBuffer const &, class QPainter *, int, int)
+	?resetHeight@QGraphicsItemPrivate@@UAEXXZ @ 12753 NONAME ; void QGraphicsItemPrivate::resetHeight(void)
+	?resetWidth@QGraphicsItemPrivate@@UAEXXZ @ 12754 NONAME ; void QGraphicsItemPrivate::resetWidth(void)
+	?resizeEvent@QSplitterHandle@@MAEXPAVQResizeEvent@@@Z @ 12755 NONAME ; void QSplitterHandle::resizeEvent(class QResizeEvent *)
+	?setFocusHelper@QGraphicsItemPrivate@@QAEXW4FocusReason@Qt@@_N1@Z @ 12756 NONAME ; void QGraphicsItemPrivate::setFocusHelper(enum Qt::FocusReason, bool, bool)
+	?setHeight@QGraphicsItemPrivate@@UAEXM@Z @ 12757 NONAME ; void QGraphicsItemPrivate::setHeight(float)
+	?setPlaceholderText@QLineEdit@@QAEXABVQString@@@Z @ 12758 NONAME ; void QLineEdit::setPlaceholderText(class QString const &)
+	?setSideWidget@QWizard@@QAEXPAVQWidget@@@Z @ 12759 NONAME ; void QWizard::setSideWidget(class QWidget *)
+	?setTextWidth@QStaticText@@QAEXM@Z @ 12760 NONAME ; void QStaticText::setTextWidth(float)
+	?setWidth@QGraphicsItemPrivate@@UAEXM@Z @ 12761 NONAME ; void QGraphicsItemPrivate::setWidth(float)
+	?sideWidget@QWizard@@QBEPAVQWidget@@XZ @ 12762 NONAME ; class QWidget * QWizard::sideWidget(void) const
+	?textWidth@QStaticText@@QBEMXZ @ 12763 NONAME ; float QStaticText::textWidth(void) const
+	?updateDisplayText@QLineControl@@AAEX_N@Z @ 12764 NONAME ; void QLineControl::updateDisplayText(bool)
+	?updateMicroFocus@QGraphicsItem@@IAEXXZ @ 12765 NONAME ; void QGraphicsItem::updateMicroFocus(void)
+	?updateMicroFocus@QGraphicsObject@@IAEXXZ @ 12766 NONAME ; void QGraphicsObject::updateMicroFocus(void)
+	?width@QGraphicsItemPrivate@@UBEMXZ @ 12767 NONAME ; float QGraphicsItemPrivate::width(void) const
+	?widthChanged@QGraphicsObject@@IAEXXZ @ 12768 NONAME ; void QGraphicsObject::widthChanged(void)
+	?children_append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12769 NONAME ; void QGraphicsItemPrivate::children_append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
+	?children_at@QGraphicsItemPrivate@@SAPAVQGraphicsObject@@PAV?$QDeclarativeListProperty@VQGraphicsObject@@@@H@Z @ 12770 NONAME ; class QGraphicsObject * QGraphicsItemPrivate::children_at(class QDeclarativeListProperty<class QGraphicsObject> *, int)
+	?children_count@QGraphicsItemPrivate@@SAHPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@@Z @ 12771 NONAME ; int QGraphicsItemPrivate::children_count(class QDeclarativeListProperty<class QGraphicsObject> *)
+	?display@QEglContext@@QAEHXZ @ 12772 NONAME  ABSENT ; int QEglContext::display(void)
+	?defaultConfig@QEgl@@YAHHW4API@1@V?$QFlags@W4ConfigOption@QEgl@@@@@Z @ 12773 NONAME ABSENT ; int QEgl::defaultConfig(int, enum QEgl::API, class QFlags<enum QEgl::ConfigOption>)
+	?configAttrib@QEglContext@@QBEHH@Z @ 12774 NONAME ABSENT ; int QEglContext::configAttrib(int) const
+	?error@QEgl@@YAHXZ @ 12775 NONAME ABSENT ; int QEgl::error(void)
+	?errorString@QEgl@@YA?AVQString@@XZ @ 12776 NONAME ABSENT ; class QString QEgl::errorString(void)
+	?configProperties@QEglContext@@QBE?AVQEglProperties@@XZ @ 12777 NONAME ABSENT ; class QEglProperties QEglContext::configProperties(void) const
+	?extensions@QEgl@@YA?AVQString@@XZ @ 12778 NONAME ABSENT ; class QString QEgl::extensions(void)
+	?nativePixmap@QEgl@@YAPAXPAVQPixmap@@@Z @ 12779 NONAME ABSENT ; void * QEgl::nativePixmap(class QPixmap *)
+	?display@QEgl@@YAHXZ @ 12780 NONAME ABSENT ; int QEgl::display(void)
+	?eglCreateImageKHR@QEgl@@YAHHHHHPBH@Z @ 12781 NONAME ABSENT ; int QEgl::eglCreateImageKHR(int, int, int, int, int const *)
+	?hasExtension@QEgl@@YA_NPBD@Z @ 12782 NONAME ABSENT ; bool QEgl::hasExtension(char const *)
+	?destroyContext@QEglContext@@QAEXXZ @ 12783 NONAME ABSENT ; void QEglContext::destroyContext(void)
+	?nativeWindow@QEgl@@YAPAXPAVQWidget@@@Z @ 12784 NONAME ABSENT ; void * QEgl::nativeWindow(class QWidget *)
+	?errorString@QEgl@@YA?AVQString@@H@Z @ 12785 NONAME ABSENT ; class QString QEgl::errorString(int)
+	?chooseConfig@QEgl@@YAHPBVQEglProperties@@W4PixelFormatMatch@1@@Z @ 12786 NONAME ABSENT ; int QEgl::chooseConfig(class QEglProperties const *, enum QEgl::PixelFormatMatch)
+	?eglDestroyImageKHR@QEgl@@YAHHH@Z @ 12787 NONAME ABSENT ; int QEgl::eglDestroyImageKHR(int, int)
+	?isEmpty@QItemSelectionRange@@QBE_NXZ @ 12788 NONAME ; bool QItemSelectionRange::isEmpty(void) const
+	?clearError@QEgl@@YAXXZ @ 12789 NONAME ABSENT ; void QEgl::clearError(void)
+	?nativeDisplay@QEgl@@YAHXZ @ 12790 NONAME ABSENT ; int QEgl::nativeDisplay(void)
+	?dumpAllConfigs@QEgl@@YAXXZ @ 12791 NONAME ABSENT ; void QEgl::dumpAllConfigs(void)
+	?setDeviceType@QEglProperties@@QAEXH@Z @ 12792 NONAME ABSENT ; void QEglProperties::setDeviceType(int)
+	?glyphPadding@QTextureGlyphCache@@UBEHXZ @ 12793 NONAME ; int QTextureGlyphCache::glyphPadding(void) const
+	?createSurface@QEgl@@YAHPAVQPaintDevice@@HPBVQEglProperties@@@Z @ 12794 NONAME ABSENT ; int QEgl::createSurface(class QPaintDevice *, int, class QEglProperties const *)
 

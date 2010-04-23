@@ -822,6 +822,9 @@ bool QSqlQuery::isForwardOnly() const
   scrollable. isForwardOnly() will always return the correct status of
   the result set.
 
+  \note Calling setForwardOnly after execution of the query will result
+  in unexpected results at best, and crashes at worst.
+
   \sa isForwardOnly(), next(), seek(), QSqlResult::setForwardOnly()
 */
 void QSqlQuery::setForwardOnly(bool forward)
@@ -999,9 +1002,17 @@ bool QSqlQuery::execBatch(BatchExecutionMode mode)
   must be included when specifying the placeholder name. If \a
   paramType is QSql::Out or QSql::InOut, the placeholder will be
   overwritten with data from the database after the exec() call.
+  In this case, sufficient space must be pre-allocated to store
+  the result into.
 
   To bind a NULL value, use a null QVariant; for example, use
   \c {QVariant(QVariant::String)} if you are binding a string.
+
+  Values cannot be bound to multiple locations in the query, eg:
+  \code
+  INSERT INTO testtable (id, name, samename) VALUES (:id, :name, :name)
+  \endcode
+  Binding to name will bind to the first :name, but not the second.
 
   \sa addBindValue(), prepare(), exec(), boundValue() boundValues()
 */

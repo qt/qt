@@ -414,6 +414,9 @@ void tst_QGraphicsView::chipTester_data()
 
 void tst_QGraphicsView::chipTester()
 {
+#ifdef Q_WS_WINCE_WM 
+QSKIP("WinCE WM: Fails on Windows Mobile w/o OpenGL", SkipAll);
+#endif
     QFETCH(bool, antialias);
     QFETCH(bool, opengl);
     QFETCH(int, operation);

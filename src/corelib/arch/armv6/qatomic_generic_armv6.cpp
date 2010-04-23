@@ -46,6 +46,7 @@
 #include <QtCore/qglobal.h>
 
 #ifdef QT_HAVE_ARMV6
+#ifndef SYMBIAN_E32_ATOMIC_API
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,24 @@ QT_USE_NAMESPACE
 #ifdef Q_CC_RVCT
 #pragma push
 #pragma arm
+Q_CORE_EXPORT asm
+bool QBasicAtomicInt_testAndSetRelaxed(volatile int *_q_value, int expectedValue, int newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+bool QBasicAtomicInt_testAndSetAcquire(volatile int *_q_value, int expectedValue, int newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+bool QBasicAtomicInt_testAndSetRelease(volatile int *_q_value, int expectedValue, int newValue)
+{
+    CODE32
+    //fall through
+}
 Q_CORE_EXPORT asm
 bool QBasicAtomicInt_testAndSetOrdered(volatile int *_q_value, int expectedValue, int newValue)
 {
@@ -73,6 +92,24 @@ retry_testAndSetOrdered
 }
 
 Q_CORE_EXPORT asm
+int QBasicAtomicInt_fetchAndStoreRelaxed(volatile int *_q_value, int newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+int QBasicAtomicInt_fetchAndStoreAcquire(volatile int *_q_value, int newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+int QBasicAtomicInt_fetchAndStoreRelease(volatile int *_q_value, int newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
 int QBasicAtomicInt_fetchAndStoreOrdered(volatile int *_q_value, int newValue)
 {
     CODE32
@@ -87,6 +124,24 @@ retry_fetchAndStoreOrdered
     BX       r14
 }
 
+Q_CORE_EXPORT asm
+int QBasicAtomicInt_fetchAndAddRelaxed(volatile int *_q_value, int valueToAdd)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+int QBasicAtomicInt_fetchAndAddAcquire(volatile int *_q_value, int valueToAdd)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+int QBasicAtomicInt_fetchAndAddRelease(volatile int *_q_value, int valueToAdd)
+{
+    CODE32
+    //fall through
+}
 Q_CORE_EXPORT asm
 int QBasicAtomicInt_fetchAndAddOrdered(volatile int *_q_value, int valueToAdd)
 {
@@ -104,6 +159,30 @@ retry_fetchAndAddOrdered
     LDMIA    sp!,{r12,pc}
 }
 
+Q_CORE_EXPORT asm
+bool QBasicAtomicPointer_testAndSetRelaxed(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+bool QBasicAtomicPointer_testAndSetRelease(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+bool QBasicAtomicPointer_testAndSetAcquire(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    CODE32
+    //fall through
+}
 Q_CORE_EXPORT asm
 bool QBasicAtomicPointer_testAndSetOrdered(void * volatile *_q_value,
                                            void *expectedValue,
@@ -125,6 +204,24 @@ retryPointer_testAndSetOrdered
 }
 
 Q_CORE_EXPORT asm
+void *QBasicAtomicPointer_fetchAndStoreRelaxed(void * volatile *_q_value, void *newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+void *QBasicAtomicPointer_fetchAndStoreAcquire(void * volatile *_q_value, void *newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+void *QBasicAtomicPointer_fetchAndStoreRelease(void * volatile *_q_value, void *newValue)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
 void *QBasicAtomicPointer_fetchAndStoreOrdered(void * volatile *_q_value, void *newValue)
 {
     CODE32
@@ -139,6 +236,24 @@ retryPointer_fetchAndStoreOrdered
     BX       r14
 }
 
+Q_CORE_EXPORT asm
+void *QBasicAtomicPointer_fetchAndAddRelaxed(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+void *QBasicAtomicPointer_fetchAndAddRelease(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    CODE32
+    //fall through
+}
+Q_CORE_EXPORT asm
+void *QBasicAtomicPointer_fetchAndAddAcquire(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    CODE32
+    //fall through
+}
 Q_CORE_EXPORT asm
 void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff valueToAdd)
 {
@@ -159,6 +274,21 @@ retryPointer_fetchAndAddOrdered
 #pragma pop
 #elif defined (Q_CC_GCCE)
 Q_CORE_EXPORT __declspec( naked )
+bool QBasicAtomicInt_testAndSetRelaxed(volatile int *_q_value, int expectedValue, int newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+bool QBasicAtomicInt_testAndSetAcquire(volatile int *_q_value, int expectedValue, int newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+bool QBasicAtomicInt_testAndSetRelease(volatile int *_q_value, int expectedValue, int newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
 bool QBasicAtomicInt_testAndSetOrdered(volatile int *_q_value, int expectedValue, int newValue)
 {
     //R0 = _q_value
@@ -176,6 +306,21 @@ bool QBasicAtomicInt_testAndSetOrdered(volatile int *_q_value, int expectedValue
 }
 
 Q_CORE_EXPORT __declspec( naked )
+int QBasicAtomicInt_fetchAndStoreRelaxed(volatile int *_q_value, int newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+int QBasicAtomicInt_fetchAndStoreAcquire(volatile int *_q_value, int newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+int QBasicAtomicInt_fetchAndStoreRelease(volatile int *_q_value, int newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
 int QBasicAtomicInt_fetchAndStoreOrdered(volatile int *_q_value, int newValue)
 {
 //R0 = _q_value
@@ -189,6 +334,21 @@ int QBasicAtomicInt_fetchAndStoreOrdered(volatile int *_q_value, int newValue)
     asm("    BX       r14");
 }
 
+Q_CORE_EXPORT __declspec( naked )
+int QBasicAtomicInt_fetchAndAddRelaxed(volatile int *_q_value, int valueToAdd)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+int QBasicAtomicInt_fetchAndAddAcquire(volatile int *_q_value, int valueToAdd)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+int QBasicAtomicInt_fetchAndAddRelease(volatile int *_q_value, int valueToAdd)
+{
+    //fall through
+}
 Q_CORE_EXPORT __declspec( naked )
 int QBasicAtomicInt_fetchAndAddOrdered(volatile int *_q_value, int valueToAdd)
 {
@@ -205,6 +365,27 @@ int QBasicAtomicInt_fetchAndAddOrdered(volatile int *_q_value, int valueToAdd)
     asm("    LDMIA    sp!,{r12,pc}");
 }
 
+Q_CORE_EXPORT __declspec( naked )
+bool QBasicAtomicPointer_testAndSetRelaxed(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+bool QBasicAtomicPointer_testAndSetRelease(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+bool QBasicAtomicPointer_testAndSetAcquire(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    //fall through
+}
 Q_CORE_EXPORT __declspec( naked )
 bool QBasicAtomicPointer_testAndSetOrdered(void * volatile *_q_value,
                                            void *expectedValue,
@@ -225,6 +406,21 @@ bool QBasicAtomicPointer_testAndSetOrdered(void * volatile *_q_value,
 }
 
 Q_CORE_EXPORT __declspec( naked )
+void *QBasicAtomicPointer_fetchAndStoreRelaxed(void * volatile *_q_value, void *newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+void *QBasicAtomicPointer_fetchAndStoreAcquire(void * volatile *_q_value, void *newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+void *QBasicAtomicPointer_fetchAndStoreRelease(void * volatile *_q_value, void *newValue)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
 void *QBasicAtomicPointer_fetchAndStoreOrdered(void * volatile *_q_value, void *newValue)
 {
     //R0 = _q_value
@@ -238,6 +434,21 @@ void *QBasicAtomicPointer_fetchAndStoreOrdered(void * volatile *_q_value, void *
     asm("    BX       r14");
 }
 
+Q_CORE_EXPORT __declspec( naked )
+void *QBasicAtomicPointer_fetchAndAddRelaxed(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+void *QBasicAtomicPointer_fetchAndAddRelease(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    //fall through
+}
+Q_CORE_EXPORT __declspec( naked )
+void *QBasicAtomicPointer_fetchAndAddAcquire(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    //fall through
+}
 Q_CORE_EXPORT __declspec( naked )
 void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff valueToAdd)
 {
@@ -257,4 +468,5 @@ void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff
 #error unknown arm compiler
 #endif
 QT_END_NAMESPACE
+#endif
 #endif

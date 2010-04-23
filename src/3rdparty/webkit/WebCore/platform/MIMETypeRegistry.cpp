@@ -200,9 +200,7 @@ static void initializeSupportedNonImageMimeTypes()
         "text/",
         "application/xml",
         "application/xhtml+xml",
-#if ENABLE(XHTMLMP)
         "application/vnd.wap.xhtml+xml",
-#endif
         "application/rss+xml",
         "application/atom+xml",
 #if ENABLE(SVG)
@@ -235,8 +233,8 @@ static void initializeMediaTypeMaps()
     static const TypeExtensionPair pairs[] = {
     
         // Ogg
-        { "application/ogg", "ogg" },
         { "application/ogg", "ogx" },
+        { "audio/ogg", "ogg" },
         { "audio/ogg", "oga" },
         { "video/ogg", "ogv" },
 

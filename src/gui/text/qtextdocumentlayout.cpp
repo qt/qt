@@ -75,7 +75,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_defaultDpi();
+Q_GUI_EXPORT extern int qt_defaultDpi();
 
 // ################ should probably add frameFormatChange notification!
 

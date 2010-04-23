@@ -69,7 +69,6 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #   include "qfontdialog.h"
 #   include "qcolordialog.h"
 #   include "qwizard.h"
-#   include "qmenubar.h"
 #endif
 
 #if defined(Q_WS_S60)
@@ -259,7 +258,7 @@ QT_BEGIN_NAMESPACE
 
 QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
-              f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
+              f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
@@ -296,7 +295,7 @@ QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags 
   \internal
 */
 QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
-    : QWidget(dd, parent, f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
+    : QWidget(dd, parent, f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
@@ -415,8 +414,15 @@ bool QDialog::event(QEvent *e)
         result = true;
      }
 #else
-    if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize ))
-        adjustPosition(parentWidget());
+    if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize )) {
+        if (!testAttribute(Qt::WA_Moved)) {
+            Qt::WindowStates state = windowState();
+            adjustPosition(parentWidget());
+            setAttribute(Qt::WA_Moved, false); // not really an explicit position
+            if (state != windowState())
+                setWindowState(state);
+        }
+    }
 #endif
     return result;
 }
@@ -522,12 +528,6 @@ int QDialog::exec()
 #endif //Q_WS_WINCE_WM
 
 #ifdef Q_OS_SYMBIAN
-#ifndef QT_NO_MENUBAR
-    QMenuBar *menuBar = 0;
-    if (!findChild<QMenuBar *>())
-        menuBar = new QMenuBar(this);
-#endif
-
     if (qobject_cast<QFileDialog *>(this) || qobject_cast<QFontDialog *>(this) ||
         qobject_cast<QColorDialog *>(this) || qobject_cast<QWizard *>(this))
         showMaximized();
@@ -559,13 +559,6 @@ int QDialog::exec()
         delete menuBar;
 #endif //QT_NO_MENUBAR
 #endif //Q_WS_WINCE_WM
-#ifdef Q_OS_SYMBIAN
-#ifndef QT_NO_MENUBAR
-    else if (menuBar)
-        delete menuBar;
-#endif //QT_NO_MENUBAR
-#endif //Q_OS_SYMBIAN
-
     return res;
 }
 
@@ -808,11 +801,11 @@ void QDialog::setVisible(bool visible)
 void QDialog::showEvent(QShowEvent *event)
 {
     if (!event->spontaneous() && !testAttribute(Qt::WA_Moved)) {
-	Qt::WindowStates  state = windowState();
+        Qt::WindowStates  state = windowState();
         adjustPosition(parentWidget());
         setAttribute(Qt::WA_Moved, false); // not really an explicit position
-	if (state != windowState())
-	    setWindowState(state);
+        if (state != windowState())
+            setWindowState(state);
     }
 }
 
@@ -912,26 +905,33 @@ bool QDialog::s60AdjustedPosition()
             } else {
                 cbaHeight = qt_TSize2QSize(bgContainer->Size()).height();
             }
-            p.setY(S60->screenHeightInPixels-height()-cbaHeight);
+            p.setY(S60->screenHeightInPixels - height() - cbaHeight);
             p.setX(0);
         } else {
             const int scrollbarWidth = style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-            TRect cbaRect = TRect();
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
-            AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
-            switch (cbaLocation) {
-            case AknLayoutUtils::EAknCbaLocationBottom:
-                p.setY(S60->screenHeightInPixels - height()-cbaRect.Height());
-                p.setX((S60->screenWidthInPixels - width())>>1);
-                break;
-            case AknLayoutUtils::EAknCbaLocationRight:
-                p.setY((S60->screenHeightInPixels - height())>>1);
-                p.setX(qMax(0,S60->screenWidthInPixels-width()-scrollbarWidth-cbaRect.Width()));
-                break;
-            case AknLayoutUtils::EAknCbaLocationLeft:
-                p.setY((S60->screenHeightInPixels - height())>>1);
-                p.setX(qMax(0,scrollbarWidth+cbaRect.Width()));
-                break;
+            TRect staConTopRect = TRect();
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
+            if (staConTopRect.IsEmpty()) {
+                TRect cbaRect = TRect();
+                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
+                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
+                switch (cbaLocation) {
+                case AknLayoutUtils::EAknCbaLocationBottom:
+                    p.setY(S60->screenHeightInPixels - height() - cbaRect.Height());
+                    p.setX((S60->screenWidthInPixels - width()) >> 1);
+                    break;
+                case AknLayoutUtils::EAknCbaLocationRight:
+                    p.setY((S60->screenHeightInPixels - height()) >> 1);
+                    p.setX(qMax(0,S60->screenWidthInPixels - width() - scrollbarWidth - cbaRect.Width()));
+                    break;
+                case AknLayoutUtils::EAknCbaLocationLeft:
+                    p.setY((S60->screenHeightInPixels - height()) >> 1);
+                    p.setX(qMax(0,scrollbarWidth + cbaRect.Width()));
+                    break;
+                }
+            } else {
+                p.setY((S60->screenHeightInPixels - height()) >> 1);
+                p.setX(qMax(0,S60->screenWidthInPixels - width()));
             }
         }
         move(p);

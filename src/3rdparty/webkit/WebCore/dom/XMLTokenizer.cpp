@@ -51,7 +51,6 @@
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "TextResourceDecoder.h"
-#include <wtf/Platform.h>
 #include <wtf/StringExtras.h>
 #include <wtf/Threading.h>
 #include <wtf/Vector.h>
@@ -91,7 +90,8 @@ void XMLTokenizer::pushCurrentNode(Node* n)
 
 void XMLTokenizer::popCurrentNode()
 {
-    ASSERT(m_currentNode);
+    if (!m_currentNode)
+        return;
     ASSERT(m_currentNodeStack.size());
 
     if (m_currentNode != m_doc)
@@ -133,8 +133,8 @@ void XMLTokenizer::write(const SegmentedString& s, bool /*appendData*/)
     
     doWrite(s.toString());
     
-    // After parsing, go ahead and dispatch image beforeload/load events.
-    ImageLoader::dispatchPendingEvents();
+    // After parsing, go ahead and dispatch image beforeload events.
+    ImageLoader::dispatchPendingBeforeLoadEvents();
 }
 
 void XMLTokenizer::handleError(ErrorType type, const char* m, int lineNumber, int columnNumber)
@@ -205,7 +205,11 @@ void XMLTokenizer::exitText()
 void XMLTokenizer::end()
 {
     doEnd();
-    
+
+    // doEnd() could process a script tag, thus pausing parsing.
+    if (m_parserPaused)
+        return;
+
     if (m_sawError)
         insertErrorMessageBlock();
     else {

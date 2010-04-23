@@ -60,6 +60,8 @@
 
 #include <QtCore/qdatetime.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QBearerEngineImpl;
@@ -69,7 +71,7 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
     Q_OBJECT
 public:
     QNetworkSessionPrivateImpl()
-    :   startTime(0)
+    :   startTime(0), sessionTimeout(-1)
     {
     }
 
@@ -83,7 +85,9 @@ public:
     //notification hooks to discover future state changes.
     void syncStateWithInterface();
 
+#ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface currentInterface() const;
+#endif
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
 
@@ -108,23 +112,26 @@ private:
 
 private Q_SLOTS:
     void networkConfigurationsChanged();
-    void configurationChanged(const QNetworkConfiguration &config);
+    void configurationChanged(QNetworkConfigurationPrivatePointer config);
     void forcedSessionClose(const QNetworkConfiguration &config);
     void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
+    void decrementTimeout();
 
 private:
-    QNetworkConfigurationManager manager;
-
-    bool opened;
-
     QBearerEngineImpl *engine;
+
+    quint64 startTime;
 
     QNetworkSession::SessionError lastError;
 
-    quint64 startTime;
+    int sessionTimeout;
+
+    bool opened;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKSESSION_IMPL_H
 

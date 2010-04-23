@@ -1,5 +1,5 @@
 //![0]
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     id: page
@@ -11,15 +11,14 @@ Rectangle {
         text: "Hello world!"
         font.pointSize: 24; font.bold: true
         y: 30; anchors.horizontalCenter: page.horizontalCenter
-        transformOrigin: Item.Center
 
 //![1]
-        MouseArea { id: mouseRegion; anchors.fill: parent }
+        MouseArea { id: mouseArea; anchors.fill: parent }
 //![1]
 
 //![2]
         states: State {
-            name: "down"; when: mouseRegion.pressed == true
+            name: "down"; when: mouseArea.pressed == true
             PropertyChanges { target: helloText; y: 160; rotation: 180; color: "red" }
         }
 //![2]
@@ -37,15 +36,15 @@ Rectangle {
 
     Grid {
         id: colorPicker
-        anchors.bottom: page.bottom
+        x: 4; anchors.bottom: page.bottom; anchors.bottomMargin: 4
         rows: 2; columns: 3; spacing: 3
 
-        Cell { color: "red"; onClicked: helloText.color = color }
-        Cell { color: "green"; onClicked: helloText.color = color }
-        Cell { color: "blue"; onClicked: helloText.color = color }
-        Cell { color: "yellow"; onClicked: helloText.color = color }
-        Cell { color: "steelblue"; onClicked: helloText.color = color }
-        Cell { color: "black"; onClicked: helloText.color = color }
+        Cell { cellColor: "red"; onClicked: helloText.color = cellColor }
+        Cell { cellColor: "green"; onClicked: helloText.color = cellColor }
+        Cell { cellColor: "blue"; onClicked: helloText.color = cellColor }
+        Cell { cellColor: "yellow"; onClicked: helloText.color = cellColor }
+        Cell { cellColor: "steelblue"; onClicked: helloText.color = cellColor }
+        Cell { cellColor: "black"; onClicked: helloText.color = cellColor }
     }
 }
 //![0]

@@ -42,17 +42,28 @@
 #ifndef QNETWORKCONFIGURATIONMANAGER_H
 #define QNETWORKCONFIGURATIONMANAGER_H
 
+#ifdef QT_MOBILITY_BEARER
+# include "qmobilityglobal.h"
+#endif
+
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_HEADER
 
+#ifndef QT_MOBILITY_BEARER
 QT_BEGIN_NAMESPACE
-
+#define QNetworkConfigurationManagerExport Q_NETWORK_EXPORT
 QT_MODULE(Network)
+#else
+QTM_BEGIN_NAMESPACE
+#define QNetworkConfigurationManagerExport Q_BEARER_EXPORT
+#endif
 
 class QNetworkConfigurationManagerPrivate;
-class Q_NETWORK_EXPORT QNetworkConfigurationManager : public QObject
+class QNetworkConfigurationManagerExport QNetworkConfigurationManager : public QObject
 {
     Q_OBJECT
 
@@ -64,7 +75,8 @@ public:
          SystemSessionSupport = 0x00000004,
          ApplicationLevelRoaming = 0x00000008,
          ForcedRoaming = 0x00000010,
-         DataStatistics = 0x00000020
+         DataStatistics = 0x00000020,
+         NetworkSessionRequired = 0x00000040
     };
 
     Q_DECLARE_FLAGS(Capabilities, Capability)
@@ -93,9 +105,15 @@ Q_SIGNALS:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)
 
+#ifndef QT_MOBILITY_BEARER
 QT_END_NAMESPACE
+#else
+QTM_END_NAMESPACE
+#endif
 
 QT_END_HEADER
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKCONFIGURATIONMANAGER_H
 

@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1366"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -12,52 +12,52 @@
 <context>
     <name>BatchTranslationDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/batchtranslation.ui" line="+54"/>
+        <location filename="../tools/linguist/linguist/batchtranslation.ui"/>
         <source>Qt Linguist - Batch Translation</source>
         <translation>Qt Linguist - Пакетный перевод</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Options</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Set translated entries to finished</source>
         <translation>Помечать переведенные записи как завершённые</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Retranslate entries with existing translation</source>
         <translation>Переводить записи, уже имеющие перевод</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Translate also finished entries</source>
         <translation>Также переводить записи с завершёнными переводами</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>Phrase book preference</source>
-        <translation>Предпочитаемые разговорники</translation>
+        <translation>Предпочитаемые глоссарии</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>Move up</source>
         <translation>Поднять</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Move down</source>
         <translation>Опустить</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location/>
         <source>&amp;Run</source>
         <translation>&amp;Выполнить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -91,14 +91,14 @@
         </translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/batchtranslation.ui" line="-126"/>
+        <location filename="../tools/linguist/linguist/batchtranslation.ui"/>
         <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked</source>
         <translation>Имейте в виду, что изменённые записи будут отмечены как незавершённые, если не включен параметр &quot;Помечать переведенные записи как завершённые&quot;</translation>
     </message>
     <message>
-        <location line="+85"/>
+        <location/>
         <source>The batch translator will search through the selected phrase books in the order given above</source>
-        <translation>Пакетный переводчик будет искать в выбранных разговорниках в указанном выше порядке</translation>
+        <translation>Пакетный переводчик будет искать в выбранных глоссариях в указанном выше порядке</translation>
     </message>
 </context>
 <context>
@@ -110,11 +110,17 @@
     </message>
     <message>
         <location line="+4"/>
+        <location line="+8"/>
         <source>&lt;p&gt;[more duplicates omitted]</source>
         <translation>&lt;p&gt;[остальные повторы не указаны]</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-5"/>
+        <source>&lt;p&gt;* ID: %1</source>
+        <translation>&lt;p&gt;* ID: %1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>&lt;p&gt;* Context: %1&lt;br&gt;* Source: %2</source>
         <translation>&lt;p&gt;* Контекст: %1&lt;br&gt;* Источник: %2</translation>
     </message>
@@ -124,7 +130,7 @@
         <translation>&lt;br&gt;* Комментарий: %3</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+71"/>
         <source>Linguist does not know the plural rules for &apos;%1&apos;.
 Will assume a single universal form.</source>
         <translation>Qt Linguist не знает правила множественных форм для &apos;%1&apos;.
@@ -161,7 +167,7 @@ Will assume a single universal form.</source>
     <message>
         <location line="+3"/>
         <source>A phrase book suggestion for &apos;%1&apos; was ignored.</source>
-        <translation>Предложение разговорника для &apos;%1&apos; пропущено.</translation>
+        <translation>Предложение глоссария для &apos;%1&apos; пропущено.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -188,92 +194,92 @@ Will assume a single universal form.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/finddialog.ui" line="+60"/>
+        <location filename="../tools/linguist/linguist/finddialog.ui"/>
         <source>Find</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>This window allows you to search for some text in the translation source file.</source>
         <translation>Данное окно позволяет искать текст в файле перевода.</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location/>
         <source>&amp;Find what:</source>
         <translation>&amp;Искать:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Type in the text to search for.</source>
         <translation>Введите искомый текст.</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>Options</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Source texts are searched when checked.</source>
         <translation>Если отмечено, поиск будет вестись в исходных текстах.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Source texts</source>
         <translation>&amp;Исходные тексты</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Translations are searched when checked.</source>
         <translation>Если отмечено, поиск будет вестись в переведённых текстах.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Translations</source>
         <translation>&amp;Переводы</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Texts such as &apos;TeX&apos; and &apos;tex&apos; are considered as different when checked.</source>
         <translation>Если отмечено, строки &quot;ПрИмЕр&quot; и &quot;пример&quot; будет считаться разными.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Match case</source>
         <translation>С учётом &amp;регистра</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Comments and contexts are searched when checked.</source>
         <translation>Если отмечено, поиск будет вестись по контекстам и комментариям.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Comments</source>
         <translation>&amp;Комментарии</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Ignore &amp;accelerators</source>
         <translation>Пропускать &amp;акселераторы</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location/>
         <source>Click here to find the next occurrence of the text you typed in.</source>
         <translation>Найти следующее совпадение для введённого текста.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Find Next</source>
         <translation>Найти далее</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Click here to close this window.</source>
         <translation>Закрыть окно.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -281,7 +287,7 @@ Will assume a single universal form.</source>
 <context>
     <name>FormMultiWidget</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+296"/>
+        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+302"/>
         <source>Alt+Delete</source>
         <extracomment>translate, but don&apos;t change</extracomment>
         <translation type="unfinished"></translation>
@@ -306,23 +312,27 @@ Will assume a single universal form.</source>
     <message>
         <location line="+1"/>
         <source>Delete non-empty length variant?</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить непустой вариант длины?</translation>
     </message>
 </context>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+747"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+763"/>
         <source>Dropped %n message(s) which had no ID.</source>
         <translation type="unfinished">
-            <numerusform></numerusform>
+            <numerusform>Удалено %n сообщение, у которого не было ID.</numerusform>
+            <numerusform>Удалено %n сообщения, у которых не было ID.</numerusform>
+            <numerusform>Удалено %n сообщений, у которых не было ID.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location line="+4"/>
         <source>Excess context/disambiguation dropped from %n message(s).</source>
         <translation type="unfinished">
-            <numerusform></numerusform>
+            <numerusform>Удалён лишний контекст из %n сообщения.</numerusform>
+            <numerusform>Удалён лишний контекст из %n сообщений.</numerusform>
+            <numerusform>Удалён лишний контекст из %n сообщений.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -355,14 +365,14 @@ Will assume a single universal form.</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1315"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1324"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translatorcomment>Основное окно программы.</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location line="+158"/>
+        <location line="+160"/>
         <source>Source text</source>
         <translation>Исходный текст</translation>
     </message>
@@ -374,27 +384,27 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location line="-2"/>
-        <location line="+62"/>
+        <location line="+63"/>
         <source>Context</source>
         <translation>Контекст</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-62"/>
         <source>Items</source>
         <translation>Записи</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+79"/>
         <source>This panel lists the source contexts.</source>
         <translation>В данной панели перечислены исходные контексты.</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+13"/>
         <source>Strings</source>
         <translation>Строки</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+37"/>
         <source>Phrases and guesses</source>
         <translation>Фразы и похожие переводы</translation>
     </message>
@@ -415,7 +425,7 @@ Will assume a single universal form.</source>
         <translation> ИЗМ </translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+139"/>
         <source>Loading...</source>
         <translation>Загрузка...</translation>
     </message>
@@ -453,7 +463,7 @@ Skip loading the first named file?</source>
         </translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+94"/>
         <source>Related files (%1);;</source>
         <translation>Связанные файлы (%1);;</translation>
     </message>
@@ -469,7 +479,7 @@ Skip loading the first named file?</source>
         <translation>Файл сохранён.</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui" line="+247"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
         <location line="+1165"/>
         <source>Release</source>
@@ -586,29 +596,29 @@ All files (*)</source>
     <message>
         <location line="+30"/>
         <source>Create New Phrase Book</source>
-        <translation>Создать разговорник</translation>
+        <translation>Создать глоссарий</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph)
 All files (*)</source>
-        <translation>Разговорники Qt (*.qph)
+        <translation>Глоссарии Qt (*.qph)
 Все файлы (*)</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Phrase book created.</source>
-        <translation>Разговорник создан.</translation>
+        <translation>Глоссарий создан.</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Open Phrase Book</source>
-        <translation>Открыть разговорник</translation>
+        <translation>Открыть глоссарий</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph);;All files (*)</source>
-        <translation>Разговорники Qt (*.qph);;Все файлы (*)</translation>
+        <translation>Глоссарии Qt (*.qph);;Все файлы (*)</translation>
     </message>
     <message numerus="yes">
         <location line="+7"/>
@@ -624,22 +634,22 @@ All files (*)</source>
         <location line="+3"/>
         <location line="+7"/>
         <source>Add to phrase book</source>
-        <translation>Добавить в разговорник</translation>
+        <translation>Добавить в глоссарий</translation>
     </message>
     <message>
         <location line="-9"/>
         <source>No appropriate phrasebook found.</source>
-        <translation>Подходящий разговорник не найден.</translation>
+        <translation>Подходящий глоссарий не найден.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Adding entry to phrasebook %1</source>
-        <translation>Добавление записи в разговорник %1</translation>
+        <translation>Добавление записи в глоссарий %1</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Select phrase book to add to</source>
-        <translation>Выберите разговорник, в который желаете добавить фразу</translation>
+        <translation>Выберите глоссарий, в который желаете добавить фразу</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -739,15 +749,14 @@ All files (*)</source>
         <translation>&amp;Сохранить</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui" line="-11"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-14"/>
         <location line="+11"/>
         <source>Save &amp;As...</source>
         <translation>Сохранить &amp;как...</translation>
     </message>
     <message>
-        <location line="+508"/>
-        <location line="+3"/>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-9"/>
         <location line="+10"/>
         <source>Release As...</source>
@@ -765,7 +774,7 @@ All files (*)</source>
         <translation>Сохранить все</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui" line="+118"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>&amp;Release All</source>
         <translation>С&amp;компилировать все</translation>
@@ -796,13 +805,13 @@ All files (*)</source>
         <translation>&amp;Найти и перевести в &apos;%1&apos;...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui" line="-32"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+2"/>
         <source>Translation File &amp;Settings...</source>
         <translation>&amp;Параметры файла перевода...</translation>
     </message>
     <message>
-        <location line="-100"/>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>&amp;Batch Translation...</source>
         <translation>Пак&amp;етный перевод...</translation>
@@ -813,31 +822,31 @@ All files (*)</source>
         <translation>&amp;Найти и перевести...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui" line="+28"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+51"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+7"/>
         <source>Edit</source>
         <translation>Правка</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Translation</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Validation</source>
         <translation>Проверка</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+7"/>
         <source>Help</source>
         <translation>Справка</translation>
@@ -845,658 +854,655 @@ All files (*)</source>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+84"/>
         <source>Cannot read from phrase book &apos;%1&apos;.</source>
-        <translation>Не удалось прочитать из разговорника &apos;%1&apos;.</translation>
+        <translation>Не удалось прочитать из глоссария &apos;%1&apos;.</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Close this phrase book.</source>
-        <translation>Закрыть разговорник.</translation>
+        <translation>Закрыть глоссарий.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Enables you to add, modify, or delete entries in this phrase book.</source>
-        <translation>Позволяет добавлять, изменять и удалять записи в разговорнике.</translation>
+        <translation>Позволяет добавлять, изменять и удалять записи в глоссарии.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Print the entries in this phrase book.</source>
-        <translation>Печать записей фраз разговорника.</translation>
+        <translation>Печать записей фраз глоссария.</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Cannot create phrase book &apos;%1&apos;.</source>
-        <translation>Не удалось создать разговорник &apos;%1&apos;.</translation>
+        <translation>Не удалось создать глоссарий &apos;%1&apos;.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Do you want to save phrase book &apos;%1&apos;?</source>
-        <translation>Желаете сохранить разговорник &apos;%1&apos;?</translation>
+        <translation>Желаете сохранить глоссарий &apos;%1&apos;?</translation>
     </message>
     <message>
-        <location line="+323"/>
+        <location line="+349"/>
         <source>All</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui" line="-751"/>
+        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>MainWindow</source>
         <translation>Главное окно</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>&amp;Phrases</source>
         <translation>Фра&amp;зы</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location/>
         <source>&amp;Close Phrase Book</source>
-        <translation>&amp;Закрыть разговорник</translation>
+        <translation>&amp;Закрыть глоссарий</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>&amp;Edit Phrase Book</source>
-        <translation>&amp;Редактироваь разговорник</translation>
+        <translation>&amp;Редактироваь глоссарий</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>&amp;Print Phrase Book</source>
-        <translation>&amp;Печатать разговорник</translation>
+        <translation>&amp;Печатать глоссарий</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>V&amp;alidation</source>
         <translation>П&amp;роверка</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>&amp;View</source>
         <translation>&amp;Вид</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location/>
         <source>Vie&amp;ws</source>
         <translation>Вид&amp;ы</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>&amp;Toolbars</source>
         <translation>Пан&amp;ели инструментов</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>&amp;Help</source>
         <translation>&amp;Справка</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>&amp;Translation</source>
         <translation>П&amp;еревод</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location/>
         <source>Recently Opened &amp;Files</source>
         <translation>Недавно открытые &amp;файлы</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location/>
         <source>&amp;Edit</source>
         <translation>&amp;Правка</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location/>
         <source>&amp;Open...</source>
         <translation>&amp;Открыть...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Open a Qt translation source file (TS file) for editing</source>
         <translation>Открыть исходный файл переводов Qt (файл TS) для изменения</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>E&amp;xit</source>
         <translation>В&amp;ыход</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Close this window and exit.</source>
         <translation>Закрыть окно и выйти.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+Q</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Save changes made to this Qt translation source file</source>
         <translation>Сохранить изменения в данном исходном файле перевода Qt</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Save As...</source>
         <translation>Сохранить как...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Save changes made to this Qt translation source file into a new file.</source>
         <translation>Сохранить изменения в данном исходном файле перевода Qt в новый файл.</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Create a Qt message file suitable for released applications from the current message file.</source>
         <translation>Скомпилировать файл перевода Qt из текущего файла.</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>&amp;Print...</source>
         <translation>&amp;Печать...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Print a list of all the translation units in the current translation source file.</source>
         <translation>Печать списка всех записей перевода из текущего файла.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+P</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;Undo</source>
         <translation>&amp;Отменить</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Undo the last editing operation performed on the current translation.</source>
         <translation>Отменить последнее изменение текущего перевода.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+Z</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Redo</source>
         <translation>&amp;Повторить</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Redo an undone editing operation performed on the translation.</source>
         <translation>Повторить отменённую правку перевода.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>Cu&amp;t</source>
         <translation>Выр&amp;езать</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Copy the selected translation text to the clipboard and deletes it.</source>
         <translation>Скопировать отмеченный текст в буфер обмена и удалить его из оригинала.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Copy</source>
         <translation>&amp;Копировать</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Copy the selected translation text to the clipboard.</source>
         <translation>Скопировать отмеченный текст в буфер обмена.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Paste</source>
         <translation>&amp;Вставить</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Paste the clipboard text into the translation.</source>
         <translation>Вставить текст из буфера обмена в перевод.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+V</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>Select &amp;All</source>
         <translation>В&amp;ыделить всё</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Select the whole translation text.</source>
         <translation>Выделить весь текст перевода.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Find...</source>
         <translation>&amp;Найти...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Search for some text in the translation source file.</source>
         <translation>Найти текст в исходном файле перевода.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+F</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>Find &amp;Next</source>
         <translation>Найти д&amp;алее</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Continue the search where it was left.</source>
         <translation>Продолжить поиск с места, где он был остановлен.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>F3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;Prev Unfinished</source>
         <translation>&amp;Предыдущий незавершённый</translation>
     </message>
     <message>
-        <location line="+348"/>
+        <location/>
         <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the TS file.</source>
         <translation>Создание готового файла перевода Qt из текущего файла. Имя файла будет автоматически определено из имени .ts файла.</translation>
     </message>
     <message>
-        <location line="+136"/>
+        <location/>
         <source>Length Variants</source>
-        <translation type="unfinished"></translation>
+        <translation>Варианты длины</translation>
     </message>
     <message>
-        <location line="-478"/>
+        <location/>
         <source>Move to the previous unfinished item.</source>
         <translation>Перейти к предыдущему незавершённому переводу.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+K</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;Next Unfinished</source>
         <translation>&amp;Следующий незавершённый</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Move to the next unfinished item.</source>
         <translation>Перейти к следующему незавершённому переводу.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+J</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>P&amp;rev</source>
         <translation>Пр&amp;едыдущий</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Move to the previous item.</source>
         <translation>Перейти к предыдущему переводу.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+Shift+K</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Ne&amp;xt</source>
         <translation>С&amp;ледующий</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Move to the next item.</source>
         <translation>Перейти к следующему переводу.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+Shift+J</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Done and Next</source>
         <translation>&amp;Готово и далее</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Mark this item as done and move to the next unfinished item.</source>
         <translation>Пометить перевод как завершённый и перейти к следующему незавершённому.</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <location line="+3"/>
+        <location/>
         <source>Copy from source text</source>
         <translation>Скопировать из исходного текста</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Copies the source text into the translation field.</source>
         <translation>Скопировать исходный текст в поле перевода.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Accelerators</source>
         <translation>&amp;Акселераторы</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
         <translation>Переключение проверки акселераторов, т.е. совпадает ли количество амперсандов в исходном и переведённом текстах. Если выявлено несовпадение, будет показано сообщение в окне предупреждений.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Ending Punctuation</source>
         <translation>&amp;Знаки препинания</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</source>
         <translation>Переключение проверки знаков препинания в конце текста. Если выявлено несовпадение, будет показано сообщение в окне предупреждений.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Phrase matches</source>
         <translation>Совпадение &amp;фраз</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
         <translation>Переключение проверки использования предложений для фраз. Если выявлено несовпадение, будет показано сообщение в окне предупреждений.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>Place &amp;Marker Matches</source>
         <translation>Совпадение &amp;маркеров</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
         <translation>Переключение проверки маркеров форматирования, т.е. все ли маркеры (%1, %2, ...) исходного текста присутствуют в переведённом. Если выявлено несовпадение, будет показано сообщение в окне предупреждений.</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;New Phrase Book...</source>
-        <translation>&amp;Новый разговорник...</translation>
+        <translation>&amp;Новый глоссарий...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Create a new phrase book.</source>
-        <translation>Создать разговорник.</translation>
+        <translation>Создать глоссарий.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;Open Phrase Book...</source>
-        <translation>&amp;Открыть разговорник...</translation>
+        <translation>&amp;Открыть глоссарий...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Open a phrase book to assist translation.</source>
-        <translation>Открыть разговорник для помощи в переводе.</translation>
+        <translation>Открыть глоссарий для помощи в переводе.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+H</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>&amp;Reset Sorting</source>
         <translation>&amp;Сброс сортировки</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Sort the items back in the same order as in the message file.</source>
         <translation>Упорядочить элементы в той последовательности, в которой они находятся в файле.</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>&amp;Display guesses</source>
         <translation>&amp;Предлагать похожие</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Set whether or not to display translation guesses.</source>
         <translation>Определяет необходимо или нет отображать похожие переводы.</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>&amp;Statistics</source>
         <translation>&amp;Статистика</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Display translation statistics.</source>
         <translation>Показать статистику перевода.</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;Manual</source>
         <translation>&amp;Руководство</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>F1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>About Qt Linguist</source>
         <translation>О Qt Linguist</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>About Qt</source>
         <translation>О Qt</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Display information about the Qt toolkit by Trolltech.</source>
         <translation>Показать информацию об инструментарии Qt от Nokia.</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>&amp;What&apos;s This?</source>
         <translation>&amp;Что это?</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+3"/>
+        <location/>
         <source>What&apos;s This?</source>
         <translation>Что это?</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Enter What&apos;s This? mode.</source>
         <translation>Переход в режим &quot;Что это?&quot;.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Shift+F1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>&amp;Search And Translate...</source>
         <translation>&amp;Найти и перевести...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Replace the translation on all entries that matches the search source text.</source>
         <translation>Заменить перевод всех записей, которые совпадают с искомым исходным текстом.</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Batch translate all entries using the information in the phrase books.</source>
-        <translation>Перевести все записи в пакетном режиме, используя информацию из разговорника.</translation>
+        <translation>Перевести все записи в пакетном режиме, используя информацию из глоссария.</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location/>
         <source>Open/Refresh Form &amp;Preview</source>
         <translation>Открыть/обновить предпрос&amp;мотр формы</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+3"/>
+        <location/>
         <source>Form Preview Tool</source>
         <translation>Инструмент предпросмотра форм</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>F5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>&amp;Add to Phrase Book</source>
-        <translation>&amp;Добавить в разговорник</translation>
+        <translation>&amp;Добавить в глоссарий</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+T</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Open Read-O&amp;nly...</source>
         <translation>Открыть только для &amp;чтения...</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>&amp;Save All</source>
         <translation>&amp;Сохранить все</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>&amp;Close All</source>
         <translation>&amp;Закрыть все</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+W</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-473"/>
+        <location/>
         <source>Previous unfinished item</source>
         <translation>Предыдущий незавершённый перевод</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Next unfinished item</source>
         <translation>Следующий незавершённый перевод</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Move to previous item</source>
         <translation>Перейти к предыдущему переводу</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Next item</source>
         <translation>Следующий перевод</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Mark item as done and move to the next unfinished item</source>
         <translation>Пометить перевод как завершённый и перейти к следующему незавершённому</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Copies the source text into the translation field</source>
         <translation>Скопировать исходный текст в поле перевода</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>Toggle the validity check of accelerators</source>
         <translation>Переключение проверки акселераторов</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Toggle the validity check of ending punctuation</source>
         <translation>Переключение проверки знаков препинания в конце текста</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Toggle checking that phrase suggestions are used</source>
         <translation>Переключение проверки использования предложений для фраз</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Toggle the validity check of place markers</source>
         <translation>Переключение проверки маркеров форматирования</translation>
     </message>
@@ -1541,12 +1547,12 @@ All files (*)</source>
         <translation>Китайский</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+47"/>
         <source>This whole panel allows you to view and edit the translation of some source text.</source>
         <translation>Данная панель позволяет просматривать и редактировать перевод исходного текста.</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+10"/>
         <source>Source text</source>
         <translation>Исходный текст</translation>
     </message>
@@ -1581,7 +1587,7 @@ All files (*)</source>
         <translation>Здесь вы можете оставить комментарий для собственного использования. Комментарии не влияют на перевод приложений.</translation>
     </message>
     <message>
-        <location line="+232"/>
+        <location line="+234"/>
         <source>%1 translation (%2)</source>
         <translation>%1 перевод (%2)</translation>
     </message>
@@ -1611,7 +1617,7 @@ Line: %2</source>
 <context>
     <name>MessageModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+839"/>
         <source>Completion status for %1</source>
         <translation>Состояние завершённости для %1</translation>
     </message>
@@ -1657,90 +1663,90 @@ Line: %2</source>
     <message>
         <location line="+1"/>
         <source>Cannot save phrase book &apos;%1&apos;.</source>
-        <translation>Не удалось сохранить разговорник &apos;%1&apos;.</translation>
+        <translation>Не удалось сохранить глоссарий &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.ui" line="+54"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.ui"/>
         <source>Edit Phrase Book</source>
-        <translation>Правка разговорника</translation>
+        <translation>Правка глоссария</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
-        <translation>Данное окно позволяет добавлять, изменять и удалять записи в разговорнике.</translation>
+        <translation>Данное окно позволяет добавлять, изменять и удалять записи в глоссарии.</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Translation:</source>
         <translation>&amp;Перевод:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>This is the phrase in the target language corresponding to the source phrase.</source>
         <translation>Перевод, соответствующий исходной фразе.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>S&amp;ource phrase:</source>
         <translation>&amp;Исходная фраза:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>This is a definition for the source phrase.</source>
         <translation>Определение исходной фразы.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>This is the phrase in the source language.</source>
         <translation>Фраза на исходном языке.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>&amp;Definition:</source>
         <translation>&amp;Определение:</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>Click here to add the phrase to the phrase book.</source>
-        <translation>Добавить фразу в разговорник.</translation>
+        <translation>Добавить фразу в глоссарий.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;New Entry</source>
         <translation>Новая &amp;запись</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Click here to remove the entry from the phrase book.</source>
-        <translation>Удалить фразу из разговорника.</translation>
+        <translation>Удалить фразу из глоссария.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Remove Entry</source>
         <translation>&amp;Удалить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Settin&amp;gs...</source>
         <translation>&amp;Настройки...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Click here to save the changes made.</source>
         <translation>Сохранить изменения.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&amp;Save</source>
         <translation>&amp;Сохранить</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Click here to close this window.</source>
         <translation>Закрыть окно.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
@@ -1789,7 +1795,7 @@ Line: %2</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1816"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1842"/>
         <source>Translation files (%1);;</source>
         <translation>Файлы перевода (%1);;</translation>
     </message>
@@ -1799,8 +1805,8 @@ Line: %2</source>
         <translation>Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1118"/>
-        <location line="+18"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1134"/>
+        <location line="+27"/>
         <location line="+67"/>
         <location line="+39"/>
         <location line="+17"/>
@@ -1820,9 +1826,9 @@ Line: %2</source>
         <translation>Скомпилированные переводы Qt</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qph.cpp" line="+183"/>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+195"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
-        <translation>&apos;Разговорник&apos; Qt Linguist</translation>
+        <translation>&apos;Глоссарий&apos; Qt Linguist</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
@@ -1866,47 +1872,42 @@ Line: %2</source>
 <context>
     <name>Statistics</name>
     <message>
-        <location filename="../tools/linguist/linguist/statistics.ui" line="+54"/>
+        <location filename="../tools/linguist/linguist/statistics.ui"/>
         <source>Statistics</source>
         <translation>Статистика</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location/>
         <source>Translation</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Source</source>
         <translation>Источник</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+7"/>
-        <location line="+14"/>
-        <location line="+7"/>
-        <location line="+21"/>
-        <location line="+7"/>
+        <location/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location line="-42"/>
+        <location/>
         <source>Words:</source>
         <translation>Слов:</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location/>
         <source>Characters:</source>
         <translation>Символов:</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Characters (with spaces):</source>
         <translation>Символов (с пробелами):</translation>
     </message>
@@ -1914,73 +1915,72 @@ Line: %2</source>
 <context>
     <name>TranslateDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translatedialog.ui" line="+60"/>
+        <location filename="../tools/linguist/linguist/translatedialog.ui"/>
         <source>This window allows you to search for some text in the translation source file.</source>
         <translation>Данное окно позволяет искать текст в файле перевода.</translation>
     </message>
     <message>
-        <location line="+28"/>
-        <location line="+27"/>
+        <location/>
         <source>Type in the text to search for.</source>
         <translation>Введите искомый текст.</translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location/>
         <source>Find &amp;source text:</source>
         <translation>&amp;Найти текст:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Translate to:</source>
         <translation>&amp;Перевести как:</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Search options</source>
         <translation>Параметры поиска</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Texts such as &apos;TeX&apos; and &apos;tex&apos; are considered as different when checked.</source>
         <translation>Если отмечено, строки &quot;ПрИмЕр&quot; и &quot;пример&quot; будет считаться разными.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Match &amp;case</source>
         <translation>С учётом &amp;регистра</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Mark new translation as &amp;finished</source>
         <translation>Помечать перевод как завер&amp;шённый</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location/>
         <source>Click here to find the next occurrence of the text you typed in.</source>
         <translation>Найти следующее совпадение для введённого текста.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Find Next</source>
         <translation>Найти далее</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Translate</source>
         <translation>Перевести</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Translate All</source>
         <translation>Перевести все</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Click here to close this window.</source>
         <translation>Закрыть окно.</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -1988,34 +1988,32 @@ Line: %2</source>
 <context>
     <name>TranslationSettingsDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettings.ui" line="+20"/>
+        <location filename="../tools/linguist/linguist/translationsettings.ui"/>
         <source>Source language</source>
         <translation>Исходный язык</translation>
     </message>
     <message>
-        <location line="+15"/>
-        <location line="+38"/>
+        <location/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location line="-25"/>
-        <location line="+38"/>
+        <location/>
         <source>Country/Region</source>
         <translation>Страна/Регион</translation>
     </message>
     <message>
-        <location line="-28"/>
+        <location/>
         <source>Target language</source>
         <translation>Язык перевода</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
+        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+93"/>
         <source>Any Country</source>
         <translation>Любая страна</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-22"/>
         <location line="+8"/>
         <source>Settings for &apos;%1&apos; - Qt Linguist</source>
         <translation>Настройки для &apos;%1&apos; - Qt Linguist</translation>

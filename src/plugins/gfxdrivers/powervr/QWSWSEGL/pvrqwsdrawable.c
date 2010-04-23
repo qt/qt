@@ -95,7 +95,7 @@ static int pvrQwsInitFbScreen(int screen)
     width = var.xres;
     height = var.yres;
     bytesPerPixel = var.bits_per_pixel / 8;
-    stride = var.xres * bytesPerPixel;
+    stride = fix.line_length;
     format = PVR2D_1BPP;
     if (var.bits_per_pixel == 16) {
         if (var.red.length == 5 && var.green.length == 6 &&

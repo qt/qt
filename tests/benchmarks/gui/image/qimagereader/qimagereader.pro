@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = tst_qimagereader
+TARGET = tst_bench_qimagereader
 
 SOURCES += tst_qimagereader.cpp
 

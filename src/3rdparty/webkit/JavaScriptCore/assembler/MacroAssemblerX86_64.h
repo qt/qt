@@ -26,9 +26,7 @@
 #ifndef MacroAssemblerX86_64_h
 #define MacroAssemblerX86_64_h
 
-#include <wtf/Platform.h>
-
-#if ENABLE(ASSEMBLER) && PLATFORM(X86_64)
+#if ENABLE(ASSEMBLER) && CPU(X86_64)
 
 #include "MacroAssemblerX86Common.h"
 
@@ -190,33 +188,6 @@ public:
     void orPtr(Imm32 imm, RegisterID dest)
     {
         m_assembler.orq_ir(imm.m_value, dest);
-    }
-
-    void rshiftPtr(RegisterID shift_amount, RegisterID dest)
-    {
-        // On x86 we can only shift by ecx; if asked to shift by another register we'll
-        // need rejig the shift amount into ecx first, and restore the registers afterwards.
-        if (shift_amount != X86Registers::ecx) {
-            swap(shift_amount, X86Registers::ecx);
-
-            // E.g. transform "shll %eax, %eax" -> "xchgl %eax, %ecx; shll %ecx, %ecx; xchgl %eax, %ecx"
-            if (dest == shift_amount)
-                m_assembler.sarq_CLr(X86Registers::ecx);
-            // E.g. transform "shll %eax, %ecx" -> "xchgl %eax, %ecx; shll %ecx, %eax; xchgl %eax, %ecx"
-            else if (dest == X86Registers::ecx)
-                m_assembler.sarq_CLr(shift_amount);
-            // E.g. transform "shll %eax, %ebx" -> "xchgl %eax, %ecx; shll %ecx, %ebx; xchgl %eax, %ecx"
-            else
-                m_assembler.sarq_CLr(dest);
-        
-            swap(shift_amount, X86Registers::ecx);
-        } else
-            m_assembler.sarq_CLr(dest);
-    }
-
-    void rshiftPtr(Imm32 imm, RegisterID dest)
-    {
-        m_assembler.sarq_i8r(imm.m_value, dest);
     }
 
     void subPtr(RegisterID src, RegisterID dest)

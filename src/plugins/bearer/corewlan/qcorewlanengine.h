@@ -46,6 +46,9 @@
 
 #include <QMap>
 #include <QTimer>
+#include <SystemConfiguration/SystemConfiguration.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +70,7 @@ public:
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
-    void requestUpdate();
+    Q_INVOKABLE void requestUpdate();
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
@@ -77,7 +80,7 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    bool getAllScInterfaces();
+    bool requiresPolling() const;
 
 private Q_SLOTS:
     void doRequestUpdate();
@@ -85,15 +88,27 @@ private Q_SLOTS:
 private:
     bool isWifiReady(const QString &dev);
     QMap<QString, QString> configurationInterface;
-    QTimer pollTimer;
     QStringList scanForSsids(const QString &interfaceName);
 
-    bool isKnownSsid(const QString &interfaceName, const QString &ssid);
+    bool isKnownSsid(const QString &ssid);
     QList<QNetworkConfigurationPrivate *> foundConfigurations;
 
+    SCDynamicStoreRef storeSession;
+    CFRunLoopSourceRef runloopSource;
+    bool hasWifi;
+
+protected:
+    QMap<QString, QMap<QString,QString> > userProfiles;
+
+    void startNetworkChangeLoop();
+    void getUserConfigurations();
+    QString getNetworkNameFromSsid(const QString &ssid);
+    QString getSsidFromNetworkName(const QString &name);
+    QStringList foundNetwork(const QString &id, const QString &ssid, const QNetworkConfiguration::StateFlags state, const QString &interfaceName, const QNetworkConfiguration::Purpose purpose);
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_BEARERMANAGEMENT
 
+#endif

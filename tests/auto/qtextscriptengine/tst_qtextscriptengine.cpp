@@ -99,6 +99,7 @@ private slots:
     void kannada();
     void malayalam();
     void sinhala();
+    void greek();
 
     void khmer();
     void linearB();
@@ -870,6 +871,8 @@ void tst_QTextScriptEngine::malayalam()
                   { 0x3f8, 0x0 } },
                 { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
                   { 0x2ff, 0x0 } },
+                { { 0xd30, 0xd4d, 0x200d, 0xd35, 0xd4d, 0xd35, 0x0 },
+                  { 0xf3, 0x350, 0x0 } },
 
                 { {0}, {0} }
             };
@@ -992,6 +995,116 @@ void tst_QTextScriptEngine::linearB()
 	} else {
 	    QSKIP("couln't find Penuturesu", SkipAll);
 	}
+    }
+#else
+    QSKIP("X11 specific test", SkipAll);
+#endif
+}
+
+#if defined(Q_WS_X11)
+static bool decomposedShaping( const QFont &f, const QChar &ch)
+{
+    QString str = QString().append(ch);
+    QTextLayout layout(str, f);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QTextLayout decomposed(str.normalized(QString::NormalizationForm_D), f);
+    QTextEngine *de = decomposed.d;
+    de->itemize();
+    de->shape(0);
+
+    if( e->layoutData->items[0].num_glyphs != de->layoutData->items[0].num_glyphs )
+        goto error;
+
+    for (int i = 0; i < e->layoutData->items[0].num_glyphs; ++i) {
+        if ((e->layoutData->glyphLayout.glyphs[i] & 0xffffff) != (de->layoutData->glyphLayout.glyphs[i] & 0xffffff))
+            goto error;
+    }
+    return true;
+ error:
+    qDebug("%s: decomposedShaping of char %4x failed, nglyphs=%d, decomposed nglyphs %d",
+           f.family().toLatin1().constData(),
+           ch.unicode(),
+           e->layoutData->items[0].num_glyphs,
+           de->layoutData->items[0].num_glyphs);
+
+    str = "";
+    int i = 0;
+    while (i < e->layoutData->items[0].num_glyphs) {
+        str += QString("%1 ").arg(e->layoutData->glyphLayout.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    composed glyph result   = %s", str.toLatin1().constData());
+    str = "";
+    i = 0;
+    while (i < de->layoutData->items[0].num_glyphs) {
+        str += QString("%1 ").arg(de->layoutData->glyphLayout.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    decomposed glyph result = %s", str.toLatin1().constData());
+    return false;
+}
+#endif
+
+
+void tst_QTextScriptEngine::greek()
+{
+#if defined(Q_WS_X11)
+    {
+        if (QFontDatabase().families(QFontDatabase::Any).contains("DejaVu Sans")) {
+            QFont f("DejaVu Sans");
+            for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+                QString str;
+                str.append(uc);
+                if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                    //qDebug() << "skipping" << hex << uc;
+                    continue;
+                }
+                if (uc == 0x1fc1 || uc == 0x1fed)
+                    continue;
+                QVERIFY( decomposedShaping(f, QChar(uc)) );
+            }
+        } else {
+            QSKIP("couln't find DejaVu Sans", SkipAll);
+        }
+    }
+
+    {
+        if (QFontDatabase().families(QFontDatabase::Any).contains("SBL Greek")) {
+            QFont f("SBL Greek");
+            for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+                QString str;
+                str.append(uc);
+                if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                    //qDebug() << "skipping" << hex << uc;
+                    continue;
+                }
+                if (uc == 0x1fc1 || uc == 0x1fed)
+                    continue;
+                QVERIFY( decomposedShaping(f, QChar(uc) ) );
+
+            }
+
+            const ShapeTable shape_table [] = {
+                { { 0x3b1, 0x300, 0x313, 0x0 },
+                  { 0xb8, 0x3d3, 0x3c7, 0x0 } },
+                { { 0x3b1, 0x313, 0x300, 0x0 },
+                  { 0xd4, 0x0 } },
+
+                { {0}, {0} }
+            };
+
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(f, s) );
+                ++s;
+            }
+        } else {
+            QSKIP("couln't find SBL_grk", SkipAll);
+        }
     }
 #else
     QSKIP("X11 specific test", SkipAll);

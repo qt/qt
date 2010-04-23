@@ -191,6 +191,9 @@ bool QHelpGenerator::generate(QHelpDataInterface *helpData,
         return false;
     }
 
+    d->query->exec(QLatin1String("PRAGMA synchronous=OFF"));
+    d->query->exec(QLatin1String("PRAGMA cache_size=3000"));
+
     addProgress(1.0);
     createTables();
     insertFileNotFoundFile();

@@ -14,8 +14,10 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QScrollArea { background:red; }
-QScrollArea .QWidget { background:transparent; }
+   <string notr="true">QScrollArea { background:red; 
+ border: 5px dashed blue; }
+QScrollArea .QWidget { background:transparent; 
+  border: 5px dotted green;}
 QScrollArea::corner { background:yellow; }
 
 
@@ -111,10 +113,10 @@ QScrollArea::corner { background:yellow; }
      <widget class="QWidget" name="scrollAreaWidgetContents">
       <property name="geometry">
        <rect>
-        <x>-60</x>
-        <y>-145</y>
-        <width>554</width>
-        <height>575</height>
+        <x>0</x>
+        <y>0</y>
+        <width>520</width>
+        <height>532</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">

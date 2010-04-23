@@ -57,22 +57,24 @@
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativeproperty.h"
-#include "qdeclarativeproperty_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaProperty>
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QDeclarativeAbstractBinding
+class Q_DECLARATIVE_EXPORT QDeclarativeAbstractBinding
 {
 public:
     QDeclarativeAbstractBinding();
-    virtual ~QDeclarativeAbstractBinding();
 
     virtual void destroy();
 
     virtual QString expression() const;
+
+    enum Type { PropertyBinding, ValueTypeProxy };
+    virtual Type bindingType() const { return PropertyBinding; }
 
     void setEnabled(bool e) { setEnabled(e, QDeclarativePropertyPrivate::DontRemoveBinding); }
     virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags) = 0;
@@ -85,11 +87,13 @@ public:
     void removeFromObject();
 
 protected:
+    virtual ~QDeclarativeAbstractBinding();
     void clear();
 
 private:
-    friend class QDeclarativeDeclarativeData;
-    friend class QDeclarativeProperty;
+
+    friend class QDeclarativeData;
+    friend class QDeclarativeValueTypeProxyBinding;
     friend class QDeclarativePropertyPrivate;
     friend class QDeclarativeVME;
 
@@ -99,16 +103,42 @@ private:
     QDeclarativeAbstractBinding  *m_nextBinding;
 };
 
+class QDeclarativeValueTypeProxyBinding : public QDeclarativeAbstractBinding
+{
+public:
+    QDeclarativeValueTypeProxyBinding(QObject *o, int coreIndex);
+
+    virtual Type bindingType() const { return ValueTypeProxy; }
+
+    virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags);
+    virtual int propertyIndex();
+    virtual void update(QDeclarativePropertyPrivate::WriteFlags);
+
+    QDeclarativeAbstractBinding *binding(int propertyIndex);
+
+protected:
+    ~QDeclarativeValueTypeProxyBinding();
+
+private:
+    void recursiveEnable(QDeclarativeAbstractBinding *, QDeclarativePropertyPrivate::WriteFlags);
+    void recursiveDisable(QDeclarativeAbstractBinding *);
+
+    friend class QDeclarativeAbstractBinding;
+    QObject *m_object;
+    int m_index;
+    QDeclarativeAbstractBinding *m_bindings;
+};
+
 class QDeclarativeContext;
 class QDeclarativeBindingPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeBinding : public QDeclarativeExpression, public QDeclarativeAbstractBinding
+class Q_DECLARATIVE_EXPORT QDeclarativeBinding : public QDeclarativeExpression, public QDeclarativeAbstractBinding
 {
 Q_OBJECT
 public:
     QDeclarativeBinding(const QString &, QObject *, QDeclarativeContext *, QObject *parent=0);
-    QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContext *, const QString &, int, 
-               QObject *parent);
-    ~QDeclarativeBinding();
+    QDeclarativeBinding(const QString &, QObject *, QDeclarativeContextData *, QObject *parent=0);
+    QDeclarativeBinding(void *, QDeclarativeRefCount *, QObject *, QDeclarativeContextData *, 
+                        const QString &, int, QObject *parent);
 
     void setTarget(const QDeclarativeProperty &);
     QDeclarativeProperty property() const;
@@ -125,6 +155,7 @@ public Q_SLOTS:
     void update() { update(QDeclarativePropertyPrivate::DontRemoveBinding); }
 
 protected:
+    ~QDeclarativeBinding();
     void emitValueChanged();
 
 private:

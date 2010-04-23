@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativerepeater_p.h"
-#include "qdeclarativerepeater_p_p.h"
+#include "private/qdeclarativerepeater_p.h"
+#include "private/qdeclarativerepeater_p_p.h"
 
-#include "qdeclarativevisualitemmodel_p.h"
-
+#include "private/qdeclarativevisualitemmodel_p.h"
+#include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativelistaccessor_p.h>
 
 #include <qlistmodelinterface_p.h>
@@ -62,10 +62,10 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlclass Repeater QDeclarativeRepeater
-  \since 4.7
+    \since 4.7
     \inherits Item
 
-    \brief The Repeater item allows you to repeat a component based on a model.
+    \brief The Repeater item allows you to repeat an Item-based component using a model.
 
     The Repeater item is used when you want to create a large number of
     similar items.  For each entry in the model, an item is instantiated
@@ -102,15 +102,24 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     The repeater instance continues to own all items it instantiates, even
     if they are otherwise manipulated.  It is illegal to manually remove an item
     created by the Repeater.
+
+    \note Repeater is Item-based, and cannot be used to repeat non-Item-derived objects.
+    For example, it cannot be used to repeat QtObjects.
+    \badcode
+    Item {
+        //XXX illegal. Can't repeat QtObject as it doesn't derive from Item.
+        Repeater {
+            model: 10
+            QtObject {}
+        }
+    }
+    \endcode
  */
 
 /*!
     \internal
     \class QDeclarativeRepeater
     \qmlclass Repeater
-
-    XXX Repeater is very conservative in how it instatiates/deletes items.  Also
-    new model entries will not be created and old ones will not be removed.
  */
 
 /*!
@@ -283,7 +292,6 @@ void QDeclarativeRepeater::clear()
     Q_D(QDeclarativeRepeater);
     if (d->model) {
         foreach (QDeclarativeItem *item, d->deletables) {
-            item->setParentItem(this);
             d->model->release(item);
         }
     }
@@ -296,6 +304,8 @@ void QDeclarativeRepeater::clear()
 void QDeclarativeRepeater::regenerate()
 {
     Q_D(QDeclarativeRepeater);
+    if (!isComponentComplete())
+        return;
 
     clear();
 
@@ -305,30 +315,69 @@ void QDeclarativeRepeater::regenerate()
     for (int ii = 0; ii < count(); ++ii) {
         QDeclarativeItem *item = d->model->item(ii);
         if (item) {
-            item->setParent(parentItem());
+            QDeclarative_setParent_noEvent(item, parentItem());
+            item->setParentItem(parentItem());
             item->stackBefore(this);
             d->deletables << item;
         }
     }
 }
 
-void QDeclarativeRepeater::itemsInserted(int, int)
+void QDeclarativeRepeater::itemsInserted(int index, int count)
 {
-    regenerate();
+    Q_D(QDeclarativeRepeater);
+    if (!isComponentComplete())
+        return;
+    for (int i = 0; i < count; ++i) {
+        int modelIndex = index + i;
+        QDeclarativeItem *item = d->model->item(modelIndex);
+        if (item) {
+            QDeclarative_setParent_noEvent(item, parentItem());
+            item->setParentItem(parentItem());
+            if (modelIndex < d->deletables.count())
+                item->stackBefore(d->deletables.at(modelIndex));
+            else
+                item->stackBefore(this);
+            d->deletables.insert(modelIndex, item);
+        }
+    }
 }
 
-void QDeclarativeRepeater::itemsRemoved(int, int)
+void QDeclarativeRepeater::itemsRemoved(int index, int count)
 {
-    regenerate();
+    Q_D(QDeclarativeRepeater);
+    if (!isComponentComplete())
+        return;
+    while (count--) {
+        QDeclarativeItem *item = d->deletables.takeAt(index);
+        if (item) {
+            d->model->release(item);
+        }
+    }
 }
 
-void QDeclarativeRepeater::itemsMoved(int,int,int)
+void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
 {
-    regenerate();
+    Q_D(QDeclarativeRepeater);
+    if (!isComponentComplete())
+        return;
+    QList<QDeclarativeItem*> removed;
+    int removedCount = count;
+    while (removedCount--)
+        removed << d->deletables.takeAt(from);
+    for (int i = 0; i < count; ++i)
+        d->deletables.insert(to + i, removed.at(i));
+    d->deletables.last()->stackBefore(this);
+    for (int i = d->model->count()-1; i > 0; --i) {
+        QDeclarativeItem *item = d->deletables.at(i-1);
+        item->stackBefore(d->deletables.at(i));
+    }
 }
 
 void QDeclarativeRepeater::modelReset()
 {
+    if (!isComponentComplete())
+        return;
     regenerate();
 }
 

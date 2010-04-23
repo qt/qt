@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 FocusScope {
     id: focusScope
@@ -18,27 +18,32 @@ FocusScope {
     }
 
     Text {
-        id: typeSomething; anchors.fill: parent; anchors.leftMargin: 8
+        id: typeSomething
+        anchors.fill: parent; anchors.leftMargin: 8
         verticalAlignment: Text.AlignVCenter
-        text: "Type something..."; color: "gray"; font.italic: true
+        text: "Type something..."
+        color: "gray"
+        font.italic: true
     }
 
     MouseArea { anchors.fill: parent; onClicked: focusScope.focus = true }
 
     TextInput {
         id: textInput
-        anchors.left: parent.left; anchors.leftMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        focus: if (1) true
+        anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter }
+        focus: true
     }
 
     Image {
         id: clear
-        anchors.right: parent.right; anchors.rightMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        source: "images/edit-clear-locationbar-rtl.png"; opacity: 0
+        anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+        source: "images/edit-clear-locationbar-rtl.png"
+        opacity: 0
 
-        MouseArea { anchors.fill: parent; onClicked: { textInput.text = ''; focusScope.focus = true } }
+        MouseArea { 
+            anchors.fill: parent
+            onClicked: { textInput.text = ''; focusScope.focus = true }
+        }
     }
 
     states: State {

@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEIMAGE_H
 #define QDECLARATIVEIMAGE_H
 
-#include "qdeclarativeimagebase_p.h"
+#include "private/qdeclarativeimagebase_p.h"
 
 #include <QtNetwork/qnetworkreply.h>
 
@@ -79,12 +79,14 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
+    void pixmapChanged();
     void fillModeChanged();
     void paintedGeometryChanged();
 
 protected:
     QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent);
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void pixmapChange();
 
 protected Q_SLOTS:
     void updatePaintedGeometry();

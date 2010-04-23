@@ -43,9 +43,16 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeproperty.h>
 #include <QtDeclarative/private/qdeclarativeproperty_p.h>
-#include <private/qguard_p.h>
 #include <private/qdeclarativebinding_p.h>
 #include <QtGui/QLineEdit>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdir.h>
+
+inline QUrl TEST_FILE(const QString &filename)
+{
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(QLatin1String("data/") + filename));
+}
 
 class MyQmlObject : public QObject
 {
@@ -130,9 +137,9 @@ void tst_qdeclarativeproperty::qmlmetaproperty()
 {
     QDeclarativeProperty prop;
 
-    QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+    QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
     QVERIFY(binding != 0);
-    QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+    QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
     QVERIFY(expression != 0);
 
     QObject *obj = new QObject;
@@ -161,10 +168,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty()
     QCOMPARE(prop.propertyTypeName(), (const char *)0);
     QVERIFY(prop.property().name() == 0);
     QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-    QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+    QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
     QVERIFY(binding == 0);
     QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-    QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+    QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
     QVERIFY(expression == 0);
     QCOMPARE(prop.index(), -1);
     QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -175,14 +182,15 @@ void tst_qdeclarativeproperty::qmlmetaproperty()
 class PropertyObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int defaultProperty READ defaultProperty);
-    Q_PROPERTY(QRect rectProperty READ rectProperty);
-    Q_PROPERTY(QRect wrectProperty READ wrectProperty WRITE setWRectProperty);
-    Q_PROPERTY(QUrl url READ url WRITE setUrl);
-    Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty);
+    Q_PROPERTY(int defaultProperty READ defaultProperty)
+    Q_PROPERTY(QRect rectProperty READ rectProperty)
+    Q_PROPERTY(QRect wrectProperty READ wrectProperty WRITE setWRectProperty)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl)
+    Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
+    Q_PROPERTY(MyQmlObject *qmlObject READ qmlObject)
 
-    Q_CLASSINFO("DefaultProperty", "defaultProperty");
+    Q_CLASSINFO("DefaultProperty", "defaultProperty")
 public:
     PropertyObject() : m_resetProperty(9) {}
 
@@ -202,6 +210,7 @@ public:
     int propertyWithNotify() const { return m_propertyWithNotify; }
     void setPropertyWithNotify(int i) { m_propertyWithNotify = i; emit oddlyNamedNotifySignal(); }
 
+    MyQmlObject *qmlObject() { return &m_qmlObject; }
 signals:
     void clicked();
     void oddlyNamedNotifySignal();
@@ -211,6 +220,7 @@ private:
     QRect m_rect;
     QUrl m_url;
     int m_propertyWithNotify;
+    MyQmlObject m_qmlObject;
 };
 
 QML_DECLARE_TYPE(PropertyObject);
@@ -223,9 +233,9 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
     {
         QDeclarativeProperty prop(&object);
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -254,10 +264,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), -1);
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -268,10 +278,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
     {
         QDeclarativeProperty prop(&dobject);
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -294,18 +304,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding.data());
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -322,9 +332,9 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
     {
         QDeclarativeProperty prop(&object, QString("defaultProperty"));
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -353,10 +363,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), -1);
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -367,10 +377,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
     {
         QDeclarativeProperty prop(&dobject, QString("defaultProperty"));
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -393,18 +403,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding.data());
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -415,10 +425,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
     {
         QDeclarativeProperty prop(&dobject, QString("onClicked"));
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -441,18 +451,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression != 0);
-        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression.data());
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfMethod("clicked()"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
 
@@ -462,10 +472,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
     {
         QDeclarativeProperty prop(&dobject, QString("onPropertyWithNotifyChanged"));
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -488,18 +498,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression != 0);
-        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression.data());
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfMethod("oddlyNamedNotifySignal()"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
 
@@ -515,9 +525,9 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
     {
         QDeclarativeProperty prop(&object, engine.rootContext());
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -546,10 +556,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), -1);
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -560,10 +570,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
     {
         QDeclarativeProperty prop(&dobject, engine.rootContext());
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -586,18 +596,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding.data());
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -614,9 +624,9 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
     {
         QDeclarativeProperty prop(&object, QString("defaultProperty"), engine.rootContext());
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -645,10 +655,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), -1);
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -659,10 +669,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
     {
         QDeclarativeProperty prop(&dobject, QString("defaultProperty"), engine.rootContext());
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -685,18 +695,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDesignable(), true);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == binding.data());
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
@@ -707,10 +717,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
     {
         QDeclarativeProperty prop(&dobject, QString("onClicked"), engine.rootContext());
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -733,18 +743,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression != 0);
-        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression.data());
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfMethod("clicked()"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
 
@@ -754,10 +764,10 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
     {
         QDeclarativeProperty prop(&dobject, QString("onPropertyWithNotifyChanged"), engine.rootContext());
 
-        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
-        binding->setTarget(prop);
+        QWeakPointer<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding.data()->setTarget(prop);
         QVERIFY(binding != 0);
-        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QWeakPointer<QDeclarativeExpression> expression(new QDeclarativeExpression());
         QVERIFY(expression != 0);
 
         QObject *obj = new QObject;
@@ -780,18 +790,18 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDesignable(), false);
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
-        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.object(), qobject_cast<QObject*>(&dobject));
         QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
         QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding.data()) == 0);
         QVERIFY(binding == 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
-        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression.data()) == 0);
         QVERIFY(expression != 0);
-        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression.data());
         QCOMPARE(prop.index(), dobject.metaObject()->indexOfMethod("oddlyNamedNotifySignal()"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
 
@@ -951,6 +961,32 @@ void tst_qdeclarativeproperty::read()
         QCOMPARE(p.read(), QVariant(10));
         delete o;
         QCOMPARE(p.read(), QVariant());
+    }
+
+    // Object property
+    {
+        PropertyObject o;
+        QDeclarativeProperty p(&o, "qmlObject");
+        QCOMPARE(p.propertyTypeCategory(), QDeclarativeProperty::Object);
+        QCOMPARE(p.propertyType(), qMetaTypeId<MyQmlObject*>());
+        QVariant v = p.read();
+        QVERIFY(v.userType() == QMetaType::QObjectStar);
+        QVERIFY(qvariant_cast<QObject *>(v) == o.qmlObject());
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("readSynthesizedObject.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QDeclarativeProperty p(object, "test", &engine);
+
+        QCOMPARE(p.propertyTypeCategory(), QDeclarativeProperty::Object);
+        QVERIFY(p.propertyType() != QMetaType::QObjectStar);
+
+        QVariant v = p.read();
+        QVERIFY(v.userType() == QMetaType::QObjectStar);
+        QCOMPARE(qvariant_cast<QObject *>(v)->property("a").toInt(), 10);
+        QCOMPARE(qvariant_cast<QObject *>(v)->property("b").toInt(), 19);
     }
 
     // Attached property
@@ -1217,7 +1253,7 @@ void tst_qdeclarativeproperty::writeObjectToList()
     QDeclarativeProperty prop(container, "children");
     prop.write(qVariantFromValue(object));
     QCOMPARE(list.count(), 1);
-    QCOMPARE(list.at(0), object);
+    QCOMPARE(list.at(0), qobject_cast<QObject*>(object));
 }
 
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -1311,9 +1347,9 @@ void tst_qdeclarativeproperty::copy()
 
 void tst_qdeclarativeproperty::initTestCase()
 {
-    QML_REGISTER_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
-    QML_REGISTER_TYPE(Test,1,0,PropertyObject,PropertyObject);
-    QML_REGISTER_TYPE(Test,1,0,MyContainer,MyContainer);
+    qmlRegisterType<MyQmlObject>("Test",1,0,"MyQmlObject");
+    qmlRegisterType<PropertyObject>("Test",1,0,"PropertyObject");
+    qmlRegisterType<MyContainer>("Test",1,0,"MyContainer");
 }
 
 

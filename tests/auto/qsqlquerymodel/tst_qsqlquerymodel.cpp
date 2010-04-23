@@ -148,10 +148,10 @@ void tst_QSqlQueryModel::cleanupTestCase()
 void tst_QSqlQueryModel::dropTestTables(QSqlDatabase db)
 {
     QStringList tableNames;
-    tableNames << qTableName("test")
-            << qTableName("test2")
-            << qTableName("test3")
-            << qTableName("many");
+    tableNames << qTableName("test", __FILE__)
+            << qTableName("test2", __FILE__)
+            << qTableName("test3", __FILE__)
+            << qTableName("many", __FILE__);
     tst_Databases::safeDropTables(db, tableNames);
 }
 
@@ -161,10 +161,10 @@ void tst_QSqlQueryModel::createTestTables(QSqlDatabase db)
     QSqlQuery q(db);
     if(tst_Databases::isPostgreSQL(db))
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
-    QVERIFY_SQL( q, exec("create table " + qTableName("test") + "(id integer not null, name varchar(20), title integer, primary key (id))"));
-    QVERIFY_SQL( q, exec("create table " + qTableName("test2") + "(id integer not null, title varchar(20), primary key (id))"));
-    QVERIFY_SQL( q, exec("create table " + qTableName("test3") + "(id integer not null, primary key (id))"));
-    QVERIFY_SQL( q, exec("create table " + qTableName("many") + "(id integer not null, name varchar(20), primary key (id))"));
+    QVERIFY_SQL( q, exec("create table " + qTableName("test", __FILE__) + "(id integer not null, name varchar(20), title integer, primary key (id))"));
+    QVERIFY_SQL( q, exec("create table " + qTableName("test2", __FILE__) + "(id integer not null, title varchar(20), primary key (id))"));
+    QVERIFY_SQL( q, exec("create table " + qTableName("test3", __FILE__) + "(id integer not null, primary key (id))"));
+    QVERIFY_SQL( q, exec("create table " + qTableName("many", __FILE__) + "(id integer not null, name varchar(20), primary key (id))"));
 }
 
 void tst_QSqlQueryModel::populateTestTables(QSqlDatabase db)
@@ -174,38 +174,38 @@ void tst_QSqlQueryModel::populateTestTables(QSqlDatabase db)
 
     QSqlQuery q(db), q2(db);
 
-    tst_Databases::safeDropTables(db, QStringList() << qTableName("manytmp") << qTableName("test3tmp"));
-    QVERIFY_SQL(q, exec("create table " + qTableName("manytmp") + "(id integer not null, name varchar(20), primary key (id))"));
-    QVERIFY_SQL(q, exec("create table " + qTableName("test3tmp") + "(id integer not null, primary key (id))"));
+    tst_Databases::safeDropTables(db, QStringList() << qTableName("manytmp", __FILE__) << qTableName("test3tmp", __FILE__));
+    QVERIFY_SQL(q, exec("create table " + qTableName("manytmp", __FILE__) + "(id integer not null, name varchar(20), primary key (id))"));
+    QVERIFY_SQL(q, exec("create table " + qTableName("test3tmp", __FILE__) + "(id integer not null, primary key (id))"));
 
     if (hasTransactions) QVERIFY_SQL(db, transaction());
 
-    QVERIFY_SQL(q, exec("insert into " + qTableName("test") + " values(1, 'harry', 1)"));
-    QVERIFY_SQL(q, exec("insert into " + qTableName("test") + " values(2, 'trond', 2)"));
-    QVERIFY_SQL(q, exec("insert into " + qTableName("test2") + " values(1, 'herr')"));
-    QVERIFY_SQL(q, exec("insert into " + qTableName("test2") + " values(2, 'mister')"));
+    QVERIFY_SQL(q, exec("insert into " + qTableName("test", __FILE__) + " values(1, 'harry', 1)"));
+    QVERIFY_SQL(q, exec("insert into " + qTableName("test", __FILE__) + " values(2, 'trond', 2)"));
+    QVERIFY_SQL(q, exec("insert into " + qTableName("test2", __FILE__) + " values(1, 'herr')"));
+    QVERIFY_SQL(q, exec("insert into " + qTableName("test2", __FILE__) + " values(2, 'mister')"));
 
-    QVERIFY_SQL(q, exec(QString("insert into " + qTableName("test3") + " values(0)")));
-    QVERIFY_SQL(q, prepare("insert into "+qTableName("test3")+"(id) select id + ? from "+qTableName("test3tmp")));
+    QVERIFY_SQL(q, exec(QString("insert into " + qTableName("test3", __FILE__) + " values(0)")));
+    QVERIFY_SQL(q, prepare("insert into "+qTableName("test3", __FILE__)+"(id) select id + ? from "+qTableName("test3tmp", __FILE__)));
     for (int i=1; i<260; i*=2) {
-        q2.exec("delete from "+qTableName("test3tmp"));
-        QVERIFY_SQL(q2, exec("insert into "+qTableName("test3tmp")+"(id) select id from "+qTableName("test3")));
+        q2.exec("delete from "+qTableName("test3tmp", __FILE__));
+        QVERIFY_SQL(q2, exec("insert into "+qTableName("test3tmp", __FILE__)+"(id) select id from "+qTableName("test3", __FILE__)));
         q.bindValue(0, i);
         QVERIFY_SQL(q, exec());
     }
 
-    QVERIFY_SQL(q, exec(QString("insert into " + qTableName("many") + "(id, name) values (0, \'harry\')")));
-    QVERIFY_SQL(q, prepare("insert into "+qTableName("many")+"(id, name) select id + ?, name from "+qTableName("manytmp")));
+    QVERIFY_SQL(q, exec(QString("insert into " + qTableName("many", __FILE__) + "(id, name) values (0, \'harry\')")));
+    QVERIFY_SQL(q, prepare("insert into "+qTableName("many", __FILE__)+"(id, name) select id + ?, name from "+qTableName("manytmp", __FILE__)));
     for (int i=1; i < 2048; i*=2) {
-        q2.exec("delete from "+qTableName("manytmp"));
-        QVERIFY_SQL(q2, exec("insert into "+qTableName("manytmp")+"(id, name) select id, name from "+qTableName("many")));
+        q2.exec("delete from "+qTableName("manytmp", __FILE__));
+        QVERIFY_SQL(q2, exec("insert into "+qTableName("manytmp", __FILE__)+"(id, name) select id, name from "+qTableName("many", __FILE__)));
         q.bindValue(0, i);
         QVERIFY_SQL(q, exec());
     }
 
     if (hasTransactions) QVERIFY_SQL(db, commit());
 
-    tst_Databases::safeDropTables(db, QStringList() << qTableName("manytmp") << qTableName("test3tmp"));
+    tst_Databases::safeDropTables(db, QStringList() << qTableName("manytmp", __FILE__) << qTableName("test3tmp", __FILE__));
 }
 
 void tst_QSqlQueryModel::generic_data(const QString& engine)
@@ -233,7 +233,7 @@ void tst_QSqlQueryModel::removeColumn()
     CHECK_DATABASE(db);
 
     DBTestModel model;
-    model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
+    model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
     model.fetchMore();
     QSignalSpy spy(&model, SIGNAL(columnsAboutToBeRemoved(QModelIndex, int, int)));
 
@@ -315,7 +315,7 @@ void tst_QSqlQueryModel::insertColumn()
     CHECK_DATABASE(db);
 
     DBTestModel model;
-    model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
+    model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
     model.fetchMore(); // necessary???
 
     QSignalSpy spy(&model, SIGNAL(columnsInserted(QModelIndex, int, int)));
@@ -395,7 +395,7 @@ void tst_QSqlQueryModel::record()
     CHECK_DATABASE(db);
 
     QSqlQueryModel model;
-    model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
+    model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
 
     QSqlRecord rec = model.record();
 
@@ -429,7 +429,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QVERIFY(!model.setHeaderData(5, Qt::Vertical, "foo"));
     QVERIFY(model.headerData(5, Qt::Vertical).isValid());
 
-    model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
+    model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     QSignalSpy spy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
@@ -459,7 +459,7 @@ void tst_QSqlQueryModel::fetchMore()
     QSqlQueryModel model;
     QSignalSpy spy(&model, SIGNAL(rowsInserted(QModelIndex, int, int)));
 
-    model.setQuery(QSqlQuery("select * from " + qTableName("many"), db));
+    model.setQuery(QSqlQuery("select * from " + qTableName("many", __FILE__), db));
     int rowCount = model.rowCount();
 
     QCOMPARE(spy.value(0).value(1).toInt(), 0);
@@ -491,7 +491,7 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
         QSKIP("Test applies only for drivers not reporting the query size.", SkipSingle);
 
     QSqlQueryModel model;
-    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3"), db));
+    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3", __FILE__), db));
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
 
@@ -500,7 +500,7 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
 
     QSignalSpy modelRowsRemovedSpy(&model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
     QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
-    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3"), db));
+    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3", __FILE__), db));
     view.scrollToBottom();
 
     QTestEventLoop::instance().enterLoop(1);
@@ -536,12 +536,12 @@ void tst_QSqlQueryModel::setQuerySignalEmission()
     QSignalSpy modelRowsRemovedSpy(&model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
 
     // First select, the model was empty and no rows had to be removed!
-    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test"), db));
+    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test", __FILE__), db));
     QCOMPARE(modelRowsAboutToBeRemovedSpy.count(), 0);
     QCOMPARE(modelRowsRemovedSpy.count(), 0);
 
     // Second select, the model wasn't empty and two rows had to be removed!
-    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test"), db));
+    model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test", __FILE__), db));
     QCOMPARE(modelRowsAboutToBeRemovedSpy.count(), 1);
     QCOMPARE(modelRowsAboutToBeRemovedSpy.value(0).value(1).toInt(), 0);
     QCOMPARE(modelRowsAboutToBeRemovedSpy.value(0).value(2).toInt(), 1);
@@ -564,7 +564,7 @@ void tst_QSqlQueryModel::setQueryWithNoRowsInResultSet()
 
     // The query's result set will be empty so no signals should be emitted!
     QSqlQuery query(db);
-    QVERIFY_SQL(query, exec("SELECT * FROM " + qTableName("test") + " where 0 = 1"));
+    QVERIFY_SQL(query, exec("SELECT * FROM " + qTableName("test", __FILE__) + " where 0 = 1"));
     model.setQuery(query);
     QCOMPARE(modelRowsAboutToBeInsertedSpy.count(), 0);
     QCOMPARE(modelRowsInsertedSpy.count(), 0);
@@ -578,13 +578,14 @@ void tst_QSqlQueryModel::task_180617()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const QString test3(qTableName("test3", __FILE__));
 
     QTableView view;
     QCOMPARE(view.columnAt(0), -1);
     QCOMPARE(view.rowAt(0), -1);
 
     QSqlQueryModel model;
-    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+    model.setQuery( "SELECT TOP 0 * FROM " + test3, db );
     view.setModel(&model);
 
     bool error = false;
@@ -595,10 +596,10 @@ void tst_QSqlQueryModel::task_180617()
     QCOMPARE(view.columnAt(0), (error)?-1:0 );
     QCOMPARE(view.rowAt(0), -1);
 
-    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
-    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
-    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
-    model.setQuery( "SELECT TOP 0 * FROM " + qTableName("test3"), db );
+    model.setQuery( "SELECT TOP 0 * FROM " + test3, db );
+    model.setQuery( "SELECT TOP 0 * FROM " + test3, db );
+    model.setQuery( "SELECT TOP 0 * FROM " + test3, db );
+    model.setQuery( "SELECT TOP 0 * FROM " + test3, db );
 
     QCOMPARE(view.columnAt(0),  (error)?-1:0 );
     QCOMPARE(view.rowAt(0), -1);

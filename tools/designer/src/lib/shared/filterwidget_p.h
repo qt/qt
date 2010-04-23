@@ -58,58 +58,55 @@
 #include <QtGui/QWidget>
 #include <QtGui/QLineEdit>
 #include <QtGui/QColor>
+#include <QtGui/QToolButton>
 
 QT_BEGIN_NAMESPACE
 
-class QPushButton;
+class QToolButton;
 
 namespace qdesigner_internal {
 
-/* A line edit that displays a grayed hintText (like "Type Here to Filter")
- * when not focused and empty. When connecting to the changed signals and
- * querying text, one has to be aware that the text is set to that hint
- * text if isShowingHintText() returns true (that is, does not contain
- * valid user input). This widget should never have initial focus
+/* This widget should never have initial focus
  * (ie, be the first widget of a dialog, else, the hint cannot be displayed.
  * For situations, where it is the only focusable control (widget box),
  * there is a special "refuseFocus()" mode, in which it clears the focus
  * policy and focusses explicitly on click (note that setting Qt::ClickFocus
  * is not sufficient for that as an ActivationFocus will occur). */
 
+#define ICONBUTTON_SIZE 16
+
 class QDESIGNER_SHARED_EXPORT HintLineEdit : public QLineEdit {
     Q_OBJECT
 public:
     explicit HintLineEdit(QWidget *parent = 0);
 
-    QString hintText() const;
-
-    bool isShowingHintText() const;
-
-    // Convenience for accessing the text that returns "" in case of isShowingHintText().
-    QString typedText() const;
-
     bool refuseFocus() const;
     void setRefuseFocus(bool v);
-
-public slots:
-    void setHintText(const QString &ht);
-    void showHintText(bool force = false);
-    void hideHintText();
 
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void focusInEvent(QFocusEvent *e);
-    virtual void focusOutEvent(QFocusEvent *e);
 
 private:
-    void setTextColor(const QColor &newColor, QColor *oldColor = 0);
-
     const Qt::FocusPolicy m_defaultFocusPolicy;
-    const QColor m_hintColor;
-    QColor m_textColor;
     bool m_refuseFocus;
-    QString m_hintText;
-    bool m_showingHintText;
+};
+
+// IconButton: This is a simple helper class that represents clickable icons
+
+class IconButton: public QToolButton
+{
+    Q_OBJECT
+    Q_PROPERTY(float fader READ fader WRITE setFader)
+public:
+    IconButton(QWidget *parent);
+    void paintEvent(QPaintEvent *event);
+    float fader() { return m_fader; }
+    void setFader(float value) { m_fader = value; update(); }
+    void animateShow(bool visible);
+
+private:
+    float m_fader;
 };
 
 // FilterWidget: For filtering item views, with reset button Uses HintLineEdit.
@@ -128,7 +125,7 @@ public:
     explicit FilterWidget(QWidget *parent = 0, LayoutMode lm = LayoutAlignRight);
 
     QString text() const;
-
+    void resizeEvent(QResizeEvent *);
     bool refuseFocus() const; // see HintLineEdit
     void setRefuseFocus(bool v);
 
@@ -142,8 +139,9 @@ private slots:
     void checkButton(const QString &text);
 
 private:
-    QPushButton *m_button;
     HintLineEdit *m_editor;
+    IconButton *m_button;
+    int m_buttonwidth;
 };
 } // namespace qdesigner_internal
 

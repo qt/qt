@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qdeclarativeanchors_p.h"
-#include "qdeclarativeitemchangelistener_p.h"
+#include "private/qdeclarativeanchors_p.h"
+#include "private/qdeclarativeitemchangelistener_p.h"
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -62,9 +62,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeAnchorLine
 {
 public:
-    QDeclarativeAnchorLine() : item(0), anchorLine(Invalid)
-    {
-    }
+    QDeclarativeAnchorLine() : item(0), anchorLine(Invalid) {}
 
     enum AnchorLine {
         Invalid = 0x0,
@@ -79,55 +77,54 @@ public:
         Vertical_Mask = Top | Bottom | VCenter | Baseline
     };
 
-    QDeclarativeItem *item;
+    QGraphicsObject *item;
     AnchorLine anchorLine;
-
-    bool operator==(const QDeclarativeAnchorLine& other) const
-    {
-        return item == other.item && anchorLine == other.anchorLine;
-    }
 };
+
+inline bool operator==(const QDeclarativeAnchorLine& a, const QDeclarativeAnchorLine& b)
+{
+    return a.item == b.item && a.anchorLine == b.anchorLine;
+}
 
 class QDeclarativeAnchorsPrivate : public QObjectPrivate, public QDeclarativeItemChangeListener
 {
     Q_DECLARE_PUBLIC(QDeclarativeAnchors)
 public:
-    QDeclarativeAnchorsPrivate(QDeclarativeItem *i)
-      : updatingMe(false), updatingHorizontalAnchor(0),
+    QDeclarativeAnchorsPrivate(QGraphicsObject *i)
+      : componentComplete(true), updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), updatingFill(0), updatingCenterIn(0), item(i), usedAnchors(0), fill(0),
         centerIn(0), leftMargin(0), rightMargin(0), topMargin(0), bottomMargin(0),
-        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0),
-        componentComplete(true)
+        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0)
     {
     }
 
-    void init()
-    {
-    }
+    void clearItem(QGraphicsObject *);
 
-    void clearItem(QDeclarativeItem *);
-
-    void addDepend(QDeclarativeItem *);
-    void remDepend(QDeclarativeItem *);
+    void addDepend(QGraphicsObject *);
+    void remDepend(QGraphicsObject *);
     bool isItemComplete() const;
 
-    bool updatingMe;
-    int updatingHorizontalAnchor;
-    int updatingVerticalAnchor;
-    int updatingFill;
-    int updatingCenterIn;
+    bool componentComplete:1;
+    bool updatingMe:1;
+    uint updatingHorizontalAnchor:2;
+    uint updatingVerticalAnchor:2;
+    uint updatingFill:2;
+    uint updatingCenterIn:2;
 
     void setItemHeight(qreal);
     void setItemWidth(qreal);
     void setItemX(qreal);
     void setItemY(qreal);
     void setItemPos(const QPointF &);
+    void setItemSize(const QSizeF &);
 
     void updateOnComplete();
     void updateMe();
 
     // QDeclarativeItemGeometryListener interface
     void itemGeometryChanged(QDeclarativeItem *, const QRectF &, const QRectF &);
+    void _q_widgetDestroyed(QObject *);
+    void _q_widgetGeometryChanged();
     QDeclarativeAnchorsPrivate *anchorPrivate() { return this; }
 
     bool checkHValid() const;
@@ -141,11 +138,11 @@ public:
     void fillChanged();
     void centerInChanged();
 
-    QDeclarativeItem *item;
+    QGraphicsObject *item;
     QDeclarativeAnchors::UsedAnchors usedAnchors;
 
-    QDeclarativeItem *fill;
-    QDeclarativeItem *centerIn;
+    QGraphicsObject *fill;
+    QGraphicsObject *centerIn;
 
     QDeclarativeAnchorLine left;
     QDeclarativeAnchorLine right;
@@ -163,8 +160,6 @@ public:
     qreal vCenterOffset;
     qreal hCenterOffset;
     qreal baselineOffset;
-
-    bool componentComplete;
 };
 
 QT_END_NAMESPACE

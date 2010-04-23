@@ -57,6 +57,8 @@
 
 #include <QtCore/qtimer.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
@@ -78,7 +80,7 @@ public:
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
-    void requestUpdate();
+    Q_INVOKABLE void requestUpdate();
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
@@ -90,15 +92,17 @@ public:
 
     inline bool available() const { return handle != 0; }
 
+    bool requiresPolling() const;
+
 public Q_SLOTS:
     void scanComplete();
 
 private:
-    QTimer pollTimer;
-
     Qt::HANDLE handle;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif

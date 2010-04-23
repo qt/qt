@@ -53,7 +53,7 @@
 //
 
 #include "qdeclarativeerror.h"
-#include "qdeclarativeparser_p.h"
+#include "private/qdeclarativeparser_p.h"
 
 #include <QtCore/QList>
 #include <QtCore/QUrl>
@@ -75,7 +75,7 @@ public:
     public:
         Import() : type(Library) {}
 
-        enum Type { Library, File };
+        enum Type { Library, File, Script };
         Type type;
 
         QString uri;
@@ -111,6 +111,8 @@ public:
     void clear();
 
     QList<QDeclarativeError> errors() const;
+
+    static QDeclarativeParser::Object::ScriptBlock::Pragmas extractPragmas(QString &);
 
 // ### private:
     TypeReference *findOrCreateType(const QString &name);

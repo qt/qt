@@ -15,6 +15,7 @@ PHONON_GSTREAMER_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer
 
 HEADERS += $$PHONON_GSTREAMER_DIR/common.h \
  $$PHONON_GSTREAMER_DIR/audiooutput.h \
+ $$PHONON_GSTREAMER_DIR/audiodataoutput.h \
  $$PHONON_GSTREAMER_DIR/artssink.h \
  $$PHONON_GSTREAMER_DIR/abstractrenderer.h \
  $$PHONON_GSTREAMER_DIR/backend.h \
@@ -35,26 +36,27 @@ HEADERS += $$PHONON_GSTREAMER_DIR/common.h \
  $$PHONON_GSTREAMER_DIR/audioeffect.h \
  $$PHONON_GSTREAMER_DIR/volumefadereffect.h
 
-SOURCES += $$PHONON_GSTREAMER_DIR/audiooutput.cpp \
- $$PHONON_GSTREAMER_DIR/abstractrenderer.cpp \
+SOURCES += $$PHONON_GSTREAMER_DIR/abstractrenderer.cpp \
  $$PHONON_GSTREAMER_DIR/artssink.cpp \
+ $$PHONON_GSTREAMER_DIR/audioeffect.cpp \
+ $$PHONON_GSTREAMER_DIR/audiooutput.cpp \
+ $$PHONON_GSTREAMER_DIR/audiodataoutput.cpp \
  $$PHONON_GSTREAMER_DIR/backend.cpp \
  $$PHONON_GSTREAMER_DIR/devicemanager.cpp \
  $$PHONON_GSTREAMER_DIR/effect.cpp \
  $$PHONON_GSTREAMER_DIR/effectmanager.cpp \
+ $$PHONON_GSTREAMER_DIR/glrenderer.cpp \
  $$PHONON_GSTREAMER_DIR/gsthelper.cpp \
- $$PHONON_GSTREAMER_DIR/mediaobject.cpp \
  $$PHONON_GSTREAMER_DIR/medianode.cpp \
  $$PHONON_GSTREAMER_DIR/medianodeevent.cpp \
- $$PHONON_GSTREAMER_DIR/widgetrenderer.cpp \
- $$PHONON_GSTREAMER_DIR/videowidget.cpp \
- $$PHONON_GSTREAMER_DIR/glrenderer.cpp \
- $$PHONON_GSTREAMER_DIR/qwidgetvideosink.cpp \
- $$PHONON_GSTREAMER_DIR/phononsrc.cpp \
- $$PHONON_GSTREAMER_DIR/streamreader.cpp \
+ $$PHONON_GSTREAMER_DIR/mediaobject.cpp \
  $$PHONON_GSTREAMER_DIR/message.cpp \
- $$PHONON_GSTREAMER_DIR/audioeffect.cpp \
- $$PHONON_GSTREAMER_DIR/volumefadereffect.cpp
+ $$PHONON_GSTREAMER_DIR/phononsrc.cpp \
+ $$PHONON_GSTREAMER_DIR/qwidgetvideosink.cpp \
+ $$PHONON_GSTREAMER_DIR/streamreader.cpp \
+ $$PHONON_GSTREAMER_DIR/videowidget.cpp \
+ $$PHONON_GSTREAMER_DIR/volumefadereffect.cpp \
+ $$PHONON_GSTREAMER_DIR/widgetrenderer.cpp
 
 !embedded {
     HEADERS += $$PHONON_GSTREAMER_DIR/x11renderer.h

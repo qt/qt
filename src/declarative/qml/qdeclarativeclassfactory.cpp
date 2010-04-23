@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeclassfactory_p.h"
+#include "private/qdeclarativeclassfactory_p.h"
 
 QT_BEGIN_NAMESPACE
 

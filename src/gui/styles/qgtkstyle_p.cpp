@@ -60,6 +60,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QUrl>
 #include <QtCore/QLibrary>
+#include <QtCore/QDebug>
 
 #include <private/qapplication_p.h>
 #include <private/qiconloader_p.h>
@@ -91,8 +92,8 @@ Ptr_gtk_widget_set_default_direction QGtkStylePrivate::gtk_widget_set_default_di
 Ptr_gtk_widget_modify_color QGtkStylePrivate::gtk_widget_modify_fg = 0;
 Ptr_gtk_widget_modify_color QGtkStylePrivate::gtk_widget_modify_bg = 0;
 Ptr_gtk_arrow_new QGtkStylePrivate::gtk_arrow_new = 0;
-Ptr_gtk_menu_item_new QGtkStylePrivate::gtk_menu_item_new = 0;
-Ptr_gtk_check_menu_item_new QGtkStylePrivate::gtk_check_menu_item_new = 0;
+Ptr_gtk_menu_item_new_with_label QGtkStylePrivate::gtk_menu_item_new_with_label = 0;
+Ptr_gtk_check_menu_item_new_with_label QGtkStylePrivate::gtk_check_menu_item_new_with_label = 0;
 Ptr_gtk_menu_bar_new QGtkStylePrivate::gtk_menu_bar_new = 0;
 Ptr_gtk_menu_new QGtkStylePrivate::gtk_menu_new = 0;
 Ptr_gtk_button_new QGtkStylePrivate::gtk_button_new = 0;
@@ -233,17 +234,22 @@ static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *, gpointer)
     }
 }
 
-static QString classPath(GtkWidget *widget)
+static QHashableLatin1Literal classPath(GtkWidget *widget)
 {
-    char* class_path;
+    char *class_path;
     QGtkStylePrivate::gtk_widget_path (widget, NULL, &class_path, NULL);
-    QString path = QLS(class_path);
+
+    char *copy = class_path;
+    if (strncmp(copy, "GtkWindow.", 10) == 0)
+        copy += 10;
+    if (strncmp(copy, "GtkFixed.", 9) == 0)
+        copy += 9;
+
+    copy = strdup(copy);
+
     g_free(class_path);
 
-    // Remove the prefixes
-    path.remove(QLS("GtkWindow."));
-    path.remove(QLS("GtkFixed."));
-    return path;
+    return QHashableLatin1Literal::fromData(copy);
 }
 
 
@@ -261,6 +267,7 @@ bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
 }
 
 QList<QGtkStylePrivate *> QGtkStylePrivate::instances;
+QGtkStylePrivate::WidgetMap *QGtkStylePrivate::widgetMap = 0;
 
 QGtkStylePrivate::QGtkStylePrivate()
   : QCleanlooksStylePrivate()
@@ -282,7 +289,7 @@ void QGtkStylePrivate::init()
         qApp->installEventFilter(&filter);
 }
 
-GtkWidget* QGtkStylePrivate::gtkWidget(const QString &path)
+GtkWidget* QGtkStylePrivate::gtkWidget(const QHashableLatin1Literal &path)
 {
     GtkWidget *widget = gtkWidgetMap()->value(path);
     if (!widget) {
@@ -292,10 +299,10 @@ GtkWidget* QGtkStylePrivate::gtkWidget(const QString &path)
     return widget;
 }
 
-GtkStyle* QGtkStylePrivate::gtkStyle(const QString &path)
+GtkStyle* QGtkStylePrivate::gtkStyle(const QHashableLatin1Literal &path)
 {
-    if (gtkWidgetMap()->contains(path))
-        return gtkWidgetMap()->value(path)->style;
+    if (GtkWidget *w = gtkWidgetMap()->value(path))
+        return w->style;
     return 0;
 }
 
@@ -347,8 +354,8 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_widget_modify_fg = (Ptr_gtk_widget_modify_color)libgtk.resolve("gtk_widget_modify_fg");
     gtk_widget_modify_bg = (Ptr_gtk_widget_modify_color)libgtk.resolve("gtk_widget_modify_bg");
     gtk_arrow_new = (Ptr_gtk_arrow_new)libgtk.resolve("gtk_arrow_new");
-    gtk_menu_item_new = (Ptr_gtk_menu_item_new)libgtk.resolve("gtk_menu_item_new");
-    gtk_check_menu_item_new = (Ptr_gtk_check_menu_item_new)libgtk.resolve("gtk_check_menu_item_new");
+    gtk_menu_item_new_with_label = (Ptr_gtk_menu_item_new_with_label)libgtk.resolve("gtk_menu_item_new_with_label");
+    gtk_check_menu_item_new_with_label = (Ptr_gtk_check_menu_item_new_with_label)libgtk.resolve("gtk_check_menu_item_new_with_label");
     gtk_menu_bar_new = (Ptr_gtk_menu_bar_new)libgtk.resolve("gtk_menu_bar_new");
     gtk_menu_new = (Ptr_gtk_menu_new)libgtk.resolve("gtk_menu_new");
     gtk_toolbar_new = (Ptr_gtk_toolbar_new)libgtk.resolve("gtk_toolbar_new");
@@ -439,7 +446,7 @@ void QGtkStylePrivate::initGtkMenu() const
     GtkWidget *gtkMenuBar = QGtkStylePrivate::gtk_menu_bar_new();
     setupGtkWidget(gtkMenuBar);
 
-    GtkWidget *gtkMenuBarItem = QGtkStylePrivate::gtk_menu_item_new();
+    GtkWidget *gtkMenuBarItem = QGtkStylePrivate::gtk_menu_item_new_with_label("X");
     gtk_menu_shell_append((GtkMenuShell*)(gtkMenuBar), gtkMenuBarItem);
     gtk_widget_realize(gtkMenuBarItem);
 
@@ -448,14 +455,11 @@ void QGtkStylePrivate::initGtkMenu() const
     gtk_menu_item_set_submenu((GtkMenuItem*)(gtkMenuBarItem), gtkMenu);
     gtk_widget_realize(gtkMenu);
 
-    GtkWidget *gtkMenuItem = QGtkStylePrivate::gtk_menu_item_new();
-    g_object_set(gtkMenuItem, "label", "X", NULL);
-
+    GtkWidget *gtkMenuItem = QGtkStylePrivate::gtk_menu_item_new_with_label("X");
     gtk_menu_shell_append((GtkMenuShell*)gtkMenu, gtkMenuItem);
     gtk_widget_realize(gtkMenuItem);
 
-    GtkWidget *gtkCheckMenuItem = QGtkStylePrivate::gtk_check_menu_item_new();
-    g_object_set(gtkCheckMenuItem, "label", "X", NULL);
+    GtkWidget *gtkCheckMenuItem = QGtkStylePrivate::gtk_check_menu_item_new_with_label("X");
     gtk_menu_shell_append((GtkMenuShell*)gtkMenu, gtkCheckMenuItem);
     gtk_widget_realize(gtkCheckMenuItem);
 
@@ -497,7 +501,7 @@ void QGtkStylePrivate::initGtkWidgets() const
     }
 
     static QString themeName;
-    if (!gtkWidgetMap()->contains(QLS("GtkWindow")) && themeName.isEmpty()) {
+    if (!gtkWidgetMap()->contains("GtkWindow") && themeName.isEmpty()) {
         themeName = getThemeName();
 
         if (themeName.isEmpty()) {
@@ -522,18 +526,18 @@ void QGtkStylePrivate::initGtkWidgets() const
         QGtkStylePrivate::gtk_widget_realize(gtkWindow);
         if (displayDepth == -1)
             displayDepth = QGtkStylePrivate::gdk_drawable_get_depth(gtkWindow->window);
-        gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
+        gtkWidgetMap()->insert(QHashableLatin1Literal::fromData(strdup("GtkWindow")), gtkWindow);
 
 
         // Make all other widgets. respect the text direction
         if (qApp->layoutDirection() == Qt::RightToLeft)
             QGtkStylePrivate::gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
 
-        if (!gtkWidgetMap()->contains(QLS("GtkButton"))) {
+        if (!gtkWidgetMap()->contains("GtkButton")) {
             GtkWidget *gtkButton = QGtkStylePrivate::gtk_button_new();
             addWidget(gtkButton);
             g_signal_connect(gtkButton, "style-set", G_CALLBACK(gtkStyleSetCallback), 0);
-            addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, NULL));
+            addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, "Qt"));
             addWidget(QGtkStylePrivate::gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE));
             addWidget(QGtkStylePrivate::gtk_hbutton_box_new());
             addWidget(QGtkStylePrivate::gtk_check_button_new());
@@ -566,12 +570,12 @@ void QGtkStylePrivate::initGtkWidgets() const
             // When styles change subwidgets can get rearranged
             // as with the combo box. We need to update the widget map
             // to reflect this;
-            QHash<QString, GtkWidget*> oldMap = *gtkWidgetMap();
+            QHash<QHashableLatin1Literal, GtkWidget*> oldMap = *gtkWidgetMap();
             gtkWidgetMap()->clear();
-            QHashIterator<QString, GtkWidget*> it(oldMap);
+            QHashIterator<QHashableLatin1Literal, GtkWidget*> it(oldMap);
             while (it.hasNext()) {
                 it.next();
-                if (!it.key().contains(QLatin1Char('.'))) {
+                if (!strchr(it.key().data(), '.')) {
                     addAllSubWidgets(it.value());
                 }
             }
@@ -586,8 +590,13 @@ void QGtkStylePrivate::initGtkWidgets() const
  */
 void QGtkStylePrivate::cleanupGtkWidgets()
 {
-    if (gtkWidgetMap()->contains(QLS("GtkWindow"))) // Gtk will destroy all children
-        gtk_widget_destroy(gtkWidgetMap()->value(QLS("GtkWindow")));
+    if (!widgetMap)
+        return;
+    if (widgetMap->contains("GtkWindow")) // Gtk will destroy all children
+        gtk_widget_destroy(widgetMap->value("GtkWindow"));
+    for (QHash<QHashableLatin1Literal, GtkWidget *>::const_iterator it = widgetMap->constBegin();
+         it != widgetMap->constEnd(); ++it)
+        free(const_cast<char *>(it.key().data()));
 }
 
 static bool resolveGConf()
@@ -678,7 +687,7 @@ QString QGtkStylePrivate::getThemeName()
 int QGtkStylePrivate::getSpinboxArrowSize() const
 {
     const int MIN_ARROW_WIDTH = 6;
-    GtkWidget *spinButton = gtkWidget(QLS("GtkSpinButton"));
+    GtkWidget *spinButton = gtkWidget("GtkSpinButton");
     GtkStyle *style = spinButton->style;
     gint size = pango_font_description_get_size (style->font_desc);
     gint arrow_size;
@@ -698,17 +707,17 @@ bool QGtkStylePrivate::isKDE4Session()
 
 void QGtkStylePrivate::applyCustomPaletteHash()
 {
-    QPalette menuPal = gtkWidgetPalette(QLS("GtkMenu"));
-    GdkColor gdkBg = gtkWidget(QLS("GtkMenu"))->style->bg[GTK_STATE_NORMAL];
+    QPalette menuPal = gtkWidgetPalette("GtkMenu");
+    GdkColor gdkBg = gtkWidget("GtkMenu")->style->bg[GTK_STATE_NORMAL];
     QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
     menuPal.setBrush(QPalette::Base, bgColor);
     menuPal.setBrush(QPalette::Window, bgColor);
     qApp->setPalette(menuPal, "QMenu");
 
-    QPalette toolbarPal = gtkWidgetPalette(QLS("GtkToolbar"));
+    QPalette toolbarPal = gtkWidgetPalette("GtkToolbar");
     qApp->setPalette(toolbarPal, "QToolBar");
 
-    QPalette menuBarPal = gtkWidgetPalette(QLS("GtkMenuBar"));
+    QPalette menuBarPal = gtkWidgetPalette("GtkMenuBar");
     qApp->setPalette(menuBarPal, "QMenuBar");
 }
 
@@ -717,7 +726,7 @@ void QGtkStylePrivate::applyCustomPaletteHash()
 */
 GtkWidget* QGtkStylePrivate::getTextColorWidget() const
 {
-    return  gtkWidget(QLS("GtkEntry"));
+    return  gtkWidget("GtkEntry");
 }
 
 void QGtkStylePrivate::setupGtkWidget(GtkWidget* widget)
@@ -726,7 +735,7 @@ void QGtkStylePrivate::setupGtkWidget(GtkWidget* widget)
         static GtkWidget* protoLayout = 0;
         if (!protoLayout) {
             protoLayout = QGtkStylePrivate::gtk_fixed_new();
-            QGtkStylePrivate::gtk_container_add((GtkContainer*)(gtkWidgetMap()->value(QLS("GtkWindow"))), protoLayout);
+            QGtkStylePrivate::gtk_container_add((GtkContainer*)(gtkWidgetMap()->value("GtkWindow")), protoLayout);
         }
         Q_ASSERT(protoLayout);
 
@@ -739,8 +748,19 @@ void QGtkStylePrivate::setupGtkWidget(GtkWidget* widget)
 void QGtkStylePrivate::addWidgetToMap(GtkWidget *widget)
 {
     if (Q_GTK_IS_WIDGET(widget)) {
-       gtk_widget_realize(widget);
-       gtkWidgetMap()->insert(classPath(widget), widget);
+        gtk_widget_realize(widget);
+        QHashableLatin1Literal widgetPath = classPath(widget);
+
+        WidgetMap *map = gtkWidgetMap();
+        WidgetMap::iterator it = map->find(widgetPath);
+        if (it != map->end()) {
+            free(const_cast<char *>(it.key().data()));
+            map->erase(it);
+        }
+        map->insert(widgetPath, widget);
+#ifdef DUMP_GTK_WIDGET_TREE
+        qWarning("Inserted Gtk Widget: %s", widgetPath.data());
+#endif
     }
  }
 
@@ -753,7 +773,7 @@ void QGtkStylePrivate::addAllSubWidgets(GtkWidget *widget, gpointer v)
 }
 
 // Updates window/windowtext palette based on the indicated gtk widget
-QPalette QGtkStylePrivate::gtkWidgetPalette(const QString &gtkWidgetName) const
+QPalette QGtkStylePrivate::gtkWidgetPalette(const QHashableLatin1Literal &gtkWidgetName) const
 {
     GtkWidget *gtkWidget = QGtkStylePrivate::gtkWidget(gtkWidgetName);
     Q_ASSERT(gtkWidget);
@@ -1087,6 +1107,28 @@ QIcon QGtkStylePrivate::getFilesystemIcon(const QFileInfo &info)
         return QIcon::fromTheme(iconName);
     }
     return icon;
+}
+
+bool operator==(const QHashableLatin1Literal &l1, const QHashableLatin1Literal &l2)
+{
+    return l1.size() == l2.size() || qstrcmp(l1.data(), l2.data()) == 0;
+}
+
+// copied from qHash.cpp
+uint qHash(const QHashableLatin1Literal &key)
+{
+    int n = key.size();
+    const uchar *p = reinterpret_cast<const uchar *>(key.data());
+    uint h = 0;
+    uint g;
+
+    while (n--) {
+        h = (h << 4) + *p++;
+        if ((g = (h & 0xf0000000)) != 0)
+            h ^= g >> 23;
+        h &= ~g;
+    }
+    return h;
 }
 
 QT_END_NAMESPACE

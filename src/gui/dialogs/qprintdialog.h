@@ -56,7 +56,7 @@ class QPrintDialogPrivate;
 class QPushButton;
 class QPrinter;
 
-#if defined (Q_OS_UNIX) && !defined(QTOPIA_PRINTDIALOG) && !defined(Q_WS_MAC)
+#if defined (Q_OS_UNIX) && !defined(QTOPIA_PRINTDIALOG) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
 class QUnixPrintWidgetPrivate;
 
 class Q_GUI_EXPORT QUnixPrintWidget : public QWidget

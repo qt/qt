@@ -134,7 +134,7 @@ void ExtractImages::acceptImage(DomImage *image)
         QTextStream *imageOut = new QTextStream(&f);
         imageOut->setCodec(QTextCodec::codecForName("UTF-8"));
 
-        CPP::WriteIconData::writeImage(*imageOut, QString(), image);
+        CPP::WriteIconData::writeImage(*imageOut, QString(), m_option.limitXPM_LineLength, image);
         delete imageOut;
     } else {
         CPP::WriteIconData::writeImage(f, image);

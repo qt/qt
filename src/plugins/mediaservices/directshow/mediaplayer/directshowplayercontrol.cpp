@@ -87,7 +87,7 @@ DirectShowPlayerControl::DirectShowPlayerControl(DirectShowPlayerService *servic
     , m_muteVolume(-1)
     , m_position(0)
     , m_duration(0)
-    , m_playbackRate(0)
+    , m_playbackRate(1.0)
     , m_seekable(false)
 {
 }

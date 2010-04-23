@@ -137,7 +137,8 @@ public:
 
     void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
 
-    void drawPixmapFragments(const QPainter::Fragment *drawingData, int dataCount, const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints);
+    void drawPixmapFragments(const QPainter::PixmapFragment *drawingData, int dataCount, const QPixmap &pixmap,
+                             QFlags<QPainter::PixmapFragmentHint> hints);
 
     void drawTextItem(const QPointF &p, const QTextItem &textItem);
     void drawStaticTextItem(QStaticTextItem *staticTextItem);

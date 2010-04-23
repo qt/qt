@@ -36,13 +36,13 @@ namespace JSC {
 
     class JSFunction : public InternalFunction {
         friend class JIT;
-        friend struct VPtrSet;
+        friend class JSGlobalData;
 
         typedef InternalFunction Base;
 
     public:
-        JSFunction(ExecState*, PassRefPtr<Structure>, int length, const Identifier&, NativeFunction);
-        JSFunction(ExecState*, PassRefPtr<FunctionExecutable>, ScopeChainNode*);
+        JSFunction(ExecState*, NonNullPassRefPtr<Structure>, int length, const Identifier&, NativeFunction);
+        JSFunction(ExecState*, NonNullPassRefPtr<FunctionExecutable>, ScopeChainNode*);
         virtual ~JSFunction();
 
         JSObject* construct(ExecState*, const ArgList&);
@@ -61,26 +61,30 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype) 
         { 
-            return Structure::create(prototype, TypeInfo(ObjectType, ImplementsHasInstance)); 
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags)); 
         }
 
         NativeFunction nativeFunction()
         {
-            return *reinterpret_cast<NativeFunction*>(m_data);
+            return *WTF::bitwise_cast<NativeFunction*>(m_data);
         }
 
         virtual ConstructType getConstructData(ConstructData&);
         virtual CallType getCallData(CallData&);
 
+    protected:
+        const static unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | OverridesMarkChildren | OverridesGetPropertyNames | InternalFunction::StructureFlags;
+
     private:
-        JSFunction(PassRefPtr<Structure>);
+        JSFunction(NonNullPassRefPtr<Structure>);
 
         bool isHostFunctionNonInline() const;
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
         virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
 
         virtual void markChildren(MarkStack&);
 
@@ -94,7 +98,7 @@ namespace JSC {
         ScopeChain& scopeChain()
         {
             ASSERT(!isHostFunctionNonInline());
-            return *reinterpret_cast<ScopeChain*>(m_data);
+            return *WTF::bitwise_cast<ScopeChain*>(m_data);
         }
         void clearScopeChain()
         {
@@ -109,11 +113,11 @@ namespace JSC {
         void setScopeChain(const ScopeChain& sc)
         {
             ASSERT(!isHostFunctionNonInline());
-            *reinterpret_cast<ScopeChain*>(m_data) = sc;
+            *WTF::bitwise_cast<ScopeChain*>(m_data) = sc;
         }
         void setNativeFunction(NativeFunction func)
         {
-            *reinterpret_cast<NativeFunction*>(m_data) = func;
+            *WTF::bitwise_cast<NativeFunction*>(m_data) = func;
         }
         unsigned char m_data[sizeof(void*)];
     };

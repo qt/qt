@@ -52,14 +52,22 @@ QT_BEGIN_NAMESPACE
 
     \sa QDeclarativeEngine::addImageProvider()
 */
+
+/*!
+  The destructor is virtual.
+ */
 QDeclarativeImageProvider::~QDeclarativeImageProvider()
 {
 }
 
 /*!
-    \fn QImage QDeclarativeImageProvider::request(const QString &id)
+    \fn QImage QDeclarativeImageProvider::request(const QString &id, QSize *size, const QSize& requested_size)
 
     Implement this method to return the image with \a id.
+
+    If \a requested_size is a valid size, resize the image to that size before returning.
+
+    In any case, \a size must be set to the (original) size of the image.
 
     Note: this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.

@@ -161,6 +161,8 @@ QGestureRecognizer::~QGestureRecognizer()
 
     Reimplement this function to create a custom QGesture-derived gesture
     object if necessary.
+
+    The application takes ownership of the created gesture object.
 */
 QGesture *QGestureRecognizer::create(QObject *target)
 {

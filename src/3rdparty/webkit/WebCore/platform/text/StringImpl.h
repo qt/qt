@@ -26,24 +26,24 @@
 #include <limits.h>
 #include <wtf/ASCIICType.h>
 #include <wtf/CrossThreadRefCounted.h>
+#include <wtf/Noncopyable.h>
 #include <wtf/OwnFastMallocPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/PtrAndFlags.h>
 #include <wtf/RefCounted.h>
+#include <wtf/StringHashFunctions.h>
 #include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
 
-#if USE(JSC)
-#include <runtime/UString.h>
-#endif
-
-#if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
+#if PLATFORM(CF)
 typedef const struct __CFString * CFStringRef;
 #endif
 
 #ifdef __OBJC__
 @class NSString;
 #endif
+
+namespace JSC {
+class UString;
+}
 
 namespace WebCore {
 
@@ -56,23 +56,83 @@ struct UCharBufferTranslator;
 
 enum TextCaseSensitivity { TextCaseSensitive, TextCaseInsensitive };
 
+typedef OwnFastMallocPtr<const UChar> SharableUChar;
+typedef CrossThreadRefCounted<SharableUChar> SharedUChar;
 typedef bool (*CharacterMatchFunctionPtr)(UChar);
 
-class StringImpl : public RefCounted<StringImpl> {
+class StringImpl : public Noncopyable {
     friend struct CStringTranslator;
     friend struct HashAndCharactersTranslator;
     friend struct UCharBufferTranslator;
+    friend class AtomicStringImpl;
 private:
-    friend class ThreadGlobalData;
-    StringImpl();
-    
-    // This adopts the UChar* without copying the buffer.
-    StringImpl(const UChar*, unsigned length);
+    enum BufferOwnership {
+        BufferInternal,
+        BufferOwned,
+        BufferShared,
+    };
+
+    // Used to construct static strings, which have an special refCount that can never hit zero.
+    // This means that the static string will never be destroyed, which is important because
+    // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
+    enum StaticStringConstructType { ConstructStaticString };
+    StringImpl(const UChar* characters, unsigned length, StaticStringConstructType)
+        : m_data(characters)
+        , m_sharedBuffer(0)
+        , m_length(length)
+        , m_refCountAndFlags(s_refCountFlagStatic | BufferInternal)
+        , m_hash(0)
+    {
+        // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
+        // with impunity. The empty string is special because it is never entered into
+        // AtomicString's HashKey, but still needs to compare correctly.
+        hash();
+    }
+
+    // Create a normal string with internal storage (BufferInternal)
+    StringImpl(unsigned length)
+        : m_data(reinterpret_cast<const UChar*>(this + 1))
+        , m_sharedBuffer(0)
+        , m_length(length)
+        , m_refCountAndFlags(s_refCountIncrement | BufferInternal)
+        , m_hash(0)
+    {
+        ASSERT(m_data);
+        ASSERT(m_length);
+    }
+
+    // Create a StringImpl adopting ownership of the provided buffer (BufferOwned)
+    StringImpl(const UChar* characters, unsigned length)
+        : m_data(characters)
+        , m_sharedBuffer(0)
+        , m_length(length)
+        , m_refCountAndFlags(s_refCountIncrement | BufferOwned)
+        , m_hash(0)
+    {
+        ASSERT(m_data);
+        ASSERT(m_length);
+    }
+
+    // Used to construct new strings sharing an existing SharedUChar (BufferShared)
+    StringImpl(const UChar* characters, unsigned length, PassRefPtr<SharedUChar> sharedBuffer)
+        : m_data(characters)
+        , m_sharedBuffer(sharedBuffer.releaseRef())
+        , m_length(length)
+        , m_refCountAndFlags(s_refCountIncrement | BufferShared)
+        , m_hash(0)
+    {
+        ASSERT(m_data);
+        ASSERT(m_length);
+    }
 
     // For use only by AtomicString's XXXTranslator helpers.
-    void setHash(unsigned hash) { ASSERT(!m_hash); m_hash = hash; }
-    
-    typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
+    void setHash(unsigned hash)
+    {
+        ASSERT(!isStatic());
+        ASSERT(!m_hash);
+        ASSERT(hash == computeHash(m_data, m_length));
+        m_hash = hash;
+    }
 
 public:
     ~StringImpl();
@@ -80,32 +140,46 @@ public:
     static PassRefPtr<StringImpl> create(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> create(const char*, unsigned length);
     static PassRefPtr<StringImpl> create(const char*);
-    static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
-
-    static PassRefPtr<StringImpl> createWithTerminatingNullCharacter(const StringImpl&);
-
-    static PassRefPtr<StringImpl> createStrippingNullCharacters(const UChar*, unsigned length);
-    static PassRefPtr<StringImpl> adopt(StringBuffer&);
-    static PassRefPtr<StringImpl> adopt(Vector<UChar>&);
 #if USE(JSC)
     static PassRefPtr<StringImpl> create(const JSC::UString&);
     JSC::UString ustring();
 #endif
 
+    static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
+    static PassRefPtr<StringImpl> createWithTerminatingNullCharacter(const StringImpl&);
+    static PassRefPtr<StringImpl> createStrippingNullCharacters(const UChar*, unsigned length);
+
+    template<size_t inlineCapacity>
+    static PassRefPtr<StringImpl> adopt(Vector<UChar, inlineCapacity>& vector)
+    {
+        if (size_t size = vector.size()) {
+            ASSERT(vector.data());
+            return adoptRef(new StringImpl(vector.releaseBuffer(), size));
+        }
+        return empty();
+    }
+    static PassRefPtr<StringImpl> adopt(StringBuffer&);
+
     SharedUChar* sharedBuffer();
-    const UChar* characters() { return m_data; }
+    const UChar* characters() const { return m_data; }
     unsigned length() { return m_length; }
 
-    bool hasTerminatingNullCharacter() const { return m_sharedBufferAndFlags.isFlagSet(HasTerminatingNullCharacter); }
+    bool hasTerminatingNullCharacter() const { return m_refCountAndFlags & s_refCountFlagHasTerminatingNullCharacter; }
 
-    bool inTable() const { return m_sharedBufferAndFlags.isFlagSet(InTable); }
-    void setInTable() { return m_sharedBufferAndFlags.setFlag(InTable); }
+    bool inTable() const { return m_refCountAndFlags & s_refCountFlagInTable; }
+    void setInTable() { m_refCountAndFlags |= s_refCountFlagInTable; }
 
-    unsigned hash() { if (m_hash == 0) m_hash = computeHash(m_data, m_length); return m_hash; }
+    unsigned hash() const { if (!m_hash) m_hash = computeHash(m_data, m_length); return m_hash; }
     unsigned existingHash() const { ASSERT(m_hash); return m_hash; }
-    static unsigned computeHash(const UChar*, unsigned len);
-    static unsigned computeHash(const char*);
-    
+    static unsigned computeHash(const UChar* data, unsigned length) { return WTF::stringHash(data, length); }
+    static unsigned computeHash(const char* data) { return WTF::stringHash(data); }
+
+    StringImpl* ref() { m_refCountAndFlags += s_refCountIncrement; return this; }
+    ALWAYS_INLINE void deref() { m_refCountAndFlags -= s_refCountIncrement; if (!(m_refCountAndFlags & (s_refCountMask | s_refCountFlagStatic))) delete this; }
+    ALWAYS_INLINE bool hasOneRef() const { return (m_refCountAndFlags & (s_refCountMask | s_refCountFlagStatic)) == s_refCountIncrement; }
+
+    static StringImpl* empty();
+
     // Returns a StringImpl suitable for use on another thread.
     PassRefPtr<StringImpl> crossThreadString();
     // Makes a deep copy. Helpful only if you need to use a String on another thread
@@ -162,44 +236,37 @@ public:
     PassRefPtr<StringImpl> replace(StringImpl*, StringImpl*);
     PassRefPtr<StringImpl> replace(unsigned index, unsigned len, StringImpl*);
 
-    static StringImpl* empty();
-
     Vector<char> ascii();
 
     WTF::Unicode::Direction defaultWritingDirection();
 
-#if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
+#if PLATFORM(CF)
     CFStringRef createCFString();
 #endif
 #ifdef __OBJC__
     operator NSString*();
 #endif
 
-    void operator delete(void*);
-
 private:
-    // Allocation from a custom buffer is only allowed internally to avoid
-    // mismatched allocators. Callers should use create().
-    void* operator new(size_t size);
-    void* operator new(size_t size, void* address);
+    using Noncopyable::operator new;
 
     static PassRefPtr<StringImpl> createStrippingNullCharactersSlowCase(const UChar*, unsigned length);
     
-    // The StringImpl struct and its data may be allocated within a single heap block.
-    // In this case, the m_data pointer is an "internal buffer", and does not need to be deallocated.
-    bool bufferIsInternal() { return m_data == reinterpret_cast<const UChar*>(this + 1); }
+    BufferOwnership bufferOwnership() const { return static_cast<BufferOwnership>(m_refCountAndFlags & s_refCountMaskBufferOwnership); }
+    bool isStatic() const { return m_refCountAndFlags & s_refCountFlagStatic; }
 
-    enum StringImplFlags {
-        HasTerminatingNullCharacter,
-        InTable,
-    };
+    static const unsigned s_refCountMask = 0xFFFFFFE0;
+    static const unsigned s_refCountIncrement = 0x20;
+    static const unsigned s_refCountFlagStatic = 0x10;
+    static const unsigned s_refCountFlagHasTerminatingNullCharacter = 0x8;
+    static const unsigned s_refCountFlagInTable = 0x4;
+    static const unsigned s_refCountMaskBufferOwnership = 0x3;
 
     const UChar* m_data;
+    SharedUChar* m_sharedBuffer;
     unsigned m_length;
+    unsigned m_refCountAndFlags;
     mutable unsigned m_hash;
-    PtrAndFlags<SharedUChar, StringImplFlags> m_sharedBufferAndFlags;
-    // There is a fictitious variable-length UChar array at the end, which is used
-    // as the internal buffer by the createUninitialized and create methods.
 };
 
 bool equal(StringImpl*, StringImpl*);
@@ -213,91 +280,6 @@ bool equalIgnoringCase(const UChar* a, const char* b, unsigned length);
 inline bool equalIgnoringCase(const char* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, a, length); }
 
 bool equalIgnoringNullity(StringImpl*, StringImpl*);
-
-// Golden ratio - arbitrary start value to avoid mapping all 0's to all 0's
-// or anything like that.
-const unsigned phi = 0x9e3779b9U;
-
-// Paul Hsieh's SuperFastHash
-// http://www.azillionmonkeys.com/qed/hash.html
-inline unsigned StringImpl::computeHash(const UChar* data, unsigned length)
-{
-    unsigned hash = phi;
-    
-    // Main loop.
-    for (unsigned pairCount = length >> 1; pairCount; pairCount--) {
-        hash += data[0];
-        unsigned tmp = (data[1] << 11) ^ hash;
-        hash = (hash << 16) ^ tmp;
-        data += 2;
-        hash += hash >> 11;
-    }
-    
-    // Handle end case.
-    if (length & 1) {
-        hash += data[0];
-        hash ^= hash << 11;
-        hash += hash >> 17;
-    }
-
-    // Force "avalanching" of final 127 bits.
-    hash ^= hash << 3;
-    hash += hash >> 5;
-    hash ^= hash << 2;
-    hash += hash >> 15;
-    hash ^= hash << 10;
-
-    // This avoids ever returning a hash code of 0, since that is used to
-    // signal "hash not computed yet", using a value that is likely to be
-    // effectively the same as 0 when the low bits are masked.
-    hash |= !hash << 31;
-    
-    return hash;
-}
-
-// Paul Hsieh's SuperFastHash
-// http://www.azillionmonkeys.com/qed/hash.html
-inline unsigned StringImpl::computeHash(const char* data)
-{
-    // This hash is designed to work on 16-bit chunks at a time. But since the normal case
-    // (above) is to hash UTF-16 characters, we just treat the 8-bit chars as if they
-    // were 16-bit chunks, which should give matching results
-
-    unsigned hash = phi;
-    
-    // Main loop
-    for (;;) {
-        unsigned char b0 = data[0];
-        if (!b0)
-            break;
-        unsigned char b1 = data[1];
-        if (!b1) {
-            hash += b0;
-            hash ^= hash << 11;
-            hash += hash >> 17;
-            break;
-        }
-        hash += b0;
-        unsigned tmp = (b1 << 11) ^ hash;
-        hash = (hash << 16) ^ tmp;
-        data += 2;
-        hash += hash >> 11;
-    }
-    
-    // Force "avalanching" of final 127 bits.
-    hash ^= hash << 3;
-    hash += hash >> 5;
-    hash ^= hash << 2;
-    hash += hash >> 15;
-    hash ^= hash << 10;
-
-    // This avoids ever returning a hash code of 0, since that is used to
-    // signal "hash not computed yet", using a value that is likely to be
-    // effectively the same as 0 when the low bits are masked.
-    hash |= !hash << 31;
-    
-    return hash;
-}
 
 static inline bool isSpaceOrNewline(UChar c)
 {

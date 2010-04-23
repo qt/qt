@@ -337,7 +337,7 @@ QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
     if (!bitmap)
         return QPixmap();
 
-    QScopedPointer<QS60PixmapData> data(new QS60PixmapData(QPixmapData::PixmapType));
+    QScopedPointer<QPixmapData> data(QPixmapData::create(0,0, QPixmapData::PixmapType));
     data->fromNativeType(reinterpret_cast<void*>(bitmap), QPixmapData::FbsBitmap);
     QPixmap pixmap(data.take());
     return pixmap;
@@ -735,7 +735,7 @@ QPixmap QPixmap::fromSymbianRSgImage(RSgImage *sgImage)
     if (!sgImage)
         return QPixmap();
 
-    QScopedPointer<QS60PixmapData> data(new QS60PixmapData(QPixmapData::PixmapType));
+    QScopedPointer<QPixmapData> data(QPixmapData::create(0,0, QPixmapData::PixmapType));
     data->fromNativeType(reinterpret_cast<void*>(sgImage), QPixmapData::SgImage);
     QPixmap pixmap(data.take());
     return pixmap;

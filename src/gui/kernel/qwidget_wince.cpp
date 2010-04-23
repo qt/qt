@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 const QString qt_reg_winclass(QWidget *w);                // defined in qapplication_win.cpp
-extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
 //#define TABLET_DEBUG
 #define PACKETDATA  (PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE \
@@ -586,7 +586,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level) {
 }
 
 // The procedure does nothing, but is required for mousegrabbing to work
-LRESULT CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT QT_WIN_CALLBACK qJournalRecordProc(int nCode, WPARAM wParam, LPARAM lParam) {
     Q_UNUSED(nCode);
     Q_UNUSED(wParam);
     Q_UNUSED(lParam);

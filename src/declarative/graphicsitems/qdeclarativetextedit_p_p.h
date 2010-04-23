@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeitem.h"
-#include "qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativepainteditem_p_p.h"
 
 #include <qdeclarative.h>
 
@@ -68,10 +68,11 @@ class QDeclarativeTextEditPrivate : public QDeclarativePaintedItemPrivate
 
 public:
     QDeclarativeTextEditPrivate()
-      : color("black"), imgDirty(true), hAlign(QDeclarativeTextEdit::AlignLeft), vAlign(QDeclarativeTextEdit::AlignTop),
-      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(true),
+      : color("black"), hAlign(QDeclarativeTextEdit::AlignLeft), vAlign(QDeclarativeTextEdit::AlignTop),
+      imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
       persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
-      cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0)
+      cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0),
+      wrapMode(QDeclarativeTextEdit::NoWrap)
     {
     }
 
@@ -80,6 +81,7 @@ public:
     void updateDefaultTextOption();
     void relayoutDocument();
     void updateSelection();
+    void focusChanged(bool);
 
     QString text;
     QFont font;
@@ -88,17 +90,16 @@ public:
     QColor  selectedTextColor;
     QString style;
     QColor  styleColor;
-    bool imgDirty;
     QPixmap imgCache;
     QPixmap imgStyleCache;
     QDeclarativeTextEdit::HAlignment hAlign;
     QDeclarativeTextEdit::VAlignment vAlign;
-    bool dirty;
-    bool wrap;
-    bool richText;
-    bool cursorVisible;
-    bool focusOnPress;
-    bool persistentSelection;
+    bool imgDirty : 1;
+    bool dirty : 1;
+    bool richText : 1;
+    bool cursorVisible : 1;
+    bool focusOnPress : 1;
+    bool persistentSelection : 1;
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;
@@ -107,6 +108,7 @@ public:
     QDeclarativeTextEdit::TextFormat format;
     QTextDocument *document;
     QTextControl *control;
+    QDeclarativeTextEdit::WrapMode wrapMode;
 };
 
 QT_END_NAMESPACE

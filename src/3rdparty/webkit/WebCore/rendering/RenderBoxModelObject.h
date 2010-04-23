@@ -90,13 +90,15 @@ public:
     void paintBorder(GraphicsContext*, int tx, int ty, int w, int h, const RenderStyle*, bool begin = true, bool end = true);
     bool paintNinePieceImage(GraphicsContext*, int tx, int ty, int w, int h, const RenderStyle*, const NinePieceImage&, CompositeOperator = CompositeSourceOver);
     void paintBoxShadow(GraphicsContext*, int tx, int ty, int w, int h, const RenderStyle*, ShadowStyle, bool begin = true, bool end = true);
-    void paintFillLayerExtended(const PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int width, int height, InlineFlowBox* = 0, CompositeOperator = CompositeSourceOver);
+    void paintFillLayerExtended(const PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int width, int height, InlineFlowBox* = 0, CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0);
 
     // The difference between this inline's baseline position and the line's baseline position.
     int verticalPosition(bool firstLine) const;
 
     // Called by RenderObject::destroy() (and RenderWidget::destroy()) and is the only way layers should ever be destroyed
     void destroyLayer();
+
+    void highQualityRepaintTimerFired(Timer<RenderBoxModelObject>*);
 
 protected:
     void calculateBackgroundImageGeometry(const FillLayer*, int tx, int ty, int w, int h, IntRect& destRect, IntPoint& phase, IntSize& tileSize);

@@ -19,6 +19,7 @@
 #include "config.h"
 #include "PluginView.h"
 
+#include "Bridge.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "Element.h"
@@ -31,13 +32,12 @@
 #include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
+#include "HostWindow.h"
 #include "Image.h"
 #include "JSDOMBinding.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "NotImplemented.h"
-#include "npfunctions.h"
-#include "npinterface.h"
 #include "Page.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
@@ -45,15 +45,18 @@
 #include "PluginDebug.h"
 #include "PluginMainThreadScheduler.h"
 #include "PluginPackage.h"
+#include "QWebPageClient.h"
 #include "RenderLayer.h"
 #include "ScriptController.h"
 #include "Settings.h"
+#include "npfunctions.h"
+#include "npinterface.h"
 #include "npruntime_impl.h"
-#include "runtime.h"
+#include "qgraphicswebview.h"
 #include "runtime_root.h"
-#include "QWebPageClient.h"
+#include <QGraphicsProxyWidget>
 #include <QKeyEvent>
-#include <QPixmap.h>
+#include <QPixmap>
 #include <QRegion>
 #include <QVector>
 #include <QWidget>
@@ -84,6 +87,7 @@ void PluginView::updatePluginWidget()
     IntRect oldClipRect = m_clipRect;
     
     m_windowRect = IntRect(frameView->contentsToWindow(frameRect().location()), frameRect().size());
+    
     m_clipRect = windowClipRect();
     m_clipRect.move(-m_windowRect.x(), -m_windowRect.y());
     if (m_windowRect == oldWindowRect && m_clipRect == oldClipRect)
@@ -306,66 +310,27 @@ NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const c
     return NPERR_NO_ERROR;
 }
 
-NPError PluginView::getValueStatic(NPNVariable variable, void* value)
+bool PluginView::platformGetValueStatic(NPNVariable variable, void* value, NPError* result)
 {
-    LOG(Plugins, "PluginView::getValueStatic(%s)", prettyNameForNPNVariable(variable).data());
-
     switch (variable) {
     case NPNVjavascriptEnabledBool:
         *static_cast<NPBool*>(value) = true;
-        return NPERR_NO_ERROR;
+        *result = NPERR_NO_ERROR;
+        return true;
 
     case NPNVSupportsWindowless:
         *static_cast<NPBool*>(value) = true;
-        return NPERR_NO_ERROR;
+        *result = NPERR_NO_ERROR;
+        return true;
 
     default:
-        return NPERR_GENERIC_ERROR;
+        return false;
     }
 }
 
-NPError PluginView::getValue(NPNVariable variable, void* value)
+bool PluginView::platformGetValue(NPNVariable, void*, NPError*)
 {
-    LOG(Plugins, "PluginView::getValue(%s)", prettyNameForNPNVariable(variable).data());
-
-    switch (variable) {
-    case NPNVWindowNPObject: {
-        if (m_isJavaScriptPaused)
-            return NPERR_GENERIC_ERROR;
-
-        NPObject* windowScriptObject = m_parentFrame->script()->windowScriptNPObject();
-
-        // Return value is expected to be retained, as described here: <http://www.mozilla.org/projects/plugin/npruntime.html>
-        if (windowScriptObject)
-            _NPN_RetainObject(windowScriptObject);
-
-        void** v = (void**)value;
-        *v = windowScriptObject;
-            
-        return NPERR_NO_ERROR;
-    }
-
-    case NPNVPluginElementNPObject: {
-        if (m_isJavaScriptPaused)
-            return NPERR_GENERIC_ERROR;
-
-        NPObject* pluginScriptObject = 0;
-
-        if (m_element->hasTagName(appletTag) || m_element->hasTagName(embedTag) || m_element->hasTagName(objectTag))
-            pluginScriptObject = static_cast<HTMLPlugInElement*>(m_element)->getNPObject();
-
-        // Return value is expected to be retained, as described here: <http://www.mozilla.org/projects/plugin/npruntime.html>
-        if (pluginScriptObject)
-            _NPN_RetainObject(pluginScriptObject);
-
-        void** v = (void**)value;
-        *v = pluginScriptObject;
-
-        return NPERR_NO_ERROR;
-    }        
-    default:
-        return getValueStatic(variable, value);
-    }
+    return false;
 }
 
 void PluginView::invalidateRect(const IntRect& rect)
@@ -425,12 +390,15 @@ bool PluginView::platformStart()
 
     if (m_isWindowed) {
         QWebPageClient* client = m_parentFrame->view()->hostWindow()->platformPageClient();
-        // FIXME this will not work for QGraphicsView.
-        // But we cannot use winId because it will create a window and on S60,
-        // QWidgets should not create a window. 
-        Q_ASSERT(qobject_cast<QWidget*>(client->pluginParent()));
-        setPlatformWidget(new PluginContainerSymbian(this, 
-            qobject_cast<QWidget*>(client->pluginParent())));
+        QGraphicsProxyWidget* proxy = 0;
+        if (QGraphicsWebView *webView = qobject_cast<QGraphicsWebView*>(client->pluginParent()))
+            proxy = new QGraphicsProxyWidget(webView);
+
+        PluginContainerSymbian* container = new PluginContainerSymbian(this, proxy ? 0 : client->ownerWidget(), proxy);
+        setPlatformWidget(container);
+        if (proxy)
+            proxy->setWidget(container);
+        
         m_npWindow.type = NPWindowTypeWindow;
         m_npWindow.window = (void*)platformPluginWidget();
 
@@ -446,7 +414,11 @@ bool PluginView::platformStart()
 
 void PluginView::platformDestroy()
 {
-    delete platformPluginWidget();
+    QWebPageClient* client = m_parentFrame->view()->hostWindow()->platformPageClient();
+    if (client && qobject_cast<QGraphicsWebView*>(client->pluginParent()))
+        delete static_cast<PluginContainerSymbian*>(platformPluginWidget())->proxy();
+    else
+        delete platformPluginWidget();
 }
 
 void PluginView::halt()

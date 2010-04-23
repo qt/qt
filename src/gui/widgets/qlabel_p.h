@@ -55,7 +55,7 @@
 
 #include "qlabel.h"
 
-#include "../text/qtextdocumentlayout_p.h"
+#include "private/qtextdocumentlayout_p.h"
 #include "private/qtextcontrol_p.h"
 #include "qtextdocumentfragment.h"
 #include "qframe_p.h"

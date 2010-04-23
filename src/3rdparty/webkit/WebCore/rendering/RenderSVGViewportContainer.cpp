@@ -38,23 +38,33 @@ RenderSVGViewportContainer::RenderSVGViewportContainer(SVGStyledElement* node)
 {
 }
 
-void RenderSVGViewportContainer::paint(PaintInfo& paintInfo, int parentX, int parentY)
+FloatRect RenderSVGViewportContainer::markerBoundaries(const AffineTransform& markerTransformation) const
 {
-    // FIXME: The if statement here evaluates to false. isEmpty() is exactly the same
-    // as what is on the right side, so it's basically !isEmpty && isEmpty. So this
-    // function does nothing.
+    FloatRect coordinates = repaintRectInLocalCoordinates();
 
-    // A value of zero disables rendering of the element. 
-    if (!m_viewport.isEmpty() && (m_viewport.width() <= 0. || m_viewport.height() <= 0.))
-        return;
+    // Map repaint rect into parent coordinate space, in which the marker boundaries have to be evaluated
+    coordinates = localToParentTransform().mapRect(coordinates);
 
-    RenderSVGContainer::paint(paintInfo, parentX, parentY);
+    return markerTransformation.mapRect(coordinates);
+}
+
+AffineTransform RenderSVGViewportContainer::markerContentTransformation(const AffineTransform& contentTransformation, const FloatPoint& origin, float strokeWidth) const
+{
+    // The 'origin' coordinate maps to SVGs refX/refY, given in coordinates relative to the viewport established by the marker
+    FloatPoint mappedOrigin = viewportTransform().mapPoint(origin);
+
+    AffineTransform transformation = contentTransformation;
+    if (strokeWidth != -1)
+        transformation.scaleNonUniform(strokeWidth, strokeWidth);
+
+    transformation.translate(-mappedOrigin.x(), -mappedOrigin.y());
+    return transformation;
 }
 
 void RenderSVGViewportContainer::applyViewportClip(PaintInfo& paintInfo)
 {
-    if (style()->overflowX() != OVISIBLE)
-        paintInfo.context->clip(enclosingIntRect(m_viewport)); // FIXME: Eventually we'll want float-precision clipping
+    if (SVGRenderBase::isOverflowHidden(this))
+        paintInfo.context->clip(m_viewport);
 }
 
 void RenderSVGViewportContainer::calcViewport()
@@ -82,7 +92,7 @@ void RenderSVGViewportContainer::calcViewport()
     }
 }
 
-TransformationMatrix RenderSVGViewportContainer::viewportTransform() const
+AffineTransform RenderSVGViewportContainer::viewportTransform() const
 {
     if (node()->hasTagName(SVGNames::svgTag)) {
         SVGSVGElement* svg = static_cast<SVGSVGElement*>(node());
@@ -92,38 +102,27 @@ TransformationMatrix RenderSVGViewportContainer::viewportTransform() const
         return marker->viewBoxToViewTransform(m_viewport.width(), m_viewport.height());
     }
 
-    return TransformationMatrix();
+    return AffineTransform();
 }
 
-TransformationMatrix RenderSVGViewportContainer::localToParentTransform() const
+const AffineTransform& RenderSVGViewportContainer::localToParentTransform() const
 {
-    TransformationMatrix viewportTranslation;
-    viewportTranslation.translate(m_viewport.x(), m_viewport.y());
-    return viewportTransform() * viewportTranslation;
+    AffineTransform viewportTranslation(viewportTransform());
+    m_localToParentTransform = viewportTranslation.translateRight(m_viewport.x(), m_viewport.y());
+    return m_localToParentTransform;
     // If this class were ever given a localTransform(), then the above would read:
     // return viewportTransform() * localTransform() * viewportTranslation;
 }
 
-// FIXME: This method should be removed as soon as callers to RenderBox::absoluteTransform() can be removed.
-TransformationMatrix RenderSVGViewportContainer::absoluteTransform() const
-{
-    // This would apply localTransform() twice if localTransform() were not the identity.
-    return localToParentTransform() * RenderSVGContainer::absoluteTransform();
-}
-
 bool RenderSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& pointInParent)
 {
-    // Respect the viewport clip (which is in parent coords).  SVG does not support separate x/y overflow rules.
-    if (style()->overflowX() == OHIDDEN) {
-        ASSERT(style()->overflowY() == OHIDDEN);
-        if (!m_viewport.contains(pointInParent))
-            return false;
-    }
-    return true;
+    // Respect the viewport clip (which is in parent coords)
+    if (!SVGRenderBase::isOverflowHidden(this))
+        return true;
+    
+    return m_viewport.contains(pointInParent);
 }
 
 }
 
 #endif // ENABLE(SVG)
-
-// vim:ts=4:noet

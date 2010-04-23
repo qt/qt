@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativetypenamescriptclass_p.h"
+#include "private/qdeclarativetypenamescriptclass_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativetypenamecache_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,7 +62,7 @@ struct TypeNameData : public QScriptDeclarativeClass::Object {
 };
 
 QDeclarativeTypeNameScriptClass::QDeclarativeTypeNameScriptClass(QDeclarativeEngine *bindEngine)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(bindEngine)), 
   engine(bindEngine), object(0), type(0)
 {
 }
@@ -139,7 +139,7 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
     return 0;
 }
 
-QDeclarativeTypeNameScriptClass::ScriptValue 
+QDeclarativeTypeNameScriptClass::Value 
 QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
@@ -159,7 +159,7 @@ void QDeclarativeTypeNameScriptClass::setProperty(Object *o, const Identifier &n
     Q_ASSERT(!type);
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-    ep->objectClass->setProperty(((TypeNameData *)o)->object, n, v);
+    ep->objectClass->setProperty(((TypeNameData *)o)->object, n, v, context());
 }
 
 QT_END_NAMESPACE

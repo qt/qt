@@ -1,12 +1,12 @@
 TARGET = qcorewlanbearer
 include(../../qpluginbase.pri)
 
-QT += network
+QT = core gui network
 LIBS += -framework Foundation -framework SystemConfiguration
 
 contains(QT_CONFIG, corewlan) {
     isEmpty(QMAKE_MAC_SDK)|contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.6.sdk") {
-         LIBS += -framework CoreWLAN
+         LIBS += -framework CoreWLAN -framework Security
          DEFINES += MAC_SDK_10_6
     }
 }

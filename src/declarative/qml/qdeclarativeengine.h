@@ -77,8 +77,15 @@ public:
 
     void clearComponentCache();
 
+    QStringList importPathList() const;
+    void setImportPathList(const QStringList &paths);
     void addImportPath(const QString& dir);
-    bool importExtension(const QString &fileName, const QString &uri);
+
+    QStringList pluginPathList() const;
+    void setPluginPathList(const QStringList &paths);
+    void addPluginPath(const QString& dir);
+
+    bool importPlugin(const QString &filePath, const QString &uri, QString *errorString);
 
     void setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *);
     QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory() const;
@@ -97,6 +104,10 @@ public:
 
     static QDeclarativeContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QDeclarativeContext *);
+
+    enum ObjectOwnership { CppOwnership, JavaScriptOwnership };
+    static void setObjectOwnership(QObject *, ObjectOwnership);
+    static ObjectOwnership objectOwnership(QObject *);
 
 Q_SIGNALS:
     void quit ();

@@ -60,9 +60,10 @@
 #include <qfileiconprovider.h>
 #include <qfsfileengine.h>
 #include <qpair.h>
-#include <qdatetime.h>
 #include <qstack.h>
+#include <qdatetime.h>
 #include <qdir.h>
+#include <qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,11 +89,7 @@ public:
         return fe.caseSensitive();
     }
     QFile::Permissions permissions() const {
-        return mPermissions;
-    }
-
-    void setPermissions (QFile::Permissions permissions) {
-        mPermissions = permissions;
+        return mFileInfo.permissions();
     }
 
     Type type() const {
@@ -140,7 +137,6 @@ public:
 
 private :
     QFileInfo mFileInfo;
-    QFile::Permissions mPermissions;
 };
 
 class QFileIconProvider;
@@ -179,9 +175,8 @@ protected:
     void getFileInfos(const QString &path, const QStringList &files);
 
 private:
-    void fetch(const QFileInfo &info, QTime &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
+    void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
     QString translateDriveName(const QFileInfo &drive) const;
-    QFile::Permissions translatePermissions(const QFileInfo &fileInfo) const;
 
     QMutex mutex;
     QWaitCondition condition;

@@ -1,29 +1,27 @@
- import Qt 4.6
+ import Qt 4.7
 
  Component {
      id: photoDelegate
      Item {
          id: wrapper; width: 79; height: 79
 
-         Script {
-             function photoClicked() {
-                 imageDetails.photoTitle = title;
-                 imageDetails.photoTags = tags;
-                 imageDetails.photoWidth = photoWidth;
-                 imageDetails.photoHeight = photoHeight;
-                 imageDetails.photoType = photoType;
-                 imageDetails.photoAuthor = photoAuthor;
-                 imageDetails.photoDate = photoDate;
-                 imageDetails.photoUrl = url;
-                 imageDetails.rating = 0;
-                 scaleMe.state = "Details";
-             }
+         function photoClicked() {
+             imageDetails.photoTitle = title;
+             imageDetails.photoTags = tags;
+             imageDetails.photoWidth = photoWidth;
+             imageDetails.photoHeight = photoHeight;
+             imageDetails.photoType = photoType;
+             imageDetails.photoAuthor = photoAuthor;
+             imageDetails.photoDate = photoDate;
+             imageDetails.photoUrl = url;
+             imageDetails.rating = 0;
+             scaleMe.state = "Details";
          }
 
          Item {
              anchors.centerIn: parent
              scale: 0.0
-             scale: Behavior { NumberAnimation { easing.type: "InOutQuad"} }
+             Behavior on scale { NumberAnimation { easing.type: "InOutQuad"} }
              id: scaleMe
 
              Rectangle { height: 79; width: 79; id: blackRect;  anchors.centerIn: parent; color: "black"; smooth: true }
@@ -54,14 +52,16 @@
              transitions: [
                  Transition {
                      from: "Show"; to: "Details"
-                     ParentAction { }
-                     NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                     ParentAnimation {
+                         NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                     }
                  },
                  Transition {
                      from: "Details"; to: "Show"
                      SequentialAnimation {
-                         ParentAction { }
-                         NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                         ParentAnimation {
+                            NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                         }
                          PropertyAction { targets: wrapper; properties: "z" }
                      }
                  }

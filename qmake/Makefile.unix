@@ -11,8 +11,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      borland_bmake.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o \
      symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o \
-     registry.o \
-     epocroot.o
+     symbiancommon.o registry.o epocroot.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
@@ -37,6 +36,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
 	   $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp \
 	   generators/symbian/symmake_abld.cpp generators/symbian/symmake_sbsv2.cpp \
+           generaters/symbian/symbiancommon.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
@@ -235,7 +235,7 @@ option.o: option.cpp option.h $(BUILD_PATH)/src/corelib/global/qconfig.cpp
 qcryptographichash.o:  $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
 
-metamakefile.o: generators/metamakefile.cpp
+metamakefile.o: generators/metamakefile.cpp generators/symbian/symbian_makefile.h
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/metamakefile.cpp
 
 xmloutput.o: generators/xmloutput.cpp
@@ -279,6 +279,9 @@ symmake_abld.o: generators/symbian/symmake_abld.cpp
 
 symmake_sbsv2.o: generators/symbian/symmake_sbsv2.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
+
+symbiancommon.o: generators/symbian/symbiancommon.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symbiancommon.cpp
 
 initprojectdeploy_symbian.o: generators/symbian/initprojectdeploy_symbian.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp

@@ -1,6 +1,4 @@
 /*
- * This file is part of the DOM implementation for KDE.
- *
  * Copyright (C) 2006 Apple Computer, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -56,7 +54,7 @@
 #if COMPILER(MSVC7)
 #define DEFINE_GLOBAL(type, name) \
     const type name;
-#elif PLATFORM(SYMBIAN)
+#elif COMPILER(WINSCW)
 #define DEFINE_GLOBAL(type, name, arg...) \
     const type name;
 #else
@@ -70,7 +68,7 @@
 #if COMPILER(MSVC7)
 #define DEFINE_GLOBAL(type, name) \
     void * name[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)];
-#elif PLATFORM(SYMBIAN)
+#elif COMPILER(WINSCW)
 #define DEFINE_GLOBAL(type, name, arg...) \
     void * name[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)];
 #else

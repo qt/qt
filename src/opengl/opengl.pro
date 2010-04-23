@@ -77,7 +77,7 @@ SOURCES	+= qgl.cpp \
 }
 
 x11 {
-    contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
+    contains(QT_CONFIG, egl) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
                     qgl_egl.cpp \
@@ -116,6 +116,7 @@ mac {
     LIBS_PRIVATE += -framework AppKit -framework Carbon
 }
 win32:!wince*: {
+    DEFINES += QT_NO_EGL
     SOURCES += qgl_win.cpp \
 	       qglpixelbuffer_win.cpp
 }

@@ -43,11 +43,11 @@
   cppcodeparser.cpp
 */
 
-#include <QtCore>
 #include <qfile.h>
 
 #include <stdio.h>
 #include <errno.h>
+#include <qdebug.h>
 
 #include "codechunk.h"
 #include "config.h"
@@ -1034,7 +1034,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_QMLINHERITS) {
         setLink(node, Node::InheritsLink, arg);
         if (node->subType() == Node::QmlClass) {
-            QmlClassNode::addInheritedBy(arg,node->name());
+            QmlClassNode::addInheritedBy(arg,node);
         }
    }
     else if (command == COMMAND_QMLDEFAULT) {
@@ -1651,8 +1651,9 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
     */
     QString namespaceName = previousLexeme();
     NamespaceNode *namespasse = 0;
-    if (parent)
+    if (parent) {
         namespasse = static_cast<NamespaceNode*>(parent->findNode(namespaceName, Node::Namespace));
+    }
     if (!namespasse) {
         namespasse = new NamespaceNode(parent, namespaceName);
         namespasse->setAccess(access);

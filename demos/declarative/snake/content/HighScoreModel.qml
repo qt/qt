@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 // Models a high score table.
 //
@@ -41,21 +41,19 @@ ListModel {
     property string topPlayer: ""
     property int maxScores: 10
 
-    Script {
-        function db()
-        {
-            return openDatabaseSync("HighScoreModel", "1.0", "Generic High Score Functionality for QML", 1000000);
-        }
-        function ensureTables(tx)
-        {
-            tx.executeSql('CREATE TABLE IF NOT EXISTS HighScores(game TEXT, score INT, player TEXT)', []);
-        }
+    function __db()
+    {
+        return openDatabaseSync("HighScoreModel", "1.0", "Generic High Score Functionality for QML", 1000000);
+    }
+    function __ensureTables(tx)
+    {
+        tx.executeSql('CREATE TABLE IF NOT EXISTS HighScores(game TEXT, score INT, player TEXT)', []);
     }
 
     function fillModel() {
-        db().transaction(
+        __db().transaction(
             function(tx) {
-                ensureTables(tx);
+                __ensureTables(tx);
                 var rs = tx.executeSql("SELECT score,player FROM HighScores WHERE game=? ORDER BY score DESC", [game]);
                 model.clear();
                 if (rs.rows.length > 0) {
@@ -74,9 +72,9 @@ ListModel {
     }
 
     function savePlayerScore(player,score) {
-        db().transaction(
+        __db().transaction(
             function(tx) {
-                ensureTables(tx);
+                __ensureTables(tx);
                 tx.executeSql("INSERT INTO HighScores VALUES(?,?,?)", [game,score,player]);
                 fillModel();
             }
@@ -88,7 +86,7 @@ ListModel {
     }
 
     function clearScores() {
-        db().transaction(
+        __db().transaction(
             function(tx) {
                 tx.executeSql("DELETE FROM HighScores WHERE game=?", [game]);
                 fillModel();

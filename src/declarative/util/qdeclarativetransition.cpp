@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativestate_p.h"
-#include "qdeclarativestategroup_p.h"
-#include "qdeclarativestate_p_p.h"
-#include "qdeclarativestateoperations_p.h"
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativeanimation_p_p.h"
-#include "qdeclarativetransitionmanager_p_p.h"
+#include "private/qdeclarativestate_p.h"
+#include "private/qdeclarativestategroup_p.h"
+#include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativestateoperations_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativeanimation_p_p.h"
+#include "private/qdeclarativetransitionmanager_p_p.h"
 
 #include <QParallelAnimationGroup>
 
@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     \ingroup group_states
 */
 
-//ParallelAnimationWrapperallows us to do a "callback" when the animation finishes, rather than connecting
+//ParallelAnimationWrapper allows us to do a "callback" when the animation finishes, rather than connecting
 //and disconnecting signals and slots frequently
 class ParallelAnimationWrapper : public QParallelAnimationGroup
 {
@@ -116,9 +116,9 @@ void QDeclarativeTransitionPrivate::append_animation(QDeclarativeListProperty<QD
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 {
     QParallelAnimationGroup::updateState(newState, oldState);
-    if (newState == Stopped &&
-        ((direction() == QAbstractAnimation::Forward && currentLoopTime() == duration()) ||
-         (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
+    if (newState == Stopped && (duration() == -1
+        || (direction() == QAbstractAnimation::Forward && currentLoopTime() == duration())
+        || (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
     {
         trans->complete();
     }
@@ -195,7 +195,11 @@ QString QDeclarativeTransition::fromState() const
 void QDeclarativeTransition::setFromState(const QString &f)
 {
     Q_D(QDeclarativeTransition);
+    if (f == d->fromState)
+        return;
+
     d->fromState = f;
+    emit fromChanged();
 }
 
 /*!
@@ -213,7 +217,11 @@ bool QDeclarativeTransition::reversible() const
 void QDeclarativeTransition::setReversible(bool r)
 {
     Q_D(QDeclarativeTransition);
+    if (r == d->reversible)
+        return;
+
     d->reversible = r;
+    emit reversibleChanged();
 }
 
 QString QDeclarativeTransition::toState() const
@@ -225,7 +233,11 @@ QString QDeclarativeTransition::toState() const
 void QDeclarativeTransition::setToState(const QString &t)
 {
     Q_D(QDeclarativeTransition);
+    if (t == d->toState)
+        return;
+
     d->toState = t;
+    emit toChanged();
 }
 
 /*!

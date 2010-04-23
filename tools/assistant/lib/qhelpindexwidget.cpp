@@ -244,7 +244,8 @@ void QHelpIndexModel::invalidateIndex(bool onShutDown)
         disconnect(this, SLOT(insertIndices()));
     d->indexProvider->stopCollecting();
     d->indices.clear();
-    filter(QString());
+    if (!onShutDown)
+        filter(QString());
 }
 
 /*!

@@ -266,7 +266,7 @@ GLRenderWidgetImplementation::GLRenderWidgetImplementation(VideoWidget*videoWidg
     palette.setColor(QPalette::Background, Qt::black);
     setPalette(palette);
     setAutoFillBackground(true);
-    // Videowidget allways have this property to allow hiding the mouse cursor
+    // Videowidget always have this property to allow hiding the mouse cursor
     setMouseTracking(true);
 }
 
@@ -304,7 +304,7 @@ void GLRenderWidgetImplementation::paintEvent(QPaintEvent *)
         const float tx_array[] = { 0, 0, 1, 0, 1, 1, 0, 1};
         const QRectF r = drawFrameRect();
 
-        const float v_array[] = { r.left(), r.top(), r.right(), r.top(), r.right(), r.bottom(), r.left(), r.bottom() };
+        const float v_array[] = { float(r.left()), float(r.top()), float(r.right()), float(r.top()), float(r.right()), float(r.bottom()), float(r.left()), float(r.bottom()) };
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_texture[0]);

@@ -3,5 +3,6 @@
 <file>media/sax.wav</file>
 <file>media/sax.ogg</file>
 <file>media/sax.mp3</file>
+<file>media/test.sdp</file>
 </qresource>
 </RCC>

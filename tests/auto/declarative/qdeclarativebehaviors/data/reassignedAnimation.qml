@@ -6,10 +6,10 @@ Rectangle {
         id: rect
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
-        x: Behavior {
+        Behavior on x {
             objectName: "MyBehavior"
-            NumberAnimation { duration: 200 }
-            NumberAnimation { duration: 1000 }
+            NumberAnimation {id: na1; duration: 200 }
+            NumberAnimation {id: na2; duration: 1000 }
         }
     }
     MouseArea {

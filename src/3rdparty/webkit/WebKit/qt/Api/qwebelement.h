@@ -20,16 +20,22 @@
 #ifndef QWEBELEMENT_H
 #define QWEBELEMENT_H
 
-#include <QString>
-#include <QStringList>
-#include <QRect>
-#include <QVariant>
-#include <QExplicitlySharedDataPointer>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qshareddata.h>
 
 #include "qwebkitglobal.h"
 namespace WebCore {
     class Element;
     class Node;
+}
+
+namespace JSC {
+namespace Bindings {
+    class QtWebElementRuntime;
+}
 }
 
 QT_BEGIN_NAMESPACE
@@ -153,6 +159,7 @@ private:
     friend class QWebHitTestResult;
     friend class QWebHitTestResultPrivate;
     friend class QWebPage;
+    friend class JSC::Bindings::QtWebElementRuntime;
 
     QWebElementPrivate* d;
     WebCore::Element* m_element;
@@ -254,5 +261,7 @@ public:
 private:
     QExplicitlySharedDataPointer<QWebElementCollectionPrivate> d;
 };
+
+Q_DECLARE_METATYPE(QWebElement)
 
 #endif // QWEBELEMENT_H

@@ -171,6 +171,7 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     stop();
+    wait();
     QMutexLocker locker(&mutex);
     QStringList failedToAdd;
     // if we have a running FSStreamEvent, we have to kill it, we'll re-add the stream soon.
@@ -268,6 +269,7 @@ QStringList QFSEventsFileSystemWatcherEngine::removePaths(const QStringList &pat
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     stop();
+    wait();
     QMutexLocker locker(&mutex);
     // short circuit for smarties that call remove before add and we have nothing.
     if (pathsToWatch == 0)

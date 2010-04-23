@@ -41,10 +41,6 @@
 #ifndef HELPVIEWERQTB_H
 #define HELPVIEWERQTB_H
 
-#include <QtCore/qglobal.h>
-
-#if defined(QT_NO_WEBKIT)
-
 #include "helpviewer.h"
 
 #include <QtCore/QUrl>
@@ -75,6 +71,8 @@ public:
     void resetScale();
     qreal scale() const { return zoomCount; }
 
+    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
+
     void setSource(const QUrl &url);
 
     inline bool hasSelection() const
@@ -97,6 +95,7 @@ private:
     void contextMenuEvent(QContextMenuEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     void keyPressEvent(QKeyEvent *e);
+    void mousePressEvent(QMouseEvent *e);
 
 private slots:
     void openLinkInNewTab();
@@ -111,7 +110,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif  // QT_NO_WEBKIT
 
 #endif  // HELPVIEWERQTB_H

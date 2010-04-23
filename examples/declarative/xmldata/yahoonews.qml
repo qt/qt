@@ -1,11 +1,12 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
+    width: 600; height: 600
+
     gradient: Gradient {
         GradientStop { position: 0; color: "black" }
         GradientStop { position: 1.0; color: "#AAAAAA" }
     }
-    width: 600; height: 600
 
     XmlListModel {
         id: feedModel
@@ -18,6 +19,7 @@ Rectangle {
 
     Component {
         id: feedDelegate
+
         Item {
             id: delegate
             height: wrapper.height + 10
@@ -30,25 +32,27 @@ Rectangle {
 
             Rectangle {
                 id: wrapper
-                y: 5; height: titleText.height + 10; width: 580
-                color: "#F0F0F0"; radius: 5
+
+                width: 580; y: 5; height: titleText.height + 10
+                color: "#F0F0F0"
+                radius: 5
+                
                 Text {
                     id: titleText
                     x: 10; y: 5
                     text: '<a href=\'' + link + '\'>' + title + '</a>'
-                    font.bold: true; font.family: "Helvetica"; font.pointSize: 14
+                    font { bold: true; family: "Helvetica"; pointSize: 14 }
+
                     onLinkActivated: { console.log('link clicked: ' + link) }
                 }
 
                 Text {
-                    x: 10
                     id: descriptionText
+                    x: 10; width: 560
+                    anchors.top: titleText.bottom; anchors.topMargin: 5
                     text: description
-                    width: 560
-                    wrap: true
+                    wrapMode: Text.WordWrap
                     font.family: "Helvetica"
-                    anchors.top: titleText.bottom
-                    anchors.topMargin: 5
                     opacity: 0
                 }
 

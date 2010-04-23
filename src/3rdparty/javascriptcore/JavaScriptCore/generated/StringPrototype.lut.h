@@ -1,10 +1,10 @@
-// Automatically generated from ../runtime/StringPrototype.cpp using JavaScriptCore/create_hash_table. DO NOT EDIT!
+// Automatically generated from runtime/StringPrototype.cpp using /home/khansen/dev/qtwebkit-qtscript-integration/JavaScriptCore/create_hash_table. DO NOT EDIT!
 
 #include "Lookup.h"
 
 namespace JSC {
 
-static const struct HashTableValue stringTableValues[33] = {
+static const struct HashTableValue stringTableValues[36] = {
    { "toString", DontEnum|Function, (intptr_t)stringProtoFuncToString, (intptr_t)0 },
    { "valueOf", DontEnum|Function, (intptr_t)stringProtoFuncToString, (intptr_t)0 },
    { "charAt", DontEnum|Function, (intptr_t)stringProtoFuncCharAt, (intptr_t)1 },
@@ -37,9 +37,12 @@ static const struct HashTableValue stringTableValues[33] = {
    { "fontsize", DontEnum|Function, (intptr_t)stringProtoFuncFontsize, (intptr_t)1 },
    { "anchor", DontEnum|Function, (intptr_t)stringProtoFuncAnchor, (intptr_t)1 },
    { "link", DontEnum|Function, (intptr_t)stringProtoFuncLink, (intptr_t)1 },
+   { "trim", DontEnum|Function, (intptr_t)stringProtoFuncTrim, (intptr_t)0 },
+   { "trimLeft", DontEnum|Function, (intptr_t)stringProtoFuncTrimLeft, (intptr_t)0 },
+   { "trimRight", DontEnum|Function, (intptr_t)stringProtoFuncTrimRight, (intptr_t)0 },
    { 0, 0, 0, 0 }
 };
 
 extern JSC_CONST_HASHTABLE HashTable stringTable =
-    { 71, 63, stringTableValues, 0 };
+    { 133, 127, stringTableValues, 0 };
 } // namespace

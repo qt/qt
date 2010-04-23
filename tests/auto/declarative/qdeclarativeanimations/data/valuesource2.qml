@@ -9,6 +9,6 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        x: NumberAnimation { id: anim; objectName: "MyAnim"; running: false; to: 200 }
+        NumberAnimation on x { id: anim; objectName: "MyAnim"; running: false; to: 200 }
     }
 }

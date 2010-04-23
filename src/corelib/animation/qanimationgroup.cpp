@@ -244,7 +244,7 @@ QAbstractAnimation *QAnimationGroup::takeAnimation(int index)
     // in ChildRemoved event
     d->animations.removeAt(index);
     animation->setParent(0);
-    d->animationRemovedAt(index);
+    d->animationRemoved(index, animation);
     return animation;
 }
 
@@ -285,7 +285,7 @@ bool QAnimationGroup::event(QEvent *event)
 }
 
 
-void QAnimationGroupPrivate::animationRemovedAt(int index)
+void QAnimationGroupPrivate::animationRemoved(int index, QAbstractAnimation *)
 {
     Q_Q(QAnimationGroup);
     Q_UNUSED(index);

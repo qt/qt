@@ -111,16 +111,16 @@ void tst_Q3SqlSelectCursor::createTestTables( QSqlDatabase db )
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
     // please never ever change this table; otherwise fix all tests ;)
     if (tst_Databases::isMSAccess(db))
-        QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
+        QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest", __FILE__ ) + " ( id int not null, t_varchar varchar(40) not null,"
                 "t_char char(40), t_numeric number, primary key (id, t_varchar) )" ));
     else
-        QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
+        QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest", __FILE__ ) + " ( id int not null, t_varchar varchar(40) not null,"
                 "t_char char(40), t_numeric numeric(6, 3), primary key (id, t_varchar) )" ));
 }
 
 void tst_Q3SqlSelectCursor::dropTestTables( QSqlDatabase db )
 {
-    tst_Databases::safeDropTable( db, qTableName( "qtest" ) );
+    tst_Databases::safeDropTable( db, qTableName( "qtest", __FILE__ ) );
 }
 
 void tst_Q3SqlSelectCursor::populateTestTables( QSqlDatabase db )
@@ -129,11 +129,11 @@ void tst_Q3SqlSelectCursor::populateTestTables( QSqlDatabase db )
 	return;
     QSqlQuery q( db );
 
-    q.exec( "delete from " + qTableName( "qtest" ) ); //non-fatal
-    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest" ) + " (id, t_varchar, t_char, t_numeric) values ( 0, 'VarChar0', 'Char0', 1.1 )" ));
-    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest" ) + " (id, t_varchar, t_char, t_numeric) values ( 1, 'VarChar1', 'Char1', 2.2 )" ));
-    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest" ) + " (id, t_varchar, t_char, t_numeric) values ( 2, 'VarChar2', 'Char2', 3.3 )" ));
-    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest" ) + " (id, t_varchar, t_char, t_numeric) values ( 3, 'VarChar3', 'Char3', 4.4 )" ));
+    q.exec( "delete from " + qTableName( "qtest", __FILE__ ) ); //non-fatal
+    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest", __FILE__ ) + " (id, t_varchar, t_char, t_numeric) values ( 0, 'VarChar0', 'Char0', 1.1 )" ));
+    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest", __FILE__ ) + " (id, t_varchar, t_char, t_numeric) values ( 1, 'VarChar1', 'Char1', 2.2 )" ));
+    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest", __FILE__ ) + " (id, t_varchar, t_char, t_numeric) values ( 2, 'VarChar2', 'Char2', 3.3 )" ));
+    QVERIFY_SQL(q, exec( "insert into " + qTableName( "qtest", __FILE__ ) + " (id, t_varchar, t_char, t_numeric) values ( 3, 'VarChar3', 'Char3', 4.4 )" ));
 }
 
 void tst_Q3SqlSelectCursor::initTestCase()
@@ -184,7 +184,7 @@ void tst_Q3SqlSelectCursor::value()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    Q3SqlSelectCursor cur( "select * from " + qTableName( "qtest" ) + " order by id", db );
+    Q3SqlSelectCursor cur( "select * from " + qTableName( "qtest", __FILE__ ) + " order by id", db );
     QVERIFY( cur.select() );
     QVERIFY_SQL(cur, isActive());
     int i = 0;
@@ -203,7 +203,7 @@ void tst_Q3SqlSelectCursor::_exec()
     Q3SqlSelectCursor cur( QString(), db );
     QVERIFY_SQL(cur, isActive() == false);
 
-    cur.exec( "select * from " + qTableName( "qtest" ) ); //nothing should happen
+    cur.exec( "select * from " + qTableName( "qtest", __FILE__ ) ); //nothing should happen
     QVERIFY_SQL(cur, isActive());
     int i = 0;
     while ( cur.next() ) {

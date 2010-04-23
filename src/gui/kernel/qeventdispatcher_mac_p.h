@@ -100,6 +100,7 @@ typedef struct _NSModalSession *NSModalSession;
 typedef struct _QCocoaModalSessionInfo {
     QPointer<QWidget> widget;
     NSModalSession session;
+    void *nswindow;
 } QCocoaModalSessionInfo;
 #endif
 
@@ -175,7 +176,6 @@ public:
     static bool currentExecIsNSAppRun;
     static bool nsAppRunCalledByQt;
     static bool cleanupModalSessionsNeeded;
-    static bool modalSessionsTemporarilyStopped;
     static NSModalSession currentModalSessionCached;
     static NSModalSession currentModalSession();
     static void updateChildrenWorksWhenModal();

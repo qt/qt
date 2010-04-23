@@ -54,6 +54,7 @@
 //
 
 #include "QtCore/qbasictimer.h"
+#include "QtCore/qelapsedtimer.h"
 #include "private/qwidget_p.h"
 #include "qstyle.h"
 
@@ -103,7 +104,7 @@ public:
     /**
      * The time of when the first auto repeating key press event occurs.
      */
-    QTime firstRepeat;
+    QElapsedTimer firstRepeat;
 
 #endif
 

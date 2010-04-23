@@ -57,25 +57,39 @@
 #include "qnetworkconfiguration_p.h"
 
 #include <QtCore/qmutex.h>
+#include <QtCore/qset.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
+class QTimer;
 
 class Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate : public QObject
 {
     Q_OBJECT
+
 public:
     QNetworkConfigurationManagerPrivate();
     virtual ~QNetworkConfigurationManagerPrivate();
 
     QNetworkConfiguration defaultConfiguration();
+    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags filter);
+    QNetworkConfiguration configurationFromIdentifier(const QString &identifier);
 
-    QNetworkConfigurationManager::Capabilities capFlags;
+    bool isOnline();
+
+    QNetworkConfigurationManager::Capabilities capabilities();
 
     void performAsyncConfigurationUpdate();
 
     QList<QBearerEngine *> engines();
+
+    Q_INVOKABLE void startPolling();
+
+    void enablePolling();
+    void disablePolling();
 
 public slots:
     void updateConfigurations();
@@ -90,13 +104,17 @@ Q_SIGNALS:
     void abort();
 
 private:
+    QTimer *pollTimer;
+
     QMutex mutex;
 
     QList<QBearerEngine *> sessionEngines;
 
-    QSet<QNetworkConfigurationPrivatePointer> onlineConfigurations;
+    QSet<QString> onlineConfigurations;
 
+    QSet<int> pollingEngines;
     QSet<int> updatingEngines;
+    int forcedPolling;
     bool updating;
 
     bool firstUpdate;
@@ -105,10 +123,14 @@ private Q_SLOTS:
     void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
     void configurationRemoved(QNetworkConfigurationPrivatePointer ptr);
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
+
+    void pollEngines();
 };
 
 Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H

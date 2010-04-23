@@ -27,8 +27,6 @@
 #include "AbstractWorker.h"
 #include "Event.h"
 #include "EventListener.h"
-#include "Frame.h"
-#include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "RegisteredEventListener.h"
@@ -45,8 +43,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSAbstractWorker);
 
 static const HashTableValue JSAbstractWorkerTableValues[3] =
 {
-    { "onerror", DontDelete, (intptr_t)jsAbstractWorkerOnerror, (intptr_t)setJSAbstractWorkerOnerror },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsAbstractWorkerConstructor, (intptr_t)0 },
+    { "onerror", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsAbstractWorkerOnerror), (intptr_t)setJSAbstractWorkerOnerror },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsAbstractWorkerConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -85,7 +83,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -108,9 +106,9 @@ bool JSAbstractWorkerConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 static const HashTableValue JSAbstractWorkerPrototypeTableValues[4] =
 {
-    { "addEventListener", DontDelete|Function, (intptr_t)jsAbstractWorkerPrototypeFunctionAddEventListener, (intptr_t)3 },
-    { "removeEventListener", DontDelete|Function, (intptr_t)jsAbstractWorkerPrototypeFunctionRemoveEventListener, (intptr_t)3 },
-    { "dispatchEvent", DontDelete|Function, (intptr_t)jsAbstractWorkerPrototypeFunctionDispatchEvent, (intptr_t)1 },
+    { "addEventListener", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsAbstractWorkerPrototypeFunctionAddEventListener), (intptr_t)3 },
+    { "removeEventListener", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsAbstractWorkerPrototypeFunctionRemoveEventListener), (intptr_t)3 },
+    { "dispatchEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsAbstractWorkerPrototypeFunctionDispatchEvent), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -148,14 +146,14 @@ JSAbstractWorker::JSAbstractWorker(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSAbstractWorker::~JSAbstractWorker()
 {
-    impl()->invalidateEventListeners();
+    impl()->invalidateJSEventListeners(this);
     forgetDOMObject(this, impl());
 }
 
 void JSAbstractWorker::markChildren(MarkStack& markStack)
 {
     Base::markChildren(markStack);
-    impl()->markEventListeners(markStack);
+    impl()->markJSEventListeners(markStack);
 }
 
 JSObject* JSAbstractWorker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -173,21 +171,23 @@ bool JSAbstractWorker::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSAbstractWorker, Base>(exec, &JSAbstractWorkerTable, this, propertyName, descriptor);
 }
 
-JSValue jsAbstractWorkerOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsAbstractWorkerOnerror(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSAbstractWorker* castedThis = static_cast<JSAbstractWorker*>(asObject(slot.slotBase()));
+    JSAbstractWorker* castedThis = static_cast<JSAbstractWorker*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     AbstractWorker* imp = static_cast<AbstractWorker*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
 
-JSValue jsAbstractWorkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsAbstractWorkerConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSAbstractWorker* domObject = static_cast<JSAbstractWorker*>(asObject(slot.slotBase()));
+    JSAbstractWorker* domObject = static_cast<JSAbstractWorker*>(asObject(slotBase));
     return JSAbstractWorker::getConstructor(exec, domObject->globalObject());
 }
 void JSAbstractWorker::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -199,10 +199,7 @@ void setJSAbstractWorkerOnerror(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     AbstractWorker* imp = static_cast<AbstractWorker*>(static_cast<JSAbstractWorker*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
+    imp->setOnerror(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 JSValue JSAbstractWorker::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

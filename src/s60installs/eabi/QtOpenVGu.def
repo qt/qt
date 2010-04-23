@@ -31,7 +31,7 @@ EXPORTS
 	_ZN14QVGPaintEngine10penChangedEv @ 30 NONAME
 	_ZN14QVGPaintEngine11drawEllipseERK5QRect @ 31 NONAME
 	_ZN14QVGPaintEngine11drawEllipseERK6QRectF @ 32 NONAME
-	_ZN14QVGPaintEngine11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 33 NONAME
+	_ZN14QVGPaintEngine11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 33 NONAME ABSENT
 	_ZN14QVGPaintEngine11drawPolygonEPK6QPointiN12QPaintEngine15PolygonDrawModeE @ 34 NONAME
 	_ZN14QVGPaintEngine11drawPolygonEPK7QPointFiN12QPaintEngine15PolygonDrawModeE @ 35 NONAME
 	_ZN14QVGPaintEngine12brushChangedEv @ 36 NONAME
@@ -196,4 +196,7 @@ EXPORTS
 	_ZN13QVGPixmapData19detachImageFromPoolEv @ 195 NONAME
 	_ZTI12QVGImagePool @ 196 NONAME
 	_ZTV12QVGImagePool @ 197 NONAME
+	_ZN14QVGPaintEngine16drawCachedGlyphsEiPKjRK5QFontP11QFontEngineRK7QPointF @ 198 NONAME
+	_ZN14QVGPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 199 NONAME
+	_ZN14QVGPaintEngine19drawPixmapFragmentsEPKN8QPainter14PixmapFragmentEiRK7QPixmap6QFlagsINS0_18PixmapFragmentHintEE @ 200 NONAME
 

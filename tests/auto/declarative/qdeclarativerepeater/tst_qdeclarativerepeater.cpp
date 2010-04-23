@@ -109,7 +109,7 @@ public:
         setRoleNames(roles);
     }
 
-    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { Q_UNUSED(parent); return list.count(); }
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
         QVariant rv;
         if (role == Name)
@@ -181,6 +181,7 @@ void tst_QDeclarativeRepeater::numberModel()
     QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
+    delete testObject;
     delete canvas;
 }
 
@@ -204,6 +205,9 @@ void tst_QDeclarativeRepeater::objectList()
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->property("errors").toInt(), 0);//If this fails either they are out of order or can't find the object's data
     QCOMPARE(repeater->property("instantiated").toInt(), 100);
+
+    qDeleteAll(data);
+    delete canvas;
 }
 
 /*
@@ -224,7 +228,7 @@ void tst_QDeclarativeRepeater::stringList()
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", data);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater1.qml"));
     qApp->processEvents();
 
     QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");
@@ -293,6 +297,9 @@ void tst_QDeclarativeRepeater::dataModel()
 
     testModel.removeItem(2);
     QCOMPARE(container->childItems().count(), 4);
+
+    delete testObject;
+    delete canvas;
 }
 
 void tst_QDeclarativeRepeater::itemModel()
@@ -323,6 +330,7 @@ void tst_QDeclarativeRepeater::itemModel()
     QVERIFY(qobject_cast<QObject*>(container->childItems().at(2))->objectName() == "item3");
     QVERIFY(container->childItems().at(3) == repeater);
 
+    delete testObject;
     delete canvas;
 }
 
@@ -346,12 +354,14 @@ void tst_QDeclarativeRepeater::properties()
     QSignalSpy delegateSpy(repeater, SIGNAL(delegateChanged()));
 
     QDeclarativeComponent rectComponent(&engine);
-    rectComponent.setData("import Qt 4.6; Rectangle {}", QUrl::fromLocalFile(""));
+    rectComponent.setData("import Qt 4.7; Rectangle {}", QUrl::fromLocalFile(""));
 
     repeater->setDelegate(&rectComponent);
     QCOMPARE(delegateSpy.count(),1);
     repeater->setDelegate(&rectComponent);
     QCOMPARE(delegateSpy.count(),1);
+
+    delete rootObject;
 }
 
 QDeclarativeView *tst_QDeclarativeRepeater::createView()

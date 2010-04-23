@@ -41,14 +41,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSXSLTProcessor);
 
 static const HashTableValue JSXSLTProcessorPrototypeTableValues[9] =
 {
-    { "importStylesheet", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionImportStylesheet, (intptr_t)1 },
-    { "transformToFragment", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionTransformToFragment, (intptr_t)2 },
-    { "transformToDocument", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionTransformToDocument, (intptr_t)1 },
-    { "setParameter", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionSetParameter, (intptr_t)3 },
-    { "getParameter", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionGetParameter, (intptr_t)2 },
-    { "removeParameter", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionRemoveParameter, (intptr_t)2 },
-    { "clearParameters", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionClearParameters, (intptr_t)0 },
-    { "reset", DontDelete|Function, (intptr_t)jsXSLTProcessorPrototypeFunctionReset, (intptr_t)0 },
+    { "importStylesheet", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionImportStylesheet), (intptr_t)1 },
+    { "transformToFragment", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionTransformToFragment), (intptr_t)2 },
+    { "transformToDocument", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionTransformToDocument), (intptr_t)1 },
+    { "setParameter", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionSetParameter), (intptr_t)3 },
+    { "getParameter", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionGetParameter), (intptr_t)2 },
+    { "removeParameter", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionRemoveParameter), (intptr_t)2 },
+    { "clearParameters", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionClearParameters), (intptr_t)0 },
+    { "reset", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXSLTProcessorPrototypeFunctionReset), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 

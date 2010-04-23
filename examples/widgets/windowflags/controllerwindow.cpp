@@ -58,7 +58,7 @@ ControllerWindow::ControllerWindow()
     bottomLayout->addStretch();
     bottomLayout->addWidget(quitButton);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QHBoxLayout *mainLayout = new QHBoxLayout;
     mainLayout->addWidget(typeGroupBox);
     mainLayout->addWidget(hintsGroupBox);
     mainLayout->addLayout(bottomLayout);

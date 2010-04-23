@@ -1,13 +1,12 @@
-import Qt 4.6
+import Qt 4.7
 import "content"
 
 Rectangle {
-    width: childrenRect.width
-    height: childrenRect.height
+    width: 640; height: 240
     color: "#646464"
 
-    Grid {
-        columns: 3
+    Row {
+        anchors.centerIn: parent
         Clock { city: "New York"; shift: -4 }
         Clock { city: "Mumbai"; shift: 5.5 }
         Clock { city: "Tokyo"; shift: 9 }

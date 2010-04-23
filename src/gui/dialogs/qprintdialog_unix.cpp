@@ -152,6 +152,9 @@ public:
     bool checkFields();
     void setupPrinter();
     void setOptionsPane(QPrintDialogPrivate *pane);
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    void setCupsProperties();
+#endif
 
 // slots
     void _q_printerChanged(int index);
@@ -502,6 +505,9 @@ void QPrintDialogPrivate::setupPrinter()
     } else if (options.printSelection->isChecked()) {
         p->setPrintRange(QPrinter::Selection);
         p->setFromTo(0,0);
+    } else if (options.printCurrentPage->isChecked()) {
+        p->setPrintRange(QPrinter::CurrentPage);
+        p->setFromTo(0,0);
     } else if (options.printRange->isChecked()) {
         p->setPrintRange(QPrinter::PageRange);
         p->setFromTo(options.from->value(), qMax(options.from->value(), options.to->value()));
@@ -518,10 +524,12 @@ void QPrintDialogPrivate::updateWidgets()
 {
     Q_Q(QPrintDialog);
     options.gbPrintRange->setVisible(q->isOptionEnabled(QPrintDialog::PrintPageRange) ||
-                                q->isOptionEnabled(QPrintDialog::PrintSelection));
+                                     q->isOptionEnabled(QPrintDialog::PrintSelection) ||
+                                     q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
 
     options.printRange->setEnabled(q->isOptionEnabled(QPrintDialog::PrintPageRange));
     options.printSelection->setVisible(q->isOptionEnabled(QPrintDialog::PrintSelection));
+    options.printCurrentPage->setVisible(q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
     options.collate->setVisible(q->isOptionEnabled(QPrintDialog::PrintCollateCopies));
 
     switch (q->printRange()) {
@@ -533,6 +541,10 @@ void QPrintDialogPrivate::updateWidgets()
         break;
     case QPrintDialog::PageRange:
         options.printRange->setChecked(true);
+        break;
+    case QPrintDialog::CurrentPage:
+        if (q->isOptionEnabled(QPrintDialog::PrintCurrentPage))
+            options.printCurrentPage->setChecked(true);
         break;
     default:
         break;
@@ -691,12 +703,10 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
     }
 #endif
 
-#ifndef QT_NO_FILESYSTEMMODEL
+#if !defined(QT_NO_FILESYSTEMMODEL) && !defined(QT_NO_COMPLETER)
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
-#if !defined(QT_NO_FSCOMPLETER) && !defined(QT_NO_FILEDIALOG)
-    widget.filename->setCompleter(new QFSCompleter(fsm, widget.filename));
-#endif
+    widget.filename->setCompleter(new QCompleter(fsm, widget.filename));
 #endif
     _q_printerChanged(currentPrinterIndex);
 
@@ -940,7 +950,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
 
 void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
 {
-    if (propertiesDialog == 0) {
+    if (!propertiesDialog) {
         propertiesDialog = new QPrintPropertiesDialog(q);
         propertiesDialog->setResult(QDialog::Rejected);
     }
@@ -959,6 +969,35 @@ void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
     }
     propertiesDialog->exec();
 }
+
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+void QUnixPrintWidgetPrivate::setCupsProperties()
+{
+    if (cups && QCUPSSupport::isAvailable()) {
+        QPrintEngine *engine = printer->printEngine();
+        const ppd_option_t* pageSizes = cups->pageSizes();
+        QByteArray cupsPageSize;
+        for (int i = 0; i < pageSizes->num_choices; ++i) {
+            if (static_cast<int>(pageSizes->choices[i].marked) == 1)
+                cupsPageSize = pageSizes->choices[i].choice;
+        }
+        engine->setProperty(PPK_CupsStringPageSize, QString::fromLatin1(cupsPageSize));
+        engine->setProperty(PPK_CupsOptions, cups->options());
+
+        QRect pageRect = cups->pageRect(cupsPageSize);
+        engine->setProperty(PPK_CupsPageRect, pageRect);
+
+        QRect paperRect = cups->paperRect(cupsPageSize);
+        engine->setProperty(PPK_CupsPaperRect, paperRect);
+
+        for (int ps = 0; ps < QPrinter::NPaperSize; ++ps) {
+            QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
+            if (size.width == paperRect.width() && size.height == paperRect.height())
+                printer->setPaperSize(static_cast<QPrinter::PaperSize>(ps));
+        }
+    }
+}
+#endif
 
 void QUnixPrintWidgetPrivate::setupPrinter()
 {
@@ -984,6 +1023,10 @@ void QUnixPrintWidgetPrivate::setupPrinter()
 
     if (propertiesDialog && propertiesDialog->result() == QDialog::Accepted)
         propertiesDialog->setupPrinter();
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    if (!propertiesDialog)
+        setCupsProperties();
+#endif
 }
 
 

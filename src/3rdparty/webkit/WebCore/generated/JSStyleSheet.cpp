@@ -40,14 +40,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSStyleSheet);
 
 static const HashTableValue JSStyleSheetTableValues[9] =
 {
-    { "type", DontDelete|ReadOnly, (intptr_t)jsStyleSheetType, (intptr_t)0 },
-    { "disabled", DontDelete, (intptr_t)jsStyleSheetDisabled, (intptr_t)setJSStyleSheetDisabled },
-    { "ownerNode", DontDelete|ReadOnly, (intptr_t)jsStyleSheetOwnerNode, (intptr_t)0 },
-    { "parentStyleSheet", DontDelete|ReadOnly, (intptr_t)jsStyleSheetParentStyleSheet, (intptr_t)0 },
-    { "href", DontDelete|ReadOnly, (intptr_t)jsStyleSheetHref, (intptr_t)0 },
-    { "title", DontDelete|ReadOnly, (intptr_t)jsStyleSheetTitle, (intptr_t)0 },
-    { "media", DontDelete|ReadOnly, (intptr_t)jsStyleSheetMedia, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsStyleSheetConstructor, (intptr_t)0 },
+    { "type", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetType), (intptr_t)0 },
+    { "disabled", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetDisabled), (intptr_t)setJSStyleSheetDisabled },
+    { "ownerNode", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetOwnerNode), (intptr_t)0 },
+    { "parentStyleSheet", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetParentStyleSheet), (intptr_t)0 },
+    { "href", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetHref), (intptr_t)0 },
+    { "title", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetTitle), (intptr_t)0 },
+    { "media", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetMedia), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStyleSheetConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -154,65 +154,72 @@ bool JSStyleSheet::getOwnPropertyDescriptor(ExecState* exec, const Identifier& p
     return getStaticValueDescriptor<JSStyleSheet, Base>(exec, &JSStyleSheetTable, this, propertyName, descriptor);
 }
 
-JSValue jsStyleSheetType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->type());
+    JSValue result = jsStringOrNull(exec, imp->type());
+    return result;
 }
 
-JSValue jsStyleSheetDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetDisabled(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return jsBoolean(imp->disabled());
+    JSValue result = jsBoolean(imp->disabled());
+    return result;
 }
 
-JSValue jsStyleSheetOwnerNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetOwnerNode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerNode()));
+    return result;
 }
 
-JSValue jsStyleSheetParentStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetParentStyleSheet(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
+    return result;
 }
 
-JSValue jsStyleSheetHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetHref(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->href());
+    JSValue result = jsStringOrNull(exec, imp->href());
+    return result;
 }
 
-JSValue jsStyleSheetTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetTitle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->title());
+    JSValue result = jsStringOrNull(exec, imp->title());
+    return result;
 }
 
-JSValue jsStyleSheetMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* castedThis = static_cast<JSStyleSheet*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StyleSheet* imp = static_cast<StyleSheet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    return result;
 }
 
-JSValue jsStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStyleSheet* domObject = static_cast<JSStyleSheet*>(asObject(slot.slotBase()));
+    JSStyleSheet* domObject = static_cast<JSStyleSheet*>(asObject(slotBase));
     return JSStyleSheet::getConstructor(exec, domObject->globalObject());
 }
 void JSStyleSheet::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -222,7 +229,8 @@ void JSStyleSheet::put(ExecState* exec, const Identifier& propertyName, JSValue 
 
 void setJSStyleSheetDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    StyleSheet* imp = static_cast<StyleSheet*>(static_cast<JSStyleSheet*>(thisObject)->impl());
+    JSStyleSheet* castedThisObj = static_cast<JSStyleSheet*>(thisObject);
+    StyleSheet* imp = static_cast<StyleSheet*>(castedThisObj->impl());
     imp->setDisabled(value.toBoolean(exec));
 }
 

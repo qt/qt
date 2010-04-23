@@ -97,11 +97,6 @@ QT_BEGIN_NAMESPACE
 QT_USE_NAMESPACE
 
 /*****************************************************************************
-  Internal variables and functions
- *****************************************************************************/
-bool qt_blockCocoaSettingModalWindowLevel = false;
-
-/*****************************************************************************
   Externals
  *****************************************************************************/
 extern void qt_event_request_timer(MacTimerInfo *); //qapplication_mac.cpp
@@ -752,7 +747,6 @@ bool QEventDispatcherMacPrivate::interrupt = false;
 #ifdef QT_MAC_USE_COCOA
 QStack<QCocoaModalSessionInfo> QEventDispatcherMacPrivate::cocoaModalSessionStack;
 bool QEventDispatcherMacPrivate::currentExecIsNSAppRun = false;
-bool QEventDispatcherMacPrivate::modalSessionsTemporarilyStopped = false;
 bool QEventDispatcherMacPrivate::nsAppRunCalledByQt = false;
 bool QEventDispatcherMacPrivate::cleanupModalSessionsNeeded = false;
 NSModalSession QEventDispatcherMacPrivate::currentModalSessionCached = 0;
@@ -788,19 +782,14 @@ void QEventDispatcherMacPrivate::temporarilyStopAllModalSessions()
     // we need to stop all the modal session first. To avoid changing
     // the stacking order of the windows while doing so, we put
     // up a block that is used in QCocoaWindow and QCocoaPanel:
-    QBoolBlocker block1(blockSendPostedEvents, true);
-    QBoolBlocker block2(qt_blockCocoaSettingModalWindowLevel, true);
-
     int stackSize = cocoaModalSessionStack.size();
     for (int i=stackSize-1; i>=0; --i) {
         QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
         if (info.session) {
-            [NSApp runModalSession:info.session];
             [NSApp endModalSession:info.session];
             info.session = 0;
         }
     }
-    modalSessionsTemporarilyStopped = true;
     currentModalSessionCached = 0;
 }
 
@@ -829,25 +818,17 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
 
             ensureNSAppInitialized();
             QBoolBlocker block1(blockSendPostedEvents, true);
+            info.nswindow = window;
+            [(NSWindow*) info.nswindow retain];
+            // When creating a modal session cocoa will rearrange the windows.
+            // In order to avoid windows to be put behind another we need to
+            // keep the window level.
+            int level = [window level];
             info.session = [NSApp beginModalSessionForWindow:window];
+            [window setLevel:level];
         }
         currentModalSessionCached = info.session;
     }
-
-    if (modalSessionsTemporarilyStopped && currentModalSessionCached) {
-        // After a call to temporarilyStopAllModalSessions, cocoa have
-        // now posted events to restore ended modal session windows to
-        // the correct window level. Those events will be processed
-        // _after_ our new calls to beginModalSessionForWindow have
-        // taken effect, which will end up stacking the windows wrong on
-        // screen. To work around this, we block cocoa from changing the
-        // stacking order of the windows, and flush out the pending events
-        // (the block is used in QCocoaWindow and QCocoaPanel):
-        QBoolBlocker block1(blockSendPostedEvents, true);
-        QBoolBlocker block2(qt_blockCocoaSettingModalWindowLevel, true);
-        [NSApp runModalSession:currentModalSessionCached];
-    }
-    modalSessionsTemporarilyStopped = false;
     return currentModalSessionCached;
 }
 
@@ -903,8 +884,10 @@ void QEventDispatcherMacPrivate::cleanupModalSessions()
         }
         cocoaModalSessionStack.remove(i);
         currentModalSessionCached = 0;
-        if (info.session)
+        if (info.session) {
             [NSApp endModalSession:info.session];
+            [(NSWindow *)info.nswindow release];
+        }
     }
 
     updateChildrenWorksWhenModal();
@@ -920,7 +903,7 @@ void QEventDispatcherMacPrivate::beginModalSession(QWidget *widget)
     // currentModalSession). A QCocoaModalSessionInfo is considered pending to be stopped if
     // the widget pointer is zero, and the session pointer is non-zero (it will be fully
     // stopped in cleanupModalSessions()).
-    QCocoaModalSessionInfo info = {widget, 0};
+    QCocoaModalSessionInfo info = {widget, 0, 0};
     cocoaModalSessionStack.push(info);
     updateChildrenWorksWhenModal();
     currentModalSessionCached = 0;

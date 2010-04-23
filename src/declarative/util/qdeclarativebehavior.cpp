@@ -39,22 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebehavior_p.h"
+#include "private/qdeclarativebehavior_p.h"
 
-#include "qdeclarativeanimation_p.h"
-#include "qdeclarativetransition_p.h"
+#include "private/qdeclarativeanimation_p.h"
+#include "private/qdeclarativetransition_p.h"
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeinfo.h>
 #include <qdeclarativeproperty_p.h>
-
-#include <QtCore/qparallelanimationgroup.h>
+#include <qdeclarativeguard_p.h>
 
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
-
-
 
 class QDeclarativeBehaviorPrivate : public QObjectPrivate
 {
@@ -64,7 +61,7 @@ public:
 
     QDeclarativeProperty property;
     QVariant currentValue;
-    QDeclarativeAbstractAnimation *animation;
+    QDeclarativeGuard<QDeclarativeAbstractAnimation> animation;
     bool enabled;
 };
 
@@ -75,15 +72,16 @@ public:
 
     Behaviors provide one way to specify \l{qdeclarativeanimation.html}{animations} in QML.
 
-    In the example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
+    In the example below, the rectangle will use a bounce easing curve over 200 millisecond for any changes to its y property:
     \code
     Rectangle {
         width: 20; height: 20
         color: "#00ff00"
-        y: 200  //initial value
-        y: Behavior {
+        y: 200  // initial value
+        Behavior on y {
             NumberAnimation {
-                easing: "easeOutBounce(amplitude:100)"
+                easing.type: "OutBounce"
+                easing.amplitude: 100
                 duration: 200
             }
         }
@@ -157,6 +155,7 @@ void QDeclarativeBehavior::setEnabled(bool enabled)
 void QDeclarativeBehavior::write(const QVariant &value)
 {
     Q_D(QDeclarativeBehavior);
+    qmlExecuteDeferred(this);
     if (!d->animation || !d->enabled) {
         QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         return;
@@ -164,7 +163,8 @@ void QDeclarativeBehavior::write(const QVariant &value)
 
     d->currentValue = d->property.read();
 
-    d->animation->qtAnimation()->stop();
+    if (d->animation->qtAnimation()->duration() != -1)
+        d->animation->qtAnimation()->stop();
 
     QDeclarativeStateOperation::ActionList actions;
     QDeclarativeAction action;
@@ -174,11 +174,10 @@ void QDeclarativeBehavior::write(const QVariant &value)
     actions << action;
 
     QList<QDeclarativeProperty> after;
-    if (d->animation)
-        d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
+    d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
     d->animation->qtAnimation()->start();
     if (!after.contains(d->property))
-        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);    
 }
 
 void QDeclarativeBehavior::setTarget(const QDeclarativeProperty &property)

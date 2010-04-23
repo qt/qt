@@ -78,6 +78,7 @@ class QString;
 #define Q_CLASSINFO(name, value)
 #define Q_INTERFACES(x)
 #define Q_PROPERTY(text)
+#define Q_PRIVATE_PROPERTY(d, text)
 #define Q_OVERRIDE(text)
 #define Q_ENUMS(x)
 #define Q_FLAGS(x)
@@ -178,6 +179,7 @@ private:
 #define Q_CLASSINFO(name, value) Q_CLASSINFO(name, value)
 #define Q_INTERFACES(x) Q_INTERFACES(x)
 #define Q_PROPERTY(text) Q_PROPERTY(text)
+#define Q_PRIVATE_PROPERTY(d, text) Q_PRIVATE_PROPERTY(d, text)
 #define Q_OVERRIDE(text) Q_OVERRIDE(text)
 #define Q_ENUMS(x) Q_ENUMS(x)
 #define Q_FLAGS(x) Q_FLAGS(x)
@@ -268,6 +270,14 @@ class QArgument: public QGenericArgument
 {
 public:
     inline QArgument(const char *aName, const T &aData)
+        : QGenericArgument(aName, static_cast<const void *>(&aData))
+        {}
+};
+template <class T>
+class QArgument<T &>: public QGenericArgument
+{
+public:
+    inline QArgument(const char *aName, T &aData)
         : QGenericArgument(aName, static_cast<const void *>(&aData))
         {}
 };

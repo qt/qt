@@ -97,6 +97,7 @@ public:
     bool initSslContext();
     SSL *ssl;
     SSL_CTX *ctx;
+    EVP_PKEY *pkey;
     BIO *readBio;
     BIO *writeBio;
     SSL_SESSION *session;

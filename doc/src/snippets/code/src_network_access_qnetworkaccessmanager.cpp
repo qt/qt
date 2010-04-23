@@ -69,3 +69,12 @@ networkAccessManager->setConfiguration(manager.defaultConfiguration());
 //! [3]
 networkAccessManager->setConfiguration(QNetworkConfiguration());
 //! [3]
+
+//! [4]
+networkAccessManager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
+//! [4]
+
+//! [5]
+networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+//! [5]
+

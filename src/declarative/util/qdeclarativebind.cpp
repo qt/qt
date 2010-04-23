@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativebind_p.h"
+#include "private/qdeclarativebind_p.h"
 
-#include "qdeclarativenullablevalue_p_p.h"
+#include "private/qdeclarativenullablevalue_p_p.h"
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
@@ -72,7 +72,7 @@ public:
 
 /*!
     \qmlclass Binding QDeclarativeBind
-  \since 4.7
+    \since 4.7
     \brief The Binding element allows arbitrary property bindings to be created.
 
     Sometimes it is necessary to bind to a property of an object that wasn't
@@ -114,6 +114,19 @@ QDeclarativeBind::~QDeclarativeBind()
 {
 }
 
+/*!
+    \qmlproperty bool Binding::when
+
+    This property holds when the binding is active.
+    This should be set to an expression that evaluates to true when you want the binding to be active.
+
+    \code
+    Binding {
+        target: contactName; property: 'text'
+        value: name; when: list.ListView.isCurrentItem
+    }
+    \endcode
+*/
 bool QDeclarativeBind::when() const
 {
     Q_D(const QDeclarativeBind);

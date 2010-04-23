@@ -450,13 +450,27 @@ bool QFSFileEnginePrivate::nativeClose()
 
     // Windows native mode.
     bool ok = true;
+
+#ifndef Q_OS_WINCE
+    if (cachedFd != -1) {
+        if (::_close(cachedFd) && !::CloseHandle(fileHandle)) {
+            q->setError(QFile::UnspecifiedError, qt_error_string());
+            ok = false;
+        }
+
+        // System handle is closed with associated file descriptor.
+        fileHandle = INVALID_HANDLE_VALUE;
+        cachedFd = -1;
+
+        return ok;
+    }
+#endif
+
     if ((fileHandle == INVALID_HANDLE_VALUE || !::CloseHandle(fileHandle))) {
         q->setError(QFile::UnspecifiedError, qt_error_string());
         ok = false;
     }
     fileHandle = INVALID_HANDLE_VALUE;
-    cachedFd = -1;              // gets closed by CloseHandle above
-
     return ok;
 }
 
@@ -1266,7 +1280,7 @@ static QString readSymLink(const QString &link)
                 int offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
                 const wchar_t* PathBuffer = &rdb->MountPointReparseBuffer.PathBuffer[offset];
                 result = QString::fromWCharArray(PathBuffer, length);
-            } else {
+            } else if (rdb->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
                 int length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
                 int offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
                 const wchar_t* PathBuffer = &rdb->SymbolicLinkReparseBuffer.PathBuffer[offset];
@@ -1278,6 +1292,15 @@ static QString readSymLink(const QString &link)
         }
         qFree(rdb);
         CloseHandle(handle);
+
+        QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
+        if(matchVolName.indexIn(result) == 0) {
+            DWORD len;
+            wchar_t buffer[MAX_PATH];
+            QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
+            if(GetVolumePathNamesForVolumeNameW((wchar_t*)volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
+                result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
+        }
     }
 #else
     Q_UNUSED(link);
@@ -1405,10 +1428,7 @@ bool QFSFileEngine::link(const QString &newName)
 #endif // Q_OS_WINCE
 }
 
-/*!
-    \internal
-*/
-QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
+QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const
 {
     QAbstractFileEngine::FileFlags ret = 0;
 
@@ -1429,7 +1449,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
             if(res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
-                { //user
+                if (type & 0x0700) { // user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
                     if(access_mask & ReadMask)
@@ -1439,7 +1459,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeUserPerm;
                 }
-                { //owner
+                if (type & 0x7000) { // owner
                     ptrBuildTrusteeWithSidW(&trustee, pOwner);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
@@ -1450,7 +1470,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeOwnerPerm;
                 }
-                { //group
+                if (type & 0x0070) { // group
                     ptrBuildTrusteeWithSidW(&trustee, pGroup);
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
@@ -1461,7 +1481,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                     if(access_mask & ExecMask)
                         ret |= QAbstractFileEngine::ExeGroupPerm;
                 }
-                { //other (world)
+                if (type & 0x0007) { // other (world)
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1; // ###
                     if(access_mask & ReadMask)
@@ -1476,29 +1496,35 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
         }
     } else
 #endif
-           {
+    {
         //### what to do with permissions if we don't use NTFS
         // for now just add all permissions and what about exe missions ??
         // also qt_ntfs_permission_lookup is now not set by default ... should it ?
-        ret |= QAbstractFileEngine::ReadOtherPerm | QAbstractFileEngine::ReadGroupPerm
-            | QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadUserPerm
-            | QAbstractFileEngine::WriteUserPerm | QAbstractFileEngine::WriteOwnerPerm
-            | QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm;
+        ret |= QAbstractFileEngine::ReadOwnerPerm | QAbstractFileEngine::ReadGroupPerm
+             | QAbstractFileEngine::ReadOtherPerm;
 
-        if (doStat()) {
-            if (ret & (QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm)) {
-                if (fileAttrib & FILE_ATTRIBUTE_READONLY)
-                    ret &= ~(QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteUserPerm |
-                             QAbstractFileEngine::WriteGroupPerm | QAbstractFileEngine::WriteOtherPerm);
-            }
+        if (!(fileAttrib & FILE_ATTRIBUTE_READONLY)) {
+            ret |= QAbstractFileEngine::WriteOwnerPerm | QAbstractFileEngine::WriteGroupPerm
+                 | QAbstractFileEngine::WriteOtherPerm;
+        }
 
-            QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
-            QString ext = fname.right(4).toLower();
-            if (ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
-                ext == QLatin1String(".pif") || ext == QLatin1String(".cmd") || (fileAttrib & FILE_ATTRIBUTE_DIRECTORY))
-                ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm |
-                       QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
+        QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+        QString ext = fname.right(4).toLower();
+        if ((fileAttrib & FILE_ATTRIBUTE_DIRECTORY) ||
+            ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
+            ext == QLatin1String(".pif") || ext == QLatin1String(".cmd")) {
+            ret |= QAbstractFileEngine::ExeOwnerPerm | QAbstractFileEngine::ExeGroupPerm
+                 | QAbstractFileEngine::ExeOtherPerm | QAbstractFileEngine::ExeUserPerm;
+        }
+
+        // calculate user permissions
+        if (type & QAbstractFileEngine::ReadUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(fname).utf16(), R_OK) == 0)
+                ret |= QAbstractFileEngine::ReadUserPerm;
+        }
+        if (type & QAbstractFileEngine::WriteUserPerm) {
+            if (::_waccess((wchar_t*)longFileName(fname).utf16(), W_OK) == 0)
+                ret |= QAbstractFileEngine::WriteUserPerm;
         }
     }
     return ret;
@@ -1526,8 +1552,7 @@ bool QFSFileEnginePrivate::isSymlink() const
             if (hFind != INVALID_HANDLE_VALUE) {
                 ::FindClose(hFind);
                 if ((findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-                    && (findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT
-                        || findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
+                    && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK || findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT)) {
                     is_link = true;
                 }
             }
@@ -1555,13 +1580,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     }
 
     if (type & PermsMask) {
-        ret |= d->getPermissions();
-        // ### Workaround pascals ### above. Since we always set all properties to true
-        // we need to disable read and exec access if the file does not exists
-        if (d->doStat())
+        if (d->doStat()) {
             ret |= ExistsFlag;
-        else
-            ret &= 0x2222;
+            ret |= d->getPermissions(type);
+        }
     }
     if (type & TypesMask) {
         if (d->filePath.endsWith(QLatin1String(".lnk"))) {

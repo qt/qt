@@ -55,13 +55,16 @@
 
 #include "qdeclarative.h"
 #include "qdeclarativeparserstatus.h"
-#include <private/qlistmodelinterface_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qurl.h>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
 
 class QDeclarativeWorkerScript;
 class QDeclarativeWorkerScriptEnginePrivate;
@@ -84,7 +87,7 @@ private:
     QDeclarativeWorkerScriptEnginePrivate *d;
 };
 
-class QDeclarativeWorkerScript : public QObject, public QDeclarativeParserStatus
+class Q_DECLARATIVE_EXPORT QDeclarativeWorkerScript : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
@@ -114,47 +117,10 @@ private:
     QUrl m_source;
 };
 
-class QDeclarativeWorkerListModelAgent;
-class QDeclarativeWorkerListModel : public QListModelInterface
-{
-    Q_OBJECT
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
-
-public:
-    QDeclarativeWorkerListModel(QObject * = 0);
-    virtual ~QDeclarativeWorkerListModel();
-
-    Q_INVOKABLE void clear();
-    Q_INVOKABLE void remove(int index);
-    Q_INVOKABLE void append(const QScriptValue &);
-    Q_INVOKABLE void insert(int index, const QScriptValue&);
-    Q_INVOKABLE QScriptValue get(int index) const;
-    Q_INVOKABLE void set(int index, const QScriptValue &);
-
-    QDeclarativeWorkerListModelAgent *agent();
-
-    virtual QList<int> roles() const;
-    virtual QString toString(int role) const;
-    virtual int count() const;
-    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
-    virtual QVariant data(int index, int role) const;
-
-Q_SIGNALS:
-    void countChanged();
-
-private:
-    friend class QDeclarativeWorkerListModelAgent;
-
-    QHash<int, QString> m_roles;
-    QHash<QString, int> m_strings;
-    QList<QHash<int, QVariant> > m_values;
-
-    QDeclarativeWorkerListModelAgent *m_agent;
-};
-
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeWorkerScript);
-QML_DECLARE_TYPE(QDeclarativeWorkerListModel);
+
+QT_END_HEADER
 
 #endif // QDECLARATIVEWORKERSCRIPT_P_H

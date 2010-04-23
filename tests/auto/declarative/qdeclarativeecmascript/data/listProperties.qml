@@ -9,15 +9,12 @@ MyQmlObject {
         QtObject { property int a: 11 }
     ]
 
-    Script {
-        function calcTest1() {
-            var rv = 0;
-            for (var ii = 0; ii < root.objectListProperty.length; ++ii) {
-                rv += root.objectListProperty[ii].a;
-            }
-            return rv;
+    function calcTest1() {
+        var rv = 0;
+        for (var ii = 0; ii < root.objectListProperty.length; ++ii) {
+            rv += root.objectListProperty[ii].a;
         }
-
+        return rv;
     }
 
     property int test1: calcTest1();

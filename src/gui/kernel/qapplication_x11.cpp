@@ -96,6 +96,11 @@ extern "C" {
 }
 #endif
 
+#ifndef QT_GUI_DOUBLE_CLICK_RADIUS
+#define QT_GUI_DOUBLE_CLICK_RADIUS 5
+#endif
+
+
 //#define ALIEN_DEBUG
 
 #if !defined(QT_NO_GLIB)
@@ -270,6 +275,8 @@ static const char * x11_atomnames = {
 
     "_NET_SYSTEM_TRAY_VISUAL\0"
 
+    "_NET_ACTIVE_WINDOW\0"
+
     // Property formats
     "COMPOUND_TEXT\0"
     "TEXT\0"
@@ -312,9 +319,14 @@ static const char * x11_atomnames = {
     "_XEMBED\0"
     "_XEMBED_INFO\0"
 
+    // Wacom old. (before version 0.10)
     "Wacom Stylus\0"
     "Wacom Cursor\0"
     "Wacom Eraser\0"
+
+    // Tablet
+    "STYLUS\0"
+    "ERASER\0"
 };
 
 Q_GUI_EXPORT QX11Data *qt_x11Data = 0;
@@ -657,11 +669,6 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
             return 0;
         break;
 
-    case BadMatch:
-        if (err->request_code == 42 /* X_SetInputFocus */)
-            return 0;
-        break;
-
     default:
 #if !defined(QT_NO_XINPUT)
         if (err->request_code == X11->xinput_major
@@ -699,6 +706,10 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
             extensionName = "XInputExtension";
         else if (err->request_code == X11->mitshm_major)
             extensionName = "MIT-SHM";
+#ifndef QT_NO_XKB
+        else if(err->request_code == X11->xkb_major)
+            extensionName = "XKEYBOARD";
+#endif
 
         char minor_str[256];
         if (extensionName) {
@@ -1625,6 +1636,11 @@ void qt_init(QApplicationPrivate *priv, int,
     X11->xinput_eventbase = 0;
     X11->xinput_errorbase = 0;
 
+    X11->use_xkb = false;
+    X11->xkb_major = 0;
+    X11->xkb_eventbase = 0;
+    X11->xkb_errorbase = 0;
+
     // MIT-SHM
     X11->use_mitshm = false;
     X11->use_mitshm_pixmaps = false;
@@ -2098,6 +2114,33 @@ void qt_init(QApplicationPrivate *priv, int,
         }
 #endif // QT_NO_XINPUT
 
+#ifndef QT_NO_XKB
+        int xkblibMajor = XkbMajorVersion;
+        int xkblibMinor = XkbMinorVersion;
+        X11->use_xkb = XkbQueryExtension(X11->display,
+                                         &X11->xkb_major,
+                                         &X11->xkb_eventbase,
+                                         &X11->xkb_errorbase,
+                                         &xkblibMajor,
+                                         &xkblibMinor);
+        if (X11->use_xkb) {
+            // If XKB is detected, set the GrabsUseXKBState option so input method
+            // compositions continue to work (ie. deadkeys)
+            unsigned int state = XkbPCF_GrabsUseXKBStateMask;
+            (void) XkbSetPerClientControls(X11->display, state, &state);
+
+            // select for group change events
+            XkbSelectEventDetails(X11->display,
+                                  XkbUseCoreKbd,
+                                  XkbStateNotify,
+                                  XkbAllStateComponentsMask,
+                                  XkbGroupStateMask);
+
+            // current group state is queried when creating the keymapper, no need to do it here
+        }
+#endif
+
+
 #if !defined(QT_NO_FONTCONFIG)
         int dpi = 0;
         getXDefault("Xft", FC_DPI, &dpi);
@@ -2175,15 +2218,6 @@ void qt_init(QApplicationPrivate *priv, int,
 
         // initialize key mapper
         QKeyMapper::changeKeyboard();
-
-#ifndef QT_NO_XKB
-        if (qt_keymapper_private()->useXKB) {
-            // If XKB is detected, set the GrabsUseXKBState option so input method
-            // compositions continue to work (ie. deadkeys)
-            unsigned int state = XkbPCF_GrabsUseXKBStateMask;
-            (void) XkbSetPerClientControls(X11->display, state, &state);
-        }
-#endif // QT_NO_XKB
 
         // Misc. initialization
 #if 0 //disabled for now..
@@ -2340,12 +2374,12 @@ void qt_init(QApplicationPrivate *priv, int,
                     gotStylus = true;
                 }
 #else
-                if (devs->type == ATOM(XWacomStylus)) {
+                if (devs->type == ATOM(XWacomStylus) || devs->type == ATOM(XTabletStylus)) {
                     deviceType = QTabletEvent::Stylus;
                     if (wacomDeviceName()->isEmpty())
                         wacomDeviceName()->append(devs->name);
                     gotStylus = true;
-                } else if (devs->type == ATOM(XWacomEraser)) {
+                } else if (devs->type == ATOM(XWacomEraser) || devs->type == ATOM(XTabletEraser)) {
                     deviceType = QTabletEvent::XFreeEraser;
                     gotEraser = true;
                 }
@@ -3021,6 +3055,8 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                 if ((ulong) event->xclient.data.l[1] > X11->time)
                     X11->time = event->xclient.data.l[1];
                 QWidget *amw = activeModalWidget();
+                if (amw && amw->testAttribute(Qt::WA_X11DoNotAcceptFocus))
+                    amw = 0;
                 if (amw && !QApplicationPrivate::tryModalHelper(widget, 0)) {
                     QWidget *p = amw->parentWidget();
                     while (p && p != widget)
@@ -3219,6 +3255,24 @@ int QApplication::x11ProcessEvent(XEvent* event)
         QKeyMapper::changeKeyboard();
         return 0;
     }
+#ifndef QT_NO_XKB
+    else if (X11->use_xkb && event->type == X11->xkb_eventbase) {
+        XkbAnyEvent *xkbevent = (XkbAnyEvent *) event;
+        switch (xkbevent->xkb_type) {
+        case XkbStateNotify:
+            {
+                XkbStateNotifyEvent *xkbstateevent = (XkbStateNotifyEvent *) xkbevent;
+                if ((xkbstateevent->changed & XkbGroupStateMask) != 0) {
+                    qt_keymapper_private()->xkb_currentGroup = xkbstateevent->group;
+                    QKeyMapper::changeKeyboard();
+                }
+                break;
+            }
+        default:
+            break;
+        }
+    }
+#endif
 
     if (!widget) {                                // don't know this windows
         QWidget* popup = QApplication::activePopupWidget();
@@ -4194,8 +4248,8 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
                 mouseButtonPressed == button &&
                 (long)event->xbutton.time -(long)mouseButtonPressTime
                 < QApplication::doubleClickInterval() &&
-                qAbs(event->xbutton.x - mouseXPos) < 5 &&
-                qAbs(event->xbutton.y - mouseYPos) < 5) {
+                qAbs(event->xbutton.x - mouseXPos) < QT_GUI_DOUBLE_CLICK_RADIUS &&
+                qAbs(event->xbutton.y - mouseYPos) < QT_GUI_DOUBLE_CLICK_RADIUS) {
                 type = QEvent::MouseButtonDblClick;
                 mouseButtonPressTime -= 2000;        // no double-click next time
             } else {

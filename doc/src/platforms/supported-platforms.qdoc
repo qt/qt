@@ -116,7 +116,7 @@
                                      \o aCC 3.57, gcc 3.4
     \row    \o HPUXi 11.23
                                      \o aCC 6.10
-    \row    \o Solaris 10 UltraSparc
+    \row    \o Solaris 10 (UltraSparc, x86)
                                      \o Sun Studio 12
     \row    \o AIX 6
                                      \o Power5 xlC 7

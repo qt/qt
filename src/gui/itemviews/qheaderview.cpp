@@ -1698,13 +1698,10 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
     if (!d->sectionHidden.isEmpty()) {
         QBitArray sectionHidden(d->sectionHidden);
         sectionHidden.resize(sectionHidden.count() + insertCount);
-        //sectionHidden.fill(false, logicalFirst, logicalLast + 1);
-        for (int i = logicalFirst; i <= logicalLast; ++i)
-            // visual == logical in this range (see previous block)
-            sectionHidden.setBit(i, false);
+        sectionHidden.fill(false, logicalFirst, logicalLast + 1);
         for (int j = logicalLast + 1; j < sectionHidden.count(); ++j)
-            sectionHidden.setBit(d->visualIndex(j),
-                    d->sectionHidden.testBit(d->visualIndex(j - insertCount)));
+            //here we simply copy the old sectionHidden
+            sectionHidden.setBit(j, d->sectionHidden.testBit(j - insertCount));
         d->sectionHidden = sectionHidden;
     }
 
@@ -2037,7 +2034,7 @@ bool QHeaderView::event(QEvent *e)
                 updateSection(d->hover);
         }
         break; }
-    case QEvent::Timer: { // ### reimplement timerEvent() instead ?
+    case QEvent::Timer: {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         if (te->timerId() == d->delayedResize.timerId()) {
             d->delayedResize.stop();
@@ -2223,16 +2220,24 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
         case QHeaderViewPrivate::MoveSection: {
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
                 || !d->sectionIndicator->isHidden()) {
-                int indicatorCenter = (d->orientation == Qt::Horizontal
-                                       ? d->sectionIndicator->width()
-                                       : d->sectionIndicator->height()) / 2;
-                int centerOffset = indicatorCenter - d->sectionIndicatorOffset;
-                // This will drop the moved section to the position under the center of the indicator.
-                // If centerOffset is 0, the section will be moved to the position of the mouse cursor.
-                int visual = visualIndexAt(pos + centerOffset);
+                int visual = visualIndexAt(pos);
                 if (visual == -1)
                     return;
-                d->target = d->logicalIndex(visual);
+                int posThreshold = d->headerSectionPosition(visual) + d->headerSectionSize(visual) / 2;
+                int moving = visualIndex(d->section);
+                if (visual < moving) {
+                    if (pos < posThreshold)
+                        d->target = d->logicalIndex(visual);
+                    else
+                        d->target = d->logicalIndex(visual + 1);
+                } else if (visual > moving) {
+                    if (pos > posThreshold)
+                        d->target = d->logicalIndex(visual);
+                    else
+                        d->target = d->logicalIndex(visual - 1);
+                } else {
+                    d->target = d->section;
+                }
                 d->updateSectionIndicator(d->section, pos);
             }
             return;
@@ -2610,7 +2615,7 @@ void QHeaderView::updateGeometries()
     Q_D(QHeaderView);
     d->layoutChildren();
     if (d->hasAutoResizeSections())
-        resizeSections();
+        d->doDelayedResizeSections();
 }
 
 /*!

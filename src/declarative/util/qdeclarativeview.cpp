@@ -41,9 +41,6 @@
 
 #include "qdeclarativeview.h"
 
-#include "qperformancelog_p_p.h"
-#include "qfxperf_p_p.h"
-
 #include <qdeclarative.h>
 #include <qdeclarativeitem.h>
 #include <qdeclarativeengine.h>
@@ -51,6 +48,7 @@
 #include <qdeclarativedebug_p.h>
 #include <qdeclarativedebugservice_p.h>
 #include <qdeclarativeglobal_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -131,13 +129,14 @@ class QDeclarativeViewPrivate
 public:
     QDeclarativeViewPrivate(QDeclarativeView *view)
         : q(view), root(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
+    ~QDeclarativeViewPrivate() { delete root; }
 
     void execute();
 
     QDeclarativeView *q;
 
-    QGuard<QGraphicsObject> root;
-    QGuard<QDeclarativeItem> qmlRoot;
+    QDeclarativeGuard<QGraphicsObject> root;
+    QDeclarativeGuard<QDeclarativeItem> qmlRoot;
 
     QUrl source;
 
@@ -158,6 +157,7 @@ void QDeclarativeViewPrivate::execute()
 {
     delete root;
     delete component;
+    initialSize = QSize();
     component = new QDeclarativeComponent(&engine, source, q);
 
     if (!component->isLoading()) {
@@ -193,6 +193,7 @@ void QDeclarativeViewPrivate::execute()
     \o Initializes QGraphicsView for QML key handling:
         \list
         \o QGraphicsView::viewport()->setFocusPolicy(Qt::NoFocus);
+        \o QGraphicsView::setFocusPolicy(Qt::StrongFocus);
         \o QGraphicsScene::setStickyFocus(true);
         \endlist
     \endlist
@@ -203,7 +204,7 @@ void QDeclarativeViewPrivate::execute()
     QDeclarativeView *view = new QDeclarativeView(this);
     vbox->addWidget(view);
 
-    QUrl url(fileName);
+    QUrl url = QUrl::fromLocalFile(fileName);
     view->setSource(url);
     view->show();
     \endcode
@@ -219,7 +220,7 @@ void QDeclarativeViewPrivate::execute()
 */
 
 /*! \fn void QDeclarativeView::statusChanged(QDeclarativeView::Status status)
-    This signal is emitted when the component's current \l{QDeclarativeView::Status} {status} changes.
+    This signal is emitted when the component's current \a status changes.
 */
 
 /*!
@@ -249,13 +250,6 @@ QDeclarativeView::QDeclarativeView(const QUrl &source, QWidget *parent)
 
 void QDeclarativeViewPrivate::init()
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    {
-        QDeclarativePerfTimer<QDeclarativePerf::FontDatabase> perf;
-        QFontDatabase database;
-    }
-#endif
-
     q->setScene(&scene);
 
     q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
@@ -267,6 +261,7 @@ void QDeclarativeViewPrivate::init()
     q->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     q->viewport()->setFocusPolicy(Qt::NoFocus);
+    q->setFocusPolicy(Qt::StrongFocus);
 
     scene.setStickyFocus(true);  //### needed for correct focus handling
 }
@@ -277,18 +272,31 @@ void QDeclarativeViewPrivate::init()
  */
 QDeclarativeView::~QDeclarativeView()
 {
-    delete d->root;
+    delete d;
 }
+
+/*! \property QDeclarativeView::source
+  \brief The URL of the source of the QML component.
+
+  Changing this property causes the QML component to be reloaded.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
+ */
 
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
+
+    Calling this methods multiple times with the same url will result
+    in the QML being reloaded.
  */
 void QDeclarativeView::setSource(const QUrl& url)
 {
-    if (url != d->source) {
-        d->source = url;
-        d->execute();
-    }
+    d->source = url;
+    d->execute();
 }
 
 /*!
@@ -322,7 +330,6 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     return d->engine.rootContext();
 }
 
-
 /*!
   \enum QDeclarativeView::Status
 
@@ -332,6 +339,14 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
     \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+*/
+
+/*! \enum QDeclarativeView::ResizeMode
+
+  This enum specifies how to resize the view.
+
+  \value SizeViewToRootObject
+  \value SizeRootObjectToView
 */
 
 /*!
@@ -372,8 +387,6 @@ QList<QDeclarativeError> QDeclarativeView::errors() const
     Regardless of this property, the sizeHint of the view
     is the initial size of the root item. Note though that
     since QML may load dynamically, that size may change.
-
-    \sa initialSize()
 */
 
 void QDeclarativeView::setResizeMode(ResizeMode mode)
@@ -439,8 +452,6 @@ void QDeclarativeView::setRootObject(QObject *obj)
     if (QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(obj)) {
         d->scene.addItem(item);
 
-        QPerformanceLog::displayData();
-        QPerformanceLog::clear();
         d->root = item;
         d->qmlRoot = item;
         connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));

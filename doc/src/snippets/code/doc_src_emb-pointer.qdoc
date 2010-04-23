@@ -77,7 +77,10 @@ export QWS_MOUSE_PROTO="Vr41xx:press=500:/dev/misc/ts"
 
 
 //! [7]
-./configure  -L <path to tslib library> -I <path to tslib headers>
+....
+QMAKE_CFLAGS += -I<path to tslib headers>
+QMAKE_LFLAGS += -L<path to tslib library> -Wl,-rpath-link=<path to tslib library>
+....
 //! [7]
 
 

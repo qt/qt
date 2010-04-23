@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeboundsignal_p.h"
+#include "private/qdeclarativeboundsignal_p.h"
 
-#include "qmetaobjectbuilder_p.h"
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeexpression_p.h"
-#include "qdeclarativecontext_p.h"
-#include "qdeclarativemetatype_p.h"
+#include "private/qmetaobjectbuilder_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeexpression_p.h"
+#include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativemetatype_p.h"
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativeglobal_p.h"
+#include "private/qdeclarativeglobal_p.h"
 
 #include <QtCore/qdebug.h>
 
@@ -104,7 +104,7 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QObject *scope, const QMetaMeth
     // is that they both do the work to figure it out.  Boo hoo.
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    QDeclarativeGraphics_setParent_noEvent(this, parent);
+    QDeclarative_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 }
 
@@ -120,7 +120,7 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, cons
     // is that they both do the work to figure it out.  Boo hoo.
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    QDeclarativeGraphics_setParent_noEvent(this, parent);
+    QDeclarative_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 
     m_expression = new QDeclarativeExpression(ctxt, val, scope);
@@ -176,7 +176,7 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         }
 
         if (m_params) m_params->setValues(a);
-        if (m_expression) {
+        if (m_expression && m_expression->engine()) {
             QDeclarativeExpressionPrivate::get(m_expression)->value(m_params);
             if (m_expression && m_expression->hasError())
                 qWarning().nospace() << qPrintable(m_expression->error().toString());

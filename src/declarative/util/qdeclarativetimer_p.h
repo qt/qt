@@ -59,10 +59,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTimer : public QObject, public QDeclarati
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeTimer)
     Q_INTERFACES(QDeclarativeParserStatus)
-    Q_PROPERTY(int interval READ interval WRITE setInterval)
+    Q_PROPERTY(int interval READ interval WRITE setInterval NOTIFY intervalChanged)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
-    Q_PROPERTY(bool repeat READ isRepeating WRITE setRepeating)
-    Q_PROPERTY(bool triggeredOnStart READ triggeredOnStart WRITE setTriggeredOnStart)
+    Q_PROPERTY(bool repeat READ isRepeating WRITE setRepeating NOTIFY repeatChanged)
+    Q_PROPERTY(bool triggeredOnStart READ triggeredOnStart WRITE setTriggeredOnStart NOTIFY triggeredOnStartChanged)
 
 public:
     QDeclarativeTimer(QObject *parent=0);
@@ -91,6 +91,9 @@ public Q_SLOTS:
 Q_SIGNALS:
     void triggered();
     void runningChanged();
+    void intervalChanged();
+    void repeatChanged();
+    void triggeredOnStartChanged();
 
 private:
     void update();

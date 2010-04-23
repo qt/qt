@@ -72,6 +72,7 @@
 #endif
 
 #include <qhostinfo.h>
+#include "private/qhostinfo_p.h"
 
 #if !defined(QT_NO_GETADDRINFO)
 # if !defined(Q_OS_WINCE)
@@ -108,10 +109,11 @@ public:
 public slots:
     void init();
     void cleanup();
+    void initTestCase();
+
 private slots:
     void getSetCheck();
     void staticInformation();
-    void initTestCase();
     void lookupIPv4_data();
     void lookupIPv4();
     void lookupIPv6_data();
@@ -127,6 +129,8 @@ private slots:
 
     void multipleSameLookups();
     void multipleDifferentLookups();
+
+    void cache();
 
 protected slots:
     void resultsReady(const QHostInfo &);
@@ -205,10 +209,21 @@ void tst_QHostInfo::initTestCase()
         // We have IPv6 support
         ipv6Available = true;
     }
+
+
+    // run each testcase with and without test enabled
+    QTest::addColumn<bool>("cache");
+    QTest::newRow("WithCache") << true;
+    QTest::newRow("WithoutCache") << false;
 }
 
 void tst_QHostInfo::init()
 {
+    // delete the cache so inidividual testcase results are independant from each other
+    qt_qhostinfo_clear_cache();
+
+    QFETCH_GLOBAL(bool, cache);
+    qt_qhostinfo_enable_cache(cache);
 }
 
 void tst_QHostInfo::cleanup()
@@ -456,6 +471,45 @@ void tst_QHostInfo::multipleDifferentLookups()
     // spin two seconds more to see if it is not more than expected
     QTestEventLoop::instance().enterLoop(2);
     QTRY_VERIFY(lookupsDoneCounter == COUNT);
+}
+
+void tst_QHostInfo::cache()
+{
+    QFETCH_GLOBAL(bool, cache);
+    if (!cache)
+        return; // test makes only sense when cache enabled
+
+    // reset slot counter
+    lookupsDoneCounter = 0;
+
+    // lookup once, wait in event loop, result should not come directly.
+    bool valid = true;
+    int id = -1;
+    QHostInfo result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(valid == false);
+    QVERIFY(result.addresses().isEmpty());
+
+    // loopkup second time, result should come directly
+    valid = false;
+    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QVERIFY(valid == true);
+    QVERIFY(!result.addresses().isEmpty());
+
+    // clear the cache
+    qt_qhostinfo_clear_cache();
+
+    // lookup third time, result should not come directly.
+    valid = true;
+    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(valid == false);
+    QVERIFY(result.addresses().isEmpty());
+
+    // the slot should have been called 2 times.
+    QVERIFY(lookupsDoneCounter == 2);
 }
 
 void tst_QHostInfo::resultsReady(const QHostInfo &hi)

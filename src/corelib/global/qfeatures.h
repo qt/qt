@@ -335,6 +335,11 @@
 #define QT_NO_DATESTRING
 #endif
 
+// QtDBus module
+#if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES))
+#define QT_NO_DBUS
+#endif
+
 // QDial
 #if !defined(QT_NO_DIAL) && (defined(QT_NO_SLIDER))
 #define QT_NO_DIAL
@@ -498,6 +503,11 @@
 // QXmlStreamWriter
 #if !defined(QT_NO_XMLSTREAMWRITER) && (defined(QT_NO_XMLSTREAM))
 #define QT_NO_XMLSTREAMWRITER
+#endif
+
+// Bearer Management
+#if !defined(QT_NO_BEARERMANAGEMENT) && (defined(QT_NO_LIBRARY))
+#define QT_NO_BEARERMANAGEMENT
 #endif
 
 // Context menu

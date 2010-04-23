@@ -814,8 +814,8 @@ QSize QTabWidget::sizeHint() const
 {
     Q_D(const QTabWidget);
     QSize lc(0, 0), rc(0, 0);
-    QStyleOption opt(0);
-    opt.init(this);
+    QStyleOptionTabWidgetFrameV2 opt;
+    initStyleOption(&opt);
     opt.state = QStyle::State_None;
 
     if (d->leftCornerWidget)
@@ -863,8 +863,8 @@ QSize QTabWidget::minimumSizeHint() const
 
     QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
-    QStyleOption opt(0);
-    opt.rect = rect();
+    QStyleOptionTabWidgetFrameV2 opt;
+    initStyleOption(&opt);
     opt.palette = palette();
     opt.state = QStyle::State_None;
     return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this)

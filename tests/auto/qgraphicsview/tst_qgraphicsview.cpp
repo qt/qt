@@ -219,6 +219,7 @@ private slots:
     void inputMethodSensitivity();
     void inputContextReset();
     void indirectPainting();
+    void compositionModeInDrawBackground();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -3825,6 +3826,39 @@ void tst_QGraphicsView::indirectPainting()
     QTRY_VERIFY(scene.drawCount > 0);
 }
 
+void tst_QGraphicsView::compositionModeInDrawBackground()
+{
+    class MyView : public QGraphicsView
+    { public:
+        MyView(QGraphicsScene *scene) : QGraphicsView(scene),
+        painted(false), compositionMode(QPainter::CompositionMode_SourceOver) {}
+        bool painted;
+        QPainter::CompositionMode compositionMode;
+        void drawBackground(QPainter *painter, const QRectF &)
+        {
+            compositionMode = painter->compositionMode();
+            painted = true;
+        }
+    };
+
+    QGraphicsScene dummy;
+    MyView view(&dummy);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    // Make sure the painter's composition mode is SourceOver in drawBackground.
+    QTRY_VERIFY(view.painted);
+    QCOMPARE(view.compositionMode, QPainter::CompositionMode_SourceOver);
+
+    view.painted = false;
+    view.setCacheMode(QGraphicsView::CacheBackground);
+    view.viewport()->update();
+
+    // Make sure the painter's composition mode is SourceOver in drawBackground
+    // with background cache enabled.
+    QTRY_VERIFY(view.painted);
+    QCOMPARE(view.compositionMode, QPainter::CompositionMode_SourceOver);
+}
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
 {
     QGraphicsView view;

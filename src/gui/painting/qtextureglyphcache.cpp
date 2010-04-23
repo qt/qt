@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 // returns the highest number closest to v, which is a power of 2
 // NB! assumes 32 bit ints
-int qt_next_power_of_two(int v)
+static inline int qt_next_power_of_two(int v)
 {
     v--;
     v |= v >> 1;
@@ -73,12 +73,13 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                                   const QFixedPoint *)
 {
 #ifdef CACHE_DEBUG
-    printf("Populating with '%s'\n", QString::fromRawData(ti.chars, ti.num_chars).toLatin1().data());
+    printf("Populating with %d glyphs\n", numGlyphs);
     qDebug() << " -> current transformation: " << m_transform;
 #endif
 
     m_current_fontengine = fontEngine;
     const int margin = glyphMargin();
+    const int paddingDoubled = glyphPadding() * 2;
 
     QHash<glyph_t, Coord> listItemCoordinates;
     int rowHeight = 0;
@@ -93,17 +94,14 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
 
 #ifdef CACHE_DEBUG
-        printf("'%c' (%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f, ti.ascent=%.2f, ti.descent=%.2f\n",
-               ti.chars[i].toLatin1(),
+        printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
                glyph,
                metrics.width.toReal(),
                metrics.height.toReal(),
                metrics.xoff.toReal(),
                metrics.yoff.toReal(),
                metrics.x.toReal(),
-               metrics.y.toReal(),
-               ti.ascent.toReal(),
-               ti.descent.toReal());
+               metrics.y.toReal());
 #endif
         int glyph_width = metrics.width.ceil().toInt();
         int glyph_height = metrics.height.ceil().toInt();
@@ -127,7 +125,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     if (listItemCoordinates.isEmpty())
         return;
 
-    rowHeight += margin * 2;
+    rowHeight += margin * 2 + paddingDoubled;
     if (isNull())
         createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, qt_next_power_of_two(rowHeight));
 
@@ -136,10 +134,13 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     while (iter != listItemCoordinates.end()) {
         Coord c = iter.value();
 
+        m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
+
         if (m_cx + c.w > m_w) {
             // no room on the current line, start new glyph strip
             m_cx = 0;
-            m_cy = m_h;
+            m_cy += m_currentRowHeight + paddingDoubled;
+            m_currentRowHeight = 0; // New row
         }
         if (m_cy + c.h > m_h) {
             int new_height = m_h*2;
@@ -156,14 +157,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         fillTexture(c, iter.key());
         coords.insert(iter.key(), c);
 
-        if (m_cx + c.w > m_w) {
-            m_cx = 0;
-            m_cy += rowHeight;
-        } else {
-            // for the Mono case, glyph_width is 8-bit aligned,
-            // and therefore so will m_cx
-            m_cx += c.w;
-        }
+        m_cx += c.w + paddingDoubled;
         ++iter;
     }
 
@@ -195,7 +189,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
 
         if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
-            QFontEngineFT::Glyph *glyph = gset->glyph_data.value(g);
+            QFontEngineFT::Glyph *glyph = gset->getGlyph(g);
             const int bytesPerLine = (format == QFontEngineFT::Format_Mono ? ((glyph->width + 31) & ~31) >> 3
                                : (glyph->width + 3) & ~3);
             return QImage(glyph->data, glyph->width, glyph->height, bytesPerLine, imageFormat);
@@ -333,10 +327,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
     QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
-    m_image.save(QString::fromLatin1("cache-%1-%2-%3.png")
-                 .arg(m_current_textitem->font().family())
-                 .arg(m_current_textitem->font().pointSize())
-                 .arg(m_transform.type()));
+    m_image.save(QString::fromLatin1("cache-%1.png").arg(int(this)));
 #endif
 }
 

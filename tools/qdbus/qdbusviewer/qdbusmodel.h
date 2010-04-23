@@ -72,6 +72,7 @@ public:
     QString dBusPath(const QModelIndex &index) const;
     QString dBusInterface(const QModelIndex &index) const;
     QString dBusMethodName(const QModelIndex &index) const;
+    QString dBusTypeSignature(const QModelIndex &index) const;
 
     void refresh(const QModelIndex &index = QModelIndex());
 

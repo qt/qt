@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativelistscriptclass_p.h"
+#include "private/qdeclarativelistscriptclass_p.h"
 
-#include "qdeclarativeengine_p.h"
-#include "qdeclarativeguard_p.h"
-#include "qdeclarativelist_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativeguard_p.h"
+#include "private/qdeclarativelist_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -54,7 +54,7 @@ struct ListData : public QScriptDeclarativeClass::Object {
 };
 
 QDeclarativeListScriptClass::QDeclarativeListScriptClass(QDeclarativeEngine *e)
-: QDeclarativeScriptClass(QDeclarativeEnginePrivate::getScriptEngine(e)), engine(e)
+: QScriptDeclarativeClass(QDeclarativeEnginePrivate::getScriptEngine(e)), engine(e)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
     Q_UNUSED(scriptEngine);
@@ -114,7 +114,7 @@ QDeclarativeListScriptClass::queryProperty(Object *object, const Identifier &nam
     }
 }
 
-QDeclarativeListScriptClass::ScriptValue QDeclarativeListScriptClass::property(Object *obj, const Identifier &name)
+QDeclarativeListScriptClass::Value QDeclarativeListScriptClass::property(Object *obj, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);

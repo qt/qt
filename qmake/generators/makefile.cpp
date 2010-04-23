@@ -806,9 +806,8 @@ MakefileGenerator::init()
     }
 
     // escape qmake command
-    if (!project->isEmpty("QMAKE_QMAKE")) {
-        project->values("QMAKE_QMAKE") = escapeFilePaths(project->values("QMAKE_QMAKE"));
-    }
+    QStringList &qmk = project->values("QMAKE_QMAKE");
+    qmk = escapeFilePaths(qmk);
 }
 
 bool
@@ -1246,7 +1245,8 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 }
                 if(!dirstr.endsWith(Option::dir_sep))
                     dirstr += Option::dir_sep;
-                if(exists(wild)) { //real file
+                bool is_target = (wild == fileFixify(var("TARGET"), FileFixifyAbsolute));
+                if(is_target || exists(wild)) { //real file or target
                     QString file = wild;
                     QFileInfo fi(fileInfo(wild));
                     if(!target.isEmpty())
@@ -1260,7 +1260,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     QString cmd;
                     if (fi.isDir())
                        cmd = "-$(INSTALL_DIR)";
-                    else if (fi.isExecutable())
+                    else if (is_target || fi.isExecutable())
                        cmd = "-$(INSTALL_PROGRAM)";
                     else
                        cmd = "-$(INSTALL_FILE)";
@@ -2097,7 +2097,7 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
 bool
 MakefileGenerator::writeStubMakefile(QTextStream &t)
 {
-    t << "QMAKE    = "        << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE")) << endl;
+    t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
     QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
     for(QStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
         t << *it << " ";
@@ -2212,8 +2212,7 @@ MakefileGenerator::writeHeader(QTextStream &t)
     t << "# Project:  " << fileFixify(project->projectFile()) << endl;
     t << "# Template: " << var("TEMPLATE") << endl;
     if(!project->isActiveConfig("build_pass"))
-        t << "# Command: " << build_args().replace("$(QMAKE)",
-                      (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") : var("QMAKE_QMAKE"))) << endl;
+        t << "# Command: " << build_args().replace("$(QMAKE)", var("QMAKE_QMAKE")) << endl;
     t << "#############################################################################" << endl;
     t << endl;
 }
@@ -2346,7 +2345,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         t << "MAKEFILE      = " << ofile << endl;
         /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
          * back-slashes to be turned into slashes. */
-        t << "QMAKE         = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
+        t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
         t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
         t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
         t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;

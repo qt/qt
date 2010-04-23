@@ -43,7 +43,11 @@
   config.cpp
 */
 
-#include <QtCore>
+#include <QDir>
+#include <QVariant>
+#include <QFile>
+#include <QTemporaryFile>
+#include <QTextStream>
 
 #include "archiveextractor.h"
 #include "config.h"
@@ -524,8 +528,11 @@ QString Config::findFile(const Location& location,
 {
     QStringList::ConstIterator e = fileExtensions.begin();
     while (e != fileExtensions.end()) {
-	QString filePath = findFile(location, files, dirs, fileBase + "." + *e,
-				     userFriendlyFilePath);
+	QString filePath = findFile(location,
+                                    files,
+                                    dirs,
+                                    fileBase + "." + *e,
+                                    userFriendlyFilePath);
 	if (!filePath.isEmpty())
 	    return filePath;
 	++e;

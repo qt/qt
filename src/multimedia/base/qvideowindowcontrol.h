@@ -74,8 +74,8 @@ public:
 
     virtual QSize nativeSize() const = 0;
 
-    virtual QVideoWidget::AspectRatioMode aspectRatioMode() const = 0;
-    virtual void setAspectRatioMode(QVideoWidget::AspectRatioMode mode) = 0;
+    virtual Qt::AspectRatioMode aspectRatioMode() const = 0;
+    virtual void setAspectRatioMode(Qt::AspectRatioMode mode) = 0;
 
     virtual int brightness() const = 0;
     virtual void setBrightness(int brightness) = 0;

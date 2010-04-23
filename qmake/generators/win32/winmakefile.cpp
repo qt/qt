@@ -150,6 +150,10 @@ Win32MakefileGenerator::findLibraries(const QString &where)
                     if(QMakeMetaInfo::libExists((*it).local() + Option::dir_sep + lib) ||
                        exists((*it).local() + Option::dir_sep + lib + extension)) {
                         out = (*it).real() + Option::dir_sep + lib + extension;
+                        if (out.contains(QLatin1Char(' '))) {
+                            out.prepend(QLatin1Char('\"'));
+                            out.append(QLatin1Char('\"'));
+                        }
                         break;
                     }
                 }
@@ -591,8 +595,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeIncPart(t);
     writeLibsPart(t);
 
-    t << "QMAKE         = " << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") :
-                              Option::fixPathToTargetOS(var("QMAKE_QMAKE"), false)) << endl;
+    t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
     t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") :
                               Option::fixPathToTargetOS(var("QMAKE_IDC"), false)) << endl;
     t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") :

@@ -29,6 +29,8 @@
 #include "config.h"
 #include "Threading.h"
 
+#if !ENABLE(SINGLE_THREADED)
+
 #include "CurrentTime.h"
 #include "HashMap.h"
 #include "MainThread.h"
@@ -66,6 +68,21 @@ void ThreadPrivate::run()
     m_returnValue = m_entryPoint(m_data);
 }
 
+class ThreadMonitor : public QObject {
+    Q_OBJECT
+public:
+    static ThreadMonitor * instance()
+    {
+        static ThreadMonitor *instance = new ThreadMonitor();
+        return instance;
+    }
+
+public Q_SLOTS:
+    void threadFinished()
+    {
+        sender()->deleteLater();
+    }
+};
 
 static Mutex* atomicallyInitializedStaticMutex;
 
@@ -157,6 +174,9 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
         LOG_ERROR("Failed to create thread at entry point %p with data %p", entryPoint, data);
         return 0;
     }
+
+    QObject::connect(thread, SIGNAL(finished()), ThreadMonitor::instance(), SLOT(threadFinished()));
+
     thread->start();
 
     QThread* threadRef = static_cast<QThread*>(thread);
@@ -164,7 +184,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     return establishIdentifierForThread(threadRef);
 }
 
-void setThreadNameInternal(const char*)
+void initializeCurrentThreadInternal(const char*)
 {
 }
 
@@ -183,8 +203,10 @@ int waitForThreadCompletion(ThreadIdentifier threadID, void** result)
     return !res;
 }
 
-void detachThread(ThreadIdentifier)
+void detachThread(ThreadIdentifier threadID)
 {
+    ASSERT(threadID);
+    clearThreadForIdentifier(threadID);
 }
 
 ThreadIdentifier currentThread()
@@ -269,3 +291,7 @@ void ThreadCondition::broadcast()
 }
 
 } // namespace WebCore
+
+#include "ThreadingQt.moc"
+
+#endif

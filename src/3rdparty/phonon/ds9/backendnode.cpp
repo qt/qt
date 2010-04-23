@@ -67,7 +67,7 @@ namespace Phonon
                 if (info.pGraph) {
                     HRESULT hr = info.pGraph->RemoveFilter(filter);
 
-                    if (hr == VFW_E_NOT_STOPPED && m_mediaObject) {
+                    if (FAILED(hr) && m_mediaObject) {
                         m_mediaObject->ensureStopped();
 
                         hr = info.pGraph->RemoveFilter(filter);

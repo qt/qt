@@ -145,15 +145,44 @@ Node.prototype.rangeOfWord = function(offset, stopCharacters, stayWithinNode, di
     return result;
 }
 
+Node.prototype.traverseNextTextNode = function(stayWithin)
+{
+    var node = this.traverseNextNode(stayWithin);
+    if (!node)
+        return;
+
+    while (node && node.nodeType !== Node.TEXT_NODE)
+        node = node.traverseNextNode(stayWithin);
+
+    return node;
+}
+
+Node.prototype.rangeBoundaryForOffset = function(offset)
+{
+    var node = this.traverseNextTextNode(this);
+    while (node && offset > node.nodeValue.length) {
+        offset -= node.nodeValue.length;
+        node = node.traverseNextTextNode(this);
+    }
+    if (!node)
+        return { container: this, offset: 0 };
+    return { container: node, offset: offset };
+}
+
 Element.prototype.removeStyleClass = function(className) 
 {
-    // Test for the simple case before using a RegExp.
+    // Test for the simple case first.
     if (this.className === className) {
         this.className = "";
         return;
     }
 
-    this.removeMatchingStyleClasses(className.escapeForRegExp());
+    var index = this.className.indexOf(className);
+    if (index === -1)
+        return;
+
+    var newClassName = " " + this.className + " ";
+    this.className = newClassName.replace(" " + className + " ", " ");
 }
 
 Element.prototype.removeMatchingStyleClasses = function(classNameRegex)
@@ -173,17 +202,32 @@ Element.prototype.hasStyleClass = function(className)
 {
     if (!className)
         return false;
-    // Test for the simple case before using a RegExp.
+    // Test for the simple case
     if (this.className === className)
         return true;
-    var regex = new RegExp("(^|\\s)" + className.escapeForRegExp() + "($|\\s)");
-    return regex.test(this.className);
+
+    var index = this.className.indexOf(className);
+    if (index === -1)
+        return false;
+    var toTest = " " + this.className + " ";
+    return toTest.indexOf(" " + className + " ", index) !== -1;
 }
 
 Element.prototype.positionAt = function(x, y)
 {
     this.style.left = x + "px";
     this.style.top = y + "px";
+}
+
+Element.prototype.pruneEmptyTextNodes = function()
+{
+    var sibling = this.firstChild;
+    while (sibling) {
+        var nextSibling = sibling.nextSibling;
+        if (sibling.nodeType === this.TEXT_NODE && sibling.nodeValue === "")
+            this.removeChild(sibling);
+        sibling = nextSibling;
+    }
 }
 
 Node.prototype.enclosingNodeOrSelfWithNodeNameInArray = function(nameArray)
@@ -222,8 +266,7 @@ Element.prototype.query = function(query)
 
 Element.prototype.removeChildren = function()
 {
-    while (this.firstChild) 
-        this.removeChild(this.firstChild);        
+    this.innerHTML = "";
 }
 
 Element.prototype.isInsertionCaretInside = function()
@@ -239,7 +282,7 @@ Element.prototype.__defineGetter__("totalOffsetLeft", function()
 {
     var total = 0;
     for (var element = this; element; element = element.offsetParent)
-        total += element.offsetLeft;
+        total += element.offsetLeft + (this !== element ? element.clientLeft : 0);
     return total;
 });
 
@@ -247,7 +290,7 @@ Element.prototype.__defineGetter__("totalOffsetTop", function()
 {
     var total = 0;
     for (var element = this; element; element = element.offsetParent)
-        total += element.offsetTop;
+        total += element.offsetTop + (this !== element ? element.clientTop : 0);
     return total;
 });
 
@@ -325,24 +368,9 @@ String.prototype.collapseWhitespace = function()
     return this.replace(/[\s\xA0]+/g, " ");
 }
 
-String.prototype.trimLeadingWhitespace = function()
-{
-    return this.replace(/^[\s\xA0]+/g, "");
-}
-
-String.prototype.trimTrailingWhitespace = function()
-{
-    return this.replace(/[\s\xA0]+$/g, "");
-}
-
-String.prototype.trimWhitespace = function()
-{
-    return this.replace(/^[\s\xA0]+|[\s\xA0]+$/g, "");
-}
-
 String.prototype.trimURL = function(baseURLDomain)
 {
-    var result = this.replace(new RegExp("^http[s]?:\/\/", "i"), "");
+    var result = this.replace(/^https?:\/\//i, "");
     if (baseURLDomain)
         result = result.replace(new RegExp("^" + baseURLDomain.escapeForRegExp(), "i"), "");
     return result;
@@ -542,6 +570,9 @@ Number.secondsToString = function(seconds, formatterFunction, higherResolution)
     if (!formatterFunction)
         formatterFunction = String.sprintf;
 
+    if (seconds === 0)
+        return "0";
+
     var ms = seconds * 1000;
     if (higherResolution && ms < 1000)
         return formatterFunction("%.3fms", ms);
@@ -615,6 +646,14 @@ Array.prototype.remove = function(value, onlyFirst)
         if (this[i] === value)
             this.splice(i, 1);
     }
+}
+
+Array.prototype.keySet = function()
+{
+    var keys = {};
+    for (var i = 0; i < this.length; ++i)
+        keys[this[i]] = true;
+    return keys;
 }
 
 function insertionIndexForObjectInListSortedByFunction(anObject, aList, aFunction)
@@ -821,4 +860,61 @@ String.format = function(format, substitutions, formatters, initialValue, append
 function isEnterKey(event) {
     // Check if in IME.
     return event.keyCode !== 229 && event.keyIdentifier === "Enter";
+}
+
+
+function highlightSearchResult(element, offset, length)
+{
+    var lineText = element.textContent;
+    var endOffset = offset + length;
+    var highlightNode = document.createElement("span");
+    highlightNode.className = "webkit-search-result";
+    highlightNode.textContent = lineText.substring(offset, endOffset);
+
+    var boundary = element.rangeBoundaryForOffset(offset);
+    var textNode = boundary.container;
+    var text = textNode.textContent;
+
+    if (boundary.offset + length < text.length) {
+        // Selection belong to a single split mode.
+        textNode.textContent = text.substring(boundary.offset + length);
+        textNode.parentElement.insertBefore(highlightNode, textNode);
+        var prefixNode = document.createTextNode(text.substring(0, boundary.offset));
+        textNode.parentElement.insertBefore(prefixNode, highlightNode);
+        return highlightNode;
+    }
+
+    var parentElement = textNode.parentElement;
+    var anchorElement = textNode.nextSibling;
+
+    length -= text.length - boundary.offset;
+    textNode.textContent = text.substring(0, boundary.offset);
+    textNode = textNode.traverseNextTextNode(element);
+
+    while (textNode) {
+        var text = textNode.textContent;
+        if (length < text.length) {
+            textNode.textContent = text.substring(length);
+            break;
+        }
+
+        length -= text.length;
+        textNode.textContent = "";
+        textNode = textNode.traverseNextTextNode(element);
+    }
+
+    parentElement.insertBefore(highlightNode, anchorElement);
+    return highlightNode;
+}
+
+function createSearchRegex(query)
+{
+    var regex = "";
+    for (var i = 0; i < query.length; ++i) {
+        var char = query.charAt(i);
+        if (char === "]")
+            char = "\\]";
+        regex += "[" + char + "]";
+    }
+    return new RegExp(regex, "i");
 }

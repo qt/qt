@@ -90,6 +90,7 @@ class HtmlGenerator : public PageGenerator
         Typedef, 
         Property,
         Variable, 
+        QmlClass,
         QmlProperty,
         QmlSignal,
         QmlMethod,
@@ -152,6 +153,9 @@ class HtmlGenerator : public PageGenerator
                                  Doc::SectioningUnit sectioningUnit,
                                  int numColumns, 
                                  const Node *relative = 0);
+    void generateTableOfContents(const Node *node, 
+                                 CodeMarker *marker, 
+                                 QList<Section>* sections = 0);
     QString generateListOfAllMemberFile(const InnerNode *inner, CodeMarker *marker);
     QString generateLowStatusMemberFile(const InnerNode *inner, 
                                         CodeMarker *marker,
@@ -326,6 +330,7 @@ class HtmlGenerator : public PageGenerator
     NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
     NewClassMaps newClassMaps;
+    NewClassMaps newQmlClassMaps;
     static int id;
 };
 

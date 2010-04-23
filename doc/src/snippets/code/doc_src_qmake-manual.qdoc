@@ -886,7 +886,7 @@ TARGET.CAPABILITY += AllFiles
 //! [133]
 
 //! [134]
-TARGET.CAPABILITY = ALL -TCB
+TARGET.CAPABILITY = ALL -TCB -DRM -AllFiles
 //! [134]
 
 //! [135]
@@ -933,7 +933,9 @@ DEPLOYMENT += somelib justdep
 //! [140]
 
 //! [141]
-default_deployment.pkg_prerules = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
+default_deployment.pkg_prerules -= pkg_platform_dependencies
+my_deployment.pkg_prerules = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
+DEPLOYMENT += my_deployment
 //! [141]
 
 //! [142]
@@ -982,3 +984,22 @@ MYVARIABLES = LIB
 
 addMMPRules(MYCONDITIONS, MYVARIABLES)
 //! [148]
+
+//! [149]
+SUBDIRS += my_executable my_library
+my_executable.subdir = app
+my_executable.depends = my_library
+my_library.subdir = lib
+//! [149]
+
+//! [150]
+symbian {
+    SUBDIRS += emulator_dll
+    emulator_dll.condition = WINSCW
+}
+//! [150]
+
+//! [151]
+RSS_RULES.service_list += "uid = 0x12345678; datatype_list = \{\}; opaque_data = r_my_icon;"
+RSS_RULES.footer +="RESOURCE CAPTION_AND_ICON_INFO r_my_icon \{ icon_file =\"$$PWD/my_icon.svg\"; \}"
+//! [151]
