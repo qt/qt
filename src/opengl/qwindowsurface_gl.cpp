@@ -82,7 +82,7 @@
 #define GLX_SAMPLES_ARB         100001
 #endif
 
-#ifdef QT_OPENGL_ES
+#ifndef QT_NO_EGL
 #include <private/qeglcontext_p.h>
 #endif
 
@@ -353,6 +353,11 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     QGLContext *ctx = new QGLContext(surfaceFormat, widget);
     ctx->create(qt_gl_share_widget()->context());
+
+#ifndef QT_NO_EGL
+    if (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR) != EGL_BUFFER_PRESERVED)
+        setPartialUpdateSupport(false); // Force full-screen updates
+#endif
 
     widgetPrivate->extraData()->glContext = ctx;
 
