@@ -840,22 +840,16 @@ QObject::~QObject()
             delete d->sharedRefcount;
     }
 
-    QT_TRY {
-        emit destroyed(this);
-    } QT_CATCH(...) {
-        // all the signal/slots connections are still in place - if we don't
-        // quit now, we will crash pretty soon.
-        qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
-#if defined(Q_BUILD_INTERNAL) && !defined(QT_NO_EXCEPTIONS)
-        struct AutotestException : public std::exception
-        {
-            const char *what() const throw() { return "autotest swallow"; }
-        } autotestException;
-        // throw autotestException;
 
-#else
-        QT_RETHROW;
-#endif
+    if (d->isSignalConnected(0)) {
+        QT_TRY {
+            emit destroyed(this);
+        } QT_CATCH(...) {
+            // all the signal/slots connections are still in place - if we don't
+            // quit now, we will crash pretty soon.
+            qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
+            QT_RETHROW;
+        }
     }
 
     if (d->declarativeData)
