@@ -7322,7 +7322,7 @@ void QWidgetPrivate::hide_helper()
 
     bool isEmbedded = false;
 #if !defined QT_NO_GRAPHICSVIEW
-    isEmbedded = q->isWindow() && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
+    isEmbedded = q->isWindow() && !bypassGraphicsProxyWidget(q) && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
 #else
     Q_UNUSED(isEmbedded);
 #endif
