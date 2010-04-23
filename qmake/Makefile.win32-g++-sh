@@ -37,8 +37,8 @@ ADDCLEAN    =
 OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               option.o winmakefile.o projectgenerator.o property.o meta.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-              borland_bmake.o msvc_nmake.o msvc_vcproj.o \
-              msvc_objectmodel.o symmake.o initprojectdeploy_symbian.o \
+              borland_bmake.o msvc_nmake.o msvc_vcproj.o msvc_vcxproj.o \
+              msvc_objectmodel.o msbuild_objectmodel.o symmake.o initprojectdeploy_symbian.o \
               symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
@@ -262,6 +262,12 @@ msvc_vcproj.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcproj.cpp
 
 msvc_objectmodel.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_objectmodel.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_objectmodel.cpp
+
+msvc_vcxproj.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcxproj.cpp
+	$(CXX) $(CXXFLAGS) generators/win32/msvc_vcxproj.cpp
+
+msbuild_objectmodel.o: $(SOURCE_PATH)/qmake/generators/win32/msbuild_objectmodel.cpp
+	$(CXX) $(CXXFLAGS) generators/win32/msbuild_objectmodel.cpp
 
 symmake.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/symmake.cpp

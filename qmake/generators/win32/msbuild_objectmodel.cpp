@@ -2705,13 +2705,13 @@ bool VCXFilter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QSt
 
 
 // VCXProjectSingleConfig --------------------------------------------
-VCXFilter nullFilter;
+VCXFilter nullVCXFilter;
 VCXFilter& VCXProjectSingleConfig::filterForExtraCompiler(const QString &compilerName)
 {
     for (int i = 0; i < ExtraCompilersFiles.count(); ++i)
         if (ExtraCompilersFiles.at(i).Name == compilerName)
             return ExtraCompilersFiles[i];
-    return nullFilter;
+    return nullVCXFilter;
 }
 
 
