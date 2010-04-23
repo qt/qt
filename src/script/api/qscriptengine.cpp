@@ -796,7 +796,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     JSC::UString context;
     // The first non-empty source URL in the call stack determines the translation context.
     {
-        JSC::ExecState *frame = exec->removeHostCallFrameFlag();
+        JSC::ExecState *frame = exec->callerFrame()->removeHostCallFrameFlag();
         while (frame) {
             if (frame->codeBlock() && frame->codeBlock()->source()
                 && !frame->codeBlock()->source()->url().isEmpty()) {
@@ -3404,7 +3404,7 @@ void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 //    unsigned attribs = JSC::DontEnum;
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 5, JSC::Identifier(exec, "qsTranslate"), QScript::functionQsTranslate));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 2, JSC::Identifier(exec, "QT_TRANSLATE_NOOP"), QScript::functionQsTranslateNoOp));
-    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::PrototypeFunction(exec, glob->prototypeFunctionStructure(), 3, JSC::Identifier(exec, "qsTr"), QScript::functionQsTr));
+    JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 3, JSC::Identifier(exec, "qsTr"), QScript::functionQsTr));
     JSC::asObject(jscObject)->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "QT_TR_NOOP"), QScript::functionQsTrNoOp));
 
     glob->stringPrototype()->putDirectFunction(exec, new (exec)JSC::NativeFunctionWrapper(exec, glob->prototypeFunctionStructure(), 1, JSC::Identifier(exec, "arg"), QScript::stringProtoFuncArg));

@@ -356,7 +356,7 @@ void QPixelTool::contextMenuEvent(QContextMenuEvent *e)
     freeze.setCheckable(true);
     freeze.setChecked(tmpFreeze);
     freeze.setShortcut(QKeySequence(Qt::Key_Space));
-    QAction autoUpdate(QLatin1String("Continous update"), &menu);
+    QAction autoUpdate(QLatin1String("Continuous update"), &menu);
     autoUpdate.setCheckable(true);
     autoUpdate.setChecked(m_autoUpdate);
     autoUpdate.setShortcut(QKeySequence(Qt::Key_A));

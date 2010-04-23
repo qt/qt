@@ -434,7 +434,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             a.specifiedProperty = QString::fromUtf8(property);
 
             if (d->isExplicit) {
-                a.toValue = d->expressions.at(ii).second->value();
+                a.toValue = d->expressions.at(ii).second->evaluate();
             } else {
                 QDeclarativeBinding *newBinding = 
                     new QDeclarativeBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));

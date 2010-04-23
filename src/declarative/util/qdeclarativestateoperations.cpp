@@ -579,7 +579,7 @@ void QDeclarativeStateChangeScript::execute(Reason)
         QDeclarativeData *ddata = QDeclarativeData::get(this);
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
-        expr.value();
+        expr.evaluate();
         if (expr.hasError())
             qmlInfo(this, expr.error());
     }

@@ -97,8 +97,6 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QObject *scope, const QMetaMeth
                                QObject *parent)
 : m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0)
 {
-    // A cached evaluation of the QDeclarativeExpression::value() slot index.
-    //
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
@@ -113,8 +111,6 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, cons
                                QObject *parent)
 : m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0)
 {
-    // A cached evaluation of the QDeclarativeExpression::value() slot index.
-    //
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.

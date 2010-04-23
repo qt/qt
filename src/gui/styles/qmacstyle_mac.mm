@@ -2143,7 +2143,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         if (qstyleoption_cast<const QStyleOptionComboBox *>(opt) != 0)
             ret = 0;
         else
-            ret = QWindowsStyle::pixelMetric(metric, opt, widget);
+            ret = 1;
         break;
     case PM_MaximumDragDistance:
         ret = -1;
@@ -3099,14 +3099,16 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         HIRect hirect = qt_hirectForQRect(opt->rect);
         HIThemeDrawButton(&hirect, &bi, cg, kHIThemeOrientationNormal, 0);
         break; }
+
     case PE_Frame: {
         QPen oldPen = p->pen();
-        QPen newPen;
-        newPen.setBrush(opt->palette.dark());
-        p->setPen(newPen);
+        p->setPen(opt->palette.base().color().darker(140));
         p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+        p->setPen(opt->palette.base().color().darker(180));
+        p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
         p->setPen(oldPen);
         break; }
+
     case PE_FrameLineEdit:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frame->state & State_Sunken) {
@@ -3279,10 +3281,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (header->orientation == Qt::Horizontal){
                 switch (header->position) {
                 case QStyleOptionHeader::Beginning:
+                    ir.adjust(-1, -1, 0, 0);
                     break;
                 case QStyleOptionHeader::Middle:
+                    ir.adjust(-1, -1, 0, 0);
+                    break;
+                case QStyleOptionHeader::OnlyOneSection:
                 case QStyleOptionHeader::End:
-                    ir.adjust(-1, 0, 0, 0);
+                    ir.adjust(-1, -1, 1, 0);
                     break;
                 default:
                     break;
