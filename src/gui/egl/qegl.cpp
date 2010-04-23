@@ -333,6 +333,16 @@ bool QEglContext::configAttrib(int name, EGLint *value) const
     return eglGetConfigAttrib(display(), cfg, name, value);
 }
 
+void QEglContext::clearError()
+{
+    eglGetError();
+}
+
+EGLint QEglContext::error()
+{
+    return eglGetError();
+}
+
 // Retrieve all of the properties on "cfg".  If zero, return
 // the context's configuration.
 QEglProperties QEglContext::configProperties(EGLConfig cfg) const
