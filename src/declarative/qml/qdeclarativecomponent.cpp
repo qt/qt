@@ -594,7 +594,9 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 
 /*!
     \qmlmethod object Component::createObject()
-    Returns an object instance from this component.
+    Returns an object instance from this component, or null if object creation fails.
+
+    The object will be created in the same context as the component was created in.
 */
 
 /*!
@@ -606,10 +608,10 @@ QScriptValue QDeclarativeComponent::createObject()
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
     if(!ctxt)
-        return QScriptValue();
+        return QScriptValue(QScriptValue::NullValue);
     QObject* ret = create(ctxt);
     if (!ret)
-        return QScriptValue();
+        return QScriptValue(QScriptValue::NullValue);
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
