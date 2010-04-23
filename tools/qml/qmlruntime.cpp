@@ -341,14 +341,14 @@ private:
                 data.append("\n");
             }
         }
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         settings.setValue("Cookies",data);
     }
 
     void load()
     {
         QMutexLocker lock(&mutex);
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         QByteArray data = settings.value("Cookies").toByteArray();
         setAllCookies(QNetworkCookie::parseCookies(data));
     }
@@ -466,6 +466,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
     QDeclarativeViewer::registerTypes();
+    setWindowTitle(tr("Qt Qml Runtime"));
 
     devicemode = false;
     skin = 0;
@@ -946,7 +947,7 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
     else
         url = QUrl(file_or_url);
-    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
+    setWindowTitle(tr("%1 - Qt Qml Runtime").arg(file_or_url));
 
     if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
