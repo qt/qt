@@ -288,7 +288,7 @@ bool QDeclarativeStateGroupPrivate::updateAutoState()
         QDeclarativeState *state = states.at(ii);
         if (state->isWhenKnown()) {
             if (!state->name().isEmpty()) {
-                if (state->when() && state->when()->value().toBool()) {
+                if (state->when() && state->when()->evaluate().toBool()) {
                     if (stateChangeDebug()) 
                         qWarning() << "Setting auto state due to:" 
                                    << state->when()->expression();

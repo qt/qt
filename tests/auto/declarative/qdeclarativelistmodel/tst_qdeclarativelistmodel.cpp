@@ -279,7 +279,7 @@ void tst_qdeclarativelistmodel::dynamic()
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 
-    int actual = e.value().toInt();
+    int actual = e.evaluate().toInt();
     if (e.hasError())
         qDebug() << e.error(); // errors not expected
     QVERIFY(!e.hasError());
@@ -338,9 +338,9 @@ void tst_qdeclarativelistmodel::dynamic_worker()
 
         QDeclarativeExpression e(eng.rootContext(), operations.last().toString(), &model);
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
-            QVERIFY(e.value().toInt() != result);
+            QVERIFY(e.evaluate().toInt() != result);
         else
-            QCOMPARE(e.value().toInt(), result);
+            QCOMPARE(e.evaluate().toInt(), result);
     }
 
     delete item;

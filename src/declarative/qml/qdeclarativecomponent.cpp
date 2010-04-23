@@ -67,14 +67,14 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
 
 /*!
     \class QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeComponent class encapsulates a QML component description.
     \mainclass
 */
 
 /*!
     \qmlclass Component QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The Component element encapsulates a QML component description.
 
     Components are reusable, encapsulated Qml element with a well-defined interface.
@@ -86,26 +86,26 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
     file containing it.
 
     \qml
-Item {
-    Component {
-        id: redSquare
-        Rectangle {
-            color: "red"
-            width: 10
-            height: 10
+    Item {
+        Component {
+            id: redSquare
+            Rectangle {
+                color: "red"
+                width: 10
+                height: 10
+            }
         }
+        Loader { sourceComponent: redSquare }
+        Loader { sourceComponent: redSquare; x: 20 }
     }
-    Loader { sourceComponent: redSquare }
-    Loader { sourceComponent: redSquare; x: 20 }
-}
     \endqml
+*/
 
-    \section1 Attached Properties
-
-    \e onCompleted
+/*!
+    \qmlattachedsignal Component::onCompleted()
 
     Emitted after component "startup" has completed.  This can be used to
-    execute script code at startup, once the full QML environment has been 
+    execute script code at startup, once the full QML environment has been
     established.
 
     The \c {Component::onCompleted} attached property can be applied to
@@ -120,8 +120,10 @@ Item {
         }
     }
     \endqml
+*/
 
-    \e onDestruction
+/*!
+    \qmlattachedsignal Component::onDestruction()
 
     Emitted as the component begins destruction.  This can be used to undo
     work done in the onCompleted signal, or other imperative code in your
@@ -129,7 +131,7 @@ Item {
 
     The \c {Component::onDestruction} attached property can be applied to
     any element.  However, it applies to the destruction of the component as
-    a whole, and not the destruction of the specific object.  The order of 
+    a whole, and not the destruction of the specific object.  The order of
     running the \c onDestruction scripts is undefined.
 
     \qml
@@ -150,7 +152,7 @@ Item {
     \value Null This QDeclarativeComponent has no data.  Call loadUrl() or setData() to add QML content.
     \value Ready This QDeclarativeComponent is ready and create() may be called.
     \value Loading This QDeclarativeComponent is loading network data.
-    \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+    \value Error An error has occured.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
 */
 
 void QDeclarativeComponentPrivate::typeDataReady()
@@ -235,6 +237,18 @@ QDeclarativeComponent::~QDeclarativeComponent()
 }
 
 /*!
+    \qmlproperty enumeration Component::status
+    This property holds the status of component loading.  It can be one of:
+    \list
+    \o Null - no data is available for the component
+    \o Ready - the component has been loaded, and can be used to create instances.
+    \o Loading - the component is currently being loaded
+    \o Error - an error occurred while loading the component.
+               Calling errorsString() will provide a human-readable description of any errors.
+    \endlist
+ */
+
+/*!
     \property QDeclarativeComponent::status
     The component's current \l{QDeclarativeComponent::Status} {status}.
  */
@@ -253,6 +267,14 @@ QDeclarativeComponent::Status QDeclarativeComponent::status() const
 }
 
 /*!
+    \qmlproperty bool Component::isNull
+
+    Is true if the component is in the Null state, false otherwise.
+
+    Equivalent to status == Component.Null.
+*/
+
+/*!
     \property QDeclarativeComponent::isNull
 
     Is true if the component is in the Null state, false otherwise.
@@ -263,6 +285,14 @@ bool QDeclarativeComponent::isNull() const
 {
     return status() == Null;
 }
+
+/*!
+    \qmlproperty bool Component::isReady
+
+    Is true if the component is in the Ready state, false otherwise.
+
+    Equivalent to status == Component.Ready.
+*/
 
 /*!
     \property QDeclarativeComponent::isReady
@@ -277,6 +307,16 @@ bool QDeclarativeComponent::isReady() const
 }
 
 /*!
+    \qmlproperty bool Component::isError
+
+    Is true if the component is in the Error state, false otherwise.
+
+    Equivalent to status == Component.Error.
+
+    Calling errorsString() will provide a human-readable description of any errors.
+*/
+
+/*!
     \property QDeclarativeComponent::isError
 
     Is true if the component is in the Error state, false otherwise.
@@ -289,6 +329,14 @@ bool QDeclarativeComponent::isError() const
 }
 
 /*!
+    \qmlproperty bool Component::isLoading
+
+    Is true if the component is in the Loading state, false otherwise.
+
+    Equivalent to status == Component::Loading.
+*/
+
+/*!
     \property QDeclarativeComponent::isLoading
 
     Is true if the component is in the Loading state, false otherwise.
@@ -299,6 +347,12 @@ bool QDeclarativeComponent::isLoading() const
 {
     return status() == Loading;
 }
+
+/*!
+    \qmlproperty real Component::progress
+    The progress of loading the component, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+*/
 
 /*!
     \property QDeclarativeComponent::progress
@@ -486,6 +540,17 @@ QList<QDeclarativeError> QDeclarativeComponent::errors() const
 }
 
 /*!
+    \qmlmethod string Component::errorsString()
+
+    Returns a human-readable description of any errors.
+
+    The string includes the file, location, and description of each error.
+    If multiple errors are present they are separated by a newline character.
+
+    If no errors are present, an empty string is returned.
+*/
+
+/*!
     \internal
     errorsString is only meant as a way to get the errors in script
 */
@@ -502,6 +567,11 @@ QString QDeclarativeComponent::errorsString() const
     }
     return ret;
 }
+
+/*!
+    \qmlproperty url Component::url
+    The component URL.  This is the URL that was used to construct the component.
+*/
 
 /*!
     \property QDeclarativeComponent::url
@@ -523,6 +593,13 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
+    \qmlmethod object Component::createObject()
+    Returns an object instance from this component, or null if object creation fails.
+
+    The object will be created in the same context as the component was created in.
+*/
+
+/*!
     \internal
     A version of create which returns a scriptObject, for use in script
 */
@@ -531,10 +608,10 @@ QScriptValue QDeclarativeComponent::createObject()
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
     if(!ctxt)
-        return QScriptValue();
+        return QScriptValue(QScriptValue::NullValue);
     QObject* ret = create(ctxt);
     if (!ret)
-        return QScriptValue();
+        return QScriptValue(QScriptValue::NullValue);
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);

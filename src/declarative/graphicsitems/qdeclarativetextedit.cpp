@@ -495,19 +495,6 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
     emit wrapModeChanged();
 }
 
-bool QDeclarativeTextEdit::wrap() const
-{
-    Q_D(const QDeclarativeTextEdit);
-    return d->wrapMode != QDeclarativeTextEdit::NoWrap;
-}
-
-void QDeclarativeTextEdit::setWrap(bool w)
-{
-
-    qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
-    setWrapMode(w ? WordWrap : NoWrap);
-}
-
 /*!
     \qmlproperty bool TextEdit::cursorVisible
     If true the text edit shows a cursor.
