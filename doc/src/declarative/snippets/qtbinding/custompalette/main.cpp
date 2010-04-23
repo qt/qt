@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     QDeclarativeView view;
     view.rootContext()->setContextProperty("palette", new CustomPalette);
 
-    view.setSource(QUrl("main.qml"));
+    view.setSource(QUrl::fromLocalFile("main.qml"));
     view.show();
 
     return app.exec();

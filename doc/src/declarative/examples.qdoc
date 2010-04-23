@@ -71,7 +71,47 @@ For example, from your build directory, run:
 \section1 Examples
 
 \list
+\o \l{declarative/animations}{Animations}
+\o \l{declarative/aspectratio}{Aspect Ratio}
+\o \l{declarative/behaviors}{Behaviors}
+\o \l{declarative/border-image}{Border Image}
+\o \l{declarative/clocks}{Clocks}
+\o \l{declarative/connections}{Connections}
+\o \l{declarative/dial}{Dial}
+\o \l{declarative/dynamic}{Dynamic}
+\o \l{declarative/extending}{Extending}
+\o \l{declarative/fillmode}{Fillmode}
+\o \l{declarative/flipable}{Flipable}
 \o \l{declarative/focus}{Focus}
+\o \l{declarative/fonts}{Fonts}
+\o \l{declarative/gridview}{GridView}
+\o \l{declarative/imageprovider}{Image Provider}
+\o \l{declarative/images}{Images}
+\o \l{declarative/layouts}{Layouts}
+\o \l{declarative/listmodel-threaded}{ListModel Threaded}
+\o \l{declarative/listview}{ListView}
+\o \l{declarative/mousearea}{Mouse Area}
+\o \l{declarative/objectlistmodel}{Object ListModel}
+\o \l{declarative/package}{Package}
+\o \l{declarative/parallax}{Parallax}
+\o \l{declarative/plugins}{Plugins}
+\o \l{declarative/progressbar}{Progress Bars}
+\o \l{declarative/proxywidgets}{Proxy Widgets}
+\o \l{declarative/scrollbar}{Scrollbar}
+\o \l{declarative/searchbox}{Search Box}
+\o \l{declarative/slideswitch}{Slide Switch}
+\o \l{declarative/sql}{SQL}
+\o \l{declarative/states}{States}
+\o \l{declarative/stringlistmodel}{String ListModel}
+\o \l{declarative/tabwidget}{Tab Widget}
+\o \l{declarative/tic-tac-toe}{Tic-Tac-Toe}
+\o \l{declarative/tvtennis}{TV Tennis}
+\o \l{declarative/velocity}{Velocity}
+\o \l{declarative/webview}{WebView}
+\o \l{declarative/workerscript}{WorkerScript}
+\o \l{declarative/xmldata}{XML Data}
+\o \l{declarative/xmlhttprequest}{XMLHttpRequest}
+
 \endlist
 
 \section1 Demos

@@ -130,11 +130,12 @@ See the \tt demos/declarative/flickr for a real demonstration of this.
 \section1 Configuring the Network Access Manager
 
 All network access from QML is managed by a QNetworkAccessManager set on the QDeclarativeEngine which executes the QML.
-By default, this is an unmodified Qt QNetworkAccessManager. You may set a different manager using
-QDeclarativeEngine::setNetworkAccessManager() as appropriate for the policies of your application.
-For example, the \l {Qt Declarative UI Runtime}{qml} tool sets a new QNetworkAccessManager which
-trusts HTTP Expiry headers to avoid network cache checks, allows HTTP Pipelining, adds a persistent HTTP CookieJar,
-a simple disk cache, and supports proxy settings.
+By default, this is an unmodified Qt QNetworkAccessManager. You may set a different manager by
+providing a QDeclarativeNetworkAccessManagerFactory and setting it via
+QDeclarativeEngine::setNetworkAccessManagerFactory().
+For example, the \l {Qt Declarative UI Runtime}{qml} tool sets a QDeclarativeNetworkAccessManagerFactory which
+creates QNetworkAccessManager that trusts HTTP Expiry headers to avoid network cache checks,
+allows HTTP Pipelining, adds a persistent HTTP CookieJar, a simple disk cache, and supports proxy settings.
 
 
 \section1 QRC Resources
