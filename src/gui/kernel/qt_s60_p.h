@@ -155,7 +155,7 @@ class QLongTapTimer;
 
 class QSymbianControl : public CCoeControl, public QAbstractLongTapObserver
 #ifdef Q_WS_S60
-, public MAknFadedComponent
+, public MAknFadedComponent, public MEikStatusPaneObserver
 #endif
 {
 public:
@@ -183,6 +183,7 @@ public:
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
+    void HandleStatusPaneSizeChange();
 
 protected: // from MAknFadedComponent
     TInt CountFadedComponents() {return 1;}

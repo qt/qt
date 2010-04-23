@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_Nothing">
+<Environment>
+    <QtVersion>4.6.3</QtVersion>
+    <QTestVersion>4.6.3</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="nothing">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>
