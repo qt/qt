@@ -1,4 +1,4 @@
-!IF "$(QMAKESPEC)" == "win32-msvc" || "$(QMAKESPEC)" == "win32-msvc.net" || "$(QMAKESPEC)" == "win32-msvc2002" || "$(QMAKESPEC)" == "win32-msvc2003" || "$(QMAKESPEC)" == "win32-msvc2005" || "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-icc"
+!IF "$(QMAKESPEC)" == "win32-msvc" || "$(QMAKESPEC)" == "win32-msvc.net" || "$(QMAKESPEC)" == "win32-msvc2002" || "$(QMAKESPEC)" == "win32-msvc2003" || "$(QMAKESPEC)" == "win32-msvc2005" || "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-icc"
 
 !if "$(SOURCE_PATH)" == ""
 SOURCE_PATH = ..
@@ -75,8 +75,8 @@ ADDCLEAN    = qmake.tds
 OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
-              borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj \
-              msvc_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
+              borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
+              msvc_objectmodel.obj msbuild_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
               symmake_abld.obj symmake_sbsv2.obj symbiancommon.obj registry.obj epocroot.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
@@ -194,7 +194,9 @@ clean::
 	-del borland_bmake.obj
 	-del msvc_nmake.obj
 	-del msvc_vcproj.obj
+	-del msvc_vcxproj.obj
 	-del msvc_objectmodel.obj
+	-del msbuild_objectmodel.obj
 	-del symmake.obj
 	-del symmake_abld.obj
 	-del symmake_sbsv2.obj
@@ -383,8 +385,14 @@ msvc_nmake.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_nmake.cpp
 msvc_vcproj.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcproj.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_vcproj.cpp
 
+msvc_vcxproj.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcxproj.cpp
+	$(CXX) $(CXXFLAGS) generators/win32/msvc_vcxproj.cpp
+
 msvc_objectmodel.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_objectmodel.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_objectmodel.cpp
+
+msbuild_objectmodel.obj: $(SOURCE_PATH)/qmake/generators/win32/msbuild_objectmodel.cpp
+	$(CXX) $(CXXFLAGS) generators/win32/msbuild_objectmodel.cpp
 
 symmake.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/symmake.cpp
