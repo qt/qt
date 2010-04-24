@@ -81,6 +81,11 @@ void XmlOutput::setState(XMLState state)
     currentState = state;
 }
 
+void XmlOutput::setFormat(XMLFormat newFormat)
+{
+    format = newFormat;
+}
+
 XmlOutput::XMLState XmlOutput::state()
 {
     return currentState;
@@ -172,6 +177,20 @@ XmlOutput& XmlOutput::operator<<(const xml_output& o)
     case tTag:
         newTagOpen(o.xo_text);
         break;
+    case tTagValue:
+        addRaw(QString("\n%1<%2>").arg(currentIndent).arg(o.xo_text));
+        addRaw(QString("%1").arg(o.xo_value));
+        addRaw(QString("</%1>").arg(o.xo_text));
+        break;
+    case tValueTag:
+        addRaw(QString("%1").arg(doConversion(o.xo_text)));
+        setFormat(NoNewLine);
+        closeTag();
+        setFormat(NewLine);
+        break;
+    case tImport:
+        addRaw(QString("\n%1<Import %2=\"%3\" />").arg(currentIndent).arg(o.xo_text).arg(o.xo_value));
+        break;
     case tCloseTag:
         if (o.xo_value.count())
             closeAll();
@@ -182,6 +201,9 @@ XmlOutput& XmlOutput::operator<<(const xml_output& o)
         break;
     case tAttribute:
         addAttribute(o.xo_text, o.xo_value);
+        break;
+    case tAttributeTag:
+        addAttributeTag(o.xo_text, o.xo_value);
         break;
     case tData:
         {
@@ -266,7 +288,7 @@ void XmlOutput::closeTag()
             tagStack.pop_back();
             break;
         case Attribute:
-            xmlFile << "/>";
+            xmlFile << " />";
             tagStack.pop_back();
             currentState = Tag;
             decreaseIndent(); // <--- Post-decrease indent
@@ -307,7 +329,7 @@ void XmlOutput::addDeclaration(const QString &version, const QString &encoding)
             qDebug("<%s>: Cannot add declaration when not in bare state", tagStack.last().toLatin1().constData());
             return;
     }
-    QString outData = QString("<?xml version=\"%1\" encoding = \"%2\"?>")
+    QString outData = QString("<?xml version=\"%1\" encoding=\"%2\"?>")
                               .arg(doConversion(version))
                               .arg(doConversion(encoding));
     addRaw(outData);
@@ -335,6 +357,22 @@ void XmlOutput::addAttribute(const QString &attribute, const QString &value)
     if (format == NewLine)
         xmlFile << endl;
     xmlFile << currentIndent << doConversion(attribute) << "=\"" << doConversion(value) << "\"";
+}
+
+void XmlOutput::addAttributeTag(const QString &attribute, const QString &value)
+{
+     switch(currentState) {
+        case Bare:
+        case Tag:
+            //warn_msg(WarnLogic, "<%s>: Cannot add attribute since tags not open", tagStack.last().toLatin1().constData());
+            qDebug("<%s>: Cannot add attribute (%s) since tag's not open",
+                   (tagStack.count() ? tagStack.last().toLatin1().constData() : "Root"),
+                   attribute.toLatin1().constData());
+            return;
+        case Attribute:
+            break;
+    }
+    xmlFile << " " << doConversion(attribute) << "=\"" << doConversion(value) << "\"";
 }
 
 QT_END_NAMESPACE

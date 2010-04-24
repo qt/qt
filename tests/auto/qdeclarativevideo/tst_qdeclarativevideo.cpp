@@ -45,11 +45,11 @@
 
 #include <QtGui/qapplication.h>
 #include <QtMultimedia/qabstractvideosurface.h>
-#include <QtMultimedia/qgraphicsvideoitem.h>
-#include <QtMultimedia/qmediaplayercontrol.h>
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/qvideooutputcontrol.h>
-#include <QtMultimedia/qvideorenderercontrol.h>
+#include <QtMediaServices/qgraphicsvideoitem.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 
 
@@ -73,7 +73,7 @@ private slots:
     void geometry();
 };
 
-Q_DECLARE_METATYPE(QtMultimedia::MetaData);
+Q_DECLARE_METATYPE(QtMediaServices::MetaData);
 Q_DECLARE_METATYPE(QDeclarativeVideo::Error);
 
 class QtTestMediaPlayerControl : public QMediaPlayerControl

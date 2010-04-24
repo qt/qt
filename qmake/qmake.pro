@@ -19,7 +19,8 @@ VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/src/corelib/plugin \
          $$QT_SOURCE_TREE/src/corelib/xml \
          $$QT_SOURCE_TREE/src/corelib/io
-INCPATH += generators \
+INCPATH += . \
+           generators \
            generators/unix \
            generators/win32 \
            generators/mac \

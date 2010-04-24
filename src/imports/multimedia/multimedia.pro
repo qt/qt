@@ -2,7 +2,7 @@ TARGET  = multimedia
 TARGETPATH = Qt/multimedia
 include(../qimportbase.pri)
 
-QT += multimedia declarative
+QT += mediaservices declarative
 
 HEADERS += \
         qdeclarativeaudio_p.h \
