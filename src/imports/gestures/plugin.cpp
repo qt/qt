@@ -53,8 +53,7 @@ public:
     virtual void registerTypes(const char *uri)
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.gestures"));
-        qmlRegisterCustomType<QDeclarativeGestureArea>(uri,1,0, "GestureArea", "QDeclarativeGestureArea",
-                                                   new QDeclarativeGestureAreaParser);
+        qmlRegisterCustomType<QDeclarativeGestureArea>(uri,1,0, "GestureArea", new QDeclarativeGestureAreaParser);
     }
 };
 

@@ -86,7 +86,7 @@ lupdate hello.qml -ts hello.ts
 \endcode
 
 Then we open \c hello.ts in \l{Qt Linguist Manual} {Linguist}, provide
-a translation and create the release file \c hello.qml.
+a translation and create the release file \c hello.qm.
 
 Finally, we can test the translation:
 \code
