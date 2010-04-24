@@ -537,6 +537,14 @@ QDeclarativeViewer::~QDeclarativeViewer()
     delete namFactory;
 }
 
+int QDeclarativeViewer::menuBarHeight() const
+{
+    if (!(windowFlags() & Qt::FramelessWindowHint))
+        return menuBar()->height();
+    else
+        return 0; // don't create menu
+}
+
 QMenuBar *QDeclarativeViewer::menuBar() const
 {
 #if !defined(Q_OS_SYMBIAN)
@@ -916,7 +924,7 @@ void QDeclarativeViewer::statusChanged()
         initialSize = canvas->sizeHint();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
             QSize newWindowSize = initialSize;
-            newWindowSize.setHeight(newWindowSize.height()+menuBar()->height());
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
             updateSizeHints();
             resize(newWindowSize);
         }
@@ -1065,8 +1073,10 @@ void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
     } else if (skin) {
         skin = 0;
         clearMask();
-        menuBar()->clear();
-        createMenu(menuBar(),0);
+        if ((windowFlags() & Qt::FramelessWindowHint)) {
+            menuBar()->clear();
+            createMenu(menuBar(),0);
+        }
         canvas->setParent(this, Qt::SubWindow);
         setParent(0,windowFlags()); // recreate
         mb->show();
@@ -1079,7 +1089,7 @@ void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
             canvas->setFixedSize(initialSize);
         }
         QSize newWindowSize = canvas->size();
-        newWindowSize.setHeight(newWindowSize.height()+menuBar()->height());
+        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
         resize(newWindowSize);
         show();
     }
@@ -1401,9 +1411,8 @@ void QDeclarativeViewer::updateSizeHints()
 {
     if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
         QSize newWindowSize = canvas->sizeHint();
-        if (!skin) {
-            newWindowSize.setHeight(newWindowSize.height()+menuBar()->height());
-        }
+        if (!skin)
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
         if (!isFullScreen() && !isMaximized()) {
             resize(newWindowSize);
             setFixedSize(newWindowSize);

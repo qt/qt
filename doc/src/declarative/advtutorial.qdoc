@@ -66,13 +66,13 @@ control QML elements.
 Tutorial chapters:
 
 \list 1
-\o \l {QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks}{Creating the Game Canvas and Blocks}
-\o \l {QML Advanced Tutorial 2 - Populating the Game Canvas}{Populating the Game Canvas}
-\o \l {QML Advanced Tutorial 3 - Implementing the Game Logic}{Implementing the Game Logic}
-\o \l {QML Advanced Tutorial 4 - Finishing Touches}{Finishing Touches}
+\o \l {declarative/tutorials/samegame/samegame1}{Creating the Game Canvas and Blocks}
+\o \l {declarative/tutorials/samegame/samegame2}{Populating the Game Canvas}
+\o \l {declarative/tutorials/samegame/samegame3}{Implementing the Game Logic}
+\o \l {declarative/tutorials/samegame/samegame4}{Finishing Touches}
 \endlist
 
-All the code in this tutorial can be found in the $QTDIR/examples/declarative/tutorials/samegame
+All the code in this tutorial can be found in Qt's \c examples/declarative/tutorials/samegame
 directory.
 */
 
@@ -83,7 +83,7 @@ directory.
 \previouspage QML Advanced Tutorial
 \nextpage QML Advanced Tutorial 2 - Populating the Game Canvas
 
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame1.
+\example declarative/tutorials/samegame/samegame1
 
 \section2 Creating the application screen
 
@@ -148,8 +148,7 @@ elements to get started. Next, we will populate the game canvas with some blocks
 \previouspage QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks
 \nextpage QML Advanced Tutorial 3 - Implementing the Game Logic
 
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame2.
-
+\example declarative/tutorials/samegame/samegame2
 
 \section2 Generating the blocks in JavaScript
 
@@ -216,7 +215,7 @@ Now, we have a screen of blocks, and we can begin to add the game mechanics.
 \previouspage QML Advanced Tutorial 2 - Populating the Game Canvas
 \nextpage QML Advanced Tutorial 4 - Finishing Touches
 
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame3.
+\example declarative/tutorials/samegame/samegame3
 
 \section2 Making a playable game
 
@@ -301,7 +300,7 @@ until the next chapter - where your application becomes alive!
 \contentspage QML Advanced Tutorial
 \previouspage QML Advanced Tutorial 3 - Implementing the Game Logic
 
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame4.
+\example declarative/tutorials/samegame/samegame4
 
 \section2 Adding some flair
 
