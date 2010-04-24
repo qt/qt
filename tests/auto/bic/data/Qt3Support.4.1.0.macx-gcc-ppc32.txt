@@ -18,20 +18,6 @@ Class qIsNull(float)::U
    base size=4 base align=4
 qIsNull(float)::U (0x85a3c0) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QFlag
    size=4 align=4
    base size=4 base align=4
@@ -47,7 +33,6 @@ Class QChar
    base size=2 base align=2
 QChar (0x26d82c0) 0
 
-
 Class QBasicAtomic
    size=4 align=4
    base size=4 base align=4
@@ -58,7 +43,6 @@ Class QAtomic
    base size=4 base align=4
 QAtomic (0x26d87c0) 0
   QBasicAtomic (0x26d8800) 0
-
 
 Class __darwin_pthread_handler_rec
    size=12 align=4
@@ -140,19 +124,6 @@ Class QByteRef
    base size=8 base align=4
 QByteRef (0x27ce740) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QInternal
    size=1 align=1
    base size=0 base align=1
@@ -178,7 +149,6 @@ Class QLatin1String
    base size=4 base align=4
 QLatin1String (0x28d2c80) 0
 
-
 Class QCharRef
    size=8 align=4
    base size=8 base align=4
@@ -189,7 +159,6 @@ Class QConstString
    base size=4 base align=4
 QConstString (0x2a63cc0) 0
   QString (0x2a63d00) 0
-
 
 Vtable for std::exception
 std::exception::_ZTVSt9exception: 5u entries
@@ -252,7 +221,6 @@ Class QListData
    base size=4 base align=4
 QListData (0x2b916c0) 0
 
-
 Class QTextCodec::ConverterState
    size=28 align=4
    base size=28 base align=4
@@ -276,8 +244,6 @@ Class QTextCodec
 QTextCodec (0x2b91b40) 0 nearly-empty
     vptr=((& QTextCodec::_ZTV10QTextCodec) + 8u)
 
-
-
 Class QTextEncoder
    size=32 align=4
    base size=32 base align=4
@@ -299,13 +265,10 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0x2cc40c0) 0
   QGenericArgument (0x2cc4100) 0
 
-
 Class QMetaObject
    size=16 align=4
    base size=16 base align=4
 QMetaObject (0x2cc4340) 0
-
-
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -397,7 +360,6 @@ QIODevice (0x2cc4c80) 0
   QObject (0x2cc4cc0) 0
       primary-for QIODevice (0x2cc4c80)
 
-
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
 0     (int (*)(...))0
@@ -416,21 +378,16 @@ Class QRegExp
    base size=4 base align=4
 QRegExp (0x2d9e500) 0
 
-
 Class QStringMatcher
    size=1036 align=4
    base size=1036 base align=4
 QStringMatcher (0x2d9e780) 0
-
-
 
 Class QStringList
    size=4 align=4
    base size=4 base align=4
 QStringList (0x2d9ea40) 0
   QList<QString> (0x2d9ea80) 0
-
-
 
 Vtable for QFactoryInterface
 QFactoryInterface::_ZTV17QFactoryInterface: 5u entries
@@ -564,22 +521,15 @@ QFile (0x2ecc140) 0
     QObject (0x2ecc1c0) 0
         primary-for QIODevice (0x2ecc180)
 
-
 Class QFileInfo
    size=4 align=4
    base size=4 base align=4
 QFileInfo (0x2ecc3c0) 0
 
-
-
-
-
 Class QDir
    size=4 align=4
    base size=4 base align=4
 QDir (0x2ecc780) 0
-
-
 
 Class QAbstractFileEngine::ExtensionOption
    size=1 align=1
@@ -635,7 +585,6 @@ Class QAbstractFileEngine
    base size=8 base align=4
 QAbstractFileEngine (0x2ecc980) 0
     vptr=((& QAbstractFileEngine::_ZTV19QAbstractFileEngine) + 8u)
-
 
 Vtable for QAbstractFileEngineHandler
 QAbstractFileEngineHandler::_ZTV26QAbstractFileEngineHandler: 5u entries
@@ -709,7 +658,6 @@ Class QHashDummyValue
    base size=0 base align=1
 QHashDummyValue (0x3002040) 0 empty
 
-
 Class QMapData::Node
    size=8 align=4
    base size=8 base align=4
@@ -732,7 +680,6 @@ Class QTextStream
    base size=8 base align=4
 QTextStream (0x317e080) 0
     vptr=((& QTextStream::_ZTV11QTextStream) + 8u)
-
 
 Class QTextStreamManipulator
    size=24 align=4
@@ -839,15 +786,10 @@ Class rlimit
    base size=16 base align=8
 rlimit (0x3206040) 0
 
-
-
 Class wait
    size=4 align=4
    base size=4 base align=4
 wait (0x3206080) 0
-
-
-
 
 Class QVectorData
    size=16 align=4
@@ -960,24 +902,6 @@ Class QMetaType
    base size=0 base align=1
 QMetaType (0x3206dc0) 0 empty
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QVariant::PrivateShared
    size=8 align=4
    base size=8 base align=4
@@ -1003,18 +927,10 @@ Class QVariant
    base size=16 base align=4
 QVariant (0x334bb80) 0
 
-
-
-
-
 Class QVariantComparisonHelper
    size=4 align=4
    base size=4 base align=4
 QVariantComparisonHelper (0x33d3580) 0
-
-
-
-
 
 Vtable for QSettings
 QSettings::_ZTV9QSettings: 14u entries
@@ -1092,8 +1008,6 @@ Class QUrl
    base size=4 base align=4
 QUrl (0x33d3b40) 0
 
-
-
 Vtable for QEventLoop
 QEventLoop::_ZTV10QEventLoop: 14u entries
 0     (int (*)(...))0
@@ -1118,7 +1032,6 @@ QEventLoop (0x34a0240) 0
     vptr=((& QEventLoop::_ZTV10QEventLoop) + 8u)
   QObject (0x34a0280) 0
       primary-for QEventLoop (0x34a0240)
-
 
 Vtable for QAbstractEventDispatcher
 QAbstractEventDispatcher::_ZTV24QAbstractEventDispatcher: 27u entries
@@ -1163,12 +1076,10 @@ Class QModelIndex
    base size=16 base align=4
 QModelIndex (0x34a06c0) 0
 
-
 Class QPersistentModelIndex
    size=4 align=4
    base size=4 base align=4
 QPersistentModelIndex (0x34a0900) 0
-
 
 Vtable for QAbstractItemModel
 QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
@@ -1338,7 +1249,6 @@ Class QBasicTimer
    base size=4 base align=4
 QBasicTimer (0x34a0e80) 0
 
-
 Vtable for QEvent
 QEvent::_ZTV6QEvent: 4u entries
 0     (int (*)(...))0
@@ -1429,12 +1339,10 @@ Class QMetaMethod
    base size=8 base align=4
 QMetaMethod (0x35b7c80) 0
 
-
 Class QMetaEnum
    size=8 align=4
    base size=8 base align=4
 QMetaEnum (0x35b7dc0) 0
-
 
 Class QMetaProperty
    size=20 align=4
@@ -1445,7 +1353,6 @@ Class QMetaClassInfo
    size=8 align=4
    base size=8 base align=4
 QMetaClassInfo (0x35b7f40) 0
-
 
 Vtable for QMimeData
 QMimeData::_ZTV9QMimeData: 17u entries
@@ -1733,7 +1640,6 @@ Class QBitRef
    base size=8 base align=4
 QBitRef (0x36e97c0) 0
 
-
 Class QByteArrayMatcher
    size=1032 align=4
    base size=1032 base align=4
@@ -1744,42 +1650,35 @@ Class QDate
    base size=4 base align=4
 QDate (0x36e9b00) 0
 
-
 Class QTime
    size=4 align=4
    base size=4 base align=4
 QTime (0x36e9d80) 0
-
 
 Class QDateTime
    size=4 align=4
    base size=4 base align=4
 QDateTime (0x36e9b40) 0
 
-
 Class QPoint
    size=8 align=4
    base size=8 base align=4
 QPoint (0x37b5080) 0
-
 
 Class QPointF
    size=16 align=8
    base size=16 base align=4
 QPointF (0x37b57c0) 0
 
-
 Class QLine
    size=16 align=4
    base size=16 base align=4
 QLine (0x37b5f40) 0
 
-
 Class QLineF
    size=32 align=8
    base size=32 base align=4
 QLineF (0x37b5340) 0
-
 
 Class QLinkedListData
    size=20 align=4
@@ -1791,30 +1690,25 @@ Class QLocale
    base size=4 base align=4
 QLocale (0x38673c0) 0
 
-
 Class QSize
    size=8 align=4
    base size=8 base align=4
 QSize (0x3867580) 0
-
 
 Class QSizeF
    size=16 align=8
    base size=16 base align=4
 QSizeF (0x3867d40) 0
 
-
 Class QRect
    size=16 align=4
    base size=16 base align=4
 QRect (0x39a3200) 0
 
-
 Class QRectF
    size=32 align=8
    base size=32 base align=4
 QRectF (0x39a3640) 0
-
 
 Class QSharedData
    size=4 align=4
@@ -1835,7 +1729,6 @@ Class QKeySequence
    size=4 align=4
    base size=4 base align=4
 QKeySequence (0x3b3b000) 0
-
 
 Vtable for QMimeSource
 QMimeSource::_ZTV11QMimeSource: 7u entries
@@ -2154,8 +2047,6 @@ Class QInputMethodEvent::Attribute
    base size=28 base align=4
 QInputMethodEvent::Attribute (0x3bccf00) 0
 
-
-
 Vtable for QInputMethodEvent
 QInputMethodEvent::_ZTV17QInputMethodEvent: 4u entries
 0     (int (*)(...))0
@@ -2443,8 +2334,6 @@ Class QAccessible
    base size=0 base align=1
 QAccessible (0x3c6a700) 0 empty
 
-
-
 Vtable for QAccessibleInterface
 QAccessibleInterface::_ZTV20QAccessibleInterface: 19u entries
 0     (int (*)(...))0
@@ -2727,10 +2616,6 @@ Class QPaintDevice
 QPaintDevice (0x3cdab40) 0
     vptr=((& QPaintDevice::_ZTV12QPaintDevice) + 8u)
 
-
-
-
-
 Class QColor
    size=16 align=4
    base size=14 base align=4
@@ -2741,17 +2626,10 @@ Class QBrush
    base size=4 base align=4
 QBrush (0x3d5c000) 0
 
-
 Class QBrushData
    size=24 align=4
    base size=24 base align=4
 QBrushData (0x3d5c140) 0
-
-
-
-
-
-
 
 Class QGradient
    size=56 align=4
@@ -3147,7 +3025,6 @@ QAbstractPrintDialog (0x3fab140) 0
       QPaintDevice (0x3fab200) 8
           vptr=((& QAbstractPrintDialog::_ZTV20QAbstractPrintDialog) + 248u)
 
-
 Vtable for QColorDialog
 QColorDialog::_ZTV12QColorDialog: 66u entries
 0     (int (*)(...))0
@@ -3396,7 +3273,6 @@ QFileDialog (0x3fab9c0) 0
           primary-for QWidget (0x4002080)
       QPaintDevice (0x3faba80) 8
           vptr=((& QFileDialog::_ZTV11QFileDialog) + 244u)
-
 
 Vtable for QFontDialog
 QFontDialog::_ZTV11QFontDialog: 66u entries
@@ -4091,7 +3967,6 @@ QImage (0x4134180) 0
   QPaintDevice (0x41341c0) 0
       primary-for QImage (0x4134180)
 
-
 Vtable for QPixmap
 QPixmap::_ZTV7QPixmap: 7u entries
 0     (int (*)(...))0
@@ -4134,7 +4009,6 @@ Class QIcon
    size=4 align=4
    base size=4 base align=4
 QIcon (0x4134dc0) 0
-
 
 Vtable for QIconEngine
 QIconEngine::_ZTV11QIconEngine: 9u entries
@@ -4289,7 +4163,6 @@ QImageIOPlugin (0x4230480) 0
       vptr=((& QImageIOPlugin::_ZTV14QImageIOPlugin) + 76u)
     QFactoryInterface (0x4215680) 8 nearly-empty
         primary-for QImageIOHandlerFactoryInterface (0x4215640)
-
 
 Class QImageReader
    size=4 align=4
@@ -4464,8 +4337,6 @@ QActionGroup (0x42b2280) 0
     vptr=((& QActionGroup::_ZTV12QActionGroup) + 8u)
   QObject (0x42b22c0) 0
       primary-for QActionGroup (0x42b2280)
-
-
 
 Vtable for QInputContext
 QInputContext::_ZTV13QInputContext: 25u entries
@@ -4770,7 +4641,6 @@ QAbstractSpinBox (0x436a0c0) 0
     QPaintDevice (0x436a140) 8
         vptr=((& QAbstractSpinBox::_ZTV16QAbstractSpinBox) + 252u)
 
-
 Vtable for QAbstractSlider
 QAbstractSlider::_ZTV15QAbstractSlider: 64u entries
 0     (int (*)(...))0
@@ -4976,8 +4846,6 @@ QStyle (0x436a8c0) 0
     vptr=((& QStyle::_ZTV6QStyle) + 8u)
   QObject (0x436a900) 0
       primary-for QStyle (0x436a8c0)
-
-
 
 Vtable for QTabBar
 QTabBar::_ZTV7QTabBar: 67u entries
@@ -5236,7 +5104,6 @@ Class QStyleOptionFrame
 QStyleOptionFrame (0x44ab400) 0
   QStyleOption (0x44ab440) 0
 
-
 Class QStyleOptionFrameV2
    size=56 align=4
    base size=56 base align=4
@@ -5262,13 +5129,11 @@ Class QStyleOptionHeader
 QStyleOptionHeader (0x44abe40) 0
   QStyleOption (0x44abe80) 0
 
-
 Class QStyleOptionButton
    size=64 align=4
    base size=64 base align=4
 QStyleOptionButton (0x44ab500) 0
   QStyleOption (0x44ab740) 0
-
 
 Class QStyleOptionTab
    size=72 align=4
@@ -5282,7 +5147,6 @@ Class QStyleOptionTabV2
 QStyleOptionTabV2 (0x4532500) 0
   QStyleOptionTab (0x4532540) 0
     QStyleOption (0x4532580) 0
-
 
 Class QStyleOptionToolBar
    size=68 align=4
@@ -5308,7 +5172,6 @@ Class QStyleOptionMenuItem
    base size=100 base align=4
 QStyleOptionMenuItem (0x4532e80) 0
   QStyleOption (0x4532ec0) 0
-
 
 Class QStyleOptionQ3ListViewItem
    size=64 align=4
@@ -5366,15 +5229,12 @@ QStyleOptionSpinBox (0x45b9440) 0
   QStyleOptionComplex (0x45b9640) 0
     QStyleOption (0x45b9840) 0
 
-
-
 Class QStyleOptionQ3ListView
    size=84 align=4
    base size=84 base align=4
 QStyleOptionQ3ListView (0x4620040) 0
   QStyleOptionComplex (0x4620080) 0
     QStyleOption (0x46200c0) 0
-
 
 Class QStyleOptionToolButton
    size=96 align=4
@@ -5534,7 +5394,6 @@ Class QItemSelectionRange
    base size=8 base align=4
 QItemSelectionRange (0x46a8380) 0
 
-
 Vtable for QItemSelectionModel
 QItemSelectionModel::_ZTV19QItemSelectionModel: 18u entries
 0     (int (*)(...))0
@@ -5563,9 +5422,6 @@ QItemSelectionModel (0x46a8740) 0
     vptr=((& QItemSelectionModel::_ZTV19QItemSelectionModel) + 8u)
   QObject (0x46a8780) 0
       primary-for QItemSelectionModel (0x46a8740)
-
-
-
 
 Class QItemSelection
    size=4 align=4
@@ -5694,7 +5550,6 @@ QAbstractItemView (0x46a8c80) 0
             primary-for QWidget (0x4741180)
         QPaintDevice (0x46a8d80) 8
             vptr=((& QAbstractItemView::_ZTV17QAbstractItemView) + 392u)
-
 
 Vtable for QAbstractProxyModel
 QAbstractProxyModel::_ZTV19QAbstractProxyModel: 47u entries
@@ -6006,8 +5861,6 @@ Class QItemEditorCreatorBase
 QItemEditorCreatorBase (0x478e980) 0 nearly-empty
     vptr=((& QItemEditorCreatorBase::_ZTV22QItemEditorCreatorBase) + 8u)
 
-
-
 Vtable for QItemEditorFactory
 QItemEditorFactory::_ZTV18QItemEditorFactory: 6u entries
 0     (int (*)(...))0
@@ -6146,8 +5999,6 @@ QListView (0x478e400) 0
               primary-for QWidget (0x4825000)
           QPaintDevice (0x4826000) 8
               vptr=((& QListView::_ZTV9QListView) + 392u)
-
-
 
 Vtable for QListWidgetItem
 QListWidgetItem::_ZTV15QListWidgetItem: 11u entries
@@ -6936,15 +6787,10 @@ QTreeView (0x4915a80) 0
           QPaintDevice (0x4915bc0) 8
               vptr=((& QTreeView::_ZTV9QTreeView) + 400u)
 
-
 Class QTreeWidgetItemIterator
    size=12 align=4
    base size=12 base align=4
 QTreeWidgetItemIterator (0x4915d80) 0
-
-
-
-
 
 Vtable for QTreeWidgetItem
 QTreeWidgetItem::_ZTV15QTreeWidgetItem: 10u entries
@@ -7791,15 +7637,11 @@ Class QColormap
    base size=4 base align=4
 QColormap (0x4b9f380) 0
 
-
-
 Class QPolygon
    size=4 align=4
    base size=4 base align=4
 QPolygon (0x4c410c0) 0
   QVector<QPoint> (0x4c41100) 0
-
-
 
 Class QPolygonF
    size=4 align=4
@@ -7812,39 +7654,25 @@ Class QMatrix
    base size=48 base align=4
 QMatrix (0x4c41900) 0
 
-
 Class QTextOption
    size=24 align=4
    base size=24 base align=4
 QTextOption (0x4c41a40) 0
-
 
 Class QPen
    size=4 align=4
    base size=4 base align=4
 QPen (0x4c41bc0) 0
 
-
 Class QPainter
    size=4 align=4
    base size=4 base align=4
 QPainter (0x4c41e00) 0
 
-
-
-
-
-
-
-
-
-
 Class QTextItem
    size=1 align=1
    base size=0 base align=1
 QTextItem (0x4d60b00) 0 empty
-
-
 
 Vtable for QPaintEngine
 QPaintEngine::_ZTV12QPaintEngine: 24u entries
@@ -7879,12 +7707,10 @@ Class QPaintEngine
 QPaintEngine (0x4d60c40) 0
     vptr=((& QPaintEngine::_ZTV12QPaintEngine) + 8u)
 
-
 Class QPaintEngineState
    size=4 align=4
    base size=4 base align=4
 QPaintEngineState (0x4d60f80) 0
-
 
 Class QPainterPath::Element
    size=24 align=8
@@ -7896,13 +7722,10 @@ Class QPainterPath
    base size=4 base align=4
 QPainterPath (0x4e95040) 0
 
-
-
 Class QPainterPathPrivate
    size=8 align=4
    base size=8 base align=4
 QPainterPathPrivate (0x4e95280) 0
-
 
 Class QPainterPathStroker
    size=4 align=4
@@ -7999,7 +7822,6 @@ QCommonStyle (0x4e95f40) 0
       primary-for QCommonStyle (0x4e95f40)
     QObject (0x4e95fc0) 0
         primary-for QStyle (0x4e95f80)
-
 
 Vtable for QMotifStyle
 QMotifStyle::_ZTV11QMotifStyle: 35u entries
@@ -8321,13 +8143,10 @@ Class QTextLength
    base size=12 base align=4
 QTextLength (0x4f76280) 0
 
-
 Class QTextFormat
    size=8 align=4
    base size=8 base align=4
 QTextFormat (0x4ff9000) 0
-
-
 
 Class QTextCharFormat
    size=8 align=4
@@ -8382,8 +8201,6 @@ Class QTextLayout
    base size=4 base align=4
 QTextLayout (0x4ff9a80) 0
 
-
-
 Class QTextLine
    size=8 align=4
    base size=8 base align=4
@@ -8432,8 +8249,6 @@ QTextDocument (0x4ff9280) 0
   QObject (0x4ff9b80) 0
       primary-for QTextDocument (0x4ff9280)
 
-
-
 Class QTextCursor
    size=4 align=4
    base size=4 base align=4
@@ -8443,8 +8258,6 @@ Class QAbstractTextDocumentLayout::Selection
    size=12 align=4
    base size=12 base align=4
 QAbstractTextDocumentLayout::Selection (0x5121440) 0
-
-
 
 Class QAbstractTextDocumentLayout::PaintContext
    size=48 align=4
@@ -8606,7 +8419,6 @@ QTextFrame (0x5121100) 0
     QObject (0x5121500) 0
         primary-for QTextObject (0x5121280)
 
-
 Vtable for QTextBlockUserData
 QTextBlockUserData::_ZTV18QTextBlockUserData: 4u entries
 0     (int (*)(...))0
@@ -8630,13 +8442,10 @@ Class QTextBlock
    base size=8 base align=4
 QTextBlock (0x51d9640) 0
 
-
-
 Class QTextFragment
    size=12 align=4
    base size=12 base align=4
 QTextFragment (0x51d9bc0) 0
-
 
 Vtable for QSyntaxHighlighter
 QSyntaxHighlighter::_ZTV18QSyntaxHighlighter: 15u entries
@@ -9269,7 +9078,6 @@ QDateEdit (0x52ff800) 0
         QPaintDevice (0x52ff900) 8
             vptr=((& QDateEdit::_ZTV9QDateEdit) + 260u)
 
-
 Vtable for QDial
 QDial::_ZTV5QDial: 64u entries
 0     (int (*)(...))0
@@ -9428,7 +9236,6 @@ QDockWidget (0x52ffdc0) 0
         primary-for QWidget (0x5392280)
     QPaintDevice (0x52ffe40) 8
         vptr=((& QDockWidget::_ZTV11QDockWidget) + 232u)
-
 
 Vtable for QFocusFrame
 QFocusFrame::_ZTV11QFocusFrame: 63u entries
@@ -11880,7 +11687,6 @@ QUdpSocket (0x576d3c0) 0
       QObject (0x576da80) 0
           primary-for QIODevice (0x576d900)
 
-
 Class QSqlRecord
    size=4 align=4
    base size=4 base align=4
@@ -12016,8 +11822,6 @@ Class QSqlField
    size=24 align=8
    base size=20 base align=4
 QSqlField (0x5826b00) 0
-
-
 
 Class QSqlIndex
    size=16 align=4
@@ -12533,17 +12337,12 @@ Class Q3GListStdIterator
    base size=4 base align=4
 Q3GListStdIterator (0x590ba00) 0
 
-
-
 Class Q3PointArray
    size=4 align=4
    base size=4 base align=4
 Q3PointArray (0x59cf7c0) 0
   QPolygon (0x59cf800) 0
     QVector<QPoint> (0x59cf840) 0
-
-
-
 
 Class Q3CanvasItemList
    size=4 align=4
@@ -13181,8 +12980,6 @@ Class Q3GDictIterator
    base size=12 base align=4
 Q3GDictIterator (0x5b1ee40) 0
 
-
-
 Vtable for Q3NetworkProtocolFactoryBase
 Q3NetworkProtocolFactoryBase::_ZTV28Q3NetworkProtocolFactoryBase: 5u entries
 0     (int (*)(...))0
@@ -13716,8 +13513,6 @@ Q3Wizard (0x5c57400) 0
       QPaintDevice (0x5c574c0) 8
           vptr=((& Q3Wizard::_ZTV8Q3Wizard) + 308u)
 
-
-
 Vtable for Q3StrList
 Q3StrList::_ZTV9Q3StrList: 11u entries
 0     (int (*)(...))0
@@ -13743,7 +13538,6 @@ Q3StrList (0x5c57940) 0
         primary-for Q3PtrList<char> (0x5c57980)
       Q3PtrCollection (0x5c57a00) 0
           primary-for Q3GList (0x5c579c0)
-
 
 Vtable for Q3StrIList
 Q3StrIList::_ZTV10Q3StrIList: 11u entries
@@ -14776,8 +14570,6 @@ Q3GVector (0x5e10a80) 0
   Q3PtrCollection (0x5e10ac0) 0
       primary-for Q3GVector (0x5e10a80)
 
-
-
 Vtable for Q3Header
 Q3Header::_ZTV8Q3Header: 76u entries
 0     (int (*)(...))0
@@ -14896,8 +14688,6 @@ Class Q3GArray
 Q3GArray (0x5f17000) 0
     vptr=((& Q3GArray::_ZTV8Q3GArray) + 8u)
 
-
-
 Class Q3TableSelection
    size=28 align=4
    base size=28 base align=4
@@ -15006,14 +14796,6 @@ Class Q3Table::TableWidget
    size=12 align=4
    base size=12 base align=4
 Q3Table::TableWidget (0x5f17e80) 0
-
-
-
-
-
-
-
-
 
 Vtable for Q3Table
 Q3Table::_ZTV7Q3Table: 183u entries
@@ -15326,8 +15108,6 @@ Q3Ftp (0x5fdce00) 0
       primary-for Q3Ftp (0x5fdce00)
     QObject (0x5fdce80) 0
         primary-for Q3NetworkProtocol (0x5fdce40)
-
-
 
 Vtable for Q3HttpHeader
 Q3HttpHeader::_ZTV12Q3HttpHeader: 8u entries
@@ -16609,20 +16389,12 @@ Class Q3SqlPropertyMap
 Q3SqlPropertyMap (0x621ce40) 0
     vptr=((& Q3SqlPropertyMap::_ZTV16Q3SqlPropertyMap) + 8u)
 
-
-
-
 Class Q3SqlRecordInfo
    size=4 align=4
    base size=4 base align=4
 Q3SqlRecordInfo (0x62b7240) 0
   Q3ValueList<Q3SqlFieldInfo> (0x62b7280) 0
     QLinkedList<Q3SqlFieldInfo> (0x62b72c0) 0
-
-
-
-
-
 
 Vtable for Q3SqlSelectCursor
 Q3SqlSelectCursor::_ZTV17Q3SqlSelectCursor: 40u entries
@@ -16682,8 +16454,6 @@ Class Q3StyleSheetItem
    base size=4 base align=4
 Q3StyleSheetItem (0x62b7d80) 0
 
-
-
 Vtable for Q3StyleSheet
 Q3StyleSheet::_ZTV12Q3StyleSheet: 16u entries
 0     (int (*)(...))0
@@ -16720,10 +16490,6 @@ Class Q3TextEditOptimPrivate::Selection
    size=8 align=4
    base size=8 base align=4
 Q3TextEditOptimPrivate::Selection (0x638f200) 0
-
-
-
-
 
 Class Q3TextEditOptimPrivate
    size=52 align=4
@@ -16930,7 +16696,6 @@ Q3TextEdit (0x638fb00) 0
               primary-for QWidget (0x63cec80)
           QPaintDevice (0x638fc40) 8
               vptr=((& Q3TextEdit::_ZTV10Q3TextEdit) + 680u)
-
 
 Vtable for Q3MultiLineEdit
 Q3MultiLineEdit::_ZTV15Q3MultiLineEdit: 192u entries
@@ -17591,21 +17356,11 @@ Class Q3GCacheIterator
    base size=4 base align=4
 Q3GCacheIterator (0x646ca40) 0
 
-
-
-
-
-
-
 Class Q3CString
    size=4 align=4
    base size=4 base align=4
 Q3CString (0x650a700) 0
   QByteArray (0x650a740) 0
-
-
-
-
 
 Vtable for Q3ObjectDictionary
 Q3ObjectDictionary::_ZTV18Q3ObjectDictionary: 10u entries
@@ -17631,12 +17386,6 @@ Q3ObjectDictionary (0x65fa940) 0
         primary-for Q3AsciiDict<QMetaObject> (0x65fa980)
       Q3PtrCollection (0x65faa00) 0
           primary-for Q3GDict (0x65fa9c0)
-
-
-
-
-
-
 
 Vtable for Q3Semaphore
 Q3Semaphore::_ZTV11Q3Semaphore: 4u entries
@@ -17675,8 +17424,6 @@ Q3Signal (0x6662980) 0
     vptr=((& Q3Signal::_ZTV8Q3Signal) + 8u)
   QObject (0x66629c0) 0
       primary-for Q3Signal (0x6662980)
-
-
 
 Vtable for Q3StrVec
 Q3StrVec::_ZTV8Q3StrVec: 11u entries
@@ -17981,8 +17728,6 @@ Q3GroupBox (0x6832d00) 0
           primary-for QWidget (0x6894f80)
       QPaintDevice (0x6832dc0) 8
           vptr=((& Q3GroupBox::_ZTV10Q3GroupBox) + 236u)
-
-
 
 Vtable for Q3ButtonGroup
 Q3ButtonGroup::_ZTV13Q3ButtonGroup: 64u entries
@@ -18785,10 +18530,6 @@ Q3DockWindow (0x694a6c0) 0
         QPaintDevice (0x694a7c0) 8
             vptr=((& Q3DockWindow::_ZTV12Q3DockWindow) + 304u)
 
-
-
-
-
 Vtable for Q3DockAreaLayout
 Q3DockAreaLayout::_ZTV16Q3DockAreaLayout: 48u entries
 0     (int (*)(...))0
@@ -18851,7 +18592,6 @@ Q3DockAreaLayout (0x694a980) 0
         primary-for QLayout (0x69c5100)
     QLayoutItem (0x694aa00) 8
         vptr=((& Q3DockAreaLayout::_ZTV16Q3DockAreaLayout) + 128u)
-
 
 Class Q3DockArea::DockWindowData
    size=24 align=4
@@ -19900,42 +19640,4 @@ Q3WidgetStack (0x6ab4f40) 0
             primary-for QWidget (0x6b39d80)
         QPaintDevice (0x6ab4300) 8
             vptr=((& Q3WidgetStack::_ZTV13Q3WidgetStack) + 248u)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

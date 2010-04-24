@@ -2382,6 +2382,10 @@ void QAbstractSocket::disconnectFromHostImplementation()
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::disconnectFromHost() aborting immediately");
 #endif
+        if (d->state == HostLookupState) {
+            QHostInfo::abortHostLookup(d->hostLookupId);
+            d->hostLookupId = -1;
+        }
     } else {
         // Perhaps emit closing()
         if (d->state != ClosingState) {

@@ -1446,9 +1446,11 @@ void tst_QScriptValue::toObject()
 
     QScriptValue undefined = eng.undefinedValue();
     QCOMPARE(undefined.toObject().isValid(), false);
+    QVERIFY(undefined.isUndefined());
 
     QScriptValue null = eng.nullValue();
     QCOMPARE(null.toObject().isValid(), false);
+    QVERIFY(null.isNull());
 
     {
         QScriptValue falskt = QScriptValue(&eng, false);
@@ -1457,6 +1459,7 @@ void tst_QScriptValue::toObject()
             QCOMPARE(tmp.isObject(), true);
             QCOMPARE(tmp.toNumber(), falskt.toNumber());
         }
+        QVERIFY(falskt.isBool());
 
         QScriptValue sant = QScriptValue(&eng, true);
         {
@@ -1464,6 +1467,7 @@ void tst_QScriptValue::toObject()
             QCOMPARE(tmp.isObject(), true);
             QCOMPARE(tmp.toNumber(), sant.toNumber());
         }
+        QVERIFY(sant.isBool());
 
         QScriptValue number = QScriptValue(&eng, 123.0);
         {
@@ -1471,6 +1475,7 @@ void tst_QScriptValue::toObject()
             QCOMPARE(tmp.isObject(), true);
             QCOMPARE(tmp.toNumber(), number.toNumber());
         }
+        QVERIFY(number.isNumber());
 
         QScriptValue str = QScriptValue(&eng, QString("ciao"));
         {
@@ -1478,6 +1483,7 @@ void tst_QScriptValue::toObject()
             QCOMPARE(tmp.isObject(), true);
             QCOMPARE(tmp.toString(), str.toString());
         }
+        QVERIFY(str.isString());
     }
 
     QScriptValue object = eng.newObject();
@@ -1497,10 +1503,12 @@ void tst_QScriptValue::toObject()
         QScriptValue undefined = QScriptValue(QScriptValue::UndefinedValue);
         QVERIFY(!undefined.toObject().isValid());
         QVERIFY(!eng.toObject(undefined).isValid());
+        QVERIFY(undefined.isUndefined());
 
         QScriptValue null = QScriptValue(QScriptValue::NullValue);
         QVERIFY(!null.toObject().isValid());
         QVERIFY(!eng.toObject(null).isValid());
+        QVERIFY(null.isNull());
 
         QScriptValue falskt = QScriptValue(false);
         QVERIFY(!falskt.toObject().isValid());
@@ -1509,6 +1517,7 @@ void tst_QScriptValue::toObject()
             QVERIFY(tmp.isObject());
             QVERIFY(tmp.toBool());
         }
+        QVERIFY(falskt.isBool());
 
         QScriptValue sant = QScriptValue(true);
         QVERIFY(!sant.toObject().isValid());
@@ -1517,6 +1526,7 @@ void tst_QScriptValue::toObject()
             QVERIFY(tmp.isObject());
             QVERIFY(tmp.toBool());
         }
+        QVERIFY(sant.isBool());
 
         QScriptValue number = QScriptValue(123.0);
         QVERIFY(!number.toObject().isValid());
@@ -1525,6 +1535,7 @@ void tst_QScriptValue::toObject()
             QVERIFY(tmp.isObject());
             QCOMPARE(tmp.toInt32(), number.toInt32());
         }
+        QVERIFY(number.isNumber());
 
         QScriptValue str = QScriptValue(QString::fromLatin1("ciao"));
         QVERIFY(!str.toObject().isValid());
@@ -1533,6 +1544,7 @@ void tst_QScriptValue::toObject()
             QVERIFY(tmp.isObject());
             QCOMPARE(tmp.toString(), QString::fromLatin1("ciao"));
         }
+        QVERIFY(str.isString());
     }
 }
 

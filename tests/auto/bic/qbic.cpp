@@ -57,6 +57,10 @@ void QBic::removeBlacklistedClass(const QString &wildcard)
 
 bool QBic::isBlacklisted(const QString &className) const
 {
+    // all templates are blacklisted
+    if (className.contains('<'))
+        return true;
+
     for (int i = 0; i < blackList.count(); ++i)
         if (blackList.at(i).exactMatch(className))
             return true;
