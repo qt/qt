@@ -5,7 +5,6 @@ HEADERS = tetrixboard.h
 SOURCES = main.cpp \
 	  tetrixboard.cpp
 
-FORMS   = tetrixwindow.ui
 RESOURCES = tetrix.qrc
 
 contains(QT_CONFIG, scripttools): QT += scripttools

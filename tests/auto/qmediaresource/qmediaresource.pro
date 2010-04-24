@@ -2,5 +2,5 @@ load(qttest_p4)
 
 SOURCES = tst_qmediaresource.cpp
 
-QT = core multimedia network
+QT = core mediaservices network
 

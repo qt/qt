@@ -1,5 +1,7 @@
+TEMPLATE = app
+TARGET = player
 
-QT += multimedia
+QT += gui mediaservices
 
 HEADERS = \
     player.h \
@@ -15,9 +17,8 @@ SOURCES = \
     videowidget.cpp
 
 target.path = $$[QT_INSTALL_DEMOS]/multimedia/player
-
-sources.files = $$SOURCES $$HEADERS
-sources.path = $$[QT_INSTALL_DEMOS]/multimedia/player player.pro
+sources.files = $$SOURCES $$HEADERS *.pro
+sources.path = $$[QT_INSTALL_DEMOS]/multimedia/player
 
 INSTALLS += target sources
 
