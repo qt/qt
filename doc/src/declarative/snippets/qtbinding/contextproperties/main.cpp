@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     context->setContextProperty("backgroundColor",
                                 QColor(Qt::yellow));
 
-    view.setSource(QUrl("main.qml"));
+    view.setSource(QUrl::fromLocalFile("main.qml"));
     view.show();
 
     return app.exec();

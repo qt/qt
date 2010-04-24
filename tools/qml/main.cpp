@@ -389,8 +389,6 @@ int main(int argc, char ** argv)
         usage();
     }
 
-    viewer->addLibraryPath(QCoreApplication::applicationDirPath());
-
     foreach (QString lib, imports)
         viewer->addLibraryPath(lib);
 
