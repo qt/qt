@@ -147,6 +147,7 @@ protected:
 
 private Q_SLOTS:
     void widgetDestroyed(QObject *);
+    void styleDestroyed(QObject *);
 
 private:
     int refcount;
