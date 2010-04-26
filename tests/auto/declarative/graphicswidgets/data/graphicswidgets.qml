@@ -1,7 +1,8 @@
-import Qt 4.6
-import Qt.widgets 4.6
+import Qt 4.7
+import Qt.widgets 4.7
 
 QGraphicsWidget {
+    geometry: "20,0,600x400"
     layout: QGraphicsLinearLayout {
         orientation: Qt.Horizontal
         QGraphicsWidget {
@@ -9,6 +10,7 @@ QGraphicsWidget {
                 spacing: 10; orientation: Qt.Vertical
                 LayoutItem {
                     QGraphicsLinearLayout.stretchFactor: 1
+                    QGraphicsLinearLayout.spacing: 1
                     objectName: "left"
                     minimumSize: "100x100"
                     maximumSize: "300x300"
@@ -17,6 +19,7 @@ QGraphicsWidget {
                 }
                 LayoutItem {
                     QGraphicsLinearLayout.stretchFactor: 10
+                    QGraphicsLinearLayout.spacing: 10
                     objectName: "left"
                     minimumSize: "100x100"
                     maximumSize: "300x300"
@@ -27,7 +30,7 @@ QGraphicsWidget {
         }
         QGraphicsWidget {
             layout: QGraphicsLinearLayout {
-                spacing: 10; orientation: Qt.Vertical
+                spacing: 10; orientation: Qt.Horizontal; contentsMargin: 10
                 LayoutItem {
                     objectName: "left"
                     minimumSize: "100x100"

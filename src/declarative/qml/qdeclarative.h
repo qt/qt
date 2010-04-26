@@ -100,6 +100,7 @@ int qmlRegisterType()
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
         0, 0,
+        QString(),
 
         0, 0, 0, 0, &T::staticMetaObject,
 
@@ -118,8 +119,10 @@ int qmlRegisterType()
     return QDeclarativePrivate::registerType(type);
 }
 
+int qmlRegisterTypeNotAvailable(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message);
+
 template<typename T>
-int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& reason)
 {
     QByteArray name(T::staticMetaObject.className());
 
@@ -132,6 +135,7 @@ int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMin
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
         0, 0,
+        reason,
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
@@ -164,6 +168,7 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
         sizeof(T), QDeclarativePrivate::createInto<T>,
+        QString(),
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
@@ -196,6 +201,7 @@ int qmlRegisterExtendedType()
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
         0, 0,
+        QString(),
 
         0, 0, 0, 0, &T::staticMetaObject,
 
@@ -236,6 +242,7 @@ int qmlRegisterExtendedType(const char *uri, int versionMajor, int versionMinor,
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
         sizeof(T), QDeclarativePrivate::createInto<T>,
+        QString(),
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
@@ -276,9 +283,9 @@ int qmlRegisterInterface(const char *typeName)
 
 template<typename T>
 int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor, 
-                          const char *qmlName, const char *typeName, QDeclarativeCustomParser *parser)
+                          const char *qmlName, QDeclarativeCustomParser *parser)
 {
-    QByteArray name(typeName);
+    QByteArray name(T::staticMetaObject.className());
 
     QByteArray pointerName(name + '*');
     QByteArray listName("QDeclarativeListProperty<" + name + ">");
@@ -289,6 +296,7 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
         sizeof(T), QDeclarativePrivate::createInto<T>,
+        QString(),
 
         uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 

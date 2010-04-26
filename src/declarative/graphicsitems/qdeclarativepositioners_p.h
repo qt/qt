@@ -136,7 +136,7 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
 {
     Q_OBJECT
-    Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowChanged)
+    Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowsChanged)
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
 

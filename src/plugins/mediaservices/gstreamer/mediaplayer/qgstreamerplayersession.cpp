@@ -182,7 +182,7 @@ void QGstreamerPlayerSession::setPlaybackRate(qreal rate)
         m_playbackRate = rate;
         if (m_playbin) {
             gst_element_seek(m_playbin, rate, GST_FORMAT_TIME,
-                             GstSeekFlags(GST_SEEK_FLAG_ACCURATE | GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_SEGMENT),
+                             GstSeekFlags(GST_SEEK_FLAG_ACCURATE | GST_SEEK_FLAG_FLUSH),
                              GST_SEEK_TYPE_NONE,0,
                              GST_SEEK_TYPE_NONE,0 );
         }
@@ -464,8 +464,16 @@ bool QGstreamerPlayerSession::seek(qint64 ms)
 {
     //seek locks when the video output sink is changing and pad is blocked
     if (m_playbin && !m_pendingVideoSink && m_state != QMediaPlayer::StoppedState) {
+
         gint64  position = qMax(ms,qint64(0)) * 1000000;
-        return gst_element_seek_simple(m_playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position);
+        return gst_element_seek(m_playbin,
+                                m_playbackRate,
+                                GST_FORMAT_TIME,
+                                GstSeekFlags(GST_SEEK_FLAG_ACCURATE | GST_SEEK_FLAG_FLUSH),
+                                GST_SEEK_TYPE_SET,
+                                position,
+                                GST_SEEK_TYPE_NONE,
+                                0);
     }
 
     return false;
@@ -666,8 +674,11 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
 
                             setSeekable(true);
 
-                            if (!qFuzzyCompare(m_playbackRate, qreal(1.0)))
-                                setPlaybackRate(m_playbackRate);
+                            if (!qFuzzyCompare(m_playbackRate, qreal(1.0))) {
+                                qreal rate = m_playbackRate;
+                                m_playbackRate = 1.0;
+                                setPlaybackRate(rate);
+                            }
 
                             if (m_renderer)
                                 m_renderer->precessNewStream();
@@ -812,7 +823,7 @@ void QGstreamerPlayerSession::getStreamsInfo()
 
     for (int i=0; i<m_streamTypes.count(); i++) {
         QMediaStreamsControl::StreamType streamType = m_streamTypes[i];
-        QMap<QtMultimedia::MetaData, QVariant> streamProperties;
+        QMap<QtMediaServices::MetaData, QVariant> streamProperties;
 
         int streamIndex = i - m_playbin2StreamOffset[streamType];
 
@@ -834,7 +845,7 @@ void QGstreamerPlayerSession::getStreamsInfo()
         if (tags && gst_is_tag_list(tags)) {
             gchar *languageCode = 0;
             if (gst_tag_list_get_string(tags, GST_TAG_LANGUAGE_CODE, &languageCode))
-                streamProperties[QtMultimedia::Language] = QString::fromUtf8(languageCode);
+                streamProperties[QtMediaServices::Language] = QString::fromUtf8(languageCode);
 
             //qDebug() << "language for setream" << i << QString::fromUtf8(languageCode);
             g_free (languageCode);
@@ -889,8 +900,8 @@ void QGstreamerPlayerSession::getStreamsInfo()
 //            break;
 //        }
 //
-//        QMap<QtMultimedia::MetaData, QVariant> streamProperties;
-//        streamProperties[QtMultimedia::Language] = QString::fromUtf8(languageCode);
+//        QMap<QtMediaServices::MetaData, QVariant> streamProperties;
+//        streamProperties[QtMediaServices::Language] = QString::fromUtf8(languageCode);
 //
 //        m_streamProperties.append(streamProperties);
 //        m_streamTypes.append(streamType);

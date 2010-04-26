@@ -103,6 +103,7 @@ private:
     friend class QDeclarativeContextData;
     QDeclarativeContext(QDeclarativeContextData *);
     QDeclarativeContext(QDeclarativeEngine *, bool);
+    Q_DISABLE_COPY(QDeclarativeContext)
 };
 QT_END_NAMESPACE
 

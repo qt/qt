@@ -5,7 +5,7 @@ MyQmlObject{
     objectName: "obj"
     function create()
     {
-        obj.objectProperty = createQmlObject('import Qt.test 1.0; MyQmlObject{objectName:"emptyObject"}', obj);
+        obj.objectProperty = Qt.createQmlObject('import Qt.test 1.0; MyQmlObject{objectName:"emptyObject"}', obj);
     }
 
     function killOther()

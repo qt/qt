@@ -525,18 +525,6 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
     emit wrapModeChanged();
 }
 
-bool QDeclarativeText::wrap() const
-{
-    Q_D(const QDeclarativeText);
-    return d->wrapMode != NoWrap;
-}
-
-void QDeclarativeText::setWrap(bool w)
-{
-    qmlInfo(this) << "\"wrap\" property is deprecated and will soon be removed.  Use wrapMode";
-    setWrapMode(w ? WordWrap : NoWrap);
-}
-
 
 /*!
     \qmlproperty enumeration Text::textFormat

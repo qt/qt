@@ -1,7 +1,7 @@
-TARGET = gstengine
+TARGET = qgstengine
 include(../../qpluginbase.pri)
 
-QT += multimedia
+QT += mediaservices
 
 unix:contains(QT_CONFIG, alsa) {
     DEFINES += HAVE_ALSA

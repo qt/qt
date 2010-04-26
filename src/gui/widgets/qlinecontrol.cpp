@@ -1350,6 +1350,7 @@ bool QLineControl::processEvent(QEvent* ev)
 #endif
     switch(ev->type()){
 #ifndef QT_NO_GRAPHICSVIEW
+        case QEvent::GraphicsSceneMouseDoubleClick:
         case QEvent::GraphicsSceneMouseMove:
         case QEvent::GraphicsSceneMouseRelease:
         case QEvent::GraphicsSceneMousePress:{
@@ -1439,6 +1440,7 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
             moveCursor(cursor, mark);
             break;
         }
+        case QEvent::GraphicsSceneMouseDoubleClick:
         case QEvent::MouseButtonDblClick:
             if (ev->button() == Qt::LeftButton) {
                 selectWordAtPos(xToPos(ev->pos().x()));

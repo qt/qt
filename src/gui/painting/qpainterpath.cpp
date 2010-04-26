@@ -3167,6 +3167,8 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     Set operations on paths will treat the paths as areas. Non-closed
     paths will be treated as implicitly closed.
+    Bezier curves may be flattened to line segments due to numerical instability of
+    doing bezier curve intersections.
 
     \sa intersected(), subtracted()
 */
@@ -3182,6 +3184,8 @@ QPainterPath QPainterPath::united(const QPainterPath &p) const
     \since 4.3
 
     Returns a path which is the intersection of this path's fill area and \a p's fill area.
+    Bezier curves may be flattened to line segments due to numerical instability of
+    doing bezier curve intersections.
 */
 QPainterPath QPainterPath::intersected(const QPainterPath &p) const
 {
@@ -3198,7 +3202,8 @@ QPainterPath QPainterPath::intersected(const QPainterPath &p) const
 
     Set operations on paths will treat the paths as areas. Non-closed
     paths will be treated as implicitly closed.
-
+    Bezier curves may be flattened to line segments due to numerical instability of
+    doing bezier curve intersections.
 */
 QPainterPath QPainterPath::subtracted(const QPainterPath &p) const
 {
@@ -3227,6 +3232,8 @@ QPainterPath QPainterPath::subtractedInverted(const QPainterPath &p) const
     Returns a simplified version of this path. This implies merging all subpaths that intersect,
     and returning a path containing no intersecting edges. Consecutive parallel lines will also
     be merged. The simplified path will always use the default fill rule, Qt::OddEvenFill.
+    Bezier curves may be flattened to line segments due to numerical instability of
+    doing bezier curve intersections.
 */
 QPainterPath QPainterPath::simplified() const
 {

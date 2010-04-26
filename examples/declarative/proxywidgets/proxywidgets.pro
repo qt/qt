@@ -3,7 +3,6 @@ DESTDIR = ProxyWidgets
 TARGET  = proxywidgetsplugin
 CONFIG += qt plugin
 QT += declarative
-VERSION = 1.0.0
 
 SOURCES += proxywidgets.cpp
 

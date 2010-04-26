@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property variant test1: Qt.size(19, 34);

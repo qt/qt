@@ -82,6 +82,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
     setPolygon(myPolygon);
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 }
 //! [0]
 

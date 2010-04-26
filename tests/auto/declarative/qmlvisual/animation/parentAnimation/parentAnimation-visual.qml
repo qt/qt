@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 /*
 This test shows a green rectangle moving and growing from the upper-left corner

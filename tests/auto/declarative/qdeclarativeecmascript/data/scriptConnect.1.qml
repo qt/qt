@@ -1,16 +1,10 @@
 import Qt.test 1.0
-import Qt 4.6
-
+import Qt 4.7
+import "scriptConnect.1.js" as Script
 MyQmlObject { 
     property bool test: false
 
     id: root
     
-    Script {
-        function testFunction() {
-            test = true;
-        }
-    }
-
-    Component.onCompleted: root.argumentSignal.connect(testFunction);
+    Component.onCompleted: root.argumentSignal.connect(Script.testFunction);
 }

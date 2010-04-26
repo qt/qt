@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 LinearLayoutAttached::LinearLayoutAttached(QObject *parent)
-: QObject(parent), _stretch(1), _alignment(Qt::AlignCenter)
+: QObject(parent), _stretch(1), _alignment(Qt::AlignCenter), _spacing(0)
 {
 }
 
@@ -58,6 +58,15 @@ void LinearLayoutAttached::setStretchFactor(int f)
 
     _stretch = f;
     emit stretchChanged(reinterpret_cast<QGraphicsLayoutItem*>(parent()), _stretch);
+}
+
+void LinearLayoutAttached::setSpacing(int s)
+{
+    if (_spacing == s)
+        return;
+
+    _spacing = s;
+    emit spacingChanged(reinterpret_cast<QGraphicsLayoutItem*>(parent()), _spacing);
 }
 
 void LinearLayoutAttached::setAlignment(Qt::Alignment a)
@@ -99,10 +108,13 @@ insertItem(index, item);
 if (LinearLayoutAttached *obj = attachedProperties.value(item)) {
     setStretchFactor(item, obj->stretchFactor());
     setAlignment(item, obj->alignment());
+    updateSpacing(item, obj->spacing());
     QObject::connect(obj, SIGNAL(stretchChanged(QGraphicsLayoutItem*,int)),
                      this, SLOT(updateStretch(QGraphicsLayoutItem*,int)));
     QObject::connect(obj, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
                      this, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));
+    QObject::connect(obj, SIGNAL(spacingChanged(QGraphicsLayoutItem*,int)),
+                     this, SLOT(updateSpacing(QGraphicsLayoutItem*,int)));
     //### need to disconnect when widget is removed?
 }
 }
@@ -114,9 +126,33 @@ for (int i = 0; i < count(); ++i)
     removeAt(i);
 }
 
+qreal QGraphicsLinearLayoutObject::contentsMargin() const
+{
+    qreal a,b,c,d;
+    getContentsMargins(&a, &b, &c, &d);
+    if(a==b && a==c && a==d)
+        return a;
+    return -1;
+}
+
+void QGraphicsLinearLayoutObject::setContentsMargin(qreal m)
+{
+    setContentsMargins(m,m,m,m);
+}
+
 void QGraphicsLinearLayoutObject::updateStretch(QGraphicsLayoutItem *item, int stretch)
 {
 QGraphicsLinearLayout::setStretchFactor(item, stretch);
+}
+
+void QGraphicsLinearLayoutObject::updateSpacing(QGraphicsLayoutItem* item, int spacing)
+{
+    for(int i=0; i < count(); i++){
+        if(itemAt(i) == item){ //I do not see the reverse function, which is why we must loop over all items
+            QGraphicsLinearLayout::setItemSpacing(i, spacing);
+            return;
+        }
+    }
 }
 
 void QGraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::Alignment alignment)
@@ -139,7 +175,9 @@ return rv;
 // QGraphicsGridLayout-related classes
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 GridLayoutAttached::GridLayoutAttached(QObject *parent)
-: QObject(parent), _row(-1), _column(-1), _rowspan(1), _colspan(1), _alignment(-1)
+: QObject(parent), _row(-1), _column(-1), _rowspan(1), _colspan(1), _alignment(-1), _rowstretch(-1),
+    _colstretch(-1), _rowspacing(-1), _colspacing(-1), _rowprefheight(-1), _rowmaxheight(-1), _rowminheight(-1),
+    _rowfixheight(-1), _colprefwidth(-1), _colmaxwidth(-1), _colminwidth(-1), _colfixwidth(-1)
 {
 }
 
@@ -185,8 +223,29 @@ void GridLayoutAttached::setAlignment(Qt::Alignment a)
         return;
 
     _alignment = a;
-    //emit alignmentChanged(reinterpret_cast<QGraphicsLayoutItem*>(parent()), _alignment);
+    emit alignmentChanged(reinterpret_cast<QGraphicsLayoutItem*>(parent()), _alignment);
 }
+
+void GridLayoutAttached::setRowStretchFactor(int f)
+{
+    _rowstretch = f;
+}
+
+void GridLayoutAttached::setColumnStretchFactor(int f)
+{
+    _colstretch = f;
+}
+
+void GridLayoutAttached::setRowSpacing(int s)
+{
+    _rowspacing = s;
+}
+
+void GridLayoutAttached::setColumnSpacing(int s)
+{
+    _colspacing = s;
+}
+
 
 QGraphicsGridLayoutObject::QGraphicsGridLayoutObject(QObject *parent)
 : QObject(parent)
@@ -226,9 +285,36 @@ if (GridLayoutAttached *obj = attachedProperties.value(item)) {
         qWarning() << "Must set row and column for an item in a grid layout";
         return;
     }
+    if(obj->rowSpacing() != -1)
+        setRowSpacing(row, obj->rowSpacing());
+    if(obj->columnSpacing() != -1)
+        setColumnSpacing(column, obj->columnSpacing());
+    if(obj->rowStretchFactor() != -1)
+        setRowStretchFactor(row, obj->rowStretchFactor());
+    if(obj->columnStretchFactor() != -1)
+        setColumnStretchFactor(column, obj->columnStretchFactor());
+    if(obj->rowPreferredHeight() != -1)
+        setRowPreferredHeight(row, obj->rowPreferredHeight());
+    if(obj->rowMaximumHeight() != -1)
+        setRowMaximumHeight(row, obj->rowMaximumHeight());
+    if(obj->rowMinimumHeight() != -1)
+        setRowMinimumHeight(row, obj->rowMinimumHeight());
+    if(obj->rowFixedHeight() != -1)
+        setRowFixedHeight(row, obj->rowFixedHeight());
+    if(obj->columnPreferredWidth() != -1)
+        setColumnPreferredWidth(row, obj->columnPreferredWidth());
+    if(obj->columnMaximumWidth() != -1)
+        setColumnMaximumWidth(row, obj->columnMaximumWidth());
+    if(obj->columnMinimumWidth() != -1)
+        setColumnMinimumWidth(row, obj->columnMinimumWidth());
+    if(obj->columnFixedWidth() != -1)
+        setColumnFixedWidth(row, obj->columnFixedWidth());
     addItem(item, row, column, rowSpan, columnSpan);
     if (alignment != -1)
         setAlignment(item,alignment);
+    QObject::connect(obj, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
+                     this, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));
+    //### need to disconnect when widget is removed?
 }
 }
 
@@ -244,6 +330,26 @@ qreal QGraphicsGridLayoutObject::spacing() const
 if (verticalSpacing() == horizontalSpacing())
     return verticalSpacing();
 return -1;  //###
+}
+
+qreal QGraphicsGridLayoutObject::contentsMargin() const
+{
+    qreal a,b,c,d;
+    getContentsMargins(&a, &b, &c, &d);
+    if(a==b && a==c && a==d)
+        return a;
+    return -1;
+}
+
+void QGraphicsGridLayoutObject::setContentsMargin(qreal m)
+{
+    setContentsMargins(m,m,m,m);
+}
+
+
+void QGraphicsGridLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::Alignment alignment)
+{
+QGraphicsGridLayout::setAlignment(item, alignment);
 }
 
 QHash<QGraphicsLayoutItem*, GridLayoutAttached*> QGraphicsGridLayoutObject::attachedProperties;

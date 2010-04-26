@@ -141,7 +141,7 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
         if (url.startsWith(AbstractHelpViewer::DocPath)) {
             QUrl newUrl = request.url();
             if (!newUrl.path().startsWith(QLatin1String("/qdoc/"))) {
-                newUrl.setPath(QLatin1String("/qdoc/")+newUrl.path());
+                newUrl.setPath(QLatin1String("qdoc") + newUrl.path());
                 url = newUrl.toString();
             }
         }
