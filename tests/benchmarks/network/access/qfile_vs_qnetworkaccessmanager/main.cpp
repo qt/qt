@@ -46,7 +46,6 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QFile>
-#include "../../../../auto/network-settings.h"
 
 class qfile_vs_qnetworkaccessmanager : public QObject
 {
@@ -78,11 +77,15 @@ void qfile_vs_qnetworkaccessmanager::initTestCase()
 {
     testFile.open();
     QByteArray qba(1*1024*1024, 'x'); // 1 MB
+#ifdef Q_OS_SYMBIAN
+    for (int i = 0; i < 10; i++) { // for Symbian only 10 MB
+#else
     for (int i = 0; i < 100; i++) {
+#endif
         testFile.write(qba);
         testFile.flush();
         size += qba.size();
-    } // 100 MB
+    } // 100 MB or 10 MB
     testFile.reset();
 }
 
@@ -105,7 +108,7 @@ void qfile_vs_qnetworkaccessmanager::qnamFileRead()
 {
     QNetworkAccessManager manager;
     QTime t;
-    QNetworkRequest request(QUrl(testFile.fileName()));
+    QNetworkRequest request(QUrl::fromLocalFile(testFile.fileName()));
 
     // do 3 dry runs for cache warmup
     qnamFileRead_iteration(manager, request);
@@ -138,7 +141,7 @@ void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead()
 {
     QNetworkAccessManager manager;
     QTime t;
-    QNetworkRequest request(QUrl(testFile.fileName()));
+    QNetworkRequest request(QUrl::fromLocalFile(testFile.fileName()));
 
     // do 3 dry runs for cache warmup
     qnamImmediateFileRead_iteration(manager, request);

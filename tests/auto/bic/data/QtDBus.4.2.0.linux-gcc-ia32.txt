@@ -1,9 +1,3 @@
-
-
-
-
-
-
 Class QSysInfo
    size=1 align=1
    base size=0 base align=1
@@ -23,21 +17,6 @@ Class qIsNull(float)::U
    size=4 align=4
    base size=4 base align=4
 qIsNull(float)::U (0xb7f6be00) 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QFlag
    size=4 align=4
@@ -74,7 +53,6 @@ Class QByteRef
    size=8 align=4
    base size=8 base align=4
 QByteRef (0xb7805640) 0
-
 
 Vtable for std::exception
 std::exception::_ZTVSt9exception: 5u entries
@@ -157,20 +135,6 @@ Class QChar
    base size=2 base align=2
 QChar (0xb7805b80) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QInternal
    size=1 align=1
    base size=0 base align=1
@@ -191,7 +155,6 @@ Class QString
    base size=4 base align=4
 QString (0xb765d3c0) 0
 
-
 Class QLatin1String
    size=4 align=4
    base size=4 base align=4
@@ -208,7 +171,6 @@ Class QConstString
 QConstString (0xb765d600) 0
   QString (0xb765d640) 0
 
-
 Class QGenericArgument
    size=8 align=4
    base size=8 base align=4
@@ -220,13 +182,10 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0xb765d700) 0
   QGenericArgument (0xb765d740) 0
 
-
 Class QMetaObject
    size=16 align=4
    base size=16 base align=4
 QMetaObject (0xb765d8c0) 0
-
-
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -318,7 +277,6 @@ QIODevice (0xb765dc00) 0
   QObject (0xb765dc40) 0
       primary-for QIODevice (0xb765dc00)
 
-
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
 0     (int (*)(...))0
@@ -337,13 +295,10 @@ Class QRegExp
    base size=4 base align=4
 QRegExp (0xb765ddc0) 0
 
-
 Class QStringMatcher
    size=1036 align=4
    base size=1036 base align=4
 QStringMatcher (0xb765de40) 0
-
-
 
 Class QStringList
    size=4 align=4
@@ -351,65 +306,10 @@ Class QStringList
 QStringList (0xb765df40) 0
   QList<QString> (0xb765df80) 0
 
-
-
 Class QMetaType
    size=1 align=1
    base size=0 base align=1
 QMetaType (0xb765dd80) 0 empty
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QVariant::PrivateShared
    size=8 align=4
@@ -436,17 +336,10 @@ Class QVariant
    base size=12 base align=4
 QVariant (0xb73b1dc0) 0
 
-
-
-
-
-
-
 Class QVariantComparisonHelper
    size=4 align=4
    base size=4 base align=4
 QVariantComparisonHelper (0xb721e200) 0
-
 
 Class QDBusObjectPath
    size=4 align=4
@@ -454,13 +347,11 @@ Class QDBusObjectPath
 QDBusObjectPath (0xb721e2c0) 0
   QString (0xb721e300) 0
 
-
 Class QDBusSignature
    size=4 align=4
    base size=4 base align=4
 QDBusSignature (0xb721e400) 0
   QString (0xb721e440) 0
-
 
 Class QDBusVariant
    size=12 align=4
@@ -468,16 +359,10 @@ Class QDBusVariant
 QDBusVariant (0xb721e540) 0
   QVariant (0xb721e580) 0
 
-
 Class QDBusArgument
    size=4 align=4
    base size=4 base align=4
 QDBusArgument (0xb721e680) 0
-
-
-
-
-
 
 Vtable for QDBusAbstractAdaptor
 QDBusAbstractAdaptor::_ZTV20QDBusAbstractAdaptor: 14u entries
@@ -519,7 +404,6 @@ Class QDBusConnection
    base size=4 base align=4
 QDBusConnection (0xb721ec80) 0
 
-
 Vtable for QDBusAbstractInterface
 QDBusAbstractInterface::_ZTV22QDBusAbstractInterface: 14u entries
 0     (int (*)(...))0
@@ -544,8 +428,6 @@ QDBusAbstractInterface (0xb721ed40) 0
     vptr=((& QDBusAbstractInterface::_ZTV22QDBusAbstractInterface) + 8u)
   QObject (0xb721ed80) 0
       primary-for QDBusAbstractInterface (0xb721ed40)
-
-
 
 Vtable for QDBusConnectionInterface
 QDBusConnectionInterface::_ZTV24QDBusConnectionInterface: 14u entries
@@ -573,7 +455,6 @@ QDBusConnectionInterface (0xb721ef80) 0
       primary-for QDBusConnectionInterface (0xb721ef80)
     QObject (0xb721e1c0) 0
         primary-for QDBusAbstractInterface (0xb721efc0)
-
 
 Vtable for QDBusServer
 QDBusServer::_ZTV11QDBusServer: 14u entries
@@ -631,7 +512,4 @@ Class QDBusMetaType
    size=1 align=1
    base size=0 base align=1
 QDBusMetaType (0xb71260c0) 0 empty
-
-
-
 
