@@ -58,6 +58,7 @@ public:
 
 private slots:
     void task190739_focus();
+    void minimumSizeHint();
 
 private:
 };
@@ -96,6 +97,11 @@ void tst_QRadioButton::task190739_focus()
 }
 
 
+void tst_QRadioButton::minimumSizeHint()
+{
+    QRadioButton button(tr("QRadioButtons sizeHint is the same as it's minimumSizeHint"));
+    QCOMPARE(button.sizeHint(), button.minimumSizeHint());
+}
 
 
 QTEST_MAIN(tst_QRadioButton)
