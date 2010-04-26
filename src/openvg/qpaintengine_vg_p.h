@@ -58,6 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFixedPoint;
 class QVGPaintEnginePrivate;
 class QPixmapData;
 class QVGEGLWindowSurfacePrivate;
@@ -143,7 +144,7 @@ public:
     void drawTextItem(const QPointF &p, const QTextItem &textItem);
     void drawStaticTextItem(QStaticTextItem *staticTextItem);
     bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
-                          QFontEngine *fontEngine, const QPointF &p);
+                          QFontEngine *fontEngine, const QFixedPoint *positions, const QPointF &p)
 
     void setState(QPainterState *s);
     QVGPainterState *state() { return static_cast<QVGPainterState *>(QPaintEngineEx::state()); }

@@ -3279,7 +3279,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     QTransform matrix;
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
-    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, positions.data(), p))
         QPaintEngineEx::drawTextItem(p, textItem);
 #else
     // OpenGL 1.0 does not have support for VGFont and glyphs,
@@ -3291,11 +3291,12 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
-                     QPointF(0, 0));
+                     textItem->positions, QPointF(0, 0));
 }
 
  bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
-                                       QFontEngine *fontEngine, const QPointF &p)
+                                       QFontEngine *fontEngine, const QFixedPoint *positions,
+                                       const QPointF &p)
  {
 #if !defined(QVG_NO_DRAW_GLYPHS)
     Q_D(QVGPaintEngine);
@@ -3332,9 +3333,9 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
     // Create the array of adjustments between glyphs
-    QVarLengthArray<VGfloat> adjustments_x(glyphs.size());
-    QVarLengthArray<VGfloat> adjustments_y(glyphs.size());
-    for (int i = 1; i < glyphs.size(); ++i) {
+    QVarLengthArray<VGfloat> adjustments_x(numGlyphs);
+    QVarLengthArray<VGfloat> adjustments_y(numGlyphs);
+    for (int i = 1; i < numGlyphs; ++i) {
         adjustments_x[i-1] = (positions[i].x - positions[i-1].x).toReal();
         adjustments_y[i-1] = (positions[i].y - positions[i-1].y).toReal();
     }
@@ -3356,7 +3357,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs.data(),
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
                  adjustments_x.data(), adjustments_y.data(), VG_FILL_PATH, VG_TRUE);
     return true;
 #else
@@ -3364,6 +3365,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     Q_UNUSED(glyphs);
     Q_UNUSED(font);
     Q_UNUSED(fontEngine);
+    Q_UNUSED(positions);
     Q_UNUSED(p);
     return false;
 #endif
