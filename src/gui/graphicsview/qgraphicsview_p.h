@@ -192,8 +192,17 @@ public:
 #endif
     }
 
+    inline bool updateRectF(const QRectF &rect)
+    {
+        if (rect.isEmpty())
+            return false;
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            return updateRect(rect.toAlignedRect().adjusted(-1, -1, 1, 1));
+        return updateRect(rect.toAlignedRect().adjusted(-2, -2, 2, 2));
+    }
+
     bool updateRect(const QRect &rect);
-    bool updateRegion(const QRegion &region);
+    bool updateRegion(const QRectF &rect, const QTransform &xform);
     bool updateSceneSlotReimplementedChecked;
     QRegion exposedRegion;
 
