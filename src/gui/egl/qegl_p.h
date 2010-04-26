@@ -102,8 +102,8 @@ public:
 
     bool configAttrib(int name, EGLint *value) const;
 
-    static void clearError() { eglGetError(); }
-    static EGLint error() { return eglGetError(); }
+    static void clearError();
+    static EGLint error();
     static QString errorString(EGLint code);
 
     static EGLDisplay display();
