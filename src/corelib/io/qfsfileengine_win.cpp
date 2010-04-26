@@ -154,6 +154,8 @@ static TRUSTEE_W worldTrusteeW;
 
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
+typedef BOOL (WINAPI *PtrGetVolumePathNamesForVolumeNameW)(LPCWSTR,LPWSTR,DWORD,PDWORD);
+static PtrGetVolumePathNamesForVolumeNameW ptrGetVolumePathNamesForVolumeNameW = 0;
 QT_END_INCLUDE_NAMESPACE
 
 
@@ -212,6 +214,9 @@ void QFSFileEnginePrivate::resolveLibs()
         HINSTANCE userenvHnd = LoadLibrary(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
+        HINSTANCE kernel32 = LoadLibrary(L"kernel32");
+        if(kernel32)
+            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)GetProcAddress(kernel32, "GetVolumePathNamesForVolumeNameW");
 #endif
     }
 }
@@ -1293,14 +1298,19 @@ static QString readSymLink(const QString &link)
         qFree(rdb);
         CloseHandle(handle);
 
-        QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
-        if(matchVolName.indexIn(result) == 0) {
-            DWORD len;
-            wchar_t buffer[MAX_PATH];
-            QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
-            if(GetVolumePathNamesForVolumeNameW((wchar_t*)volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
-                result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
+#if !defined(QT_NO_LIBRARY)
+        QFSFileEnginePrivate::resolveLibs();
+        if (ptrGetVolumePathNamesForVolumeNameW) {
+            QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
+            if(matchVolName.indexIn(result) == 0) {
+                DWORD len;
+                wchar_t buffer[MAX_PATH];
+                QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
+                if(ptrGetVolumePathNamesForVolumeNameW((wchar_t*)volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
+                    result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
+            }
         }
+#endif
     }
 #else
     Q_UNUSED(link);

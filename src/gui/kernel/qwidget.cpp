@@ -9626,6 +9626,23 @@ int QWidget::heightForWidth(int w) const
     return -1;
 }
 
+
+/*!
+    \internal
+
+    *virtual private*
+
+    This is a bit hackish, but ideally we would have created a virtual function
+    in the public API (however, too late...) so that subclasses could reimplement 
+    their own function.
+    Instead we add a virtual function to QWidgetPrivate.
+    ### Qt5: move to public class and make virtual
+*/ 
+bool QWidgetPrivate::hasHeightForWidth() const
+{
+    return layout ? layout->hasHeightForWidth() : size_policy.hasHeightForWidth();
+}
+
 /*!
     \fn QWidget *QWidget::childAt(int x, int y) const
 
