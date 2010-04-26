@@ -617,7 +617,8 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         int majorVersion;
         int minorVersion;
         QDeclarativeEnginePrivate::ImportedNamespace *typeNamespace = 0;
-        if (!QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace)
+        QString errorString;
+        if (!QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace, &errorString)
                 || typeNamespace)
         {
             // Known to not be a type:
@@ -630,7 +631,8 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             if (typeNamespace)
                 error.setDescription(tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else
-                error.setDescription(tr("%1 is not a type").arg(userTypeName));
+                error.setDescription(tr("%1 %2").arg(userTypeName).arg(errorString));
+
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);
