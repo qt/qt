@@ -188,7 +188,7 @@ void HelpViewer::openLinkInNewTab()
     if(lastAnchor.isEmpty())
         return;
 
-    OpenPagesManager::instance()->createNewTab(QUrl(lastAnchor));
+    OpenPagesManager::instance()->createPage(QUrl(lastAnchor));
     lastAnchor.clear();
 }
 

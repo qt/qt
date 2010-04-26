@@ -42,9 +42,11 @@
  
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
-#include "helpviewer.h"
+#if defined(QT_NO_WEBKIT)
 #include "helpviewer_qtb.h"
+#else
 #include "helpviewer_qwv.h"
+#endif // QT_NO_WEBKIT
 #include "openpagesmodel.h"
 #include "openpageswidget.h"
 #include "tracer.h"

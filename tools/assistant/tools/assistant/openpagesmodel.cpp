@@ -41,8 +41,11 @@
 #include "openpagesmodel.h"
 
 #include "helpenginewrapper.h"
+#if defined(QT_NO_WEBKIT)
 #include "helpviewer_qtb.h"
+#else
 #include "helpviewer_qwv.h"
+#endif // QT_NO_WEBKIT
 #include "tracer.h"
 
 #include <QtCore/QStringList>

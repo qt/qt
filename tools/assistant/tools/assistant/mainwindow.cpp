@@ -418,8 +418,13 @@ void MainWindow::setupActions()
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
-    m_newTabAction = menu->addAction(tr("New &Tab"), m_centralWidget, SLOT(newTab()));
+    OpenPagesManager * const openPages = OpenPagesManager::instance();
+    m_newTabAction
+        = menu->addAction(tr("New &Tab"), openPages, SLOT(createPage()));
     m_newTabAction->setShortcut(QKeySequence::AddTab);
+    m_closeTabAction = menu->addAction(tr("&Close Tab"),
+                                          openPages, SLOT(closeCurrentPage()));
+    m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     menu->addSeparator();
 
@@ -431,14 +436,6 @@ void MainWindow::setupActions()
     GlobalActions *globalActions = GlobalActions::instance(this);
     menu->addAction(globalActions->printAction());
     menu->addSeparator();
-
-    OpenPagesManager * const openPages = OpenPagesManager::instance();
-    m_newTabAction
-        = menu->addAction(tr("New &Tab"), openPages, SLOT(createPage()));
-    m_newTabAction->setShortcut(QKeySequence::AddTab);
-    m_closeTabAction = menu->addAction(tr("&Close Tab"),
-                                          openPages, SLOT(closeCurrentPage()));
-    m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(QIcon::fromTheme("application-exit"),
                                    tr("&Quit"), this, SLOT(close()));
