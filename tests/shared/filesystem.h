@@ -49,8 +49,12 @@
 #include <QFile>
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-# define IO_REPARSE_TAG_MOUNT_POINT       (0xA0000003L)
-# define REPARSE_MOUNTPOINT_HEADER_SIZE   8
+#include <windows.h>
+#include <winioctl.h>
+#ifndef IO_REPARSE_TAG_MOUNT_POINT
+#define IO_REPARSE_TAG_MOUNT_POINT       (0xA0000003L)
+#endif
+#define REPARSE_MOUNTPOINT_HEADER_SIZE   8
 #endif
 
 struct FileSystem
@@ -113,7 +117,7 @@ struct FileSystem
         QFileInfo junctionInfo(linkName);
         linkName = QDir::toNativeSeparators(junctionInfo.absoluteFilePath());
 
-        GetVolumeInformationW( linkName.left(3).utf16(), NULL, 0, NULL, NULL, NULL,
+        GetVolumeInformationW( (wchar_t*)linkName.left(3).utf16(), NULL, 0, NULL, NULL, NULL,
                                fileSystem, sizeof(fileSystem)/sizeof(WCHAR));
         if(QString().fromWCharArray(fileSystem) != "NTFS")
             QSKIP("This seems not to be an NTFS volume. Junctions are not allowed.",SkipSingle);
@@ -126,7 +130,7 @@ struct FileSystem
                 target.chop(1);
         }
         QDir().mkdir(linkName);
-        hFile = CreateFileW( linkName.utf16(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+        hFile = CreateFileW( (wchar_t*)linkName.utf16(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                              FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL );
         QVERIFY(hFile != INVALID_HANDLE_VALUE );
 
