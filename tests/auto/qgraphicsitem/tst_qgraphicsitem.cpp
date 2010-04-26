@@ -294,6 +294,7 @@ private slots:
     void explicitlyEnabled();
     void selected();
     void selected2();
+    void selected3();
     void selected_group();
     void selected_textItem();
     void selected_multi();
@@ -1451,6 +1452,43 @@ void tst_QGraphicsItem::selected2()
         QApplication::sendEvent(&scene, &mouseMove);
         QVERIFY(mouseMove.isAccepted());
     }
+}
+
+void tst_QGraphicsItem::selected3()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item1 = scene.addRect(QRectF(0, 0, 100, 100));
+    item1->setFlag(QGraphicsItem::ItemIsSelectable);
+
+    QGraphicsItem *item2 = scene.addRect(QRectF(100, 100, 100, 100));
+    item2->setFlag(QGraphicsItem::ItemIsSelectable);
+
+    item1->setSelected(true);
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QVERIFY(item1->isSelected());
+    QVERIFY(!item2->isSelected());
+
+    // Right click on a selected item should not clear the selection
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, view.mapFromScene(item1->boundingRect().center()));
+    QVERIFY(item1->isSelected());
+    QCOMPARE(scene.selectedItems().count(), 1);
+
+    // Right click on an unselected item should clear the selection
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, view.mapFromScene(item2->boundingRect().center()));
+    QVERIFY(!item1->isSelected());
+    QCOMPARE(scene.selectedItems().count(), 0);
+
+    item2->setSelected(true);
+    QVERIFY(item2->isSelected());
+    QCOMPARE(scene.selectedItems().count(), 1);
+
+    // Right click on the scene background should clear the selection
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, view.mapFromScene(QPointF(0, 110)));
+    QVERIFY(!item2->isSelected());
+    QCOMPARE(scene.selectedItems().count(), 0);
 }
 
 void tst_QGraphicsItem::selected_group()
