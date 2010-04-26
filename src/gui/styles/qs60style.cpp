@@ -2494,6 +2494,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             break;
         case CT_MenuItem:
         case CT_ItemViewItem:
+            if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
+                if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
+                    sz = QSize();
+                    break;
+                }
+            }
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             if (QS60StylePrivate::isTouchSupported())
                 //Make itemview easier to use in touch devices
