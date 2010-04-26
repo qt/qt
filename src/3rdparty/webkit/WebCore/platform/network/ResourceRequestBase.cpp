@@ -381,9 +381,17 @@ void ResourceRequestBase::updateResourceRequest() const
 #if !PLATFORM(MAC) && !USE(CFNETWORK) && !USE(SOUP) && !PLATFORM(CHROMIUM)
 unsigned initializeMaximumHTTPConnectionCountPerHost()
 {
+#if PLATFORM(QT)
+#ifdef Q_OS_SYMBIAN
+    return 3 * (1 + 3 + 2);
+#else
+    return 6 * (1 + 3 + 2);
+#endif
+#else
     // This is used by the loader to control the number of issued parallel load requests. 
     // Four seems to be a common default in HTTP frameworks.
     return 4;
+#endif
 }
 #endif
 
