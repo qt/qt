@@ -300,6 +300,15 @@ QSize QCheckBox::sizeHint() const
     return d->sizeHint;
 }
 
+
+/*!
+    \reimp
+*/
+QSize QCheckBox::minimumSizeHint() const
+{
+    return sizeHint();
+}
+
 /*!
     \reimp
 */
