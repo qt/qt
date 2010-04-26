@@ -651,6 +651,8 @@ void QS60StylePrivate::setFont(QWidget *widget) const
         fontCategory = QS60StyleEnums::FC_Title;
     } else if (qobject_cast<QMessageBox *>(widget)){
         fontCategory = QS60StyleEnums::FC_Primary;
+    } else if (qobject_cast<QMenu *>(widget)){
+        fontCategory = QS60StyleEnums::FC_Primary;
     }
     if (fontCategory != QS60StyleEnums::FC_Undefined) {
         const bool resolveFontSize = widget->testAttribute(Qt::WA_SetFont)
@@ -1744,6 +1746,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
                 optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
                 optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
+                optionCheckBox.rect.moveCenter(QPoint(
+                        optionCheckBox.rect.center().x(), 
+                        menuItem->rect.center().y()));
                 const int moveByX = optionCheckBox.rect.width() + vSpacing;
                 if (optionMenuItem.direction == Qt::LeftToRight) {
                     textRect.translate(moveByX, 0);
@@ -2483,6 +2488,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                     sz.setHeight(naviPaneSize.height());
             }
             break;
+        case CT_MenuItem:
         case CT_ItemViewItem:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             if (QS60StylePrivate::isTouchSupported())
@@ -3150,6 +3156,12 @@ bool QS60Style::event(QEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::FocusIn:
         if (QWidget *focusWidget = QApplication::focusWidget()) {
+
+            // Menus and combobox popups do not draw focus frame around them
+            if (qobject_cast<QComboBoxListView *>(focusWidget) ||
+                qobject_cast<QMenu *>(focusWidget))
+                    break;
+
             if (!d->m_focusFrame)
                 d->m_focusFrame = new QFocusFrame(focusWidget);
             d->m_focusFrame->setWidget(focusWidget);

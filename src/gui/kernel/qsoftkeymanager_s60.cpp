@@ -79,6 +79,8 @@ bool QSoftKeyManagerPrivateS60::skipCbaUpdate()
     // Note: Cannot use IsDisplayingMenuOrDialog since CBA update can be triggered before
     // menu/dialog CBA is actually displayed i.e. it is being costructed.
     CEikButtonGroupContainer *appUiCba = S60->buttonGroupContainer();
+    if (!appUiCba)
+        return true;
     // CEikButtonGroupContainer::Current returns 0 if CBA is not visible at all
     CEikButtonGroupContainer *currentCba = CEikButtonGroupContainer::Current();
     // Check if softkey need to be update even they are not visible
