@@ -38,12 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
-
 #include "remotecontrol.h"
-#include "mainwindow.h"
+
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
+#include "mainwindow.h"
+#include "openpagesmanager.h"
+#include "tracer.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -323,8 +324,7 @@ void RemoteControl::handleUnregisterCommand(const QString &arg)
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     const QString &ns = QHelpEngineCore::namespaceName(absFileName);
     if (helpEngine.registeredDocumentations().contains(ns)) {
-        CentralWidget* widget = CentralWidget::instance();
-        widget->closeOrReloadTabs(widget->currentSourceFileList().keys(ns), false);
+        OpenPagesManager::instance()->closePages(ns);
         if (helpEngine.unregisterDocumentation(ns))
             helpEngine.setupData();
     }

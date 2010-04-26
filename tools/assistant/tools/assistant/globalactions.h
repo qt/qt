@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the Assistant module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,77 +38,54 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWERQTB_H
-#define HELPVIEWERQTB_H
 
-#include "helpviewer.h"
+#ifndef GLOBALACTION_H
+#define GLOBALACTION_H
 
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-
-#include <QtGui/QTextBrowser>
+#include <QtCore/QList>
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
 
-class HelpEngineWrapper;
-class QContextMenuEvent;
-class QKeyEvent;
-class QMouseEvent;
+class QAction;
 
-class HelpViewer : public QTextBrowser, public AbstractHelpViewer
+class GlobalActions : public QObject
 {
     Q_OBJECT
-
+    Q_DISABLE_COPY(GlobalActions)
 public:
-    HelpViewer(qreal zoom = 0.0);
-    ~HelpViewer();
+    static GlobalActions *instance(QObject *parent = 0);
 
-    QFont viewerFont() const;
-    void setViewerFont(const QFont &font);
+    QList<QAction *> actionList() const { return m_actionList; }
+    QAction *backAction() const { return m_backAction; }
+    QAction *nextAction() const { return m_nextAction; }
+    QAction *homeAction() const { return m_homeAction; }
+    QAction *zoomInAction() const { return m_zoomInAction; }
+    QAction *zoomOutAction() const { return m_zoomOutAction; }
+    QAction *copyAction() const { return m_copyAction; }
+    QAction *printAction() const { return m_printAction; }
+    QAction *findAction() const { return m_findAction; }
 
-    void scaleUp();
-    void scaleDown();
-    void resetScale();
-    qreal scale() const { return zoomCount; }
-
-    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
-
-    void setSource(const QUrl &url);
-
-    inline bool hasSelection() const
-    { return textCursor().hasSelection(); }
-
-signals:
-    void titleChanged();
-
-public Q_SLOTS:
-    void home();
-
-protected:
-    void wheelEvent(QWheelEvent *e);
-    bool eventFilter(QObject *obj, QEvent *event);
+    Q_SLOT void updateActions();
+    Q_SLOT void setCopyAvailable(bool available);
 
 private:
-    QVariant loadResource(int type, const QUrl &name);
-    void openLinkInNewTab(const QString &link);
-    bool hasAnchorAt(const QPoint& pos);
-    void contextMenuEvent(QContextMenuEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(QMouseEvent *e);
+    GlobalActions(QObject *parent);
 
-private slots:
-    void openLinkInNewTab();
+    static GlobalActions *m_instance;
 
-private:
-    int zoomCount;
-    bool controlPressed;
-    QString lastAnchor;
-    HelpEngineWrapper &helpEngine;
+    QAction *m_backAction;
+    QAction *m_nextAction;
+    QAction *m_homeAction;
+    QAction *m_zoomInAction;
+    QAction *m_zoomOutAction;
+    QAction *m_copyAction;
+    QAction *m_printAction;
+    QAction *m_findAction;
 
-    bool forceFont;
+    QList<QAction *> m_actionList;
 };
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQTB_H
+#endif // GLOBALACTION_H

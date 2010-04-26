@@ -1,11 +1,10 @@
 <RCC>
-    <qresource prefix="/trolltech/assistant" >
+    <qresource prefix="/trolltech/assistant">
         <file>images/trolltech-logo.png</file>
         <file>images/assistant-128.png</file>
         <file>images/assistant.png</file>
         <file>images/wrap.png</file>
         <file>images/bookmark.png</file>
-#mac
         <file>images/mac/addtab.png</file>
         <file>images/mac/book.png</file>
         <file>images/mac/closetab.png</file>
@@ -19,7 +18,6 @@
         <file>images/mac/zoomin.png</file>
         <file>images/mac/zoomout.png</file>
         <file>images/mac/resetzoom.png</file>
-#win
         <file>images/win/addtab.png</file>
         <file>images/win/book.png</file>
         <file>images/win/closetab.png</file>
@@ -33,5 +31,7 @@
         <file>images/win/zoomin.png</file>
         <file>images/win/zoomout.png</file>
         <file>images/win/resetzoom.png</file>
+        <file>images/closebutton.png</file>
+        <file>images/darkclosebutton.png</file>
     </qresource>
 </RCC>
