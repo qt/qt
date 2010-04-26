@@ -1631,6 +1631,10 @@ void tst_QUrl::toString_data()
     QTest::newRow("nopath_task31320") << QString::fromLatin1("host://protocol")
                                    << uint(QUrl::None)
                                    << QString::fromLatin1("host://protocol");
+
+    QTest::newRow("underscore_QTBUG-7434") << QString::fromLatin1("http://foo_bar.host.com/rss.php")
+                                   << uint(QUrl::None)
+                                   << QString::fromLatin1("http://foo_bar.host.com/rss.php");
 }
 
 void tst_QUrl::toString()
@@ -3269,7 +3273,6 @@ void tst_QUrl::std3violations_data()
     QTest::newRow("question") << "foo?bar" << true;
     QTest::newRow("at") << "foo@bar" << true;
     QTest::newRow("backslash") << "foo\\bar" << false;
-    QTest::newRow("underline") << "foo_bar" << false;
 
     // these characters are transformed by NFKC to non-LDH characters
     QTest::newRow("dot-like") << QString::fromUtf8("foo\342\200\244bar") << false;  // U+2024 ONE DOT LEADER
@@ -3314,6 +3317,7 @@ void tst_QUrl::std3deviations_data()
 
     QTest::newRow("ending-dot") << "example.com.";
     QTest::newRow("ending-dot3002") << QString("example.com") + QChar(0x3002);
+    QTest::newRow("underline") << "foo_bar";  //QTBUG-7434
 }
 
 void tst_QUrl::std3deviations()
