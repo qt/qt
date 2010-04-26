@@ -52,7 +52,7 @@
 
     QML is a runtime, as you can run plain qml files which pull in their required modules.
     To run apps with the QML runtime, you can either start the runtime
-    from your on application (using a QDeclarativeView) or with the simple \c qml application.
+    from your own application (using a QDeclarativeView) or with the simple \c qml application.
     The \c qml application can be
     installed in a production environment, assuming that it is not already
     present in the system. It is generally packaged alongside Qt.
@@ -137,8 +137,8 @@
     \section2 Runtime Object
 
     All applications using the qmlruntime will have access to the 'runtime'
-    property on the root context. This property contains several information
-    about the runtime environment of the application.
+    property on the root context. This property contains several pieces of
+    information about the runtime environment of the application.
 
     \section3 Screen Orientation
 
@@ -150,11 +150,11 @@
     which can be either Orientation.Landscape or Orientation.Portrait and which can be bound to in your
     application. An example is below:
 
-\code
+    \code
     Item {
         state: (runtime.orientation == Orientation.Landscape) ? 'landscape' : ''
     }
-\endcode
+    \endcode
 
     This allows your application to respond to the orientation of the screen changing. The runtime
     will automatically update this on some platforms (currently the N900 only) to match the physical
@@ -163,12 +163,12 @@
     \section3 Window Active
 
     The runtime.isActiveWindow property tells whether the main window of the qml runtime is currently active
-    or not. This is specially useful for embedded devices when you want to pause parts of your application,
+    or not. This is especially useful for embedded devices when you want to pause parts of your application,
     including animations, when your application loses focus or goes to the background.
 
     The example below, stops the animation when the application's window is deactivated and resumes on activation:
 
-\code
+    \code
     Item {
         width: 300; height: 200
         Rectangle {
@@ -182,6 +182,6 @@
             }
         }
     }
-\endcode
+    \endcode
 
 */

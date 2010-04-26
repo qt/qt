@@ -59,7 +59,7 @@ QT_MODULE(Declarative)
 class QDeclarativeBoundSignal;
 class QDeclarativeContext;
 class QDeclarativeGestureAreaPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeGestureArea : public QDeclarativeItem
+class QDeclarativeGestureArea : public QDeclarativeItem
 {
     Q_OBJECT
 

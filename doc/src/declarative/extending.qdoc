@@ -43,7 +43,7 @@
 \page qml-extending.html
 \title Extending QML in C++
 
-The QML syntax declaratively describes how to construct an in memory object
+The QML syntax declaratively describes how to construct an in-memory object
 tree.  In Qt, QML is mainly used to describe a visual scene graph, but it is
 not conceptually limited to this: the QML format is an abstract description of
 any object tree.  All the QML element types included in Qt are implemented using
@@ -65,7 +65,7 @@ QML relies heavily on Qt's meta object system and can only instantiate classes
 that derive from QObject.
 
 The QML engine has no intrinsic knowledge of any class types.  Instead the
-programmer must define the C++ types, and their corresponding QML name.
+programmer must register the C++ types with their corresponding QML names.
 
 Custom C++ types are registered using a template function:
 
@@ -152,7 +152,7 @@ template<typename T>
 int qmlRegisterInterface(const char *typeName)
 \endcode
 
-Registers the C++ interface \a T with the QML system as \a typeName.
+This registers the C++ interface \a T with the QML system as \a typeName.
 
 Following registration, QML can coerce objects that implement this interface
 for assignment to appropriately typed properties.
@@ -196,7 +196,7 @@ registered, the following function can be used:
     int qmlRegisterType()
 \endcode
 
-Registers the C++ type \a T with the QML system. The parameterless call to the template
+This registers the C++ type \a T with the QML system. The parameterless call to the template
 function qmlRegisterType() does not define a mapping between the
 C++ class and a QML element name, so the type is not instantiable from QML, but
 it is available for type coercion.
@@ -222,7 +222,7 @@ The QML snippet shown above assigns a collection of objects to the
 The \e {default property} is a syntactic convenience that allows a type designer to
 specify a single property as the type's default.  The default property is
 assigned to whenever no explicit property is specified.  As a convenience, it is
-behaviorally identical to assigning the default property explicitly by name.
+behaviorally identical to assigning to the default property explicitly by name.
 
 From C++, type designers mark the default property using a Q_CLASSINFO()
 annotation:
@@ -232,7 +232,7 @@ annotation:
 Q_CLASSINFO("DefaultProperty", "property")
 \endcode
 
-Mark \a property as the class's default property.  \a property must be either
+This marks \a property as the class's default property.  \a property must be either
 an object property, or a list property.
 
 A default property is optional.  A derived class inherits its base class's
@@ -248,7 +248,7 @@ specify a default property.
 
 \snippet examples/declarative/extending/grouped/example.qml 1
 
-The QML snippet shown above assigns a number properties to the \c Boy object,
+The QML snippet shown above assigns a number of properties to the \c Boy object,
 including four properties using the grouped property syntax.
 
 Grouped properties collect similar properties together into a single named
@@ -273,13 +273,13 @@ implement the \c shoe property grouping.
 
 \snippet examples/declarative/extending/attached/example.qml 1
 
-The QML snippet shown above assigns the \c rsvp property using the attached
+The QML snippet shown above assigns a date to the \c rsvp property using the attached
 property syntax.
 
 Attached properties allow unrelated types to annotate other types with some
 additional properties, generally for their own use.  Attached properties are
 identified through the use of the attacher type name, in the case shown
-\c BirthdayParty, as a suffix to the property name.
+\c BirthdayParty, as a prefix to the property name.
 
 In the example shown, \c BirthdayParty is called the attaching type, and the
 \c Boy instance the attachee object instance.
@@ -306,7 +306,7 @@ public:
 
 QML_DECLARE_TYPEINFO(MyType, QML_HAS_ATTACHED_PROPERTIES)
 \endcode
-Return an attachment object, of type \a AttachedPropertiesType, for the
+This returns an attachment object, of type \a AttachedPropertiesType, for the
 attachee \a object instance.  It is customary, though not strictly required, for
 the attachment object to be parented to \a object to prevent memory leaks.
 
@@ -349,7 +349,7 @@ an instance can be accessed using the following method:
 template<typename T>
 QObject *qmlAttachedPropertiesObject<T>(QObject *attachee, bool create = true);
 \endcode
-Returns the attachment object attached to \a attachee by the attaching type
+This returns the attachment object attached to \a attachee by the attaching type
 \a T.  If type \a T is not a valid attaching type, this method always returns 0.
 
 If \a create is true, a valid attachment object will always be returned,
@@ -366,7 +366,7 @@ It is an element's responsibility to ensure that it does not access or return
 pointers to invalid objects.  QML makes the following guarentees:
 
 \list
-\o An object assigned to an QObject (or QObject-derived) pointer property will be 
+\o An object assigned to a QObject (or QObject-derived) pointer property will be
 valid at the time of assignment.  
 
 Following assignment, it is the responsibility of the class to subsequently guard 
@@ -562,19 +562,22 @@ extension type - when registering the target class whose properties are
 transparently merged with the original target class when used from within QML.
 
 An extension class is a regular QObject, with a constructor that takes a QObject
-pointer.  When needed (extension classes are delay created until the first extended
+pointer.  When needed (extension class creation is delayed until the first extended
 property is accessed) the extension class is created and the target object is
 passed in as the parent.  When an extended property on the original is accessed,
 the appropriate property on the extension object is used instead.
 
 When an extended type is installed, one of the
 \code
-    #define QML_REGISTER_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QDeclarativeName,T, ExtendedT)
-    #define QML_REGISTER_EXTENDED_NOCREATE_TYPE(T, ExtendedT)
+template<typename T, typename ExtendedT>
+int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+
+template<typename T, typename ExtendedT>
+int qmlRegisterType()
 \endcode
-macros should be used instead of the regular \c QML_REGISTER_TYPE or
-\c QML_REGISTER_NOCREATE_TYPE.  The arguments are identical to the corresponding
-non-extension object macro, except for the ExtendedT parameter which is the type
+functions should be used instead of the regular \c qmlRegisterType() variations.
+The arguments are identical to the corresponding non-extension registration functions,
+except for the ExtendedT parameter which is the type
 of the extension object.
 
 \section1 Optimization
