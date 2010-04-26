@@ -12565,11 +12565,11 @@ EXPORTS
 	?setApi@QEglContext@@QAEXW4API@QEgl@@@Z @ 12564 NONAME ; void QEglContext::setApi(enum QEgl::API)
 	?makeCurrent@QEglContext@@QAE_NH@Z @ 12565 NONAME ; bool QEglContext::makeCurrent(int)
 	?createSurface@QEglContext@@QAEHPAVQPaintDevice@@PBVQEglProperties@@@Z @ 12566 NONAME ; int QEglContext::createSurface(class QPaintDevice *, class QEglProperties const *)
-	?dumpAllConfigs@QEglContext@@QAEXXZ @ 12567 NONAME ; void QEglContext::dumpAllConfigs(void)
+	?dumpAllConfigs@QEglContext@@QAEXXZ @ 12567 NONAME ABSENT ; void QEglContext::dumpAllConfigs(void)
 	?reduceConfiguration@QEglProperties@@QAE_NXZ @ 12568 NONAME ; bool QEglProperties::reduceConfiguration(void)
 	?removeValue@QEglProperties@@QAE_NH@Z @ 12569 NONAME ; bool QEglProperties::removeValue(int)
 	?toString@QEglProperties@@QBE?AVQString@@XZ @ 12570 NONAME ; class QString QEglProperties::toString(void) const
-	?dumpAllConfigs@QEglProperties@@SAXXZ @ 12571 NONAME ; void QEglProperties::dumpAllConfigs(void)
+	?dumpAllConfigs@QEglProperties@@SAXXZ @ 12571 NONAME ABSENT ; void QEglProperties::dumpAllConfigs(void)
 	?defaultDisplay@QEglContext@@SAHPAVQPaintDevice@@@Z @ 12572 NONAME ABSENT ; int QEglContext::defaultDisplay(class QPaintDevice *)
 	?configProperties@QEglContext@@QBE?AVQEglProperties@@H@Z @ 12573 NONAME ABSENT ; class QEglProperties QEglContext::configProperties(int) const
 	?properties@QEglProperties@@QBEPBHXZ @ 12574 NONAME ; int const * QEglProperties::properties(void) const
@@ -12597,10 +12597,10 @@ EXPORTS
 	?setConfig@QEglContext@@QAEXH@Z @ 12596 NONAME ; void QEglContext::setConfig(int)
 	?hasExtension@QEglContext@@SA_NPBD@Z @ 12597 NONAME ABSENT ; bool QEglContext::hasExtension(char const *)
 	?doneCurrent@QEglContext@@QAE_NXZ @ 12598 NONAME ; bool QEglContext::doneCurrent(void)
-	?display@QEglContext@@QBEHXZ @ 12599 NONAME ; int QEglContext::display(void) const
+	?display@QEglContext@@QBEHXZ @ 12599 NONAME ABSENT ; int QEglContext::display(void) const
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
-	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ; class QString QEglContext::errorString(int)
+	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
 	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @ 12603 NONAME ; bool QFontDatabase::removeAllApplicationFonts()
 	??0FileInfo@QZipReader@@QAE@XZ @ 12604 NONAME ; QZipReader::FileInfo::FileInfo(void)
 	??0QAbstractScrollAreaPrivate@@QAE@XZ @ 12605 NONAME ; QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate(void)
@@ -12793,4 +12793,9 @@ EXPORTS
 	?setDeviceType@QEglProperties@@QAEXH@Z @ 12792 NONAME ; void QEglProperties::setDeviceType(int)
 	?glyphPadding@QTextureGlyphCache@@UBEHXZ @ 12793 NONAME ; int QTextureGlyphCache::glyphPadding(void) const
 	?createSurface@QEgl@@YAHPAVQPaintDevice@@HPBVQEglProperties@@@Z @ 12794 NONAME ; int QEgl::createSurface(class QPaintDevice *, int, class QEglProperties const *)
+	?setPartialUpdateSupport@QWindowSurface@@IAEX_N@Z @ 12795 NONAME ; void QWindowSurface::setPartialUpdateSupport(bool)
+	?transformChanged@QGraphicsItemPrivate@@UAEXXZ @ 12796 NONAME ; void QGraphicsItemPrivate::transformChanged(void)
+	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 12797 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
+	?name@QIcon@@QBE?AVQString@@XZ @ 12798 NONAME ; class QString QIcon::name(void) const
+	?iconName@QIconEngineV2@@QAE?AVQString@@XZ @ 12799 NONAME ; class QString QIconEngineV2::iconName(void)
 

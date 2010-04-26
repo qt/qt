@@ -1137,9 +1137,10 @@ EXPORTS
 	?networkAccessibleChanged@QNetworkAccessManager@@IAEXW4NetworkAccessibility@1@@Z @ 1136 NONAME ; void QNetworkAccessManager::networkAccessibleChanged(enum QNetworkAccessManager::NetworkAccessibility)
 	?networkSessionConnected@QNetworkAccessManager@@IAEXXZ @ 1137 NONAME ; void QNetworkAccessManager::networkSessionConnected(void)
 	?pollEngines@QNetworkConfigurationManagerPrivate@@AAEXXZ @ 1138 NONAME ; void QNetworkConfigurationManagerPrivate::pollEngines(void)
-	?qt_qhostinfo_clear_cache@@YAXXZ @ 1139 NONAME ; void qt_qhostinfo_clear_cache(void)
+	?qt_qhostinfo_clear_cache@@YAXXZ @ 1139 NONAME ABSENT ; void qt_qhostinfo_clear_cache(void)
 	?qt_qhostinfo_lookup@@YA?AVQHostInfo@@ABVQString@@PAVQObject@@PBDPA_NPAH@Z @ 1140 NONAME ; class QHostInfo qt_qhostinfo_lookup(class QString const &, class QObject *, char const *, bool *, int *)
 	?requiresPolling@QBearerEngine@@UBE_NXZ @ 1141 NONAME ; bool QBearerEngine::requiresPolling(void) const
 	?setNetworkAccessible@QNetworkAccessManager@@QAEXW4NetworkAccessibility@1@@Z @ 1142 NONAME ; void QNetworkAccessManager::setNetworkAccessible(enum QNetworkAccessManager::NetworkAccessibility)
 	?startPolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1143 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
+	?capabilities@QNetworkConfigurationManagerPrivate@@QAE?AV?$QFlags@W4Capability@QNetworkConfigurationManager@@@@XZ @ 1144 NONAME ; class QFlags<enum QNetworkConfigurationManager::Capability> QNetworkConfigurationManagerPrivate::capabilities(void)
 
