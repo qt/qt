@@ -52,17 +52,15 @@
 
 QT_BEGIN_NAMESPACE
 
-QString AbstractHelpViewer::DocPath = QString::fromLatin1("qthelp://com."
-    "trolltech.qt.%1/").arg(QString(QLatin1String(QT_VERSION_STR))
-    .replace(QLatin1String("."), QLatin1String("")));
+const QLatin1String AbstractHelpViewer::DocPath("qthelp://com.trolltech.");
 
-QString AbstractHelpViewer::AboutBlank =
+const QString AbstractHelpViewer::AboutBlank =
     QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
 
-QString AbstractHelpViewer::LocalHelpFile = QLatin1String("qthelp://"
+const QString AbstractHelpViewer::LocalHelpFile = QLatin1String("qthelp://"
     "com.trolltech.com.assistantinternal-1.0.0/assistant/assistant.html");
 
-QString AbstractHelpViewer::PageNotFoundMessage =
+const QString AbstractHelpViewer::PageNotFoundMessage =
     QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
     "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
     "</h3></div>");
