@@ -48,13 +48,27 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+// QGLPlatformWidgetSurface does _not_ inherit from QWindowSurface
+// - The backing store may be totally unaware of it's existance.
+class Q_OPENGL_EXPORT QPlatformGLWidgetSurface
+{
+public:
+    QPlatformGLWidgetSurface();
+    virtual ~QPlatformGLWidgetSurface();
+
+    virtual bool create(QGLWidget*, QGLFormat&) = 0;
+
+    virtual void setGeometry(const QRect&) = 0;
+};
+
+
 class Q_OPENGL_EXPORT QPlatformGLContext
 {
 public:
     QPlatformGLContext();
     virtual ~QPlatformGLContext();
 
-    virtual bool create(QPaintDevice* device, const QGLFormat& format, QPlatformGLContext* shareContext) = 0;
+    virtual bool create(QPaintDevice* device, QGLFormat& format, QPlatformGLContext* shareContext) = 0;
 
     virtual void makeCurrent() = 0;
     virtual void doneCurrent() = 0;
@@ -63,16 +77,6 @@ public:
 
 };
 
-// QGLPlatformWidgetSurface does _not_ inherit from QWindowSurface
-// - The backing store may be totally unaware of it's existance.
-class QPlatformGLWidgetSurface
-{
-public:
-    QPlatformGLWidgetSurface(QGLWidget*);
-    virtual ~QPlatformGLWidgetSurface();
-
-    virtual void setGeometry(const QRect&) = 0;
-};
 
 
 QT_END_NAMESPACE

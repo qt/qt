@@ -165,7 +165,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
                        , disable_clear_on_painter_begin(false)
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
                        , wsurf(0)
 #endif
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
@@ -207,6 +207,8 @@ public:
     void updatePaintDevice();
 #elif defined(Q_WS_QWS)
     QWSGLWindowSurface *wsurf;
+#elif defined (Q_WS_LITE)
+    QPlatformGLWidgetSurface* wsurf;
 #endif
 };
 

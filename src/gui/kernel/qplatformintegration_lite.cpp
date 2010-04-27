@@ -67,7 +67,7 @@ QPlatformGLContext * QPlatformIntegration::createGLContext()
     return 0;
 }
 
-QPlatformGLWidgetSurface * QPlatformIntegration::createGLWidgetSurface(QGLWidget*)
+QPlatformGLWidgetSurface * QPlatformIntegration::createGLWidgetSurface()
 {
     return 0;
 }

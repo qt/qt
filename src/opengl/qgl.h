@@ -128,6 +128,10 @@ class QGLOverlayWidget;
 class QGLWidgetPrivate;
 class QGLContextPrivate;
 
+#ifdef Q_WS_LITE
+class QPlatformGLWidgetSurface;
+#endif
+
 // Namespace class:
 namespace QGL
 {
@@ -529,6 +533,11 @@ public:
 
     void drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
+#endif
+
+#ifdef Q_WS_LITE
+    // Used by the platform context to get at the surface which it created for the glwidget:
+    QPlatformGLWidgetSurface* platformSurface();
 #endif
 
 public Q_SLOTS:
