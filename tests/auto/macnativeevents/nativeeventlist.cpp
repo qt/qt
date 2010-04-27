@@ -88,11 +88,6 @@ void NativeEventList::append(int waitMs, QNativeEvent *event)
     eventList.append(QPair<int, QNativeEvent *>(waitMs, event));
 }
 
-void NativeEventList::append(int waitMs)
-{
-    eventList.append(QPair<int, QNativeEvent *>(waitMs, 0));
-}
-
 void NativeEventList::play(Playback playback)
 {
     waitNextEvent();
