@@ -100,19 +100,3 @@ imagedirs               = $QT_SOURCE_TREE/doc/src/images \
 outputdir               = $QT_BUILD_TREE/doc-build/html-qml
 tagfile                 = $QT_BUILD_TREE/doc-build/html-qml/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html-qml
-
-HTML.stylesheets        = classic.css
-
-HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n" \
-                          "<tr>\n" \
-                          "<td align=\"left\" valign=\"top\">" \
-                          "<img src=\"images/qt-logo.png\" align=\"left\" border=\"0\"/>" \
-                          "</td>\n" \
-                          "<td width=\"1\">&nbsp;&nbsp;</td>" \
-                          "<td class=\"postheader\" valign=\"center\" align=\"left\">" \
-                          "<a href=\"qmlreference.html\">" \
-                          "<font color=\"#004faf\">Home</font></a>&nbsp;&middot;" \
-                          " <a href=\"qmlelements.html\">" \
-                          "<font color=\"#004faf\">Elements</font></a>" \
-                          "</td>\n" \
-                          "</tr></table>"
