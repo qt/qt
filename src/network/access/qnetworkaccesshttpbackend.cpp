@@ -680,8 +680,7 @@ void QNetworkAccessHttpBackend::readFromHttp()
     QByteDataBuffer list;
 
     while (httpReply->bytesAvailable() != 0 && nextDownstreamBlockSize() != 0 && nextDownstreamBlockSize() > list.byteAmount()) {
-        QByteArray data = httpReply->readAny();
-        list.append(data);
+        list.append(httpReply->readAny());
     }
 
     if (!list.isEmpty())

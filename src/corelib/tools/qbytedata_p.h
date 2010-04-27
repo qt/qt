@@ -84,7 +84,7 @@ public:
     }
 
 
-    inline void append(QByteArray& bd)
+    inline void append(const QByteArray& bd)
     {
         if (bd.isEmpty())
             return;

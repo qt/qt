@@ -145,8 +145,13 @@ public:
     void consume(qint64 count);
     void emitUploadProgress(qint64 bytesSent, qint64 bytesTotal);
     qint64 nextDownstreamBlockSize() const;
+
+    void initCacheSaveDevice();
+    void appendDownstreamDataSignalEmissions();
     void appendDownstreamData(QByteDataBuffer &data);
     void appendDownstreamData(QIODevice *data);
+    void appendDownstreamData(const QByteArray &data);
+
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
