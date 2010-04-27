@@ -102,6 +102,8 @@ void tst_QDeclarativePositioners::test_horizontal()
     QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
     QCOMPARE(row->width(), 110.0);
     QCOMPARE(row->height(), 50.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_horizontal_spacing()
@@ -127,6 +129,8 @@ void tst_QDeclarativePositioners::test_horizontal_spacing()
     QDeclarativeItem *row = canvas->rootObject()->findChild<QDeclarativeItem*>("row");
     QCOMPARE(row->width(), 130.0);
     QCOMPARE(row->height(), 50.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_horizontal_animated()
@@ -177,6 +181,8 @@ void tst_QDeclarativePositioners::test_horizontal_animated()
 
     QTRY_COMPARE(two->x(), 50.0);
     QTRY_COMPARE(three->x(), 100.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_vertical()
@@ -203,6 +209,8 @@ void tst_QDeclarativePositioners::test_vertical()
     QVERIFY(column);
     QCOMPARE(column->height(), 80.0);
     QCOMPARE(column->width(), 50.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_vertical_spacing()
@@ -228,6 +236,8 @@ void tst_QDeclarativePositioners::test_vertical_spacing()
     QDeclarativeItem *column = canvas->rootObject()->findChild<QDeclarativeItem*>("column");
     QCOMPARE(column->height(), 100.0);
     QCOMPARE(column->width(), 50.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_vertical_animated()
@@ -275,6 +285,7 @@ void tst_QDeclarativePositioners::test_vertical_animated()
     QTRY_COMPARE(two->y(), 50.0);
     QTRY_COMPARE(three->y(), 100.0);
 
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_grid()
@@ -306,6 +317,8 @@ void tst_QDeclarativePositioners::test_grid()
     QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
     QCOMPARE(grid->width(), 120.0);
     QCOMPARE(grid->height(), 100.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_grid_topToBottom()
@@ -337,6 +350,8 @@ void tst_QDeclarativePositioners::test_grid_topToBottom()
     QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
     QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 120.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_grid_spacing()
@@ -368,6 +383,8 @@ void tst_QDeclarativePositioners::test_grid_spacing()
     QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
     QCOMPARE(grid->width(), 128.0);
     QCOMPARE(grid->height(), 104.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_grid_animated()
@@ -448,6 +465,7 @@ void tst_QDeclarativePositioners::test_grid_animated()
     QTRY_COMPARE(five->x(), 50.0);
     QTRY_COMPARE(five->y(), 50.0);
 
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_grid_zero_columns()
@@ -479,6 +497,8 @@ void tst_QDeclarativePositioners::test_grid_zero_columns()
     QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
     QCOMPARE(grid->width(), 170.0);
     QCOMPARE(grid->height(), 60.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_propertychanges()
@@ -536,6 +556,8 @@ void tst_QDeclarativePositioners::test_propertychanges()
     grid->setRows(2);
     QCOMPARE(columnsSpy.count(),2);
     QCOMPARE(rowsSpy.count(),2);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_repeater()
@@ -557,6 +579,8 @@ void tst_QDeclarativePositioners::test_repeater()
     QCOMPARE(two->y(), 0.0);
     QCOMPARE(three->x(), 100.0);
     QCOMPARE(three->y(), 0.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_flow()
@@ -589,6 +613,8 @@ void tst_QDeclarativePositioners::test_flow()
     QVERIFY(flow);
     QCOMPARE(flow->width(), 90.0);
     QCOMPARE(flow->height(), 120.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativePositioners::test_flow_resize()
@@ -620,6 +646,8 @@ void tst_QDeclarativePositioners::test_flow_resize()
     QCOMPARE(four->y(), 50.0);
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
+
+    delete canvas;
 }
 
 QString warningMessage;
