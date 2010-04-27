@@ -46,6 +46,7 @@
 #include <qdeclarativestate_p.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativestateoperations_p.h>
+#include <qdeclarativeinfo.h>
 #include <QtCore/qmath.h>
 
 #include <QDebug>
@@ -165,6 +166,7 @@ void QDeclarativeBasePositioner::componentComplete()
     QDeclarativeItem::componentComplete();
     positionedItems.reserve(d->QGraphicsItemPrivate::children.count());
     prePositioning();
+    reportConflictingAnchors();
 }
 
 QVariant QDeclarativeBasePositioner::itemChange(GraphicsItemChange change,
@@ -436,6 +438,26 @@ void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
     contentSize->setHeight(voffset - spacing());
 }
 
+void QDeclarativeColumn::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item) {
+            QDeclarativeAnchors::Anchors usedAnchors = child.item->anchors()->usedAnchors();
+            if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
+                usedAnchors & QDeclarativeAnchors::BottomAnchor ||
+                usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
+                childsWithConflictingAnchors = true;
+                break;
+            }
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify top, bottom or verticalCenter anchors for items inside Column";
+    }
+}
+
 /*!
   \qmlclass Row QDeclarativeRow
   \since 4.7
@@ -551,6 +573,25 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
     contentSize->setWidth(hoffset - spacing());
 }
 
+void QDeclarativeRow::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item) {
+            QDeclarativeAnchors::Anchors usedAnchors = child.item->anchors()->usedAnchors();
+            if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
+                usedAnchors & QDeclarativeAnchors::RightAnchor ||
+                usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
+                childsWithConflictingAnchors = true;
+                break;
+            }
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify left, right or horizontalCenter anchors for items inside Row";
+    }
+}
 
 /*!
   \qmlclass Grid QDeclarativeGrid
@@ -823,6 +864,20 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     }
 }
 
+void QDeclarativeGrid::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item && child.item->anchors()->usedAnchors()) {
+            childsWithConflictingAnchors = true;
+            break;
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify anchors for items inside Grid";
+    }
+}
 
 /*!
   \qmlclass Flow QDeclarativeFlow
@@ -966,5 +1021,19 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
     }
 }
 
+void QDeclarativeFlow::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item && child.item->anchors()->usedAnchors()) {
+            childsWithConflictingAnchors = true;
+            break;
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify anchors for items inside Flow";
+    }
+}
 
 QT_END_NAMESPACE

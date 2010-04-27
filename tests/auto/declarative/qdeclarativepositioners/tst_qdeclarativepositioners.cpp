@@ -41,6 +41,7 @@
 #include <QtTest/QtTest>
 #include <private/qlistmodelinterface_p.h>
 #include <qdeclarativeview.h>
+#include <qdeclarativeengine.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativepositioners_p.h>
 #include <private/qdeclarativetransition_p.h>
@@ -69,6 +70,7 @@ private slots:
     void test_repeater();
     void test_flow();
     void test_flow_resize();
+    void test_conflictinganchors();
 private:
     QDeclarativeView *createView(const QString &filename);
 };
@@ -618,6 +620,76 @@ void tst_QDeclarativePositioners::test_flow_resize()
     QCOMPARE(four->y(), 50.0);
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
+}
+
+QString warningMessage;
+
+void interceptWarnings(QtMsgType type, const char *msg)
+{
+    Q_UNUSED( type );
+    warningMessage = msg;
+}
+
+void tst_QDeclarativePositioners::test_conflictinganchors()
+{
+    qInstallMsgHandler(interceptWarnings);
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine);
+
+    component.setData("import Qt 4.7\nColumn { Item {} }", QUrl::fromLocalFile(""));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QVERIFY(warningMessage.isEmpty());
+
+    component.setData("import Qt 4.7\nRow { Item {} }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QVERIFY(warningMessage.isEmpty());
+
+    component.setData("import Qt 4.7\nGrid { Item {} }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QVERIFY(warningMessage.isEmpty());
+
+    component.setData("import Qt 4.7\nFlow { Item {} }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QVERIFY(warningMessage.isEmpty());
+
+    component.setData("import Qt 4.7\nColumn { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom or verticalCenter anchors for items inside Column"));
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nColumn { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QVERIFY(warningMessage.isEmpty());
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nRow { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right or horizontalCenter anchors for items inside Row"));
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nRow { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QVERIFY(warningMessage.isEmpty());
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nGrid { Item { anchors.horizontalCenter: parent.horizontalCenter } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nFlow { Item { anchors.verticalCenter: parent.verticalCenter } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
 }
 
 QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)
