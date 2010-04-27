@@ -42,7 +42,7 @@
 #ifndef QGSTREAMERVIDEOWIDGET_H
 #define QGSTREAMERVIDEOWIDGET_H
 
-#include <QtMultimedia/qvideowidgetcontrol.h>
+#include <QtMediaServices/qvideowidgetcontrol.h>
 
 #include "qgstreamervideorendererinterface.h"
 

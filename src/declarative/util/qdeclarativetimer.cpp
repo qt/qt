@@ -98,6 +98,8 @@ public:
     1000ms has its \e repeat property changed 500ms after starting, the
     elapsed time will be reset to 0, and the Timer will be triggered
     1000ms later.
+
+    \sa {QtDeclarative}
 */
 
 QDeclarativeTimer::QDeclarativeTimer(QObject *parent)

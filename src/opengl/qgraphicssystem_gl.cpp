@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qgraphicssystem_gl_p.h"
+#include <QGraphicsView>
 
 #include "private/qpixmap_raster_p.h"
 #include "private/qpixmapdata_gl_p.h"
@@ -47,7 +48,7 @@
 #include "private/qgl_p.h"
 #include <private/qwindowsurface_raster_p.h>
 
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
 #include "private/qpixmapdata_x11gl_p.h"
 #include "private/qwindowsurface_x11gl_p.h"
 #endif
@@ -58,10 +59,6 @@ extern QGLWidget *qt_gl_getShareWidget();
 
 QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
-    if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
-        return new QX11GLPixmapData();
-#endif
     return new QGLPixmapData(type);
 }
 
@@ -75,9 +72,18 @@ QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
         return new QRasterWindowSurface(widget);
 #endif
 
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
-    if (QX11GLPixmapData::hasX11GLPixmaps())
-        return new QX11GLWindowSurface(widget);
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
+    if (m_useX11GL && QX11GLPixmapData::hasX11GLPixmaps()) {
+        // If the widget is a QGraphicsView which will be re-drawing the entire
+        // scene each frame anyway, we should use QGLWindowSurface as this may
+        // provide proper buffer flipping, which should be faster than QX11GL's
+        // blitting approach:
+        QGraphicsView* qgv = qobject_cast<QGraphicsView*>(widget);
+        if (qgv && qgv->viewportUpdateMode() == QGraphicsView::FullViewportUpdate)
+            return new QGLWindowSurface(widget);
+        else
+            return new QX11GLWindowSurface(widget);
+    }
 #endif
 
     return new QGLWindowSurface(widget);

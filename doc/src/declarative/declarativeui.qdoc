@@ -40,19 +40,28 @@
 ****************************************************************************/
 
 /*!
-\title Declarative UI (QML)
+\title Declarative UI Using QML
 \page declarativeui.html
 
 \brief The Qt Declarative module provides a declarative framework for building
 highly dynamic, custom user interfaces.
 
+\section1 \l{QML Elements}{Fast QML Elements Reference Page}
+
+\raw HTML
+<br>
+\endraw
+
+\section1 Preamble
+
 Qt Declarative UI provides a declarative framework for building highly dynamic, custom
 user interfaces.  Declarative UI helps programmers and designers collaborate to build
 the animation rich, fluid user interfaces that are becoming common in portable
 consumer devices, such as mobile phones, media players, set-top boxes and netbooks.
-The Qt Declarative module provides an engine for interpreting the declarative QML
-language, and a rich set of \l {QML Elements}{QML elements} that can be used
-from QML.
+
+The Qt Declarative module provides an engine for interpreting the declarative
+QML language, and a rich set of \bold { \l {QML Elements}{QML elements} }
+that can be used from QML.
 
 QML is an extension to \l {http://www.ecma-international.org/publications/standards/Ecma-262.htm}
 {JavaScript}, that provides a mechanism to declaratively build an object tree

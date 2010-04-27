@@ -42,7 +42,7 @@
 #ifndef QGSTREAMERVIDEOINPUTDEVICECONTROL_H
 #define QGSTREAMERVIDEOINPUTDEVICECONTROL_H
 
-#include <QtMultimedia/qvideodevicecontrol.h>
+#include <QtMediaServices/qvideodevicecontrol.h>
 #include <QtCore/qstringlist.h>
 
 

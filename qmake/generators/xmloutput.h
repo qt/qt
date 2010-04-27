@@ -69,9 +69,13 @@ public:
         tRaw,               // Raw text (no formating)
         tDeclaration,       // <?xml version="x.x" encoding="xxx"?>
         tTag,               // <tagname attribute1="value"
+        tTagValue,          // <tagname>value</tagname>
+        tValueTag,          // value</tagname>
         tCloseTag,          // Closes an open tag
         tAttribute,         //  attribute2="value">
+        tAttributeTag,      //  attribute on the same line as a tag
         tData,              // Tag data (formating done)
+        tImport,            // <import "type"="path" />
         tComment,           // <!-- Comment -->
         tCDATA              // <![CDATA[ ... ]]>
     };
@@ -85,6 +89,7 @@ public:
     void setIndentLevel(int level);
     int indentLevel();
     void setState(XMLState state);
+    void setFormat(XMLFormat newFormat);
     XMLState state();
 
 
@@ -121,6 +126,7 @@ private:
     void addDeclaration(const QString &version, const QString &encoding);
     void addRaw(const QString &rawText);
     void addAttribute(const QString &attribute, const QString &value);
+    void addAttributeTag(const QString &attribute, const QString &value);
     void addData(const QString &data);
 
     // Data
@@ -163,6 +169,22 @@ inline XmlOutput::xml_output tag(const QString &name)
     return XmlOutput::xml_output(XmlOutput::tTag, name, QString());
 }
 
+
+inline XmlOutput::xml_output valueTag(const QString &value)
+{
+    return XmlOutput::xml_output(XmlOutput::tValueTag, value, QString());
+}
+
+inline XmlOutput::xml_output tagValue(const QString &tagName, const QString &value)
+{
+    return XmlOutput::xml_output(XmlOutput::tTagValue, tagName, value);
+}
+
+inline XmlOutput::xml_output import(const QString &tagName, const QString &value)
+{
+    return XmlOutput::xml_output(XmlOutput::tImport, tagName, value);
+}
+
 inline XmlOutput::xml_output closetag()
 {
     return XmlOutput::xml_output(XmlOutput::tCloseTag, QString(), QString());
@@ -184,10 +206,22 @@ inline XmlOutput::xml_output attribute(const QString &name,
     return XmlOutput::xml_output(XmlOutput::tAttribute, name, value);
 }
 
+inline XmlOutput::xml_output attributeTag(const QString &name,
+                                       const QString &value)
+{
+    return XmlOutput::xml_output(XmlOutput::tAttributeTag, name, value);
+}
+
 inline XmlOutput::xml_output attr(const QString &name,
                                   const QString &value)
 {
     return attribute(name, value);
+}
+
+inline XmlOutput::xml_output attrTag(const QString &name,
+                                  const QString &value)
+{
+    return attributeTag(name, value);
 }
 
 inline XmlOutput::xml_output data(const QString &text = QString())

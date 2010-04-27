@@ -139,9 +139,10 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     // the virtual folder
     if (!helpEngine.findFile(url).isValid()) {
         if (url.startsWith(AbstractHelpViewer::DocPath)) {
-            if (!url.startsWith(AbstractHelpViewer::DocPath + QLatin1String("qdoc/"))) {
-                url = url.replace(AbstractHelpViewer::DocPath,
-                    AbstractHelpViewer::DocPath + QLatin1String("qdoc/"));
+            QUrl newUrl = request.url();
+            if (!newUrl.path().startsWith(QLatin1String("/qdoc/"))) {
+                newUrl.setPath(QLatin1String("qdoc") + newUrl.path());
+                url = newUrl.toString();
             }
         }
     }

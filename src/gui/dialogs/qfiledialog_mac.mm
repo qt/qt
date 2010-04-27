@@ -493,7 +493,7 @@ QT_USE_NAMESPACE
         for (int i=0; i<mNameFilterDropDownList->size(); ++i) {
             QString filter = hideDetails ? [self removeExtensions:filters->at(i)] : filters->at(i);
             [mPopUpButton addItemWithTitle:QT_PREPEND_NAMESPACE(qt_mac_QStringToNSString)(filter)];
-            if (filters->at(i) == selectedFilter)
+            if (filters->at(i).startsWith(selectedFilter))
                 [mPopUpButton selectItemAtIndex:i];
         }
     }
