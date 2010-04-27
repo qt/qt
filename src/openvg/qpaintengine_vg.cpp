@@ -3279,7 +3279,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     QTransform matrix;
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
-    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, positions.data(), p))
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p, positions.data()))
         QPaintEngineEx::drawTextItem(p, textItem);
 #else
     // OpenGL 1.0 does not have support for VGFont and glyphs,
@@ -3291,12 +3291,12 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
-                     textItem->positions, QPointF(0, 0));
+                     QPointF(0, 0), textItem->glyphPositions);
 }
 
  bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
-                                       QFontEngine *fontEngine, const QFixedPoint *positions,
-                                       const QPointF &p)
+                                       QFontEngine *fontEngine, const QPointF &p,
+                                       const QFixedPoint *positions)
  {
 #if !defined(QVG_NO_DRAW_GLYPHS)
     Q_D(QVGPaintEngine);
@@ -3365,8 +3365,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     Q_UNUSED(glyphs);
     Q_UNUSED(font);
     Q_UNUSED(fontEngine);
-    Q_UNUSED(positions);
     Q_UNUSED(p);
+    Q_UNUSED(positions);
     return false;
 #endif
 }
