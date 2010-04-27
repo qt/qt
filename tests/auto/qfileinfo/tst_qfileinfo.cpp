@@ -46,6 +46,7 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qcoreapplication.h>
+#include <qlibrary.h>
 #include <qtemporaryfile.h>
 #include <qdir.h>
 #include <qfileinfo.h>
@@ -583,6 +584,25 @@ void tst_QFileInfo::canonicalFilePath()
         }
     }
 #  endif
+#endif
+
+#ifdef Q_OS_WIN
+    typedef BOOL (WINAPI *PtrCreateSymbolicLink)(LPTSTR, LPTSTR, DWORD);
+    PtrCreateSymbolicLink ptrCreateSymbolicLink =
+            (PtrCreateSymbolicLink)QLibrary::resolve(QLatin1String("kernel32"), "CreateSymbolicLink");
+
+    if (!ptrCreateSymbolicLink ||
+        ptrCreateSymbolicLink((wchar_t*)QString("res").utf16(), (wchar_t*)QString("resources").utf16(), 1) == 0) {
+        QSKIP("Symbolic links aren't supported by FS", SkipAll);
+    }
+
+    QString currentPath = QDir::currentPath();
+    QCOMPARE(QDir::setCurrent("res"), true);
+
+    QCOMPARE(QFileInfo("file1").canonicalFilePath(), currentPath + "/resources/file1");
+
+    QCOMPARE(QDir::setCurrent(currentPath), true);
+    QFile::remove("res");
 #endif
 }
 
