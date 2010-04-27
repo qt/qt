@@ -297,6 +297,8 @@ void tst_qdeclarativeengine::objectOwnership()
     {
     QObject o;
     QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::CppOwnership);
+    QDeclarativeEngine::setObjectOwnership(&o, QDeclarativeEngine::CppOwnership);
+    QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::CppOwnership);
     QDeclarativeEngine::setObjectOwnership(&o, QDeclarativeEngine::JavaScriptOwnership);
     QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::JavaScriptOwnership);
     QDeclarativeEngine::setObjectOwnership(&o, QDeclarativeEngine::CppOwnership);

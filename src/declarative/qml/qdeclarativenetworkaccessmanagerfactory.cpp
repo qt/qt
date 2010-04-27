@@ -59,10 +59,6 @@ QT_BEGIN_NAMESPACE
     To use a factory, assign it to the relevant QDeclarativeEngine using
     QDeclarativeEngine::setNetworkAccessManagerFactory().
 
-    If the created QNetworkAccessManager becomes invalid, due to a
-    change in proxy settings, for example, call the invalidate() method.
-    This will cause all QNetworkAccessManagers to be recreated.
-
     Note: the create() method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
 
@@ -82,7 +78,10 @@ QDeclarativeNetworkAccessManagerFactory::~QDeclarativeNetworkAccessManagerFactor
     Implement this method to create a QNetworkAccessManager with \a parent.
     This allows proxies, caching and cookie support to be setup appropriately.
 
-    This method should return a new QNetworkAccessManager each time it is called.
+    This method must return a new QNetworkAccessManager each time it is called.
+    The parent of the QNetworkAccessManager must be the \a parent provided.
+    The QNetworkAccessManager(s) created by this
+    function will be destroyed automatically when their parent is destroyed.
 
     Note: this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.

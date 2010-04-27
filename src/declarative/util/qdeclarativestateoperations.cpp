@@ -612,6 +612,11 @@ QString QDeclarativeStateChangeScript::typeName() const
             anchors.top: window.top;
             anchors.bottom: window.bottom
         }
+        PropertyChanges {
+            target: content;
+            anchors.topMargin: 3
+            anchors.bottomMargin: 3;
+        }
     }
     \endqml
 
@@ -622,6 +627,8 @@ QString QDeclarativeStateChangeScript::typeName() const
         AnchorAnimation {}
     }
     \endqml
+
+    Margin animations can be animated using NumberAnimation.
 
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
 */

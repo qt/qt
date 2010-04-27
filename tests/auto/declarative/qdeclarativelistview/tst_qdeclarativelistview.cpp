@@ -571,6 +571,7 @@ void tst_QDeclarativeListView::removed(bool animated)
 
     // Remove items not visible
     model.removeItem(18);
+    qApp->processEvents();
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -586,6 +587,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     listview->setCurrentIndex(10);
 
     model.removeItem(1); // post: top item will be at 40
+    qApp->processEvents();
 
     // Confirm items positioned correctly
     for (int i = 2; i < 18; ++i) {
