@@ -75,6 +75,7 @@ class Text
     const Atom *lastAtom() const { return last; }
     Text subText(Atom::Type left, Atom::Type right, const Atom *from = 0) const;
     void dump() const;
+    void clear();
 
     static Text subText(const Atom *begin, const Atom *end = 0);
     static Text sectionHeading(const Atom *sectionBegin);
@@ -82,7 +83,6 @@ class Text
     static int compare(const Text &text1, const Text &text2);
 
  private:
-    void clear();
 
     Atom *first;
     Atom *last;
