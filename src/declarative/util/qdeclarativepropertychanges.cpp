@@ -128,7 +128,7 @@ QT_BEGIN_NAMESPACE
     Changes to an Item's parent or anchors should be done using the associated change elements
     (ParentChange and AnchorChanges, respectively) rather than PropertyChanges.
 
-    \sa {qmlstate}{States}
+    \sa {qmlstate}{States}, QtDeclarative
 */
 
 /*!
