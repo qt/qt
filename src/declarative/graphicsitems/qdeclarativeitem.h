@@ -157,6 +157,7 @@ public:
 
     Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
     Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
+    Q_INVOKABLE void forceFocus();
 
     QDeclarativeAnchorLine left() const;
     QDeclarativeAnchorLine right() const;

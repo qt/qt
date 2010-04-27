@@ -1,17 +1,8 @@
-TARGET = QtMultimedia
-QPRO_PWD = $$PWD
-QT = core gui
+TEMPLATE = subdirs
 
-DEFINES += QT_BUILD_MULTIMEDIA_LIB QT_NO_USING_NAMESPACE
+contains(QT_CONFIG, multimedia) {
+    SUBDIRS += multimedia
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+    contains(QT_CONFIG, mediaservices):SUBDIRS += mediaservices
+}
 
-include(../qbase.pri)
-
-include(audio/audio.pri)
-include(video/video.pri)
-include(base/base.pri)
-include(playback/playback.pri)
-include(effects/effects.pri)
-
-symbian: TARGET.UID3 = 0x2001E627

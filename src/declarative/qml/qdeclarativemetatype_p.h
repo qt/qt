@@ -123,6 +123,7 @@ public:
 
     bool isCreatable() const;
     bool isExtendedType() const;
+    QString noCreationReason() const;
 
     bool isInterface() const;
     int typeId() const;

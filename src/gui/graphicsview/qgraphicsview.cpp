@@ -733,11 +733,13 @@ void QGraphicsViewPrivate::_q_unsetViewportCursor()
     }
 
     // Restore the original viewport cursor.
-    hasStoredOriginalCursor = false;
-    if (dragMode == QGraphicsView::ScrollHandDrag)
-        viewport->setCursor(Qt::OpenHandCursor);
-    else
-        viewport->setCursor(originalCursor);
+    if (hasStoredOriginalCursor) {
+        hasStoredOriginalCursor = false;
+        if (dragMode == QGraphicsView::ScrollHandDrag)
+            viewport->setCursor(Qt::OpenHandCursor);
+        else
+            viewport->setCursor(originalCursor);
+    }
 }
 #endif
 
@@ -1035,10 +1037,28 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 void QGraphicsViewPrivate::updateInputMethodSensitivity()
 {
     Q_Q(QGraphicsView);
-    bool enabled = scene && scene->focusItem()
-                   && (scene->focusItem()->flags() & QGraphicsItem::ItemAcceptsInputMethod);
+    QGraphicsItem *focusItem = 0;
+    bool enabled = scene && (focusItem = scene->focusItem())
+                   && (focusItem->d_ptr->flags & QGraphicsItem::ItemAcceptsInputMethod);
     q->setAttribute(Qt::WA_InputMethodEnabled, enabled);
     q->viewport()->setAttribute(Qt::WA_InputMethodEnabled, enabled);
+
+    if (!enabled) {
+        q->setInputMethodHints(0);
+        return;
+    }
+
+    QGraphicsProxyWidget *proxy = focusItem->d_ptr->isWidget && focusItem->d_ptr->isProxyWidget()
+                                    ? static_cast<QGraphicsProxyWidget *>(focusItem) : 0;
+    if (!proxy) {
+        q->setInputMethodHints(focusItem->inputMethodHints());
+    } else if (QWidget *widget = proxy->widget()) {
+    if (QWidget *fw = widget->focusWidget())
+        widget = fw;
+        q->setInputMethodHints(widget->inputMethodHints());
+    } else {
+        q->setInputMethodHints(0);
+    }
 }
 
 /*!

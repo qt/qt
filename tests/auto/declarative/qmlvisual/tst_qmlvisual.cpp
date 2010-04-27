@@ -117,6 +117,9 @@ void tst_qmlvisual::visual_data()
         files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
         files << QT_TEST_SOURCE_DIR "/fillmode/fillmode.qml";
 
+        // new tests
+        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-flickable.qml";
+
         //these reliably fail in CI, for unknown reasons
         //files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
         //files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";

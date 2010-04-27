@@ -60,12 +60,12 @@ class QDeclarativeDebugServer : public QObject
     Q_DISABLE_COPY(QDeclarativeDebugServer)
 public:
     static QDeclarativeDebugServer *instance();
-    void wait();
-    void registerForStartNotification(QObject *object, const char *receiver);
+    void listen();
+    bool hasDebuggingClient() const;
 
 private Q_SLOTS:
     void readyRead();
-    void registeredObjectDestroyed(QObject *object);
+    void newConnection();
 
 private:
     friend class QDeclarativeDebugService;
@@ -78,14 +78,14 @@ class QDeclarativeDebugServerPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeDebugServer)
 public:
     QDeclarativeDebugServerPrivate();
-    void wait();
 
     int port;
     QTcpSocket *connection;
     QPacketProtocol *protocol;
     QHash<QString, QDeclarativeDebugService *> plugins;
     QStringList enabledPlugins;
-    QList<QPair<QObject*, QByteArray> > notifyClients;
+    QTcpServer *tcpServer;
+    bool gotHello;
 };
 
 class QDeclarativeDebugServicePrivate : public QObjectPrivate
@@ -99,56 +99,41 @@ public:
 };
 
 QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate()
-: connection(0), protocol(0)
+: connection(0), protocol(0), gotHello(false)
 {
 }
 
-void QDeclarativeDebugServerPrivate::wait()
+void QDeclarativeDebugServer::listen()
 {
-    Q_Q(QDeclarativeDebugServer);
-    QTcpServer server;
+    Q_D(QDeclarativeDebugServer);
 
-    if (!server.listen(QHostAddress::Any, port)) {
-        qWarning("QDeclarativeDebugServer: Unable to listen on port %d", port);
+    d->tcpServer = new QTcpServer(this);
+    QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
+    if (d->tcpServer->listen(QHostAddress::Any, d->port)) 
+        qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
+    else
+        qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
+}
+
+void QDeclarativeDebugServer::newConnection()
+{
+    Q_D(QDeclarativeDebugServer);
+
+    if (d->connection) {
+        qWarning("QDeclarativeDebugServer error: another client is already connected");
         return;
     }
 
-    qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", port);
+    d->connection = d->tcpServer->nextPendingConnection();
+    d->connection->setParent(this);
+    d->protocol = new QPacketProtocol(d->connection, this);
+    QObject::connect(d->protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
+}
 
-    for (int i=0; i<notifyClients.count(); i++) {
-        if (!QMetaObject::invokeMethod(notifyClients[i].first, notifyClients[i].second)) {
-            qWarning() << "QDeclarativeDebugServer: unable to call method" << notifyClients[i].second
-                    << "on object" << notifyClients[i].first << "to notify of debug server start";
-        }
-    }
-    notifyClients.clear();
-
-    if (!server.waitForNewConnection(-1)) {
-        qWarning("QDeclarativeDebugServer: Connection error");
-        return;
-    }
-
-    connection = server.nextPendingConnection();
-    connection->setParent(q);
-    protocol = new QPacketProtocol(connection, q);
-
-    // ### Wait for hello
-    while (!protocol->packetsAvailable()) {
-        connection->waitForReadyRead();
-    }
-    QPacket hello = protocol->read();
-    QString name; 
-    hello >> name >> enabledPlugins;
-    if (name != QLatin1String("QDeclarativeDebugServer")) {
-        qWarning("QDeclarativeDebugServer: Invalid hello message");
-        delete protocol; delete connection; connection = 0; protocol = 0;
-        return;
-    }
-
-    QObject::connect(protocol, SIGNAL(readyRead()), q, SLOT(readyRead()));
-    q->readyRead();
-
-    qWarning("QDeclarativeDebugServer: Connection established");
+bool QDeclarativeDebugServer::hasDebuggingClient() const
+{
+    Q_D(const QDeclarativeDebugServer);
+    return d->gotHello;
 }
 
 QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
@@ -163,34 +148,13 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         bool ok = false;
         int port = env.toInt(&ok);
 
-        if (ok && port > 1024) 
+        if (ok && port > 1024) {
             server = new QDeclarativeDebugServer(port);
+            server->listen();
+        }
     }
 
     return server;
-}
-
-void QDeclarativeDebugServer::wait()
-{
-    Q_D(QDeclarativeDebugServer);
-    d->wait();
-}
-
-void QDeclarativeDebugServer::registerForStartNotification(QObject *object, const char *methodName)
-{
-    Q_D(QDeclarativeDebugServer);
-    connect(object, SIGNAL(destroyed(QObject*)), SLOT(registeredObjectDestroyed(QObject*)));
-    d->notifyClients.append(qMakePair(object, QByteArray(methodName)));
-}
-
-void QDeclarativeDebugServer::registeredObjectDestroyed(QObject *object)
-{
-    Q_D(QDeclarativeDebugServer);
-    QMutableListIterator<QPair<QObject*, QByteArray> > i(d->notifyClients);
-    while (i.hasNext()) {
-        if (i.next().first == object)
-            i.remove();
-    }
 }
 
 QDeclarativeDebugServer::QDeclarativeDebugServer(int port)
@@ -203,6 +167,23 @@ QDeclarativeDebugServer::QDeclarativeDebugServer(int port)
 void QDeclarativeDebugServer::readyRead()
 {
     Q_D(QDeclarativeDebugServer);
+
+    if (!d->gotHello) {
+        QPacket hello = d->protocol->read();
+        QString name; 
+        hello >> name >> d->enabledPlugins;
+        if (name != QLatin1String("QDeclarativeDebugServer")) {
+            qWarning("QDeclarativeDebugServer: Invalid hello message");
+            QObject::disconnect(d->protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
+            d->protocol->deleteLater();
+            d->protocol = 0;
+            d->connection->deleteLater();
+            d->connection = 0;
+            return;
+        }
+        d->gotHello = true;
+        qWarning("QDeclarativeDebugServer: Connection established");
+    }
 
     QString debugServer(QLatin1String("QDeclarativeDebugServer"));
 
@@ -375,6 +356,12 @@ bool QDeclarativeDebugService::isDebuggingEnabled()
     return QDeclarativeDebugServer::instance() != 0;
 }
 
+bool QDeclarativeDebugService::hasDebuggingClient()
+{
+    return QDeclarativeDebugServer::instance() != 0
+            && QDeclarativeDebugServer::instance()->hasDebuggingClient();
+}
+
 QString QDeclarativeDebugService::objectToString(QObject *obj)
 {
     if(!obj)
@@ -388,16 +375,6 @@ QString QDeclarativeDebugService::objectToString(QObject *obj)
                  QLatin1String(": ") + objectName;
 
     return rv;
-}
-
-void QDeclarativeDebugService::waitForClients()
-{
-    QDeclarativeDebugServer::instance()->wait();
-}
-
-void QDeclarativeDebugService::notifyOnServerStart(QObject *object, const char *receiver)
-{
-    QDeclarativeDebugServer::instance()->registerForStartNotification(object, receiver);
 }
 
 void QDeclarativeDebugService::sendMessage(const QByteArray &message)

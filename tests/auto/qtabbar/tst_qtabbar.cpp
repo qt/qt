@@ -95,6 +95,8 @@ private slots:
 
     void task251184_removeTab();
     void changeTitleWhileDoubleClickingTab();
+
+    void taskQTBUG_10052_widgetLayoutWhenMoving();
 };
 
 // Testing get/set functions
@@ -574,6 +576,39 @@ void tst_QTabBar::changeTitleWhileDoubleClickingTab()
 
     for(int i=0; i < 10; i++)
         QTest::mouseDClick(&bar, Qt::LeftButton, 0, tabPos);
+}
+
+class Widget10052 : public QWidget
+{
+public:
+    Widget10052(QWidget *parent) : QWidget(parent), moved(false)
+    { }
+
+    void moveEvent(QMoveEvent *e)
+    {
+        moved = e->oldPos() != e->pos();
+        QWidget::moveEvent(e);
+    }
+
+    bool moved;
+};
+
+void tst_QTabBar::taskQTBUG_10052_widgetLayoutWhenMoving()
+{
+    QTabBar tabBar;
+    tabBar.insertTab(0, "My first tab");
+    Widget10052 w1(&tabBar);
+    tabBar.setTabButton(0, QTabBar::RightSide, &w1);
+    tabBar.insertTab(1, "My other tab");
+    Widget10052 w2(&tabBar);
+    tabBar.setTabButton(1, QTabBar::RightSide, &w2);
+
+    tabBar.show();
+    QTest::qWaitForWindowShown(&tabBar);
+    w1.moved = w2.moved = false;
+    tabBar.moveTab(0, 1);
+    QTRY_VERIFY(w1.moved);
+    QVERIFY(w2.moved);
 }
 
 QTEST_MAIN(tst_QTabBar)

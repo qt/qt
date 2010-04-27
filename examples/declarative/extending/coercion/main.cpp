@@ -60,10 +60,10 @@ int main(int argc, char ** argv)
     QDeclarativeComponent component(&engine, ":example.qml");
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
-    if (party && party->celebrant()) {
-        qWarning() << party->celebrant()->name() << "is having a birthday!";
+    if (party && party->host()) {
+        qWarning() << party->host()->name() << "is having a birthday!";
 
-        if (qobject_cast<Boy *>(party->celebrant()))
+        if (qobject_cast<Boy *>(party->host()))
             qWarning() << "He is inviting:";
         else
             qWarning() << "She is inviting:";

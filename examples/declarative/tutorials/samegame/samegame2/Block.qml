@@ -1,8 +1,8 @@
 import Qt 4.7
 
-Item { 
+Item {
     id: block
-    
+
     Image {
         id: img
         anchors.fill: parent

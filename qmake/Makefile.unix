@@ -9,7 +9,7 @@ LFLAGS = @QMAKE_LFLAGS@
 OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-     borland_bmake.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o \
+     borland_bmake.o msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
      symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o \
      symbiancommon.o registry.o epocroot.o
 
@@ -31,7 +31,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   generators/unix/unixmake.cpp generators/win32/winmakefile.cpp generators/projectgenerator.cpp \
 	   generators/mac/pbuilder_pbx.cpp generators/mac/xmloutput.cpp generators/metamakefile.cpp \
 	   generators/makefiledeps.cpp option.cpp generators/win32/mingw_make.cpp generators/makefile.cpp \
-	   generators/win32/msvc_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
+	   generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcxproj.cpp generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
 	   generators/symbian/symmake.cpp generators/symbian/initprojectdeploy_symbian.cpp \
 	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
 	   $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp \
@@ -264,6 +264,12 @@ msvc_objectmodel.o: generators/win32/msvc_objectmodel.cpp
 
 msvc_vcproj.o: generators/win32/msvc_vcproj.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_vcproj.cpp
+
+msbuild_objectmodel.o: generators/win32/msbuild_objectmodel.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msbuild_objectmodel.cpp
+
+msvc_vcxproj.o: generators/win32/msvc_vcxproj.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_vcxproj.cpp
 
 msvc_nmake.o: generators/win32/msvc_nmake.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_nmake.cpp

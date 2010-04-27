@@ -8,9 +8,9 @@ Rectangle {
         source: "workerscript.js"
 
         onMessage: {
-            print("Moved " + messageObject.xmove + " along the X axis.");
-            print("Moved " + messageObject.ymove + " along the Y axis.");
-            print("Moved " + messageObject.move + " pixels.");
+            console.log("Moved " + messageObject.xmove + " along the X axis.");
+            console.log("Moved " + messageObject.ymove + " along the Y axis.");
+            console.log("Moved " + messageObject.move + " pixels.");
         }
     }
 

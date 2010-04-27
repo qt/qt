@@ -5,18 +5,19 @@ unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 symbian:SRC_SUBDIRS += src_s60main
 SRC_SUBDIRS += src_corelib src_xml src_network src_sql src_testlib
-win32:SRC_SUBDIRS += src_activeqt
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 !contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
 !wince*:!symbian:!vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
 
 !wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
+win32:SRC_SUBDIRS += src_activeqt
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
 contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
+contains(QT_CONFIG, mediaservices): SRC_SUBDIRS += src_mediaservices
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, webkit)  {
     exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
@@ -66,8 +67,10 @@ src_qt3support.subdir = $$QT_SOURCE_TREE/src/qt3support
 src_qt3support.target = sub-qt3support
 src_phonon.subdir = $$QT_SOURCE_TREE/src/phonon
 src_phonon.target = sub-phonon
-src_multimedia.subdir = $$QT_SOURCE_TREE/src/multimedia
+src_multimedia.subdir = $$QT_SOURCE_TREE/src/multimedia/multimedia
 src_multimedia.target = sub-multimedia
+src_mediaservices.subdir = $$QT_SOURCE_TREE/src/multimedia/mediaservices
+src_mediaservices.target = sub-mediaservices
 src_activeqt.subdir = $$QT_SOURCE_TREE/src/activeqt
 src_activeqt.target = sub-activeqt
 src_plugins.subdir = $$QT_SOURCE_TREE/src/plugins
@@ -105,6 +108,7 @@ src_declarative.target = sub-declarative
    src_phonon.depends = src_gui
    src_multimedia.depends = src_gui
    contains(QT_CONFIG, opengl):src_multimedia.depends += src_opengl
+   src_mediaservices.depends = src_multimedia
    src_tools_activeqt.depends = src_tools_idc src_gui
    src_declarative.depends = src_xml src_gui src_script src_network src_svg
    src_plugins.depends = src_gui src_sql src_svg src_multimedia
@@ -112,7 +116,7 @@ src_declarative.target = sub-declarative
    src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network src_xml 
-      contains(QT_CONFIG, multimedia):src_webkit.depends += src_multimedia
+      contains(QT_CONFIG, mediaservices):src_webkit.depends += src_mediaservices
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
       contains(QT_CONFIG, declarative):src_declarative.depends += src_webkit
       src_imports.depends += src_webkit

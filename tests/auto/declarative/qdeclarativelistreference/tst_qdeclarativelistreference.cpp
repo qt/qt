@@ -102,7 +102,6 @@ public:
     QList<TestType *> data;
     QDeclarativeListProperty<TestType> property;
 };
-QML_DECLARE_TYPE(TestType);
 
 void tst_qdeclarativelistreference::initTestCase()
 {

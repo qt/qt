@@ -185,7 +185,7 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         return;
 
     if (d->group || d->disableUserControl) {
-        qWarning("QDeclarativeAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        qmlInfo(this) << "setRunning() cannot be used on non-root animation nodes.";
         return;
     }
 
@@ -245,7 +245,7 @@ void QDeclarativeAbstractAnimation::setPaused(bool p)
         return;
 
     if (d->group || d->disableUserControl) {
-        qWarning("QDeclarativeAbstractAnimation: setPaused() cannot be used on non-root animation nodes");
+        qmlInfo(this) << "setPaused() cannot be used on non-root animation nodes.";
         return;
     }
 
@@ -780,9 +780,9 @@ void QDeclarativeScriptActionPrivate::execute()
         QDeclarativeData *ddata = QDeclarativeData::get(q);
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
-        expr.value();
-        if (expr.hasError())
-            qWarning() << expr.error();
+        expr.evaluate();
+        if (expr.hasError()) 
+            qmlInfo(q) << expr.error();
     }
 }
 
@@ -834,6 +834,8 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
     The PropertyAction is immediate -
     the target property is not animated to the selected value in any way.
+    
+    \sa QtDeclarative
 */
 /*!
     \internal
@@ -1316,7 +1318,7 @@ void QDeclarativeRotationAnimation::setTo(qreal t)
 }
 
 /*!
-    \qmlproperty enum RotationAnimation::direction
+    \qmlproperty enumeration RotationAnimation::direction
     The direction in which to rotate.
     Possible values are Numerical, Clockwise, Counterclockwise,
     or Shortest.
@@ -1674,7 +1676,7 @@ void QDeclarativePropertyAnimationPrivate::init()
 
 /*!
     \qmlproperty int PropertyAnimation::duration
-    This property holds the duration of the transition, in milliseconds.
+    This property holds the duration of the animation, in milliseconds.
 
     The default value is 250.
 */
@@ -1741,14 +1743,15 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 }
 
 /*!
-    \qmlproperty enum PropertyAnimation::easing.type
+    \qmlproperty enumeration PropertyAnimation::easing.type
     \qmlproperty real PropertyAnimation::easing.amplitude
     \qmlproperty real PropertyAnimation::easing.overshoot
     \qmlproperty real PropertyAnimation::easing.period
     \brief the easing curve used for the animation.
 
     To specify an easing curve you need to specify at least the type. For some curves you can also specify
-    amplitude, period and/or overshoot (more details provided after the table).
+    amplitude, period and/or overshoot (more details provided after the table). The default easing curve is
+    Linear.
 
     \qml
     PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
@@ -2687,6 +2690,67 @@ QDeclarativeListProperty<QDeclarativeItem> QDeclarativeAnchorAnimation::targets(
 {
     Q_D(QDeclarativeAnchorAnimation);
     return QDeclarativeListProperty<QDeclarativeItem>(this, d->targets);
+}
+
+/*!
+    \qmlproperty int AnchorAnimation::duration
+    This property holds the duration of the animation, in milliseconds.
+
+    The default value is 250.
+*/
+int QDeclarativeAnchorAnimation::duration() const
+{
+    Q_D(const QDeclarativeAnchorAnimation);
+    return d->va->duration();
+}
+
+void QDeclarativeAnchorAnimation::setDuration(int duration)
+{
+    if (duration < 0) {
+        qmlInfo(this) << tr("Cannot set a duration of < 0");
+        return;
+    }
+
+    Q_D(QDeclarativeAnchorAnimation);
+    if (d->va->duration() == duration)
+        return;
+    d->va->setDuration(duration);
+    emit durationChanged(duration);
+}
+
+/*!
+    \qmlproperty enumeration AnchorAnimation::easing.type
+    \qmlproperty real AnchorAnimation::easing.amplitude
+    \qmlproperty real AnchorAnimation::easing.overshoot
+    \qmlproperty real AnchorAnimation::easing.period
+    \brief the easing curve used for the animation.
+
+    To specify an easing curve you need to specify at least the type. For some curves you can also specify
+    amplitude, period and/or overshoot. The default easing curve is
+    Linear.
+
+    \qml
+    AnchorAnimation { easing.type: "InOutQuad" }
+    \endqml
+
+    See the \l{PropertyAnimation::easing.type} documentation for information
+    about the different types of easing curves.
+*/
+
+QEasingCurve QDeclarativeAnchorAnimation::easing() const
+{
+    Q_D(const QDeclarativeAnchorAnimation);
+    return d->va->easingCurve();
+}
+
+void QDeclarativeAnchorAnimation::setEasing(const QEasingCurve &e)
+{
+    Q_D(QDeclarativeAnchorAnimation);
+    if (d->va->easingCurve() == e)
+        return;
+
+    d->va->setEasingCurve(e);
+    emit easingChanged(e);
 }
 
 void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,

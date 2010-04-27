@@ -719,6 +719,21 @@
         float: right;
         color: #254117;
     }
+
+    .qmldefault
+    {
+        float: right;
+        color: red;
+    }
+
+    .qmldoc
+    {
+    }
+
+    *.qmlitem p
+    {
+    }
+
     #feedbackBox
     {
         display:none;

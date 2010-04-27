@@ -1,6 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file>forms/querywidget.ui</file>
     <file>files/cookbook.xml</file>
     <file>files/allRecipes.xq</file>
     <file>files/liquidIngredientsInSoup.xq</file>

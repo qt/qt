@@ -235,11 +235,6 @@ bool qt_resolve_eglimage_gl_extensions(QGLContext *ctx)
 
 bool qt_resolve_glsl_extensions(QGLContext *ctx)
 {
-    // Geometry shaders are optional...
-    glProgramParameteriEXT = (_glProgramParameteriEXT) ctx->getProcAddress(QLatin1String("glProgramParameteriEXT"));
-    glFramebufferTextureEXT = (_glFramebufferTextureEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureEXT"));
-    glFramebufferTextureLayerEXT = (_glFramebufferTextureLayerEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureLayerEXT"));
-    glFramebufferTextureFaceEXT = (_glFramebufferTextureFaceEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureFaceEXT"));
 
 #if defined(QT_OPENGL_ES_2)
     // The GLSL shader functions are always present in OpenGL/ES 2.0.
@@ -253,6 +248,12 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
 #else
     if (glCreateShader)
         return true;
+
+    // Geometry shaders are optional...
+    glProgramParameteriEXT = (_glProgramParameteriEXT) ctx->getProcAddress(QLatin1String("glProgramParameteriEXT"));
+    glFramebufferTextureEXT = (_glFramebufferTextureEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureEXT"));
+    glFramebufferTextureLayerEXT = (_glFramebufferTextureLayerEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureLayerEXT"));
+    glFramebufferTextureFaceEXT = (_glFramebufferTextureFaceEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureFaceEXT"));
 
     glCreateShader = (_glCreateShader) ctx->getProcAddress(QLatin1String("glCreateShader"));
     if (glCreateShader) {

@@ -438,7 +438,7 @@ qreal QDeclarativeSmoothedAnimation::velocity() const
 }
 
 /*!
-    \qmlproperty qreal SmoothedAnimation::velocity
+    \qmlproperty real SmoothedAnimation::velocity
 
     This property holds the average velocity allowed when tracking the 'to' value.
 
@@ -457,7 +457,7 @@ void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 }
 
 /*!
-    \qmlproperty qreal SmoothedAnimation::maximumEasingTime
+    \qmlproperty int SmoothedAnimation::maximumEasingTime
 
     This property specifies the maximum time, in msecs, an "eases" during the follow should take.
     Setting this property causes the velocity to "level out" after at a time.  Setting
