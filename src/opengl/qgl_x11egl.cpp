@@ -351,7 +351,6 @@ void QGLWidgetPrivate::recreateEglSurface()
     }
 
     if (glcx->d_func()->eglSurface == EGL_NO_SURFACE) {
-        qDebug("Re-creating the surface");
         glcx->d_func()->eglSurface = glcx->d_func()->eglContext->createSurface(q);
         eglSurfaceWindowId = currentId;
     }

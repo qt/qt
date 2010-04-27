@@ -44,7 +44,7 @@
 \target elements
 \title QML Elements
 
-The following table lists the QML elements provided by the Qt Declarative module.
+The following table lists the QML elements provided by the \l {QtDeclarative}{Qt Declarative} module.
 
 \table 80%
 \header

@@ -834,6 +834,8 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
     The PropertyAction is immediate -
     the target property is not animated to the selected value in any way.
+    
+    \sa QtDeclarative
 */
 /*!
     \internal
