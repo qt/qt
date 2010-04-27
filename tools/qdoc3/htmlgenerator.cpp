@@ -925,7 +925,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << "<ol type=";
             if (atom->string() == ATOM_LIST_UPPERALPHA) {
                 out() << "\"A\"";
-            }
+            } /* why type? */
             else if (atom->string() == ATOM_LIST_LOWERALPHA) {
                 out() << "\"a\"";
             }
@@ -2774,14 +2774,14 @@ void HtmlGenerator::generateSection(const NodeList& nl,
             else {
                 if (twoColumn && i == (int) (nl.count() + 1) / 2)
                     out() << "</ul></td><td  class=\"topAlign\"><ul>\n";
-                out() << "<li><div class=\"fn\">";
+                out() << "<li class=\"fn\">";
             }
 
             generateSynopsis(*m, relative, marker, style, name_alignment);
             if (name_alignment)
                 out() << "</td></tr>\n";
             else
-                out() << "</div></li>\n";
+                out() << "</li>\n";
             i++;
             ++m;
         }
@@ -2835,14 +2835,14 @@ void HtmlGenerator::generateSectionList(const Section& section,
             else {
                 if (twoColumn && i == (int) (section.members.count() + 1) / 2)
                     out() << "</ul></td><td class=\"topAlign\"><ul>\n";
-                out() << "<li><div class=\"fn\">";
+                out() << "<li class=\"fn\">";
             }
 
             generateSynopsis(*m, relative, marker, style, name_alignment);
             if (name_alignment)
                 out() << "</td></tr>\n";
             else
-                out() << "</div></li>\n";
+                out() << "</li>\n";
             i++;
             ++m;
         }
@@ -2870,9 +2870,9 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         if (nameAlignment)
-            out() << "<li><div bar=\"2\" class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
         else
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -3128,7 +3128,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
             if (twoColumn && i == (int) (section.members.count() + 1) / 2)
                 out() << "</ul></td><td class=\"topAlign\"><ul>\n";
 
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
             if (style == CodeMarker::Accessors)
                 out() << "<b>";
             generateSynopsis(*m, relative, marker, style);
@@ -3156,7 +3156,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div bar=\"2\" class=\"fn\"></div>";
+        out() << "<li class=\"fn\">";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -4330,7 +4330,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
         while (m != section.members.end()) {
             if (twoColumn && row == (int) (count + 1) / 2)
                 out() << "</ul></td><td class=\"topAlign\"><ul>\n";
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
             generateQmlItem(*m,relative,marker,true);
             out() << "</li>\n";
             row++;
