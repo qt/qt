@@ -116,6 +116,8 @@ public:
         onClicked: foo(...)
     }
     \endqml
+
+    \sa QtDeclarative
 */
 
 /*!

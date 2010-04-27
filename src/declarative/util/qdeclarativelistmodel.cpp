@@ -244,7 +244,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     In addition, the WorkerScript cannot add any list data to the model.
 
-    \sa {qmlmodels}{Data Models}, WorkerScript
+    \sa {qmlmodels}{Data Models}, WorkerScript, QtDeclarative
 */
 
 

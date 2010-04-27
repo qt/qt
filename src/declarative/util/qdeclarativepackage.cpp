@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet examples/declarative/package/view.qml 0
 
+    \sa QtDeclarative
 */
 
 

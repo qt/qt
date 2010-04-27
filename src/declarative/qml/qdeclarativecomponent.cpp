@@ -140,6 +140,8 @@ Item {
         }
     }
     \endqml
+
+    \sa QtDeclarative
 */
 
 /*!
