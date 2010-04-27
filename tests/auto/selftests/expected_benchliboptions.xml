@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_BenchlibOneHundredMinimum">
+<Environment>
+    <QtVersion>4.6.3</QtVersion>
+    <QTestVersion>4.6.3</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="threeEvents">
+<BenchmarkResult metric="walltime" tag="" value="123" iterations="2097152" />
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

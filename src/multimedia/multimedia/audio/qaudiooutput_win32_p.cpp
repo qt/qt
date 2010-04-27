@@ -150,7 +150,8 @@ void QAudioOutputPrivate::freeBlocks(WAVEHDR* blockArray)
     int count = buffer_size/period_size;
 
     for(int i = 0; i < count; i++) {
-        waveOutUnprepareHeader(hWaveOut,&blocks[i], sizeof(WAVEHDR));
+        if (blocks->dwFlags & WHDR_PREPARED)
+            waveOutUnprepareHeader(hWaveOut,blocks, sizeof(WAVEHDR));
         blocks+=sizeof(WAVEHDR);
     }
     HeapFree(GetProcessHeap(), 0, blockArray);
