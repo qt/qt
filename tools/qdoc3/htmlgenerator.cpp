@@ -259,6 +259,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     postHeader = config.getString(HtmlGenerator::format() +
                                   Config::dot +
                                   HTMLGENERATOR_POSTHEADER);
+    postPostHeader = config.getString(HtmlGenerator::format() +
+                                      Config::dot +
+                                      HTMLGENERATOR_POSTPOSTHEADER);
     footer = config.getString(HtmlGenerator::format() +
                               Config::dot +
                               HTMLGENERATOR_FOOTER);
@@ -1697,6 +1700,27 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
 </head>
 #endif
 
+void HtmlGenerator::generateBreadCrumbs(const QString& title,
+                                        const Node *node,
+                                        CodeMarker *marker)
+{
+    if (node->type() == Node::Class) {
+    }
+    else if (node->type() == Node::Fake) {
+        if (node->subType() == Node::Module) {
+        }
+        else if (node->subType() == Node::Page) {
+        }
+        else if (node->subType() == Node::QmlClass) {
+        }
+        else if (node->subType() == Node::Example) {
+        }
+    }
+    else if (node->type() == Node::Namespace) {
+    }
+}
+
+
 void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
                                    CodeMarker *marker,
@@ -1748,9 +1772,13 @@ void HtmlGenerator::generateHeader(const QString& title,
     else
         out() << "<body class=\"\">\n";
 
+#ifdef GENERATE_MAC_REFS    
     if (mainPage)
         generateMacRef(node, marker);
+#endif    
     out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+    generateBreadCrumbs(title,node,marker);
+    out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
 
 #if 0 // Removed for new docf format. MWS
     if (node && !node->links().empty())
@@ -3687,10 +3715,14 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
 {
     const EnumNode *enume;
 
+#ifdef GENERATE_MAC_REFS    
     generateMacRef(node, marker);
+#endif    
     if (node->type() == Node::Enum
             && (enume = static_cast<const EnumNode *>(node))->flagsType()) {
+#ifdef GENERATE_MAC_REFS    
         generateMacRef(enume->flagsType(), marker);
+#endif        
         out() << "<h3 class=\"flags\">";
         out() << "<a name=\"" + refForNode(node) + "\"></a>";
         generateSynopsis(enume, relative, marker, CodeMarker::Detailed);
@@ -4204,6 +4236,10 @@ void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
     }
 }
 
+#ifdef GENERATE_MAC_REFS    
+/*
+  No longer valid.
+ */
 void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
 {
     if (!pleaseGenerateMacRef || marker == 0)
@@ -4213,6 +4249,7 @@ void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
     foreach (const QString &macRef, macRefs)
         out() << "<a name=\"" << "//apple_ref/" << macRef << "\"></a>\n";
 }
+#endif
 
 void HtmlGenerator::beginLink(const QString &link,
                               const Node *node,
@@ -4314,7 +4351,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                                               CodeMarker *marker)
 {
     const QmlPropertyNode* qpn = 0;
+#ifdef GENERATE_MAC_REFS    
     generateMacRef(node, marker);
+#endif    
     out() << "<div class=\"qmlitem\">";
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
