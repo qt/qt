@@ -71,6 +71,10 @@ private slots:
     void isAtWordStart();
     void fastConstructor();
     void isAtBoundaryLine();
+    void toNextBoundary_data();
+    void toNextBoundary();
+    void toPreviousBoundary_data();
+    void toPreviousBoundary();
 };
 
 tst_QTextBoundaryFinder::tst_QTextBoundaryFinder()
@@ -292,25 +296,120 @@ void tst_QTextBoundaryFinder::fastConstructor()
 
 void tst_QTextBoundaryFinder::isAtBoundaryLine()
 {
-    // idx          0       1       2       3       4       5
-    // break?       -       -       -       +       -       +
+    // idx       0       1       2       3       4       5      6
+    // break?    -       -       -       -       +       -      +
     QChar s[] = { 0x0061, 0x00AD, 0x0062, 0x0009, 0x0063, 0x0064 };
     QString text(s, sizeof(s)/sizeof(s[0]));
-    qDebug() << "text = " << text << ", length = " << text.length();
+//    qDebug() << "text = " << text << ", length = " << text.length();
     QTextBoundaryFinder finder(QTextBoundaryFinder::Line, text.constData(), text.length(), /*buffer*/0, /*buffer size*/0);
     finder.setPosition(0);
-    QVERIFY(!finder.isAtBoundary());
+    QVERIFY(finder.isAtBoundary());
     finder.setPosition(1);
     QVERIFY(!finder.isAtBoundary());
     finder.setPosition(2);
     QVERIFY(!finder.isAtBoundary());
     finder.setPosition(3);
-    QVERIFY(finder.isAtBoundary());
-    finder.setPosition(4);
     QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(4);
+    QVERIFY(finder.isAtBoundary());
     finder.setPosition(5);
+    QVERIFY(!finder.isAtBoundary());
+    finder.setPosition(6);
     QVERIFY(finder.isAtBoundary());
 }
+
+Q_DECLARE_METATYPE(QList<int>)
+
+void tst_QTextBoundaryFinder::toNextBoundary_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("type");
+    QTest::addColumn< QList<int> >("boundaries");
+
+    QList<int> boundaries;
+    boundaries << 0 << 3 << 4 << 7 << 8 << 11 << 12 << 13 << 16 << 17 << 20 << 21 << 24 << 25;
+    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Word) \
+            << boundaries;
+
+    boundaries.clear();
+    boundaries << 0 << 13 << 25;
+    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Sentence) \
+            << boundaries;
+
+    boundaries.clear();
+    boundaries << 0 << 4 << 8 << 13 << 17 << 21 << 25;
+    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Line) \
+            << boundaries;
+
+    boundaries.clear();
+    boundaries << 0 << 5 << 9 << 15 << 17 << 21 << 28;
+    QTest::newRow("Line") << QString::fromUtf8("Diga-nos qualé a sua opinião") << int(QTextBoundaryFinder::Line)
+            << boundaries;
+
+}
+
+void tst_QTextBoundaryFinder::toNextBoundary()
+{
+    QFETCH(QString, text);
+    QFETCH(int, type);
+    QFETCH(QList<int>, boundaries);
+
+    QList<int> foundBoundaries;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::BoundaryType(type), text);
+    boundaryFinder.toStart();
+    for(int next = 0; next != -1; next = boundaryFinder.toNextBoundary())
+        foundBoundaries << next;
+    QCOMPARE(boundaries, foundBoundaries);
+}
+
+void tst_QTextBoundaryFinder::toPreviousBoundary_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("type");
+    QTest::addColumn< QList<int> >("boundaries");
+
+    QList<int> boundaries;
+    boundaries << 25 << 24 << 21 << 20 << 17 << 16 << 13 << 12 << 11 << 8 << 7 << 4 << 3 << 0;
+    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Word)
+            << boundaries;
+
+    boundaries.clear();
+    boundaries << 25 << 13 << 0;
+    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Sentence)
+            << boundaries;
+
+    boundaries.clear();
+    boundaries << 25 << 21 << 17 << 13 << 8 << 4 << 0;
+    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Line)
+            << boundaries;
+
+    boundaries.clear();
+    boundaries << 28 << 21 << 17 << 15 << 9 << 5 << 0;
+    QTest::newRow("Line") << QString::fromUtf8("Diga-nos qualé a sua opinião") << int(QTextBoundaryFinder::Line)
+            << boundaries;
+
+}
+
+void tst_QTextBoundaryFinder::toPreviousBoundary()
+{
+    QFETCH(QString, text);
+    QFETCH(int, type);
+    QFETCH(QList<int>, boundaries);
+
+    QList<int> foundBoundaries;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::BoundaryType(type), text);
+    boundaryFinder.toEnd();
+    for (int previous = boundaryFinder.position();
+         previous != -1;
+         previous = boundaryFinder.toPreviousBoundary())
+    {
+        foundBoundaries << previous;
+    }
+    QCOMPARE(boundaries, foundBoundaries);
+}
+
+
+
 
 QTEST_MAIN(tst_QTextBoundaryFinder)
 #include "tst_qtextboundaryfinder.moc"
