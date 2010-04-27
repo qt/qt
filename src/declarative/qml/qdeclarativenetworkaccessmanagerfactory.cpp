@@ -78,8 +78,10 @@ QDeclarativeNetworkAccessManagerFactory::~QDeclarativeNetworkAccessManagerFactor
     Implement this method to create a QNetworkAccessManager with \a parent.
     This allows proxies, caching and cookie support to be setup appropriately.
 
-    This method should return a new QNetworkAccessManager each time it is called.
+    This method must return a new QNetworkAccessManager each time it is called.
     The parent of the QNetworkAccessManager must be the \a parent provided.
+    The QNetworkAccessManager(s) created by this
+    function will be destroyed automatically when their parent is destroyed.
 
     Note: this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
