@@ -1674,39 +1674,30 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
     return "html";
 }
 
-#if 0
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Qt Reference Documentation</title>
-  <link rel="stylesheet" type="text/css" href="style/style.css" />
-  <!--[if IE]>
-	<meta name="MSSmartTagsPreventParsing" content="true">
-	<meta http-equiv="imagetoolbar" content="no">
-	<![endif]-->
-  <!--[if lt IE 7]>
-	<link rel="stylesheet" type="text/css" href="style/style_ie6.css">
-	<![endif]-->
-  <!--[if IE 7]>
-	<link rel="stylesheet" type="text/css" href="style/style_ie7.css">
-	<![endif]-->
-  <!--[if IE 8]>
-	<link rel="stylesheet" type="text/css" href="style/style_ie8.css">
-	<![endif]-->
-
-  <script src="scripts/jquery.js" type="text/javascript"></script>
-
-</head>
-#endif
-
 void HtmlGenerator::generateBreadCrumbs(const QString& title,
                                         const Node *node,
                                         CodeMarker *marker)
 {
+    Text breadcrumb;
     if (node->type() == Node::Class) {
+        ClassNode* cn = static_cast<const ClassNode*>(node);
+        QString name =  node->moduleName();
+        if (!name.isEmpty()) {
+            out() << "              <li>";
+            breadcrumb << Atom(Atom::AutoLink,name);
+            generateText(breadcrumb, node, marker);
+            out() << "</li>\n";
+        }
+        breadcrumb.clear();
+        if (!cn->name().isEmpty()) {
+            out() << "              <li>";
+            breadcrumb << Atom(Atom::AutoLink,cn->name());
+            generateText(breadcrumb, 0, marker);
+            out() << "</li>\n";
+        }
     }
     else if (node->type() == Node::Fake) {
+        const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
         }
         else if (node->subType() == Node::Page) {
@@ -1717,6 +1708,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
         }
     }
     else if (node->type() == Node::Namespace) {
+        const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
     }
 }
 

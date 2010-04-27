@@ -853,9 +853,7 @@ void **QListData::erase(void **xi)
     same as takeAt(0). This function assumes the list is not empty. To
     avoid failure, call isEmpty() before calling this function.
 
-    This operation is very fast (\l{constant time}), because QList
-    preallocates extra space on both sides of its internal buffer to
-    allow for fast growth at both ends of the list.
+    This operation takes \l{constant time}.
 
     If you don't use the return value, removeFirst() is more
     efficient.
@@ -870,9 +868,7 @@ void **QListData::erase(void **xi)
     not empty. To avoid failure, call isEmpty() before calling this
     function.
 
-    This operation is very fast (\l{constant time}), because QList
-    preallocates extra space on both sides of its internal buffer to
-    allow for fast growth at both ends of the list.
+    This operation takes \l{constant time}.
 
     If you don't use the return value, removeLast() is more
     efficient.
