@@ -189,9 +189,15 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
     known.insert(path);
     do {
 #ifdef Q_OS_WIN
-        // UNC, skip past the first two elements
-        if (separatorPos == 0 && tmpPath.startsWith(QLatin1String("//")))
-            separatorPos = tmpPath.indexOf(slash, 2);
+        if (separatorPos == 0) {
+            if (tmpPath.size() >= 2 && tmpPath.at(0) == slash && tmpPath.at(1) == slash) {
+                // UNC, skip past the first two elements
+                separatorPos = tmpPath.indexOf(slash, 2);
+            } else if (tmpPath.size() >= 3 && tmpPath.at(1) == QLatin1Char(':') && tmpPath.at(2) == slash) {
+                // volume root, skip since it can not be a symlink
+                separatorPos = 2;
+            }
+        }
         if (separatorPos != -1)
 #endif
         separatorPos = tmpPath.indexOf(slash, separatorPos + 1);
