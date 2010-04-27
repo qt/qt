@@ -269,6 +269,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     Q_D(const QNetworkCookieJar);
     QDateTime now = QDateTime::currentDateTime();
     QList<QNetworkCookie> result;
+    bool isEncrypted = url.scheme().toLower() == QLatin1String("https");
 
     // scan our cookies for something that matches
     QList<QNetworkCookie>::ConstIterator it = d->allCookies.constBegin(),
@@ -279,6 +280,8 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
         if (!isParentPath(url.path(), it->path()))
             continue;
         if (!(*it).isSessionCookie() && (*it).expirationDate() < now)
+            continue;
+        if ((*it).isSecure() && !isEncrypted)
             continue;
 
         // insert this cookie into result, sorted by path
