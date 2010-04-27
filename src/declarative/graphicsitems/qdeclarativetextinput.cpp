@@ -726,8 +726,18 @@ void QDeclarativeTextInput::setEchoMode(QDeclarativeTextInput::EchoMode echo)
     Q_D(QDeclarativeTextInput);
     if (echoMode() == echo)
         return;
-
+    Qt::InputMethodHints imHints = inputMethodHints();
+    if (echo == Password || echo == NoEcho)
+        imHints |= Qt::ImhHiddenText;
+    else
+        imHints &= ~Qt::ImhHiddenText;
+    if (echo != Normal)
+        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    else
+        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    setInputMethodHints(imHints);
     d->control->setEchoMode((uint)echo);
+    update();
     emit echoModeChanged(echoMode());
 }
 

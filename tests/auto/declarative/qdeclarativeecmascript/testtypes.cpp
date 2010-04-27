@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 #include "testtypes.h"
+#include <QWidget>
+#include <QPlainTextEdit>
 
 class BaseExtensionObject : public QObject
 {
@@ -80,6 +82,24 @@ public:
     DefaultPropertyExtensionObject(QObject *parent) : QObject(parent) {}
 };
 
+class QWidgetDeclarativeUI : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
+
+signals:
+    void widthChanged();
+
+public:
+    QWidgetDeclarativeUI(QObject *other) : QObject(other) { }
+
+public:
+    int width() const { return 0; }
+    void setWidth(int) { }
+};
+
+
 void registerTypes()
 {
     qmlRegisterType<MyQmlObject>("Qt.test", 1,0, "MyQmlObject");
@@ -91,6 +111,9 @@ void registerTypes()
     qmlRegisterType<NumberAssignment>("Qt.test", 1,0, "NumberAssignment");
     qmlRegisterExtendedType<DefaultPropertyExtendedObject, DefaultPropertyExtensionObject>("Qt.test", 1,0, "DefaultPropertyExtendedObject");
     qmlRegisterType<OverrideDefaultPropertyObject>("Qt.test", 1,0, "OverrideDefaultPropertyObject");
+
+    qmlRegisterExtendedType<QWidget,QWidgetDeclarativeUI>("Qt.test",1,0,"QWidget");
+    qmlRegisterType<QPlainTextEdit>("Qt.test",1,0,"QPlainTextEdit");
 }
 
 #include "testtypes.moc"

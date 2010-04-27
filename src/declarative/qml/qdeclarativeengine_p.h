@@ -290,7 +290,8 @@ public:
     bool resolveType(const Imports&, const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
-                     ImportedNamespace** ns_return) const;
+                     ImportedNamespace** ns_return,
+                     QString *errorString = 0) const;
     void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type,
                                 QDeclarativeType** type_return, QUrl* url_return,
                                 int *version_major, int *version_minor ) const;

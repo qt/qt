@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QGL2PaintEngineExPrivate;
 
-class QGLTextureGlyphCache : public QObject, public QTextureGlyphCache
+class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QObject, public QTextureGlyphCache
 {
     Q_OBJECT
 public:

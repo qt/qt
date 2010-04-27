@@ -861,7 +861,7 @@ inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
                 static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
                                                                 ->source->d_func())->invalidateCache();
             }
-            if (parentp->graphicsEffect->isEnabled()) {
+            if (parentp->scene && parentp->graphicsEffect->isEnabled()) {
                 parentp->dirty = 1;
                 parentp->fullUpdatePending = 1;
             }
