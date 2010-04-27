@@ -64,17 +64,19 @@ QT_BEGIN_NAMESPACE
     import Qt 4.7
     import Qt.multimedia 4.7
 
-    Item {
+    Text {
+        text: "Click Me!";
+        font.pointSize: 24;
+        width: 150; height: 50;
+
         SoundEffect {
             id: playSound
-            source: "test.wav"
+            source: "soundeffect.wav"
         }
         MouseArea {
             id: playArea
             anchors.fill: parent
-            onPressed: {
-                playSound.play()
-            }
+            onPressed: { playSound.play() }
         }
     }
     \endqml
