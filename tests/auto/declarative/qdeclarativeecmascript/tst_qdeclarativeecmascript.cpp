@@ -134,6 +134,7 @@ private slots:
     void numberAssignment();
 
     void bug1();
+    void bug2();
     void dynamicCreationCrash();
     void regExpBug();
     void nullObjectBinding();
@@ -1247,6 +1248,17 @@ void tst_qdeclarativeecmascript::bug1()
     object->setProperty("b", true);
 
     QCOMPARE(object->property("test").toInt(), 9);
+
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::bug2()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt.test 1.0;\nQPlainTextEdit { width: 100 }", QUrl());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 
     delete object;
 }
