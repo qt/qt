@@ -355,7 +355,7 @@ void CppGenerator::operator () ()
       out << startIncludeGuard(grammar.merged_output) << endl;
 
       if (copyright) {
-          out << "#if defined(Q_OS_VXWORKS) && defined(ERROR)" << endl
+          out << "#if defined(ERROR)" << endl
               << "#  undef ERROR" << endl
               << "#endif" << endl << endl;
       }
