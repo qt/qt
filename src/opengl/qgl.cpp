@@ -2774,8 +2774,8 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
          if (!eng->isNativePaintingActive()) {
             QRectF src(0, 0, target.width(), target.height());
             QSize size(target.width(), target.height());
-            eng->drawTexture(target, textureId, size, src);
-            return;
+            if (eng->drawTexture(target, textureId, size, src))
+                return;
         }
      }
 
@@ -2850,8 +2850,8 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
             QRectF dest(point, QSizeF(textureWidth, textureHeight));
             QRectF src(0, 0, textureWidth, textureHeight);
             QSize size(textureWidth, textureHeight);
-            eng->drawTexture(dest, textureId, size, src);
-            return;
+            if (eng->drawTexture(dest, textureId, size, src))
+                return;
         }
     }
 
