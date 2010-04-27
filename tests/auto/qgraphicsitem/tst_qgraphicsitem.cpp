@@ -63,6 +63,7 @@
 #include <QGraphicsEffect>
 #include <QInputContext>
 #include <QPushButton>
+#include <QLineEdit>
 
 #include "../../shared/util.h"
 
@@ -445,6 +446,7 @@ private slots:
     void QT_2653_fullUpdateDiscardingOpacityUpdate();
     void QT_2649_focusScope();
     void sortItemsWhileAdding();
+    void doNotMarkFullUpdateIfNotInScene();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -945,8 +947,52 @@ class ImhTester : public QGraphicsItem
 
 void tst_QGraphicsItem::inputMethodHints()
 {
-    ImhTester item;
-    QCOMPARE(item.inputMethodHints(), Qt::ImhNone);
+    ImhTester *item = new ImhTester;
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    item->setFlag(QGraphicsItem::ItemIsFocusable, true);
+    QCOMPARE(item->inputMethodHints(), Qt::ImhNone);
+    ImhTester *item2 = new ImhTester;
+    item2->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable, true);
+    Qt::InputMethodHints imHints = item2->inputMethodHints();
+    imHints |= Qt::ImhHiddenText;
+    item2->setInputMethodHints(imHints);
+    QGraphicsScene scene;
+    scene.addItem(item);
+    scene.addItem(item2);
+    QGraphicsView view(&scene);
+    QApplication::setActiveWindow(&view);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    item->setFocus();
+    QTRY_VERIFY(item->hasFocus());
+    QCOMPARE(view.inputMethodHints(), item->inputMethodHints());
+    item2->setFocus();
+    QTRY_VERIFY(item2->hasFocus());
+    QCOMPARE(view.inputMethodHints(), item2->inputMethodHints());
+    item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
+    item->setFocus();
+    QTRY_VERIFY(item->hasFocus());
+    //Focus has changed but the new item doesn't accept input method, no hints.
+    QCOMPARE(view.inputMethodHints(), 0);
+    item2->setFocus();
+    QTRY_VERIFY(item2->hasFocus());
+    QCOMPARE(view.inputMethodHints(), item2->inputMethodHints());
+    imHints = item2->inputMethodHints();
+    imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    item2->setInputMethodHints(imHints);
+    QCOMPARE(view.inputMethodHints(), item2->inputMethodHints());
+    QGraphicsProxyWidget *widget = new QGraphicsProxyWidget;
+    QLineEdit *edit = new QLineEdit;
+    edit->setEchoMode(QLineEdit::Password);
+    scene.addItem(widget);
+    widget->setFocus();
+    QTRY_VERIFY(widget->hasFocus());
+    //No widget on the proxy, so no hints
+    QCOMPARE(view.inputMethodHints(), 0);
+    widget->setWidget(edit);
+    //View should match with the line edit
+    QCOMPARE(view.inputMethodHints(), edit->inputMethodHints());
 }
 
 void tst_QGraphicsItem::toolTip()
@@ -10055,6 +10101,9 @@ void tst_QGraphicsItem::updateMicroFocus()
     QApplication::setActiveWindow(&parent);
     QTest::qWaitForWindowShown(&parent);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
+    //We reset the number of updates that happened previously (initialisation)
+    ic.nbUpdates = 0;
+    ic2.nbUpdates = 0;
     input.doUpdateMicroFocus();
     QApplication::processEvents();
     QTRY_COMPARE(ic.nbUpdates, 1);
@@ -10381,6 +10430,52 @@ void tst_QGraphicsItem::sortItemsWhileAdding()
     parent.resize(200, 200);
     MyGraphicsItemWithItemChange item(&parent);
     grandParent.setParentItem(&grandGrandParent);
+}
+
+void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
+{
+    struct Item : public QGraphicsTextItem
+    {
+        int painted;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *opt, QWidget *wid)
+        {
+            painted++;
+            QGraphicsTextItem::paint(painter, opt, wid);
+        }
+    };
+    QGraphicsScene scene;
+    MyGraphicsView view(&scene);
+    Item *item = new Item;
+    item->painted = 0;
+    item->setPlainText("Grandparent");
+    Item *item2 = new Item;
+    item2->setPlainText("parent");
+    item2->painted = 0;
+    Item *item3 = new Item;
+    item3->setPlainText("child");
+    item3->painted = 0;
+    QGraphicsOpacityEffect *effect = new QGraphicsOpacityEffect;
+    effect->setOpacity(0.5);
+    item2->setGraphicsEffect(effect);
+    item3->setParentItem(item2);
+    item2->setParentItem(item);
+    scene.addItem(item);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(view.repaints, 1);
+    QTRY_COMPARE(item->painted, 1);
+    QTRY_COMPARE(item2->painted, 1);
+    QTRY_COMPARE(item3->painted, 1);
+    item2->update();
+    QApplication::processEvents();
+    QTRY_COMPARE(item->painted, 2);
+    QTRY_COMPARE(item2->painted, 2);
+    QTRY_COMPARE(item3->painted, 2);
+    item2->update();
+    QApplication::processEvents();
+    QTRY_COMPARE(item->painted, 3);
+    QTRY_COMPARE(item2->painted, 3);
+    QTRY_COMPARE(item3->painted, 3);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

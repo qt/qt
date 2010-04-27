@@ -717,6 +717,7 @@ void QDeclarativeTextPrivate::updateSize()
             dy -= size.height();
         } else {
             singleline = false; // richtext can't elide or be optimized for single-line case
+            ensureDoc();
             doc->setDefaultFont(font);
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
             option.setWrapMode(QTextOption::WrapMode(wrapMode));

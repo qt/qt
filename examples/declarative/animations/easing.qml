@@ -79,10 +79,10 @@ Rectangle {
                 }
 
                 transitions: Transition {
-                    ParallelAnimation {
+                    // ParallelAnimation {
                         NumberAnimation { properties: "x"; easing.type: type; duration: 1000 }
                         ColorAnimation { properties: "color"; easing.type: type; duration: 1000 }
-                    }
+                    // }
                 }
             }
         }

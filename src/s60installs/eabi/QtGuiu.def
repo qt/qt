@@ -11994,4 +11994,8 @@ EXPORTS
 	_ZNK11QEglContext12configAttribEi @ 11993 NONAME
 	_ZNK11QEglContext16configPropertiesEv @ 11994 NONAME ABSENT
 	_ZNK19QItemSelectionRange7isEmptyEv @ 11995 NONAME
+	_ZN13QIconEngineV28iconNameEv @ 11996 NONAME
+	_ZN14QWindowSurface23setPartialUpdateSupportEb @ 11997 NONAME
+	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 11998 NONAME
+	_ZNK5QIcon4nameEv @ 11999 NONAME
 

@@ -375,9 +375,11 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
     if (QDeclarativeItem *item = model->item(modelIndex, false)) {
         listItem = new FxGridItem(item, q);
         listItem->index = modelIndex;
-        listItem->item->setZValue(1);
-        // complete
-        model->completeItem();
+        if (model->completePending()) {
+            // complete
+            listItem->item->setZValue(1);
+            model->completeItem();
+        }
         listItem->item->setParentItem(q->viewport());
         unrequestedItems.remove(listItem->item);
     }

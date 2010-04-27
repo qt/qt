@@ -449,6 +449,14 @@ bool ProcessAST::visit(AST::UiImport *node)
             _parser->_errors << error;
             return false;
         }
+        if (import.qualifier == QLatin1String("Qt")) {
+            QDeclarativeError error;
+            error.setDescription(QCoreApplication::translate("QDeclarativeParser","Reserved name \"Qt\" cannot be used as an qualifier"));
+            error.setLine(node->importIdToken.startLine);
+            error.setColumn(node->importIdToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
 
         // Check for script qualifier clashes
         bool isScript = import.type == QDeclarativeScriptParser::Import::Script;

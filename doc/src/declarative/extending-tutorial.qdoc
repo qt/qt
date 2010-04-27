@@ -62,7 +62,7 @@ Tutorial chapters:
 \o \l{declarative/tutorials/extending/chapter2-methods}{Connecting to C++ Methods and Signals}
 \o \l{declarative/tutorials/extending/chapter3-bindings}{Adding Property Bindings}
 \o \l{declarative/tutorials/extending/chapter4-customPropertyTypes}{Using Custom Property Types}
-\o \l{declarative/tutorials/extending/chapter5-plugins}{Deploying Your Extension}
+\o \l{declarative/tutorials/extending/chapter5-plugins}{Writing an Extension Plugin}
 \o \l{qml-extending-tutorial6.html}{In Summary}
 \endlist
 
@@ -308,7 +308,7 @@ Try it out with the code in Qt's \c examples/tutorials/extending/chapter4-custom
 */
 
 /*!
-\title Chapter 5: Deploying Your Extension
+\title Chapter 5: Writing an Extension Plugin
 
 \example declarative/tutorials/extending/chapter5-plugins
 
@@ -316,7 +316,8 @@ Currently the \c Musician and \c Instrument types are used by \c app.qml,
 which is displayed using a QDeclarativeView in a C++ application. An alternative
 way to use our QML extension is to create a plugin library to make it available
 to the QML engine. This means we could load \c app.qml using the standard \c qml tool
-instead of writing a \c main.cpp file and loading our own C++ application.
+(or some other QML runtime application) instead of writing a \c main.cpp file and
+loading our own C++ application.
 
 To create a plugin library, we need:
 

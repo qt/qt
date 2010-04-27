@@ -176,6 +176,11 @@ QDeclarativeVisualModel::ReleaseFlags QDeclarativeVisualItemModel::release(QDecl
     return 0;
 }
 
+bool QDeclarativeVisualItemModel::completePending() const
+{
+    return false;
+}
+
 void QDeclarativeVisualItemModel::completeItem()
 {
     // Nothing to do
@@ -352,9 +357,10 @@ public:
 
     VDMDelegateDataType *m_delegateDataType;
     friend class QDeclarativeVisualDataModelData;
-    bool m_metaDataCreated;
-    bool m_metaDataCacheable;
-    bool m_delegateValidated;
+    bool m_metaDataCreated : 1;
+    bool m_metaDataCacheable : 1;
+    bool m_delegateValidated : 1;
+    bool m_completePending : 1;
 
     QDeclarativeVisualDataModelData *data(QObject *item);
 
@@ -567,7 +573,7 @@ QDeclarativeVisualDataModelParts::QDeclarativeVisualDataModelParts(QDeclarativeV
 QDeclarativeVisualDataModelPrivate::QDeclarativeVisualDataModelPrivate(QDeclarativeContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
 , m_context(ctxt), m_parts(0), m_delegateDataType(0), m_metaDataCreated(false)
-, m_metaDataCacheable(false), m_delegateValidated(false), m_listAccessor(0)
+, m_metaDataCacheable(false), m_delegateValidated(false), m_completePending(false), m_listAccessor(0)
 {
 }
 
@@ -1026,11 +1032,14 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->setContextObject(data);
+        d->m_completePending = false;
         nobj = d->m_delegate->beginCreate(ctxt);
-        if (complete)
+        if (complete) {
             d->m_delegate->completeCreate();
-        else
+        } else {
+            d->m_completePending = true;
             needComplete = true;
+        }
         if (nobj) {
             QDeclarative_setParent_noEvent(ctxt, nobj);
             QDeclarative_setParent_noEvent(data, nobj);
@@ -1066,6 +1075,14 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
     return item;
 }
 
+bool QDeclarativeVisualDataModel::completePending() const
+{
+    Q_D(const QDeclarativeVisualDataModel);
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->completePending();
+    return d->m_completePending;
+}
+
 void QDeclarativeVisualDataModel::completeItem()
 {
     Q_D(QDeclarativeVisualDataModel);
@@ -1075,6 +1092,7 @@ void QDeclarativeVisualDataModel::completeItem()
     }
 
     d->m_delegate->completeCreate();
+    d->m_completePending = false;
 }
 
 QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)

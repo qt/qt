@@ -122,7 +122,7 @@ void QFSFileEnginePrivate::setSymbianError(int symbianError, QFile::FileError de
 
     Returns the stdlib open string corresponding to a QIODevice::OpenMode.
 */
-static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &fileName)
+static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QByteArray &fileName)
 {
     QByteArray mode;
     if ((flags & QIODevice::ReadOnly) && !(flags & QIODevice::Truncate)) {
@@ -130,7 +130,7 @@ static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QS
         if (flags & QIODevice::WriteOnly) {
             QT_STATBUF statBuf;
             if (!fileName.isEmpty()
-                && QT_STAT(QFile::encodeName(fileName), &statBuf) == 0
+                && QT_STAT(fileName, &statBuf) == 0
                 && (statBuf.st_mode & S_IFMT) == S_IFREG) {
                 mode += '+';
             } else {
@@ -254,7 +254,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 
         fh = 0;
     } else {
-        QByteArray fopenMode = openModeToFopenMode(openMode, filePath);
+        QByteArray fopenMode = openModeToFopenMode(openMode, nativeFilePath.constData());
 
         // Try to open the file in buffered mode.
         do {

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,46 +38,5 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWER_H
-#define HELPVIEWER_H
 
-#include <QtCore/QString>
-
-#include <QtGui/QFont>
-
-QT_BEGIN_NAMESPACE
-
-class QMouseEvent;
-class QUrl;
-
-class AbstractHelpViewer
-{
-public:
-    AbstractHelpViewer();
-    virtual ~AbstractHelpViewer();
-
-    virtual QFont viewerFont() const = 0;
-    virtual void setViewerFont(const QFont &font) = 0;
-
-    virtual void scaleUp() = 0;
-    virtual void scaleDown() = 0;
-    
-    virtual void resetScale() = 0;
-    virtual qreal scale() const = 0;
-
-    virtual bool handleForwardBackwardMouseButtons(QMouseEvent *e) = 0;
-
-    static const QLatin1String DocPath;
-    static const QString AboutBlank;
-    static const QString LocalHelpFile;
-    static const QString PageNotFoundMessage;
-
-    static bool isLocalUrl(const QUrl &url);
-    static bool canOpenPage(const QString &url);
-    static QString mimeFromUrl(const QUrl &url);
-    static bool launchWithExternalApp(const QUrl &url);
-};
-
-QT_END_NAMESPACE
-
-#endif  // HELPVIEWER_H
+#include "../win32-msvc2005/qplatformdefs.h"

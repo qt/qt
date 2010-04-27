@@ -141,7 +141,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \note setting the state of an object from within another state of the same object is
     not allowed.
 
-    \sa {qmlstates}{States}, {state-transitions}{Transitions}
+    \sa {qmlstates}{States}, {state-transitions}{Transitions}, QtDeclarative
 */
 
 /*!

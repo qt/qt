@@ -89,6 +89,7 @@ private slots:
     void contextPropertiesTriggerReeval();
     void objectPropertiesTriggerReeval();
     void deferredProperties();
+    void deferredPropertiesErrors();
     void extensionObjects();
     void overrideExtensionProperties();
     void attachedProperties();
@@ -133,6 +134,7 @@ private slots:
     void numberAssignment();
 
     void bug1();
+    void bug2();
     void dynamicCreationCrash();
     void regExpBug();
     void nullObjectBinding();
@@ -541,6 +543,25 @@ void tst_qdeclarativeecmascript::deferredProperties()
     QCOMPARE(qmlObject->value(), 10);
     object->setValue(19);
     QCOMPARE(qmlObject->value(), 19);
+}
+
+// Check errors on deferred properties are correctly emitted
+void tst_qdeclarativeecmascript::deferredPropertiesErrors()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("deferredPropertiesErrors.qml"));
+    MyDeferredObject *object = 
+        qobject_cast<MyDeferredObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->value(), 0);
+    QVERIFY(object->objectProperty() == 0);
+    QVERIFY(object->objectProperty2() == 0);
+
+    QString warning = component.url().toString() + ":6: Unable to assign [undefined] to QObject*";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
+
+    qmlExecuteDeferred(object);
+
+    delete object;
 }
 
 void tst_qdeclarativeecmascript::extensionObjects()
@@ -1227,6 +1248,17 @@ void tst_qdeclarativeecmascript::bug1()
     object->setProperty("b", true);
 
     QCOMPARE(object->property("test").toInt(), 9);
+
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::bug2()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt.test 1.0;\nQPlainTextEdit { width: 100 }", QUrl());
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 
     delete object;
 }

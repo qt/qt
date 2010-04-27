@@ -294,6 +294,10 @@ QNetworkAccessManager *QDeclarativeScriptEngine::networkAccessManager()
 
 QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
 {
+    Q_ASSERT(inProgressCreations == 0);
+    Q_ASSERT(bindValues.isEmpty());
+    Q_ASSERT(parserStatus.isEmpty());
+
     while (cleanup) {
         QDeclarativeCleanup *c = cleanup;
         cleanup = c->next;
@@ -318,10 +322,6 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
     delete globalClass;
     globalClass = 0;
 
-    for(int ii = 0; ii < bindValues.count(); ++ii)
-        clear(bindValues[ii]);
-    for(int ii = 0; ii < parserStatus.count(); ++ii)
-        clear(parserStatus[ii]);
     for(QHash<int, QDeclarativeCompiledData*>::ConstIterator iter = m_compositeTypes.constBegin(); iter != m_compositeTypes.constEnd(); ++iter)
         (*iter)->release();
     for(QHash<const QMetaObject *, QDeclarativePropertyCache *>::Iterator iter = propertyCache.begin(); iter != propertyCache.end(); ++iter)
@@ -771,7 +771,9 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
     if (!object)
         return;
 
-    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
+    // No need to do anything if CppOwnership and there is no QDeclarativeData as
+    // the current ownership must be CppOwnership
+    QDeclarativeData *ddata = QDeclarativeData::get(object, ownership == JavaScriptOwnership);
     if (!ddata)
         return;
 
@@ -809,9 +811,6 @@ void qmlExecuteDeferred(QObject *object)
         data->deferredComponent = 0;
 
         QDeclarativeComponentPrivate::complete(ep, &state);
-
-        if (!state.errors.isEmpty())
-            ep->warning(state.errors);
     }
 }
 
@@ -1162,7 +1161,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else { 
-            return ctxt->throwError("Qt.formatDateTime(): Invalid datetime formate");
+            return ctxt->throwError("Qt.formatDateTime(): Invalid datetime format");
         }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));

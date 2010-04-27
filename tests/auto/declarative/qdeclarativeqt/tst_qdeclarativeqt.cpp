@@ -398,6 +398,21 @@ void tst_qdeclarativeqt::consoleLog()
 void tst_qdeclarativeqt::formatting()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("formatting.qml"));
+
+    QString warning1 = component.url().toString() + ":22: Error: Qt.formatDate(): Invalid date format";
+    QString warning2 = component.url().toString() + ":21: Error: Qt.formatDate(): Invalid arguments";
+    QString warning3 = component.url().toString() + ":28: Error: Qt.formatDateTime(): Invalid datetime format";
+    QString warning4 = component.url().toString() + ":27: Error: Qt.formatDateTime(): Invalid arguments";
+    QString warning5 = component.url().toString() + ":25: Error: Qt.formatTime(): Invalid time format";
+    QString warning6 = component.url().toString() + ":24: Error: Qt.formatTime(): Invalid arguments";
+
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning5));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning6));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 

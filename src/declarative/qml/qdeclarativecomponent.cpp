@@ -142,6 +142,8 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
         }
     }
     \endqml
+
+    \sa QtDeclarative
 */
 
 /*!
