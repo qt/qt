@@ -48,6 +48,9 @@
 #include <qaudio.h>
 #include <qaudioformat.h>
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR ""
+#endif
 
 class tst_QAudioOutput : public QObject
 {
@@ -131,7 +134,7 @@ void tst_QAudioOutput::notifyInterval()
 void tst_QAudioOutput::pullFile()
 {
     if(available) {
-        QFile file(SRCDIR "4.wav");
+        QFile file(SRCDIR"4.wav");
         QVERIFY(file.exists());
         file.open(QIODevice::ReadOnly);
 
@@ -178,7 +181,7 @@ void tst_QAudioOutput::pullFile()
 void tst_QAudioOutput::pushFile()
 {
     if(available) {
-        QFile file(SRCDIR "4.wav");
+        QFile file(SRCDIR"4.wav");
         QVERIFY(file.exists());
         file.open(QIODevice::ReadOnly);
 

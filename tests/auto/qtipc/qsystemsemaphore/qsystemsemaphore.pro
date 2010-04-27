@@ -17,9 +17,8 @@ requires(contains(QT_CONFIG,script))
 # this test calls lackey, which then again depends on QtScript.
 # let's add it here so that it gets deployed easily
 QT += script
-lackey.sources = ../lackey/lackey.exe
-lackey.path = ../lackey
-
+lackey.sources = $$OUT_PWD/../lackey/lackey.exe ../lackey/scripts
+lackey.path = .
 DEPLOYMENT += lackey
 }
 
