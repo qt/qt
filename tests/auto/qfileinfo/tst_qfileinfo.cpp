@@ -39,9 +39,6 @@
 **
 ****************************************************************************/
 
-#ifdef Q_OS_WIN
-#define _WIN32_WINNT  0x500
-#endif
 
 #include <QtTest/QtTest>
 
@@ -58,6 +55,7 @@
 #include <sys/stat.h>
 #endif
 #ifdef Q_OS_WIN
+#define _WIN32_WINNT  0x500
 #include <qt_windows.h>
 #include <qlibrary.h>
 #endif
