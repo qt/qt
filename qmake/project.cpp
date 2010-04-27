@@ -3161,4 +3161,10 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
     return place[var];
 }
 
+bool QMakeProject::isEmpty(const QString &v)
+{
+    QMap<QString, QStringList>::ConstIterator it = vars.constFind(varMap(v));
+    return it == vars.constEnd() || it->isEmpty();
+}
+
 QT_END_NAMESPACE

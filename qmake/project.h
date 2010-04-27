@@ -179,9 +179,6 @@ inline QString QMakeProject::configFile()
 inline QStringList &QMakeProject::values(const QString &v)
 { return values(v, vars); }
 
-inline bool QMakeProject::isEmpty(const QString &v)
-{ return !isSet(v) || values(v).isEmpty(); }
-
 inline bool QMakeProject::isSet(const QString &v)
 { return vars.contains(v); }
 
