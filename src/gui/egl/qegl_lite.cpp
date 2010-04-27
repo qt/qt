@@ -64,6 +64,7 @@ EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
 
 EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
 {
+    Q_UNUSED(pixmap);
     return 0;
 }
 
@@ -72,13 +73,11 @@ EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
 //    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
 //}
 
-static QGraphicsSystemScreen *screenForDevice(QPaintDevice *device)
+static QPlatformScreen *screenForDevice(QPaintDevice *device)
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (!gs)
-        return 0;
+    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
 
-    QList<QGraphicsSystemScreen *> screens = gs->screens();
+    QList<QPlatformScreen *> screens = pi->screens();
 
     int screenNumber;
     if (device && device->devType() == QInternal::Widget)
@@ -97,7 +96,7 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
         return;
 
     // Find the QGLScreen for this paint device.
-    QGraphicsSystemScreen *screen = screenForDevice(dev);
+    QPlatformScreen *screen = screenForDevice(dev);
     if (!screen)
         return;
     int devType = dev->devType();
