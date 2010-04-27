@@ -51,7 +51,7 @@
 #include "NotImplemented.h"
 
 QT_BEGIN_NAMESPACE
-Q_DECL_IMPORT extern bool qt_tab_all_widgets; // from qapplication.cpp
+Q_GUI_EXPORT extern bool qt_tab_all_widgets; // from qapplication.cpp
 QT_END_NAMESPACE
 
 namespace WebCore {
