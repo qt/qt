@@ -175,7 +175,7 @@ QDeclarativeBorderImage::TileMode QDeclarativeGridScaledImage::stringToRule(cons
     if (s == QLatin1String("Round"))
         return QDeclarativeBorderImage::Round;
 
-    qWarning() << "Unknown tile rule specified. Using Stretch";
+    qWarning("QDeclarativeGridScaledImage: Invalid tile rule specified. Using Stretch.");
     return QDeclarativeBorderImage::Stretch;
 }
 

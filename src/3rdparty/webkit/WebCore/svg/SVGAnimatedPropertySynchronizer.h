@@ -41,13 +41,15 @@ struct GetOwnerElementForType<OwnerType, true> : public Noncopyable {
 
 template<typename OwnerType>
 struct GetOwnerElementForType<OwnerType, false> : public Noncopyable {    
-    static SVGElement* ownerElement(OwnerType* type)
+    static SVGElement* ownerElement(OwnerType* type);
+};
+template<typename OwnerType>
+SVGElement* GetOwnerElementForType<OwnerType, false>::ownerElement(OwnerType* type)
     {
         SVGElement* context = type->contextElement();
         ASSERT(context);
         return context;
     }
-};
 
 // IsDerivedFromSVGElement implementation
 template<typename OwnerType>

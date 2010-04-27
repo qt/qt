@@ -308,8 +308,6 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
     QByteArray type;
     ds >> type;
 
-    //qDebug() << "QDeclarativeEngineDebugServer::messageReceived()" << type;
-
     if (type == "LIST_ENGINES") {
         int queryId;
         ds >> queryId;
@@ -418,7 +416,7 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         if (object && context) {
             QDeclarativeExpression exprObj(context, expr, object);
             bool undefined = false;
-            QVariant value = exprObj.value(&undefined);
+            QVariant value = exprObj.evaluate(&undefined);
             if (undefined)
                 result = QLatin1String("<undefined>");
             else

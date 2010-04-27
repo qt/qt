@@ -68,19 +68,16 @@ public:
     static int idForObject(QObject *);
     static QObject *objectForId(int);
 
-    static bool isDebuggingEnabled();
     static QString objectToString(QObject *obj);
 
-    static void waitForClients();
-
-    static void notifyOnServerStart(QObject *object, const char *receiver);
+    static bool isDebuggingEnabled();
+    static bool hasDebuggingClient();
 
 protected:
     virtual void enabledChanged(bool);
     virtual void messageReceived(const QByteArray &);
 
 private:
-    void registerForStartNotification(QObject *object, const char *methodName);
     friend class QDeclarativeDebugServer;
 };
 

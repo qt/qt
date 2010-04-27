@@ -314,7 +314,7 @@ void QDeclarativePathViewPrivate::regenerate()
 
     \image pathview.gif
 
-    Note that views do not enable \e clip automatically.  If the view
+    \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.

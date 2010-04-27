@@ -59,10 +59,12 @@ SUBDIRS += \
            qdeclarativerepeater \    # Cover
            qdeclarativeworkerscript \    # Cover
            qdeclarativevaluetypes \          # Cover
+           qdeclarativeview \          # Cover
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
            qdeclarativestyledtext \          # Cover
            qdeclarativesqldatabase \         # Cover
+           qdeclarativevisualdatamodel \     # Cover
            qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {

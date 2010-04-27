@@ -137,7 +137,12 @@ SymbianEngine::SymbianEngine(QObject *parent)
         return;
     }
 #endif
-    
+}
+
+void SymbianEngine::initialize()
+{
+    QMutexLocker locker(&mutex);
+
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     cpPriv->name = "UserChoice";
     cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;

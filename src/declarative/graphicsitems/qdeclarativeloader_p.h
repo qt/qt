@@ -58,7 +58,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeLoader : public QDeclarativeItem
     Q_ENUMS(ResizeMode)
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(QDeclarativeComponent *sourceComponent READ sourceComponent WRITE setSourceComponent NOTIFY sourceChanged)
+    Q_PROPERTY(QDeclarativeComponent *sourceComponent READ sourceComponent WRITE setSourceComponent RESET resetSourceComponent NOTIFY sourceChanged)
     Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode NOTIFY resizeModeChanged)
     Q_PROPERTY(QGraphicsObject *item READ item NOTIFY itemChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -73,6 +73,7 @@ public:
 
     QDeclarativeComponent *sourceComponent() const;
     void setSourceComponent(QDeclarativeComponent *);
+    void resetSourceComponent();
 
     enum Status { Null, Ready, Loading, Error };
     Status status() const;

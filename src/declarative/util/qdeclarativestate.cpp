@@ -95,7 +95,7 @@ QString QDeclarativeActionEvent::typeName() const
     return QString();
 }
 
-void QDeclarativeActionEvent::execute()
+void QDeclarativeActionEvent::execute(Reason)
 {
 }
 
@@ -104,7 +104,7 @@ bool QDeclarativeActionEvent::isReversable()
     return false;
 }
 
-void QDeclarativeActionEvent::reverse()
+void QDeclarativeActionEvent::reverse(Reason)
 {
 }
 

@@ -1305,7 +1305,7 @@ void QDeclarativeXMLHttpRequest::printError(const QScriptValue& sv)
 {
     QDeclarativeError error;
     QDeclarativeExpressionPrivate::exceptionToError(sv.engine(), error);
-    qWarning().nospace() << qPrintable(error.toString());
+    QDeclarativeEnginePrivate::warning(QDeclarativeEnginePrivate::get(sv.engine()), error);
 }
 
 void QDeclarativeXMLHttpRequest::destroyNetwork()

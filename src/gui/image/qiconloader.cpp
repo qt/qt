@@ -554,6 +554,12 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
             }
         }
         break;
+    case QIconEngineV2::IconNameHook:
+        {
+            QString &name = *reinterpret_cast<QString*>(data);
+            name = m_iconName;
+        }
+        break;
     default:
         QIconEngineV2::virtual_hook(id, data);
     }

@@ -75,9 +75,9 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
         ctx->setConfig(shareContext->config());
 #if QGL_RENDER_TEXTURE
         EGLint value = EGL_FALSE;
-        if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGBA, &value) && value)
+        if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGBA) == EGL_TRUE)
             textureFormat = EGL_TEXTURE_RGBA;
-        else if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGB, &value) && value)
+        else if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGB) == EGL_TRUE)
             textureFormat = EGL_TEXTURE_RGB;
 #endif
     } else {

@@ -110,7 +110,7 @@ void QDeclarativeWatchProxy::notifyValueChanged()
 {
     QVariant v;
     if (m_expr)
-        v = m_expr->value();
+        v = m_expr->evaluate();
     else
         v = m_property.read(m_object);
 

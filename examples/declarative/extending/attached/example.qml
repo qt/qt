@@ -1,16 +1,17 @@
 import People 1.0
 
 BirthdayParty {
-    celebrant: Boy {
+    host: Boy {
         name: "Bob Jones"
         shoe { size: 12; color: "white"; brand: "Nike"; price: 90.0 }
     }
 
     // ![1]
     Boy { 
-        name: "Joan Hodges" 
-        BirthdayParty.rsvp: "2009-07-06"
+        name: "Leo Hodges" 
         shoe { size: 10; color: "black"; brand: "Reebok"; price: 59.95 }
+
+        BirthdayParty.rsvp: "2009-07-06"
     }
     // ![1]
     Boy { 
@@ -19,11 +20,12 @@ BirthdayParty {
     }
     Girl { 
         name: "Anne Brown" 
-        BirthdayParty.rsvp: "2009-07-01"
         shoe.size: 7
         shoe.color: "red"
         shoe.brand: "Marc Jacobs"
         shoe.price: 699.99 
+
+        BirthdayParty.rsvp: "2009-07-01"
     }
 }
 

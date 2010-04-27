@@ -199,6 +199,10 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         configProps.setRenderableType(QEgl::OpenGL);
         qt_eglproperties_set_glformat(configProps, d->glFormat);
 
+        // Set buffer preserved for regular QWidgets, QGLWidgets are ok with either preserved or destroyed:
+        if ((devType == QInternal::Widget) && qobject_cast<QGLWidget*>(static_cast<QWidget*>(device())) == 0)
+            configProps.setValue(EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
+
         if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete d->eglContext;
             d->eglContext = 0;
@@ -331,24 +335,23 @@ void QGLWidget::setColormap(const QGLColormap &)
 {
 }
 
-// Re-creates the EGL surface if the window ID has changed or if force is true
-void QGLWidgetPrivate::recreateEglSurface(bool force)
+// Re-creates the EGL surface if the window ID has changed or if there isn't a surface
+void QGLWidgetPrivate::recreateEglSurface()
 {
     Q_Q(QGLWidget);
 
     Window currentId = q->winId();
 
-    if ( force || (currentId != eglSurfaceWindowId) ) {
-        // The window id has changed so we need to re-create the EGL surface
-        QEglContext *ctx = glcx->d_func()->eglContext;
-        EGLSurface surface = glcx->d_func()->eglSurface;
-        if (surface != EGL_NO_SURFACE)
-            ctx->destroySurface(surface); // Will force doneCurrent() if nec.
-        surface = ctx->createSurface(q);
-        if (surface == EGL_NO_SURFACE)
-            qWarning("Error creating EGL window surface: 0x%x", eglGetError());
-        glcx->d_func()->eglSurface = surface;
+    // If the window ID has changed since the surface was created, we need to delete the
+    // old surface before re-creating a new one. Note: This should not be the case as the
+    // surface should be deleted before the old window id.
+    if (glcx->d_func()->eglSurface != EGL_NO_SURFACE && (currentId != eglSurfaceWindowId)) {
+        qWarning("EGL surface for deleted window %x was not destroyed", eglSurfaceWindowId);
+        glcx->d_func()->destroyEglSurfaceForDevice();
+    }
 
+    if (glcx->d_func()->eglSurface == EGL_NO_SURFACE) {
+        glcx->d_func()->eglSurface = glcx->d_func()->eglContext->createSurface(q);
         eglSurfaceWindowId = currentId;
     }
 }

@@ -5,5 +5,5 @@ by a C++ plugin (providing the "Time" type), and by QML files (providing the
 To run:
 
   make install
-  qml plugins.qml
+  qml -I . plugins.qml
 

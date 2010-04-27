@@ -27,8 +27,45 @@ qhp.Qml.indexTitle          = Qml Reference
 
 # Files not referenced in any qdoc file
 # See also extraimages.HTML
-qhp.Qml.extraFiles          = classic.css \
-                             images/qt-logo.png
+qhp.Qml.extraFiles            = images/api_examples.png \
+                             	images/api_lookup.png \
+                             	images/api_topics.png \
+                             	images/bg_l_blank.png \
+			     	images/bg_ll_blank.png \
+                             	images/bg_ll.png \
+                             	images/bg_l.png \
+                             	images/bg_lr.png \
+                             	images/bg_r.png \
+                             	images/bg_ul_blank.png \
+                             	images/bg_ul.png \
+                             	images/bg_ur_blank.png \
+                             	images/bg_ur.png \
+			     	images/box_bg.png \
+                             	images/breadcrumb.png \
+                             	images/bullet_dn.png \
+                             	images/bullet_gt.png \
+                             	images/bullet_sq.png \
+                             	images/bullet_up.png \
+                             	images/coloreditorfactoryimage.png \
+                             	images/content_bg.png \
+                             	images/dynamiclayouts-example.png \
+                             	images/feedbackground.png \
+                             	images/form_bg.png \
+                             	images/horBar.png \
+                             	images/page_bg.png \
+                             	images/print.png \
+                             	images/qt_guide.png \
+                             	images/qt_icon.png \
+                             	images/qt-logo.png \
+                             	images/qt_ref_doc.png \
+                             	images/qt_tools.png \
+                             	images/sep.png \
+                             	images/sprites-combined.png \
+                             	images/stylesheet-coffee-plastique.png \
+                             	images/taskmenuextension-example.png \
+			     	scripts/functions.js \
+			     	scripts/jquery.js \
+                             	style/style.css
 
 qhp.Qml.filterAttributes    = qt 4.6.0 qtrefdoc
 qhp.Qml.customFilters.Qt.name = Qt 4.6.0
@@ -63,19 +100,3 @@ imagedirs               = $QT_SOURCE_TREE/doc/src/images \
 outputdir               = $QT_BUILD_TREE/doc-build/html-qml
 tagfile                 = $QT_BUILD_TREE/doc-build/html-qml/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html-qml
-
-HTML.stylesheets        = classic.css
-
-HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n" \
-                          "<tr>\n" \
-                          "<td align=\"left\" valign=\"top\">" \
-                          "<img src=\"images/qt-logo.png\" align=\"left\" border=\"0\"/>" \
-                          "</td>\n" \
-                          "<td width=\"1\">&nbsp;&nbsp;</td>" \
-                          "<td class=\"postheader\" valign=\"center\" align=\"left\">" \
-                          "<a href=\"qmlreference.html\">" \
-                          "<font color=\"#004faf\">Home</font></a>&nbsp;&middot;" \
-                          " <a href=\"qmlelements.html\">" \
-                          "<font color=\"#004faf\">Elements</font></a>" \
-                          "</td>\n" \
-                          "</tr></table>"

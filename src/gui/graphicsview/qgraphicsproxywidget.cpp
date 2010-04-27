@@ -1024,9 +1024,18 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
     // Map event position from us to the receiver
     pos = d->mapToReceiver(pos, receiver);
 
+    QPoint globalPos = receiver->mapToGlobal(pos.toPoint());
+    //If the receiver by-pass the proxy its popups
+    //will be top level QWidgets therefore they need
+    //the screen position. mapToGlobal expect the widget to
+    //have proper coordinates in regards of the windowing system
+    //but it's not true because the widget is embedded.
+    if (bypassGraphicsProxyWidget(receiver))
+        globalPos = event->screenPos();
+
     // Send mouse event. ### Doesn't propagate the event.
     QContextMenuEvent contextMenuEvent(QContextMenuEvent::Reason(event->reason()),
-                                       pos.toPoint(), receiver->mapToGlobal(pos.toPoint()), event->modifiers());
+                                       pos.toPoint(), globalPos, event->modifiers());
     QApplication::sendEvent(receiver, &contextMenuEvent);
 
     event->setAccepted(contextMenuEvent.isAccepted());

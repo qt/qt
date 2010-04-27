@@ -4,7 +4,7 @@ Item {
     id: container
 
     property string label
-    property string tint: ""
+    property color tint: "#FFFFFFFF"
     signal clicked
     signal labelChanged(string label)
 

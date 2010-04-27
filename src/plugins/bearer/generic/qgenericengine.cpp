@@ -177,6 +177,11 @@ void QGenericEngine::disconnectFromId(const QString &id)
     emit connectionError(id, OperationNotSupported);
 }
 
+void QGenericEngine::initialize()
+{
+    doRequestUpdate();
+}
+
 void QGenericEngine::requestUpdate()
 {
     doRequestUpdate();

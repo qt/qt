@@ -42,7 +42,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/qdebug.h>
 
-#include <QtMultimedia/qmediatimerange.h>
+#include <QtMediaServices/qmediatimerange.h>
 
 class tst_QMediaTimeRange: public QObject
 {

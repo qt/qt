@@ -1187,10 +1187,9 @@ QScriptValue NestedListModel::get(int index) const
     if (!node)
         return 0;
     QDeclarativeEngine *eng = qmlEngine(m_listModel);
-    if (!eng) {
-        qWarning("Cannot call QDeclarativeListModel::get() without a QDeclarativeEngine");
+    if (!eng) 
         return 0;
-    }
+    
     return QDeclarativeEnginePrivate::qmlScriptObject(node->object(this), eng);
 }
 

@@ -41,7 +41,7 @@
 #ifndef VIDEOWIDGET_H
 #define VIDEOWIDGET_H
 
-#include <QtMultimedia/qvideowidget.h>
+#include <QtMediaServices/qvideowidget.h>
 
 
 QT_BEGIN_HEADER

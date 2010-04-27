@@ -3,7 +3,6 @@ DESTDIR = com/nokia/TimeExample
 TARGET  = qtimeexampleqmlplugin
 CONFIG += qt plugin
 QT += declarative
-VERSION = 1.0.0
 
 SOURCES += plugin.cpp
 

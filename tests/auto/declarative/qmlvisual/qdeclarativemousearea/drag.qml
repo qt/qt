@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 /*
 this test shows a blue box being dragged around -- first roughly tracing the

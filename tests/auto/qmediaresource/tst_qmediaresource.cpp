@@ -41,7 +41,7 @@
 
 #include <QtTest/QtTest>
 
-#include <QtMultimedia/qmediaresource.h>
+#include <QtMediaServices/qmediaresource.h>
 
 
 class tst_QMediaResource : public QObject

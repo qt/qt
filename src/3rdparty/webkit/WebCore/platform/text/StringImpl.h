@@ -64,6 +64,7 @@ class StringImpl : public Noncopyable {
     friend struct CStringTranslator;
     friend struct HashAndCharactersTranslator;
     friend struct UCharBufferTranslator;
+    friend class AtomicStringImpl;
 private:
     enum BufferOwnership {
         BufferInternal,
@@ -248,7 +249,6 @@ public:
 
 private:
     using Noncopyable::operator new;
-    void* operator new(size_t, void* inPlace) { ASSERT(inPlace); return inPlace; }
 
     static PassRefPtr<StringImpl> createStrippingNullCharactersSlowCase(const UChar*, unsigned length);
     

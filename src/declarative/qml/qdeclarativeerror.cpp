@@ -49,8 +49,27 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDeclarativeError
-  \since 4.7
-    \brief The QDeclarativeError class encapsulates a QML error
+    \since 4.7
+    \brief The QDeclarativeError class encapsulates a QML error.
+
+    QDeclarativeError includes a textual description of the error, as well
+    as location information (the file, line, and column). The toString()
+    method creates a single-line, human-readable string containing all of
+    this information, for example:
+    \code
+    file:///home/user/test.qml:7:8: Invalid property assignment: double expected
+    \endcode
+
+    You can use qDebug() or qWarning() to output errors to the console. This method
+    will attempt to open the file indicated by the error
+    and include additional contextual information.
+    \code
+    file:///home/user/test.qml:7:8: Invalid property assignment: double expected
+            y: "hello"
+               ^
+    \endcode
+
+    \sa QDeclarativeView::errors(), QDeclarativeComponent::errors()
 */
 class QDeclarativeErrorPrivate
 {
@@ -69,7 +88,7 @@ QDeclarativeErrorPrivate::QDeclarativeErrorPrivate()
 }
 
 /*!
-    Create an empty error object.
+    Creates an empty error object.
 */
 QDeclarativeError::QDeclarativeError()
 : d(0)
@@ -77,7 +96,7 @@ QDeclarativeError::QDeclarativeError()
 }
 
 /*!
-    Create a copy of \a other.
+    Creates a copy of \a other.
 */
 QDeclarativeError::QDeclarativeError(const QDeclarativeError &other)
 : d(0)
@@ -86,7 +105,7 @@ QDeclarativeError::QDeclarativeError(const QDeclarativeError &other)
 }
 
 /*!
-    Assign \a other to this error object.
+    Assigns \a other to this error object.
 */
 QDeclarativeError &QDeclarativeError::operator=(const QDeclarativeError &other)
 {
@@ -112,7 +131,7 @@ QDeclarativeError::~QDeclarativeError()
 }
 
 /*!
-    Return true if this error is valid, otherwise false.
+    Returns true if this error is valid, otherwise false.
 */
 bool QDeclarativeError::isValid() const
 {
@@ -120,7 +139,7 @@ bool QDeclarativeError::isValid() const
 }
 
 /*!
-    Return the url for the file that caused this error.
+    Returns the url for the file that caused this error.
 */
 QUrl QDeclarativeError::url() const
 {
@@ -129,7 +148,7 @@ QUrl QDeclarativeError::url() const
 }
 
 /*!
-    Set the \a url for the file that caused this error.
+    Sets the \a url for the file that caused this error.
 */
 void QDeclarativeError::setUrl(const QUrl &url)
 {
@@ -138,7 +157,7 @@ void QDeclarativeError::setUrl(const QUrl &url)
 }
 
 /*!
-    Return the error description.
+    Returns the error description.
 */
 QString QDeclarativeError::description() const
 {
@@ -147,7 +166,7 @@ QString QDeclarativeError::description() const
 }
 
 /*!
-    Set the error \a description.
+    Sets the error \a description.
 */
 void QDeclarativeError::setDescription(const QString &description)
 {
@@ -156,7 +175,7 @@ void QDeclarativeError::setDescription(const QString &description)
 }
 
 /*!
-    Return the error line number.
+    Returns the error line number.
 */
 int QDeclarativeError::line() const
 {
@@ -165,7 +184,7 @@ int QDeclarativeError::line() const
 }
 
 /*!
-    Set the error \a line number.
+    Sets the error \a line number.
 */
 void QDeclarativeError::setLine(int line)
 {
@@ -174,7 +193,7 @@ void QDeclarativeError::setLine(int line)
 }
 
 /*!
-    Return the error column number.
+    Returns the error column number.
 */
 int QDeclarativeError::column() const
 {
@@ -183,7 +202,7 @@ int QDeclarativeError::column() const
 }
 
 /*!
-    Set the error \a column number.
+    Sets the error \a column number.
 */
 void QDeclarativeError::setColumn(int column)
 {
@@ -192,14 +211,20 @@ void QDeclarativeError::setColumn(int column)
 }
 
 /*!
-    Return the error as a human readable string.
+    Returns the error as a human readable string.
 */
 QString QDeclarativeError::toString() const
 {
     QString rv;
-    rv = url().toString() + QLatin1Char(':') + QString::number(line());
-    if(column() != -1) 
-        rv += QLatin1Char(':') + QString::number(column());
+    if (url().isEmpty()) {
+        rv = QLatin1String("<Unknown File>");
+    } else if (line() != -1) {
+        rv = url().toString() + QLatin1Char(':') + QString::number(line());
+        if(column() != -1) 
+            rv += QLatin1Char(':') + QString::number(column());
+    } else {
+        rv = url().toString();
+    }
 
     rv += QLatin1String(": ") + description();
 
@@ -210,7 +235,7 @@ QString QDeclarativeError::toString() const
     \relates QDeclarativeError
     \fn QDebug operator<<(QDebug debug, const QDeclarativeError &error)
 
-    Output a human readable version of \a error to \a debug.
+    Outputs a human readable version of \a error to \a debug.
 */
 
 QDebug operator<<(QDebug debug, const QDeclarativeError &error)

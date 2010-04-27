@@ -41,6 +41,7 @@
 
 #include "msvc_objectmodel.h"
 #include "msvc_vcproj.h"
+#include "msvc_vcxproj.h"
 #include <qstringlist.h>
 #include <qfileinfo.h>
 

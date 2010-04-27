@@ -4417,8 +4417,8 @@ EXPORTS
 	?findData@QComboBox@@QBEHABVQVariant@@HV?$QFlags@W4MatchFlag@Qt@@@@@Z @ 4416 NONAME ; int QComboBox::findData(class QVariant const &, int, class QFlags<enum Qt::MatchFlag>) const
 	?findFont@QFontDatabase@@CAPAVQFontEngine@@HPBVQFontPrivate@@ABUQFontDef@@@Z @ 4417 NONAME ; class QFontEngine * QFontDatabase::findFont(int, class QFontPrivate const *, struct QFontDef const &)
 	?findInMask@QLineControl@@ABEHH_N0VQChar@@@Z @ 4418 NONAME ; int QLineControl::findInMask(int, bool, bool, class QChar) const
-	?findIntersections@QBezier@@SA?AV?$QVector@U?$QPair@MM@@@@ABV1@0@Z @ 4419 NONAME ; class QVector<struct QPair<float, float> > QBezier::findIntersections(class QBezier const &, class QBezier const &)
-	?findIntersections@QBezier@@SA_NABV1@0PAV?$QVector@U?$QPair@MM@@@@@Z @ 4420 NONAME ; bool QBezier::findIntersections(class QBezier const &, class QBezier const &, class QVector<struct QPair<float, float> > *)
+	?findIntersections@QBezier@@SA?AV?$QVector@U?$QPair@MM@@@@ABV1@0@Z @ 4419 NONAME ABSENT ; class QVector<struct QPair<float, float> > QBezier::findIntersections(class QBezier const &, class QBezier const &)
+	?findIntersections@QBezier@@SA_NABV1@0PAV?$QVector@U?$QPair@MM@@@@@Z @ 4420 NONAME ABSENT ; bool QBezier::findIntersections(class QBezier const &, class QBezier const &, class QVector<struct QPair<float, float> > *)
 	?findItem@QTextEngine@@QBEHH@Z @ 4421 NONAME ; int QTextEngine::findItem(int) const
 	?findItems@QListWidget@@QBE?AV?$QList@PAVQListWidgetItem@@@@ABVQString@@V?$QFlags@W4MatchFlag@Qt@@@@@Z @ 4422 NONAME ; class QList<class QListWidgetItem *> QListWidget::findItems(class QString const &, class QFlags<enum Qt::MatchFlag>) const
 	?findItems@QStandardItemModel@@QBE?AV?$QList@PAVQStandardItem@@@@ABVQString@@V?$QFlags@W4MatchFlag@Qt@@@@H@Z @ 4423 NONAME ; class QList<class QStandardItem *> QStandardItemModel::findItems(class QString const &, class QFlags<enum Qt::MatchFlag>, int) const
@@ -10501,7 +10501,7 @@ EXPORTS
 	?speed@QMovie@@QBEHXZ @ 10500 NONAME ; int QMovie::speed(void) const
 	?split@QBezier@@QBEXPAV1@0@Z @ 10501 NONAME ; void QBezier::split(class QBezier *, class QBezier *) const
 	?split@QItemSelection@@SAXABVQItemSelectionRange@@0PAV1@@Z @ 10502 NONAME ; void QItemSelection::split(class QItemSelectionRange const &, class QItemSelectionRange const &, class QItemSelection *)
-	?splitAtIntersections@QBezier@@QAE?AV?$QVector@V?$QList@VQBezier@@@@@@AAV1@@Z @ 10503 NONAME ; class QVector<class QList<class QBezier> > QBezier::splitAtIntersections(class QBezier &)
+	?splitAtIntersections@QBezier@@QAE?AV?$QVector@V?$QList@VQBezier@@@@@@AAV1@@Z @ 10503 NONAME ABSENT ; class QVector<class QList<class QBezier> > QBezier::splitAtIntersections(class QBezier &)
 	?splitCell@QTextTable@@QAEXHHHH@Z @ 10504 NONAME ; void QTextTable::splitCell(int, int, int, int)
 	?splitDockWidget@QMainWindow@@QAEXPAVQDockWidget@@0W4Orientation@Qt@@@Z @ 10505 NONAME ; void QMainWindow::splitDockWidget(class QDockWidget *, class QDockWidget *, enum Qt::Orientation)
 	?splitItem@QTextEngine@@ABEXHH@Z @ 10506 NONAME ; void QTextEngine::splitItem(int, int) const
@@ -12551,55 +12551,55 @@ EXPORTS
 	?isOpacityNull@QGraphicsItemPrivate@@SA_NM@Z @ 12550 NONAME ; bool QGraphicsItemPrivate::isOpacityNull(float)
 	?isOpacityNull@QGraphicsItemPrivate@@QBE_NXZ @ 12551 NONAME ; bool QGraphicsItemPrivate::isOpacityNull(void) const
 	?api@QEglContext@@QBE?AW4API@QEgl@@XZ @ 12552 NONAME ABSENT ; enum QEgl::API QEglContext::api(void) const
-	?chooseConfig@QEglContext@@QAE_NABVQEglProperties@@W4PixelFormatMatch@QEgl@@@Z @ 12553 NONAME ABSENT ; bool QEglContext::chooseConfig(class QEglProperties const &, enum QEgl::PixelFormatMatch)
-	?destroySurface@QEglContext@@QAEXH@Z @ 12554 NONAME ABSENT ; void QEglContext::destroySurface(int)
-	?lazyDoneCurrent@QEglContext@@QAE_NXZ @ 12555 NONAME ABSENT ; bool QEglContext::lazyDoneCurrent(void)
+	?chooseConfig@QEglContext@@QAE_NABVQEglProperties@@W4PixelFormatMatch@QEgl@@@Z @ 12553 NONAME ; bool QEglContext::chooseConfig(class QEglProperties const &, enum QEgl::PixelFormatMatch)
+	?destroySurface@QEglContext@@QAEXH@Z @ 12554 NONAME ; void QEglContext::destroySurface(int)
+	?lazyDoneCurrent@QEglContext@@QAE_NXZ @ 12555 NONAME ; bool QEglContext::lazyDoneCurrent(void)
 	?waitNative@QEglContext@@QAEXXZ @ 12556 NONAME ABSENT ; void QEglContext::waitNative(void)
 	?context@QEglContext@@QBEHXZ @ 12557 NONAME ABSENT ; int QEglContext::context(void) const
 	?configAttrib@QEglContext@@QBE_NHPAH@Z @ 12558 NONAME ABSENT ; bool QEglContext::configAttrib(int, int *) const
-	??0QEglProperties@@QAE@ABV0@@Z @ 12559 NONAME ABSENT ; QEglProperties::QEglProperties(class QEglProperties const &)
+	??0QEglProperties@@QAE@ABV0@@Z @ 12559 NONAME ; QEglProperties::QEglProperties(class QEglProperties const &)
 	?config@QEglContext@@QBEHXZ @ 12560 NONAME ABSENT ; int QEglContext::config(void) const
 	?openDisplay@QEglContext@@QAE_NPAVQPaintDevice@@@Z @ 12561 NONAME ABSENT ; bool QEglContext::openDisplay(class QPaintDevice *)
 	?error@QEglContext@@SAHXZ @ 12562 NONAME ABSENT ; int QEglContext::error(void)
-	?swapBuffers@QEglContext@@QAE_NH@Z @ 12563 NONAME ABSENT ; bool QEglContext::swapBuffers(int)
-	?setApi@QEglContext@@QAEXW4API@QEgl@@@Z @ 12564 NONAME ABSENT ; void QEglContext::setApi(enum QEgl::API)
-	?makeCurrent@QEglContext@@QAE_NH@Z @ 12565 NONAME ABSENT ; bool QEglContext::makeCurrent(int)
-	?createSurface@QEglContext@@QAEHPAVQPaintDevice@@PBVQEglProperties@@@Z @ 12566 NONAME ABSENT ; int QEglContext::createSurface(class QPaintDevice *, class QEglProperties const *)
+	?swapBuffers@QEglContext@@QAE_NH@Z @ 12563 NONAME ; bool QEglContext::swapBuffers(int)
+	?setApi@QEglContext@@QAEXW4API@QEgl@@@Z @ 12564 NONAME ; void QEglContext::setApi(enum QEgl::API)
+	?makeCurrent@QEglContext@@QAE_NH@Z @ 12565 NONAME ; bool QEglContext::makeCurrent(int)
+	?createSurface@QEglContext@@QAEHPAVQPaintDevice@@PBVQEglProperties@@@Z @ 12566 NONAME ; int QEglContext::createSurface(class QPaintDevice *, class QEglProperties const *)
 	?dumpAllConfigs@QEglContext@@QAEXXZ @ 12567 NONAME ABSENT ; void QEglContext::dumpAllConfigs(void)
-	?reduceConfiguration@QEglProperties@@QAE_NXZ @ 12568 NONAME ABSENT ; bool QEglProperties::reduceConfiguration(void)
-	?removeValue@QEglProperties@@QAE_NH@Z @ 12569 NONAME ABSENT ; bool QEglProperties::removeValue(int)
-	?toString@QEglProperties@@QBE?AVQString@@XZ @ 12570 NONAME ABSENT ; class QString QEglProperties::toString(void) const
+	?reduceConfiguration@QEglProperties@@QAE_NXZ @ 12568 NONAME ; bool QEglProperties::reduceConfiguration(void)
+	?removeValue@QEglProperties@@QAE_NH@Z @ 12569 NONAME ; bool QEglProperties::removeValue(int)
+	?toString@QEglProperties@@QBE?AVQString@@XZ @ 12570 NONAME ; class QString QEglProperties::toString(void) const
 	?dumpAllConfigs@QEglProperties@@SAXXZ @ 12571 NONAME ABSENT ; void QEglProperties::dumpAllConfigs(void)
 	?defaultDisplay@QEglContext@@SAHPAVQPaintDevice@@@Z @ 12572 NONAME ABSENT ; int QEglContext::defaultDisplay(class QPaintDevice *)
 	?configProperties@QEglContext@@QBE?AVQEglProperties@@H@Z @ 12573 NONAME ABSENT ; class QEglProperties QEglContext::configProperties(int) const
-	?properties@QEglProperties@@QBEPBHXZ @ 12574 NONAME ABSENT ; int const * QEglProperties::properties(void) const
-	??0QEglContext@@QAE@XZ @ 12575 NONAME ABSENT ; QEglContext::QEglContext(void)
-	??1QEglContext@@QAE@XZ @ 12576 NONAME ABSENT ; QEglContext::~QEglContext(void)
-	?isValid@QEglContext@@QBE_NXZ @ 12577 NONAME ABSENT ; bool QEglContext::isValid(void) const
-	?value@QEglProperties@@QBEHH@Z @ 12578 NONAME ABSENT ; int QEglProperties::value(int) const
+	?properties@QEglProperties@@QBEPBHXZ @ 12574 NONAME ; int const * QEglProperties::properties(void) const
+	??0QEglContext@@QAE@XZ @ 12575 NONAME ; QEglContext::QEglContext(void)
+	??1QEglContext@@QAE@XZ @ 12576 NONAME ; QEglContext::~QEglContext(void)
+	?isValid@QEglContext@@QBE_NXZ @ 12577 NONAME ; bool QEglContext::isValid(void) const
+	?value@QEglProperties@@QBEHH@Z @ 12578 NONAME ; int QEglProperties::value(int) const
 	?clearError@QEglContext@@SAXXZ @ 12579 NONAME ABSENT ; void QEglContext::clearError(void)
-	??0QEglProperties@@QAE@H@Z @ 12580 NONAME ABSENT ; QEglProperties::QEglProperties(int)
-	?setValue@QEglProperties@@QAEXHH@Z @ 12581 NONAME ABSENT ; void QEglProperties::setValue(int, int)
-	?setPaintDeviceFormat@QEglProperties@@QAEXPAVQPaintDevice@@@Z @ 12582 NONAME ABSENT ; void QEglProperties::setPaintDeviceFormat(class QPaintDevice *)
+	??0QEglProperties@@QAE@H@Z @ 12580 NONAME ; QEglProperties::QEglProperties(int)
+	?setValue@QEglProperties@@QAEXHH@Z @ 12581 NONAME ; void QEglProperties::setValue(int, int)
+	?setPaintDeviceFormat@QEglProperties@@QAEXPAVQPaintDevice@@@Z @ 12582 NONAME ; void QEglProperties::setPaintDeviceFormat(class QPaintDevice *)
 	?destroy@QEglContext@@QAEXXZ @ 12583 NONAME ABSENT ; void QEglContext::destroy(void)
-	?setRenderableType@QEglProperties@@QAEXW4API@QEgl@@@Z @ 12584 NONAME ABSENT ; void QEglProperties::setRenderableType(enum QEgl::API)
-	?setContext@QEglContext@@QAEXH@Z @ 12585 NONAME ABSENT ; void QEglContext::setContext(int)
+	?setRenderableType@QEglProperties@@QAEXW4API@QEgl@@@Z @ 12584 NONAME ; void QEglProperties::setRenderableType(enum QEgl::API)
+	?setContext@QEglContext@@QAEXH@Z @ 12585 NONAME ; void QEglContext::setContext(int)
 	?waitClient@QEglContext@@QAEXXZ @ 12586 NONAME ABSENT ; void QEglContext::waitClient(void)
-	?isEmpty@QEglProperties@@QBE_NXZ @ 12587 NONAME ABSENT ; bool QEglProperties::isEmpty(void) const
+	?isEmpty@QEglProperties@@QBE_NXZ @ 12587 NONAME ; bool QEglProperties::isEmpty(void) const
 	?getDisplay@QEglContext@@CAHPAVQPaintDevice@@@Z @ 12588 NONAME ABSENT ; int QEglContext::getDisplay(class QPaintDevice *)
-	?isSharing@QEglContext@@QBE_NXZ @ 12589 NONAME ABSENT ; bool QEglContext::isSharing(void) const
-	?isCurrent@QEglContext@@QBE_NXZ @ 12590 NONAME ABSENT ; bool QEglContext::isCurrent(void) const
-	??0QEglProperties@@QAE@XZ @ 12591 NONAME ABSENT ; QEglProperties::QEglProperties(void)
+	?isSharing@QEglContext@@QBE_NXZ @ 12589 NONAME ; bool QEglContext::isSharing(void) const
+	?isCurrent@QEglContext@@QBE_NXZ @ 12590 NONAME ; bool QEglContext::isCurrent(void) const
+	??0QEglProperties@@QAE@XZ @ 12591 NONAME ; QEglProperties::QEglProperties(void)
 	?extensions@QEglContext@@SA?AVQString@@XZ @ 12592 NONAME ABSENT ; class QString QEglContext::extensions(void)
-	?setCurrentContext@QEglContext@@CAXW4API@QEgl@@PAV1@@Z @ 12593 NONAME ABSENT ; void QEglContext::setCurrentContext(enum QEgl::API, class QEglContext *)
-	??1QEglProperties@@QAE@XZ @ 12594 NONAME ABSENT ; QEglProperties::~QEglProperties(void)
-	?createContext@QEglContext@@QAE_NPAV1@PBVQEglProperties@@@Z @ 12595 NONAME ABSENT ; bool QEglContext::createContext(class QEglContext *, class QEglProperties const *)
-	?setConfig@QEglContext@@QAEXH@Z @ 12596 NONAME ABSENT ; void QEglContext::setConfig(int)
+	?setCurrentContext@QEglContext@@CAXW4API@QEgl@@PAV1@@Z @ 12593 NONAME ; void QEglContext::setCurrentContext(enum QEgl::API, class QEglContext *)
+	??1QEglProperties@@QAE@XZ @ 12594 NONAME ; QEglProperties::~QEglProperties(void)
+	?createContext@QEglContext@@QAE_NPAV1@PBVQEglProperties@@@Z @ 12595 NONAME ; bool QEglContext::createContext(class QEglContext *, class QEglProperties const *)
+	?setConfig@QEglContext@@QAEXH@Z @ 12596 NONAME ; void QEglContext::setConfig(int)
 	?hasExtension@QEglContext@@SA_NPBD@Z @ 12597 NONAME ABSENT ; bool QEglContext::hasExtension(char const *)
-	?doneCurrent@QEglContext@@QAE_NXZ @ 12598 NONAME ABSENT ; bool QEglContext::doneCurrent(void)
+	?doneCurrent@QEglContext@@QAE_NXZ @ 12598 NONAME ; bool QEglContext::doneCurrent(void)
 	?display@QEglContext@@QBEHXZ @ 12599 NONAME ABSENT ; int QEglContext::display(void) const
-	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
-	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
+	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ; void QEglProperties::setPixelFormat(enum QImage::Format)
+	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
 	?removeAllApplicationFonts@QFontDatabase@@SA_NXZ @ 12603 NONAME ; bool QFontDatabase::removeAllApplicationFonts()
 	??0FileInfo@QZipReader@@QAE@XZ @ 12604 NONAME ; QZipReader::FileInfo::FileInfo(void)
@@ -12770,27 +12770,32 @@ EXPORTS
 	?children_append@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@PAVQGraphicsObject@@@Z @ 12769 NONAME ; void QGraphicsItemPrivate::children_append(class QDeclarativeListProperty<class QGraphicsObject> *, class QGraphicsObject *)
 	?children_at@QGraphicsItemPrivate@@SAPAVQGraphicsObject@@PAV?$QDeclarativeListProperty@VQGraphicsObject@@@@H@Z @ 12770 NONAME ; class QGraphicsObject * QGraphicsItemPrivate::children_at(class QDeclarativeListProperty<class QGraphicsObject> *, int)
 	?children_count@QGraphicsItemPrivate@@SAHPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@@Z @ 12771 NONAME ; int QGraphicsItemPrivate::children_count(class QDeclarativeListProperty<class QGraphicsObject> *)
-	?display@QEglContext@@QAEHXZ @ 12772 NONAME  ABSENT ; int QEglContext::display(void)
-	?defaultConfig@QEgl@@YAHHW4API@1@V?$QFlags@W4ConfigOption@QEgl@@@@@Z @ 12773 NONAME ABSENT ; int QEgl::defaultConfig(int, enum QEgl::API, class QFlags<enum QEgl::ConfigOption>)
-	?configAttrib@QEglContext@@QBEHH@Z @ 12774 NONAME ABSENT ; int QEglContext::configAttrib(int) const
+	?display@QEglContext@@QAEHXZ @ 12772 NONAME ; int QEglContext::display(void)
+	?defaultConfig@QEgl@@YAHHW4API@1@V?$QFlags@W4ConfigOption@QEgl@@@@@Z @ 12773 NONAME ; int QEgl::defaultConfig(int, enum QEgl::API, class QFlags<enum QEgl::ConfigOption>)
+	?configAttrib@QEglContext@@QBEHH@Z @ 12774 NONAME ; int QEglContext::configAttrib(int) const
 	?error@QEgl@@YAHXZ @ 12775 NONAME ABSENT ; int QEgl::error(void)
 	?errorString@QEgl@@YA?AVQString@@XZ @ 12776 NONAME ABSENT ; class QString QEgl::errorString(void)
 	?configProperties@QEglContext@@QBE?AVQEglProperties@@XZ @ 12777 NONAME ABSENT ; class QEglProperties QEglContext::configProperties(void) const
-	?extensions@QEgl@@YA?AVQString@@XZ @ 12778 NONAME ABSENT ; class QString QEgl::extensions(void)
-	?nativePixmap@QEgl@@YAPAXPAVQPixmap@@@Z @ 12779 NONAME ABSENT ; void * QEgl::nativePixmap(class QPixmap *)
-	?display@QEgl@@YAHXZ @ 12780 NONAME ABSENT ; int QEgl::display(void)
-	?eglCreateImageKHR@QEgl@@YAHHHHHPBH@Z @ 12781 NONAME ABSENT ; int QEgl::eglCreateImageKHR(int, int, int, int, int const *)
-	?hasExtension@QEgl@@YA_NPBD@Z @ 12782 NONAME ABSENT ; bool QEgl::hasExtension(char const *)
-	?destroyContext@QEglContext@@QAEXXZ @ 12783 NONAME ABSENT ; void QEglContext::destroyContext(void)
-	?nativeWindow@QEgl@@YAPAXPAVQWidget@@@Z @ 12784 NONAME ABSENT ; void * QEgl::nativeWindow(class QWidget *)
-	?errorString@QEgl@@YA?AVQString@@H@Z @ 12785 NONAME ABSENT ; class QString QEgl::errorString(int)
-	?chooseConfig@QEgl@@YAHPBVQEglProperties@@W4PixelFormatMatch@1@@Z @ 12786 NONAME ABSENT ; int QEgl::chooseConfig(class QEglProperties const *, enum QEgl::PixelFormatMatch)
-	?eglDestroyImageKHR@QEgl@@YAHHH@Z @ 12787 NONAME ABSENT ; int QEgl::eglDestroyImageKHR(int, int)
+	?extensions@QEgl@@YA?AVQString@@XZ @ 12778 NONAME ; class QString QEgl::extensions(void)
+	?nativePixmap@QEgl@@YAPAXPAVQPixmap@@@Z @ 12779 NONAME ; void * QEgl::nativePixmap(class QPixmap *)
+	?display@QEgl@@YAHXZ @ 12780 NONAME ; int QEgl::display(void)
+	?eglCreateImageKHR@QEgl@@YAHHHHHPBH@Z @ 12781 NONAME ; int QEgl::eglCreateImageKHR(int, int, int, int, int const *)
+	?hasExtension@QEgl@@YA_NPBD@Z @ 12782 NONAME ; bool QEgl::hasExtension(char const *)
+	?destroyContext@QEglContext@@QAEXXZ @ 12783 NONAME ; void QEglContext::destroyContext(void)
+	?nativeWindow@QEgl@@YAPAXPAVQWidget@@@Z @ 12784 NONAME ; void * QEgl::nativeWindow(class QWidget *)
+	?errorString@QEgl@@YA?AVQString@@H@Z @ 12785 NONAME ; class QString QEgl::errorString(int)
+	?chooseConfig@QEgl@@YAHPBVQEglProperties@@W4PixelFormatMatch@1@@Z @ 12786 NONAME ; int QEgl::chooseConfig(class QEglProperties const *, enum QEgl::PixelFormatMatch)
+	?eglDestroyImageKHR@QEgl@@YAHHH@Z @ 12787 NONAME ; int QEgl::eglDestroyImageKHR(int, int)
 	?isEmpty@QItemSelectionRange@@QBE_NXZ @ 12788 NONAME ; bool QItemSelectionRange::isEmpty(void) const
 	?clearError@QEgl@@YAXXZ @ 12789 NONAME ABSENT ; void QEgl::clearError(void)
-	?nativeDisplay@QEgl@@YAHXZ @ 12790 NONAME ABSENT ; int QEgl::nativeDisplay(void)
-	?dumpAllConfigs@QEgl@@YAXXZ @ 12791 NONAME ABSENT ; void QEgl::dumpAllConfigs(void)
-	?setDeviceType@QEglProperties@@QAEXH@Z @ 12792 NONAME ABSENT ; void QEglProperties::setDeviceType(int)
+	?nativeDisplay@QEgl@@YAHXZ @ 12790 NONAME ; int QEgl::nativeDisplay(void)
+	?dumpAllConfigs@QEgl@@YAXXZ @ 12791 NONAME ; void QEgl::dumpAllConfigs(void)
+	?setDeviceType@QEglProperties@@QAEXH@Z @ 12792 NONAME ; void QEglProperties::setDeviceType(int)
 	?glyphPadding@QTextureGlyphCache@@UBEHXZ @ 12793 NONAME ; int QTextureGlyphCache::glyphPadding(void) const
-	?createSurface@QEgl@@YAHPAVQPaintDevice@@HPBVQEglProperties@@@Z @ 12794 NONAME ABSENT ; int QEgl::createSurface(class QPaintDevice *, int, class QEglProperties const *)
+	?createSurface@QEgl@@YAHPAVQPaintDevice@@HPBVQEglProperties@@@Z @ 12794 NONAME ; int QEgl::createSurface(class QPaintDevice *, int, class QEglProperties const *)
+	?setPartialUpdateSupport@QWindowSurface@@IAEX_N@Z @ 12795 NONAME ; void QWindowSurface::setPartialUpdateSupport(bool)
+	?transformChanged@QGraphicsItemPrivate@@UAEXXZ @ 12796 NONAME ; void QGraphicsItemPrivate::transformChanged(void)
+	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 12797 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
+	?name@QIcon@@QBE?AVQString@@XZ @ 12798 NONAME ; class QString QIcon::name(void) const
+	?iconName@QIconEngineV2@@QAE?AVQString@@XZ @ 12799 NONAME ; class QString QIconEngineV2::iconName(void)
 
