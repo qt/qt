@@ -599,6 +599,23 @@ void QDeclarativeMouseArea::geometryChanged(const QRectF &newGeometry,
         d->lastPos = mapFromScene(d->lastScenePos);
 }
 
+/*! \internal */
+QVariant QDeclarativeMouseArea::itemChange(GraphicsItemChange change,
+                                       const QVariant &value)
+{
+    Q_D(QDeclarativeMouseArea);
+    switch (change) {
+    case ItemVisibleHasChanged:
+        if (acceptHoverEvents() && d->hovered != (isVisible() && isUnderMouse()))
+            setHovered(!d->hovered);
+        break;
+    default:
+        break;
+    }
+
+    return QDeclarativeItem::itemChange(change, value);
+}
+
 /*!
     \qmlproperty bool MouseArea::hoverEnabled
     This property holds whether hover events are handled.
@@ -609,6 +626,22 @@ void QDeclarativeMouseArea::geometryChanged(const QRectF &newGeometry,
 
     This property affects the containsMouse property and the onEntered, onExited and onPositionChanged signals.
 */
+bool QDeclarativeMouseArea::hoverEnabled() const
+{
+    return acceptHoverEvents();
+}
+
+void QDeclarativeMouseArea::setHoverEnabled(bool h)
+{
+    Q_D(QDeclarativeMouseArea);
+    if (h == acceptHoverEvents())
+        return;
+
+    setAcceptHoverEvents(h);
+    emit hoverEnabledChanged();
+    if (d->hovered != isUnderMouse())
+        setHovered(!d->hovered);
+}
 
 /*!
     \qmlproperty bool MouseArea::containsMouse
