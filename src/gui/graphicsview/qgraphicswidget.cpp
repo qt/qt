@@ -408,12 +408,6 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 }
 
 /*!
-  \fn QGraphicsWidget::geometryChanged()
-
-  This signal gets emitted whenever the geometry is changed in setGeometry().
-*/
-
-/*!
     \fn QRectF QGraphicsWidget::rect() const
 
     Returns the item's local rect as a QRectF. This function is equivalent
@@ -753,6 +747,17 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     }
     return sh;
 }
+
+/*!
+    \property QGraphicsWidget::layout
+    \brief The layout of the widget
+*/
+
+/*!
+    \fn void QGraphicsWidget::layoutChanged()
+    This signal gets emitted whenever the layout of the item changes
+    \internal
+*/
 
 /*!
     Returns this widget's layout, or 0 if no layout is currently managing this
