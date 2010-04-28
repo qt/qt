@@ -1123,15 +1123,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         if (buttonGroup) {
             // Visibility
             buttonGroup->MakeVisible(visible || (isFullscreen && cbaRequested));
-
-            // Responsiviness
-            CEikCba *cba = static_cast<CEikCba *>( buttonGroup->ButtonGroup() ); // downcast from MEikButtonGroup
-            TUint cbaFlags = cba->ButtonGroupFlags();
-            if(windowFlags() & Qt::WindowSoftkeysRespondHint)
-                cbaFlags |= EAknCBAFlagRespondWhenInvisible;
-            else
-                cbaFlags &= ~EAknCBAFlagRespondWhenInvisible;
-            cba->SetButtonGroupFlags(cbaFlags);
         }
 #endif // Q_WS_S60
 
