@@ -104,16 +104,12 @@ public:
     void operator()(const QString &code, AST::Node *node);
 
 protected:
+
     Object *defineObjectBinding(AST::UiQualifiedId *propertyName, bool onAssignment,
-                                AST::UiQualifiedId *objectTypeName,
+                                const QString &objectType,
+                                AST::SourceLocation typeLocation,
                                 LocationSpan location,
                                 AST::UiObjectInitializer *initializer = 0);
-
-    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName, bool onAssignment,
-                                       const QString &objectType,
-                                       AST::SourceLocation typeLocation,
-                                       LocationSpan location,
-                                       AST::UiObjectInitializer *initializer = 0);
 
     QDeclarativeParser::Variant getVariant(AST::ExpressionNode *expr);
 
@@ -240,12 +236,12 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 }
 
 Object *
-ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
-                                       bool onAssignment,
-                                       const QString &objectType,
-                                       AST::SourceLocation typeLocation,
-                                       LocationSpan location,
-                                       AST::UiObjectInitializer *initializer)
+ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
+                                bool onAssignment,
+                                const QString &objectType,
+                                AST::SourceLocation typeLocation,
+                                LocationSpan location,
+                                AST::UiObjectInitializer *initializer)
 {
     int lastTypeDot = objectType.lastIndexOf(QLatin1Char('.'));
     bool isType = !objectType.isEmpty() &&
@@ -353,41 +349,6 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
 
         return obj;
     }
-}
-
-Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId, bool onAssignment,
-                                        AST::UiQualifiedId *objectTypeName,
-                                        LocationSpan location,
-                                        AST::UiObjectInitializer *initializer)
-{
-    const QString objectType = asString(objectTypeName);
-    const AST::SourceLocation typeLocation = objectTypeName->identifierToken;
-
-    if (objectType == QLatin1String("Script")) {
-
-        AST::UiObjectMemberList *it = initializer->members;
-        for (; it; it = it->next) {
-            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
-            if (! scriptBinding)
-                continue;
-
-            QString propertyName = asString(scriptBinding->qualifiedId);
-            if (propertyName == QLatin1String("source")) {
-                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    QDeclarativeParser::Variant string = getVariant(stmt->expression);
-                    if (string.isStringList()) {
-                        QStringList urls = string.asStringList();
-                        // We need to add this as a resource
-                        for (int ii = 0; ii < urls.count(); ++ii)
-                            _parser->_refUrls << QUrl(urls.at(ii));
-                    }
-                }
-            }
-        }
-
-    }
-
-    return defineObjectBinding_helper(qualifiedId, onAssignment, objectType, typeLocation, location, initializer);
 }
 
 LocationSpan ProcessAST::location(AST::UiQualifiedId *id)
@@ -664,10 +625,11 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
     LocationSpan l = location(node->firstSourceLocation(),
                               node->lastSourceLocation());
 
-    defineObjectBinding(/*propertyName = */ 0, false,
-                        node->qualifiedTypeNameId,
-                        l,
-                        node->initializer);
+    const QString objectType = asString(node->qualifiedTypeNameId);
+    const AST::SourceLocation typeLocation = node->qualifiedTypeNameId->identifierToken;
+
+    defineObjectBinding(/*propertyName = */ 0, false, objectType,
+                        typeLocation, l, node->initializer);
 
     return false;
 }
@@ -679,10 +641,11 @@ bool ProcessAST::visit(AST::UiObjectBinding *node)
     LocationSpan l = location(node->qualifiedTypeNameId->identifierToken,
                               node->initializer->rbraceToken);
 
-    defineObjectBinding(node->qualifiedId, node->hasOnToken,
-                        node->qualifiedTypeNameId,
-                        l,
-                        node->initializer);
+    const QString objectType = asString(node->qualifiedTypeNameId);
+    const AST::SourceLocation typeLocation = node->qualifiedTypeNameId->identifierToken;
+
+    defineObjectBinding(node->qualifiedId, node->hasOnToken, objectType, 
+                        typeLocation, l, node->initializer);
 
     return false;
 }
