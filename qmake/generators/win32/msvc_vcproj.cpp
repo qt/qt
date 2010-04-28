@@ -1005,13 +1005,6 @@ void VcprojGenerator::initLinkerTool()
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
     }
-
-    if(project->isActiveConfig("console")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_CONSOLE"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_WINDOWS"));
-    }
-
 }
 
 void VcprojGenerator::initResourceTool()
