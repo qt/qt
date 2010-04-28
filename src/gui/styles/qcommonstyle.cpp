@@ -981,7 +981,7 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
             qreal y = position.y() + line.y() + line.ascent();
             p->save();
             p->setFont(option->font);
-            p->drawText(int(x), int(y), elidedText);
+            p->drawText(QPointF(x, y), elidedText);
             p->restore();
             break;
         }

@@ -70,7 +70,7 @@ In QML:
 \o A state can affect the properties of other objects, not just the object owning the state (and not just that object's children).
 \endlist
 
-Here is an example of using states. In the default state \c myRect is positioned at 0,0. In the 'moved' state it is positioned at 50,50. Clicking within the mouse region changes the state from the default state to the 'moved' state, thus moving the rectangle.
+Here is an example of using states. In the default state \c myRect is positioned at 0,0. In the 'moved' state it is positioned at 50,50. Clicking within the mouse area changes the state from the default state to the 'moved' state, thus moving the rectangle.
 
 \qml
 Item {

@@ -95,7 +95,7 @@ QString QDeclarativeActionEvent::typeName() const
     return QString();
 }
 
-void QDeclarativeActionEvent::execute()
+void QDeclarativeActionEvent::execute(Reason)
 {
 }
 
@@ -104,7 +104,7 @@ bool QDeclarativeActionEvent::isReversable()
     return false;
 }
 
-void QDeclarativeActionEvent::reverse()
+void QDeclarativeActionEvent::reverse(Reason)
 {
 }
 
@@ -141,7 +141,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \note setting the state of an object from within another state of the same object is
     not allowed.
 
-    \sa {qmlstates}{States}, {state-transitions}{Transitions}
+    \sa {qmlstates}{States}, {state-transitions}{Transitions}, QtDeclarative
 */
 
 /*!

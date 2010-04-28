@@ -88,7 +88,8 @@ enum {
     SECS_PER_HOUR = 3600,
     MSECS_PER_HOUR = 3600000,
     SECS_PER_MIN = 60,
-    MSECS_PER_MIN = 60000
+    MSECS_PER_MIN = 60000,
+    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromGregorianDate(1970, 1, 1)
 };
 
 static inline QDate fixedDate(int y, int m, int d)
@@ -2321,8 +2322,8 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 
 qint64 toMSecsSinceEpoch_helper(qint64 jd, int msecs)
 {
-    int days = jd - julianDayFromGregorianDate(1970, 1, 1);
-    qint64 retval = (qlonglong(days) * MSECS_PER_DAY) + msecs;
+    qint64 days = jd - JULIAN_DAY_FOR_EPOCH;
+    qint64 retval = (days * MSECS_PER_DAY) + msecs;
     return retval;
 }
 
@@ -4017,7 +4018,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     localTM.tm_year = fakeDate.year() - 1900;
     localTM.tm_isdst = (int)isdst;
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time));
+    time_t secsSince1Jan1970UTC = (toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000);
 #else
 #if defined(Q_OS_WIN)
     _tzset();

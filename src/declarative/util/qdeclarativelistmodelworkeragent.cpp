@@ -202,10 +202,9 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
 
             FlatListModel *orig = m_orig->m_flat;
             FlatListModel *copy = s->list->m_flat;
-            if (!orig || !copy) {
-                qWarning("QML ListModel worker: sync() failed");
+            if (!orig || !copy) 
                 return QObject::event(e);
-            }
+            
             orig->m_roles = copy->m_roles;
             orig->m_strings = copy->m_strings;
             orig->m_values = copy->m_values;

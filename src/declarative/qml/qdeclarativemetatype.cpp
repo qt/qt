@@ -99,8 +99,12 @@ struct QDeclarativeMetaTypeData
     StringConverters stringConverters;
 
     struct ModuleInfo {
-        ModuleInfo(int maj, int min) : vmajor(maj), vminor(min) {}
-        int vmajor, vminor;
+        ModuleInfo(int major, int minor)
+            : vmajor_min(major), vminor_min(minor), vmajor_max(major), vminor_max(minor) {}
+        ModuleInfo(int major_min, int minor_min, int major_max, int minor_max)
+            : vmajor_min(major_min), vminor_min(minor_min), vmajor_max(major_max), vminor_max(minor_max) {}
+        int vmajor_min, vminor_min;
+        int vmajor_max, vminor_max;
     };
     typedef QHash<QByteArray, ModuleInfo> ModuleInfoHash;
     ModuleInfoHash modules;
@@ -134,6 +138,7 @@ public:
 
     int m_allocationSize;
     void (*m_newFunc)(void *);
+    QString m_noCreationReason;
 
     const QMetaObject *m_baseMetaObject;
     QDeclarativeAttachedPropertiesFunc m_attachedPropertiesFunc;
@@ -186,6 +191,7 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     d->m_listId = type.listId;
     d->m_allocationSize = type.objectSize;
     d->m_newFunc = type.create;
+    d->m_noCreationReason = type.noCreationReason;
     d->m_baseMetaObject = type.metaObject;
     d->m_attachedPropertiesFunc = type.attachedPropertiesFunction;
     d->m_attachedPropertiesType = type.attachedPropertiesMetaObject;
@@ -221,6 +227,76 @@ bool QDeclarativeType::availableInVersion(int vmajor, int vminor) const
     return vmajor > d->m_version_maj || (vmajor == d->m_version_maj && vminor >= d->m_version_min);
 }
 
+static void clone(QMetaObjectBuilder &builder, const QMetaObject *mo, 
+                  const QMetaObject *ignoreStart, const QMetaObject *ignoreEnd)
+{
+    // Clone Q_CLASSINFO
+    for (int ii = mo->classInfoOffset(); ii < mo->classInfoCount(); ++ii) {
+        QMetaClassInfo info = mo->classInfo(ii);
+
+        int otherIndex = ignoreEnd->indexOfClassInfo(info.name());
+        if (otherIndex >= ignoreStart->classInfoOffset() + ignoreStart->classInfoCount()) {
+            // Skip 
+        } else {
+            builder.addClassInfo(info.name(), info.value());
+        }
+    }
+
+    // Clone Q_PROPERTY
+    for (int ii = mo->propertyOffset(); ii < mo->propertyCount(); ++ii) {
+        QMetaProperty property = mo->property(ii);
+
+        int otherIndex = ignoreEnd->indexOfProperty(property.name());
+        if (otherIndex >= ignoreStart->propertyOffset() + ignoreStart->propertyCount()) {
+            builder.addProperty(QByteArray("__qml_ignore__") + property.name(), QByteArray("void"));
+            // Skip 
+        } else {
+            builder.addProperty(property);
+        }
+    }
+
+    // Clone Q_METHODS
+    for (int ii = mo->methodOffset(); ii < mo->methodCount(); ++ii) {
+        QMetaMethod method = mo->method(ii);
+
+        // More complex - need to search name
+        QByteArray name = method.signature();
+        int parenIdx = name.indexOf('(');
+        if (parenIdx != -1) name = name.left(parenIdx);
+
+
+        bool found = false;
+
+        for (int ii = ignoreStart->methodOffset() + ignoreStart->methodCount(); 
+             !found && ii < ignoreEnd->methodOffset() + ignoreEnd->methodCount();
+             ++ii) {
+
+            QMetaMethod other = ignoreEnd->method(ii);
+            QByteArray othername = other.signature();
+            int parenIdx = othername.indexOf('(');
+            if (parenIdx != -1) othername = othername.left(parenIdx);
+
+            found = name == othername;
+        }
+
+        QMetaMethodBuilder m = builder.addMethod(method);
+        if (found) // SKIP
+            m.setAccess(QMetaMethod::Private);
+    }
+
+    // Clone Q_ENUMS
+    for (int ii = mo->enumeratorOffset(); ii < mo->enumeratorCount(); ++ii) {
+        QMetaEnum enumerator = mo->enumerator(ii);
+
+        int otherIndex = ignoreEnd->indexOfEnumerator(enumerator.name());
+        if (otherIndex >= ignoreStart->enumeratorOffset() + ignoreStart->enumeratorCount()) {
+            // Skip 
+        } else {
+            builder.addEnumerator(enumerator);
+        }
+    }
+}
+
 void QDeclarativeTypePrivate::init() const
 {
     if (m_isSetup) return;
@@ -245,8 +321,9 @@ void QDeclarativeTypePrivate::init() const
         QDeclarativeType *t = metaTypeData()->metaObjectToType.value(mo);
         if (t) {
             if (t->d->m_extFunc) {
-                QMetaObject *mmo = new QMetaObject;
-                *mmo = *t->d->m_extMetaObject;
+                QMetaObjectBuilder builder;
+                clone(builder, t->d->m_extMetaObject, t->d->m_baseMetaObject, m_baseMetaObject);
+                QMetaObject *mmo = builder.toMetaObject();
                 mmo->d.superdata = m_baseMetaObject;
                 if (!m_metaObjects.isEmpty())
                     m_metaObjects.last().metaObject->d.superdata = mmo;
@@ -316,6 +393,11 @@ QDeclarativeCustomParser *QDeclarativeType::customParser() const
 QDeclarativeType::CreateFunc QDeclarativeType::createFunction() const
 {
     return d->m_newFunc;
+}
+
+QString QDeclarativeType::noCreationReason() const
+{
+    return d->m_noCreationReason;
 }
 
 int QDeclarativeType::createSize() const
@@ -403,10 +485,8 @@ int QDeclarativeType::index() const
 
 int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterface &interface)
 {
-    if (interface.version > 0) {
-        qWarning("Cannot mix incompatible QML versions.");
-        return -1;
-    }
+    if (interface.version > 0) 
+        qFatal("qmlRegisterType(): Cannot mix incompatible QML versions.");
 
     QWriteLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
@@ -437,7 +517,7 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     if (type.elementName) {
         for (int ii = 0; type.elementName[ii]; ++ii) {
             if (!isalnum(type.elementName[ii])) {
-                qWarning("QDeclarativeMetaType: Invalid QML element name %s", type.elementName);
+                qWarning("qmlRegisterType(): Invalid QML element name \"%s\"", type.elementName);
                 return -1;
             }
         }
@@ -468,9 +548,15 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     if (type.uri) {
         QByteArray mod(type.uri);
         QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(mod);
-        if (it == data->modules.end()
-                || ((*it).vmajor < type.versionMajor || ((*it).vmajor == type.versionMajor && (*it).vminor < type.versionMinor))) {
+        if (it == data->modules.end()) {
+            // New module
             data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo(type.versionMajor,type.versionMinor));
+        } else if ((*it).vmajor_max < type.versionMajor || ((*it).vmajor_max == type.versionMajor && (*it).vminor_max < type.versionMinor)) {
+            // Newer module
+            data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo((*it).vmajor_min, (*it).vminor_min, type.versionMajor, type.versionMinor));
+        } else if ((*it).vmajor_min > type.versionMajor || ((*it).vmajor_min == type.versionMajor && (*it).vminor_min > type.versionMinor)) {
+            // Older module
+            data->modules.insert(mod, QDeclarativeMetaTypeData::ModuleInfo(type.versionMajor, type.versionMinor, (*it).vmajor_min, (*it).vminor_min));
         }
     }
 
@@ -478,15 +564,23 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
 }
 
 /*
-    Have any types been registered for \a module with at least versionMajor.versionMinor.
+    Have any types been registered for \a module with at least versionMajor.versionMinor, and types
+    for \a module with at most versionMajor.versionMinor.
+
+    So if only 4.7 and 4.9 have been registered, 4.7,4.8, and 4.9 are valid, but not 4.6 nor 4.10.
+
+    Passing -1 for both \a versionMajor \a versionMinor will return true if any version is installed.
 */
 bool QDeclarativeMetaType::isModule(const QByteArray &module, int versionMajor, int versionMinor)
 {
     QDeclarativeMetaTypeData *data = metaTypeData();
     QDeclarativeMetaTypeData::ModuleInfoHash::Iterator it = data->modules.find(module);
     return it != data->modules.end()
-        && ((*it).vmajor > versionMajor ||
-                ((*it).vmajor == versionMajor && (*it).vminor >= versionMinor));
+        && ((versionMajor<0 && versionMinor<0) ||
+                (((*it).vmajor_max > versionMajor ||
+                    ((*it).vmajor_max == versionMajor && (*it).vminor_max >= versionMinor))
+                && ((*it).vmajor_min < versionMajor ||
+                    ((*it).vmajor_min == versionMajor && (*it).vminor_min <= versionMinor))));
 }
 
 QObject *QDeclarativeMetaType::toQObject(const QVariant &v, bool *ok)

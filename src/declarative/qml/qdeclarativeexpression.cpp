@@ -479,18 +479,18 @@ QVariant QDeclarativeExpressionPrivate::value(QObject *secondaryScope, bool *isU
 }
 
 /*!
-    Returns the value of the expression, or an invalid QVariant if the
-    expression is invalid or has an error.
+    Evaulates the expression, returning the result of the evaluation,
+    or an invalid QVariant if the expression is invalid or has an error.
 
-    \a isUndefined is set to true if the expression resulted in an
+    \a valueIsUndefined is set to true if the expression resulted in an
     undefined value.
 
     \sa hasError(), error()
 */
-QVariant QDeclarativeExpression::value(bool *isUndefined)
+QVariant QDeclarativeExpression::evaluate(bool *valueIsUndefined)
 {
     Q_D(QDeclarativeExpression);
-    return d->value(0, isUndefined);
+    return d->value(0, valueIsUndefined);
 }
 
 /*!
@@ -569,7 +569,7 @@ QObject *QDeclarativeExpression::scopeObject() const
 }
 
 /*!
-    Returns true if the last call to value() resulted in an error, 
+    Returns true if the last call to evaluate() resulted in an error,
     otherwise false.
     
     \sa error(), clearError()
@@ -593,7 +593,7 @@ void QDeclarativeExpression::clearError()
 }
 
 /*!
-    Return any error from the last call to value().  If there was no error,
+    Return any error from the last call to evaluate().  If there was no error,
     this returns an invalid QDeclarativeError instance.
 
     \sa hasError(), clearError()
@@ -606,10 +606,9 @@ QDeclarativeError QDeclarativeExpression::error() const
 }
 
 /*! \internal */
-void QDeclarativeExpression::__q_notify()
+void QDeclarativeExpressionPrivate::_q_notify()
 {
-    Q_D(QDeclarativeExpression);
-    d->emitValueChanged();
+    emitValueChanged();
 }
 
 void QDeclarativeExpressionPrivate::clearGuards()
@@ -625,7 +624,7 @@ void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEn
 
     static int notifyIdx = -1;
     if (notifyIdx == -1) 
-        notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("__q_notify()");
+        notifyIdx = QDeclarativeExpression::staticMetaObject.indexOfMethod("_q_notify()");
 
     if (properties.count() != data->guardListLength) {
         QDeclarativeNotifierEndpoint *newGuardList = 
@@ -695,14 +694,13 @@ void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEn
             if (!outputWarningHeader) {
                 outputWarningHeader = true;
                 qWarning() << "QDeclarativeExpression: Expression" << q->expression()
-                    << "depends on non-NOTIFYable properties:";
+                           << "depends on non-NOTIFYable properties:";
             }
 
             const QMetaObject *metaObj = property.object->metaObject();
             QMetaProperty metaProp = metaObj->property(property.coreIndex);
 
-            qWarning().nospace() << "    " << metaObj->className()
-                                 << "::" << metaProp.name();
+            qWarning().nospace() << "    " << metaObj->className() << "::" << metaProp.name();
         }
     }
 }
@@ -712,7 +710,7 @@ void QDeclarativeExpressionPrivate::updateGuards(const QPODVector<QDeclarativeEn
 
     Emitted each time the expression value changes from the last time it was
     evaluated.  The expression must have been evaluated at least once (by
-    calling QDeclarativeExpression::value()) before this signal will be emitted.
+    calling QDeclarativeExpression::evaluate()) before this signal will be emitted.
 */
 
 void QDeclarativeExpressionPrivate::emitValueChanged()
@@ -772,3 +770,4 @@ bool QDeclarativeAbstractExpression::isValid() const
 
 QT_END_NAMESPACE
 
+#include <moc_qdeclarativeexpression.cpp>

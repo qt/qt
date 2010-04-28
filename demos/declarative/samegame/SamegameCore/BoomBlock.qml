@@ -1,7 +1,8 @@
 import Qt 4.7
 import Qt.labs.particles 1.0
 
-Item { id:block
+Item {
+    id: block
     property bool dying: false
     property bool spawned: false
     property int type: 0
@@ -11,7 +12,8 @@ Item { id:block
     SpringFollow on x { enabled: spawned; to: targetX; spring: 2; damping: 0.2 }
     SpringFollow on y { to: targetY; spring: 2; damping: 0.2 }
 
-    Image { id: img
+    Image {
+        id: img
         source: {
             if(type == 0){
                 "pics/redStone.png";
@@ -26,10 +28,10 @@ Item { id:block
         anchors.fill: parent
     }
 
-    Particles { 
+    Particles {
         id: particles
 
-        width: 1; height: 1 
+        width: 1; height: 1
         anchors.centerIn: parent
 
         emissionRate: 0

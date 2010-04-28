@@ -73,7 +73,7 @@ Rectangle {
 
         Button {
             anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
-            text: "New Game" 
+            text: "New Game"
             onClicked: SameGame.startNewGame()
         }
 

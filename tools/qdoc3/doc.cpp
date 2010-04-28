@@ -3036,7 +3036,7 @@ QString Doc::canonicalTitle(const QString &title)
     QString result;
     result.reserve(title.size());
 
-    bool slurping = false;
+    bool dashAppended = false;
     bool begun = false;
     int lastAlnum = 0;
     for (int i = 0; i != title.size(); ++i) {
@@ -3047,18 +3047,21 @@ QString Doc::canonicalTitle(const QString &title)
         if (alnum) {
             result += QLatin1Char(c);
             begun = true;
-            slurping = false;
+            dashAppended = false;
             lastAlnum = result.size();
         }
-        else if (!slurping) {
+        else if (!dashAppended) {
             if (begun)
                 result += QLatin1Char('-');
-            slurping = true;
+            dashAppended = true;
         }
+#if 0
+        // This was screwing things up.
         else {
             result += title[i];
             lastAlnum = result.size();
         }
+#endif        
     }
     result.truncate(lastAlnum);
     return result;

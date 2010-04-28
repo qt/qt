@@ -53,6 +53,7 @@
 #include <QFontDatabase>
 
 #include <private/qobject_p.h>
+#include <qdeclarativeinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,7 +137,7 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
             d->status = QDeclarativeFontLoader::Ready;
         } else {
             d->status = QDeclarativeFontLoader::Error;
-            qWarning() << "Cannot load font:" << url;
+            qmlInfo(this) << "Cannot load font: \"" << url.toString() << "\"";
         }
         emit statusChanged();
     } else
@@ -181,7 +182,7 @@ void QDeclarativeFontLoader::setName(const QString &name)
 }
 
 /*!
-    \qmlproperty enum FontLoader::status
+    \qmlproperty enumeration FontLoader::status
 
     This property holds the status of font loading.  It can be one of:
     \list
@@ -231,7 +232,7 @@ void QDeclarativeFontLoader::replyFinished()
             d->addFontToDatabase(ba);
         } else {
             d->status = Error;
-            qWarning() << "Cannot load font:" << d->reply->url();
+            qmlInfo(this) << "Cannot load font: \"" << d->reply->url().toString() << "\"";
             emit statusChanged();
         }
         d->reply->deleteLater();
@@ -250,7 +251,7 @@ void QDeclarativeFontLoaderPrivate::addFontToDatabase(const QByteArray &ba)
         status = QDeclarativeFontLoader::Ready;
     } else {
         status = QDeclarativeFontLoader::Error;
-        qWarning() << "Cannot load font:" << url;
+        qmlInfo(q) << "Cannot load font: \"" << url.toString() << "\"";
     }
     emit q->statusChanged();
 }

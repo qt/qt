@@ -62,10 +62,12 @@ QT_BEGIN_NAMESPACE
 class Q_OPENGL_EXPORT QGLGraphicsSystem : public QGraphicsSystem
 {
 public:
-    QGLGraphicsSystem();
+    QGLGraphicsSystem(bool useX11GL);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
+private:
+    bool m_useX11GL;
 };
 
 QT_END_NAMESPACE

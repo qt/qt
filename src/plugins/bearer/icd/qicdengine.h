@@ -91,6 +91,7 @@ public:
 
     bool hasIdentifier(const QString &id);
 
+    Q_INVOKABLE void initialize();
     Q_INVOKABLE void requestUpdate();
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
@@ -123,7 +124,6 @@ public:
         emit configurationChanged(ptr);
     }
 
-    void init();
     void cleanup();
 
     void addConfiguration(QString &iap_id);

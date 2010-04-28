@@ -79,6 +79,7 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #include "qlayout.h"
 #include "qtooltip.h"
 #include "qt_windows.h"
+#include "qscrollbar.h"
 #if defined(QT_NON_COMMERCIAL)
 #include "qnc_win.h"
 #endif
@@ -700,6 +701,21 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     }
     QApplication::setPalette(menu, "QMenuBar");
 }
+
+static void qt_set_windows_updateScrollBar(QWidget *widget)
+{
+    QList<QObject*> children = widget->children();
+    for (int i = 0; i < children.size(); ++i) {
+        QObject *o = children.at(i);
+        if(!o->isWidgetType())
+            continue;
+        if (QWidget *w = static_cast<QWidget *>(o))
+            qt_set_windows_updateScrollBar(w);
+    }
+    if (qobject_cast<QScrollBar*>(widget))
+        widget->updateGeometry();
+}
+
 
 /*****************************************************************************
   qt_init() - initializes Qt for Windows
@@ -1930,6 +1946,15 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     }
                 }
             }
+            else if (msg.wParam == SPI_SETNONCLIENTMETRICS) {
+                widget = (QETWidget*)QWidget::find(hwnd);
+                if (widget && !widget->parentWidget()) {
+                    qt_set_windows_updateScrollBar(widget);
+                    QEvent e(QEvent::LayoutRequest);
+                    QApplication::sendEvent(widget, &e);
+                }
+        }
+
             break;
 
         case WM_PAINT:                                // paint event

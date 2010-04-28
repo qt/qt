@@ -242,6 +242,6 @@ void Browser::updateActions()
 void Browser::about()
 {
     QMessageBox::about(this, tr("About"), tr("The SQL Browser demonstration "
-        "show how a data browser can be used to visualize the results of SQL"
+        "shows how a data browser can be used to visualize the results of SQL"
         "statements on a live database"));
 }

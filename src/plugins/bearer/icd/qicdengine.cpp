@@ -225,8 +225,6 @@ QIcdEngine::QIcdEngine(QObject *parent)
 :   QBearerEngine(parent), iapMonitor(new IapMonitor), m_dbusInterface(0),
     firstUpdate(true), m_scanGoingOn(false)
 {
-    QMetaObject::invokeMethod(this, "doRequestUpdate", Qt::QueuedConnection);
-    init();
 }
 
 QIcdEngine::~QIcdEngine()
@@ -243,8 +241,10 @@ QNetworkConfigurationManager::Capabilities QIcdEngine::capabilities() const
            QNetworkConfigurationManager::NetworkSessionRequired;
 }
 
-void QIcdEngine::init()
+void QIcdEngine::initialize()
 {
+    QMutexLocker locker(&mutex);
+
     // Setup DBus Interface for ICD
     m_dbusInterface = new QDBusInterface(ICD_DBUS_API_INTERFACE,
                                          ICD_DBUS_API_PATH,
@@ -272,6 +272,8 @@ void QIcdEngine::init()
 
     QNetworkConfigurationPrivatePointer ptr(cpPriv);
     userChoiceConfigurations.insert(cpPriv->id, ptr);
+
+    doRequestUpdate();
 }
 
 static inline QString network_attrs_to_security(uint network_attrs)

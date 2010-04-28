@@ -82,7 +82,7 @@
 #define GLX_SAMPLES_ARB         100001
 #endif
 
-#ifdef QT_OPENGL_ES
+#ifndef QT_NO_EGL
 #include <private/qeglcontext_p.h>
 #endif
 
@@ -94,9 +94,10 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_WS_WIN
 extern Q_GUI_EXPORT bool qt_win_owndc_required;
 #endif
-QGLGraphicsSystem::QGLGraphicsSystem()
-    : QGraphicsSystem()
+QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
+    : QGraphicsSystem(), m_useX11GL(useX11GL)
 {
+    QGLWindowSurface::surfaceFormat.setSampleBuffers(true);
 #if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
     // only override the system defaults if the user hasn't already
     // picked a visual
@@ -352,6 +353,11 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     QGLContext *ctx = new QGLContext(surfaceFormat, widget);
     ctx->create(qt_gl_share_widget()->context());
+
+#ifndef QT_NO_EGL
+    if (ctx->d_func()->eglContext->configAttrib(EGL_SWAP_BEHAVIOR) != EGL_BUFFER_PRESERVED)
+        setPartialUpdateSupport(false); // Force full-screen updates
+#endif
 
     widgetPrivate->extraData()->glContext = ctx;
 

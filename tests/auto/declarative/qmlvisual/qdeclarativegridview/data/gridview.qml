@@ -1,4 +1,4 @@
-import Qt.VisualTest 4.6
+import Qt.VisualTest 4.7
 
 VisualTest {
     Frame {

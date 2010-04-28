@@ -160,8 +160,6 @@ namespace QDeclarativeParser
         Property *defaultProperty;
         QHash<QByteArray, Property *> properties;
 
-        QList<Object *> scriptBlockObjects;
-
         // Output of the compilation phase (these properties continue to exist
         // in either the defaultProperty or properties members too)
         void addValueProperty(Property *);
@@ -190,7 +188,9 @@ namespace QDeclarativeParser
             QList<int> lineNumbers;
             QList<Pragmas> pragmas;
         };
+#if 0
         QList<ScriptBlock> scripts;
+#endif
 
         // The bytes to cast instances by to get to the QDeclarativeParserStatus 
         // interface.  -1 indicates the type doesn't support this interface.
