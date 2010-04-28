@@ -1122,7 +1122,7 @@ QString QDeclarativeTextInput::displayText() const
 void QDeclarativeTextInput::moveCursorSelection(int position)
 {
     Q_D(QDeclarativeTextInput);
-    d->control->moveCursor(pos, true);
+    d->control->moveCursor(position, true);
 }
 
 void QDeclarativeTextInputPrivate::init()
