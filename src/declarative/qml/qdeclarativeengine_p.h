@@ -57,6 +57,7 @@
 
 #include "private/qdeclarativeclassfactory_p.h"
 #include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativeimport_p.h"
 #include "private/qpodvector_p.h"
 #include "qdeclarative.h"
 #include "private/qdeclarativevaluetype_p.h"
@@ -164,7 +165,6 @@ public:
 
     bool outputWarningsToStdErr;
 
-    struct ImportedNamespace;
     QDeclarativeContextScriptClass *contextClass;
     QDeclarativeContextData *sharedContext;
     QObject *sharedScope;
@@ -237,8 +237,8 @@ public:
     mutable QMutex mutex;
 
     QDeclarativeCompositeTypeManager typeManager;
-    QStringList fileImportPath;
-    QStringList filePluginPath;
+    QDeclarativeImportDatabase importDatabase;
+
     QString offlineStoragePath;
 
     mutable quint32 uniqueId;
@@ -251,46 +251,6 @@ public:
     QHash<const QMetaObject *, QDeclarativePropertyCache *> propertyCache;
     inline QDeclarativePropertyCache *cache(QObject *obj);
     inline QDeclarativePropertyCache *cache(const QMetaObject *);
-
-    // ### This whole class is embarrassing
-    struct Imports {
-        Imports();
-        ~Imports();
-        Imports(const Imports &copy);
-        Imports &operator =(const Imports &copy);
-
-        void setBaseUrl(const QUrl& url);
-        QUrl baseUrl() const;
-
-        void cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
-
-    private:
-        friend class QDeclarativeEnginePrivate;
-        QDeclarativeImportsPrivate *d;
-    };
-
-
-    QSet<QString> initializedPlugins;
-
-    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
-                          const QStringList &suffixes,
-                          const QString &prefix = QString());
-    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName);
-
-
-    bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
-                     const QString& uri, const QString& prefix, int vmaj, int vmin, 
-                     QDeclarativeScriptParser::Import::Type importType,
-                     QString *errorString) const;
-    bool resolveType(const Imports&, const QByteArray& type,
-                     QDeclarativeType** type_return, QUrl* url_return,
-                     int *version_major, int *version_minor,
-                     ImportedNamespace** ns_return,
-                     QString *errorString = 0) const;
-    void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type,
-                                QDeclarativeType** type_return, QUrl* url_return,
-                                int *version_major, int *version_minor ) const;
-
 
     void registerCompositeType(QDeclarativeCompiledData *);
 
