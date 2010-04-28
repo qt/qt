@@ -1680,7 +1680,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
 {
     Text breadcrumb;
     if (node->type() == Node::Class) {
-        ClassNode* cn = static_cast<const ClassNode*>(node);
+        const ClassNode* cn = static_cast<const ClassNode*>(node);
         QString name =  node->moduleName();
         if (!name.isEmpty()) {
             out() << "              <li>";
