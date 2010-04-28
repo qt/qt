@@ -315,6 +315,9 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     allCookies += secureCookie;
     QTest::newRow("no-match-secure-1") << allCookies << "http://nokia.com/web" << result;
     QTest::newRow("no-match-secure-2") << allCookies << "http://qt.nokia.com/web" << result;
+    result += secureCookie;
+    QTest::newRow("match-secure-1") << allCookies << "https://nokia.com/web" << result;
+    QTest::newRow("match-secure-2") << allCookies << "https://qt.nokia.com/web" << result;
 
 }
 
