@@ -341,14 +341,14 @@ private:
                 data.append("\n");
             }
         }
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         settings.setValue("Cookies",data);
     }
 
     void load()
     {
         QMutexLocker lock(&mutex);
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         QByteArray data = settings.value("Cookies").toByteArray();
         setAllCookies(QNetworkCookie::parseCookies(data));
     }
@@ -466,6 +466,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
     QDeclarativeViewer::registerTypes();
+    setWindowTitle(tr("Qt Qml Runtime"));
 
     devicemode = false;
     skin = 0;
@@ -535,6 +536,14 @@ QDeclarativeViewer::~QDeclarativeViewer()
 {
     canvas->engine()->setNetworkAccessManagerFactory(0);
     delete namFactory;
+}
+
+int QDeclarativeViewer::menuBarHeight() const
+{
+    if (!(windowFlags() & Qt::FramelessWindowHint))
+        return menuBar()->height();
+    else
+        return 0; // don't create menu
 }
 
 QMenuBar *QDeclarativeViewer::menuBar() const
@@ -916,7 +925,7 @@ void QDeclarativeViewer::statusChanged()
         initialSize = canvas->sizeHint();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
             QSize newWindowSize = initialSize;
-            newWindowSize.setHeight(newWindowSize.height()+menuBar()->height());
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
             updateSizeHints();
             resize(newWindowSize);
         }
@@ -938,7 +947,7 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
     else
         url = QUrl(file_or_url);
-    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
+    setWindowTitle(tr("%1 - Qt Qml Runtime").arg(file_or_url));
 
     if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
@@ -1065,8 +1074,10 @@ void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
     } else if (skin) {
         skin = 0;
         clearMask();
-        menuBar()->clear();
-        createMenu(menuBar(),0);
+        if ((windowFlags() & Qt::FramelessWindowHint)) {
+            menuBar()->clear();
+            createMenu(menuBar(),0);
+        }
         canvas->setParent(this, Qt::SubWindow);
         setParent(0,windowFlags()); // recreate
         mb->show();
@@ -1079,7 +1090,7 @@ void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
             canvas->setFixedSize(initialSize);
         }
         QSize newWindowSize = canvas->size();
-        newWindowSize.setHeight(newWindowSize.height()+menuBar()->height());
+        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
         resize(newWindowSize);
         show();
     }
@@ -1401,9 +1412,8 @@ void QDeclarativeViewer::updateSizeHints()
 {
     if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
         QSize newWindowSize = canvas->sizeHint();
-        if (!skin) {
-            newWindowSize.setHeight(newWindowSize.height()+menuBar()->height());
-        }
+        if (!skin)
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
         if (!isFullScreen() && !isMaximized()) {
             resize(newWindowSize);
             setFixedSize(newWindowSize);
@@ -1430,7 +1440,7 @@ void QDeclarativeViewer::registerTypes()
 
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
-        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation","");
+        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
         registered = true;
     }
 }

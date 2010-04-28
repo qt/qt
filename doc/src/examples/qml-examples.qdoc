@@ -1,0 +1,260 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \title Animations
+    \example declarative/animations
+
+    This example shows how to use animations in QML.
+*/
+
+/*!
+    \title AspectRatio
+    \example declarative/aspectratio
+
+    This example shows how to implement different aspect ratios in QML.
+*/
+
+/*!
+    \example declarative/behaviors
+    \title Behaviors
+*/
+
+/*!
+    \title Border Image
+    \example declarative/border-image
+
+    This example shows how to use a BorderImage in QML.
+*/
+
+/*!
+    \title Clocks
+    \example declarative/clocks
+
+    This example shows how to create a Clock component and reuse it in a grid.
+*/
+
+/*!
+    \title Connections
+    \example declarative/connections
+
+    This example shows how to use a Connection element in QML.
+*/
+
+/*!
+    \title Dial
+    \example declarative/dial
+
+    This example shows how to implement a dial in QML.
+*/
+
+/*!
+    \title Dynamic
+    \example declarative/dynamic
+
+    This example shows how to create dynamic objects QML.
+*/
+
+/*!
+    \example declarative/extending
+    \title Extending
+*/
+
+/*!
+    \example declarative/fillmode
+    \title Fillmode
+*/
+
+/*!
+    \title Flipable
+    \example declarative/flipable
+
+    This example shows how to use a Flipable element in QML.
+*/
+
+/*!
+    \title Focus
+    \example declarative/focus
+
+    This example shows how to handle keys and focus in QML.
+
+    \image qml-focus-example.png
+*/
+
+/*!
+    \example declarative/fonts
+    \title Fonts
+*/
+
+/*!
+    \example declarative/gridview
+    \title GridView
+*/
+
+/*!
+    \example declarative/imageprovider
+    \title Image Provider
+*/
+
+/*!
+    \example declarative/images
+    \title Images
+*/
+
+/*!
+    \example declarative/layouts
+    \title Layouts
+*/
+
+/*!
+    \example declarative/listmodel-threaded
+    \title ListModel Threaded
+*/
+
+/*!
+    \example declarative/listview
+    \title ListView
+*/
+
+/*!
+    \example declarative/mousearea
+    \title Mouse Area
+*/
+
+/*!
+    \example declarative/objectlistmodel
+    \title Object ListModel
+*/
+
+/*!
+    \example declarative/package
+    \title Package
+*/
+
+/*!
+    \example declarative/parallax
+    \title Parallax
+*/
+
+/*!
+    \example declarative/plugins
+    \title Plugins
+*/
+
+/*!
+    \example declarative/progressbar
+    \title Progress Bars
+*/
+
+/*!
+    \example declarative/proxywidgets
+    \title Proxy Widgets
+*/
+
+/*!
+    \example declarative/scrollbar
+    \title Scrollbar
+*/
+
+/*!
+    \example declarative/searchbox
+    \title Search Box
+*/
+
+/*!
+    \example declarative/slideswitch
+    \title Slide Switch
+*/
+
+/*!
+    \example declarative/sql
+    \title SQL
+*/
+
+/*!
+    \example declarative/states
+    \title States
+*/
+
+/*!
+    \example declarative/stringlistmodel
+    \title String ListModel
+*/
+
+/*!
+    \example declarative/tabwidget
+    \title Tab Widget
+*/
+
+/*!
+    \example declarative/tic-tac-toe
+    \title Tic-Tac-Toe
+*/
+
+/*!
+    \example declarative/tvtennis
+    \title TV Tennis
+*/
+
+/*!
+    \example declarative/velocity
+    \title Velocity
+*/
+
+/*!
+    \example declarative/webview
+    \title WebView
+*/
+
+/*!
+    \example declarative/workerscript
+    \title WorkerScript
+*/
+
+/*!
+    \example declarative/xmldata
+    \title XML Data
+*/
+
+/*!
+    \example declarative/xmlhttprequest
+    \title XMLHttpRequest
+*/

@@ -82,6 +82,7 @@ public:
     virtual bool isValid() const = 0;
     virtual QDeclarativeItem *item(int index, bool complete=true) = 0;
     virtual ReleaseFlags release(QDeclarativeItem *item) = 0;
+    virtual bool completePending() const = 0;
     virtual void completeItem() = 0;
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
     virtual QString stringValue(int, const QString &) { return QString(); }
@@ -123,6 +124,7 @@ public:
     virtual bool isValid() const;
     virtual QDeclarativeItem *item(int index, bool complete=true);
     virtual ReleaseFlags release(QDeclarativeItem *item);
+    virtual bool completePending() const;
     virtual void completeItem();
     virtual QString stringValue(int index, const QString &role);
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext);
@@ -177,6 +179,7 @@ public:
     QDeclarativeItem *item(int index, bool complete=true);
     QDeclarativeItem *item(int index, const QByteArray &, bool complete=true);
     ReleaseFlags release(QDeclarativeItem *item);
+    bool completePending() const;
     void completeItem();
     virtual QString stringValue(int index, const QString &role);
     QVariant evaluate(int index, const QString &expression, QObject *objectContext);

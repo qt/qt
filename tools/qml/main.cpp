@@ -198,7 +198,7 @@ int main(int argc, char ** argv)
 #endif
 
     QApplication app(argc, argv);
-    app.setApplicationName("viewer");
+    app.setApplicationName("QtQmlRuntime");
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
@@ -281,7 +281,7 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             app.setStartDragDistance(QString(argv[++i]).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
-            qWarning("Qt Declarative UI Viewer version %s", QT_VERSION_STR);
+            qWarning("Qt Qml Runtime version %s", QT_VERSION_STR);
             exit(0);
         } else if (arg == "-translation") {
             if (lastArg) usage();
@@ -388,8 +388,6 @@ int main(int argc, char ** argv)
     }  else if (!script.isEmpty()) {
         usage();
     }
-
-    viewer->addLibraryPath(QCoreApplication::applicationDirPath());
 
     foreach (QString lib, imports)
         viewer->addLibraryPath(lib);

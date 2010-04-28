@@ -112,6 +112,7 @@ Q_DECLARE_METATYPE(QDeclarativeProperty)
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
+DEFINE_BOOL_CONFIG_OPTION(qmlCheckTypes, QML_CHECK_TYPES)
 
 /*!
   \qmlclass QtObject QObject
@@ -293,6 +294,10 @@ QNetworkAccessManager *QDeclarativeScriptEngine::networkAccessManager()
 
 QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
 {
+    Q_ASSERT(inProgressCreations == 0);
+    Q_ASSERT(bindValues.isEmpty());
+    Q_ASSERT(parserStatus.isEmpty());
+
     while (cleanup) {
         QDeclarativeCleanup *c = cleanup;
         cleanup = c->next;
@@ -317,10 +322,6 @@ QDeclarativeEnginePrivate::~QDeclarativeEnginePrivate()
     delete globalClass;
     globalClass = 0;
 
-    for(int ii = 0; ii < bindValues.count(); ++ii)
-        clear(bindValues[ii]);
-    for(int ii = 0; ii < parserStatus.count(); ++ii)
-        clear(parserStatus[ii]);
     for(QHash<int, QDeclarativeCompiledData*>::ConstIterator iter = m_compositeTypes.constBegin(); iter != m_compositeTypes.constEnd(); ++iter)
         (*iter)->release();
     for(QHash<const QMetaObject *, QDeclarativePropertyCache *>::Iterator iter = propertyCache.begin(); iter != propertyCache.end(); ++iter)
@@ -770,7 +771,9 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
     if (!object)
         return;
 
-    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
+    // No need to do anything if CppOwnership and there is no QDeclarativeData as
+    // the current ownership must be CppOwnership
+    QDeclarativeData *ddata = QDeclarativeData::get(object, ownership == JavaScriptOwnership);
     if (!ddata)
         return;
 
@@ -808,9 +811,6 @@ void qmlExecuteDeferred(QObject *object)
         data->deferredComponent = 0;
 
         QDeclarativeComponentPrivate::complete(ep, &state);
-
-        if (!state.errors.isEmpty())
-            ep->warning(state.errors);
     }
 }
 
@@ -1161,7 +1161,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else { 
-            return ctxt->throwError("Qt.formatDateTime(): Invalid datetime formate");
+            return ctxt->throwError("Qt.formatDateTime(): Invalid datetime format");
         }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
@@ -1543,60 +1543,127 @@ struct QDeclarativeEnginePrivate::ImportedNamespace {
     QList<bool> isLibrary;
     QList<QDeclarativeDirComponents> qmlDirComponents;
 
-    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return, QUrl* url_return,
-              QUrl *base = 0)
+
+    bool find_helper(int i, const QByteArray& type, int *vmajor, int *vminor,
+                                 QDeclarativeType** type_return, QUrl* url_return,
+                                 QUrl *base = 0, bool *typeRecursionDetected = 0)
     {
-        for (int i=0; i<urls.count(); ++i) {
-            int vmaj = majversions.at(i);
-            int vmin = minversions.at(i);
+        int vmaj = majversions.at(i);
+        int vmin = minversions.at(i);
 
-            QByteArray qt = uris.at(i).toUtf8();
-            qt += '/';
-            qt += type;
+        QByteArray qt = uris.at(i).toUtf8();
+        qt += '/';
+        qt += type;
 
-            QDeclarativeType *t = QDeclarativeMetaType::qmlType(qt,vmaj,vmin);
-            if (t) {
-                if (vmajor) *vmajor = vmaj;
-                if (vminor) *vminor = vmin;
-                if (type_return)
-                    *type_return = t;
-                return true;
-            }
+        QDeclarativeType *t = QDeclarativeMetaType::qmlType(qt,vmaj,vmin);
+        if (t) {
+            if (vmajor) *vmajor = vmaj;
+            if (vminor) *vminor = vmin;
+            if (type_return)
+                *type_return = t;
+            return true;
+        }
 
-            QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
-            QDeclarativeDirComponents qmldircomponents = qmlDirComponents.at(i);
+        QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
+        QDeclarativeDirComponents qmldircomponents = qmlDirComponents.at(i);
 
-            bool typeWasDeclaredInQmldir = false;
-            if (!qmldircomponents.isEmpty()) {
-                const QString typeName = QString::fromUtf8(type);
-                foreach (const QDeclarativeDirParser::Component &c, qmldircomponents) {
-                    if (c.typeName == typeName) {
-                        typeWasDeclaredInQmldir = true;
+        bool typeWasDeclaredInQmldir = false;
+        if (!qmldircomponents.isEmpty()) {
+            const QString typeName = QString::fromUtf8(type);
+            foreach (const QDeclarativeDirParser::Component &c, qmldircomponents) {
+                if (c.typeName == typeName) {
+                    typeWasDeclaredInQmldir = true;
 
-                        // importing version -1 means import ALL versions
-                        if ((vmaj == -1) || (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion))) {
-                            QUrl candidate = url.resolved(QUrl(c.fileName));
-                            if (c.internal && base) {
-                                if (base->resolved(QUrl(c.fileName)) != candidate)
-                                    continue; // failed attempt to access an internal type
-                            }
-                            if (url_return)
-                                *url_return = candidate;
-                            return true;
+                    // importing version -1 means import ALL versions
+                    if ((vmaj == -1) || (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion))) {
+                        QUrl candidate = url.resolved(QUrl(c.fileName));
+                        if (c.internal && base) {
+                            if (base->resolved(QUrl(c.fileName)) != candidate)
+                                continue; // failed attempt to access an internal type
                         }
+                        if (base && *base == candidate) {
+                            if (typeRecursionDetected)
+                                *typeRecursionDetected = true;
+                            continue; // no recursion
+                        }
+                        if (url_return)
+                            *url_return = candidate;
+                        return true;
                     }
                 }
             }
+        }
 
-            if (!typeWasDeclaredInQmldir  && !isLibrary.at(i)) {
-                // XXX search non-files too! (eg. zip files, see QT-524)
-                QFileInfo f(toLocalFileOrQrc(url));
-                if (f.exists()) {
+        if (!typeWasDeclaredInQmldir  && !isLibrary.at(i)) {
+            // XXX search non-files too! (eg. zip files, see QT-524)
+            QFileInfo f(toLocalFileOrQrc(url));
+            if (f.exists()) {
+                if (base && *base == url) { // no recursion
+                    if (typeRecursionDetected)
+                        *typeRecursionDetected = true;
+                } else {
                     if (url_return)
                         *url_return = url;
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
+              QUrl* url_return, QUrl *base = 0, QString *errorString = 0)
+    {
+        bool typeRecursionDetected = false;
+        for (int i=0; i<urls.count(); ++i) {
+            if (find_helper(i, type, vmajor, vminor, type_return, url_return, base, &typeRecursionDetected)) {
+                if (qmlCheckTypes()) {
+                    // check for type clashes
+                    for (int j = i+1; j<urls.count(); ++j) {
+                        if (find_helper(j, type, vmajor, vminor, 0, 0, base)) {
+                            if (errorString) {
+                                QString u1 = urls.at(i);
+                                QString u2 = urls.at(j);
+                                if (base) {
+                                    QString b = base->toString();
+                                    int slash = b.lastIndexOf(QLatin1Char('/'));
+                                    if (slash >= 0) {
+                                        b = b.left(slash+1);
+                                        QString l = b.left(slash);
+                                        if (u1.startsWith(b))
+                                            u1 = u1.mid(b.count());
+                                        else if (u1 == l)
+                                            u1 = QDeclarativeEngine::tr("local directory");
+                                        if (u2.startsWith(b))
+                                            u2 = u2.mid(b.count());
+                                        else if (u2 == l)
+                                            u2 = QDeclarativeEngine::tr("local directory");
+                                    }
+                                }
+
+                                if (u1 != u2)
+                                    *errorString
+                                            = QDeclarativeEngine::tr("is ambiguous. Found in %1 and in %2")
+                                    .arg(u1).arg(u2);
+                                else
+                                    *errorString
+                                            = QDeclarativeEngine::tr("is ambiguous. Found in %1 in version %2.%3 and %4.%5")
+                                              .arg(u1)
+                                              .arg(majversions.at(i)).arg(minversions.at(i))
+                                              .arg(majversions.at(j)).arg(minversions.at(j));
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        if (errorString) {
+            if (typeRecursionDetected)
+                *errorString = QDeclarativeEngine::tr("is instantiated recursively");
+            else
+                *errorString = QDeclarativeEngine::tr("is not a type");
         }
         return false;
     }
@@ -1809,30 +1876,37 @@ public:
         return true;
     }
 
-    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return, QUrl* url_return)
+    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
+              QUrl* url_return, QString *errorString)
     {
         QDeclarativeEnginePrivate::ImportedNamespace *s = 0;
         int slash = type.indexOf('/');
         if (slash >= 0) {
-            s = set.value(QString::fromUtf8(type.left(slash)));
-            if (!s)
-                return false; // qualifier must be a namespace
+            QString namespaceName = QString::fromUtf8(type.left(slash));
+            s = set.value(namespaceName);
+            if (!s) {
+                if (errorString)
+                    *errorString = QDeclarativeEngine::tr("- %1 is not a namespace").arg(namespaceName);
+                return false;
+            }
             int nslash = type.indexOf('/',slash+1);
-            if (nslash > 0)
-                return false; // only single qualification allowed
+            if (nslash > 0) {
+                if (errorString)
+                    *errorString = QDeclarativeEngine::tr("- nested namespaces not allowed");
+                return false;
+            }
         } else {
             s = &unqualifiedset;
         }
         QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
         if (s) {
-            if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return, &base))
+            if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return, &base, errorString))
                 return true;
             if (s->urls.count() == 1 && !s->isLibrary[0] && url_return && s != &unqualifiedset) {
                 // qualified, and only 1 url
                 *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }
-
         }
 
         return false;
@@ -2329,7 +2403,7 @@ bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QDeclarative
 
   \sa addToImport()
 */
-bool QDeclarativeEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QDeclarativeType** type_return, QUrl* url_return, int *vmaj, int *vmin, ImportedNamespace** ns_return) const
+bool QDeclarativeEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QDeclarativeType** type_return, QUrl* url_return, int *vmaj, int *vmin, ImportedNamespace** ns_return, QString *errorString) const
 {
     ImportedNamespace* ns = imports.d->findNamespace(QString::fromUtf8(type));
     if (ns) {
@@ -2338,7 +2412,7 @@ bool QDeclarativeEnginePrivate::resolveType(const Imports& imports, const QByteA
         return true;
     }
     if (type_return || url_return) {
-        if (imports.d->find(type,vmaj,vmin,type_return,url_return)) {
+        if (imports.d->find(type,vmaj,vmin,type_return,url_return, errorString)) {
             if (qmlImportTrace()) {
                 if (type_return && *type_return && url_return && !url_return->isEmpty())
                     qDebug() << "QDeclarativeEngine::resolveType" << type << '=' << (*type_return)->typeName() << *url_return;
