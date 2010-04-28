@@ -116,7 +116,7 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
-    It can display both plain and rich text. For example:
+    A Text item can display both plain and rich text. For example:
 
     \qml
     Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
@@ -132,8 +132,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     The \c elide property can alternatively be used to fit a single line of
     plain text to a set width.
 
-    Note that the \l{Supported HTML Subset} is limited, and that if IMG tags
-    load remote images, the text reloads (see resourcesLoading).
+    Note that the \l{Supported HTML Subset} is limited. Also, if the text contains
+    HTML img tags that load remote images, the text is reloaded.
 
     Text provides read-only text. For editable text, see \l TextEdit.
 */
@@ -191,7 +191,7 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 /*!
     \qmlproperty bool Text::font.bold
 
-    Sets the font's weight to bold.
+    Sets whether the font weight is bold.
 */
 
 /*!
@@ -216,25 +216,25 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 /*!
     \qmlproperty bool Text::font.italic
 
-    Sets the style of the text to italic.
+    Sets whether the font has an italic style.
 */
 
 /*!
     \qmlproperty bool Text::font.underline
 
-    Set the style of the text to underline.
+    Sets whether the text is underlined.
 */
 
 /*!
     \qmlproperty bool Text::font.outline
 
-    Set the style of the text to outline.
+    Sets whether the font has an outline style.
 */
 
 /*!
     \qmlproperty bool Text::font.strikeout
 
-    Set the style of the text to strikeout.
+    Sets whether the font has a strikeout style.
 */
 
 /*!
@@ -531,7 +531,14 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
 
     The way the text property should be displayed.
 
-    Supported text formats are \c AutoText, \c PlainText, \c RichText and \c StyledText
+    Supported text formats are:
+    
+    \list
+    \o AutoText
+    \o PlainText
+    \o RichText
+    \o StyledText
+    \endlist
 
     The default is AutoText.  If the text format is AutoText the text element
     will automatically determine whether the text should be treated as
@@ -1069,8 +1076,9 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
 /*!
     \qmlproperty bool Text::smooth
 
-    Set this property if you want the text to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
     the item is displayed at its natural size, this property has no visual or
     performance effect.
 
