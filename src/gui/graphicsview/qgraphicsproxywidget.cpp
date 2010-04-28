@@ -975,6 +975,7 @@ bool QGraphicsProxyWidget::eventFilter(QObject *object, QEvent *event)
                 d->styleChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
             }
             break;
+#ifndef QT_NO_TOOLTIP
         case QEvent::ToolTipChange:
             // Propagate tooltip change to the proxy.
             if (!d->tooltipChangeMode) {
@@ -983,6 +984,7 @@ bool QGraphicsProxyWidget::eventFilter(QObject *object, QEvent *event)
                 d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
             }
             break;
+#endif
         default:
             break;
         }

@@ -131,6 +131,9 @@ class HtmlGenerator : public PageGenerator
                                   const Node *relative,
                                   CodeMarker *marker, 
                                   const Atom *atom = 0);
+    void generateBreadCrumbs(const QString& title,
+                             const Node *node,
+                             CodeMarker *marker);
     void generateHeader(const QString& title, const Node *node = 0,
                         CodeMarker *marker = 0, bool mainPage = true);
     void generateTitle(const QString& title, 
@@ -262,7 +265,9 @@ class HtmlGenerator : public PageGenerator
     virtual void generateIndex(const QString &fileBase, 
                                const QString &url,
                                const QString &title);
+#ifdef GENERATE_MAC_REFS    
     void generateMacRef(const Node *node, CodeMarker *marker);
+#endif
     void beginLink(const QString &link, 
                    const Node *node, 
                    const Node *relative, 
@@ -303,6 +308,7 @@ class HtmlGenerator : public PageGenerator
     QRegExp funcLeftParen;
     QString style;
     QString postHeader;
+    QString postPostHeader;
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
@@ -337,8 +343,9 @@ class HtmlGenerator : public PageGenerator
 
 #define HTMLGENERATOR_ADDRESS           "address"
 #define HTMLGENERATOR_FOOTER            "footer"
-#define HTMLGENERATOR_GENERATEMACREFS    "generatemacrefs" // ### document me
+#define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
+#define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
 #define HTMLGENERATOR_STYLE             "style"
 #define HTMLGENERATOR_STYLESHEETS       "stylesheets"
 #define HTMLGENERATOR_CUSTOMHEADELEMENTS "customheadelements"

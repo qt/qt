@@ -115,7 +115,7 @@
     <message>
         <location line="-3"/>
         <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which has higher preference or is specifically configured for this stream.&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;Przełączanie na urządzenie dźwiękowe &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;które ma wyższy priorytet lub jest specjalnie skonfigurowane dla tego strumienia.&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -441,7 +441,7 @@ zainstalowałeś libgstreamer-plugins-base.</translation>
         <location line="+22"/>
         <location line="+22"/>
         <source>Video display error</source>
-        <translation type="unfinished">Błąd wyświetlacza wideo</translation>
+        <translation>Błąd wyświetlacza wideo</translation>
     </message>
 </context>
 <context>
@@ -542,7 +542,7 @@ zainstalowałeś libgstreamer-plugins-base.</translation>
         <location filename="../src/3rdparty/phonon/mmf/videoplayer_surface.cpp" line="+126"/>
         <location line="+16"/>
         <source>Video display error</source>
-        <translation type="unfinished">Błąd wyświetlacza wideo</translation>
+        <translation>Błąd wyświetlacza wideo</translation>
     </message>
 </context>
 <context>
@@ -1600,17 +1600,17 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+165"/>
         <source>Cannot animate non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można animować nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Cannot animate read-only property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można animować właściwości (tylko do odczytu): &quot;%1&quot;</translation>
     </message>
     <message>
         <location filename="../src/declarative/util/qdeclarativeutilmodule.cpp" line="+122"/>
         <source>Animation is an abstract class</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;Animation&quot; jest klasą abstrakcyjną</translation>
     </message>
 </context>
 <context>
@@ -1618,7 +1618,7 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+2540"/>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można ustawić ujemnego czasu trwania</translation>
     </message>
 </context>
 <context>
@@ -1626,12 +1626,12 @@ na
     <message>
         <location filename="../src/declarative/graphicsitems/qdeclarativeanchors.cpp" line="+181"/>
         <source>Possible anchor loop detected on fill.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykryto możliwe zapętlenie dla kotwicy &quot;fill&quot;.</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Possible anchor loop detected on centerIn.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykryto możliwe zapętlenie dla kotwicy &quot;centerIn&quot;.</translation>
     </message>
     <message>
         <location line="+201"/>
@@ -1639,54 +1639,54 @@ na
         <location line="+610"/>
         <location line="+37"/>
         <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można doczepić kotwicy do elementu który nie jest rodzicem ani rodzeństwem.</translation>
     </message>
     <message>
         <location line="-534"/>
         <source>Possible anchor loop detected on vertical anchor.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykryto możliwe zapętlenie dla pionowej kotwicy.</translation>
     </message>
     <message>
         <location line="+59"/>
         <source>Possible anchor loop detected on horizontal anchor.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykryto możliwe zapętlenie dla poziomej kotwicy.</translation>
     </message>
     <message>
         <location line="+422"/>
         <source>Cannot specify left, right, and hcenter anchors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można jednocześnie podać lewej, prawej i centralnej poziomej kotwicy.</translation>
     </message>
     <message>
         <location line="+10"/>
         <location line="+37"/>
         <source>Cannot anchor to a null item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można doczepić kotwicy do zerowego elementu.</translation>
     </message>
     <message>
         <location line="-34"/>
         <source>Cannot anchor a horizontal edge to a vertical edge.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można doczepić poziomej krawędzi do pionowej.</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+37"/>
         <source>Cannot anchor item to self.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można doczepić kotwicy do tego samego elementu.</translation>
     </message>
     <message>
         <location line="-25"/>
         <source>Cannot specify top, bottom, and vcenter anchors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można jednocześnie podać górnej, dolnej i centralnej pionowej kotwicy.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bazowa kotwica nie może być użyta w połączeniu z górną, dolną lub centralną pionową kotwicą.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Cannot anchor a vertical edge to a horizontal edge.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można doczepić pionowej krawędzi do poziomej.</translation>
     </message>
 </context>
 <context>
@@ -1694,7 +1694,7 @@ na
     <message>
         <location filename="../src/declarative/graphicsitems/qdeclarativeitemsmodule.cpp" line="+86"/>
         <source>Qt was built without support for QMovie</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt zostało zbudowane bez obsługi QMovie</translation>
     </message>
 </context>
 <context>
@@ -1702,7 +1702,7 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativebehavior.cpp" line="+122"/>
         <source>Cannot change the animation assigned to a Behavior.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można zmienić animacji przypisanej do &quot;Zachowania&quot;.</translation>
     </message>
 </context>
 <context>
@@ -1710,7 +1710,7 @@ na
     <message>
         <location filename="../src/declarative/qml/qdeclarativebinding.cpp" line="+225"/>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapętlenie powiązania dla właściwości &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -1718,7 +1718,7 @@ na
     <message>
         <location filename="../src/declarative/qml/qdeclarativecompiledbindings.cpp" line="+305"/>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapętlenie powiązania dla właściwości &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -1731,92 +1731,92 @@ na
         <location line="+75"/>
         <location line="+488"/>
         <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: &quot;%1&quot; jest właściwością tylko do odczytu</translation>
     </message>
     <message>
         <location line="-2384"/>
         <source>Invalid property assignment: unknown enumeration</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: nieznana wartość wyliczeniowa</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Invalid property assignment: string expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano ciągu</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Invalid property assignment: url expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano url</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Invalid property assignment: unsigned int expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano liczby naturalnej</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: int expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano liczby całkowitej</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: float expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano liczby zmiennoprzecinkowej</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: double expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano liczby zmiennoprzecinkowej podwójnej precyzji</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: color expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano koloru</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: date expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano daty</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: time expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano czasu</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: datetime expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano daty i czasu</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Invalid property assignment: point expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano punktu</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Invalid property assignment: size expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano rozmiaru</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Invalid property assignment: rect expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano prostokąta</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Invalid property assignment: boolean expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano wartości boolowskiej</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Invalid property assignment: 3D vector expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: oczekiwano wektoru 3D</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne przypisanie wartości: nieobsługiwany typ &quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+271"/>
@@ -1831,13 +1831,13 @@ na
     <message>
         <location line="+7"/>
         <source>Invalid component id specification</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawna specyfikacja &quot;id&quot; componentu</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+477"/>
         <source>id is not unique</source>
-        <translation type="unfinished"></translation>
+        <translation>Wartość &quot;id&quot; nie jest unikatowa</translation>
     </message>
     <message>
         <location line="-467"/>
@@ -1910,7 +1910,7 @@ na
     <message>
         <location line="-324"/>
         <source>Invalid use of namespace</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne użycie przestrzeni nazw</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -1920,7 +1920,7 @@ na
     <message>
         <location line="+183"/>
         <source>Invalid use of id property</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne użycie właściwości &quot;id&quot;</translation>
     </message>
     <message>
         <location line="+89"/>
@@ -1942,27 +1942,27 @@ na
     <message>
         <location line="+16"/>
         <source>Invalid property use</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne użycie właściwości</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Property assignment expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Oczekiwano przypisania wartości</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Single property assignment expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Oczekiwano przypisania pojedynczej wartości</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Unexpected object assignment</source>
-        <translation type="unfinished"></translation>
+        <translation>Nieoczekiwane przypisanie obiektu</translation>
     </message>
     <message>
         <location line="+57"/>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać obiektu do listy</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1987,7 +1987,7 @@ na
     <message>
         <location line="+106"/>
         <source>Cannot assign object to property</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać obiektu dla właściwości</translation>
     </message>
     <message>
         <location line="+50"/>
@@ -1997,77 +1997,77 @@ na
     <message>
         <location line="+117"/>
         <source>Duplicate default property</source>
-        <translation type="unfinished"></translation>
+        <translation>Powielona domyślna właściwość</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Duplicate property name</source>
-        <translation type="unfinished"></translation>
+        <translation>Powielona nazwa właściwości</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Property names cannot begin with an upper case letter</source>
-        <translation type="unfinished"></translation>
+        <translation>Nazwy właściwości nie mogą rozpoczynać się wielką literą</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Duplicate signal name</source>
-        <translation type="unfinished"></translation>
+        <translation>Powielona nazwa sygnału</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Signal names cannot begin with an upper case letter</source>
-        <translation type="unfinished"></translation>
+        <translation>Nazwy sygnałów nie mogą rozpoczynać się wielką literą</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Duplicate method name</source>
-        <translation type="unfinished"></translation>
+        <translation>Powielona nazwa medoty</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Method names cannot begin with an upper case letter</source>
-        <translation type="unfinished"></translation>
+        <translation>Nazwy metod nie mogą rozpoczynać się wielką literą</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Property value set multiple times</source>
-        <translation type="unfinished"></translation>
+        <translation>Wartość właściwości ustawiona wielokrotnie</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Invalid property nesting</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne zagnieżdżenie właściwości</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Cannot override FINAL property</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można nadpisać właściwości &quot;FINAL&quot;</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>Invalid property type</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawny typ właściwości</translation>
     </message>
     <message>
         <location line="+159"/>
         <source>Invalid empty ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawny pusty identyfikator</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>IDs cannot start with an uppercase letter</source>
-        <translation type="unfinished"></translation>
+        <translation>Identyfikatory nie mogą rozpoczynać się wielką literą</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>IDs must start with a letter or underscore</source>
-        <translation type="unfinished"></translation>
+        <translation>Identyfikatory muszą rozpoczynać się literą lub znakiem podkreślenia</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>IDs must contain only letters, numbers, and underscores</source>
-        <translation type="unfinished"></translation>
+        <translation>Identyfikatory mogą zawierać jedynie litery, cyfry i znaki podkreślenia</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -2102,7 +2102,7 @@ na
     <message>
         <location filename="../src/declarative/qml/qdeclarativecomponent.cpp" line="+454"/>
         <source>Invalid empty URL</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawny pusty URL</translation>
     </message>
 </context>
 <context>
@@ -2111,22 +2111,22 @@ na
         <location filename="../src/declarative/qml/qdeclarativecompositetypemanager.cpp" line="+482"/>
         <location line="+268"/>
         <source>Resource %1 unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Zasób %1 nie jest dostępny</translation>
     </message>
     <message>
         <location line="-119"/>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished"></translation>
+        <translation>Przestrzeń nazw %1 nie może być użyta jako typ</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>%1 is not a type</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 nie jest typem</translation>
     </message>
     <message>
         <location line="+46"/>
         <source>Type %1 unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Typ %1 nie jest dostępny</translation>
     </message>
 </context>
 <context>
@@ -2136,22 +2136,22 @@ na
         <location line="+54"/>
         <location line="+7"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać wartości do nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
     <message>
         <location line="-51"/>
         <source>Connections: nested objects not allowed</source>
-        <translation type="unfinished"></translation>
+        <translation>Połączenia: zagnieżdżone obiekty nie są dozwolone</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Connections: syntax error</source>
-        <translation type="unfinished"></translation>
+        <translation>Połączenia: błąd składni</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Connections: script expected</source>
-        <translation type="unfinished"></translation>
+        <translation>Połączenia: oczekiwano skryptu</translation>
     </message>
 </context>
 <context>
@@ -2159,34 +2159,34 @@ na
     <message>
         <location filename="../src/declarative/qml/qdeclarativeengine.cpp" line="+1633"/>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation type="unfinished"></translation>
+        <translation>definicja &quot;%2&quot; modułu &quot;%1&quot; nie może zostać odczytana</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>wtyczka nie może zostać załadowana dla modułu &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
-        <translation type="unfinished"></translation>
+        <translation>wtyczka &quot;%2&quot; modułu &quot;%1&quot; nie została odnaleziona</translation>
     </message>
     <message>
         <location line="+82"/>
         <location line="+55"/>
         <source>module &quot;%1&quot; version %2.%3 is not installed</source>
-        <translation type="unfinished"></translation>
+        <translation>wersja %2.%3 modułu %1 nie jest zainstalowana</translation>
     </message>
     <message>
         <location line="-53"/>
         <source>module &quot;%1&quot; is not installed</source>
-        <translation type="unfinished"></translation>
+        <translation>moduł &quot;%1&quot; nie jest zainstalowany</translation>
     </message>
     <message>
         <location line="+14"/>
         <location line="+19"/>
         <source>&quot;%1&quot;: no such directory</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;%1&quot;: brak katalogu</translation>
     </message>
     <message>
         <location line="-2"/>
@@ -2196,22 +2196,22 @@ na
     <message>
         <location filename="../src/declarative/qml/qdeclarativesqldatabase.cpp" line="+204"/>
         <source>executeSql called outside transaction()</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;executeSql&quot; zawołane na zewnątrz &quot;transation()&quot;</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>Read-only Transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Transakcja tylko do odczytu</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Version mismatch: expected %1, found %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Niezgodność wersji: oczekiwano %1, znaleziono %2</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>SQL transaction failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Transakcja SQL zakończona błędem</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -2230,12 +2230,12 @@ na
     <message>
         <location filename="../src/declarative/graphicsitems/qdeclarativeflipable.cpp" line="+129"/>
         <source>front is a write-once property</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;front&quot; jest właściwością tylko do odczytu</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>back is a write-once property</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;back&quot; jest właściwością tylko do odczytu</translation>
     </message>
 </context>
 <context>
@@ -2243,7 +2243,7 @@ na
     <message>
         <location filename="../src/declarative/graphicsitems/qdeclarativeitemsmodule.cpp" line="+62"/>
         <source>KeyNavigation is only available via attached properties</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;KeyNavigation&quot; jest dostępny jedynie poprzez właściwości dołączone</translation>
     </message>
 </context>
 <context>
@@ -2251,7 +2251,7 @@ na
     <message>
         <location line="+1"/>
         <source>Keys is only available via attached properties</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;Keys&quot; jest dostępny jedynie poprzez właściwości dołączone</translation>
     </message>
 </context>
 <context>
@@ -2259,64 +2259,64 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativelistmodel.cpp" line="+399"/>
         <source>remove: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation>remove: indeks %1 poza zakresem</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>insert: value is not an object</source>
-        <translation type="unfinished"></translation>
+        <translation>insert: wartość nie jest obiektem</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>insert: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation>insert: indeks %1 poza zakresem</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>move: out of range</source>
-        <translation type="unfinished"></translation>
+        <translation>move: poza zakresem</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>append: value is not an object</source>
-        <translation type="unfinished"></translation>
+        <translation>append: wartość nie jest obiektem</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>get: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation>get: indeks %1 poza zakresem</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>set: value is not an object</source>
-        <translation type="unfinished"></translation>
+        <translation>set: wartość nie jest obiektem</translation>
     </message>
     <message>
         <location line="+4"/>
         <location line="+34"/>
         <source>set: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation>set: indeks %1 poza zakresem</translation>
     </message>
     <message>
         <location line="+39"/>
         <location line="+15"/>
         <source>ListElement: cannot contain nested elements</source>
-        <translation type="unfinished"></translation>
+        <translation>ListElement: nie może zawierać zagnieżdżonych elementów</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
-        <translation type="unfinished"></translation>
+        <translation>ListElement: nie można używać zarezerwowanej właściwości &quot;id&quot;</translation>
     </message>
     <message>
         <location line="+49"/>
         <source>ListElement: cannot use script for property value</source>
-        <translation type="unfinished"></translation>
+        <translation>ListElement: nie można używać skryptu jako wartości właściwości</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>ListModel: undefined property &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>ListModel: niezdefiniowana właściwość &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -2377,12 +2377,12 @@ na
     <message>
         <location line="-140"/>
         <source>Illegal character</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawny znak</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Unclosed string at end of line</source>
-        <translation type="unfinished"></translation>
+        <translation>Niedomknięty ciąg na końcu linii</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -2392,7 +2392,7 @@ na
     <message>
         <location line="+72"/>
         <source>Unclosed comment at end of file</source>
-        <translation type="unfinished"></translation>
+        <translation>Niedomknięty komentarz na końcu linii</translation>
     </message>
     <message>
         <location line="+102"/>
@@ -2434,25 +2434,25 @@ na
     <message>
         <location line="-65"/>
         <source>Unexpected token `%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Nieoczekiwany znak &quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+28"/>
         <location line="+24"/>
         <source>Expected token `%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Oczekiwano znaku &quot;%1&quot;</translation>
     </message>
     <message>
         <location filename="../src/declarative/qml/qdeclarativescriptparser.cpp" line="+264"/>
         <location line="+456"/>
         <location line="+59"/>
         <source>Property value set multiple times</source>
-        <translation type="unfinished"></translation>
+        <translation>Wartość właściwości ustawiona wielokrotnie</translation>
     </message>
     <message>
         <location line="-504"/>
         <source>Expected type name</source>
-        <translation type="unfinished"></translation>
+        <translation>Oczekiwano nazwy typu</translation>
     </message>
     <message>
         <location line="+171"/>
@@ -2510,7 +2510,7 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="-1973"/>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można ustawić ujemnego czasu trwania</translation>
     </message>
 </context>
 <context>
@@ -2518,23 +2518,23 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativepixmapcache.cpp" line="+197"/>
         <source>Error decoding: %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd dekodowania: %1: %2</translation>
     </message>
     <message>
         <location line="+70"/>
         <source>Failed to get image from provider: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Pobieranie obrazka od dostawcy zakończone błędem: %1</translation>
     </message>
     <message>
         <location line="+19"/>
         <location line="+342"/>
         <source>Cannot open: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można otworzyć: %1</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Unknown Error loading %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nieznany błąd ładowania %1</translation>
     </message>
 </context>
 <context>
@@ -2542,7 +2542,7 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+1100"/>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można ustawić ujemnego czasu trwania</translation>
     </message>
 </context>
 <context>
@@ -2550,17 +2550,17 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativepropertychanges.cpp" line="+231"/>
         <source>PropertyChanges does not support creating state-specific objects.</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;PropertyChanges&quot; nie obsługuje tworzenia obiektów charakterystycznych dla stanów.</translation>
     </message>
     <message>
         <location line="+151"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać wartości do nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać wartości do właściwości (tylko do odczytu): &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -2582,22 +2582,22 @@ na
     <message>
         <location filename="../src/declarative/qml/qdeclarativevme.cpp" line="+194"/>
         <source>Unable to create object of type %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utworzyć obiektu typu %1</translation>
     </message>
     <message>
         <location line="+380"/>
         <source>Cannot assign value %1 to property %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać wartości %1 do właściwości %2</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Cannot assign object type %1 with no default method</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać obiektu typu %1 który nie posiada domyślnej metody</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można podłączyć niepasujących sygnałów / slotów (%1 i %2)</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -2607,7 +2607,7 @@ na
     <message>
         <location line="+146"/>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można przypisać obiektu do listy</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -2617,7 +2617,7 @@ na
     <message>
         <location line="+11"/>
         <source>Unable to create attached object</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można utworzyć dołączonego obiektu</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -2639,7 +2639,7 @@ na
         <location filename="../src/declarative/util/qdeclarativeutilmodule.cpp" line="-12"/>
         <location line="+2"/>
         <source>Qt was built without support for xmlpatterns</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt zostało zbudowane bez obsługi xmlpatterns</translation>
     </message>
 </context>
 <context>
@@ -2647,7 +2647,7 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativexmllistmodel_p.h" line="+168"/>
         <source>An XmlRole query must not start with &apos;/&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapytanie XmlRole nie może rozpoczynać się od &quot;/&quot;</translation>
     </message>
 </context>
 <context>
@@ -2655,7 +2655,7 @@ na
     <message>
         <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="+638"/>
         <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapytanie XmlListModel nie może rozpoczynać się od &quot;/&quot; ani od &quot;//&quot;</translation>
     </message>
 </context>
 <context>
@@ -3185,32 +3185,32 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location/>
         <source>Go back</source>
-        <translation type="unfinished"></translation>
+        <translation>Wróć</translation>
     </message>
     <message>
         <location/>
         <source>Go forward</source>
-        <translation type="unfinished"></translation>
+        <translation>Przejdź dalej</translation>
     </message>
     <message>
         <location/>
         <source>Go to the parent directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Przejdź do katalogu wyżej</translation>
     </message>
     <message>
         <location/>
         <source>Create a New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Utwórz nowy katalog</translation>
     </message>
     <message>
         <location/>
         <source>Change to list view mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokaż listę</translation>
     </message>
     <message>
         <location/>
         <source>Change to detail view mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokaż szczegóły</translation>
     </message>
 </context>
 <context>
@@ -3721,7 +3721,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+423"/>
         <location line="+16"/>
         <source>Unable to play %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można odtworzyć %1</translation>
     </message>
 </context>
 <context>
@@ -4564,23 +4564,23 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <location filename="../src/multimedia/base/qmediaplaylist.cpp" line="+455"/>
         <location line="+46"/>
         <source>Could not add items to read only playlist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można dodać elementów do listy odtwarzania (tylko do odczytu).</translation>
     </message>
     <message>
         <location line="-27"/>
         <location line="+46"/>
         <source>Playlist format is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Format listy odtwarzania nie jest obsługiwany</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>The file could not be accessed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Brak dostępu do pliku.</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>Playlist format is not supported.</source>
-        <translation type="unfinished"></translation>
+        <translation>Format listy odtwarzania nie jest obsługiwany.</translation>
     </message>
 </context>
 <context>
@@ -4821,12 +4821,12 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location filename="../src/network/access/qnetworkaccessdatabackend.cpp" line="+76"/>
         <source>Operation not supported on %1</source>
-        <translation type="unfinished">Operacja nieobsługiwana na %1</translation>
+        <translation>Operacja nieobsługiwana na %1</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>Invalid URI: %1</source>
-        <translation type="unfinished">Niepoprawny URI: %1</translation>
+        <translation>Niepoprawny URI: %1</translation>
     </message>
 </context>
 <context>
@@ -4839,12 +4839,12 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location line="+60"/>
         <source>Socket error on %1: %2</source>
-        <translation type="unfinished">Błąd gniazda na %1: %2</translation>
+        <translation>Błąd gniazda na %1: %2</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Remote host closed the connection prematurely on %1</source>
-        <translation type="unfinished">Zdalny host przedwcześnie zakończył połączenie na %1</translation>
+        <translation>Zdalny host przedwcześnie zakończył połączenie na %1</translation>
     </message>
 </context>
 <context>
@@ -4919,7 +4919,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+910"/>
         <source>Network access is disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dostęp do sieci wyłączony.</translation>
     </message>
 </context>
 <context>
@@ -4942,7 +4942,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location line="+329"/>
         <source>Temporary network failure.</source>
-        <translation type="unfinished"></translation>
+        <translation>Chwilowy błąd w sieci.</translation>
     </message>
 </context>
 <context>
@@ -4959,7 +4959,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location filename="../src/network/bearer/qnetworksession.cpp" line="+449"/>
         <source>Invalid configuration.</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawna konfiguracja.</translation>
     </message>
 </context>
 <context>
@@ -4972,7 +4972,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location line="+3"/>
         <source>Session aborted by user or system</source>
-        <translation type="unfinished"></translation>
+        <translation>Sesja przerwana przez użytkownika lub system</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -4989,25 +4989,25 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <location line="+2"/>
         <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+2"/>
         <source>The session was aborted by the user or system.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sesja została przerwana przez użytkownika lub system.</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+2"/>
         <source>The requested operation is not supported by the system.</source>
-        <translation type="unfinished"></translation>
+        <translation>Zażądana operacja nie jest obsługiwana przez system.</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+2"/>
         <source>The specified configuration cannot be used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Podana konfiguracja nie może być użyta.</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+2"/>
         <source>Roaming was aborted or is not possible.</source>
-        <translation type="unfinished"></translation>
+        <translation>Roaming przerwany albo niemożliwy.</translation>
     </message>
 </context>
 <context>
@@ -5413,7 +5413,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location line="+40"/>
         <source>Print current page</source>
-        <translation type="unfinished"></translation>
+        <translation>Wydrukuj bieżącą stronę</translation>
     </message>
     <message>
         <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+133"/>
@@ -6019,7 +6019,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location/>
         <source>Current Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Bieżąca strona</translation>
     </message>
 </context>
 <context>
@@ -8663,7 +8663,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <location line="+5"/>
         <source>Go Forward</source>
         <comment>Forward context menu item</comment>
-        <translation>Idź dalej</translation>
+        <translation>Przejdź dalej</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -8819,7 +8819,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <location line="+110"/>
         <source>Missing Plug-in</source>
         <comment>Label text to be used when a plug-in is missing</comment>
-        <translation type="unfinished"></translation>
+        <translation>Brakująca wtyczka</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -11944,32 +11944,32 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+15"/>
         <source>Duration content does not match the maxInclusive facet.</source>
-        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;maxInclusive&quot;.</translation>
+        <translation>Wartość czasu trwania koliduje z aspektem &quot;maxInclusive&quot;.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Duration content does not match the maxExclusive facet.</source>
-        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;maxExclusive&quot;.</translation>
+        <translation>Wartość czasu trwania koliduje z aspektem &quot;maxExclusive&quot;.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Duration content does not match the minInclusive facet.</source>
-        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;minInclusive&quot;.</translation>
+        <translation>Wartość czasu trwania koliduje z aspektem &quot;minInclusive&quot;.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Duration content does not match the minExclusive facet.</source>
-        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;minExclusive&quot;.</translation>
+        <translation>Wartość czasu trwania koliduje z aspektem &quot;minExclusive&quot;.</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Duration content is not listed in the enumeration facet.</source>
-        <translation>Wartość długości okresu czasu nie widnieje na liście aspektu &quot;enumeration&quot;.</translation>
+        <translation>Wartość czasu trwania nie widnieje na liście aspektu &quot;enumeration&quot;.</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Duration content does not match pattern facet.</source>
-        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;pattern&quot;.</translation>
+        <translation>Wartość czasu trwania koliduje z aspektem &quot;pattern&quot;.</translation>
     </message>
     <message>
         <location line="+27"/>
@@ -12280,7 +12280,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location filename="../src/3rdparty/webkit/WebKit/qt/tests/hybridPixmap/widget.ui"/>
         <source>about:blank</source>
-        <translation type="unfinished"></translation>
+        <translation>o:puste</translation>
     </message>
 </context>
 </TS>
