@@ -3950,7 +3950,7 @@ EXPORTS
 	?qmlInfo@@YA?AVQDeclarativeInfo@@PBVQObject@@ABVQDeclarativeError@@@Z @ 3949 NONAME ; class QDeclarativeInfo qmlInfo(class QObject const *, class QDeclarativeError const &)
 	?error@QDeclarativeCustomParser@@IAEXABVQString@@@Z @ 3950 NONAME ; void QDeclarativeCustomParser::error(class QString const &)
 	?activeChanged@QDeclarativeDrag@@IAEXXZ @ 3951 NONAME ; void QDeclarativeDrag::activeChanged(void)
-	??0QDeclarativeInfo@@AAE@PAUQDeclarativeInfoPrivate@@@Z @ 3952 NONAME ; QDeclarativeInfo::QDeclarativeInfo(struct QDeclarativeInfoPrivate *)
+	??0QDeclarativeInfo@@AAE@PAUQDeclarativeInfoPrivate@@@Z @ 3952 NONAME ABSENT ; QDeclarativeInfo::QDeclarativeInfo(struct QDeclarativeInfoPrivate *)
 	?warnings@QDeclarativeEngine@@IAEXABV?$QList@VQDeclarativeError@@@@@Z @ 3953 NONAME ; void QDeclarativeEngine::warnings(class QList<class QDeclarativeError> const &)
 	?parentModelIndex@QDeclarativeVisualDataModel@@QBE?AVQVariant@@XZ @ 3954 NONAME ; class QVariant QDeclarativeVisualDataModel::parentModelIndex(void) const
 	?usedAnchors@QDeclarativeAnchors@@QBE?AV?$QFlags@W4Anchor@QDeclarativeAnchors@@@@XZ @ 3955 NONAME ; class QFlags<enum QDeclarativeAnchors::Anchor> QDeclarativeAnchors::usedAnchors(void) const
