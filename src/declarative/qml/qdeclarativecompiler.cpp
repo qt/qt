@@ -688,14 +688,12 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     def.type = QDeclarativeInstruction::SetDefault;
     output->bytecode << def;
 
-    output->imports = unit->imports;
-
     output->importCache = new QDeclarativeTypeNameCache(engine);
 
     for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
         output->importCache->add(importedScriptIndexes.at(ii), ii);
 
-    output->imports.cache(output->importCache, engine);
+    unit->imports.cache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -938,19 +936,28 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         meta.storeMeta.propertyCache = output->propertyCaches.count();
         // ### Surely the creation of this property cache could be more efficient
         QDeclarativePropertyCache *propertyCache = 0;
-        if (tr.component && QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache) {
+        if (tr.component)
             propertyCache = QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache->copy();
-        } else {
-            propertyCache = QDeclarativePropertyCache::create(engine, obj->metaObject()->superClass());
-        }
+        else
+            propertyCache = QDeclarativeEnginePrivate::get(engine)->cache(obj->metaObject()->superClass())->copy();
+
         propertyCache->append(engine, obj->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
                               QDeclarativePropertyCache::Data::IsVMEFunction);
+
         if (obj == unitRoot) {
             propertyCache->addref();
             output->rootPropertyCache = propertyCache;
         }
+
         output->propertyCaches << propertyCache;
         output->bytecode << meta;
+    } else if (obj == unitRoot) {
+        if (tr.component)
+            output->rootPropertyCache = QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache;
+        else
+            output->rootPropertyCache = QDeclarativeEnginePrivate::get(engine)->cache(obj->metaObject());
+
+        output->rootPropertyCache->addref();
     }
 
     // Set the object id

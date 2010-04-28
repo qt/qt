@@ -84,7 +84,6 @@ public:
 
     QString name;
     QUrl url;
-    QDeclarativeEnginePrivate::Imports imports;
     QDeclarativeTypeNameCache *importCache;
 
     struct TypeReference 

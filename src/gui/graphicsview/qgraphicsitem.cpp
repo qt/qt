@@ -7637,7 +7637,13 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
         manager->cleanupCachedGestures(this, gesture);
     }
 }
+/*!
+    Updates the item's micro focus. This is slot for convenience.
 
+    \since 4.7
+
+    \sa QInputContext
+*/
 void QGraphicsObject::updateMicroFocus()
 {
     QGraphicsItem::updateMicroFocus();
@@ -7943,6 +7949,13 @@ void QGraphicsItemPrivate::resetHeight()
 
   This signal gets emitted whenever the children list changes
   \internal
+*/
+
+/*!
+  \property QGraphicsObject::effect
+  \brief the effect attached to this item
+
+  \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
 */
 
 /*!

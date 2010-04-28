@@ -54,7 +54,27 @@ QT_BEGIN_NAMESPACE
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched and tiled.
+    Displays the image from the specified \l source.  If a size is not specified explicitly,
+    the Image element will be sized to the loaded image.
+
+    If the source resolves to a network resource, the image will be loaded asynchronously,
+    updating the \l progress and \l status properties appropriately.
+
+    Images which are available locally
+    will be loaded immediately, blocking the user interface.  This is typically the
+    correct behavior for user interface elements.  For large local images, which do not need
+    to be visible immediately, it may be preferable to enable \l asynchronous loading.
+    This will load the image in the background using a low priority thread.
+
+    Images are cached and shared internally, so if several Image elements have the same source
+    only one copy of the image will be loaded.
+
+    \bold Note: Images are often the greatest user of memory in QML UIs.  It is recommended
+    that images which do not form part of the user interface have their
+    size bounded via the \l sourceSize property. This is especially important for content
+    that is loaded from external sources or provided by the user.
+
+    The Image element supports untransformed, stretched and tiled images.
 
     For an explanation of stretching and tiling, see the fillMode property description.
 
@@ -107,7 +127,7 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
     \endtable
- */
+*/
 
 /*!
     \internal
