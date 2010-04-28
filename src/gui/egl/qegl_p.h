@@ -154,7 +154,13 @@ QT_BEGIN_NAMESPACE
 
 // Declare/define the bits of EGL_KHR_image_base we need:
 #if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
+#ifdef Q_OS_SYMBIAN
+//symbian version of eglext.h differs from the khronos reference
+typedef int EGLImageKHR;
+#else
 typedef void *EGLImageKHR;
+#endif
+
 #define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
 #define EGL_IMAGE_PRESERVED_KHR     0x30D2
 #define EGL_KHR_image_base

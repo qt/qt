@@ -183,14 +183,6 @@ int QEglContext::configAttrib(int name) const
     return 0;
 }
 
-typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, const EGLint*);
-typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
-
-// Defined in qegl.cpp:
-static _eglCreateImageKHR qt_eglCreateImageKHR = 0;
-static _eglDestroyImageKHR qt_eglDestroyImageKHR = 0;
-
-
 EGLDisplay QEgl::display()
 {
     NOEGL
