@@ -991,15 +991,6 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             const TBool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
             const TBool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
             buttonGroup->MakeVisible(visible || (isFullscreen && cbaVisibilityHint));
-
-            // Responsiviness
-            CEikCba *cba = static_cast<CEikCba *>( buttonGroup->ButtonGroup() ); // downcast from MEikButtonGroup
-            TUint cbaFlags = cba->ButtonGroupFlags();
-            if(qwidget->windowFlags() & Qt::WindowSoftkeysRespondHint)
-                cbaFlags |= EAknCBAFlagRespondWhenInvisible;
-            else
-                cbaFlags &= ~EAknCBAFlagRespondWhenInvisible;
-            cba->SetButtonGroupFlags(cbaFlags);
         }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
