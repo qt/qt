@@ -517,7 +517,6 @@ void tst_QPainterPath::testSimplified_data()
     QTest::addColumn<int>("elements");
 
     QTest::newRow("rect") << rectPath(0, 0, 10, 10) << 5;
-    QTest::newRow("ellipse") << ellipsePath(0, 0, 10, 10) << 13;
 
     QPainterPath twoRects = rectPath(0, 0, 10, 10);
     twoRects.addPath(rectPath(5, 0, 10, 10));

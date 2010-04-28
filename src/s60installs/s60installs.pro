@@ -153,6 +153,7 @@ symbian: {
 
     contains(QT_CONFIG, multimedia) {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
+        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMediaServices$${QT_LIBINFIX}.dll
     }
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"

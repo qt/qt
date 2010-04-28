@@ -94,6 +94,4 @@ public:
 
 #include "proxywidgets.moc"
 
-QML_DECLARE_TYPE(MyPushButton)
-
 Q_EXPORT_PLUGIN2(proxywidgetsplugin, ProxyWidgetsPlugin);

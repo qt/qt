@@ -176,6 +176,11 @@ QDeclarativeVisualModel::ReleaseFlags QDeclarativeVisualItemModel::release(QDecl
     return 0;
 }
 
+bool QDeclarativeVisualItemModel::completePending() const
+{
+    return false;
+}
+
 void QDeclarativeVisualItemModel::completeItem()
 {
     // Nothing to do
@@ -198,7 +203,7 @@ QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &express
     QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
     ctxt->setContextObject(d->children.at(index));
     QDeclarativeExpression e(ctxt, expression, objectContext);
-    QVariant value = e.value();
+    QVariant value = e.evaluate();
     delete ctxt;
     return value;
 }
@@ -262,6 +267,7 @@ public:
                 }
                 if (m_roles.count() == 1)
                     m_roleNames.insert("modelData", m_roles.at(0));
+                m_roleNames.insert("hasModelChildren", 0);
             } else if (m_listAccessor) {
                 m_roleNames.insert("modelData", 0);
                 if (m_listAccessor->type() == QDeclarativeListAccessor::Instance) {
@@ -351,9 +357,10 @@ public:
 
     VDMDelegateDataType *m_delegateDataType;
     friend class QDeclarativeVisualDataModelData;
-    bool m_metaDataCreated;
-    bool m_metaDataCacheable;
-    bool m_delegateValidated;
+    bool m_metaDataCreated : 1;
+    bool m_metaDataCacheable : 1;
+    bool m_delegateValidated : 1;
+    bool m_completePending : 1;
 
     QDeclarativeVisualDataModelData *data(QObject *item);
 
@@ -473,11 +480,16 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
         }
     } else if (model->m_abstractItemModel) {
         model->ensureRoles();
-        QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
-        if (it != model->m_roleNames.end()) {
-            roleToProp.insert(*it, propId);
+        if (propName == "hasModelChildren") {
             QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
-            return model->m_abstractItemModel->data(index, *it);
+            return model->m_abstractItemModel->hasChildren(index);
+        } else {
+            QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
+            if (it != model->m_roleNames.end()) {
+                roleToProp.insert(*it, propId);
+                QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
+                return model->m_abstractItemModel->data(index, *it);
+            }
         }
     }
     Q_ASSERT(!"Can never be reached");
@@ -561,7 +573,7 @@ QDeclarativeVisualDataModelParts::QDeclarativeVisualDataModelParts(QDeclarativeV
 QDeclarativeVisualDataModelPrivate::QDeclarativeVisualDataModelPrivate(QDeclarativeContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
 , m_context(ctxt), m_parts(0), m_delegateDataType(0), m_metaDataCreated(false)
-, m_metaDataCacheable(false), m_delegateValidated(false), m_listAccessor(0)
+, m_metaDataCacheable(false), m_delegateValidated(false), m_completePending(false), m_listAccessor(0)
 {
 }
 
@@ -784,34 +796,13 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     \qmlproperty QModelIndex VisualDataModel::rootIndex
 
     QAbstractItemModel provides a heirachical tree of data, whereas
-    QML only operates on list data. rootIndex allows the children of
+    QML only operates on list data.  \c rootIndex allows the children of
     any node in a QAbstractItemModel to be provided by this model.
 
     This property only affects models of type QAbstractItemModel.
 
     \code
     // main.cpp
-    Q_DECLARE_METATYPE(QModelIndex)
-
-    class MyModel : public QDirModel
-    {
-        Q_OBJECT
-    public:
-        MyModel(QDeclarativeContext *ctxt) : QDirModel(), context(ctxt) {
-            QHash<int,QByteArray> roles = roleNames();
-            roles.insert(FilePathRole, "path");
-            setRoleNames(roles);
-            context->setContextProperty("myModel", this);
-            context->setContextProperty("myRoot", QVariant::fromValue(index(0,0,QModelIndex())));
-        }
-
-        Q_INVOKABLE void setRoot(const QString &path) {
-            QModelIndex root = index(path);
-            context->setContextProperty("myRoot", QVariant::fromValue(root));
-        }
-
-        QDeclarativeContext *context;
-    };
 
     int main(int argc, char ** argv)
     {
@@ -819,7 +810,8 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
 
         QDeclarativeView view;
 
-        MyModel model(view.rootContext());
+        QDirModel model;
+        view.rootContext()->setContextProperty("myModel", &model);
 
         view.setSource(QUrl("qrc:view.qml"));
         view.show();
@@ -835,18 +827,18 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     import Qt 4.7
 
     ListView {
+        id: view
         width: 200
         height: 200
         model: VisualDataModel {
             model: myModel
-            rootIndex: myRoot
             delegate: Component {
                 Rectangle {
-                    height: 25; width: 100
-                    Text { text: path }
+                    height: 25; width: 200
+                    Text { text: filePath }
                     MouseArea {
                         anchors.fill: parent;
-                        onClicked: myModel.setRoot(path)
+                        onClicked: if (hasModelChildren) view.model.rootIndex = view.model.modelIndex(index)
                     }
                 }
             }
@@ -854,19 +846,21 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     }
     \endcode
 
+    \sa modelIndex(), parentModelIndex()
 */
-QModelIndex QDeclarativeVisualDataModel::rootIndex() const
+QVariant QDeclarativeVisualDataModel::rootIndex() const
 {
     Q_D(const QDeclarativeVisualDataModel);
-    return d->m_root;
+    return QVariant::fromValue(d->m_root);
 }
 
-void QDeclarativeVisualDataModel::setRootIndex(const QModelIndex &root)
+void QDeclarativeVisualDataModel::setRootIndex(const QVariant &root)
 {
     Q_D(QDeclarativeVisualDataModel);
-    if (d->m_root != root) {
+    QModelIndex modelIndex = qvariant_cast<QModelIndex>(root);
+    if (d->m_root != modelIndex) {
         int oldCount = d->modelCount();
-        d->m_root = root;
+        d->m_root = modelIndex;
         int newCount = d->modelCount();
         if (d->m_delegate && oldCount)
             emit itemsRemoved(0, oldCount);
@@ -876,6 +870,47 @@ void QDeclarativeVisualDataModel::setRootIndex(const QModelIndex &root)
             emit countChanged();
         emit rootIndexChanged();
     }
+}
+
+
+/*!
+    \qmlmethod QModelIndex VisualDataModel::modelIndex(int index)
+
+    QAbstractItemModel provides a heirachical tree of data, whereas
+    QML only operates on list data.  This function assists in using
+    tree models in QML.
+
+    Returns a QModelIndex for the specified index.
+    This value can be assigned to rootIndex.
+
+    \sa rootIndex
+*/
+QVariant QDeclarativeVisualDataModel::modelIndex(int idx) const
+{
+    Q_D(const QDeclarativeVisualDataModel);
+    if (d->m_abstractItemModel)
+        return QVariant::fromValue(d->m_abstractItemModel->index(idx, 0, d->m_root));
+    return QVariant::fromValue(QModelIndex());
+}
+
+/*!
+    \qmlmethod QModelIndex VisualDataModel::parentModelIndex()
+
+    QAbstractItemModel provides a heirachical tree of data, whereas
+    QML only operates on list data.  This function assists in using
+    tree models in QML.
+
+    Returns a QModelIndex for the parent of the current rootIndex.
+    This value can be assigned to rootIndex.
+
+    \sa rootIndex
+*/
+QVariant QDeclarativeVisualDataModel::parentModelIndex() const
+{
+    Q_D(const QDeclarativeVisualDataModel);
+    if (d->m_abstractItemModel)
+        return QVariant::fromValue(d->m_abstractItemModel->parent(d->m_root));
+    return QVariant::fromValue(QModelIndex());
 }
 
 QString QDeclarativeVisualDataModel::part() const
@@ -997,11 +1032,14 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->setContextObject(data);
+        d->m_completePending = false;
         nobj = d->m_delegate->beginCreate(ctxt);
-        if (complete)
+        if (complete) {
             d->m_delegate->completeCreate();
-        else
+        } else {
+            d->m_completePending = true;
             needComplete = true;
+        }
         if (nobj) {
             QDeclarative_setParent_noEvent(ctxt, nobj);
             QDeclarative_setParent_noEvent(data, nobj);
@@ -1011,7 +1049,7 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         } else {
             delete data;
             delete ctxt;
-            qWarning() << d->m_delegate->errors();
+            qmlInfo(this, d->m_delegate->errors()) << "Error creating delgate";
         }
     }
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
@@ -1037,6 +1075,14 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
     return item;
 }
 
+bool QDeclarativeVisualDataModel::completePending() const
+{
+    Q_D(const QDeclarativeVisualDataModel);
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->completePending();
+    return d->m_completePending;
+}
+
 void QDeclarativeVisualDataModel::completeItem()
 {
     Q_D(QDeclarativeVisualDataModel);
@@ -1046,6 +1092,7 @@ void QDeclarativeVisualDataModel::completeItem()
     }
 
     d->m_delegate->completeCreate();
+    d->m_completePending = false;
 }
 
 QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
@@ -1109,7 +1156,7 @@ QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &express
         QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
         if (item) {
             QDeclarativeExpression e(qmlContext(item), expression, objectContext);
-            value = e.value();
+            value = e.evaluate();
         }
     } else {
         QDeclarativeContext *ccontext = d->m_context;
@@ -1118,7 +1165,7 @@ QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &express
         QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
         ctxt->setContextObject(data);
         QDeclarativeExpression e(ctxt, expression, objectContext);
-        value = e.value();
+        value = e.evaluate();
         delete data;
         delete ctxt;
     }

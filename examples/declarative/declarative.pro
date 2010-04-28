@@ -5,6 +5,7 @@ SUBDIRS = \
    extending \
    imageprovider \
    objectlistmodel \
+   stringlistmodel \
    plugins \
    proxywidgets
 

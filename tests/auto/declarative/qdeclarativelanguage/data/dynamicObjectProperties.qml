@@ -1,6 +1,6 @@
 import Test 1.0
-import Qt 4.6
-import Qt 4.6 as Qt
+import Qt 4.7
+import Qt 4.7 as Qt47
 
 QtObject {
     property QtObject objectProperty

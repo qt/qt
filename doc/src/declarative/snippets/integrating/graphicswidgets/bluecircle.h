@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 //![0]
-#include <QtDeclarative/qdeclarative.h>
 #include <QGraphicsWidget>
 #include <QPainter>
 
@@ -53,6 +52,4 @@ public:
         painter->drawEllipse(0, 0, size().width(), size().height());
     }
 };
-
-QML_DECLARE_TYPE(BlueCircle)
 //![0]

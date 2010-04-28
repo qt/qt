@@ -1,9 +1,9 @@
-import Qt 4.6
+import Qt 4.7
 
 Flickable {
     width: 100; height: 100
     contentWidth: column.width; contentHeight: column.height
-    pressDelay: 200; overShoot: false; interactive: false
+    pressDelay: 200; boundsBehavior: Flickable.StopAtBounds; interactive: false
     maximumFlickVelocity: 2000
 
     Column {

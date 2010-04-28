@@ -57,9 +57,9 @@ public:
 
         qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
         qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,6,"QGraphicsLinearLayoutStretchItem");
-        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,6,"QGraphicsLinearLayout");
-        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,6,"QGraphicsGridLayout");
+        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,7,"QGraphicsLinearLayoutStretchItem");
+        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,7,"QGraphicsLinearLayout");
+        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,7,"QGraphicsGridLayout");
     }
 };
 

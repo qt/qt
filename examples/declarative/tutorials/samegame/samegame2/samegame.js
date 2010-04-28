@@ -35,7 +35,7 @@ function startNewGame() {
 
 function createBlock(column, row) {
     if (component == null)
-        component = createComponent("Block.qml");
+        component = Qt.createComponent("Block.qml");
 
     // Note that if Block.qml was not a local file, component.isReady would be
     // false and we should wait for the component's statusChanged() signal to
@@ -43,8 +43,8 @@ function createBlock(column, row) {
     if (component.isReady) {
         var dynamicObject = component.createObject();
         if (dynamicObject == null) {
-            print("error creating block");
-            print(component.errorsString());
+            console.log("error creating block");
+            console.log(component.errorsString());
             return false;
         }
         dynamicObject.parent = background;
@@ -54,8 +54,8 @@ function createBlock(column, row) {
         dynamicObject.height = blockSize;
         board[index(column, row)] = dynamicObject;
     } else {
-        print("error loading block component");
-        print(component.errorsString());
+        console.log("error loading block component");
+        console.log(component.errorsString());
         return false;
     }
     return true;

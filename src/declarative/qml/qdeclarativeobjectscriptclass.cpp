@@ -59,12 +59,17 @@ Q_DECLARE_METATYPE(QScriptValue);
 QT_BEGIN_NAMESPACE
 
 struct ObjectData : public QScriptDeclarativeClass::Object {
-    ObjectData(QObject *o, int t) : object(o), type(t) {}
+    ObjectData(QObject *o, int t) : object(o), type(t) {
+        if (o) {
+            QDeclarativeData *ddata = QDeclarativeData::get(object, true);
+            if (ddata) ddata->objectDataRefCount++;
+        }
+    }
 
     virtual ~ObjectData() {
         if (object && !object->parent()) {
             QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && !ddata->indestructible)
+            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount)
                 object->deleteLater();
         }
     }
@@ -348,7 +353,13 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     if (delBinding)
         delBinding->destroy();
 
-    if (value.isUndefined() && lastData->flags & QDeclarativePropertyCache::Data::IsResettable) {
+    if (value.isNull() && lastData->flags & QDeclarativePropertyCache::Data::IsQObjectDerived) {
+        QObject *o = 0;
+        int status = -1;
+        int flags = 0;
+        void *argv[] = { &o, 0, &status, &flags };
+        QMetaObject::metacall(obj, QMetaObject::WriteProperty, lastData->coreIndex, argv);
+    } else if (value.isUndefined() && lastData->flags & QDeclarativePropertyCache::Data::IsResettable) {
         void *a[] = { 0 };
         QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
     } else if (value.isUndefined() && lastData->propType == qMetaTypeId<QVariant>()) {
@@ -458,12 +469,21 @@ QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
         cache = ddata->propertyCache;
     if (!cache) {
         cache = enginePrivate->cache(obj);
-        if (cache && ddata) { cache->addref(); ddata->propertyCache = cache; }
+        if (cache) {
+            if (ddata) { cache->addref(); ddata->propertyCache = cache; }
+        } else {
+            // Not cachable - fall back to QMetaObject (eg. dynamic meta object)
+            // XXX QDeclarativeOpenMetaObject has a cache, so this is suboptimal.
+            // XXX This is a workaround for QTBUG-9420.
+            const QMetaObject *mo = obj->metaObject();
+            QStringList r;
+            int pc = mo->propertyCount();
+            int po = mo->propertyOffset();
+            for (int i=po; i<pc; ++i)
+                r += QString::fromUtf8(mo->property(i).name());
+            return r;
+        }
     }
-
-    if (!cache)
-        return QStringList();
-
     return cache->propertyNames();
 }
 

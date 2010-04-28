@@ -1,4 +1,4 @@
-import Qt.VisualTest 4.6
+import Qt.VisualTest 4.7
 
 VisualTest {
     Frame {
@@ -6,6 +6,6 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "258a7e75b491e4f51a91739c776803b3"
+        image: "borders.0.png"
     }
 }

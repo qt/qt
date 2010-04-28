@@ -1,2 +1,2 @@
-import Qt 4.6 as Qt
-Qt.Rectangle {}
+import Qt 4.7 as Qt47
+Qt47.Rectangle {}

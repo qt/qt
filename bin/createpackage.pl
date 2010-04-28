@@ -68,7 +68,7 @@ Convenience script for creating signed packages you can install on your phone.
 
 Usage: createpackage.pl [options] templatepkg [target]-[platform] [certificate key [passphrase]]
 
-Where supported optiobns are as follows:
+Where supported options are as follows:
      [-i|install]            = Install the package right away using PC suite
      [-p|preprocess]         = Only preprocess the template .pkg file.
      [-c|certfile=<file>]    = The file containing certificate information for signing.

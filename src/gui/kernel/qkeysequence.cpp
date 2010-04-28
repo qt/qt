@@ -390,6 +390,9 @@ static const struct {
     int key;
     const char* name;
 } keyname[] = {
+    //: This and all following "incomprehensible" strings in QShortcut context
+    //: are key names. Please use the localized names appearing on actual
+    //: keyboards or whatever is commonly used.
     { Qt::Key_Space,        QT_TRANSLATE_NOOP("QShortcut", "Space") },
     { Qt::Key_Escape,       QT_TRANSLATE_NOOP("QShortcut", "Esc") },
     { Qt::Key_Tab,          QT_TRANSLATE_NOOP("QShortcut", "Tab") },

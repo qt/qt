@@ -17,7 +17,7 @@ HEADERS += mediaplayer.h
 
 target.path = $$[QT_INSTALL_DEMOS]/qmediaplayer
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_DEMOS]/qmediaplayer
+sources.path = $$[QT_INSTALL_DEMOS]/qmediaplayer qmediaplayer.pro
 INSTALLS += target sources
 
 wince*{

@@ -62,118 +62,173 @@
 QT_BEGIN_NAMESPACE
 
 
-// On 16bpp systems, RGB & ARGB pixmaps are different bit-depths and therefore need
-// different contexts:
-
-Q_GLOBAL_STATIC(QEglContext, qt_x11gl_rgbContext);
-Q_GLOBAL_STATIC(QEglContext, qt_x11gl_argbContext)
-
-QEglContext* QX11GLPixmapData::rgbContext = 0;
-QEglContext* QX11GLPixmapData::argbContext = 0;
-
-
-bool QX11GLPixmapData::hasX11GLPixmaps()
+class QX11GLSharedContexts
 {
-    static bool checkedForX11Pixmaps = false;
-    static bool haveX11Pixmaps = false;
+public:
+    QX11GLSharedContexts()
+        : rgbContext(0)
+        , argbContext(0)
+        , sharedQGLContext(0)
+        , sharePixmap(0)
+    {
+        EGLint rgbConfigId;
+        EGLint argbConfigId;
 
-    if (checkedForX11Pixmaps)
-        return haveX11Pixmaps;
+        do {
+            EGLConfig rgbConfig = QEgl::defaultConfig(QInternal::Pixmap, QEgl::OpenGL, QEgl::Renderable);
+            EGLConfig argbConfig = QEgl::defaultConfig(QInternal::Pixmap, QEgl::OpenGL,
+                                                       QEgl::Renderable | QEgl::Translucent);
 
-    checkedForX11Pixmaps = true;
+            eglGetConfigAttrib(QEgl::display(), rgbConfig, EGL_CONFIG_ID, &rgbConfigId);
+            eglGetConfigAttrib(QEgl::display(), argbConfig, EGL_CONFIG_ID, &argbConfigId);
 
-    EGLint rgbConfigId;
-    EGLint argbConfigId;
-
-    do {
-        if (qgetenv("QT_USE_X11GL_PIXMAPS").isEmpty())
-            break;
-
-        EGLConfig rgbConfig = QEgl::defaultConfig(QInternal::Pixmap, QEgl::OpenGL, QEgl::Renderable);
-        EGLConfig argbConfig = QEgl::defaultConfig(QInternal::Pixmap, QEgl::OpenGL,
-                                                   QEgl::Renderable | QEgl::Translucent);
-
-        eglGetConfigAttrib(QEgl::display(), rgbConfig, EGL_CONFIG_ID, &rgbConfigId);
-        eglGetConfigAttrib(QEgl::display(), argbConfig, EGL_CONFIG_ID, &argbConfigId);
-
-        if (!rgbContext) {
-            rgbContext = qt_x11gl_rgbContext();
+            rgbContext = new QEglContext;
             rgbContext->setConfig(rgbConfig);
             rgbContext->createContext();
-        }
 
-        if (!rgbContext->isValid())
-            break;
+            if (!rgbContext->isValid())
+                break;
 
-        // If the configs are the same, use the same egl contexts:
-        if (rgbConfig == argbConfig)
-            argbContext = rgbContext;
+            // If the RGB & ARGB configs are the same, use the same egl context for both:
+            if (rgbConfig == argbConfig)
+                argbContext = rgbContext;
 
-        if (!argbContext) {
-            argbContext = qt_x11gl_argbContext();
-            argbContext->setConfig(argbConfig);
-            argbContext->createContext();
-        }
+            // Otherwise, create a seperate context to be used for ARGB pixmaps:
+            if (!argbContext) {
+                argbContext = new QEglContext;
+                argbContext->setConfig(argbConfig);
+                bool success = argbContext->createContext(rgbContext);
+                if (!success) {
+                    qWarning("QX11GLPixmapData - RGB & ARGB contexts aren't shared");
+                    success = argbContext->createContext();
+                    if (!success)
+                        argbContext = rgbContext; // Might work, worth a shot at least.
+                }
+            }
 
-        if (!argbContext->isValid())
-            break;
+            if (!argbContext->isValid())
+                break;
 
-        {
-            QX11PixmapData *argbPixmapData = new QX11PixmapData(QPixmapData::PixmapType);
-            argbPixmapData->resize(100, 100);
-            argbPixmapData->fill(Qt::transparent); // Force ARGB
-            QPixmap argbPixmap(argbPixmapData);
-            EGLSurface argbPixmapSurface = QEgl::createSurface(&argbPixmap, argbConfig);
-            haveX11Pixmaps = argbContext->makeCurrent(argbPixmapSurface);
-            argbContext->doneCurrent();
-            eglDestroySurface(QEgl::display(), argbPixmapSurface);
-        }
-
-        if (!haveX11Pixmaps) {
-            qWarning() << "Unable to make pixmap surface current:" << QEgl::errorString();
-            break;
-        }
-
-        // If the ARGB & RGB configs are different, check RGB too:
-        if (argbConfig != rgbConfig) {
+            // Create the pixmap which will be used to create the egl surface for the share QGLContext
             QX11PixmapData *rgbPixmapData = new QX11PixmapData(QPixmapData::PixmapType);
-            rgbPixmapData->resize(100, 100);
+            rgbPixmapData->resize(8, 8);
             rgbPixmapData->fill(Qt::red);
+            sharePixmap = new QPixmap(rgbPixmapData);
+            EGLSurface sharePixmapSurface = QEgl::createSurface(sharePixmap, rgbConfig);
+            rgbPixmapData->gl_surface = (void*)sharePixmapSurface;
 
-            QPixmap rgbPixmap(rgbPixmapData);
-            EGLSurface rgbPixmapSurface = QEgl::createSurface(&rgbPixmap, rgbConfig);
-            haveX11Pixmaps = rgbContext->makeCurrent(rgbPixmapSurface);
-            rgbContext->doneCurrent();
-            eglDestroySurface(QEgl::display(), rgbPixmapSurface);
+            // Create the actual QGLContext which will be used for sharing
+            sharedQGLContext = new QGLContext(QX11GLPixmapData::glFormat());
+            sharedQGLContext->d_func()->eglContext = rgbContext;
+            sharedQGLContext->d_func()->eglSurface = sharePixmapSurface;
+            sharedQGLContext->d_func()->valid = true;
+            qt_glformat_from_eglconfig(sharedQGLContext->d_func()->glFormat, rgbConfig);
 
-            if (!haveX11Pixmaps) {
-                qWarning() << "Unable to make pixmap config current:" << QEgl::errorString();
+
+            valid = rgbContext->makeCurrent(sharePixmapSurface);
+
+            // If the ARGB & RGB configs are different, check ARGB works too:
+            if (argbConfig != rgbConfig) {
+                QX11PixmapData *argbPixmapData = new QX11PixmapData(QPixmapData::PixmapType);
+                argbPixmapData->resize(8, 8);
+                argbPixmapData->fill(Qt::transparent); // Force ARGB
+                QPixmap argbPixmap(argbPixmapData); // destroys pixmap data when goes out of scope
+                EGLSurface argbPixmapSurface = QEgl::createSurface(&argbPixmap, argbConfig);
+                valid = argbContext->makeCurrent(argbPixmapSurface);
+                argbContext->doneCurrent();
+                eglDestroySurface(QEgl::display(), argbPixmapSurface);
+                argbPixmapData->gl_surface = 0;
+            }
+
+            if (!valid) {
+                qWarning() << "Unable to make pixmap surface current:" << QEgl::errorString();
                 break;
             }
+
+            // The pixmap surface destruction hooks are installed by QGLTextureCache, so we
+            // must make sure this is instanciated:
+            QGLTextureCache::instance();
+        } while(0);
+
+        if (!valid)
+            cleanup();
+        else
+            qDebug("Using QX11GLPixmapData with EGL config %d for ARGB and config %d for RGB", argbConfigId, rgbConfigId);
+
+    }
+
+    ~QX11GLSharedContexts() {
+        cleanup();
+    }
+
+    void cleanup() {
+        if (sharedQGLContext) {
+            delete sharedQGLContext;
+            sharedQGLContext = 0;
         }
-
-        // The pixmap surface destruction hooks are installed by QGLTextureCache, so we
-        // must make sure this is instanciated:
-        QGLTextureCache::instance();
-    } while (0);
-
-    if (!haveX11Pixmaps) {
-        if (argbContext && (argbContext != rgbContext)) {
+        if (argbContext && argbContext != rgbContext)
             delete argbContext;
-            argbContext = 0;
-        }
+        argbContext = 0;
+
         if (rgbContext) {
             delete rgbContext;
             rgbContext = 0;
         }
+
+        // Deleting the QPixmap will fire the pixmap destruction cleanup hooks which in turn
+        // will destroy the egl surface:
+        if (sharePixmap) {
+            delete sharePixmap;
+            sharePixmap = 0;
+        }
     }
 
-    if (haveX11Pixmaps)
-        qDebug("Using QX11GLPixmapData with EGL config %d for ARGB and config %d for RGB", argbConfigId, rgbConfigId);
-    else
-        qDebug("QX11GLPixmapData is *NOT* being used");
+    bool isValid() { return valid;}
 
-    return haveX11Pixmaps;
+    // On 16bpp systems, RGB & ARGB pixmaps are different bit-depths and therefore need
+    // different contexts:
+    QEglContext *rgbContext;
+    QEglContext *argbContext;
+
+    // The share context wraps the rgbContext and is used as the master of the context share
+    // group. As all other contexts will have the same egl context (or a shared one if rgb != argb)
+    // all QGLContexts will actually be sharing and can be in the same context group.
+    QGLContext  *sharedQGLContext;
+private:
+    QPixmap     *sharePixmap;
+    bool         valid;
+};
+
+static void qt_cleanup_x11gl_share_contexts();
+
+Q_GLOBAL_STATIC_WITH_INITIALIZER(QX11GLSharedContexts, qt_x11gl_share_contexts,
+                                 {
+                                     qAddPostRoutine(qt_cleanup_x11gl_share_contexts);
+                                 })
+
+static void qt_cleanup_x11gl_share_contexts()
+{
+    qt_x11gl_share_contexts()->cleanup();
+}
+
+
+QX11GLSharedContexts* QX11GLPixmapData::sharedContexts()
+{
+    return qt_x11gl_share_contexts();
+}
+
+bool QX11GLPixmapData::hasX11GLPixmaps()
+{
+    static bool checkedForX11GLPixmaps = false;
+    static bool haveX11GLPixmaps = false;
+
+    if (checkedForX11GLPixmaps)
+        return haveX11GLPixmaps;
+
+    haveX11GLPixmaps = qt_x11gl_share_contexts()->isValid();
+    checkedForX11GLPixmaps = true;
+
+    return haveX11GLPixmaps;
 }
 
 QX11GLPixmapData::QX11GLPixmapData()
@@ -257,7 +312,15 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
     if (!ctx) {
         ctx = new QGLContext(glFormat());
         Q_ASSERT(ctx->d_func()->eglContext == 0);
-        ctx->d_func()->eglContext = hasAlphaChannel() ? argbContext : rgbContext;
+        ctx->d_func()->eglContext = hasAlphaChannel() ? sharedContexts()->argbContext : sharedContexts()->rgbContext;
+
+        // While we use a seperate QGLContext for each pixmap, the underlying QEglContext is
+        // the same. So we must use a "fake" QGLContext and fool the texture cache into thinking
+        // each pixmap's QGLContext is sharing with this central one. The only place this is
+        // going to fail is where we the underlying EGL RGB and ARGB contexts aren't sharing.
+        ctx->d_func()->sharing = true;
+        QGLContextGroup::addShare(ctx, sharedContexts()->sharedQGLContext);
+
         // Update the glFormat for the QGLContext:
         qt_glformat_from_eglconfig(ctx->d_func()->glFormat, ctx->d_func()->eglContext->config());
     }
@@ -319,12 +382,6 @@ void QX11GLPixmapData::beginPaint()
         ctx->d_func()->valid = true;
     }
     QGLPaintDevice::beginPaint();
-}
-
-void QX11GLPixmapData::endPaint()
-{
-    glFinish();
-    QGLPaintDevice::endPaint();
 }
 
 QGLContext* QX11GLPixmapData::context() const

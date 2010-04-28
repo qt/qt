@@ -63,6 +63,22 @@ QGLPaintDevice::~QGLPaintDevice()
 {
 }
 
+int QGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
+{
+    switch(metric) {
+    case PdmWidth:
+        return size().width();
+    case PdmHeight:
+        return size().height();
+    case PdmDepth: {
+        const QGLFormat f = format();
+        return f.redBufferSize() + f.greenBufferSize() + f.blueBufferSize() + f.alphaBufferSize();
+    }
+    default:
+        qWarning("QGLPaintDevice::metric() - metric %d not known", metric);
+        return 0;
+    }
+}
 
 void QGLPaintDevice::beginPaint()
 {

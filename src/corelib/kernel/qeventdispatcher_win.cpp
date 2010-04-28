@@ -595,7 +595,7 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     } else {
         ok = t->fastTimerId = qtimeSetEvent(t->interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
                                             TIME_CALLBACK_FUNCTION | TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
-        if (ok == 0) { // fall back to normal timer if no more multimedia timers avaiable
+        if (ok == 0) { // fall back to normal timer if no more multimedia timers available
             ok = SetTimer(internalHwnd, t->timerId, (uint) t->interval, 0);
         }
     }

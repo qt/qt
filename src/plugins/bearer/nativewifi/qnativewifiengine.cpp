@@ -100,8 +100,6 @@ QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
     if (result != ERROR_SUCCESS)
         qDebug("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
 #endif
-
-    scanComplete();
 }
 
 QNativeWifiEngine::~QNativeWifiEngine()
@@ -470,6 +468,11 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
         emit connectionError(id, DisconnectionError);
         return;
     }
+}
+
+void QNativeWifiEngine::initialize()
+{
+    scanComplete();
 }
 
 void QNativeWifiEngine::requestUpdate()

@@ -61,7 +61,6 @@ class VcprojGenerator : public Win32MakefileGenerator
 
     bool writeMakefile(QTextStream &);
     bool writeProjectMakefile();
-    void writeSubDirs(QTextStream &t);
 
     QString findTemplate(QString file);
     void init();
@@ -119,6 +118,9 @@ protected:
     void initLexYaccFiles();
     void initExtraCompilerOutputs();
 
+    void writeSubDirs(QTextStream &t); // Called from VCXProj backend
+    QUuid getProjectUUID(const QString &filename=QString()); // Called from VCXProj backend
+
     Target projectTarget;
 
     // Used for single project
@@ -129,7 +131,6 @@ protected:
 
 private:
     QString fixCommandLine(DotNET version, const QString &input) const;
-    QUuid getProjectUUID(const QString &filename=QString());
     QUuid increaseUUID(const QUuid &id);
     friend class VCFilter;
 };

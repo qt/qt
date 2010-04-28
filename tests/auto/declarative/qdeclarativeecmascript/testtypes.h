@@ -170,7 +170,6 @@ private:
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(MyQmlObject);
 
 class MyQmlContainer : public QObject
 {
@@ -185,7 +184,6 @@ private:
     QList<MyQmlObject*> m_children;
 };
 
-QML_DECLARE_TYPE(MyQmlContainer);
 
 class MyExpression : public QDeclarativeExpression
 {
@@ -258,7 +256,6 @@ private:
     QObject *m_object;
     QObject *m_object2;
 };
-QML_DECLARE_TYPE(MyDeferredObject);
 
 class MyBaseExtendedObject : public QObject
 {
@@ -273,7 +270,6 @@ public:
 private:
     int m_value;
 };
-QML_DECLARE_TYPE(MyBaseExtendedObject);
 
 class MyExtendedObject : public MyBaseExtendedObject
 {
@@ -288,7 +284,6 @@ public:
 private:
     int m_value;
 };
-QML_DECLARE_TYPE(MyExtendedObject);
 
 class MyTypeObject : public QObject
 {
@@ -555,7 +550,6 @@ signals:
     void rectPropertyChanged();
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
-QML_DECLARE_TYPE(MyTypeObject);
 
 Q_DECLARE_METATYPE(QScriptValue);
 class MyInvokableObject : public QObject
@@ -663,6 +657,31 @@ public:
     unsigned int _test12;
     unsigned int test12() const { return _test12; }
     void setTest12(unsigned int v) { _test12 = v; }
+};
+
+class DefaultPropertyExtendedObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QObject *firstProperty READ firstProperty WRITE setFirstProperty)
+    Q_PROPERTY(QObject *secondProperty READ secondProperty WRITE setSecondProperty)
+public:
+    DefaultPropertyExtendedObject(QObject *parent = 0) : QObject(parent), m_firstProperty(0), m_secondProperty(0) {}
+
+    QObject *firstProperty() const { return m_firstProperty; }
+    QObject *secondProperty() const { return m_secondProperty; }
+    void setFirstProperty(QObject *property) { m_firstProperty = property; }
+    void setSecondProperty(QObject *property) { m_secondProperty = property; }
+private:
+    QObject* m_firstProperty;
+    QObject* m_secondProperty;
+};
+
+class OverrideDefaultPropertyObject : public DefaultPropertyExtendedObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("DefaultProperty", "secondProperty")
+public:
+    OverrideDefaultPropertyObject() {}
 };
 
 void registerTypes();

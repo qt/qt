@@ -53,6 +53,12 @@
 QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
 
+#ifndef QT_NO_TRANSLATION
+    QT_BEGIN_NAMESPACE
+    extern QString qt_mac_applicationmenu_string(int type);
+    QT_END_NAMESPACE
+#endif
+
 QT_USE_NAMESPACE
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaMenuLoader)
@@ -226,7 +232,6 @@ QT_USE_NAMESPACE
 - (void)qtTranslateApplicationMenu
 {
 #ifndef QT_NO_TRANSLATION
-    extern QString qt_mac_applicationmenu_string(int type);
     [servicesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(0))];
     [hideItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(1).arg(qAppName()))];
     [hideAllOthersItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(2))];

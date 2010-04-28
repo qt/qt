@@ -5907,9 +5907,9 @@ EXPORTS
 	_ZN7QActionD1Ev @ 5906 NONAME
 	_ZN7QActionD2Ev @ 5907 NONAME
 	_ZN7QBezier10fromPointsERK7QPointFS2_S2_S2_ @ 5908 NONAME
-	_ZN7QBezier17findIntersectionsERKS_S1_ @ 5909 NONAME
-	_ZN7QBezier17findIntersectionsERKS_S1_P7QVectorI5QPairIffEE @ 5910 NONAME
-	_ZN7QBezier20splitAtIntersectionsERS_ @ 5911 NONAME
+	_ZN7QBezier17findIntersectionsERKS_S1_ @ 5909 NONAME ABSENT
+	_ZN7QBezier17findIntersectionsERKS_S1_P7QVectorI5QPairIffEE @ 5910 NONAME ABSENT
+	_ZN7QBezier20splitAtIntersectionsERS_ @ 5911 NONAME ABSENT
 	_ZN7QBitmap8fromDataERK5QSizePKhN6QImage6FormatE @ 5912 NONAME
 	_ZN7QBitmap9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 5913 NONAME
 	_ZN7QBitmapC1ERK5QSize @ 5914 NONAME
@@ -11745,43 +11745,43 @@ EXPORTS
 	_ZN11QEglContext10getDisplayEP12QPaintDevice @ 11744 NONAME ABSENT
 	_ZN11QEglContext10waitClientEv @ 11745 NONAME ABSENT
 	_ZN11QEglContext10waitNativeEv @ 11746 NONAME ABSENT
-	_ZN11QEglContext11doneCurrentEv @ 11747 NONAME ABSENT
+	_ZN11QEglContext11doneCurrentEv @ 11747 NONAME
 	_ZN11QEglContext11errorStringEi @ 11748 NONAME ABSENT
-	_ZN11QEglContext11makeCurrentEi @ 11749 NONAME ABSENT
+	_ZN11QEglContext11makeCurrentEi @ 11749 NONAME
 	_ZN11QEglContext11openDisplayEP12QPaintDevice @ 11750 NONAME ABSENT
-	_ZN11QEglContext11swapBuffersEi @ 11751 NONAME ABSENT
-	_ZN11QEglContext12chooseConfigERK14QEglPropertiesN4QEgl16PixelFormatMatchE @ 11752 NONAME ABSENT
+	_ZN11QEglContext11swapBuffersEi @ 11751 NONAME
+	_ZN11QEglContext12chooseConfigERK14QEglPropertiesN4QEgl16PixelFormatMatchE @ 11752 NONAME
 	_ZN11QEglContext12hasExtensionEPKc @ 11753 NONAME ABSENT
-	_ZN11QEglContext13createContextEPS_PK14QEglProperties @ 11754 NONAME ABSENT
-	_ZN11QEglContext13createSurfaceEP12QPaintDevicePK14QEglProperties @ 11755 NONAME ABSENT
-	_ZN11QEglContext14currentContextEN4QEgl3APIE @ 11756 NONAME ABSENT
+	_ZN11QEglContext13createContextEPS_PK14QEglProperties @ 11754 NONAME
+	_ZN11QEglContext13createSurfaceEP12QPaintDevicePK14QEglProperties @ 11755 NONAME
+	_ZN11QEglContext14currentContextEN4QEgl3APIE @ 11756 NONAME
 	_ZN11QEglContext14defaultDisplayEP12QPaintDevice @ 11757 NONAME ABSENT
-	_ZN11QEglContext14destroySurfaceEi @ 11758 NONAME ABSENT
+	_ZN11QEglContext14destroySurfaceEi @ 11758 NONAME
 	_ZN11QEglContext14dumpAllConfigsEv @ 11759 NONAME ABSENT
-	_ZN11QEglContext15lazyDoneCurrentEv @ 11760 NONAME ABSENT
-	_ZN11QEglContext17setCurrentContextEN4QEgl3APIEPS_ @ 11761 NONAME ABSENT
+	_ZN11QEglContext15lazyDoneCurrentEv @ 11760 NONAME
+	_ZN11QEglContext17setCurrentContextEN4QEgl3APIEPS_ @ 11761 NONAME
 	_ZN11QEglContext7destroyEv @ 11762 NONAME ABSENT
-	_ZN11QEglContextC1Ev @ 11763 NONAME ABSENT
-	_ZN11QEglContextC2Ev @ 11764 NONAME ABSENT
-	_ZN11QEglContextD1Ev @ 11765 NONAME ABSENT
-	_ZN11QEglContextD2Ev @ 11766 NONAME ABSENT
-	_ZN14QEglProperties11removeValueEi @ 11767 NONAME ABSENT
+	_ZN11QEglContextC1Ev @ 11763 NONAME
+	_ZN11QEglContextC2Ev @ 11764 NONAME
+	_ZN11QEglContextD1Ev @ 11765 NONAME
+	_ZN11QEglContextD2Ev @ 11766 NONAME
+	_ZN14QEglProperties11removeValueEi @ 11767 NONAME
 	_ZN14QEglProperties14dumpAllConfigsEv @ 11768 NONAME ABSENT
-	_ZN14QEglProperties14setPixelFormatEN6QImage6FormatE @ 11769 NONAME ABSENT
-	_ZN14QEglProperties17setRenderableTypeEN4QEgl3APIE @ 11770 NONAME ABSENT
-	_ZN14QEglProperties19reduceConfigurationEv @ 11771 NONAME ABSENT
-	_ZN14QEglProperties20setPaintDeviceFormatEP12QPaintDevice @ 11772 NONAME ABSENT
-	_ZN14QEglProperties8setValueEii @ 11773 NONAME ABSENT
-	_ZN14QEglPropertiesC1Ei @ 11774 NONAME ABSENT
-	_ZN14QEglPropertiesC1Ev @ 11775 NONAME ABSENT
-	_ZN14QEglPropertiesC2Ei @ 11776 NONAME ABSENT
-	_ZN14QEglPropertiesC2Ev @ 11777 NONAME ABSENT
+	_ZN14QEglProperties14setPixelFormatEN6QImage6FormatE @ 11769 NONAME
+	_ZN14QEglProperties17setRenderableTypeEN4QEgl3APIE @ 11770 NONAME
+	_ZN14QEglProperties19reduceConfigurationEv @ 11771 NONAME
+	_ZN14QEglProperties20setPaintDeviceFormatEP12QPaintDevice @ 11772 NONAME
+	_ZN14QEglProperties8setValueEii @ 11773 NONAME
+	_ZN14QEglPropertiesC1Ei @ 11774 NONAME
+	_ZN14QEglPropertiesC1Ev @ 11775 NONAME
+	_ZN14QEglPropertiesC2Ei @ 11776 NONAME
+	_ZN14QEglPropertiesC2Ev @ 11777 NONAME
 	_ZNK11QEglContext12configAttribEiPi @ 11778 NONAME ABSENT
 	_ZNK11QEglContext16configPropertiesEi @ 11779 NONAME ABSENT
-	_ZNK11QEglContext7isValidEv @ 11780 NONAME ABSENT
-	_ZNK11QEglContext9isCurrentEv @ 11781 NONAME ABSENT
-	_ZNK14QEglProperties5valueEi @ 11782 NONAME ABSENT
-	_ZNK14QEglProperties8toStringEv @ 11783 NONAME ABSENT
+	_ZNK11QEglContext7isValidEv @ 11780 NONAME
+	_ZNK11QEglContext9isCurrentEv @ 11781 NONAME
+	_ZNK14QEglProperties5valueEi @ 11782 NONAME
+	_ZNK14QEglProperties8toStringEv @ 11783 NONAME
 	_ZNK11QFontEngine10glyphCacheEPvN21QFontEngineGlyphCache4TypeERK10QTransform @ 11784 NONAME
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectERK6QRectF @ 11785 NONAME
 	_Z12qt_blurImageP8QPainterR6QImagefbbi @ 11786 NONAME
@@ -11973,25 +11973,29 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate11children_atEP24QDeclarativeListPropertyI15QGraphicsObjectEi @ 11972 NONAME
 	_ZN20QGraphicsItemPrivate14children_countEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 11973 NONAME
 	_ZN20QGraphicsItemPrivate15children_appendEP24QDeclarativeListPropertyI15QGraphicsObjectEPS1_ @ 11974 NONAME
-	_ZN11QEglContext14destroyContextEv @ 11975 NONAME ABSENT
-	_ZN14QEglProperties13setDeviceTypeEi @ 11976 NONAME ABSENT
+	_ZN11QEglContext14destroyContextEv @ 11975 NONAME
+	_ZN14QEglProperties13setDeviceTypeEi @ 11976 NONAME
 	_ZN4QEgl10clearErrorEv @ 11977 NONAME ABSENT
-	_ZN4QEgl10extensionsEv @ 11978 NONAME ABSENT
-	_ZN4QEgl11errorStringEi @ 11979 NONAME ABSENT
+	_ZN4QEgl10extensionsEv @ 11978 NONAME
+	_ZN4QEgl11errorStringEi @ 11979 NONAME
 	_ZN4QEgl11errorStringEv @ 11980 NONAME ABSENT
-	_ZN4QEgl12chooseConfigEPK14QEglPropertiesNS_16PixelFormatMatchE @ 11981 NONAME ABSENT
-	_ZN4QEgl12hasExtensionEPKc @ 11982 NONAME ABSENT
-	_ZN4QEgl12nativePixmapEP7QPixmap @ 11983 NONAME ABSENT
-	_ZN4QEgl12nativeWindowEP7QWidget @ 11984 NONAME ABSENT
-	_ZN4QEgl13createSurfaceEP12QPaintDeviceiPK14QEglProperties @ 11985 NONAME ABSENT
-	_ZN4QEgl13defaultConfigEiNS_3APIE6QFlagsINS_12ConfigOptionEE @ 11986 NONAME ABSENT
-	_ZN4QEgl13nativeDisplayEv @ 11987 NONAME ABSENT
-	_ZN4QEgl14dumpAllConfigsEv @ 11988 NONAME ABSENT
-	_ZN4QEgl17eglCreateImageKHREiiiiPKi @ 11989 NONAME ABSENT
-	_ZN4QEgl18eglDestroyImageKHREii @ 11990 NONAME ABSENT
+	_ZN4QEgl12chooseConfigEPK14QEglPropertiesNS_16PixelFormatMatchE @ 11981 NONAME
+	_ZN4QEgl12hasExtensionEPKc @ 11982 NONAME
+	_ZN4QEgl12nativePixmapEP7QPixmap @ 11983 NONAME
+	_ZN4QEgl12nativeWindowEP7QWidget @ 11984 NONAME
+	_ZN4QEgl13createSurfaceEP12QPaintDeviceiPK14QEglProperties @ 11985 NONAME
+	_ZN4QEgl13defaultConfigEiNS_3APIE6QFlagsINS_12ConfigOptionEE @ 11986 NONAME
+	_ZN4QEgl13nativeDisplayEv @ 11987 NONAME
+	_ZN4QEgl14dumpAllConfigsEv @ 11988 NONAME
+	_ZN4QEgl17eglCreateImageKHREiiiiPKi @ 11989 NONAME
+	_ZN4QEgl18eglDestroyImageKHREii @ 11990 NONAME
 	_ZN4QEgl5errorEv @ 11991 NONAME ABSENT
-	_ZN4QEgl7displayEv @ 11992 NONAME ABSENT
-	_ZNK11QEglContext12configAttribEi @ 11993 NONAME ABSENT
+	_ZN4QEgl7displayEv @ 11992 NONAME
+	_ZNK11QEglContext12configAttribEi @ 11993 NONAME
 	_ZNK11QEglContext16configPropertiesEv @ 11994 NONAME ABSENT
 	_ZNK19QItemSelectionRange7isEmptyEv @ 11995 NONAME
+	_ZN13QIconEngineV28iconNameEv @ 11996 NONAME
+	_ZN14QWindowSurface23setPartialUpdateSupportEb @ 11997 NONAME
+	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 11998 NONAME
+	_ZNK5QIcon4nameEv @ 11999 NONAME
 

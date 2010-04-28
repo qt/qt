@@ -46,7 +46,6 @@
 #include <QtGui/qgraphicseffect.h>
 
 #include "private/qdeclarativeevents_p_p.h"
-#include "private/qdeclarativeeffects_p.h"
 #include "private/qdeclarativescalegrid_p_p.h"
 #include "private/qdeclarativeanimatedimage_p.h"
 #include "private/qdeclarativeborderimage_p.h"
@@ -82,56 +81,59 @@
 
 void QDeclarativeItemModule::defineModule()
 {
-#ifndef QT_NO_MOVIE
-    qmlRegisterType<QDeclarativeAnimatedImage>("Qt",4,6,"AnimatedImage");
+#ifdef QT_NO_MOVIE
+    qmlRegisterTypeNotAvailable("Qt",4,7,"AnimatedImage",
+        qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
+#else
+    qmlRegisterType<QDeclarativeAnimatedImage>("Qt",4,7,"AnimatedImage");
 #endif
-    qmlRegisterType<QDeclarativeBorderImage>("Qt",4,6,"BorderImage");
-    qmlRegisterType<QDeclarativeColumn>("Qt",4,6,"Column");
-    qmlRegisterType<QDeclarativeDrag>("Qt",4,6,"Drag");
-    qmlRegisterType<QDeclarativeFlickable>("Qt",4,6,"Flickable");
-    qmlRegisterType<QDeclarativeFlipable>("Qt",4,6,"Flipable");
-    qmlRegisterType<QDeclarativeFlow>("Qt",4,6,"Flow");
-    qmlRegisterType<QDeclarativeFocusPanel>("Qt",4,6,"FocusPanel");
-    qmlRegisterType<QDeclarativeFocusScope>("Qt",4,6,"FocusScope");
-    qmlRegisterType<QDeclarativeGradient>("Qt",4,6,"Gradient");
-    qmlRegisterType<QDeclarativeGradientStop>("Qt",4,6,"GradientStop");
-    qmlRegisterType<QDeclarativeGrid>("Qt",4,6,"Grid");
-    qmlRegisterType<QDeclarativeGridView>("Qt",4,6,"GridView");
-    qmlRegisterType<QDeclarativeImage>("Qt",4,6,"Image");
-    qmlRegisterType<QDeclarativeItem>("Qt",4,6,"Item");
-    qmlRegisterType<QDeclarativeLayoutItem>("Qt",4,6,"LayoutItem");
-    qmlRegisterType<QDeclarativeListView>("Qt",4,6,"ListView");
-    qmlRegisterType<QDeclarativeLoader>("Qt",4,6,"Loader");
-    qmlRegisterType<QDeclarativeMouseArea>("Qt",4,6,"MouseArea");
-    qmlRegisterType<QDeclarativePath>("Qt",4,6,"Path");
-    qmlRegisterType<QDeclarativePathAttribute>("Qt",4,6,"PathAttribute");
-    qmlRegisterType<QDeclarativePathCubic>("Qt",4,6,"PathCubic");
-    qmlRegisterType<QDeclarativePathLine>("Qt",4,6,"PathLine");
-    qmlRegisterType<QDeclarativePathPercent>("Qt",4,6,"PathPercent");
-    qmlRegisterType<QDeclarativePathQuad>("Qt",4,6,"PathQuad");
-    qmlRegisterType<QDeclarativePathView>("Qt",4,6,"PathView");
-    qmlRegisterType<QIntValidator>("Qt",4,6,"IntValidator");
+    qmlRegisterType<QDeclarativeBorderImage>("Qt",4,7,"BorderImage");
+    qmlRegisterType<QDeclarativeColumn>("Qt",4,7,"Column");
+    qmlRegisterType<QDeclarativeDrag>("Qt",4,7,"Drag");
+    qmlRegisterType<QDeclarativeFlickable>("Qt",4,7,"Flickable");
+    qmlRegisterType<QDeclarativeFlipable>("Qt",4,7,"Flipable");
+    qmlRegisterType<QDeclarativeFlow>("Qt",4,7,"Flow");
+    qmlRegisterType<QDeclarativeFocusPanel>("Qt",4,7,"FocusPanel");
+    qmlRegisterType<QDeclarativeFocusScope>("Qt",4,7,"FocusScope");
+    qmlRegisterType<QDeclarativeGradient>("Qt",4,7,"Gradient");
+    qmlRegisterType<QDeclarativeGradientStop>("Qt",4,7,"GradientStop");
+    qmlRegisterType<QDeclarativeGrid>("Qt",4,7,"Grid");
+    qmlRegisterType<QDeclarativeGridView>("Qt",4,7,"GridView");
+    qmlRegisterType<QDeclarativeImage>("Qt",4,7,"Image");
+    qmlRegisterType<QDeclarativeItem>("Qt",4,7,"Item");
+    qmlRegisterType<QDeclarativeLayoutItem>("Qt",4,7,"LayoutItem");
+    qmlRegisterType<QDeclarativeListView>("Qt",4,7,"ListView");
+    qmlRegisterType<QDeclarativeLoader>("Qt",4,7,"Loader");
+    qmlRegisterType<QDeclarativeMouseArea>("Qt",4,7,"MouseArea");
+    qmlRegisterType<QDeclarativePath>("Qt",4,7,"Path");
+    qmlRegisterType<QDeclarativePathAttribute>("Qt",4,7,"PathAttribute");
+    qmlRegisterType<QDeclarativePathCubic>("Qt",4,7,"PathCubic");
+    qmlRegisterType<QDeclarativePathLine>("Qt",4,7,"PathLine");
+    qmlRegisterType<QDeclarativePathPercent>("Qt",4,7,"PathPercent");
+    qmlRegisterType<QDeclarativePathQuad>("Qt",4,7,"PathQuad");
+    qmlRegisterType<QDeclarativePathView>("Qt",4,7,"PathView");
+    qmlRegisterType<QIntValidator>("Qt",4,7,"IntValidator");
     qmlRegisterType<QDoubleValidator>("Qt",4,7,"DoubleValidator");
     qmlRegisterType<QRegExpValidator>("Qt",4,7,"RegExpValidator");
-    qmlRegisterType<QDeclarativeRectangle>("Qt",4,6,"Rectangle");
-    qmlRegisterType<QDeclarativeRepeater>("Qt",4,6,"Repeater");
-    qmlRegisterType<QGraphicsRotation>("Qt",4,6,"Rotation");
-    qmlRegisterType<QDeclarativeRow>("Qt",4,6,"Row");
-    qmlRegisterType<QDeclarativeTranslate>("Qt",4,6,"Translate");
-    qmlRegisterType<QGraphicsScale>("Qt",4,6,"Scale");
-    qmlRegisterType<QDeclarativeText>("Qt",4,6,"Text");
-    qmlRegisterType<QDeclarativeTextEdit>("Qt",4,6,"TextEdit");
-    qmlRegisterType<QDeclarativeTextInput>("Qt",4,6,"TextInput");
-    qmlRegisterType<QDeclarativeViewSection>("Qt",4,6,"ViewSection");
-    qmlRegisterType<QDeclarativeVisualDataModel>("Qt",4,6,"VisualDataModel");
-    qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,6,"VisualItemModel");
+    qmlRegisterType<QDeclarativeRectangle>("Qt",4,7,"Rectangle");
+    qmlRegisterType<QDeclarativeRepeater>("Qt",4,7,"Repeater");
+    qmlRegisterType<QGraphicsRotation>("Qt",4,7,"Rotation");
+    qmlRegisterType<QDeclarativeRow>("Qt",4,7,"Row");
+    qmlRegisterType<QDeclarativeTranslate>("Qt",4,7,"Translate");
+    qmlRegisterType<QGraphicsScale>("Qt",4,7,"Scale");
+    qmlRegisterType<QDeclarativeText>("Qt",4,7,"Text");
+    qmlRegisterType<QDeclarativeTextEdit>("Qt",4,7,"TextEdit");
+    qmlRegisterType<QDeclarativeTextInput>("Qt",4,7,"TextInput");
+    qmlRegisterType<QDeclarativeViewSection>("Qt",4,7,"ViewSection");
+    qmlRegisterType<QDeclarativeVisualDataModel>("Qt",4,7,"VisualDataModel");
+    qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,7,"VisualItemModel");
 
     qmlRegisterType<QDeclarativeAnchors>();
     qmlRegisterType<QDeclarativeKeyEvent>();
     qmlRegisterType<QDeclarativeMouseEvent>();
     qmlRegisterType<QGraphicsObject>();
-    qmlRegisterType<QGraphicsWidget>("Qt",4,6,"QGraphicsWidget");
-    qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("Qt",4,6,"QGraphicsWidget");
+    qmlRegisterType<QGraphicsWidget>("Qt",4,7,"QGraphicsWidget");
+    qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("Qt",4,7,"QGraphicsWidget");
     qmlRegisterType<QGraphicsTransform>();
     qmlRegisterType<QDeclarativePathElement>();
     qmlRegisterType<QDeclarativeCurve>();
@@ -141,17 +143,8 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QAction>();
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
-#ifndef QT_NO_GRAPHICSEFFECT
     qmlRegisterType<QGraphicsEffect>();
-    qmlRegisterType<QGraphicsBlurEffect>("Qt",4,6,"Blur");
-    qmlRegisterType<QGraphicsColorizeEffect>("Qt",4,6,"Colorize");
-    qmlRegisterType<QGraphicsDropShadowEffect>("Qt",4,6,"DropShadow");
-    qmlRegisterType<QGraphicsOpacityEffect>("Qt",4,6,"Opacity");
-#endif
-#ifdef QT_WEBKIT_LIB
-    qmlRegisterType<QDeclarativeWebSettings>();
-#endif
 
-    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,6,"KeyNavigation");
-    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,6,"Keys");
+    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,7,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
+    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,7,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
 }

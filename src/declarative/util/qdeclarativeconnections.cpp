@@ -116,6 +116,8 @@ public:
         onClicked: foo(...)
     }
     \endqml
+
+    \sa QtDeclarative
 */
 
 /*!
@@ -150,8 +152,14 @@ void QDeclarativeConnections::setTarget(QObject *obj)
     Q_D(QDeclarativeConnections);
     if (d->target == obj)
         return;
-    foreach (QDeclarativeBoundSignal *s, d->boundsignals)
-        delete s;
+    foreach (QDeclarativeBoundSignal *s, d->boundsignals) {
+        // It is possible that target is being changed due to one of our signal
+        // handlers -> use deleteLater().
+        if (s->isEvaluating())
+            s->deleteLater();
+        else
+            delete s;
+    }
     d->boundsignals.clear();
     d->target = obj;
     connectSignals();

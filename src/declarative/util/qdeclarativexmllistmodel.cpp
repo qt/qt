@@ -74,6 +74,8 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
     \qmlclass XmlRole QDeclarativeXmlListModelRole
   \since 4.7
     \brief The XmlRole element allows you to specify a role for an XmlListModel.
+
+    \sa {QtDeclarative}
 */
 
 /*!
@@ -502,6 +504,8 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
 
     This is useful to provide incremental updates and avoid repainting an
     entire model in a view.
+
+    \sa {QtDeclarative}
 */
 
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
@@ -667,7 +671,7 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 }
 
 /*!
-    \qmlproperty enum XmlListModel::status
+    \qmlproperty enumeration XmlListModel::status
     Specifies the model loading status, which can be one of the following:
 
     \list

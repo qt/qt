@@ -244,7 +244,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     In addition, the WorkerScript cannot add any list data to the model.
 
-    \sa {qmlmodels}{Data Models}, WorkerScript
+    \sa {qmlmodels}{Data Models}, WorkerScript, QtDeclarative
 */
 
 
@@ -1187,10 +1187,9 @@ QScriptValue NestedListModel::get(int index) const
     if (!node)
         return 0;
     QDeclarativeEngine *eng = qmlEngine(m_listModel);
-    if (!eng) {
-        qWarning("Cannot call QDeclarativeListModel::get() without a QDeclarativeEngine");
+    if (!eng) 
         return 0;
-    }
+    
     return QDeclarativeEnginePrivate::qmlScriptObject(node->object(this), eng);
 }
 

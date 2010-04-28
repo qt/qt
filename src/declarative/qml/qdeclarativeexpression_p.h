@@ -164,6 +164,7 @@ public:
         return expr->q_func();
     }
 
+    void _q_notify();
     virtual void emitValueChanged();
 
     static void exceptionToError(QScriptEngine *, QDeclarativeError &);

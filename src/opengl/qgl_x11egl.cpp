@@ -335,24 +335,23 @@ void QGLWidget::setColormap(const QGLColormap &)
 {
 }
 
-// Re-creates the EGL surface if the window ID has changed or if force is true
-void QGLWidgetPrivate::recreateEglSurface(bool force)
+// Re-creates the EGL surface if the window ID has changed or if there isn't a surface
+void QGLWidgetPrivate::recreateEglSurface()
 {
     Q_Q(QGLWidget);
 
     Window currentId = q->winId();
 
-    if ( force || (currentId != eglSurfaceWindowId) ) {
-        // The window id has changed so we need to re-create the EGL surface
-        QEglContext *ctx = glcx->d_func()->eglContext;
-        EGLSurface surface = glcx->d_func()->eglSurface;
-        if (surface != EGL_NO_SURFACE)
-            ctx->destroySurface(surface); // Will force doneCurrent() if nec.
-        surface = ctx->createSurface(q);
-        if (surface == EGL_NO_SURFACE)
-            qWarning("Error creating EGL window surface: 0x%x", eglGetError());
-        glcx->d_func()->eglSurface = surface;
+    // If the window ID has changed since the surface was created, we need to delete the
+    // old surface before re-creating a new one. Note: This should not be the case as the
+    // surface should be deleted before the old window id.
+    if (glcx->d_func()->eglSurface != EGL_NO_SURFACE && (currentId != eglSurfaceWindowId)) {
+        qWarning("EGL surface for deleted window %x was not destroyed", eglSurfaceWindowId);
+        glcx->d_func()->destroyEglSurfaceForDevice();
+    }
 
+    if (glcx->d_func()->eglSurface == EGL_NO_SURFACE) {
+        glcx->d_func()->eglSurface = glcx->d_func()->eglContext->createSurface(q);
         eglSurfaceWindowId = currentId;
     }
 }

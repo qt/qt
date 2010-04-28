@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qmetaobject.h>
-#include <QtMultimedia/qtmedianamespace.h>
+#include <QtMediaServices/qtmedianamespace.h>
 
 #include <QtCore/private/qobject_p.h>
 

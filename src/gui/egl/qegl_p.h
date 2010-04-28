@@ -55,6 +55,7 @@
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
+#ifndef QT_NO_EGL
 #if defined(QT_OPENGL_ES_2)
 #   include <GLES2/gl2.h>
 #endif
@@ -63,6 +64,23 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #   include <GLES/egl.h>
 #else
 #   include <EGL/egl.h>
+#endif
+#else
+
+//types from egltypes.h for compiling stub without EGL headers
+typedef int EGLBoolean;
+typedef int EGLint;
+typedef int EGLenum;
+typedef int    NativeDisplayType;
+typedef void*  NativeWindowType;
+typedef void*  NativePixmapType;
+typedef int EGLDisplay;
+typedef int EGLConfig;
+typedef int EGLSurface;
+typedef int EGLContext;
+typedef int EGLClientBuffer;
+#define EGL_NONE            0x3038  /* Attrib list terminator */
+
 #endif
 
 #if defined(Q_WS_X11)
@@ -169,7 +187,7 @@ namespace QEgl {
         Translucent = 0x01,
         Renderable  = 0x02  // Config will be compatable with the paint engines (VG or GL)
     };
-    Q_DECLARE_FLAGS(ConfigOptions, ConfigOption);
+    Q_DECLARE_FLAGS(ConfigOptions, ConfigOption)
 
     // Most of the time we use the same config for things like widgets & pixmaps, so rather than
     // go through the eglChooseConfig loop every time, we use defaultConfig, which will return
@@ -182,7 +200,11 @@ namespace QEgl {
 
     Q_GUI_EXPORT void dumpAllConfigs();
 
+#ifdef QT_NO_EGL
+    Q_GUI_EXPORT QString errorString(EGLint code = 0);
+#else
     Q_GUI_EXPORT QString errorString(EGLint code = eglGetError());
+#endif
 
     Q_GUI_EXPORT QString extensions();
     Q_GUI_EXPORT bool hasExtension(const char* extensionName);
@@ -200,9 +222,9 @@ namespace QEgl {
 #ifdef Q_WS_X11
     Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);
 #endif
-};
+}
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions)
 
 QT_END_NAMESPACE
 

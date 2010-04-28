@@ -93,16 +93,16 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
     userSettings->setConnections();
     connect(userSettings, SIGNAL(newConnection(QDBusObjectPath)),
             this, SLOT(newConnection(QDBusObjectPath)));
-
-    QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
 }
 
 QNetworkManagerEngine::~QNetworkManagerEngine()
 {
 }
 
-void QNetworkManagerEngine::init()
+void QNetworkManagerEngine::initialize()
 {
+    QMutexLocker locker(&mutex);
+
     // Get current list of access points.
     foreach (const QDBusObjectPath &devicePath, interface->getDevices())
         deviceAdded(devicePath);

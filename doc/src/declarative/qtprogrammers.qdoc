@@ -62,7 +62,7 @@ QML provides direct access to the following concepts from Qt:
  \o QObject signals and slots - available as functions to call in JavaScript
  \o QObject properties - available as variables in JavaScript
  \o QWidget - QDeclarativeView is a QML-displaying widget
- \o Qt models - used directly in data binding (QAbstractItemModel and next generation QListModelInterface)
+ \o Qt models - used directly in data binding (QAbstractItemModel)
 \endlist
 
 Qt knowledge is \e required for \l {Extending QML in C++}, and also for \l{Integrating QML with existing Qt UI code}.
@@ -104,7 +104,7 @@ and exactly how it respond to mouse, key, or touch input, should all be left for
 in QML.
 
 It is illustrative to note that QDeclarativeTextEdit is built upon QTextControl,
-QDeclarativeWebView is built upon QWebPage, and ListView uses QListModelInterface,
+QDeclarativeWebView is built upon QWebPage, and ListView uses QAbstractItemModel,
 just as QTextEdit, QWebView, and QListView are built upon
 those same UI-agnostic components.
 

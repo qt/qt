@@ -64,6 +64,9 @@ public:
 
     virtual void registerTypes(const char *uri) = 0;
     virtual void initializeEngine(QDeclarativeEngine *engine, const char *uri);
+
+private:
+    Q_DISABLE_COPY(QDeclarativeExtensionPlugin)
 };
 
 QT_END_NAMESPACE

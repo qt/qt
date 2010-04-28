@@ -50,6 +50,7 @@
 #include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
 
+#include <qmath.h>
 #include <math.h>
 
 QT_BEGIN_NAMESPACE
@@ -346,6 +347,7 @@ public:
 void QDeclarativeGridViewPrivate::init()
 {
     Q_Q(QDeclarativeGridView);
+    QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     q->setFlickDirection(QDeclarativeFlickable::VerticalFlick);
     addItemChangeListener(this, Geometry);
@@ -373,9 +375,11 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
     if (QDeclarativeItem *item = model->item(modelIndex, false)) {
         listItem = new FxGridItem(item, q);
         listItem->index = modelIndex;
-        listItem->item->setZValue(1);
-        // complete
-        model->completeItem();
+        if (model->completePending()) {
+            // complete
+            listItem->item->setZValue(1);
+            model->completeItem();
+        }
         listItem->item->setParentItem(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
@@ -746,24 +750,31 @@ void QDeclarativeGridViewPrivate::fixupPosition()
 void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
 {
     Q_Q(QDeclarativeGridView);
-
-    if ((&data == &vData && !q->yflick())
-        || (&data == &hData && !q->xflick())
-        || data.move.timeLine())
+    if ((flow == QDeclarativeGridView::TopToBottom && &data == &vData)
+        || (flow == QDeclarativeGridView::LeftToRight && &data == &hData))
         return;
 
     int oldDuration = fixupDuration;
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
     if (haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
-        if (currentItem && currentItem->rowPos() - position() != highlightRangeStart) {
-            qreal pos = currentItem->rowPos() - highlightRangeStart;
+        if (currentItem) {
+            updateHighlight();
+            qreal pos = currentItem->rowPos();
+            qreal viewPos = position();
+            if (viewPos < pos + rowSize() - highlightRangeEnd)
+                viewPos = pos + rowSize() - highlightRangeEnd;
+            if (viewPos > pos - highlightRangeStart)
+                viewPos = pos - highlightRangeStart;
+
             timeline.reset(data.move);
-            if (fixupDuration) {
-                timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-            } else {
-                data.move.setValue(-pos);
-                q->viewportMoved();
+            if (viewPos != position()) {
+                if (fixupDuration) {
+                    timeline.move(data.move, -viewPos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
+                } else {
+                    data.move.setValue(-viewPos);
+                    q->viewportMoved();
+                }
             }
             vTime = timeline.time();
         }
@@ -808,7 +819,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 maxDistance = qAbs(minExtent - data.move.value());
             }
         }
-        if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
+        if (snapMode == QDeclarativeGridView::NoSnap && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = minExtent;
     } else {
         if (data.move.value() > maxExtent) {
@@ -819,9 +830,10 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 maxDistance = qAbs(maxExtent - data.move.value());
             }
         }
-        if (snapMode != QDeclarativeGridView::SnapToRow && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
+        if (snapMode == QDeclarativeGridView::NoSnap && highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
             data.flickTarget = maxExtent;
     }
+    bool overShoot = boundsBehavior == QDeclarativeFlickable::DragAndOvershootBounds;
     if (maxDistance > 0 || overShoot) {
         // This mode requires the grid to stop exactly on a row boundary.
         qreal v = velocity;
@@ -840,7 +852,15 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             if (v > 0)
                 dist = -dist;
             data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
-            dist = -data.flickTarget + data.move.value();
+            qreal adjDist = -data.flickTarget + data.move.value();
+            if (qAbs(adjDist) > qAbs(dist)) {
+                // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
+                v2 = accel * 2.0f * qAbs(dist);
+                v = qSqrt(v2);
+                if (dist > 0)
+                    v = -v;
+            }
+            dist = adjDist;
             accel = v2 / (2.0f * qAbs(dist));
         } else {
             data.flickTarget = velocity > 0 ? minExtent : maxExtent;
@@ -885,7 +905,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
 
-    Note that views do not enable \e clip automatically.  If the view
+    \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
@@ -1507,12 +1527,12 @@ void QDeclarativeGridView::viewportMoved()
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
             // reposition highlight
             qreal pos = d->highlight->rowPos();
-            qreal viewPos = qRound(d->position());
-            if (pos > viewPos + d->highlightRangeEnd - 1 - d->rowSize())
-                pos = viewPos + d->highlightRangeEnd - 1 - d->rowSize();
+            qreal viewPos = d->position();
+            if (pos > viewPos + d->highlightRangeEnd - d->rowSize())
+                pos = viewPos + d->highlightRangeEnd - d->rowSize();
             if (pos < viewPos + d->highlightRangeStart)
                 pos = viewPos + d->highlightRangeStart;
-            d->highlight->setPosition(d->highlight->colPos(), pos);
+            d->highlight->setPosition(d->highlight->colPos(), qRound(pos));
 
             // update current index
             int idx = d->snapIndex();
@@ -1535,8 +1555,10 @@ qreal QDeclarativeGridView::minYExtent() const
     if (d->flow == QDeclarativeGridView::TopToBottom)
         return QDeclarativeFlickable::minYExtent();
     qreal extent = -d->startPosition();
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent += d->highlightRangeStart;
+        extent = qMax(extent, -(d->rowPosAt(0) + d->rowSize() - d->highlightRangeEnd));
+    }
     return extent;
 }
 
@@ -1547,8 +1569,9 @@ qreal QDeclarativeGridView::maxYExtent() const
         return QDeclarativeFlickable::maxYExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-        extent = -(d->endPosition() - d->highlightRangeEnd);
-        extent = qMax(extent, -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart));
+        extent = -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart);
+        if (d->highlightRangeEnd != d->highlightRangeStart)
+            extent = qMin(extent, -(d->endPosition() - d->highlightRangeEnd + 1));
     } else {
         extent = -(d->endPosition() - height());
     }
@@ -1564,8 +1587,10 @@ qreal QDeclarativeGridView::minXExtent() const
     if (d->flow == QDeclarativeGridView::LeftToRight)
         return QDeclarativeFlickable::minXExtent();
     qreal extent = -d->startPosition();
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent += d->highlightRangeStart;
+        extent = qMax(extent, -(d->rowPosAt(0) + d->rowSize() - d->highlightRangeEnd));
+    }
     return extent;
 }
 
@@ -1576,8 +1601,9 @@ qreal QDeclarativeGridView::maxXExtent() const
         return QDeclarativeFlickable::maxXExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
-        extent = -(d->endPosition() - d->highlightRangeEnd);
-        extent = qMax(extent, -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart));
+        extent = -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart);
+        if (d->highlightRangeEnd != d->highlightRangeStart)
+            extent = qMin(extent, -(d->endPosition() - d->highlightRangeEnd + 1));
     } else {
         extent = -(d->endPosition() - height());
     }
@@ -2247,6 +2273,13 @@ void QDeclarativeGridView::destroyingItem(QDeclarativeItem *item)
     d->unrequestedItems.remove(item);
 }
 
+void QDeclarativeGridView::animStopped()
+{
+    Q_D(QDeclarativeGridView);
+    d->bufferMode = QDeclarativeGridViewPrivate::NoBuffer;
+    if (d->haveHighlightRange && d->highlightRange == QDeclarativeGridView::StrictlyEnforceRange)
+        d->updateHighlight();
+}
 
 void QDeclarativeGridView::refill()
 {

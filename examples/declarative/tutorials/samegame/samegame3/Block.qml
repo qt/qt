@@ -1,11 +1,11 @@
 //![0]
 import Qt 4.7
 
-Item { 
+Item {
     id: block
 
     property int type: 0
-    
+
     Image {
         id: img
 

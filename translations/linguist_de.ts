@@ -453,7 +453,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Ctrl+Q</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+646"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+668"/>
         <location line="+15"/>
         <source>&amp;Save</source>
         <translation>&amp;Speichern</translation>
@@ -909,7 +909,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Freigeben unter ...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2013"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2035"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
@@ -1023,12 +1023,12 @@ Soll die erstgenannte Datei übersprungen werden?</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
-        <location line="+1165"/>
+        <location line="+1187"/>
         <source>Release</source>
         <translation>Freigeben</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1164"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1186"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Qt-Nachrichtendateien (*.qm)
@@ -1095,7 +1095,7 @@ Alle Dateien (*)</translation>
         <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
-        <location line="+516"/>
+        <location line="+538"/>
         <location line="+1"/>
         <location line="+274"/>
         <location line="+40"/>
@@ -1104,7 +1104,7 @@ Alle Dateien (*)</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1198"/>
+        <location line="-1220"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>Kann Zeichenkette &apos;%1&apos; nicht finden.</translation>
@@ -1233,7 +1233,7 @@ Alle Dateien (*)</translation>
         <translation>Es wurden alle Übersetzungseinheiten abgearbeitet.</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+198"/>
         <source>&amp;Window</source>
         <translation>&amp;Fenster</translation>
     </message>
@@ -1493,7 +1493,7 @@ Alle Dateien (*)</translation>
     <message>
         <location/>
         <source>Display information about the Qt toolkit by Nokia.</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeigt Informationen über das Qt-Toolkit von Nokia an.</translation>
     </message>
 </context>
 <context>
@@ -1797,7 +1797,7 @@ Zeile: %2</translation>
         <translation>Kompilierte Qt-Übersetzungen</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1280"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1302"/>
         <source>Translation files (%1);;</source>
         <translation>Übersetzungsdateien (%1);;</translation>
     </message>
@@ -1818,9 +1818,14 @@ Zeile: %2</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+658"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+817"/>
         <source>GNU Gettext localization files</source>
         <translation>GNU-Gettext-Übersetzungsdateien</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>GNU Gettext localization template files</source>
+        <translation>Vorlagen für GNU-Gettext-Übersetzungsdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
@@ -1838,7 +1843,7 @@ Zeile: %2</translation>
         <translation>Qt-Übersetzungsdateien (aktuelles Format)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+827"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+829"/>
         <source>XLIFF localization files</source>
         <translation>XLIFF-Übersetzungsdateien</translation>
     </message>

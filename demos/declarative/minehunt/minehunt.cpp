@@ -305,8 +305,6 @@ bool MinehuntGame::flag(int row, int col)
     return true;
 }
 
-QML_DECLARE_TYPE(TileData);
-
 class MinehuntExtensionPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT

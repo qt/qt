@@ -67,13 +67,14 @@ public:
 
     virtual bool handleForwardBackwardMouseButtons(QMouseEvent *e) = 0;
 
-    static QString AboutBlank;
-    static QString LocalHelpFile;
-    static QString PageNotFoundMessage;
+    static const QLatin1String DocPath;
+    static const QString AboutBlank;
+    static const QString LocalHelpFile;
+    static const QString PageNotFoundMessage;
 
     static bool isLocalUrl(const QUrl &url);
     static bool canOpenPage(const QString &url);
-    static QString mimeFromUrl(const QString &url);
+    static QString mimeFromUrl(const QUrl &url);
     static bool launchWithExternalApp(const QUrl &url);
 };
 

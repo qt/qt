@@ -111,16 +111,7 @@ public:
     int shifted(QBezier *curveSegments, int maxSegmets,
                 qreal offset, float threshold) const;
 
-    QVector< QList<QBezier> > splitAtIntersections(QBezier &a);
-
     QBezier bezierOnInterval(qreal t0, qreal t1) const;
-
-    static QVector< QPair<qreal, qreal> > findIntersections(const QBezier &a,
-                                                     const QBezier &b);
-
-    static bool findIntersections(const QBezier &a, const QBezier &b,
-                                  QVector<QPair<qreal, qreal> > *t);
-
     QBezier getSubRange(qreal t0, qreal t1) const;
 
     qreal x1, y1, x2, y2, x3, y3, x4, y4;

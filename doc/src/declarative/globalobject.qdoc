@@ -190,10 +190,10 @@ This function attempts to open the specified \c target url in an external applic
 This function returns a hex string of the md5 hash of \c data.
 
 \section3 Qt.btoa(data)
-This function returns a base64 encoding of \c data.
+Binary to ASCII - this function returns a base64 encoding of \c data.
 
 \section3 Qt.atob(data)
-This function returns a base64 decoding of \c data.
+ASCII to binary - this function returns a base64 decoding of \c data.
 
 \section3 Qt.quit()
 This function causes the QML engine to emit the quit signal, which in
@@ -223,7 +223,7 @@ of their use.
         function finishCreation(){
             if(component.isReady()){
                 sprite = component.createObject();
-                if(sprite == 0){
+                if(sprite == null){
                     // Error Handling
                 }else{
                     sprite.parent = page;
@@ -248,7 +248,7 @@ of their use.
     \code
         component = createComponent("Sprite.qml");
         sprite = component.createObject();
-        if(sprite == 0){
+        if(sprite == null){
             // Error Handling
             console.log(component.errorsString());
         }else{
@@ -257,6 +257,11 @@ of their use.
             //...
         }
     \endcode
+
+    The methods and properties of the Component element are defined in its own
+    page, but when using it dynamically only two methods are usually used.
+    Component.createObject() returns the created object or null if there is an error.
+    If there is an error, Component.errorsString() describes what the error was.
 
     If you want to just create an arbitrary string of QML, instead of
     loading a QML file, consider the createQmlObject() function.
@@ -277,7 +282,9 @@ of their use.
     similarly to eval, but for creating QML elements.
 
     Returns the created object, or null if there is an error. In the case of an
-    error, details of the error are output using qWarning().
+    error, a QtScript Error object is thrown. This object has the additional property,
+    qmlErrors, which is an array of all the errors encountered when trying to execute the
+    QML. Each object in the array has the members: lineNumber, columnNumber, fileName and message.
 
     Note that this function returns immediately, and therefore may not work if
     the QML loads new components. If you are trying to load a new component,
@@ -286,11 +293,81 @@ of their use.
     been loaded, and so it is safe to use createQmlObject to load built-in
     components.
 
-\section1 Asynchronous JavaScript and XML 
-QML script supports the XMLHttpRequest object, which can be used to asynchronously obtain data from over a network.
-\section2 XMLHttpRequest()
-In QML you can construct an XMLHttpRequest object just like in a web browser! TODO: Real documentation for this object.
+\section1 XMLHttpRequest
 
+\target XMLHttpRequest
+
+QML script supports the XMLHttpRequest object, which can be used to asynchronously obtain 
+data from over a network.  
+
+The XMLHttpRequest API implements the same \l {http://www.w3.org/TR/XMLHttpRequest/}{W3C standard}
+as many popular web browsers with following exceptions:
+\list
+\i QML's XMLHttpRequest does not enforce the same origin policty.
+\i QML's XMLHttpRequest does not support \e synchronous requests.
+\endlist
+
+Additionally, the \c responseXML XML DOM tree currently supported by QML is a reduced subset
+of the \l {http://www.w3.org/TR/DOM-Level-3-Core/}{DOM Level 3 Core} API supported in a web
+browser.  The following objects and properties are supported by the QML implementation:
+
+\table
+\header
+\o \bold {Node}
+\o \bold {Document}
+\o \bold {Element}
+\o \bold {Attr}
+\o \bold {CharacterData}
+\o \bold {Text}
+
+\row
+\o 
+\list
+\o nodeName
+\o nodeValue
+\o nodeType
+\o parentNode
+\o childNodes
+\o firstChild
+\o lastChild
+\o previousSibling
+\o nextSibling
+\o attribtes
+\endlist
+
+\o 
+\list
+\o xmlVersion
+\o xmlEncoding
+\o xmlStandalone
+\o documentElement
+\endlist
+
+\o
+\list 
+\o tagName
+\endlist
+
+\o
+\list
+\o name
+\o value
+\o ownerElement
+\endlist
+
+\o
+\list 
+\o data
+\o length
+\endlist
+
+\o
+\list
+\o isElementContentWhitespace
+\o wholeText
+\endlist
+
+\endtable
 
 \section1 Offline Storage API
 

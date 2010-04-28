@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property variant test1: Qt.vector3d(1, 0, 0.9);

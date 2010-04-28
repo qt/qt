@@ -173,11 +173,12 @@ QUnifiedTimer::QUnifiedTimer() :
     time.invalidate();
 }
 
-QUnifiedTimer *QUnifiedTimer::instance()
+
+QUnifiedTimer *QUnifiedTimer::instance(bool create)
 {
     QUnifiedTimer *inst;
 #ifndef QT_NO_THREAD
-    if (!unifiedTimer()->hasLocalData()) {
+    if (create && !unifiedTimer()->hasLocalData()) {
         inst = new QUnifiedTimer;
         unifiedTimer()->setLocalData(inst);
     } else {
@@ -190,10 +191,16 @@ QUnifiedTimer *QUnifiedTimer::instance()
     return inst;
 }
 
+QUnifiedTimer *QUnifiedTimer::instance()
+{
+    return instance(true);
+}
+
 void QUnifiedTimer::ensureTimerUpdate()
 {
-    if (isPauseTimerActive)
-        updateAnimationsTime();
+    QUnifiedTimer *inst = QUnifiedTimer::instance(false);
+    if (inst && inst->isPauseTimerActive)
+        inst->updateAnimationsTime();
 }
 
 void QUnifiedTimer::updateAnimationsTime()
@@ -217,6 +224,13 @@ void QUnifiedTimer::updateAnimationsTime()
         }
         currentAnimationIdx = 0;
     }
+}
+
+void QUnifiedTimer::updateAnimationTimer()
+{
+    QUnifiedTimer *inst = QUnifiedTimer::instance(false);
+    if (inst)
+        inst->restartAnimationTimer();
 }
 
 void QUnifiedTimer::restartAnimationTimer()
@@ -269,34 +283,41 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
 
 void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopLevel)
 {
-    registerRunningAnimation(animation);
+    QUnifiedTimer *inst = instance(true); //we create the instance if needed
+    inst->registerRunningAnimation(animation);
     if (isTopLevel) {
         Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
         QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
-        animationsToStart << animation;
-        if (!startStopAnimationTimer.isActive())
-            startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+        inst->animationsToStart << animation;
+        if (!inst->startStopAnimationTimer.isActive())
+            inst->startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, inst);
     }
 }
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
-    unregisterRunningAnimation(animation);
+    QUnifiedTimer *inst = QUnifiedTimer::instance(false);
+    if (inst) {
+        //at this point the unified timer should have been created
+        //but it might also have been already destroyed in case the application is shutting down
 
-    if (!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer)
-        return;
+        inst->unregisterRunningAnimation(animation);
 
-    int idx = animations.indexOf(animation);
-    if (idx != -1) {
-        animations.removeAt(idx);
-        // this is needed if we unregister an animation while its running
-        if (idx <= currentAnimationIdx)
-            --currentAnimationIdx;
+        if (!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer)
+            return;
 
-        if (animations.isEmpty() && !startStopAnimationTimer.isActive())
-            startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
-    } else {
-        animationsToStart.removeOne(animation);
+        int idx = inst->animations.indexOf(animation);
+        if (idx != -1) {
+            inst->animations.removeAt(idx);
+            // this is needed if we unregister an animation while its running
+            if (idx <= inst->currentAnimationIdx)
+                --inst->currentAnimationIdx;
+
+            if (inst->animations.isEmpty() && !inst->startStopAnimationTimer.isActive())
+                inst->startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, inst);
+        } else {
+            inst->animationsToStart.removeOne(animation);
+        }
     }
     QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = false;
 }
@@ -371,11 +392,11 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
     if (oldState == QAbstractAnimation::Running) {
         if (newState == QAbstractAnimation::Paused && hasRegisteredTimer)
-            QUnifiedTimer::instance()->ensureTimerUpdate();
+            QUnifiedTimer::ensureTimerUpdate();
         //the animation, is not running any more
-        QUnifiedTimer::instance()->unregisterAnimation(q);
+        QUnifiedTimer::unregisterAnimation(q);
     } else if (newState == QAbstractAnimation::Running) {
-        QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
+        QUnifiedTimer::registerAnimation(q, isTopLevel);
     }
 
     q->updateState(newState, oldState);
@@ -397,7 +418,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
             if (oldState == QAbstractAnimation::Stopped) {
                 if (isTopLevel) {
                     // currentTime needs to be updated if pauseTimer is active
-                    QUnifiedTimer::instance()->ensureTimerUpdate();
+                    QUnifiedTimer::ensureTimerUpdate();
                     q->setCurrentTime(totalCurrentTime);
                 }
             }
@@ -456,7 +477,7 @@ QAbstractAnimation::~QAbstractAnimation()
         d->state = Stopped;
         emit stateChanged(oldState, d->state);
         if (oldState == QAbstractAnimation::Running)
-            QUnifiedTimer::instance()->unregisterAnimation(this);
+            QUnifiedTimer::unregisterAnimation(this);
     }
 }
 
@@ -555,14 +576,14 @@ void QAbstractAnimation::setDirection(Direction direction)
     // the commands order below is important: first we need to setCurrentTime with the old direction,
     // then update the direction on this and all children and finally restart the pauseTimer if needed
     if (d->hasRegisteredTimer)
-        QUnifiedTimer::instance()->ensureTimerUpdate();
+        QUnifiedTimer::ensureTimerUpdate();
 
     d->direction = direction;
     updateDirection(direction);
 
     if (d->hasRegisteredTimer)
         // needed to update the timer interval in case of a pause animation
-        QUnifiedTimer::instance()->restartAnimationTimer();
+        QUnifiedTimer::updateAnimationTimer();
 
     emit directionChanged(direction);
 }
