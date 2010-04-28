@@ -43,6 +43,7 @@
 #include "private/qdeclarativerectangle_p_p.h"
 
 #include <QPainter>
+#include <QStringBuilder>
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
