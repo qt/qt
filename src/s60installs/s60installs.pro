@@ -153,6 +153,9 @@ symbian: {
 
     contains(QT_CONFIG, multimedia) {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
+    }
+
+    contains(QT_CONFIG, media-backend) {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMediaServices$${QT_LIBINFIX}.dll
     }
 
