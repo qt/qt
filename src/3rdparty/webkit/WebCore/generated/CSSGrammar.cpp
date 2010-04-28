@@ -76,7 +76,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 1 "css\\CSSGrammar.y"
+#line 1 "css/CSSGrammar.y"
 
 
 /*
@@ -137,7 +137,7 @@ using namespace HTMLNames;
 
 
 /* Line 189 of yacc.c  */
-#line 141 "C:/dev/webkit-2.0/WebCore/generated/CSSGrammar.tab.c"
+#line 141 "/WebCore/generated/CSSGrammar.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -238,7 +238,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 62 "css\\CSSGrammar.y"
+#line 62 "css/CSSGrammar.y"
 
     bool boolean;
     char character;
@@ -265,7 +265,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 269 "C:/dev/webkit-2.0/WebCore/generated/CSSGrammar.tab.c"
+#line 269 "/WebCore/generated/CSSGrammar.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -276,7 +276,7 @@ typedef union YYSTYPE
 /* Copy the second part of user declarations.  */
 
 /* Line 264 of yacc.c  */
-#line 86 "css\\CSSGrammar.y"
+#line 86 "css/CSSGrammar.y"
 
 
 static inline int cssyyerror(const char*)
@@ -292,7 +292,7 @@ static int cssyylex(YYSTYPE* yylval, void* parser)
 
 
 /* Line 264 of yacc.c  */
-#line 296 "C:/dev/webkit-2.0/WebCore/generated/CSSGrammar.tab.c"
+#line 296 "/WebCore/generated/CSSGrammar.tab.c"
 
 #ifdef short
 # undef short
@@ -2170,7 +2170,7 @@ yyreduce:
         case 10:
 
 /* Line 1455 of yacc.c  */
-#line 280 "css\\CSSGrammar.y"
+#line 280 "css/CSSGrammar.y"
     {
         static_cast<CSSParser*>(parser)->m_rule = (yyvsp[(4) - (6)].rule);
     ;}
@@ -2179,7 +2179,7 @@ yyreduce:
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 286 "css\\CSSGrammar.y"
+#line 286 "css/CSSGrammar.y"
     {
         static_cast<CSSParser*>(parser)->m_keyframe = (yyvsp[(4) - (6)].keyframeRule);
     ;}
@@ -2188,7 +2188,7 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 292 "css\\CSSGrammar.y"
+#line 292 "css/CSSGrammar.y"
     {
         /* can be empty */
     ;}
@@ -2197,7 +2197,7 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 298 "css\\CSSGrammar.y"
+#line 298 "css/CSSGrammar.y"
     {
         /* can be empty */
     ;}
@@ -2206,7 +2206,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 304 "css\\CSSGrammar.y"
+#line 304 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         if ((yyvsp[(4) - (5)].valueList)) {
@@ -2223,7 +2223,7 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 318 "css\\CSSGrammar.y"
+#line 318 "css/CSSGrammar.y"
     {
          CSSParser* p = static_cast<CSSParser*>(parser);
          p->m_mediaQuery = p->sinkFloatingMediaQuery((yyvsp[(4) - (5)].mediaQuery));
@@ -2233,7 +2233,7 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 325 "css\\CSSGrammar.y"
+#line 325 "css/CSSGrammar.y"
     {
         if ((yyvsp[(4) - (5)].selectorList)) {
             CSSParser* p = static_cast<CSSParser*>(parser);
@@ -2246,7 +2246,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 347 "css\\CSSGrammar.y"
+#line 347 "css/CSSGrammar.y"
     {
   ;}
     break;
@@ -2254,7 +2254,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 357 "css\\CSSGrammar.y"
+#line 357 "css/CSSGrammar.y"
     {
      CSSParser* p = static_cast<CSSParser*>(parser);
      (yyval.rule) = static_cast<CSSParser*>(parser)->createCharsetRule((yyvsp[(3) - (5)].string));
@@ -2266,7 +2266,7 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 363 "css\\CSSGrammar.y"
+#line 363 "css/CSSGrammar.y"
     {
   ;}
     break;
@@ -2274,7 +2274,7 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 365 "css\\CSSGrammar.y"
+#line 365 "css/CSSGrammar.y"
     {
   ;}
     break;
@@ -2282,7 +2282,7 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 371 "css\\CSSGrammar.y"
+#line 371 "css/CSSGrammar.y"
     {
      CSSParser* p = static_cast<CSSParser*>(parser);
      if ((yyvsp[(2) - (3)].rule) && p->m_styleSheet)
@@ -2293,7 +2293,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 390 "css\\CSSGrammar.y"
+#line 390 "css/CSSGrammar.y"
     {
         static_cast<CSSParser*>(parser)->m_hadSyntacticallyValidCSSRule = true;
     ;}
@@ -2302,14 +2302,14 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 398 "css\\CSSGrammar.y"
+#line 398 "css/CSSGrammar.y"
     { (yyval.ruleList) = 0; ;}
     break;
 
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 399 "css\\CSSGrammar.y"
+#line 399 "css/CSSGrammar.y"
     {
       (yyval.ruleList) = (yyvsp[(1) - (3)].ruleList);
       if ((yyvsp[(2) - (3)].rule)) {
@@ -2323,7 +2323,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 428 "css\\CSSGrammar.y"
+#line 428 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createImportRule((yyvsp[(3) - (6)].string), (yyvsp[(5) - (6)].mediaList));
     ;}
@@ -2332,7 +2332,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 431 "css\\CSSGrammar.y"
+#line 431 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -2341,7 +2341,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 434 "css\\CSSGrammar.y"
+#line 434 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -2350,7 +2350,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 437 "css\\CSSGrammar.y"
+#line 437 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -2359,7 +2359,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 443 "css\\CSSGrammar.y"
+#line 443 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createVariablesRule((yyvsp[(3) - (7)].mediaList), true);
     ;}
@@ -2368,7 +2368,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 447 "css\\CSSGrammar.y"
+#line 447 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createVariablesRule((yyvsp[(3) - (7)].mediaList), false);
     ;}
@@ -2377,7 +2377,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 453 "css\\CSSGrammar.y"
+#line 453 "css/CSSGrammar.y"
     {
         (yyval.mediaList) = static_cast<CSSParser*>(parser)->createMediaList();
     ;}
@@ -2386,7 +2386,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 457 "css\\CSSGrammar.y"
+#line 457 "css/CSSGrammar.y"
     {
         (yyval.mediaList) = (yyvsp[(3) - (3)].mediaList);
     ;}
@@ -2395,7 +2395,7 @@ yyreduce:
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 463 "css\\CSSGrammar.y"
+#line 463 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (1)].boolean);
     ;}
@@ -2404,7 +2404,7 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 466 "css\\CSSGrammar.y"
+#line 466 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (2)].boolean);
         if ((yyvsp[(2) - (2)].boolean))
@@ -2415,7 +2415,7 @@ yyreduce:
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 471 "css\\CSSGrammar.y"
+#line 471 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (1)].boolean);
     ;}
@@ -2424,7 +2424,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 474 "css\\CSSGrammar.y"
+#line 474 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2433,7 +2433,7 @@ yyreduce:
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 477 "css\\CSSGrammar.y"
+#line 477 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2442,7 +2442,7 @@ yyreduce:
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 480 "css\\CSSGrammar.y"
+#line 480 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (2)].boolean);
     ;}
@@ -2451,7 +2451,7 @@ yyreduce:
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 486 "css\\CSSGrammar.y"
+#line 486 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (3)].boolean);
     ;}
@@ -2460,7 +2460,7 @@ yyreduce:
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 489 "css\\CSSGrammar.y"
+#line 489 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2469,7 +2469,7 @@ yyreduce:
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 492 "css\\CSSGrammar.y"
+#line 492 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2478,7 +2478,7 @@ yyreduce:
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 495 "css\\CSSGrammar.y"
+#line 495 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2487,7 +2487,7 @@ yyreduce:
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 498 "css\\CSSGrammar.y"
+#line 498 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (4)].boolean);
         if ((yyvsp[(2) - (4)].boolean))
@@ -2498,7 +2498,7 @@ yyreduce:
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 503 "css\\CSSGrammar.y"
+#line 503 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (4)].boolean);
     ;}
@@ -2507,7 +2507,7 @@ yyreduce:
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 506 "css\\CSSGrammar.y"
+#line 506 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (6)].boolean);
     ;}
@@ -2516,7 +2516,7 @@ yyreduce:
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 512 "css\\CSSGrammar.y"
+#line 512 "css/CSSGrammar.y"
     {
         (yyval.boolean) = static_cast<CSSParser*>(parser)->addVariable((yyvsp[(1) - (4)].string), (yyvsp[(4) - (4)].valueList));
     ;}
@@ -2525,7 +2525,7 @@ yyreduce:
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 516 "css\\CSSGrammar.y"
+#line 516 "css/CSSGrammar.y"
     {
         (yyval.boolean) = static_cast<CSSParser*>(parser)->addVariableDeclarationBlock((yyvsp[(1) - (7)].string));
     ;}
@@ -2534,7 +2534,7 @@ yyreduce:
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 520 "css\\CSSGrammar.y"
+#line 520 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2543,7 +2543,7 @@ yyreduce:
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 524 "css\\CSSGrammar.y"
+#line 524 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -2552,7 +2552,7 @@ yyreduce:
   case 80:
 
 /* Line 1455 of yacc.c  */
-#line 528 "css\\CSSGrammar.y"
+#line 528 "css/CSSGrammar.y"
     {
         /* @variables { varname: } Just reduce away this variable with no value. */
         (yyval.boolean) = false;
@@ -2562,7 +2562,7 @@ yyreduce:
   case 81:
 
 /* Line 1455 of yacc.c  */
-#line 533 "css\\CSSGrammar.y"
+#line 533 "css/CSSGrammar.y"
     {
         /* if we come across rules with invalid values like this case: @variables { varname: *; }, just discard the property/value pair */
         (yyval.boolean) = false;
@@ -2572,7 +2572,7 @@ yyreduce:
   case 82:
 
 /* Line 1455 of yacc.c  */
-#line 540 "css\\CSSGrammar.y"
+#line 540 "css/CSSGrammar.y"
     {
         (yyval.string) = (yyvsp[(1) - (2)].string);
     ;}
@@ -2581,7 +2581,7 @@ yyreduce:
   case 83:
 
 /* Line 1455 of yacc.c  */
-#line 546 "css\\CSSGrammar.y"
+#line 546 "css/CSSGrammar.y"
     {
     static_cast<CSSParser*>(parser)->addNamespace((yyvsp[(3) - (6)].string), (yyvsp[(4) - (6)].string));
     (yyval.rule) = 0;
@@ -2591,7 +2591,7 @@ yyreduce:
   case 84:
 
 /* Line 1455 of yacc.c  */
-#line 550 "css\\CSSGrammar.y"
+#line 550 "css/CSSGrammar.y"
     {
     (yyval.rule) = 0;
 ;}
@@ -2600,7 +2600,7 @@ yyreduce:
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 553 "css\\CSSGrammar.y"
+#line 553 "css/CSSGrammar.y"
     {
     (yyval.rule) = 0;
 ;}
@@ -2609,7 +2609,7 @@ yyreduce:
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 556 "css\\CSSGrammar.y"
+#line 556 "css/CSSGrammar.y"
     {
     (yyval.rule) = 0;
 ;}
@@ -2618,21 +2618,21 @@ yyreduce:
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 562 "css\\CSSGrammar.y"
+#line 562 "css/CSSGrammar.y"
     { (yyval.string).characters = 0; ;}
     break;
 
   case 88:
 
 /* Line 1455 of yacc.c  */
-#line 563 "css\\CSSGrammar.y"
+#line 563 "css/CSSGrammar.y"
     { (yyval.string) = (yyvsp[(1) - (2)].string); ;}
     break;
 
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 572 "css\\CSSGrammar.y"
+#line 572 "css/CSSGrammar.y"
     {
         (yyval.string) = (yyvsp[(1) - (2)].string);
     ;}
@@ -2641,7 +2641,7 @@ yyreduce:
   case 92:
 
 /* Line 1455 of yacc.c  */
-#line 578 "css\\CSSGrammar.y"
+#line 578 "css/CSSGrammar.y"
     {
         (yyval.valueList) = 0;
     ;}
@@ -2650,7 +2650,7 @@ yyreduce:
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 581 "css\\CSSGrammar.y"
+#line 581 "css/CSSGrammar.y"
     {
         (yyval.valueList) = (yyvsp[(3) - (4)].valueList);
     ;}
@@ -2659,7 +2659,7 @@ yyreduce:
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 587 "css\\CSSGrammar.y"
+#line 587 "css/CSSGrammar.y"
     {
         (yyvsp[(3) - (7)].string).lower();
         (yyval.mediaQueryExp) = static_cast<CSSParser*>(parser)->createFloatingMediaQueryExp((yyvsp[(3) - (7)].string), (yyvsp[(5) - (7)].valueList));
@@ -2669,7 +2669,7 @@ yyreduce:
   case 95:
 
 /* Line 1455 of yacc.c  */
-#line 594 "css\\CSSGrammar.y"
+#line 594 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.mediaQueryExpList) = p->createFloatingMediaQueryExpList();
@@ -2680,7 +2680,7 @@ yyreduce:
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 599 "css\\CSSGrammar.y"
+#line 599 "css/CSSGrammar.y"
     {
         (yyval.mediaQueryExpList) = (yyvsp[(1) - (5)].mediaQueryExpList);
         (yyval.mediaQueryExpList)->append(static_cast<CSSParser*>(parser)->sinkFloatingMediaQueryExp((yyvsp[(5) - (5)].mediaQueryExp)));
@@ -2690,7 +2690,7 @@ yyreduce:
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 606 "css\\CSSGrammar.y"
+#line 606 "css/CSSGrammar.y"
     {
         (yyval.mediaQueryExpList) = static_cast<CSSParser*>(parser)->createFloatingMediaQueryExpList();
     ;}
@@ -2699,7 +2699,7 @@ yyreduce:
   case 98:
 
 /* Line 1455 of yacc.c  */
-#line 609 "css\\CSSGrammar.y"
+#line 609 "css/CSSGrammar.y"
     {
         (yyval.mediaQueryExpList) = (yyvsp[(3) - (3)].mediaQueryExpList);
     ;}
@@ -2708,7 +2708,7 @@ yyreduce:
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 615 "css\\CSSGrammar.y"
+#line 615 "css/CSSGrammar.y"
     {
         (yyval.mediaQueryRestrictor) = MediaQuery::None;
     ;}
@@ -2717,7 +2717,7 @@ yyreduce:
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 618 "css\\CSSGrammar.y"
+#line 618 "css/CSSGrammar.y"
     {
         (yyval.mediaQueryRestrictor) = MediaQuery::Only;
     ;}
@@ -2726,7 +2726,7 @@ yyreduce:
   case 101:
 
 /* Line 1455 of yacc.c  */
-#line 621 "css\\CSSGrammar.y"
+#line 621 "css/CSSGrammar.y"
     {
         (yyval.mediaQueryRestrictor) = MediaQuery::Not;
     ;}
@@ -2735,7 +2735,7 @@ yyreduce:
   case 102:
 
 /* Line 1455 of yacc.c  */
-#line 627 "css\\CSSGrammar.y"
+#line 627 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.mediaQuery) = p->createFloatingMediaQuery(p->sinkFloatingMediaQueryExpList((yyvsp[(1) - (1)].mediaQueryExpList)));
@@ -2745,7 +2745,7 @@ yyreduce:
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 632 "css\\CSSGrammar.y"
+#line 632 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyvsp[(3) - (4)].string).lower();
@@ -2756,7 +2756,7 @@ yyreduce:
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 640 "css\\CSSGrammar.y"
+#line 640 "css/CSSGrammar.y"
     {
         (yyval.mediaList) = static_cast<CSSParser*>(parser)->createMediaList();
      ;}
@@ -2765,7 +2765,7 @@ yyreduce:
   case 106:
 
 /* Line 1455 of yacc.c  */
-#line 647 "css\\CSSGrammar.y"
+#line 647 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.mediaList) = p->createMediaList();
@@ -2776,7 +2776,7 @@ yyreduce:
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 652 "css\\CSSGrammar.y"
+#line 652 "css/CSSGrammar.y"
     {
         (yyval.mediaList) = (yyvsp[(1) - (4)].mediaList);
         if ((yyval.mediaList))
@@ -2787,7 +2787,7 @@ yyreduce:
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 657 "css\\CSSGrammar.y"
+#line 657 "css/CSSGrammar.y"
     {
         (yyval.mediaList) = 0;
     ;}
@@ -2796,7 +2796,7 @@ yyreduce:
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 663 "css\\CSSGrammar.y"
+#line 663 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createMediaRule((yyvsp[(3) - (7)].mediaList), (yyvsp[(6) - (7)].ruleList));
     ;}
@@ -2805,7 +2805,7 @@ yyreduce:
   case 110:
 
 /* Line 1455 of yacc.c  */
-#line 666 "css\\CSSGrammar.y"
+#line 666 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createMediaRule(0, (yyvsp[(5) - (6)].ruleList));
     ;}
@@ -2814,7 +2814,7 @@ yyreduce:
   case 111:
 
 /* Line 1455 of yacc.c  */
-#line 672 "css\\CSSGrammar.y"
+#line 672 "css/CSSGrammar.y"
     {
       (yyval.string) = (yyvsp[(1) - (2)].string);
   ;}
@@ -2823,7 +2823,7 @@ yyreduce:
   case 112:
 
 /* Line 1455 of yacc.c  */
-#line 678 "css\\CSSGrammar.y"
+#line 678 "css/CSSGrammar.y"
     {
         (yyval.rule) = (yyvsp[(7) - (8)].keyframesRule);
         (yyvsp[(7) - (8)].keyframesRule)->setNameInternal((yyvsp[(3) - (8)].string));
@@ -2833,14 +2833,14 @@ yyreduce:
   case 115:
 
 /* Line 1455 of yacc.c  */
-#line 690 "css\\CSSGrammar.y"
+#line 690 "css/CSSGrammar.y"
     { (yyval.keyframesRule) = static_cast<CSSParser*>(parser)->createKeyframesRule(); ;}
     break;
 
   case 116:
 
 /* Line 1455 of yacc.c  */
-#line 691 "css\\CSSGrammar.y"
+#line 691 "css/CSSGrammar.y"
     {
         (yyval.keyframesRule) = (yyvsp[(1) - (3)].keyframesRule);
         if ((yyvsp[(2) - (3)].keyframeRule))
@@ -2851,7 +2851,7 @@ yyreduce:
   case 117:
 
 /* Line 1455 of yacc.c  */
-#line 699 "css\\CSSGrammar.y"
+#line 699 "css/CSSGrammar.y"
     {
         (yyval.keyframeRule) = static_cast<CSSParser*>(parser)->createKeyframeRule((yyvsp[(1) - (6)].valueList));
     ;}
@@ -2860,7 +2860,7 @@ yyreduce:
   case 118:
 
 /* Line 1455 of yacc.c  */
-#line 705 "css\\CSSGrammar.y"
+#line 705 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.valueList) = p->createFloatingValueList();
@@ -2871,7 +2871,7 @@ yyreduce:
   case 119:
 
 /* Line 1455 of yacc.c  */
-#line 710 "css\\CSSGrammar.y"
+#line 710 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.valueList) = (yyvsp[(1) - (5)].valueList);
@@ -2883,14 +2883,14 @@ yyreduce:
   case 120:
 
 /* Line 1455 of yacc.c  */
-#line 719 "css\\CSSGrammar.y"
+#line 719 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).isInt = false; (yyval.value).fValue = (yyvsp[(1) - (1)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_NUMBER; ;}
     break;
 
   case 121:
 
 /* Line 1455 of yacc.c  */
-#line 720 "css\\CSSGrammar.y"
+#line 720 "css/CSSGrammar.y"
     {
         (yyval.value).id = 0; (yyval.value).isInt = false; (yyval.value).unit = CSSPrimitiveValue::CSS_NUMBER;
         CSSParserString& str = (yyvsp[(1) - (1)].string);
@@ -2906,7 +2906,7 @@ yyreduce:
   case 122:
 
 /* Line 1455 of yacc.c  */
-#line 744 "css\\CSSGrammar.y"
+#line 744 "css/CSSGrammar.y"
     {
       (yyval.rule) = 0;
     ;}
@@ -2915,7 +2915,7 @@ yyreduce:
   case 123:
 
 /* Line 1455 of yacc.c  */
-#line 747 "css\\CSSGrammar.y"
+#line 747 "css/CSSGrammar.y"
     {
       (yyval.rule) = 0;
     ;}
@@ -2924,7 +2924,7 @@ yyreduce:
   case 124:
 
 /* Line 1455 of yacc.c  */
-#line 754 "css\\CSSGrammar.y"
+#line 754 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createFontFaceRule();
     ;}
@@ -2933,7 +2933,7 @@ yyreduce:
   case 125:
 
 /* Line 1455 of yacc.c  */
-#line 757 "css\\CSSGrammar.y"
+#line 757 "css/CSSGrammar.y"
     {
       (yyval.rule) = 0;
     ;}
@@ -2942,7 +2942,7 @@ yyreduce:
   case 126:
 
 /* Line 1455 of yacc.c  */
-#line 760 "css\\CSSGrammar.y"
+#line 760 "css/CSSGrammar.y"
     {
       (yyval.rule) = 0;
     ;}
@@ -2951,56 +2951,56 @@ yyreduce:
   case 127:
 
 /* Line 1455 of yacc.c  */
-#line 766 "css\\CSSGrammar.y"
+#line 766 "css/CSSGrammar.y"
     { (yyval.relation) = CSSSelector::DirectAdjacent; ;}
     break;
 
   case 128:
 
 /* Line 1455 of yacc.c  */
-#line 767 "css\\CSSGrammar.y"
+#line 767 "css/CSSGrammar.y"
     { (yyval.relation) = CSSSelector::IndirectAdjacent; ;}
     break;
 
   case 129:
 
 /* Line 1455 of yacc.c  */
-#line 768 "css\\CSSGrammar.y"
+#line 768 "css/CSSGrammar.y"
     { (yyval.relation) = CSSSelector::Child; ;}
     break;
 
   case 130:
 
 /* Line 1455 of yacc.c  */
-#line 772 "css\\CSSGrammar.y"
+#line 772 "css/CSSGrammar.y"
     { (yyval.integer) = (yyvsp[(1) - (1)].integer); ;}
     break;
 
   case 131:
 
 /* Line 1455 of yacc.c  */
-#line 773 "css\\CSSGrammar.y"
+#line 773 "css/CSSGrammar.y"
     { (yyval.integer) = 1; ;}
     break;
 
   case 132:
 
 /* Line 1455 of yacc.c  */
-#line 777 "css\\CSSGrammar.y"
+#line 777 "css/CSSGrammar.y"
     { (yyval.integer) = -1; ;}
     break;
 
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 778 "css\\CSSGrammar.y"
+#line 778 "css/CSSGrammar.y"
     { (yyval.integer) = 1; ;}
     break;
 
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 782 "css\\CSSGrammar.y"
+#line 782 "css/CSSGrammar.y"
     {
         (yyval.rule) = static_cast<CSSParser*>(parser)->createStyleRule((yyvsp[(1) - (5)].selectorList));
     ;}
@@ -3009,7 +3009,7 @@ yyreduce:
   case 135:
 
 /* Line 1455 of yacc.c  */
-#line 788 "css\\CSSGrammar.y"
+#line 788 "css/CSSGrammar.y"
     {
         if ((yyvsp[(1) - (1)].selector)) {
             CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3025,7 +3025,7 @@ yyreduce:
   case 136:
 
 /* Line 1455 of yacc.c  */
-#line 798 "css\\CSSGrammar.y"
+#line 798 "css/CSSGrammar.y"
     {
         if ((yyvsp[(1) - (4)].selectorList) && (yyvsp[(4) - (4)].selector)) {
             CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3040,7 +3040,7 @@ yyreduce:
   case 137:
 
 /* Line 1455 of yacc.c  */
-#line 807 "css\\CSSGrammar.y"
+#line 807 "css/CSSGrammar.y"
     {
         (yyval.selectorList) = 0;
     ;}
@@ -3049,7 +3049,7 @@ yyreduce:
   case 138:
 
 /* Line 1455 of yacc.c  */
-#line 813 "css\\CSSGrammar.y"
+#line 813 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(1) - (2)].selector);
     ;}
@@ -3058,7 +3058,7 @@ yyreduce:
   case 139:
 
 /* Line 1455 of yacc.c  */
-#line 819 "css\\CSSGrammar.y"
+#line 819 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(1) - (1)].selector);
     ;}
@@ -3067,7 +3067,7 @@ yyreduce:
   case 140:
 
 /* Line 1455 of yacc.c  */
-#line 823 "css\\CSSGrammar.y"
+#line 823 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(1) - (1)].selector);
     ;}
@@ -3076,7 +3076,7 @@ yyreduce:
   case 141:
 
 /* Line 1455 of yacc.c  */
-#line 827 "css\\CSSGrammar.y"
+#line 827 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(2) - (2)].selector);
         if (!(yyvsp[(1) - (2)].selector))
@@ -3097,7 +3097,7 @@ yyreduce:
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 842 "css\\CSSGrammar.y"
+#line 842 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(3) - (3)].selector);
         if (!(yyvsp[(1) - (3)].selector))
@@ -3123,7 +3123,7 @@ yyreduce:
   case 143:
 
 /* Line 1455 of yacc.c  */
-#line 862 "css\\CSSGrammar.y"
+#line 862 "css/CSSGrammar.y"
     {
         (yyval.selector) = 0;
     ;}
@@ -3132,28 +3132,28 @@ yyreduce:
   case 144:
 
 /* Line 1455 of yacc.c  */
-#line 868 "css\\CSSGrammar.y"
+#line 868 "css/CSSGrammar.y"
     { (yyval.string).characters = 0; (yyval.string).length = 0; ;}
     break;
 
   case 145:
 
 /* Line 1455 of yacc.c  */
-#line 869 "css\\CSSGrammar.y"
+#line 869 "css/CSSGrammar.y"
     { static UChar star = '*'; (yyval.string).characters = &star; (yyval.string).length = 1; ;}
     break;
 
   case 146:
 
 /* Line 1455 of yacc.c  */
-#line 870 "css\\CSSGrammar.y"
+#line 870 "css/CSSGrammar.y"
     { (yyval.string) = (yyvsp[(1) - (2)].string); ;}
     break;
 
   case 147:
 
 /* Line 1455 of yacc.c  */
-#line 874 "css\\CSSGrammar.y"
+#line 874 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.selector) = p->createFloatingSelector();
@@ -3164,7 +3164,7 @@ yyreduce:
   case 148:
 
 /* Line 1455 of yacc.c  */
-#line 879 "css\\CSSGrammar.y"
+#line 879 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(2) - (2)].selector);
         if ((yyval.selector)) {
@@ -3177,7 +3177,7 @@ yyreduce:
   case 149:
 
 /* Line 1455 of yacc.c  */
-#line 886 "css\\CSSGrammar.y"
+#line 886 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(1) - (1)].selector);
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3189,7 +3189,7 @@ yyreduce:
   case 150:
 
 /* Line 1455 of yacc.c  */
-#line 892 "css\\CSSGrammar.y"
+#line 892 "css/CSSGrammar.y"
     {
         AtomicString namespacePrefix = (yyvsp[(1) - (2)].string);
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3205,7 +3205,7 @@ yyreduce:
   case 151:
 
 /* Line 1455 of yacc.c  */
-#line 902 "css\\CSSGrammar.y"
+#line 902 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(3) - (3)].selector);
         if ((yyval.selector)) {
@@ -3223,7 +3223,7 @@ yyreduce:
   case 152:
 
 /* Line 1455 of yacc.c  */
-#line 914 "css\\CSSGrammar.y"
+#line 914 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(2) - (2)].selector);
         if ((yyval.selector)) {
@@ -3239,7 +3239,7 @@ yyreduce:
   case 153:
 
 /* Line 1455 of yacc.c  */
-#line 927 "css\\CSSGrammar.y"
+#line 927 "css/CSSGrammar.y"
     {
         CSSParserString& str = (yyvsp[(1) - (1)].string);
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3253,7 +3253,7 @@ yyreduce:
   case 154:
 
 /* Line 1455 of yacc.c  */
-#line 935 "css\\CSSGrammar.y"
+#line 935 "css/CSSGrammar.y"
     {
         static UChar star = '*';
         (yyval.string).characters = &star;
@@ -3264,7 +3264,7 @@ yyreduce:
   case 155:
 
 /* Line 1455 of yacc.c  */
-#line 943 "css\\CSSGrammar.y"
+#line 943 "css/CSSGrammar.y"
     {
         (yyval.selector) = (yyvsp[(1) - (1)].selector);
     ;}
@@ -3273,7 +3273,7 @@ yyreduce:
   case 156:
 
 /* Line 1455 of yacc.c  */
-#line 946 "css\\CSSGrammar.y"
+#line 946 "css/CSSGrammar.y"
     {
         if (!(yyvsp[(2) - (2)].selector))
             (yyval.selector) = 0;
@@ -3292,7 +3292,7 @@ yyreduce:
   case 157:
 
 /* Line 1455 of yacc.c  */
-#line 959 "css\\CSSGrammar.y"
+#line 959 "css/CSSGrammar.y"
     {
         (yyval.selector) = 0;
     ;}
@@ -3301,7 +3301,7 @@ yyreduce:
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 965 "css\\CSSGrammar.y"
+#line 965 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.selector) = p->createFloatingSelector();
@@ -3315,7 +3315,7 @@ yyreduce:
   case 159:
 
 /* Line 1455 of yacc.c  */
-#line 973 "css\\CSSGrammar.y"
+#line 973 "css/CSSGrammar.y"
     {
         if ((yyvsp[(1) - (1)].string).characters[0] >= '0' && (yyvsp[(1) - (1)].string).characters[0] <= '9') {
             (yyval.selector) = 0;
@@ -3333,7 +3333,7 @@ yyreduce:
   case 163:
 
 /* Line 1455 of yacc.c  */
-#line 991 "css\\CSSGrammar.y"
+#line 991 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.selector) = p->createFloatingSelector();
@@ -3347,7 +3347,7 @@ yyreduce:
   case 164:
 
 /* Line 1455 of yacc.c  */
-#line 1002 "css\\CSSGrammar.y"
+#line 1002 "css/CSSGrammar.y"
     {
         CSSParserString& str = (yyvsp[(1) - (2)].string);
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3361,7 +3361,7 @@ yyreduce:
   case 165:
 
 /* Line 1455 of yacc.c  */
-#line 1013 "css\\CSSGrammar.y"
+#line 1013 "css/CSSGrammar.y"
     {
         (yyval.selector) = static_cast<CSSParser*>(parser)->createFloatingSelector();
         (yyval.selector)->setAttribute(QualifiedName(nullAtom, (yyvsp[(3) - (4)].string), nullAtom));
@@ -3372,7 +3372,7 @@ yyreduce:
   case 166:
 
 /* Line 1455 of yacc.c  */
-#line 1018 "css\\CSSGrammar.y"
+#line 1018 "css/CSSGrammar.y"
     {
         (yyval.selector) = static_cast<CSSParser*>(parser)->createFloatingSelector();
         (yyval.selector)->setAttribute(QualifiedName(nullAtom, (yyvsp[(3) - (8)].string), nullAtom));
@@ -3384,7 +3384,7 @@ yyreduce:
   case 167:
 
 /* Line 1455 of yacc.c  */
-#line 1024 "css\\CSSGrammar.y"
+#line 1024 "css/CSSGrammar.y"
     {
         AtomicString namespacePrefix = (yyvsp[(3) - (5)].string);
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3398,7 +3398,7 @@ yyreduce:
   case 168:
 
 /* Line 1455 of yacc.c  */
-#line 1032 "css\\CSSGrammar.y"
+#line 1032 "css/CSSGrammar.y"
     {
         AtomicString namespacePrefix = (yyvsp[(3) - (9)].string);
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3413,7 +3413,7 @@ yyreduce:
   case 169:
 
 /* Line 1455 of yacc.c  */
-#line 1044 "css\\CSSGrammar.y"
+#line 1044 "css/CSSGrammar.y"
     {
         (yyval.integer) = CSSSelector::Exact;
     ;}
@@ -3422,7 +3422,7 @@ yyreduce:
   case 170:
 
 /* Line 1455 of yacc.c  */
-#line 1047 "css\\CSSGrammar.y"
+#line 1047 "css/CSSGrammar.y"
     {
         (yyval.integer) = CSSSelector::List;
     ;}
@@ -3431,7 +3431,7 @@ yyreduce:
   case 171:
 
 /* Line 1455 of yacc.c  */
-#line 1050 "css\\CSSGrammar.y"
+#line 1050 "css/CSSGrammar.y"
     {
         (yyval.integer) = CSSSelector::Hyphen;
     ;}
@@ -3440,7 +3440,7 @@ yyreduce:
   case 172:
 
 /* Line 1455 of yacc.c  */
-#line 1053 "css\\CSSGrammar.y"
+#line 1053 "css/CSSGrammar.y"
     {
         (yyval.integer) = CSSSelector::Begin;
     ;}
@@ -3449,7 +3449,7 @@ yyreduce:
   case 173:
 
 /* Line 1455 of yacc.c  */
-#line 1056 "css\\CSSGrammar.y"
+#line 1056 "css/CSSGrammar.y"
     {
         (yyval.integer) = CSSSelector::End;
     ;}
@@ -3458,7 +3458,7 @@ yyreduce:
   case 174:
 
 /* Line 1455 of yacc.c  */
-#line 1059 "css\\CSSGrammar.y"
+#line 1059 "css/CSSGrammar.y"
     {
         (yyval.integer) = CSSSelector::Contain;
     ;}
@@ -3467,7 +3467,7 @@ yyreduce:
   case 177:
 
 /* Line 1455 of yacc.c  */
-#line 1070 "css\\CSSGrammar.y"
+#line 1070 "css/CSSGrammar.y"
     {
         (yyval.selector) = static_cast<CSSParser*>(parser)->createFloatingSelector();
         (yyval.selector)->m_match = CSSSelector::PseudoClass;
@@ -3503,7 +3503,7 @@ yyreduce:
   case 178:
 
 /* Line 1455 of yacc.c  */
-#line 1100 "css\\CSSGrammar.y"
+#line 1100 "css/CSSGrammar.y"
     {
         (yyval.selector) = static_cast<CSSParser*>(parser)->createFloatingSelector();
         (yyval.selector)->m_match = CSSSelector::PseudoElement;
@@ -3528,7 +3528,7 @@ yyreduce:
   case 179:
 
 /* Line 1455 of yacc.c  */
-#line 1120 "css\\CSSGrammar.y"
+#line 1120 "css/CSSGrammar.y"
     {
         CSSParser *p = static_cast<CSSParser*>(parser);
         (yyval.selector) = p->createFloatingSelector();
@@ -3551,7 +3551,7 @@ yyreduce:
   case 180:
 
 /* Line 1455 of yacc.c  */
-#line 1138 "css\\CSSGrammar.y"
+#line 1138 "css/CSSGrammar.y"
     {
         CSSParser *p = static_cast<CSSParser*>(parser);
         (yyval.selector) = p->createFloatingSelector();
@@ -3574,7 +3574,7 @@ yyreduce:
   case 181:
 
 /* Line 1455 of yacc.c  */
-#line 1156 "css\\CSSGrammar.y"
+#line 1156 "css/CSSGrammar.y"
     {
         CSSParser *p = static_cast<CSSParser*>(parser);
         (yyval.selector) = p->createFloatingSelector();
@@ -3598,7 +3598,7 @@ yyreduce:
   case 182:
 
 /* Line 1455 of yacc.c  */
-#line 1175 "css\\CSSGrammar.y"
+#line 1175 "css/CSSGrammar.y"
     {
         if (!(yyvsp[(4) - (6)].selector) || (yyvsp[(4) - (6)].selector)->simpleSelector() || (yyvsp[(4) - (6)].selector)->tagHistory() || (yyvsp[(4) - (6)].selector)->matchesPseudoElement())
             (yyval.selector) = 0;
@@ -3616,7 +3616,7 @@ yyreduce:
   case 183:
 
 /* Line 1455 of yacc.c  */
-#line 1190 "css\\CSSGrammar.y"
+#line 1190 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (1)].boolean);
     ;}
@@ -3625,7 +3625,7 @@ yyreduce:
   case 184:
 
 /* Line 1455 of yacc.c  */
-#line 1193 "css\\CSSGrammar.y"
+#line 1193 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (2)].boolean);
         if ( (yyvsp[(2) - (2)].boolean) )
@@ -3636,7 +3636,7 @@ yyreduce:
   case 185:
 
 /* Line 1455 of yacc.c  */
-#line 1198 "css\\CSSGrammar.y"
+#line 1198 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (1)].boolean);
     ;}
@@ -3645,7 +3645,7 @@ yyreduce:
   case 186:
 
 /* Line 1455 of yacc.c  */
-#line 1201 "css\\CSSGrammar.y"
+#line 1201 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3654,7 +3654,7 @@ yyreduce:
   case 187:
 
 /* Line 1455 of yacc.c  */
-#line 1204 "css\\CSSGrammar.y"
+#line 1204 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3663,7 +3663,7 @@ yyreduce:
   case 188:
 
 /* Line 1455 of yacc.c  */
-#line 1207 "css\\CSSGrammar.y"
+#line 1207 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (2)].boolean);
     ;}
@@ -3672,7 +3672,7 @@ yyreduce:
   case 189:
 
 /* Line 1455 of yacc.c  */
-#line 1210 "css\\CSSGrammar.y"
+#line 1210 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (2)].boolean);
     ;}
@@ -3681,7 +3681,7 @@ yyreduce:
   case 190:
 
 /* Line 1455 of yacc.c  */
-#line 1216 "css\\CSSGrammar.y"
+#line 1216 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (3)].boolean);
     ;}
@@ -3690,7 +3690,7 @@ yyreduce:
   case 191:
 
 /* Line 1455 of yacc.c  */
-#line 1219 "css\\CSSGrammar.y"
+#line 1219 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3699,7 +3699,7 @@ yyreduce:
   case 192:
 
 /* Line 1455 of yacc.c  */
-#line 1222 "css\\CSSGrammar.y"
+#line 1222 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3708,7 +3708,7 @@ yyreduce:
   case 193:
 
 /* Line 1455 of yacc.c  */
-#line 1225 "css\\CSSGrammar.y"
+#line 1225 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3717,7 +3717,7 @@ yyreduce:
   case 194:
 
 /* Line 1455 of yacc.c  */
-#line 1228 "css\\CSSGrammar.y"
+#line 1228 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3726,7 +3726,7 @@ yyreduce:
   case 195:
 
 /* Line 1455 of yacc.c  */
-#line 1231 "css\\CSSGrammar.y"
+#line 1231 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (4)].boolean);
         if ((yyvsp[(2) - (4)].boolean))
@@ -3737,7 +3737,7 @@ yyreduce:
   case 196:
 
 /* Line 1455 of yacc.c  */
-#line 1236 "css\\CSSGrammar.y"
+#line 1236 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (4)].boolean);
     ;}
@@ -3746,7 +3746,7 @@ yyreduce:
   case 197:
 
 /* Line 1455 of yacc.c  */
-#line 1239 "css\\CSSGrammar.y"
+#line 1239 "css/CSSGrammar.y"
     {
         (yyval.boolean) = (yyvsp[(1) - (6)].boolean);
     ;}
@@ -3755,7 +3755,7 @@ yyreduce:
   case 198:
 
 /* Line 1455 of yacc.c  */
-#line 1245 "css\\CSSGrammar.y"
+#line 1245 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
         CSSParser* p = static_cast<CSSParser*>(parser);
@@ -3774,7 +3774,7 @@ yyreduce:
   case 199:
 
 /* Line 1455 of yacc.c  */
-#line 1259 "css\\CSSGrammar.y"
+#line 1259 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         p->m_valueList = new CSSParserValueList;
@@ -3791,7 +3791,7 @@ yyreduce:
   case 200:
 
 /* Line 1455 of yacc.c  */
-#line 1271 "css\\CSSGrammar.y"
+#line 1271 "css/CSSGrammar.y"
     {
         (yyval.boolean) = false;
     ;}
@@ -3800,7 +3800,7 @@ yyreduce:
   case 201:
 
 /* Line 1455 of yacc.c  */
-#line 1275 "css\\CSSGrammar.y"
+#line 1275 "css/CSSGrammar.y"
     {
         /* The default movable type template has letter-spacing: .none;  Handle this by looking for
         error tokens at the start of an expr, recover the expr and then treat as an error, cleaning
@@ -3812,7 +3812,7 @@ yyreduce:
   case 202:
 
 /* Line 1455 of yacc.c  */
-#line 1282 "css\\CSSGrammar.y"
+#line 1282 "css/CSSGrammar.y"
     {
         /* When we encounter something like p {color: red !important fail;} we should drop the declaration */
         (yyval.boolean) = false;
@@ -3822,7 +3822,7 @@ yyreduce:
   case 203:
 
 /* Line 1455 of yacc.c  */
-#line 1287 "css\\CSSGrammar.y"
+#line 1287 "css/CSSGrammar.y"
     {
         /* Handle this case: div { text-align: center; !important } Just reduce away the stray !important. */
         (yyval.boolean) = false;
@@ -3832,7 +3832,7 @@ yyreduce:
   case 204:
 
 /* Line 1455 of yacc.c  */
-#line 1292 "css\\CSSGrammar.y"
+#line 1292 "css/CSSGrammar.y"
     {
         /* div { font-family: } Just reduce away this property with no value. */
         (yyval.boolean) = false;
@@ -3842,7 +3842,7 @@ yyreduce:
   case 205:
 
 /* Line 1455 of yacc.c  */
-#line 1297 "css\\CSSGrammar.y"
+#line 1297 "css/CSSGrammar.y"
     {
         /* if we come across rules with invalid values like this case: p { weight: *; }, just discard the rule */
         (yyval.boolean) = false;
@@ -3852,7 +3852,7 @@ yyreduce:
   case 206:
 
 /* Line 1455 of yacc.c  */
-#line 1302 "css\\CSSGrammar.y"
+#line 1302 "css/CSSGrammar.y"
     {
         /* if we come across: div { color{;color:maroon} }, ignore everything within curly brackets */
         (yyval.boolean) = false;
@@ -3862,7 +3862,7 @@ yyreduce:
   case 207:
 
 /* Line 1455 of yacc.c  */
-#line 1309 "css\\CSSGrammar.y"
+#line 1309 "css/CSSGrammar.y"
     {
         (yyval.integer) = cssPropertyID((yyvsp[(1) - (2)].string));
     ;}
@@ -3871,21 +3871,21 @@ yyreduce:
   case 208:
 
 /* Line 1455 of yacc.c  */
-#line 1315 "css\\CSSGrammar.y"
+#line 1315 "css/CSSGrammar.y"
     { (yyval.boolean) = true; ;}
     break;
 
   case 209:
 
 /* Line 1455 of yacc.c  */
-#line 1316 "css\\CSSGrammar.y"
+#line 1316 "css/CSSGrammar.y"
     { (yyval.boolean) = false; ;}
     break;
 
   case 210:
 
 /* Line 1455 of yacc.c  */
-#line 1320 "css\\CSSGrammar.y"
+#line 1320 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.valueList) = p->createFloatingValueList();
@@ -3896,7 +3896,7 @@ yyreduce:
   case 211:
 
 /* Line 1455 of yacc.c  */
-#line 1325 "css\\CSSGrammar.y"
+#line 1325 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         (yyval.valueList) = (yyvsp[(1) - (3)].valueList);
@@ -3916,7 +3916,7 @@ yyreduce:
   case 212:
 
 /* Line 1455 of yacc.c  */
-#line 1339 "css\\CSSGrammar.y"
+#line 1339 "css/CSSGrammar.y"
     {
         (yyval.valueList) = 0;
     ;}
@@ -3925,7 +3925,7 @@ yyreduce:
   case 213:
 
 /* Line 1455 of yacc.c  */
-#line 1342 "css\\CSSGrammar.y"
+#line 1342 "css/CSSGrammar.y"
     {
         (yyval.valueList) = 0;
     ;}
@@ -3934,7 +3934,7 @@ yyreduce:
   case 214:
 
 /* Line 1455 of yacc.c  */
-#line 1345 "css\\CSSGrammar.y"
+#line 1345 "css/CSSGrammar.y"
     {
         (yyval.valueList) = 0;
     ;}
@@ -3943,7 +3943,7 @@ yyreduce:
   case 215:
 
 /* Line 1455 of yacc.c  */
-#line 1351 "css\\CSSGrammar.y"
+#line 1351 "css/CSSGrammar.y"
     {
         (yyval.character) = '/';
     ;}
@@ -3952,7 +3952,7 @@ yyreduce:
   case 216:
 
 /* Line 1455 of yacc.c  */
-#line 1354 "css\\CSSGrammar.y"
+#line 1354 "css/CSSGrammar.y"
     {
         (yyval.character) = ',';
     ;}
@@ -3961,7 +3961,7 @@ yyreduce:
   case 217:
 
 /* Line 1455 of yacc.c  */
-#line 1357 "css\\CSSGrammar.y"
+#line 1357 "css/CSSGrammar.y"
     {
         (yyval.character) = 0;
   ;}
@@ -3970,28 +3970,28 @@ yyreduce:
   case 218:
 
 /* Line 1455 of yacc.c  */
-#line 1363 "css\\CSSGrammar.y"
+#line 1363 "css/CSSGrammar.y"
     { (yyval.value) = (yyvsp[(1) - (1)].value); ;}
     break;
 
   case 219:
 
 /* Line 1455 of yacc.c  */
-#line 1364 "css\\CSSGrammar.y"
+#line 1364 "css/CSSGrammar.y"
     { (yyval.value) = (yyvsp[(2) - (2)].value); (yyval.value).fValue *= (yyvsp[(1) - (2)].integer); ;}
     break;
 
   case 220:
 
 /* Line 1455 of yacc.c  */
-#line 1365 "css\\CSSGrammar.y"
+#line 1365 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = (yyvsp[(1) - (2)].string); (yyval.value).unit = CSSPrimitiveValue::CSS_STRING; ;}
     break;
 
   case 221:
 
 /* Line 1455 of yacc.c  */
-#line 1366 "css\\CSSGrammar.y"
+#line 1366 "css/CSSGrammar.y"
     {
       (yyval.value).id = cssValueKeywordID((yyvsp[(1) - (2)].string));
       (yyval.value).unit = CSSPrimitiveValue::CSS_IDENT;
@@ -4002,49 +4002,49 @@ yyreduce:
   case 222:
 
 /* Line 1455 of yacc.c  */
-#line 1372 "css\\CSSGrammar.y"
+#line 1372 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = (yyvsp[(1) - (2)].string); (yyval.value).unit = CSSPrimitiveValue::CSS_DIMENSION; ;}
     break;
 
   case 223:
 
 /* Line 1455 of yacc.c  */
-#line 1373 "css\\CSSGrammar.y"
+#line 1373 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = (yyvsp[(2) - (3)].string); (yyval.value).unit = CSSPrimitiveValue::CSS_DIMENSION; ;}
     break;
 
   case 224:
 
 /* Line 1455 of yacc.c  */
-#line 1374 "css\\CSSGrammar.y"
+#line 1374 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = (yyvsp[(1) - (2)].string); (yyval.value).unit = CSSPrimitiveValue::CSS_URI; ;}
     break;
 
   case 225:
 
 /* Line 1455 of yacc.c  */
-#line 1375 "css\\CSSGrammar.y"
+#line 1375 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = (yyvsp[(1) - (2)].string); (yyval.value).unit = CSSPrimitiveValue::CSS_UNICODE_RANGE; ;}
     break;
 
   case 226:
 
 /* Line 1455 of yacc.c  */
-#line 1376 "css\\CSSGrammar.y"
+#line 1376 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = (yyvsp[(1) - (1)].string); (yyval.value).unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; ;}
     break;
 
   case 227:
 
 /* Line 1455 of yacc.c  */
-#line 1377 "css\\CSSGrammar.y"
+#line 1377 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).string = CSSParserString(); (yyval.value).unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; ;}
     break;
 
   case 228:
 
 /* Line 1455 of yacc.c  */
-#line 1379 "css\\CSSGrammar.y"
+#line 1379 "css/CSSGrammar.y"
     {
       (yyval.value) = (yyvsp[(1) - (1)].value);
   ;}
@@ -4053,7 +4053,7 @@ yyreduce:
   case 229:
 
 /* Line 1455 of yacc.c  */
-#line 1382 "css\\CSSGrammar.y"
+#line 1382 "css/CSSGrammar.y"
     {
       (yyval.value) = (yyvsp[(1) - (2)].value);
   ;}
@@ -4062,7 +4062,7 @@ yyreduce:
   case 230:
 
 /* Line 1455 of yacc.c  */
-#line 1385 "css\\CSSGrammar.y"
+#line 1385 "css/CSSGrammar.y"
     { /* Handle width: %; */
       (yyval.value).id = 0; (yyval.value).unit = 0;
   ;}
@@ -4071,147 +4071,147 @@ yyreduce:
   case 231:
 
 /* Line 1455 of yacc.c  */
-#line 1391 "css\\CSSGrammar.y"
+#line 1391 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).isInt = true; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_NUMBER; ;}
     break;
 
   case 232:
 
 /* Line 1455 of yacc.c  */
-#line 1392 "css\\CSSGrammar.y"
+#line 1392 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).isInt = false; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_NUMBER; ;}
     break;
 
   case 233:
 
 /* Line 1455 of yacc.c  */
-#line 1393 "css\\CSSGrammar.y"
+#line 1393 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_PERCENTAGE; ;}
     break;
 
   case 234:
 
 /* Line 1455 of yacc.c  */
-#line 1394 "css\\CSSGrammar.y"
+#line 1394 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_PX; ;}
     break;
 
   case 235:
 
 /* Line 1455 of yacc.c  */
-#line 1395 "css\\CSSGrammar.y"
+#line 1395 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_CM; ;}
     break;
 
   case 236:
 
 /* Line 1455 of yacc.c  */
-#line 1396 "css\\CSSGrammar.y"
+#line 1396 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_MM; ;}
     break;
 
   case 237:
 
 /* Line 1455 of yacc.c  */
-#line 1397 "css\\CSSGrammar.y"
+#line 1397 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_IN; ;}
     break;
 
   case 238:
 
 /* Line 1455 of yacc.c  */
-#line 1398 "css\\CSSGrammar.y"
+#line 1398 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_PT; ;}
     break;
 
   case 239:
 
 /* Line 1455 of yacc.c  */
-#line 1399 "css\\CSSGrammar.y"
+#line 1399 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_PC; ;}
     break;
 
   case 240:
 
 /* Line 1455 of yacc.c  */
-#line 1400 "css\\CSSGrammar.y"
+#line 1400 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_DEG; ;}
     break;
 
   case 241:
 
 /* Line 1455 of yacc.c  */
-#line 1401 "css\\CSSGrammar.y"
+#line 1401 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_RAD; ;}
     break;
 
   case 242:
 
 /* Line 1455 of yacc.c  */
-#line 1402 "css\\CSSGrammar.y"
+#line 1402 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_GRAD; ;}
     break;
 
   case 243:
 
 /* Line 1455 of yacc.c  */
-#line 1403 "css\\CSSGrammar.y"
+#line 1403 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_TURN; ;}
     break;
 
   case 244:
 
 /* Line 1455 of yacc.c  */
-#line 1404 "css\\CSSGrammar.y"
+#line 1404 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_MS; ;}
     break;
 
   case 245:
 
 /* Line 1455 of yacc.c  */
-#line 1405 "css\\CSSGrammar.y"
+#line 1405 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_S; ;}
     break;
 
   case 246:
 
 /* Line 1455 of yacc.c  */
-#line 1406 "css\\CSSGrammar.y"
+#line 1406 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_HZ; ;}
     break;
 
   case 247:
 
 /* Line 1455 of yacc.c  */
-#line 1407 "css\\CSSGrammar.y"
+#line 1407 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_KHZ; ;}
     break;
 
   case 248:
 
 /* Line 1455 of yacc.c  */
-#line 1408 "css\\CSSGrammar.y"
+#line 1408 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_EMS; ;}
     break;
 
   case 249:
 
 /* Line 1455 of yacc.c  */
-#line 1409 "css\\CSSGrammar.y"
+#line 1409 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSParserValue::Q_EMS; ;}
     break;
 
   case 250:
 
 /* Line 1455 of yacc.c  */
-#line 1410 "css\\CSSGrammar.y"
+#line 1410 "css/CSSGrammar.y"
     { (yyval.value).id = 0; (yyval.value).fValue = (yyvsp[(1) - (2)].number); (yyval.value).unit = CSSPrimitiveValue::CSS_EXS; ;}
     break;
 
   case 251:
 
 /* Line 1455 of yacc.c  */
-#line 1411 "css\\CSSGrammar.y"
+#line 1411 "css/CSSGrammar.y"
     {
       (yyval.value).id = 0;
       (yyval.value).fValue = (yyvsp[(1) - (2)].number);
@@ -4225,7 +4225,7 @@ yyreduce:
   case 252:
 
 /* Line 1455 of yacc.c  */
-#line 1422 "css\\CSSGrammar.y"
+#line 1422 "css/CSSGrammar.y"
     {
       (yyval.value).id = 0;
       (yyval.value).string = (yyvsp[(1) - (1)].string);
@@ -4236,7 +4236,7 @@ yyreduce:
   case 253:
 
 /* Line 1455 of yacc.c  */
-#line 1430 "css\\CSSGrammar.y"
+#line 1430 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         CSSParserFunction* f = p->createFloatingFunction();
@@ -4251,7 +4251,7 @@ yyreduce:
   case 254:
 
 /* Line 1455 of yacc.c  */
-#line 1439 "css\\CSSGrammar.y"
+#line 1439 "css/CSSGrammar.y"
     {
         CSSParser* p = static_cast<CSSParser*>(parser);
         CSSParserFunction* f = p->createFloatingFunction();
@@ -4266,21 +4266,21 @@ yyreduce:
   case 255:
 
 /* Line 1455 of yacc.c  */
-#line 1455 "css\\CSSGrammar.y"
+#line 1455 "css/CSSGrammar.y"
     { (yyval.string) = (yyvsp[(1) - (2)].string); ;}
     break;
 
   case 256:
 
 /* Line 1455 of yacc.c  */
-#line 1456 "css\\CSSGrammar.y"
+#line 1456 "css/CSSGrammar.y"
     { (yyval.string) = (yyvsp[(1) - (2)].string); ;}
     break;
 
   case 257:
 
 /* Line 1455 of yacc.c  */
-#line 1463 "css\\CSSGrammar.y"
+#line 1463 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -4289,7 +4289,7 @@ yyreduce:
   case 258:
 
 /* Line 1455 of yacc.c  */
-#line 1466 "css\\CSSGrammar.y"
+#line 1466 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -4298,7 +4298,7 @@ yyreduce:
   case 259:
 
 /* Line 1455 of yacc.c  */
-#line 1472 "css\\CSSGrammar.y"
+#line 1472 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -4307,7 +4307,7 @@ yyreduce:
   case 260:
 
 /* Line 1455 of yacc.c  */
-#line 1475 "css\\CSSGrammar.y"
+#line 1475 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -4316,7 +4316,7 @@ yyreduce:
   case 261:
 
 /* Line 1455 of yacc.c  */
-#line 1481 "css\\CSSGrammar.y"
+#line 1481 "css/CSSGrammar.y"
     {
         (yyval.rule) = 0;
     ;}
@@ -4325,7 +4325,7 @@ yyreduce:
   case 262:
 
 /* Line 1455 of yacc.c  */
-#line 1499 "css\\CSSGrammar.y"
+#line 1499 "css/CSSGrammar.y"
     {
         static_cast<CSSParser*>(parser)->invalidBlockHit();
     ;}
@@ -4334,7 +4334,7 @@ yyreduce:
   case 263:
 
 /* Line 1455 of yacc.c  */
-#line 1502 "css\\CSSGrammar.y"
+#line 1502 "css/CSSGrammar.y"
     {
         static_cast<CSSParser*>(parser)->invalidBlockHit();
     ;}
@@ -4343,7 +4343,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 4347 "C:/dev/webkit-2.0/WebCore/generated/CSSGrammar.tab.c"
+#line 4347 "/WebCore/generated/CSSGrammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4555,6 +4555,6 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1512 "css\\CSSGrammar.y"
+#line 1512 "css/CSSGrammar.y"
 
 
