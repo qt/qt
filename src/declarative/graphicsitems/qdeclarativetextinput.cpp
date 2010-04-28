@@ -108,7 +108,7 @@ void QDeclarativeTextInput::setText(const QString &s)
 /*!
     \qmlproperty bool TextInput::font.bold
 
-    Sets the font's weight to bold.
+    Sets whether the font weight is bold.
 */
 
 /*!
@@ -133,25 +133,25 @@ void QDeclarativeTextInput::setText(const QString &s)
 /*!
     \qmlproperty bool TextInput::font.italic
 
-    Sets the style of the text to italic.
+    Sets whether the font has an italic style.
 */
 
 /*!
     \qmlproperty bool TextInput::font.underline
 
-    Set the style of the text to underline.
+    Sets whether the text is underlined.
 */
 
 /*!
     \qmlproperty bool TextInput::font.outline
 
-    Set the style of the text to outline.
+    Sets whether the font has an outline style.
 */
 
 /*!
     \qmlproperty bool TextInput::font.strikeout
 
-    Set the style of the text to strikeout.
+    Sets whether the font has a strikeout style.
 */
 
 /*!
@@ -827,7 +827,7 @@ void QDeclarativeTextInput::moveCursor()
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
-/*
+/*!
     \qmlmethod int xToPosition(int x)
 
     This function returns the character position at
@@ -1044,8 +1044,9 @@ void QDeclarativeTextInput::selectAll()
 /*!
     \qmlproperty bool TextInput::smooth
 
-    Set this property if you want the text to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
     the item is displayed at its natural size, this property has no visual or
     performance effect.
 
@@ -1054,15 +1055,15 @@ void QDeclarativeTextInput::selectAll()
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
-/*
+/*!
    \qmlproperty string TextInput::passwordCharacter
 
    This is the character displayed when echoMode is set to Password or
    PasswordEchoOnEdit. By default it is an asterisk.
 
-   Attempting to set this to more than one character will set it to
-   the first character in the string. Attempting to set this to less
-   than one character will fail.
+   If this property is set to a string with more than one character,
+   the first character is used. If the string is empty, the value
+   is ignored and the property is not set.
 */
 QString QDeclarativeTextInput::passwordCharacter() const
 {
@@ -1079,15 +1080,15 @@ void QDeclarativeTextInput::setPasswordCharacter(const QString &str)
     d->control->setPasswordCharacter(str.constData()[0]);
 }
 
-/*
+/*!
    \qmlproperty string TextInput::displayText
 
-   This is the actual text displayed in the TextInput. When
-   echoMode is set to TextInput::Normal this will be exactly
-   the same as the TextInput::text property. When echoMode
-   is set to something else, this property will contain the text
-   the user sees, while the text property will contain the
-   entered text.
+   This is the text displayed in the TextInput.
+   
+   If \l echoMode is set to TextInput::Normal, this holds the
+   same value as the TextInput::text property. Otherwise,
+   this property holds the text visible to the user, while
+   the \l text property holds the actual entered text.
 */
 QString QDeclarativeTextInput::displayText() const
 {
@@ -1095,26 +1096,30 @@ QString QDeclarativeTextInput::displayText() const
     return d->control->displayText();
 }
 
-/*
-    \qmlmethod void moveCursorSelection(int pos)
+/*!
+    \qmlmethod void moveCursorSelection(int position)
 
-    This method allows you to move the cursor while modifying the selection accordingly.
-    To simply move the cursor, set the cursorPosition property.
+    Moves the cursor to \a position and updates the selection accordingly.
+    (To only move the cursor, set the \l cursorPosition property.)
 
     When this method is called it additionally sets either the
     selectionStart or the selectionEnd (whichever was at the previous cursor position)
     to the specified position. This allows you to easily extend and contract the selected
     text range.
 
-    Example: The sequence of calls
+    For example, take this sequence of calls:
+
+    \code
         cursorPosition = 5
         moveCursorSelection(9)
         moveCursorSelection(7)
-    would move the cursor to position 5, extend the selection end from 5 to 9
+    \endcode
+
+    This moves the cursor to position 5, extend the selection end from 5 to 9
     and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
     selected (the 6th and 7th characters).
 */
-void QDeclarativeTextInput::moveCursorSelection(int pos)
+void QDeclarativeTextInput::moveCursorSelection(int position)
 {
     Q_D(QDeclarativeTextInput);
     d->control->moveCursor(pos, true);
