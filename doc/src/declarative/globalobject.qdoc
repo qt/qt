@@ -211,86 +211,57 @@ The following functions on the global object allow you to dynamically create QML
 items from files or strings. See \l{Dynamic Object Management} for an overview
 of their use.
 
-\section2 createComponent(url file)
+\section2 Qt.createComponent(url file)
     This function takes the URL of a QML file as its only argument. It returns
     a component object which can be used to create and load that QML file.
 
-    Example QML script is below. Remember that QML files that might be loaded
+    Here is an example. Remember that QML files that might be loaded
     over the network cannot be expected to be ready immediately.
-    \code
-        var component;
-        var sprite;
-        function finishCreation(){
-            if(component.isReady()){
-                sprite = component.createObject();
-                if(sprite == null){
-                    // Error Handling
-                }else{
-                    sprite.parent = page;
-                    sprite.x = 200;
-                    //...
-                }
-            }else if(component.isError()){
-                // Error Handling
-            }
-        }
 
-        component = createComponent("Sprite.qml");
-        if(component.isReady()){
-            finishCreation();
-        }else{
-            component.statusChanged.connect(finishCreation);
-        }
-    \endcode
+    \snippet doc/src/snippets/declarative/componentCreation.js 0
+    \codeline
+    \snippet doc/src/snippets/declarative/componentCreation.js 1
+    \snippet doc/src/snippets/declarative/componentCreation.js 2
+    \snippet doc/src/snippets/declarative/componentCreation.js 4
+    \codeline
+    \snippet doc/src/snippets/declarative/componentCreation.js 5
 
-    If you are certain the files will be local, you could simplify to
+    If you are certain the files will be local, you could simplify to:
 
-    \code
-        component = createComponent("Sprite.qml");
-        sprite = component.createObject();
-        if(sprite == null){
-            // Error Handling
-            console.log(component.errorsString());
-        }else{
-            sprite.parent = page;
-            sprite.x = 200;
-            //...
-        }
-    \endcode
+    \snippet doc/src/snippets/declarative/componentCreation.js 3
 
     The methods and properties of the Component element are defined in its own
     page, but when using it dynamically only two methods are usually used.
-    Component.createObject() returns the created object or null if there is an error.
-    If there is an error, Component.errorsString() describes what the error was.
+    \c Component.createObject() returns the created object or \c null if there is an error.
+    If there is an error, \l {Component::errorsString()}{Component.errorsString()} describes
+    the error that occurred.
 
     If you want to just create an arbitrary string of QML, instead of
-    loading a QML file, consider the createQmlObject() function.
+    loading a QML file, consider the \l{Qt.createQmlObject(string qml, object parent, string filepath)}{Qt.createQmlObject()} function.
 
-\section2 createQmlObject(string qml, object parent, string filepath)
+\section2 Qt.createQmlObject(string qml, object parent, string filepath)
     Creates a new object from the specified string of QML. It requires a
     second argument, which is the id of an existing QML object to use as
     the new object's parent. If a third argument is provided, this is used
     for error reporting as the filepath that the QML came from.
 
-    Example (where targetItem is the id of an existing QML item):
-    \code
-    newObject = createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-        targetItem, "dynamicSnippet1");
-    \endcode
+    Example (where \c targetItem is the id of an existing QML item):
+
+    \snippet doc/src/snippets/declarative/createQmlObject.qml 0
 
     This function is intended for use inside QML only. It is intended to behave
     similarly to eval, but for creating QML elements.
 
-    Returns the created object, or null if there is an error. In the case of an
+    Returns the created object, \c or null if there is an error. In the case of an
     error, a QtScript Error object is thrown. This object has the additional property,
     qmlErrors, which is an array of all the errors encountered when trying to execute the
-    QML. Each object in the array has the members: lineNumber, columnNumber, fileName and message.
+    QML. Each object in the array has the members \c lineNumber, \c columnNumber, \c fileName and \c message.
 
     Note that this function returns immediately, and therefore may not work if
     the QML loads new components. If you are trying to load a new component,
-    for example from a QML file, consider the createComponent() function
+    for example from a QML file, consider the \l{Qt.createComponent(url file)}{Qt.createComponent()} function
     instead. 'New components' refers to external QML files that have not yet
-    been loaded, and so it is safe to use createQmlObject to load built-in
+    been loaded, and so it is safe to use \c Qt.createQmlObject() to load built-in
     components.
 
 \section1 XMLHttpRequest
