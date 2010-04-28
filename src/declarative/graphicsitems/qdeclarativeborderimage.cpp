@@ -57,9 +57,25 @@ QT_BEGIN_NAMESPACE
     \inherits Item
     \since 4.7
 
+    A BorderImage breaks an image into 9 sections, as shown below:
+
+    \image declarative-scalegrid.png
+
+    When the image is scaled:
+    \list
+    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
+    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
+    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \endlist
+
+    Examples:
     \snippet snippets/declarative/border-image.qml 0
 
     \image BorderImage.png
+
+    The \l{declarative/border-image}{BorderImage example} shows how a BorderImage can be used to simulate a shadow effect on a
+    rectangular item.
  */
 
 /*!
@@ -255,21 +271,17 @@ void QDeclarativeBorderImage::load()
     \qmlproperty int BorderImage::border.top
     \qmlproperty int BorderImage::border.bottom
 
-    \target ImagexmlpropertiesscaleGrid
-
-    The 4 border lines (2 horizontal and 2 vertical) break an image into 9 sections, as shown below:
+    The 4 border lines (2 horizontal and 2 vertical) break the image into 9 sections, as shown below:
 
     \image declarative-scalegrid.png
 
-    When the image is scaled:
-    \list
-    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
-    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
-    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
-    \endlist
+    Each border line (left, right, top, and bottom) specifies an offset in pixels from the respective side.
 
-    Each border line (left, right, top, and bottom) specifies an offset from the respective side. For example, \c{border.bottom: 10} sets the bottom line 10 pixels up from the bottom of the image.
+    For example:
+    \qml
+    border.bottom: 10
+    \endqml
+    sets the bottom line 10 pixels up from the bottom of the image.
 
     The border lines can also be specified using a
     \l {BorderImage::source}{.sci file}.

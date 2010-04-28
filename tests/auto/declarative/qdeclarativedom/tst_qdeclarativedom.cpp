@@ -419,10 +419,8 @@ void tst_qdeclarativedom::loadSyntaxErrors()
 void tst_qdeclarativedom::loadRemoteErrors()
 {
     QByteArray qml = "import Qt 4.7\n"
+                     "import \"http://localhost/exampleQmlScript.js\" as Script\n"
                      "Item {\n"
-                     "    Script {\n"
-                     "        source: \"http://localhost/exampleQmlScript.js\""
-                     "    }\n"
                      "}";
     QDeclarativeDomDocument document;
     QVERIFY(false == document.load(&engine, qml));

@@ -855,10 +855,13 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             qreal adjDist = -data.flickTarget + data.move.value();
             if (qAbs(adjDist) > qAbs(dist)) {
                 // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
-                v2 = accel * 2.0f * qAbs(dist);
-                v = qSqrt(v2);
-                if (dist > 0)
-                    v = -v;
+                qreal adjv2 = accel * 2.0f * qAbs(adjDist);
+                if (adjv2 > v2) {
+                    v2 = adjv2;
+                    v = qSqrt(v2);
+                    if (dist > 0)
+                        v = -v;
+                }
             }
             dist = adjDist;
             accel = v2 / (2.0f * qAbs(dist));

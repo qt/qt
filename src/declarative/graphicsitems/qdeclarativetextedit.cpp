@@ -129,7 +129,7 @@ QString QDeclarativeTextEdit::text() const
 /*!
     \qmlproperty bool TextEdit::font.bold
 
-    Sets the font's weight to bold.
+    Sets whether the font weight is bold.
 */
 
 /*!
@@ -154,25 +154,25 @@ QString QDeclarativeTextEdit::text() const
 /*!
     \qmlproperty bool TextEdit::font.italic
 
-    Sets the style of the text to italic.
+    Sets whether the font has an italic style.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.underline
 
-    Set the style of the text to underline.
+    Sets whether the text is underlined.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.outline
 
-    Set the style of the text to outline.
+    Sets whether the font has an outline style.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.strikeout
 
-    Set the style of the text to strikeout.
+    Sets whether the font has a strikeout style.
 */
 
 /*!
@@ -255,7 +255,12 @@ void QDeclarativeTextEdit::setText(const QString &text)
 
     The way the text property should be displayed.
 
-    Supported text formats are \c AutoText, \c PlainText and \c RichText.
+    \list
+    \o AutoText
+    \o PlainText
+    \o RichText
+    \o StyledText
+    \endlist
 
     The default is AutoText.  If the text format is AutoText the text edit
     will automatically determine whether the text should be treated as
@@ -991,8 +996,9 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &r)
 /*!
     \qmlproperty bool TextEdit::smooth
 
-    Set this property if you want the text to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
     the item is displayed at its natural size, this property has no visual or
     performance effect.
 

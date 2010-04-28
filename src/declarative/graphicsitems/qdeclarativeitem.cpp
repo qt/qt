@@ -1268,11 +1268,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \property QDeclarativeItem::effect
-    \internal
-*/
-
-/*!
     \property QDeclarativeItem::focus
     \internal
 */
@@ -2728,29 +2723,48 @@ void QDeclarativeItem::setSmooth(bool smooth)
     update();
 }
 
+/*!
+    \internal
+    Return the width of the item
+*/
 qreal QDeclarativeItem::width() const
 {
     Q_D(const QDeclarativeItem);
     return d->width();
 }
 
+/*!
+    \internal
+    Set the width of the item
+*/
 void QDeclarativeItem::setWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
     d->setWidth(w);
 }
 
+/*!
+    \internal
+    Reset the width of the item
+*/
 void QDeclarativeItem::resetWidth()
 {
     Q_D(QDeclarativeItem);
     d->resetWidth();
 }
 
+/*!
+    \internal
+    Return the width of the item
+*/
 qreal QDeclarativeItemPrivate::width() const
 {
     return mWidth;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeItemPrivate::setWidth(qreal w)
 {
     Q_Q(QDeclarativeItem);
@@ -2770,7 +2784,10 @@ void QDeclarativeItemPrivate::setWidth(qreal w)
                     QRectF(q->x(), q->y(), oldWidth, height()));
 }
 
-void QDeclarativeItemPrivate    ::resetWidth()
+/*!
+    \internal
+*/
+void QDeclarativeItemPrivate::resetWidth()
 {
     Q_Q(QDeclarativeItem);
     widthValid = false;
@@ -2815,29 +2832,47 @@ bool QDeclarativeItem::widthValid() const
     return d->widthValid;
 }
 
+/*!
+    \internal
+    Return the height of the item
+*/
 qreal QDeclarativeItem::height() const
 {
     Q_D(const QDeclarativeItem);
     return d->height();
 }
 
+/*!
+    \internal
+    Set the height of the item
+*/
 void QDeclarativeItem::setHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
     d->setHeight(h);
 }
 
+/*!
+    \internal
+    Reset the height of the item
+*/
 void QDeclarativeItem::resetHeight()
 {
     Q_D(QDeclarativeItem);
     d->resetHeight();
 }
 
+/*!
+    \internal
+*/
 qreal QDeclarativeItemPrivate::height() const
 {
     return mHeight;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeItemPrivate::setHeight(qreal h)
 {
     Q_Q(QDeclarativeItem);
@@ -2857,6 +2892,9 @@ void QDeclarativeItemPrivate::setHeight(qreal h)
                     QRectF(q->x(), q->y(), width(), oldHeight));
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeItemPrivate::resetHeight()
 {
     Q_Q(QDeclarativeItem);
