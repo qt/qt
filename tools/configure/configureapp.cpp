@@ -1880,6 +1880,22 @@ QString Configure::findFileInPaths(const QString &fileName, const QString &paths
     return QString();
 }
 
+static QString mingwPaths(const QString &mingwPath, const QString &pathName)
+{
+    QString ret;
+    QDir mingwDir = QFileInfo(mingwPath).dir();
+    const QFileInfoList subdirs = mingwDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (int i = 0 ;i < subdirs.length(); ++i) {
+        const QFileInfo &fi = subdirs.at(i);
+        const QString name = fi.fileName();
+        if (name == pathName)
+            ret += fi.absoluteFilePath() + ';';
+        else if (name.contains("mingw"))
+            ret += fi.absoluteFilePath() + QDir::separator() + pathName + ';';
+    }
+    return ret;
+}
+
 bool Configure::findFile( const QString &fileName )
 {
     const QString file = fileName.toLower();
@@ -1890,18 +1906,22 @@ bool Configure::findFile( const QString &fileName )
     QString paths;
     if (file.endsWith(".h")) {
         if (!mingwPath.isNull()) {
-            if (!findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+            if (!findFileInPaths(file, mingwPaths(mingwPath, "include")).isNull())
 		        return true;
             //now let's try the additional compiler path
-            QDir mingwLibDir = mingwPath + QLatin1String("/../lib/gcc/mingw32");
-            foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-                if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
-                    return true;
+
+            const QFileInfoList mingwConfigs = QDir(mingwPath + QLatin1String("/../lib/gcc")).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+            for (int i = 0; i < mingwConfigs.length(); ++i) {
+                const QDir mingwLibDir = mingwConfigs.at(i).absoluteFilePath();
+                foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+                    if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
+                        return true;
+                }
             }
         }
         paths = QString::fromLocal8Bit(getenv("INCLUDE"));
     } else if ( file.endsWith( ".lib" ) ||  file.endsWith( ".a" ) ) {
-        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
+        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPaths(mingwPath, "lib")).isNull())
 		    return true;
         paths = QString::fromLocal8Bit(getenv("LIB"));
     } else {
