@@ -62,6 +62,7 @@ public:
     explicit QRadioButton(const QString &text, QWidget *parent=0);
 
     QSize sizeHint() const;
+    QSize minimumSizeHint() const;
 
 protected:
     bool event(QEvent *e);

@@ -7015,7 +7015,7 @@ void QGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 setSelected(true);
             }
         }
-    } else if (!(flags() & ItemIsMovable) && !isSelected()) {
+    } else if (!(flags() & ItemIsMovable)) {
         event->ignore();
     }
     if (d_ptr->isWidget) {
