@@ -343,8 +343,9 @@ void QDeclarativeRectangle::generateRoundedRect()
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         const int radius = qCeil(d->radius);    //ensure odd numbered width/height so we get 1-pixel center
 
-        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name() % QLatin1Char('_') % QString::number(radius)
-                        % (d->pen && d->pen->isValid() ? d->pen->color().name() : QString());
+        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name() % QString::number(d->color.alpha(), 16) % QLatin1Char('_') % QString::number(radius);
+        if (d->pen && d->pen->isValid())
+            key += d->pen->color().name() % QString::number(d->pen->color().alpha(), 16);
 
         if (!QPixmapCache::find(key, &d->rectImage)) {
             d->rectImage = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
@@ -373,8 +374,9 @@ void QDeclarativeRectangle::generateBorderedRect()
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
 
-        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name()
-                      % (d->pen && d->pen->isValid() ? d->pen->color().name() : QString());
+        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name() % QString::number(d->color.alpha(), 16);
+        if (d->pen && d->pen->isValid())
+            key += d->pen->color().name() % QString::number(d->pen->color().alpha(), 16);
 
         if (!QPixmapCache::find(key, &d->rectImage)) {
             d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
