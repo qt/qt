@@ -123,7 +123,7 @@ Phonon::VideoWidget::ScaleMode MMF::VideoWidget::scaleMode() const
 void MMF::VideoWidget::setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode)
 {
     TRACE_CONTEXT(VideoWidget::setScaleMode, EVideoApi);
-    TRACE("setScaleMode %d", setScaleMode);
+    TRACE("setScaleMode %d", scaleMode);
 
     m_videoOutput->setScaleMode(scaleMode);
 }

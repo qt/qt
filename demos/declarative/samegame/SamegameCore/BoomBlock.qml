@@ -1,7 +1,8 @@
 import Qt 4.7
 import Qt.labs.particles 1.0
 
-Item { id:block
+Item {
+    id: block
     property bool dying: false
     property bool spawned: false
     property int type: 0
@@ -11,7 +12,8 @@ Item { id:block
     SpringFollow on x { enabled: spawned; to: targetX; spring: 2; damping: 0.2 }
     SpringFollow on y { to: targetY; spring: 2; damping: 0.2 }
 
-    Image { id: img
+    Image {
+        id: img
         source: {
             if(type == 0){
                 "pics/redStone.png";
@@ -26,12 +28,16 @@ Item { id:block
         anchors.fill: parent
     }
 
-    Particles { id: particles
-        width:1; height:1; anchors.centerIn: parent;
-        emissionRate: 0;
-        lifeSpan: 700; lifeSpanDeviation: 600;
+    Particles {
+        id: particles
+
+        width: 1; height: 1
+        anchors.centerIn: parent
+
+        emissionRate: 0
+        lifeSpan: 700; lifeSpanDeviation: 600
         angle: 0; angleDeviation: 360;
-        velocity: 100; velocityDeviation:30;
+        velocity: 100; velocityDeviation: 30
         source: {
             if(type == 0){
                 "pics/redStar.png";
@@ -44,10 +50,13 @@ Item { id:block
     }
 
     states: [
-        State{ name: "AliveState"; when: spawned == true && dying == false
+        State {
+            name: "AliveState"; when: spawned == true && dying == false
             PropertyChanges { target: img; opacity: 1 }
         },
-        State{ name: "DeathState"; when: dying == true
+
+        State {
+            name: "DeathState"; when: dying == true
             StateChangeScript { script: particles.burst(50); }
             PropertyChanges { target: img; opacity: 0 }
             StateChangeScript { script: block.destroy(1000); }

@@ -825,7 +825,7 @@ qreal qt_t_for_arc_angle(qreal angle)
     return t;
 }
 
-void qt_find_ellipse_coords(const QRectF &r, qreal angle, qreal length,
+Q_GUI_EXPORT void qt_find_ellipse_coords(const QRectF &r, qreal angle, qreal length,
                             QPointF* startPoint, QPointF *endPoint);
 
 /*!

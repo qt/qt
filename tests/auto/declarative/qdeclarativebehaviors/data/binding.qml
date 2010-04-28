@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 Rectangle {
     width: 400
     height: 400
@@ -9,7 +9,7 @@ Rectangle {
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
         x: basex
-        Behavior on x { NumberAnimation { duration: 500; } }
+        Behavior on x { NumberAnimation { duration: 800; } }
     }
     MouseArea {
         id: clicker

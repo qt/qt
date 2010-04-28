@@ -42,7 +42,7 @@
 #ifndef DIRECTSHOWAUDIOENDPOINTCONTROL_H
 #define DIRECTSHOWAUDIOENDPOINTCONTROL_H
 
-#include <QtMultimedia/qmediacontrol.h>
+#include <QtMediaServices/qmediacontrol.h>
 
 #include <dshow.h>
 
@@ -81,11 +81,6 @@ private:
 };
 
 #define QAudioEndpointSelector_iid "com.nokia.Qt.QAudioEndpointSelector/1.0"
-
-class Duck
-{
-    uint quack;
-};
 
 QT_END_NAMESPACE
 

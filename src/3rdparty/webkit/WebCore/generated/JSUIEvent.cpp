@@ -38,16 +38,16 @@ ASSERT_CLASS_FITS_IN_CELL(JSUIEvent);
 
 static const HashTableValue JSUIEventTableValues[11] =
 {
-    { "view", DontDelete|ReadOnly, (intptr_t)jsUIEventView, (intptr_t)0 },
-    { "detail", DontDelete|ReadOnly, (intptr_t)jsUIEventDetail, (intptr_t)0 },
-    { "keyCode", DontDelete|ReadOnly, (intptr_t)jsUIEventKeyCode, (intptr_t)0 },
-    { "charCode", DontDelete|ReadOnly, (intptr_t)jsUIEventCharCode, (intptr_t)0 },
-    { "layerX", DontDelete|ReadOnly, (intptr_t)jsUIEventLayerX, (intptr_t)0 },
-    { "layerY", DontDelete|ReadOnly, (intptr_t)jsUIEventLayerY, (intptr_t)0 },
-    { "pageX", DontDelete|ReadOnly, (intptr_t)jsUIEventPageX, (intptr_t)0 },
-    { "pageY", DontDelete|ReadOnly, (intptr_t)jsUIEventPageY, (intptr_t)0 },
-    { "which", DontDelete|ReadOnly, (intptr_t)jsUIEventWhich, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsUIEventConstructor, (intptr_t)0 },
+    { "view", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventView), (intptr_t)0 },
+    { "detail", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventDetail), (intptr_t)0 },
+    { "keyCode", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventKeyCode), (intptr_t)0 },
+    { "charCode", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventCharCode), (intptr_t)0 },
+    { "layerX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventLayerX), (intptr_t)0 },
+    { "layerY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventLayerY), (intptr_t)0 },
+    { "pageX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventPageX), (intptr_t)0 },
+    { "pageY", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventPageY), (intptr_t)0 },
+    { "which", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventWhich), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsUIEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -109,7 +109,7 @@ bool JSUIEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 static const HashTableValue JSUIEventPrototypeTableValues[2] =
 {
-    { "initUIEvent", DontDelete|Function, (intptr_t)jsUIEventPrototypeFunctionInitUIEvent, (intptr_t)5 },
+    { "initUIEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsUIEventPrototypeFunctionInitUIEvent), (intptr_t)5 },
     { 0, 0, 0, 0 }
 };
 
@@ -159,81 +159,90 @@ bool JSUIEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& prop
     return getStaticValueDescriptor<JSUIEvent, Base>(exec, &JSUIEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsUIEventView(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventView(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->view()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->view()));
+    return result;
 }
 
-JSValue jsUIEventDetail(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventDetail(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->detail());
+    JSValue result = jsNumber(exec, imp->detail());
+    return result;
 }
 
-JSValue jsUIEventKeyCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventKeyCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->keyCode());
+    JSValue result = jsNumber(exec, imp->keyCode());
+    return result;
 }
 
-JSValue jsUIEventCharCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventCharCode(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->charCode());
+    JSValue result = jsNumber(exec, imp->charCode());
+    return result;
 }
 
-JSValue jsUIEventLayerX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventLayerX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->layerX());
+    JSValue result = jsNumber(exec, imp->layerX());
+    return result;
 }
 
-JSValue jsUIEventLayerY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventLayerY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->layerY());
+    JSValue result = jsNumber(exec, imp->layerY());
+    return result;
 }
 
-JSValue jsUIEventPageX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventPageX(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->pageX());
+    JSValue result = jsNumber(exec, imp->pageX());
+    return result;
 }
 
-JSValue jsUIEventPageY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventPageY(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->pageY());
+    JSValue result = jsNumber(exec, imp->pageY());
+    return result;
 }
 
-JSValue jsUIEventWhich(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventWhich(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->which());
+    JSValue result = jsNumber(exec, imp->which());
+    return result;
 }
 
-JSValue jsUIEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsUIEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSUIEvent* domObject = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
+    JSUIEvent* domObject = static_cast<JSUIEvent*>(asObject(slotBase));
     return JSUIEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSUIEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

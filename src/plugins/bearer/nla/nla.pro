@@ -1,7 +1,7 @@
 TARGET = qnlabearer
 include(../../qpluginbase.pri)
 
-QT += network
+QT = core network
 
 !wince* {
     LIBS += -lWs2_32

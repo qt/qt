@@ -41,6 +41,7 @@
 
 #include "qdeclarativeparticles_p.h"
 
+#include <qdeclarativeinfo.h>
 #include <private/qdeclarativeitem_p.h>
 
 #include <private/qdeclarativepixmapcache_p.h>
@@ -188,13 +189,13 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
 */
 
 /*!
-    \qmlproperty qreal ParticleMotionGravity::xattractor
-    \qmlproperty qreal ParticleMotionGravity::yattractor
+    \qmlproperty real ParticleMotionGravity::xattractor
+    \qmlproperty real ParticleMotionGravity::yattractor
     These properties hold the x and y coordinates of the point attracting the particles.
 */
 
 /*!
-    \qmlproperty qreal ParticleMotionGravity::acceleration
+    \qmlproperty real ParticleMotionGravity::acceleration
     This property holds the acceleration to apply to the particles.
 */
 
@@ -302,14 +303,14 @@ Rectangle {
 */
 
 /*!
-    \qmlproperty qreal QDeclarativeParticleMotionWander::xvariance
-    \qmlproperty qreal QDeclarativeParticleMotionWander::yvariance
+    \qmlproperty real QDeclarativeParticleMotionWander::xvariance
+    \qmlproperty real QDeclarativeParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty qreal QDeclarativeParticleMotionWander::pace
+    \qmlproperty real QDeclarativeParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
@@ -624,6 +625,8 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     \inherits Item
 
     Particles are available in the \bold{Qt.labs.particles 1.0} module.
+    \e {Elements in the Qt.labs module are not guaranteed to remain compatible
+    in future versions.}
 
     This element provides preliminary support for particles in QML,
     and may be heavily changed or removed in later versions.
@@ -642,7 +645,7 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     snow, the lower one has particles expelled up like a fountain.
 
     \qml
-import Qt 4.6
+import Qt 4.7
 import Qt.labs.particles 1.0
 
 Rectangle {
@@ -728,7 +731,9 @@ void QDeclarativeParticles::imageLoaded()
 {
     Q_D(QDeclarativeParticles);
     d->pendingPixmapCache = false;
-    QDeclarativePixmapCache::get(d->url, &d->image);
+    QString errorString;
+    if (QDeclarativePixmapCache::get(d->url, &d->image, &errorString)==QDeclarativePixmapReply::Error)
+        qmlInfo(this) << errorString;
     d->paintItem->updateSize();
     d->paintItem->update();
 }
@@ -752,12 +757,15 @@ void QDeclarativeParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->image);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->image, &errorString);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
             connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
             d->pendingPixmapCache = true;
         } else {
+            if (status == QDeclarativePixmapReply::Error)
+                qmlInfo(this) << errorString;
             //### unify with imageLoaded
             d->paintItem->updateSize();
             d->paintItem->update();
@@ -851,7 +859,7 @@ void QDeclarativeParticles::setEmissionRate(int er)
 }
 
 /*!
-    \qmlproperty qreal Particles::emissionVariance
+    \qmlproperty real Particles::emissionVariance
     This property holds how inconsistent the rate of particle emissions are.
     It is a number between 0 (no variance) and 1 (some variance).
 

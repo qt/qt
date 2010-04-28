@@ -3,17 +3,17 @@ import org.webkit 1.0
 
 WebView {
     id: webView
-    onAlert: popup.show(message)
     width: 120
     height: 150
     url: "alerts.html"
+
+    onAlert: popup.show(message)
 
     Rectangle {
         id: popup
 
         color: "red"
-        border.color: "black"
-        border.width: 2
+        border.color: "black"; border.width: 2
         radius: 4
 
         y: parent.height // off "screen"

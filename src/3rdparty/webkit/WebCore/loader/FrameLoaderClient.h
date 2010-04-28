@@ -32,7 +32,6 @@
 #include "FrameLoaderTypes.h"
 #include "ScrollTypes.h"
 #include <wtf/Forward.h>
-#include <wtf/Platform.h>
 #include <wtf/Vector.h>
 
 typedef class _jobject* jobject;
@@ -47,6 +46,7 @@ namespace WebCore {
     class AuthenticationChallenge;
     class CachedFrame;
     class Color;
+    class DOMWrapperWorld;
     class DocumentLoader;
     class Element;
     class FormState;
@@ -64,7 +64,7 @@ namespace WebCore {
     class ResourceError;
     class ResourceHandle;
     class ResourceLoader;
-    struct ResourceRequest;
+    class ResourceRequest;
     class ResourceResponse;
     class ScriptString;
     class SecurityOrigin;
@@ -115,7 +115,11 @@ namespace WebCore {
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
         virtual void dispatchDidCancelClientRedirect() = 0;
         virtual void dispatchWillPerformClientRedirect(const KURL&, double interval, double fireDate) = 0;
+        virtual void dispatchDidNavigateWithinPage() { }
         virtual void dispatchDidChangeLocationWithinPage() = 0;
+        virtual void dispatchDidPushStateWithinPage() = 0;
+        virtual void dispatchDidReplaceStateWithinPage() = 0;
+        virtual void dispatchDidPopStateWithinPage() = 0;
         virtual void dispatchWillClose() = 0;
         virtual void dispatchDidReceiveIcon() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
@@ -165,6 +169,9 @@ namespace WebCore {
         virtual void updateGlobalHistoryRedirectLinks() = 0;
 
         virtual bool shouldGoToHistoryItem(HistoryItem*) const = 0;
+        virtual void dispatchDidAddBackForwardItem(HistoryItem*) const = 0;
+        virtual void dispatchDidRemoveBackForwardItem(HistoryItem*) const = 0;
+        virtual void dispatchDidChangeBackForwardIndex() const = 0;
 
         // This frame has displayed inactive content (such as an image) from an
         // insecure source.  Inactive content cannot spread to other frames.
@@ -212,6 +219,7 @@ namespace WebCore {
 
         virtual PassRefPtr<Frame> createFrame(const KURL& url, const String& name, HTMLFrameOwnerElement* ownerElement,
                                    const String& referrer, bool allowsScrolling, int marginWidth, int marginHeight) = 0;
+        virtual void didTransferChildFrameToNewDocument() = 0;
         virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually) = 0;
         virtual void redirectDataToPlugin(Widget* pluginWidget) = 0;
 
@@ -222,7 +230,7 @@ namespace WebCore {
         virtual ObjectContentType objectContentType(const KURL& url, const String& mimeType) = 0;
         virtual String overrideMediaType() const = 0;
 
-        virtual void windowObjectCleared() = 0;
+        virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) = 0;
         virtual void documentElementAvailable() = 0;
         virtual void didPerformFirstNavigation() const = 0; // "Navigation" here means a transition from one page to another that ends up in the back/forward list.
 
@@ -246,6 +254,21 @@ namespace WebCore {
 
         virtual bool shouldUsePluginDocument(const String& /*mimeType*/) const { return false; }
         virtual bool shouldLoadMediaElementURL(const KURL&) const { return true; }
+
+        virtual void didChangeScrollOffset() { }
+
+        virtual bool allowJavaScript(bool enabledPerSettings) { return enabledPerSettings; }
+        virtual bool allowPlugins(bool enabledPerSettings) { return enabledPerSettings; }
+        virtual bool allowImages(bool enabledPerSettings) { return enabledPerSettings; }
+
+        // This callback notifies the client that the frame was about to run
+        // JavaScript but did not because allowJavaScript returned false. We
+        // have a separate callback here because there are a number of places
+        // that need to know if JavaScript is enabled but are not necessarily
+        // preparing to execute script.
+        virtual void didNotAllowScript() { }
+        // This callback is similar, but for plugins.
+        virtual void didNotAllowPlugins() { }
     };
 
 } // namespace WebCore

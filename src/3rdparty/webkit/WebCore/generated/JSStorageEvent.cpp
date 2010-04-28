@@ -42,12 +42,12 @@ ASSERT_CLASS_FITS_IN_CELL(JSStorageEvent);
 
 static const HashTableValue JSStorageEventTableValues[7] =
 {
-    { "key", DontDelete|ReadOnly, (intptr_t)jsStorageEventKey, (intptr_t)0 },
-    { "oldValue", DontDelete|ReadOnly, (intptr_t)jsStorageEventOldValue, (intptr_t)0 },
-    { "newValue", DontDelete|ReadOnly, (intptr_t)jsStorageEventNewValue, (intptr_t)0 },
-    { "uri", DontDelete|ReadOnly, (intptr_t)jsStorageEventUri, (intptr_t)0 },
-    { "storageArea", DontDelete|ReadOnly, (intptr_t)jsStorageEventStorageArea, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsStorageEventConstructor, (intptr_t)0 },
+    { "key", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageEventKey), (intptr_t)0 },
+    { "oldValue", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageEventOldValue), (intptr_t)0 },
+    { "newValue", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageEventNewValue), (intptr_t)0 },
+    { "uri", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageEventUri), (intptr_t)0 },
+    { "storageArea", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageEventStorageArea), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsStorageEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -109,7 +109,7 @@ bool JSStorageEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const 
 
 static const HashTableValue JSStorageEventPrototypeTableValues[2] =
 {
-    { "initStorageEvent", DontDelete|Function, (intptr_t)jsStorageEventPrototypeFunctionInitStorageEvent, (intptr_t)8 },
+    { "initStorageEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsStorageEventPrototypeFunctionInitStorageEvent), (intptr_t)8 },
     { 0, 0, 0, 0 }
 };
 
@@ -159,49 +159,54 @@ bool JSStorageEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSStorageEvent, Base>(exec, &JSStorageEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsStorageEventKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageEventKey(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsString(exec, imp->key());
+    JSValue result = jsStringOrNull(exec, imp->key());
+    return result;
 }
 
-JSValue jsStorageEventOldValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageEventOldValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->oldValue());
+    JSValue result = jsStringOrNull(exec, imp->oldValue());
+    return result;
 }
 
-JSValue jsStorageEventNewValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageEventNewValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->newValue());
+    JSValue result = jsStringOrNull(exec, imp->newValue());
+    return result;
 }
 
-JSValue jsStorageEventUri(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageEventUri(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsString(exec, imp->uri());
+    JSValue result = jsString(exec, imp->uri());
+    return result;
 }
 
-JSValue jsStorageEventStorageArea(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageEventStorageArea(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->storageArea()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->storageArea()));
+    return result;
 }
 
-JSValue jsStorageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSStorageEvent* domObject = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
+    JSStorageEvent* domObject = static_cast<JSStorageEvent*>(asObject(slotBase));
     return JSStorageEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSStorageEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

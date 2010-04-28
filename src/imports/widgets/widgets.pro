@@ -21,8 +21,7 @@ symbian:{
     load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
-    importFiles.sources = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/widgets.dll \
-    qmldir
+    importFiles.sources = widgets.dll qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
     
     DEPLOYMENT = importFiles

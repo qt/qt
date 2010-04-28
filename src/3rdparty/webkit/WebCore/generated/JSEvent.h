@@ -21,7 +21,6 @@
 #ifndef JSEvent_h
 #define JSEvent_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -44,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -72,7 +71,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -84,43 +83,45 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsEventPrototypeFunctionStopPropagation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsEventPrototypeFunctionPreventDefault(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsEventPrototypeFunctionInitEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsEventPrototypeFunctionStopImmediatePropagation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsEventType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventTarget(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventCurrentTarget(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventEventPhase(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventBubbles(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventCancelable(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventTimeStamp(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventSrcElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventReturnValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventTarget(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventCurrentTarget(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventEventPhase(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventBubbles(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventCancelable(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventTimeStamp(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventDefaultPrevented(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventSrcElement(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventReturnValue(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSEventReturnValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsEventCancelBubble(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventCancelBubble(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSEventCancelBubble(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsEventClipboardData(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventClipboardData(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 // Constants
 
-JSC::JSValue jsEventCAPTURING_PHASE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventAT_TARGET(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventBUBBLING_PHASE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventMOUSEDOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventMOUSEUP(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventMOUSEOVER(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventMOUSEOUT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventMOUSEMOVE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventMOUSEDRAG(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventCLICK(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventDBLCLICK(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventKEYDOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventKEYUP(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventKEYPRESS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventDRAGDROP(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventFOCUS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventBLUR(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventSELECT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsEventCHANGE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsEventCAPTURING_PHASE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventAT_TARGET(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventBUBBLING_PHASE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventMOUSEDOWN(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventMOUSEUP(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventMOUSEOVER(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventMOUSEOUT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventMOUSEMOVE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventMOUSEDRAG(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventCLICK(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventDBLCLICK(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventKEYDOWN(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventKEYUP(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventKEYPRESS(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventDRAGDROP(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventFOCUS(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventBLUR(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventSELECT(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsEventCHANGE(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
 Disclaimer for Robert Penner's Easing Equations license:
 
 TERMS OF USE - EASING EQUATIONS
@@ -554,13 +554,13 @@ static qreal easeOutBounce_helper(qreal t, qreal c, qreal a)
     if (t < (4/11.0)) {
         return c*(7.5625*t*t);
     } else if (t < (8/11.0)) {
-        t -= qreal(6/11.0);
+        t -= (6/11.0);
         return -a * (1. - (7.5625*t*t + .75)) + c;
     } else if (t < (10/11.0)) {
-        t -= qreal(9/11.0);
+        t -= (9/11.0);
         return -a * (1. - (7.5625*t*t + .9375)) + c;
     } else {
-        t -= qreal(21/22.0);
+        t -= (21/22.0);
         return -a * (1. - (7.5625*t*t + .984375)) + c;
     }
 }

@@ -1,6 +1,4 @@
 /**
- * This file is part of the KDE project.
- *
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Simon Hausmann <hausmann@kde.org>
  *           (C) 2000 Stefan Schimanski (1Stein@gmx.de)
@@ -38,6 +36,7 @@
 #include "MouseEvent.h"
 #include "RenderFrame.h"
 #include "RenderView.h"
+#include "Settings.h"
 
 namespace WebCore {
 
@@ -87,13 +86,14 @@ void RenderFrameSet::paintColumnBorder(const PaintInfo& paintInfo, const IntRect
     
     // Fill first.
     GraphicsContext* context = paintInfo.context;
-    context->fillRect(borderRect, frameSet()->hasBorderColor() ? style()->borderLeftColor() : borderFillColor());
+    ColorSpace colorSpace = style()->colorSpace();
+    context->fillRect(borderRect, frameSet()->hasBorderColor() ? style()->borderLeftColor() : borderFillColor(), colorSpace);
     
     // Now stroke the edges but only if we have enough room to paint both edges with a little
     // bit of the fill color showing through.
     if (borderRect.width() >= 3) {
-        context->fillRect(IntRect(borderRect.topLeft(), IntSize(1, height())), borderStartEdgeColor());
-        context->fillRect(IntRect(borderRect.topRight(), IntSize(1, height())), borderEndEdgeColor());
+        context->fillRect(IntRect(borderRect.topLeft(), IntSize(1, height())), borderStartEdgeColor(), colorSpace);
+        context->fillRect(IntRect(borderRect.topRight(), IntSize(1, height())), borderEndEdgeColor(), colorSpace);
     }
 }
 
@@ -106,13 +106,14 @@ void RenderFrameSet::paintRowBorder(const PaintInfo& paintInfo, const IntRect& b
     
     // Fill first.
     GraphicsContext* context = paintInfo.context;
-    context->fillRect(borderRect, frameSet()->hasBorderColor() ? style()->borderLeftColor() : borderFillColor());
+    ColorSpace colorSpace = style()->colorSpace();
+    context->fillRect(borderRect, frameSet()->hasBorderColor() ? style()->borderLeftColor() : borderFillColor(), colorSpace);
 
     // Now stroke the edges but only if we have enough room to paint both edges with a little
     // bit of the fill color showing through.
     if (borderRect.height() >= 3) {
-        context->fillRect(IntRect(borderRect.topLeft(), IntSize(width(), 1)), borderStartEdgeColor());
-        context->fillRect(IntRect(borderRect.bottomLeft(), IntSize(width(), 1)), borderEndEdgeColor());
+        context->fillRect(IntRect(borderRect.topLeft(), IntSize(width(), 1)), borderStartEdgeColor(), colorSpace);
+        context->fillRect(IntRect(borderRect.bottomLeft(), IntSize(width(), 1)), borderEndEdgeColor(), colorSpace);
     }
 }
 
@@ -473,7 +474,10 @@ void RenderFrameSet::layout()
     layOutAxis(m_rows, frameSet()->rowLengths(), height() - (rows - 1) * borderThickness);
     layOutAxis(m_cols, frameSet()->colLengths(), width() - (cols - 1) * borderThickness);
 
-    positionFrames();
+    if (flattenFrameSet())
+        positionFramesWithFlattening();
+    else
+        positionFrames();
 
     RenderBox::layout();
 
@@ -532,6 +536,119 @@ void RenderFrameSet::positionFrames()
     }
 }
 
+void RenderFrameSet::positionFramesWithFlattening()
+{
+    RenderBox* child = firstChildBox();
+    if (!child)
+        return;
+
+    int rows = frameSet()->totalRows();
+    int cols = frameSet()->totalCols();
+
+    int borderThickness = frameSet()->border();
+    bool repaintNeeded = false;
+
+    // calculate frameset height based on actual content height to eliminate scrolling
+    bool out = false;
+    for (int r = 0; r < rows && !out; r++) {
+        int extra = 0;
+        int height = m_rows.m_sizes[r];
+
+        for (int c = 0; c < cols; c++) {
+            IntRect oldFrameRect = child->frameRect();
+
+            int width = m_cols.m_sizes[c];
+
+            bool fixedWidth = frameSet()->colLengths() && frameSet()->colLengths()[c].isFixed();
+            bool fixedHeight = frameSet()->rowLengths() && frameSet()->rowLengths()[r].isFixed();
+
+            // has to be resized and itself resize its contents
+            if (!fixedWidth)
+                child->setWidth(width ? width + extra / (cols - c) : 0);
+            else
+                child->setWidth(width);
+            child->setHeight(height);
+
+            child->setNeedsLayout(true);
+
+            if (child->isFrameSet())
+                toRenderFrameSet(child)->layout();
+            else
+                toRenderFrame(child)->layoutWithFlattening(fixedWidth, fixedHeight);
+
+            if (child->height() > m_rows.m_sizes[r])
+                m_rows.m_sizes[r] = child->height();
+            if (child->width() > m_cols.m_sizes[c])
+                m_cols.m_sizes[c] = child->width();
+
+            if (child->frameRect() != oldFrameRect)
+                repaintNeeded = true;
+
+            // difference between calculated frame width and the width it actually decides to have
+            extra += width - m_cols.m_sizes[c];
+
+            child = child->nextSiblingBox();
+            if (!child) {
+                out = true;
+                break;
+            }
+        }
+    }
+
+    int xPos = 0;
+    int yPos = 0;
+    out = false;
+    child = firstChildBox();
+    for (int r = 0; r < rows && !out; r++) {
+        xPos = 0;
+        for (int c = 0; c < cols; c++) {
+            // ensure the rows and columns are filled
+            IntRect oldRect = child->frameRect();
+
+            child->setLocation(xPos, yPos);
+            child->setHeight(m_rows.m_sizes[r]);
+            child->setWidth(m_cols.m_sizes[c]);
+
+            if (child->frameRect() != oldRect) {
+                repaintNeeded = true;
+
+                // update to final size
+                child->setNeedsLayout(true);
+                if (child->isFrameSet())
+                    toRenderFrameSet(child)->layout();
+                else
+                    toRenderFrame(child)->layoutWithFlattening(true, true);
+            }
+
+            xPos += m_cols.m_sizes[c] + borderThickness;
+            child = child->nextSiblingBox();
+            if (!child) {
+                out = true;
+                break;
+            }
+        }
+        yPos += m_rows.m_sizes[r] + borderThickness;
+    }
+
+    setWidth(xPos - borderThickness);
+    setHeight(yPos - borderThickness);
+
+    if (repaintNeeded)
+        repaint();
+
+    // all the remaining frames are hidden to avoid ugly spurious unflowed frames
+    for (; child; child = child->nextSiblingBox()) {
+        child->setWidth(0);
+        child->setHeight(0);
+        child->setNeedsLayout(false);
+    }
+}
+
+bool RenderFrameSet::flattenFrameSet() const
+{
+    return document()->frame() && document()->frame()->settings()->frameFlatteningEnabled();
+}
+
 void RenderFrameSet::startResizing(GridAxis& axis, int position)
 {
     int split = hitTestSplit(axis, position);
@@ -560,6 +677,9 @@ void RenderFrameSet::continueResizing(GridAxis& axis, int position)
 
 bool RenderFrameSet::userResize(MouseEvent* evt)
 {
+    if (flattenFrameSet())
+        return false;
+
     if (!m_isResizing) {
         if (needsLayout())
             return false;

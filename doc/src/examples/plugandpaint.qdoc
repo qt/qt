@@ -513,7 +513,7 @@
 
     Since the approach is identical to
     \l{tools/plugandpaintplugins/basictools}{Basic Tools}, we won't
-    review the code here. The only part of interes is the
+    review the code here. The only part of interest is the
     \c .pro file, since Extra Filters is a dynamic plugin
     (\l{tools/plugandpaintplugins/basictools}{Basic Tools} is
     linked statically into the Plug & Paint executable).

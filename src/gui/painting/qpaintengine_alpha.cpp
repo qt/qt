@@ -93,8 +93,8 @@ bool QAlphaPaintEngine::begin(QPaintDevice *pdev)
     return true;
 }
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 
 bool QAlphaPaintEngine::end()
 {

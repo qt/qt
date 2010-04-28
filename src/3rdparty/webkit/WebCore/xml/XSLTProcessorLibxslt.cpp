@@ -46,7 +46,6 @@
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
 #include <wtf/Assertions.h>
-#include <wtf/Platform.h>
 #include <wtf/Vector.h>
 
 #if PLATFORM(MAC)
@@ -201,8 +200,8 @@ static const char** xsltParamArrayFromParameterMap(XSLTProcessor::ParameterMap& 
     XSLTProcessor::ParameterMap::iterator end = parameters.end();
     unsigned index = 0;
     for (XSLTProcessor::ParameterMap::iterator it = parameters.begin(); it != end; ++it) {
-        parameterArray[index++] = strdup(it->first.utf8().data());
-        parameterArray[index++] = strdup(it->second.utf8().data());
+        parameterArray[index++] = fastStrDup(it->first.utf8().data());
+        parameterArray[index++] = fastStrDup(it->second.utf8().data());
     }
     parameterArray[index] = 0;
 
@@ -216,8 +215,8 @@ static void freeXsltParamArray(const char** params)
         return;
 
     while (*temp) {
-        free((void*)*(temp++)); // strdup returns malloc'd blocks, so we have to use free() here
-        free((void*)*(temp++));
+        fastFree((void*)*(temp++));
+        fastFree((void*)*(temp++));
     }
     fastFree(params);
 }
@@ -226,7 +225,8 @@ static xsltStylesheetPtr xsltStylesheetPointer(RefPtr<XSLStyleSheet>& cachedStyl
 {
     if (!cachedStylesheet && stylesheetRootNode) {
         cachedStylesheet = XSLStyleSheet::create(stylesheetRootNode->parent() ? stylesheetRootNode->parent() : stylesheetRootNode,
-            stylesheetRootNode->document()->url().string());
+            stylesheetRootNode->document()->url().string(),
+            stylesheetRootNode->document()->url()); // FIXME: Should we use baseURL here?
         cachedStylesheet->parseString(createMarkup(stylesheetRootNode));
     }
 

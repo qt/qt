@@ -21,7 +21,6 @@
 #ifndef JSCSSVariablesDeclaration_h
 #define JSCSSVariablesDeclaration_h
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -45,10 +44,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
-    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     CSSVariablesDeclaration* impl() const { return m_impl.get(); }
 
@@ -56,7 +55,7 @@ private:
     RefPtr<CSSVariablesDeclaration> m_impl;
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetPropertyNames | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
-    static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+    static JSC::JSValue indexGetter(JSC::ExecState*, JSC::JSValue, unsigned);
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CSSVariablesDeclaration*);
@@ -72,7 +71,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSCSSVariablesDeclarationPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -87,11 +86,11 @@ JSC::JSValue JSC_HOST_CALL jsCSSVariablesDeclarationPrototypeFunctionSetVariable
 JSC::JSValue JSC_HOST_CALL jsCSSVariablesDeclarationPrototypeFunctionItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsCSSVariablesDeclarationCssText(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCSSVariablesDeclarationCssText(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSCSSVariablesDeclarationCssText(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsCSSVariablesDeclarationLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCSSVariablesDeclarationParentRule(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsCSSVariablesDeclarationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsCSSVariablesDeclarationLength(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCSSVariablesDeclarationParentRule(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsCSSVariablesDeclarationConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

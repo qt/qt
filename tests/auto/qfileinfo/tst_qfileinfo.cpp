@@ -194,6 +194,9 @@ tst_QFileInfo::~tst_QFileInfo()
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QDir().rmdir("./.hidden-directory");
 #endif
+#ifdef Q_OS_WIN
+    QDir().rmdir("./hidden-directory");
+#endif
 }
 
 // Testing get/set functions
@@ -1056,14 +1059,6 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
-        QTest::newRow("Documents and Settings") << "C:/Documents and Settings" << true << "C:/Users";
-        QTest::newRow("All Users") << "C:/Users/All Users" << true << "C:/ProgramData";
-        QTest::newRow("Default User") << "C:/Users/Default User" << true << "C:/Users/Default";
-    }
-#endif
 }
 
 void tst_QFileInfo::isSymLink()
@@ -1086,16 +1081,13 @@ void tst_QFileInfo::isHidden_data()
     }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
-    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << true;
-    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << true;
+    QVERIFY(QDir("./hidden-directory").exists() || QDir().mkdir("./hidden-directory"));
+    QVERIFY(SetFileAttributesW(QString("./hidden-directory").utf16(),FILE_ATTRIBUTE_HIDDEN));
+    QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
+    QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-
-    if (!QDir("./.hidden-directory").exists()
-            && !QDir().mkdir("./.hidden-directory"))
-        qWarning("Unable to create directory './.hidden-directory'. Some tests will fail.");
-
+    QVERIFY(QDir("./.hidden-directory").exists() || QDir().mkdir("./.hidden-directory"));
     QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
     QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << true;
     QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << true;
@@ -1123,34 +1115,24 @@ void tst_QFileInfo::isHidden_data()
 
     {
         QFile file(hiddenFileName);
-        if (file.open(QIODevice::WriteOnly)) {
-            QTextStream t(&file);
-            t << "foobar";
-        } else {
-            qWarning("Failed to create hidden file");
-        }
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QTextStream t(&file);
+        t << "foobar";
+
         QFile file2(notHiddenFileName);
-        if (file2.open(QIODevice::WriteOnly)) {
-            QTextStream t(&file);
-            t << "foobar";
-        } else {
-            qWarning("Failed to create non-hidden file");
-        }
+        QVERIFY(file2.open(QIODevice::WriteOnly))
+        QTextStream t(&file);
+        t << "foobar";
     }
 
     RFs rfs;
     TInt err = rfs.Connect();
-    if (err == KErrNone) {
-        HBufC* symFile = qt_QString2HBufC(hiddenFileName);
-        err = rfs.SetAtt(*symFile, KEntryAttHidden, 0);
-        rfs.Close();
-        delete symFile;
-        if (err != KErrNone) {
-            qWarning("Failed to set hidden attribute for test file");
-        }
-    } else {
-        qWarning("Failed to open RFs session");
-    }
+    QCOMPARE(err, KErrNone);
+    HBufC* symFile = qt_QString2HBufC(hiddenFileName);
+    err = rfs.SetAtt(*symFile, KEntryAttHidden, 0);
+    rfs.Close();
+    delete symFile;
+    QCOMPARE(err, KErrNone);
 #endif
 }
 
@@ -1207,7 +1189,7 @@ void tst_QFileInfo::isLocalFs()
 
 void tst_QFileInfo::refresh()
 {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_WIN)
     int sleepTime = 3000;
 #else
     int sleepTime = 2000;

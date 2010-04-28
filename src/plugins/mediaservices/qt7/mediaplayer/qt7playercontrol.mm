@@ -42,7 +42,7 @@
 #include "qt7playercontrol.h"
 #include "qt7playersession.h"
 
-#include <QtMultimedia/qmediaplaylistnavigator.h>
+#include <QtMediaServices/qmediaplaylistnavigator.h>
 
 #include <QtCore/qurl.h>
 #include <QtCore/qdebug.h>

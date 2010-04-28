@@ -52,16 +52,57 @@
 
 QT_BEGIN_NAMESPACE
 
-QString AbstractHelpViewer::AboutBlank =
+const QLatin1String AbstractHelpViewer::DocPath("qthelp://com.trolltech.");
+
+const QString AbstractHelpViewer::AboutBlank =
     QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
 
-QString AbstractHelpViewer::LocalHelpFile = QLatin1String("qthelp://"
+const QString AbstractHelpViewer::LocalHelpFile = QLatin1String("qthelp://"
     "com.trolltech.com.assistantinternal-1.0.0/assistant/assistant.html");
 
-QString AbstractHelpViewer::PageNotFoundMessage =
+const QString AbstractHelpViewer::PageNotFoundMessage =
     QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
     "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
     "</h3></div>");
+
+struct ExtensionMap {
+    const char *extension;
+    const char *mimeType;
+} extensionMap[] = {
+    { ".bmp", "image/bmp" },
+    { ".css", "text/css" },
+    { ".gif", "image/gif" },
+    { ".html", "text/html" },
+    { ".htm", "text/html" },
+    { ".ico", "image/x-icon" },
+    { ".jpeg", "image/jpeg" },
+    { ".jpg", "image/jpeg" },
+    { ".js", "application/x-javascript" },
+    { ".mng", "video/x-mng" },
+    { ".pbm", "image/x-portable-bitmap" },
+    { ".pgm", "image/x-portable-graymap" },
+    { ".pdf", "application/pdf" },
+    { ".png", "image/png" },
+    { ".ppm", "image/x-portable-pixmap" },
+    { ".rss", "application/rss+xml" },
+    { ".svg", "image/svg+xml" },
+    { ".svgz", "image/svg+xml" },
+    { ".text", "text/plain" },
+    { ".tif", "image/tiff" },
+    { ".tiff", "image/tiff" },
+    { ".txt", "text/plain" },
+    { ".xbm", "image/x-xbitmap" },
+    { ".xml", "text/xml" },
+    { ".xpm", "image/x-xpm" },
+    { ".xsl", "text/xsl" },
+    { ".xhtml", "application/xhtml+xml" },
+    { ".wml", "text/vnd.wap.wml" },
+    { ".wmlc", "application/vnd.wap.wmlc" },
+    { "about:blank", 0 },
+    { 0, 0 }
+};
+
+// -- AbstractHelpViewer
 
 AbstractHelpViewer::AbstractHelpViewer()
 {
@@ -86,9 +127,23 @@ bool AbstractHelpViewer::isLocalUrl(const QUrl &url)
 bool AbstractHelpViewer::canOpenPage(const QString &url)
 {
     TRACE_OBJ
-    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
-        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
-        || url == QLatin1String("about:blank");
+    return !mimeFromUrl(url).isEmpty();
+}
+
+QString AbstractHelpViewer::mimeFromUrl(const QUrl &url)
+{
+    TRACE_OBJ
+    const QString &path = url.path();
+    const int index = path.lastIndexOf(QLatin1Char('.'));
+    const QByteArray &ext = path.mid(index).toUtf8().toLower();
+
+    const ExtensionMap *e = extensionMap;
+    while (e->extension) {
+        if (ext == e->extension)
+            return QLatin1String(e->mimeType);
+        ++e;
+    }
+    return QLatin1String("");
 }
 
 bool AbstractHelpViewer::launchWithExternalApp(const QUrl &url)

@@ -113,6 +113,10 @@ public:
 
     QString uiExtension() const;
 
+    // Boolean dynamic property set on actions to
+    // show them in the default toolbar layout
+    static const char *defaultToolbarPropertyName;
+
 public slots:
     void activeFormWindowChanged(QDesignerFormWindowInterface *formWindow);
     void createForm();

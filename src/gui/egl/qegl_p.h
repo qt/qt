@@ -55,6 +55,7 @@
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
+#ifndef QT_NO_EGL
 #if defined(QT_OPENGL_ES_2)
 #   include <GLES2/gl2.h>
 #endif
@@ -63,6 +64,23 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #   include <GLES/egl.h>
 #else
 #   include <EGL/egl.h>
+#endif
+#else
+
+//types from egltypes.h for compiling stub without EGL headers
+typedef int EGLBoolean;
+typedef int EGLint;
+typedef int EGLenum;
+typedef int    NativeDisplayType;
+typedef void*  NativeWindowType;
+typedef void*  NativePixmapType;
+typedef int EGLDisplay;
+typedef int EGLConfig;
+typedef int EGLSurface;
+typedef int EGLContext;
+typedef int EGLClientBuffer;
+#define EGL_NONE            0x3038  /* Attrib list terminator */
+
 #endif
 
 #if defined(Q_WS_X11)
@@ -147,20 +165,6 @@ typedef void *EGLImageKHR;
 #define EGL_KHR_image_pixmap
 #endif
 
-// It is possible that something has included eglext.h (like Symbian 10.1's broken egl.h), in
-// which case, EGL_KHR_image/EGL_KHR_image_base will be defined. They may have also defined
-// the actual function prototypes, but generally EGL_EGLEXT_PROTOTYPES will be defined in that
-// case and we shouldn't re-define them here.
-#if (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
-typedef EGLImageKHR (EGLAPIENTRY *_eglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
-typedef EGLBoolean (EGLAPIENTRY *_eglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
-
-// Defined in qegl.cpp:
-extern Q_GUI_EXPORT _eglCreateImageKHR eglCreateImageKHR;
-extern Q_GUI_EXPORT _eglDestroyImageKHR eglDestroyImageKHR;
-#endif // (defined(EGL_KHR_image) || defined(EGL_KHR_image_base)) && !defined(EGL_EGLEXT_PROTOTYPES)
-
-
 
 class QEglProperties;
 
@@ -183,7 +187,7 @@ namespace QEgl {
         Translucent = 0x01,
         Renderable  = 0x02  // Config will be compatable with the paint engines (VG or GL)
     };
-    Q_DECLARE_FLAGS(ConfigOptions, ConfigOption);
+    Q_DECLARE_FLAGS(ConfigOptions, ConfigOption)
 
     // Most of the time we use the same config for things like widgets & pixmaps, so rather than
     // go through the eglChooseConfig loop every time, we use defaultConfig, which will return
@@ -196,10 +200,11 @@ namespace QEgl {
 
     Q_GUI_EXPORT void dumpAllConfigs();
 
-    Q_GUI_EXPORT void clearError();
-    Q_GUI_EXPORT EGLint error();
-    Q_GUI_EXPORT QString errorString(EGLint code);
-    Q_GUI_EXPORT QString errorString();
+#ifdef QT_NO_EGL
+    Q_GUI_EXPORT QString errorString(EGLint code = 0);
+#else
+    Q_GUI_EXPORT QString errorString(EGLint code = eglGetError());
+#endif
 
     Q_GUI_EXPORT QString extensions();
     Q_GUI_EXPORT bool hasExtension(const char* extensionName);
@@ -210,12 +215,16 @@ namespace QEgl {
     Q_GUI_EXPORT EGLNativeWindowType  nativeWindow(QWidget*);
     Q_GUI_EXPORT EGLNativePixmapType  nativePixmap(QPixmap*);
 
+    // Extension functions
+    Q_GUI_EXPORT EGLImageKHR eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
+    Q_GUI_EXPORT EGLBoolean  eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img);
+
 #ifdef Q_WS_X11
     Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);
 #endif
-};
+}
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions)
 
 QT_END_NAMESPACE
 

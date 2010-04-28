@@ -35,6 +35,20 @@ WebInspector.ResourceView = function(resource)
 
     this.resource = resource;
 
+    this.tabsElement = document.createElement("div");
+    this.tabsElement.className = "scope-bar";
+    this.element.appendChild(this.tabsElement);
+
+    this.headersTabElement = document.createElement("li");
+    this.headersTabElement.textContent = WebInspector.UIString("Headers");
+    this.contentTabElement = document.createElement("li");
+    this.contentTabElement.textContent = WebInspector.UIString("Content");
+    this.tabsElement.appendChild(this.headersTabElement);
+    this.tabsElement.appendChild(this.contentTabElement);
+
+    this.headersTabElement.addEventListener("click", this._selectHeadersTab.bind(this), false);
+    this.contentTabElement.addEventListener("click", this.selectContentTab.bind(this), false);
+
     this.headersElement = document.createElement("div");
     this.headersElement.className = "resource-view-headers";
     this.element.appendChild(this.headersElement);
@@ -54,13 +68,16 @@ WebInspector.ResourceView = function(resource)
     this.urlTreeElement.selectable = false;
     this.headersTreeOutline.appendChild(this.urlTreeElement);
 
-    this.httpInformationTreeElement = new TreeElement("", null, true);
-    this.httpInformationTreeElement.expanded = false;
-    this.httpInformationTreeElement.selectable = false;
-    this.headersTreeOutline.appendChild(this.httpInformationTreeElement);
+    this.requestMethodTreeElement = new TreeElement("", null, false);
+    this.requestMethodTreeElement.selectable = false;
+    this.headersTreeOutline.appendChild(this.requestMethodTreeElement);
+
+    this.statusCodeTreeElement = new TreeElement("", null, false);
+    this.statusCodeTreeElement.selectable = false;
+    this.headersTreeOutline.appendChild(this.statusCodeTreeElement);
      
     this.requestHeadersTreeElement = new TreeElement("", null, true);
-    this.requestHeadersTreeElement.expanded = false;
+    this.requestHeadersTreeElement.expanded = true;
     this.requestHeadersTreeElement.selectable = false;
     this.headersTreeOutline.appendChild(this.requestHeadersTreeElement);
 
@@ -68,25 +85,25 @@ WebInspector.ResourceView = function(resource)
     this._decodeRequestParameters = true;
 
     this.queryStringTreeElement = new TreeElement("", null, true);
-    this.queryStringTreeElement.expanded = false;
+    this.queryStringTreeElement.expanded = true;
     this.queryStringTreeElement.selectable = false;
     this.queryStringTreeElement.hidden = true;
     this.headersTreeOutline.appendChild(this.queryStringTreeElement);
 
     this.formDataTreeElement = new TreeElement("", null, true);
-    this.formDataTreeElement.expanded = false;
+    this.formDataTreeElement.expanded = true;
     this.formDataTreeElement.selectable = false;
     this.formDataTreeElement.hidden = true;
     this.headersTreeOutline.appendChild(this.formDataTreeElement);
 
     this.requestPayloadTreeElement = new TreeElement(WebInspector.UIString("Request Payload"), null, true);
-    this.requestPayloadTreeElement.expanded = false;
+    this.requestPayloadTreeElement.expanded = true;
     this.requestPayloadTreeElement.selectable = false;
     this.requestPayloadTreeElement.hidden = true;
     this.headersTreeOutline.appendChild(this.requestPayloadTreeElement);
 
     this.responseHeadersTreeElement = new TreeElement("", null, true);
-    this.responseHeadersTreeElement.expanded = false;
+    this.responseHeadersTreeElement.expanded = true;
     this.responseHeadersTreeElement.selectable = false;
     this.headersTreeOutline.appendChild(this.responseHeadersTreeElement);
 
@@ -101,27 +118,10 @@ WebInspector.ResourceView = function(resource)
     this._refreshRequestHeaders();
     this._refreshResponseHeaders();
     this._refreshHTTPInformation();
+    this._selectTab();
 }
 
 WebInspector.ResourceView.prototype = {
-    get headersVisible()
-    {
-        return this._headersVisible;
-    },
-
-    set headersVisible(x)
-    {
-        if (x === this._headersVisible)
-            return;
-
-        this._headersVisible = x;
-
-        if (x)
-            this.element.addStyleClass("headers-visible");
-        else
-            this.element.removeStyleClass("headers-visible");
-    },
-
     attach: function()
     {
         if (!this.element.parentNode) {
@@ -131,25 +131,66 @@ WebInspector.ResourceView.prototype = {
         }
     },
 
+    show: function(parentElement)
+    {
+        WebInspector.View.prototype.show.call(this, parentElement);
+        this._selectTab();
+    },
+
+    set headersVisible(x)
+    {
+        if (x === this._headersVisible)
+            return;
+        this._headersVisible = x;
+        if (x)
+            this.element.addStyleClass("headers-visible"); 
+        else
+            this.element.removeStyleClass("headers-visible"); 
+        this._selectTab();
+    },
+
+    _selectTab: function()
+    {
+        if (this._headersVisible) {
+            if (WebInspector.settings.resourceViewTab === "headers")
+                this._selectHeadersTab();
+            else
+                this.selectContentTab();
+        } else
+            this._innerSelectContentTab();
+    },
+
+    _selectHeadersTab: function()
+    {
+        WebInspector.settings.resourceViewTab = "headers";
+        this.headersTabElement.addStyleClass("selected");
+        this.contentTabElement.removeStyleClass("selected");
+        this.headersElement.removeStyleClass("hidden");
+        this.contentElement.addStyleClass("hidden");
+    },
+
+    selectContentTab: function()
+    {
+        WebInspector.settings.resourceViewTab = "content";
+        this._innerSelectContentTab();
+    },
+
+    _innerSelectContentTab: function()
+    {
+        this.contentTabElement.addStyleClass("selected");
+        this.headersTabElement.removeStyleClass("selected");
+        this.contentElement.removeStyleClass("hidden");
+        this.headersElement.addStyleClass("hidden");
+        if ("resize" in this)
+            this.resize();
+        if ("contentTabSelected" in this)
+            this.contentTabSelected();
+    },
+
     _refreshURL: function()
     {
-        var url = this.resource.url;
-        var statusCodeImage = "";
-        if (this.resource.statusCode) {
-            var statusImageSource = "";
-            
-            if (this.resource.statusCode < 300)
-                statusImageSource = "Images/successGreenDot.png";
-            else if (this.resource.statusCode < 400)
-                statusImageSource = "Images/warningOrangeDot.png";
-            else
-                statusImageSource = "Images/errorRedDot.png";
-        
-            statusCodeImage = "<img class=\"resource-status-image\" src=\"" + statusImageSource + "\" title=\"" + WebInspector.Resource.StatusTextForCode(this.resource.statusCode) + "\">";
-        }
-
-        this.urlTreeElement.title = statusCodeImage + "<span class=\"resource-url\">" + url.escapeHTML() + "</span>";
-        this._refreshQueryString();
+        this.urlTreeElement.title = "<div class=\"header-name\">" + WebInspector.UIString("Request URL") + ":</div>" +
+            "<div class=\"header-value source-code\">" + this.resource.url.escapeHTML() + "</div>";
     },
 
     _refreshQueryString: function()
@@ -195,7 +236,7 @@ WebInspector.ResourceView.prototype = {
         this.requestPayloadTreeElement.removeChildren();
 
         var title = "<div class=\"header-name\">&nbsp;</div>";
-        title += "<div class=\"raw-form-data header-value\">" + formData.escapeHTML() + "</div>";
+        title += "<div class=\"raw-form-data header-value source-code\">" + formData.escapeHTML() + "</div>";
         var parmTreeElement = new TreeElement(title, null, false);
         parmTreeElement.selectable = false;
         this.requestPayloadTreeElement.appendChild(parmTreeElement);
@@ -238,7 +279,7 @@ WebInspector.ResourceView.prototype = {
                 valueEscaped += " <span class=\"error-message\">" + WebInspector.UIString("(unable to decode value)").escapeHTML() + "</span>";
 
             var title = "<div class=\"header-name\">" + key.escapeHTML() + ":</div>";
-            title += "<div class=\"header-value\">" + valueEscaped + "</div>";
+            title += "<div class=\"header-value source-code\">" + valueEscaped + "</div>";
 
             var parmTreeElement = new TreeElement(title, null, false);
             parmTreeElement.selectable = false;
@@ -248,7 +289,7 @@ WebInspector.ResourceView.prototype = {
         }
     },
 
-    _toggleURLdecoding: function(treeElement, event)
+    _toggleURLdecoding: function(event)
     {
         this._decodeRequestParameters = !this._decodeRequestParameters;
         this._refreshQueryString();
@@ -277,28 +318,27 @@ WebInspector.ResourceView.prototype = {
 
     _refreshHTTPInformation: function()
     {
-        const listElements = 2;
-
-        var headerElement = this.httpInformationTreeElement;
-        headerElement.removeChildren();
-        headerElement.hidden = !this.resource.statusCode;
+        var requestMethodElement = this.requestMethodTreeElement;
+        requestMethodElement.hidden = !this.resource.statusCode;
+        var statusCodeElement = this.statusCodeTreeElement;
+        statusCodeElement.hidden = !this.resource.statusCode;
+        var statusCodeImage = "";
 
         if (this.resource.statusCode) {
-            headerElement.title = WebInspector.UIString("HTTP Information") +  "<span class=\"header-count\">" + WebInspector.UIString(" (%d)", listElements) + "</span>";
-        
-            var title = "<div class=\"header-name\">" + WebInspector.UIString("Request Method") + ":</div>";
-            title += "<div class=\"header-value\">" + this.resource.requestMethod + "</div>"
-            
-            var headerTreeElement = new TreeElement(title, null, false);
-            headerTreeElement.selectable = false;
-            headerElement.appendChild(headerTreeElement);
-            
-            title = "<div class=\"header-name\">" + WebInspector.UIString("Status Code") + ":</div>";
-            title += "<div class=\"header-value\">" + WebInspector.Resource.StatusTextForCode(this.resource.statusCode) + "</div>"
-            
-            headerTreeElement = new TreeElement(title, null, false);
-            headerTreeElement.selectable = false;
-            headerElement.appendChild(headerTreeElement);
+            var statusImageSource = "";
+            if (this.resource.statusCode < 300)
+                statusImageSource = "Images/successGreenDot.png";
+            else if (this.resource.statusCode < 400)
+                statusImageSource = "Images/warningOrangeDot.png";
+            else
+                statusImageSource = "Images/errorRedDot.png";
+            statusCodeImage = "<img class=\"resource-status-image\" src=\"" + statusImageSource + "\" title=\"" + WebInspector.Resource.StatusTextForCode(this.resource.statusCode) + "\">";
+    
+            requestMethodElement.title = "<div class=\"header-name\">" + WebInspector.UIString("Request Method") + ":</div>" +
+                "<div class=\"header-value source-code\">" + this.resource.requestMethod + "</div>";
+
+            statusCodeElement.title = "<div class=\"header-name\">" + WebInspector.UIString("Status Code") + ":</div>" +
+                statusCodeImage + "<div class=\"header-value source-code\">" + WebInspector.Resource.StatusTextForCode(this.resource.statusCode) + "</div>";
         }
     },
     
@@ -313,7 +353,7 @@ WebInspector.ResourceView.prototype = {
         var length = headers.length;
         for (var i = 0; i < length; ++i) {
             var title = "<div class=\"header-name\">" + headers[i].header.escapeHTML() + ":</div>";
-            title += "<div class=\"header-value\">" + headers[i].value.escapeHTML() + "</div>"
+            title += "<div class=\"header-value source-code\">" + headers[i].value.escapeHTML() + "</div>"
 
             var headerTreeElement = new TreeElement(title, null, false);
             headerTreeElement.selectable = false;

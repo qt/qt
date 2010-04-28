@@ -49,6 +49,8 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 WlanOpenHandleProto local_WlanOpenHandle = 0;
@@ -98,8 +100,6 @@ QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
     if (result != ERROR_SUCCESS)
         qDebug("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
 #endif
-
-    scanComplete();
 }
 
 QNativeWifiEngine::~QNativeWifiEngine()
@@ -470,6 +470,11 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
     }
 }
 
+void QNativeWifiEngine::initialize()
+{
+    scanComplete();
+}
+
 void QNativeWifiEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
@@ -558,3 +563,5 @@ bool QNativeWifiEngine::requiresPolling() const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

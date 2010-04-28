@@ -443,6 +443,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "msvc_nmake.h"
 #include "borland_bmake.h"
 #include "msvc_vcproj.h"
+#include "msvc_vcxproj.h"
 #include "symmake_abld.h"
 #include "symmake_sbsv2.h"
 #include "symbian_makefile.h"
@@ -471,6 +472,12 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     } else if(gen == "MSVC.NET") {
         if (proj->first("TEMPLATE").startsWith("vc"))
             mkfile = new VcprojGenerator;
+        else
+            mkfile = new NmakeMakefileGenerator;
+    } else if(gen == "MSBUILD") {
+        // Visual Studio >= v11.0
+        if(proj->first("TEMPLATE").indexOf(QRegExp("^vc.*")) != -1 || proj->first("TEMPLATE").indexOf(QRegExp("^ce.*")) != -1)
+            mkfile = new VcxprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;
     } else if(gen == "BMAKE") {
@@ -522,7 +529,7 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
         *host_mode = Option::HOST_UNIX_MODE;
         *target_mode = Option::TARG_UNIX_MODE;
 #endif
-    } else if (gen == "MSVC.NET" || gen == "MINGW" || gen == "BMAKE") {
+    } else if (gen == "MSVC.NET" || gen == "MINGW" || gen == "BMAKE" || gen == "MSBUILD") {
         *host_mode = Option::HOST_WIN_MODE;
         *target_mode = Option::TARG_WIN_MODE;
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {

@@ -38,9 +38,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSCSSStyleRule);
 
 static const HashTableValue JSCSSStyleRuleTableValues[4] =
 {
-    { "selectorText", DontDelete, (intptr_t)jsCSSStyleRuleSelectorText, (intptr_t)setJSCSSStyleRuleSelectorText },
-    { "style", DontDelete|ReadOnly, (intptr_t)jsCSSStyleRuleStyle, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsCSSStyleRuleConstructor, (intptr_t)0 },
+    { "selectorText", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSStyleRuleSelectorText), (intptr_t)setJSCSSStyleRuleSelectorText },
+    { "style", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSStyleRuleStyle), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsCSSStyleRuleConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,25 +141,27 @@ bool JSCSSStyleRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
     return getStaticValueDescriptor<JSCSSStyleRule, Base>(exec, &JSCSSStyleRuleTable, this, propertyName, descriptor);
 }
 
-JSValue jsCSSStyleRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleRuleSelectorText(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSStyleRule* castedThis = static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()));
+    JSCSSStyleRule* castedThis = static_cast<JSCSSStyleRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->selectorText());
+    JSValue result = jsStringOrNull(exec, imp->selectorText());
+    return result;
 }
 
-JSValue jsCSSStyleRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleRuleStyle(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSStyleRule* castedThis = static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()));
+    JSCSSStyleRule* castedThis = static_cast<JSCSSStyleRule*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
-JSValue jsCSSStyleRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleRuleConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSCSSStyleRule* domObject = static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()));
+    JSCSSStyleRule* domObject = static_cast<JSCSSStyleRule*>(asObject(slotBase));
     return JSCSSStyleRule::getConstructor(exec, domObject->globalObject());
 }
 void JSCSSStyleRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -169,7 +171,8 @@ void JSCSSStyleRule::put(ExecState* exec, const Identifier& propertyName, JSValu
 
 void setJSCSSStyleRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSStyleRule* imp = static_cast<CSSStyleRule*>(static_cast<JSCSSStyleRule*>(thisObject)->impl());
+    JSCSSStyleRule* castedThisObj = static_cast<JSCSSStyleRule*>(thisObject);
+    CSSStyleRule* imp = static_cast<CSSStyleRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setSelectorText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

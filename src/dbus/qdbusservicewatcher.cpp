@@ -47,6 +47,8 @@
 
 #include <private/qobject_p.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busService, (QLatin1String(DBUS_SERVICE_DBUS)))
@@ -373,5 +375,7 @@ void QDBusServiceWatcher::setConnection(const QDBusConnection &connection)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
 
 #include "moc_qdbusservicewatcher.cpp"

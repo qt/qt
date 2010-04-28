@@ -683,6 +683,30 @@ String AXLinkActionVerb()
     return String();
 }
 
+String AXMenuListPopupActionVerb()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] AXMenuListPopupActionVerb];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String AXMenuListActionVerb()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] AXMenuListActionVerb];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String missingPluginText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] missingPluginText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
 String multipleFileUploadText(unsigned numberOfFiles)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS;
@@ -747,5 +771,60 @@ String localizedMediaTimeDescription(float time)
     return String();
 }
 
+String validationMessageValueMissingText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessageValueMissingText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String validationMessageTypeMismatchText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessageTypeMismatchText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String validationMessagePatternMismatchText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessagePatternMismatchText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String validationMessageTooLongText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessageTooLongText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String validationMessageRangeUnderflowText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessageRangeUnderflowText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String validationMessageRangeOverflowText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessageRangeOverflowText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
+
+String validationMessageStepMismatchText()
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+    return [[WebCoreViewFactory sharedFactory] validationMessageStepMismatchText];
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return String();
+}
 
 }

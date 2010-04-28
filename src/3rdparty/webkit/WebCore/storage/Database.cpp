@@ -35,6 +35,7 @@
 #include "ChangeVersionWrapper.h"
 #include "CString.h"
 #include "DatabaseAuthorizer.h"
+#include "DatabaseCallback.h"
 #include "DatabaseTask.h"
 #include "DatabaseThread.h"
 #include "DatabaseTracker.h"
@@ -53,8 +54,8 @@
 #include "SQLResultSet.h"
 #include "SQLTransactionClient.h"
 #include "SQLTransactionCoordinator.h"
-#include <wtf/MainThread.h>
-#endif
+
+#endif // ENABLE(DATABASE)
 
 #if USE(JSC)
 #include "JSDOMWindow.h"
@@ -72,6 +73,18 @@ const String& Database::databaseInfoTableName()
 }
 
 #if ENABLE(DATABASE)
+
+static bool isDatabaseAvailable = true;
+
+void Database::setIsAvailable(bool available)
+{
+    isDatabaseAvailable = available;
+}
+
+bool Database::isAvailable()
+{
+    return isDatabaseAvailable;
+}
 
 static Mutex& guidMutex()
 {
@@ -120,36 +133,75 @@ static const String& databaseVersionKey()
 
 static int guidForOriginAndName(const String& origin, const String& name);
 
-PassRefPtr<Database> Database::openDatabase(Document* document, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, ExceptionCode& e)
+class DatabaseCreationCallbackTask : public ScriptExecutionContext::Task {
+public:
+    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtr<Database> database)
+    {
+        return new DatabaseCreationCallbackTask(database);
+    }
+
+    virtual void performTask(ScriptExecutionContext*)
+    {
+        m_database->performCreationCallback();
+    }
+
+private:
+    DatabaseCreationCallbackTask(PassRefPtr<Database> database)
+        : m_database(database)
+    {
+    }
+
+    RefPtr<Database> m_database;
+};
+
+PassRefPtr<Database> Database::openDatabase(ScriptExecutionContext* context, const String& name,
+                                            const String& expectedVersion, const String& displayName,
+                                            unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
+                                            ExceptionCode& e)
 {
-    if (!DatabaseTracker::tracker().canEstablishDatabase(document, name, displayName, estimatedSize)) {
+    if (!DatabaseTracker::tracker().canEstablishDatabase(context, name, displayName, estimatedSize)) {
         // FIXME: There should be an exception raised here in addition to returning a null Database object.  The question has been raised with the WHATWG.
-        LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(), document->securityOrigin()->toString().ascii().data());
+        LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(), context->securityOrigin()->toString().ascii().data());
         return 0;
     }
 
-    RefPtr<Database> database = adoptRef(new Database(document, name, expectedVersion, displayName, estimatedSize));
+    RefPtr<Database> database = adoptRef(new Database(context, name, expectedVersion, displayName, estimatedSize, creationCallback));
 
     if (!database->openAndVerifyVersion(e)) {
-       LOG(StorageAPI, "Failed to open and verify version (expected %s) of database %s", expectedVersion.ascii().data(), database->databaseDebugName().ascii().data());
-       return 0;
+        LOG(StorageAPI, "Failed to open and verify version (expected %s) of database %s", expectedVersion.ascii().data(), database->databaseDebugName().ascii().data());
+        context->removeOpenDatabase(database.get());
+        DatabaseTracker::tracker().removeOpenDatabase(database.get());
+        return 0;
     }
 
-    DatabaseTracker::tracker().setDatabaseDetails(document->securityOrigin(), name, displayName, estimatedSize);
+    DatabaseTracker::tracker().setDatabaseDetails(context->securityOrigin(), name, displayName, estimatedSize);
 
-    document->setHasOpenDatabases();
-
+    context->setHasOpenDatabases();
 #if ENABLE(INSPECTOR)
-    if (Page* page = document->frame()->page())
-        page->inspectorController()->didOpenDatabase(database.get(), document->securityOrigin()->host(), name, expectedVersion);
+    if (context->isDocument()) {
+        Document* document = static_cast<Document*>(context);
+        if (Page* page = document->page())
+            page->inspectorController()->didOpenDatabase(database.get(), context->securityOrigin()->host(), name, expectedVersion);
+    }
 #endif
+
+    // If it's a new database and a creation callback was provided, reset the expected
+    // version to "" and schedule the creation callback. Because of some subtle String
+    // implementation issues, we have to reset m_expectedVersion here instead of doing
+    // it inside performOpenAndVerify() which is run on the DB thread.
+    if (database->isNew() && database->m_creationCallback.get()) {
+        database->m_expectedVersion = "";
+        LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
+        database->m_scriptExecutionContext->postTask(DatabaseCreationCallbackTask::create(database));
+    }
 
     return database;
 }
 
-Database::Database(Document* document, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
+Database::Database(ScriptExecutionContext* context, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback)
     : m_transactionInProgress(false)
-    , m_document(document)
+    , m_isTransactionQueueEnabled(true)
+    , m_scriptExecutionContext(context)
     , m_name(name.crossThreadString())
     , m_guid(0)
     , m_expectedVersion(expectedVersion.crossThreadString())
@@ -158,17 +210,18 @@ Database::Database(Document* document, const String& name, const String& expecte
     , m_deleted(false)
     , m_stopped(false)
     , m_opened(false)
+    , m_new(false)
+    , m_creationCallback(creationCallback)
 {
-    ASSERT(document);
-    m_mainThreadSecurityOrigin = document->securityOrigin();
+    ASSERT(m_scriptExecutionContext.get());
+    m_mainThreadSecurityOrigin = m_scriptExecutionContext->securityOrigin();
     m_databaseThreadSecurityOrigin = m_mainThreadSecurityOrigin->threadsafeCopy();
-
     if (m_name.isNull())
         m_name = "";
 
     ScriptController::initializeThreading();
 
-    m_guid = guidForOriginAndName(m_mainThreadSecurityOrigin->toString(), name);
+    m_guid = guidForOriginAndName(securityOrigin()->toString(), name);
 
     {
         MutexLocker locker(guidMutex());
@@ -182,38 +235,51 @@ Database::Database(Document* document, const String& name, const String& expecte
         hashSet->add(this);
     }
 
-    ASSERT(m_document->databaseThread());
-
-    m_filename = DatabaseTracker::tracker().fullPathForDatabase(m_mainThreadSecurityOrigin.get(), m_name);
+    ASSERT(m_scriptExecutionContext->databaseThread());
+    m_filename = DatabaseTracker::tracker().fullPathForDatabase(securityOrigin(), m_name);
 
     DatabaseTracker::tracker().addOpenDatabase(this);
-    m_document->addOpenDatabase(this);
+    context->addOpenDatabase(this);
 }
+
+class DerefContextTask : public ScriptExecutionContext::Task {
+public:
+    static PassOwnPtr<DerefContextTask> create()
+    {
+        return new DerefContextTask();
+    }
+
+    virtual void performTask(ScriptExecutionContext* context)
+    {
+        context->deref();
+    }
+
+    virtual bool isCleanupTask() const { return true; }
+};
 
 Database::~Database()
 {
-    if (m_document->databaseThread())
-        m_document->databaseThread()->unscheduleDatabaseTasks(this);
-
-    DatabaseTracker::tracker().removeOpenDatabase(this);
-    m_document->removeOpenDatabase(this);
+    // The reference to the ScriptExecutionContext needs to be cleared on the JavaScript thread.  If we're on that thread already, we can just let the RefPtr's destruction do the dereffing.
+    if (!m_scriptExecutionContext->isContextThread()) {
+        m_scriptExecutionContext->postTask(DerefContextTask::create());
+        m_scriptExecutionContext.release().releaseRef();
+    }
 }
 
 bool Database::openAndVerifyVersion(ExceptionCode& e)
 {
-    if (!m_document->databaseThread())
+    if (!m_scriptExecutionContext->databaseThread())
         return false;
     m_databaseAuthorizer = DatabaseAuthorizer::create();
 
-    RefPtr<DatabaseOpenTask> task = DatabaseOpenTask::create(this);
+    bool success = false;
+    DatabaseTaskSynchronizer synchronizer;
+    OwnPtr<DatabaseOpenTask> task = DatabaseOpenTask::create(this, &synchronizer, e, success);
 
-    task->lockForSynchronousScheduling();
-    m_document->databaseThread()->scheduleImmediateTask(task);
-    task->waitForSynchronousCompletion();
+    m_scriptExecutionContext->databaseThread()->scheduleImmediateTask(task.release());
+    synchronizer.waitForTaskCompletion();
 
-    ASSERT(task->isComplete());
-    e = task->exceptionCode();
-    return task->openSuccessful();
+    return success;
 }
 
 
@@ -305,49 +371,85 @@ bool Database::versionMatchesExpected() const
 
 void Database::markAsDeletedAndClose()
 {
-    if (m_deleted || !m_document->databaseThread())
+    if (m_deleted || !m_scriptExecutionContext->databaseThread())
         return;
 
     LOG(StorageAPI, "Marking %s (%p) as deleted", stringIdentifier().ascii().data(), this);
     m_deleted = true;
 
-    if (m_document->databaseThread()->terminationRequested()) {
+    if (m_scriptExecutionContext->databaseThread()->terminationRequested()) {
         LOG(StorageAPI, "Database handle %p is on a terminated DatabaseThread, cannot be marked for normal closure\n", this);
         return;
     }
 
-    m_document->databaseThread()->unscheduleDatabaseTasks(this);
+    m_scriptExecutionContext->databaseThread()->unscheduleDatabaseTasks(this);
 
-    RefPtr<DatabaseCloseTask> task = DatabaseCloseTask::create(this);
+    DatabaseTaskSynchronizer synchronizer;
+    OwnPtr<DatabaseCloseTask> task = DatabaseCloseTask::create(this, &synchronizer);
 
-    task->lockForSynchronousScheduling();
-    m_document->databaseThread()->scheduleImmediateTask(task);
-    task->waitForSynchronousCompletion();
+    m_scriptExecutionContext->databaseThread()->scheduleImmediateTask(task.release());
+    synchronizer.waitForTaskCompletion();
+
+    // DatabaseCloseTask tells Database::close not to do these two removals so that we can do them here synchronously.
+    m_scriptExecutionContext->removeOpenDatabase(this);
+    DatabaseTracker::tracker().removeOpenDatabase(this);
 }
 
-void Database::close()
+class ContextRemoveOpenDatabaseTask : public ScriptExecutionContext::Task {
+public:
+    static PassOwnPtr<ContextRemoveOpenDatabaseTask> create(PassRefPtr<Database> database)
+    {
+        return new ContextRemoveOpenDatabaseTask(database);
+    }
+
+    virtual void performTask(ScriptExecutionContext* context)
+    {
+        context->removeOpenDatabase(m_database.get());
+        DatabaseTracker::tracker().removeOpenDatabase(m_database.get());
+    }
+
+    virtual bool isCleanupTask() const { return true; }
+
+private:
+    ContextRemoveOpenDatabaseTask(PassRefPtr<Database> database)
+        : m_database(database)
+    {
+    }
+
+    RefPtr<Database> m_database;
+};
+
+void Database::close(ClosePolicy policy)
 {
-    if (m_opened) {
-        ASSERT(m_document->databaseThread());
-        ASSERT(currentThread() == document()->databaseThread()->getThreadID());
-        m_sqliteDatabase.close();
-        m_document->databaseThread()->recordDatabaseClosed(this);
-        m_opened = false;
+    RefPtr<Database> protect = this;
 
-        {
-            MutexLocker locker(guidMutex());
+    if (!m_opened)
+        return;
 
-            HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
-            ASSERT(hashSet);
-            ASSERT(hashSet->contains(this));
-            hashSet->remove(this);
-            if (hashSet->isEmpty()) {
-                guidToDatabaseMap().remove(m_guid);
-                delete hashSet;
-                guidToVersionMap().remove(m_guid);
-            }
+    ASSERT(m_scriptExecutionContext->databaseThread());
+    ASSERT(currentThread() == m_scriptExecutionContext->databaseThread()->getThreadID());
+    m_sqliteDatabase.close();
+    // Must ref() before calling databaseThread()->recordDatabaseClosed().
+    m_scriptExecutionContext->databaseThread()->recordDatabaseClosed(this);
+    m_opened = false;
+
+    {
+        MutexLocker locker(guidMutex());
+
+        HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
+        ASSERT(hashSet);
+        ASSERT(hashSet->contains(this));
+        hashSet->remove(this);
+        if (hashSet->isEmpty()) {
+            guidToDatabaseMap().remove(m_guid);
+            delete hashSet;
+            guidToVersionMap().remove(m_guid);
         }
     }
+
+    m_scriptExecutionContext->databaseThread()->unscheduleDatabaseTasks(this);
+    if (policy == RemoveDatabaseFromContext)
+        m_scriptExecutionContext->postTask(ContextRemoveOpenDatabaseTask::create(this));
 }
 
 void Database::stop()
@@ -362,7 +464,7 @@ void Database::stop()
 
     {
         MutexLocker locker(m_transactionInProgressMutex);
-        m_transactionQueue.kill();
+        m_isTransactionQueueEnabled = false;
         m_transactionInProgress = false;
     }
 }
@@ -443,10 +545,6 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
         return false;
     }
 
-    m_opened = true;
-    if (m_document->databaseThread())
-        m_document->databaseThread()->recordDatabaseOpen(this);
-
     ASSERT(m_databaseAuthorizer);
     m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer);
     m_sqliteDatabase.setBusyTimeout(maxSqliteBusyWaitTime);
@@ -464,9 +562,13 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
             LOG(StorageAPI, "No cached version for guid %i", m_guid);
 
             if (!m_sqliteDatabase.tableExists(databaseInfoTableName())) {
+                m_new = true;
+
                 if (!m_sqliteDatabase.executeCommand("CREATE TABLE " + databaseInfoTableName() + " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
                     LOG_ERROR("Unable to create table %s in database %s", databaseInfoTableName().ascii().data(), databaseDebugName().ascii().data());
                     e = INVALID_STATE_ERR;
+                    // Close the handle to the database file.
+                    m_sqliteDatabase.close();
                     return false;
                 }
             }
@@ -474,15 +576,19 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
             if (!getVersionFromDatabase(currentVersion)) {
                 LOG_ERROR("Failed to get current version from database %s", databaseDebugName().ascii().data());
                 e = INVALID_STATE_ERR;
+                // Close the handle to the database file.
+                m_sqliteDatabase.close();
                 return false;
             }
             if (currentVersion.length()) {
                 LOG(StorageAPI, "Retrieved current version %s from database %s", currentVersion.ascii().data(), databaseDebugName().ascii().data());
-            } else {
+            } else if (!m_new || !m_creationCallback) {
                 LOG(StorageAPI, "Setting version %s in database %s that was just created", m_expectedVersion.ascii().data(), databaseDebugName().ascii().data());
                 if (!setVersionInDatabase(m_expectedVersion)) {
                     LOG_ERROR("Failed to set version %s in database %s", m_expectedVersion.ascii().data(), databaseDebugName().ascii().data());
                     e = INVALID_STATE_ERR;
+                    // Close the handle to the database file.
+                    m_sqliteDatabase.close();
                     return false;
                 }
                 currentVersion = m_expectedVersion;
@@ -497,16 +603,22 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
         currentVersion = "";
     }
 
-    // FIXME: For now, the spec says that if the database has no version, it is valid for any "Expected version" string.  That seems silly and I think it should be
-    // changed, and here's where we would change it
-    if (m_expectedVersion.length()) {
-        if (currentVersion.length() && m_expectedVersion != currentVersion) {
-            LOG(StorageAPI, "page expects version %s from database %s, which actually has version name %s - openDatabase() call will fail", m_expectedVersion.ascii().data(),
-                databaseDebugName().ascii().data(), currentVersion.ascii().data());
-            e = INVALID_STATE_ERR;
-            return false;
-        }
+    // If the expected version isn't the empty string, ensure that the current database version we have matches that version. Otherwise, set an exception.
+    // If the expected version is the empty string, then we always return with whatever version of the database we have.
+    if ((!m_new || !m_creationCallback) && m_expectedVersion.length() && m_expectedVersion != currentVersion) {
+        LOG(StorageAPI, "page expects version %s from database %s, which actually has version name %s - openDatabase() call will fail", m_expectedVersion.ascii().data(),
+            databaseDebugName().ascii().data(), currentVersion.ascii().data());
+        e = INVALID_STATE_ERR;
+        // Close the handle to the database file.
+        m_sqliteDatabase.close();
+        return false;
     }
+
+    // All checks passed and we still have a handle to this database file.
+    // Make sure DatabaseThread closes it when DatabaseThread goes away.
+    m_opened = true;
+    if (m_scriptExecutionContext->databaseThread())
+        m_scriptExecutionContext->databaseThread()->recordDatabaseOpen(this);
 
     return true;
 }
@@ -534,32 +646,58 @@ void Database::scheduleTransaction()
 {
     ASSERT(!m_transactionInProgressMutex.tryLock()); // Locked by caller.
     RefPtr<SQLTransaction> transaction;
-    if (m_transactionQueue.tryGetMessage(transaction) && m_document->databaseThread()) {
-        RefPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
+
+    if (m_isTransactionQueueEnabled && !m_transactionQueue.isEmpty()) {
+        transaction = m_transactionQueue.first();
+        m_transactionQueue.removeFirst();
+    }
+
+    if (transaction && m_scriptExecutionContext->databaseThread()) {
+        OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
         LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
         m_transactionInProgress = true;
-        m_document->databaseThread()->scheduleTask(task.release());
+        m_scriptExecutionContext->databaseThread()->scheduleTask(task.release());
     } else
         m_transactionInProgress = false;
 }
 
 void Database::scheduleTransactionStep(SQLTransaction* transaction, bool immediately)
 {
-    if (!m_document->databaseThread())
+    if (!m_scriptExecutionContext->databaseThread())
         return;
 
-    RefPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
+    OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
     LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
     if (immediately)
-        m_document->databaseThread()->scheduleImmediateTask(task.release());
+        m_scriptExecutionContext->databaseThread()->scheduleImmediateTask(task.release());
     else
-        m_document->databaseThread()->scheduleTask(task.release());
+        m_scriptExecutionContext->databaseThread()->scheduleTask(task.release());
 }
+
+class DeliverPendingCallbackTask : public ScriptExecutionContext::Task {
+public:
+    static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtr<SQLTransaction> transaction)
+    {
+        return new DeliverPendingCallbackTask(transaction);
+    }
+
+    virtual void performTask(ScriptExecutionContext*)
+    {
+        m_transaction->performPendingCallback();
+    }
+
+private:
+    DeliverPendingCallbackTask(PassRefPtr<SQLTransaction> transaction)
+        : m_transaction(transaction)
+    {
+    }
+
+    RefPtr<SQLTransaction> m_transaction;
+};
 
 void Database::scheduleTransactionCallback(SQLTransaction* transaction)
 {
-    transaction->ref();
-    callOnMainThread(deliverPendingCallback, transaction);
+    m_scriptExecutionContext->postTask(DeliverPendingCallbackTask::create(transaction));
 }
 
 Vector<String> Database::performGetTableNames()
@@ -591,14 +729,19 @@ Vector<String> Database::performGetTableNames()
     return tableNames;
 }
 
+void Database::performCreationCallback()
+{
+    m_creationCallback->handleEvent(m_scriptExecutionContext.get(), this);
+}
+
 SQLTransactionClient* Database::transactionClient() const
 {
-    return m_document->databaseThread()->transactionClient();
+    return m_scriptExecutionContext->databaseThread()->transactionClient();
 }
 
 SQLTransactionCoordinator* Database::transactionCoordinator() const
 {
-    return m_document->databaseThread()->transactionCoordinator();
+    return m_scriptExecutionContext->databaseThread()->transactionCoordinator();
 }
 
 String Database::version() const
@@ -609,24 +752,21 @@ String Database::version() const
     return guidToVersionMap().get(m_guid).threadsafeCopy();
 }
 
-void Database::deliverPendingCallback(void* context)
-{
-    SQLTransaction* transaction = static_cast<SQLTransaction*>(context);
-    transaction->performPendingCallback();
-    transaction->deref(); // Was ref'd in scheduleTransactionCallback().
-}
-
 Vector<String> Database::tableNames()
 {
-    if (!m_document->databaseThread())
-        return Vector<String>();
-    RefPtr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this);
+    // FIXME: Not using threadsafeCopy on these strings looks ok since threads take strict turns
+    // in dealing with them. However, if the code changes, this may not be true anymore.
+    Vector<String> result;
+    if (!m_scriptExecutionContext->databaseThread())
+        return result;
 
-    task->lockForSynchronousScheduling();
-    m_document->databaseThread()->scheduleImmediateTask(task);
-    task->waitForSynchronousCompletion();
+    DatabaseTaskSynchronizer synchronizer;
+    OwnPtr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &synchronizer, result);
 
-    return task->tableNames();
+    m_scriptExecutionContext->databaseThread()->scheduleImmediateTask(task.release());
+    synchronizer.waitForTaskCompletion();
+
+    return result;
 }
 
 void Database::setExpectedVersion(const String& version)
@@ -639,9 +779,9 @@ void Database::setExpectedVersion(const String& version)
 
 SecurityOrigin* Database::securityOrigin() const
 {
-    if (isMainThread())
+    if (scriptExecutionContext()->isContextThread())
         return m_mainThreadSecurityOrigin.get();
-    if (currentThread() == document()->databaseThread()->getThreadID())
+    if (currentThread() == m_scriptExecutionContext->databaseThread()->getThreadID())
         return m_databaseThreadSecurityOrigin.get();
     return 0;
 }
@@ -669,6 +809,6 @@ String Database::fileName() const
     return m_filename.threadsafeCopy();
 }
 
-#endif
+#endif // ENABLE(DATABASE)
 
-}
+} // namespace WebCore

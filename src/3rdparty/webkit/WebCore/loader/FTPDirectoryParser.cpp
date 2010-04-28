@@ -27,7 +27,7 @@
 #if PLATFORM(QT)
 #include <QDateTime>
 // On Windows, use the threadsafe *_r functions provided by pthread.
-#elif PLATFORM(WIN_OS) && (USE(PTHREADS) || HAVE(PTHREAD_H))
+#elif OS(WINDOWS) && (USE(PTHREADS) || HAVE(PTHREAD_H))
 #include <pthread.h>
 #endif
 
@@ -38,8 +38,27 @@ using namespace WTF;
 
 namespace WebCore {
 #if PLATFORM(QT) && defined(Q_WS_WIN32)
-// Defined in FTPDirectoryDocument.cpp.
-struct tm gmtimeQt(const QDateTime &input);
+
+// Replacement for gmtime_r() which is not available on MinGW.
+// We use this on Win32 Qt platform for portability.
+struct tm gmtimeQt(const QDateTime& input)
+{
+    tm result;
+
+    QDate date(input.date());
+    result.tm_year = date.year() - 1900;
+    result.tm_mon = date.month();
+    result.tm_mday = date.day();
+    result.tm_wday = date.dayOfWeek();
+    result.tm_yday = date.dayOfYear();
+
+    QTime time(input.time());
+    result.tm_sec = time.second();
+    result.tm_min = time.minute();
+    result.tm_hour = time.hour();
+
+    return result;
+}
 
 static struct tm *gmtimeQt(const time_t *const timep, struct tm *result)
 {
@@ -49,7 +68,7 @@ static struct tm *gmtimeQt(const time_t *const timep, struct tm *result)
 }
 
 #define gmtime_r(x, y) gmtimeQt(x, y)
-#elif PLATFORM(WIN_OS) && !defined(gmtime_r)
+#elif OS(WINDOWS) && !defined(gmtime_r)
 #if defined(_MSC_VER) && (_MSC_VER >= 1400) 
 #define gmtime_r(x, y) gmtime_s((y), (x))
 #else /* !_MSC_VER */ 
@@ -1185,7 +1204,7 @@ FTPEntryType parseOneFTPLine(const char* line, ListState& state, ListResult& res
        
         } /* time/year */
         
-        // there is exacly 1 space between filename and previous token in all
+        // there is exactly 1 space between filename and previous token in all
         // outputs except old Hellsoft
         if (!isOldHellsoft)
           result.filename = tokens[tokmarker+3] + toklen[tokmarker+3] + 1;

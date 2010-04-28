@@ -79,6 +79,7 @@ private slots:
     void cppClasses();
     void enums();
     void conflictingBindings();
+    void returnValues();
 
 private:
     QDeclarativeEngine engine;
@@ -761,6 +762,19 @@ void tst_qdeclarativevaluetypes::conflictingBindings()
 
     delete object;
     }
+}
+
+void tst_qdeclarativevaluetypes::returnValues()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("returnValues.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("size").toSize(), QSize(13, 14));
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativevaluetypes)

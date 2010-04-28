@@ -15,14 +15,13 @@ ListView {
     WorkerScript {
         id: worker
         source: "dataloader.js"
-        onMessage: {
-            console.log("Worker said", messageObject.msg);
-        }
     }
 
     Timer {
         id: timer
-        interval: 2000; repeat: true; running: true; triggeredOnStart: true
+        interval: 2000; repeat: true
+        running: true
+        triggeredOnStart: true
 
         onTriggered: {
             var msg = {'action': 'appendCurrentTime', 'model': listModel};

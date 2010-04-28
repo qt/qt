@@ -8,9 +8,9 @@ DEPENDPATH += .
 INCLUDEPATH += .
 LIBS += -framework Carbon
 
-HEADERS += qnativeinput.h qnativeplayer.h
-SOURCES += qnativeinput.cpp qnativeplayer.cpp qnativeinput_mac.cpp
-
+HEADERS += qnativeevents.h nativeeventlist.h expectedeventlist.h
+SOURCES += qnativeevents.cpp qnativeevents_mac.cpp 
+SOURCES += expectedeventlist.cpp nativeeventlist.cpp
 SOURCES += tst_macnativeevents.cpp
 
 requires(mac)

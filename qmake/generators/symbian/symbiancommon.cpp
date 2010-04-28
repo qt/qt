@@ -164,6 +164,9 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
     QTextStream t(&pkgFile);
 
     QString installerSisHeader = project->values("DEPLOYMENT.installer_header").join("\n");
+    if (installerSisHeader.isEmpty())
+        installerSisHeader = "0xA000D7CE"; // Use default self-signable UID if not defined
+
     QString wrapperStreamBuffer;
     QTextStream tw(&wrapperStreamBuffer);
 
@@ -359,16 +362,35 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
 
     // deploy any additional DEPLOYMENT  files
     QString remoteTestPath;
+    QString zDir;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
+    if (epocBuild)
+        zDir = epocRoot() + QLatin1String("epoc32/data/z");
 
     DeploymentList depList;
     initProjectDeploySymbian(project, depList, remoteTestPath, true, epocBuild, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
     if (depList.size())
         t << "; DEPLOYMENT" << endl;
     for (int i = 0; i < depList.size(); ++i)  {
-        t << QString("\"%1\"    - \"%2\"")
-             .arg(depList.at(i).from)
-             .arg(depList.at(i).to) << endl;
+        QString from = depList.at(i).from;
+        QString to = depList.at(i).to;
+
+        if (epocBuild) {
+            // Deploy anything not already deployed from under epoc32 instead from under
+            // \epoc32\data\z\ to enable using pkg file without rebuilding
+            // the project, which can be useful for some binary only distributions.
+            if (!from.contains(QLatin1String("epoc32"), Qt::CaseInsensitive)) {
+                from = to;
+                if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
+                    from = from.mid(2);
+                from.prepend(zDir);
+            } else {
+                if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
+                    from = from.mid(2);
+            }
+        }
+
+        t << QString("\"%1\"    - \"%2\"").arg(from.replace('\\','/')).arg(to) << endl;
     }
     t << endl;
 
@@ -433,7 +455,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
         twf << "\"" << currentPath << "/" << sisName << "\" - \"c:\\adm\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
-        bootStrapPath.append("/bootstrap.sis");
+        bootStrapPath.append("/smartinstaller.sis");
         QFileInfo fi(generator->fileInfo(bootStrapPath));
         twf << "@\"" << fi.absoluteFilePath() << "\",(0x2002CCCD)" << endl;
     }

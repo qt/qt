@@ -264,7 +264,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 QDeclarativeEngineDebugServer::QDeclarativeObjectData 
 QDeclarativeEngineDebugServer::objectData(QObject *object)
 {
-    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object);
+    QDeclarativeData *ddata = QDeclarativeData::get(object);
     QDeclarativeObjectData rv;
     if (ddata && ddata->outerContext) {
         rv.url = ddata->outerContext->url;
@@ -307,8 +307,6 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
 
     QByteArray type;
     ds >> type;
-
-    //qDebug() << "QDeclarativeEngineDebugServer::messageReceived()" << type;
 
     if (type == "LIST_ENGINES") {
         int queryId;
@@ -418,7 +416,7 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         if (object && context) {
             QDeclarativeExpression exprObj(context, expr, object);
             bool undefined = false;
-            QVariant value = exprObj.value(&undefined);
+            QVariant value = exprObj.evaluate(&undefined);
             if (undefined)
                 result = QLatin1String("<undefined>");
             else

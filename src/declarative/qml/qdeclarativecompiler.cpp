@@ -67,7 +67,6 @@
 #include "private/qdeclarativecompiledbindings_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
 
-#include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
@@ -572,8 +571,12 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         QDeclarativeScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
         if (tref.type) {
             ref.type = tref.type;
-            if (!ref.type->isCreatable()) 
-                COMPILE_EXCEPTION(parserRef->refObjects.first(), tr( "Element is not creatable."));
+            if (!ref.type->isCreatable()) {
+                QString err = ref.type->noCreationReason();
+                if (err.isEmpty())
+                    err = tr( "Element is not creatable.");
+                COMPILE_EXCEPTION(parserRef->refObjects.first(), err);
+            }
         } else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
 
@@ -734,10 +737,6 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         return true;
     } 
 
-    // Build any script blocks for this type
-    for (int ii = 0; ii < obj->scriptBlockObjects.count(); ++ii)
-        COMPILE_CHECK(buildScript(obj, obj->scriptBlockObjects.at(ii)));
-
     // Object instantiations reset the binding context
     BindingContext objCtxt(obj);
 
@@ -869,12 +868,14 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         defaultProperty->release();
 
     // Compile custom parser parts
-    if (isCustomParser && !customProps.isEmpty()) {
+    if (isCustomParser/* && !customProps.isEmpty()*/) {
         QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
         cp->clearErrors();
         cp->compiler = this;
+        cp->object = obj;
         obj->custom = cp->compile(customProps);
         cp->compiler = 0;
+        cp->object = 0;
         foreach (QDeclarativeError err, cp->errors()) {
             err.setUrl(output->url);
             exceptions << err;
@@ -960,17 +961,6 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         id.setId.value = output->indexForString(obj->id);
         id.setId.index = obj->idIndex;
         output->bytecode << id;
-    }
-
-    // Set any script blocks
-    for (int ii = 0; ii < obj->scripts.count(); ++ii) {
-        QDeclarativeInstruction script;
-        script.type = QDeclarativeInstruction::StoreScript;
-        script.line = 0; // ###
-        int idx = output->scripts.count();
-        output->scripts << obj->scripts.at(ii);
-        script.storeScript.value = idx;
-        output->bytecode << script;
     }
 
     // Begin the class
@@ -1178,9 +1168,6 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
        (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
         COMPILE_EXCEPTION(*obj->properties.begin(), tr("Component elements may not contain properties other than id"));
        
-    if (!obj->scriptBlockObjects.isEmpty())
-        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), tr("Component elements may not contain script blocks"));
-
     if (obj->properties.count())
         idProp = *obj->properties.begin();
 
@@ -1204,6 +1191,13 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
         (obj->defaultProperty->values.count() == 1 && !obj->defaultProperty->values.first()->object)))
         COMPILE_EXCEPTION(obj, tr("Invalid component body specification"));
 
+    if (!obj->dynamicProperties.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new properties."));
+    if (!obj->dynamicSignals.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new signals."));
+    if (!obj->dynamicSlots.isEmpty())
+        COMPILE_EXCEPTION(obj, tr("Component objects cannot declare new functions."));
+
     Object *root = 0;
     if (obj->defaultProperty && obj->defaultProperty->values.count())
         root = obj->defaultProperty->values.first()->object;
@@ -1213,94 +1207,6 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
 
     // Build the component tree
     COMPILE_CHECK(buildComponentFromRoot(root, ctxt));
-
-    return true;
-}
-
-bool QDeclarativeCompiler::buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script)
-{
-    qWarning().nospace() << qPrintable(output->url.toString()) << ":" << obj->location.start.line << ":" << obj->location.start.column << ": Script blocks have been deprecated.  Support will be removed entirely shortly.";
-
-    Object::ScriptBlock scriptBlock;
-
-    if (script->properties.count() == 1 && 
-        script->properties.begin().key() == QByteArray("source")) {
-
-        Property *source = *script->properties.begin();
-        if (script->defaultProperty)
-            COMPILE_EXCEPTION(source, tr("Invalid Script block.  Specify either the source property or inline script"));
-
-        if (source->value || source->values.count() != 1 ||
-            source->values.at(0)->object || !source->values.at(0)->value.isStringList())
-            COMPILE_EXCEPTION(source, tr("Invalid Script source value"));
-
-        QStringList sources = source->values.at(0)->value.asStringList();
-
-        for (int jj = 0; jj < sources.count(); ++jj) {
-            QString sourceUrl = output->url.resolved(QUrl(sources.at(jj))).toString();
-            QString scriptCode;
-            int lineNumber = 1;
-
-            for (int ii = 0; ii < unit->resources.count(); ++ii) {
-                if (unit->resources.at(ii)->url == sourceUrl) {
-                    scriptCode = QString::fromUtf8(unit->resources.at(ii)->data);
-                    break;
-                }
-            }
-
-            if (!scriptCode.isEmpty()) {
-                scriptBlock.codes.append(scriptCode);
-                scriptBlock.files.append(sourceUrl);
-                scriptBlock.lineNumbers.append(lineNumber);
-                scriptBlock.pragmas.append(Object::ScriptBlock::None);
-            }
-        }
-
-    } else if (!script->properties.isEmpty()) {
-        COMPILE_EXCEPTION(*script->properties.begin(), tr("Properties cannot be set on Script block"));
-    } else if (script->defaultProperty) {
-
-        QString scriptCode;
-        int lineNumber = 1;
-        QString sourceUrl = output->url.toString();
-
-        QDeclarativeParser::Location currentLocation;
-
-        for (int ii = 0; ii < script->defaultProperty->values.count(); ++ii) {
-            Value *v = script->defaultProperty->values.at(ii);
-            if (lineNumber == 1)
-                lineNumber = v->location.start.line;
-            if (v->object || !v->value.isString())
-                COMPILE_EXCEPTION(v, tr("Invalid Script block"));
-
-            if (ii == 0) {
-                currentLocation = v->location.start;
-                scriptCode.append(QString(currentLocation.column, QLatin1Char(' ')));
-            }
-
-            while (currentLocation.line < v->location.start.line) {
-                scriptCode.append(QLatin1Char('\n'));
-                currentLocation.line++;
-                currentLocation.column = 0;
-            }
-
-            scriptCode.append(QString(v->location.start.column - currentLocation.column, QLatin1Char(' ')));
-
-            scriptCode += v->value.asString();
-            currentLocation = v->location.end;
-            currentLocation.column++;
-        }
-
-        if (!scriptCode.isEmpty()) {
-            scriptBlock.codes.append(scriptCode);
-            scriptBlock.files.append(sourceUrl);
-            scriptBlock.lineNumbers.append(lineNumber);
-            scriptBlock.pragmas.append(Object::ScriptBlock::None);
-        }
-    }
-
-    if (!scriptBlock.codes.isEmpty())
-        obj->scripts << scriptBlock;
 
     return true;
 }
@@ -1352,7 +1258,7 @@ bool QDeclarativeCompiler::buildSubObject(Object *obj, const BindingContext &ctx
 
 int QDeclarativeCompiler::componentTypeRef()
 {
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/Component",4,6);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/Component",4,7);
     for (int ii = output->types.count() - 1; ii >= 0; --ii) {
         if (output->types.at(ii).type == t)
             return ii;
@@ -1362,35 +1268,6 @@ int QDeclarativeCompiler::componentTypeRef()
     ref.type = t;
     output->types << ref;
     return output->types.count() - 1;
-}
-
-QMetaMethod QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArray &name)
-{
-    Q_ASSERT(mo);
-    int methods = mo->methodCount();
-    for (int ii = methods - 1; ii >= 0; --ii) {
-        QMetaMethod method = mo->method(ii);
-        QByteArray methodName = method.signature();
-        int idx = methodName.indexOf('(');
-        methodName = methodName.left(idx);
-
-        if (methodName == name)
-            return method;
-    }
-
-    // If no signal is found, but the signal is of the form "onBlahChanged",
-    // return the notify signal for the property "Blah"
-    if (name.endsWith("Changed")) {
-        QByteArray propName = name.mid(0, name.length() - 7);
-        int propIdx = mo->indexOfProperty(propName.constData());
-        if (propIdx >= 0) {
-            QMetaProperty prop = mo->property(propIdx);
-            if (prop.hasNotifySignal())
-                return prop.notifySignal();
-        }
-    }
-
-    return QMetaMethod();
 }
 
 bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj,
@@ -1404,7 +1281,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     if(name[0] >= 'A' && name[0] <= 'Z')
         name[0] = name[0] - 'A' + 'a';
 
-    int sigIdx = findSignalByName(obj->metaObject(), name).methodIndex();
+    int sigIdx = QDeclarativePropertyPrivate::findSignalByName(obj->metaObject(), name).methodIndex();
 
     if (sigIdx == -1) {
 
@@ -2932,25 +2809,6 @@ bool QDeclarativeCompiler::canCoerce(int to, QDeclarativeParser::Object *from)
     return false;
 }
 
-/*!
-    Returns true if from can be assigned to a (QObject) property of type
-    to.
-*/
-bool QDeclarativeCompiler::canCoerce(int to, int from)
-{
-    const QMetaObject *toMo = 
-        QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(to);
-    const QMetaObject *fromMo = 
-        QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(from);
-
-    while (fromMo) {
-        if (QDeclarativePropertyPrivate::equal(fromMo, toMo))
-            return true;
-        fromMo = fromMo->superClass();
-    }
-    return false;
-}
-
 QDeclarativeType *QDeclarativeCompiler::toQmlType(QDeclarativeParser::Object *from)
 {
     // ### Optimize
@@ -2974,11 +2832,6 @@ QStringList QDeclarativeCompiler::deferredProperties(QDeclarativeParser::Object 
     QMetaClassInfo classInfo = mo->classInfo(idx);
     QStringList rv = QString::fromUtf8(classInfo.value()).split(QLatin1Char(','));
     return rv;
-}
-
-QString QDeclarativeCompiler::tr(const char *str)
-{
-    return QCoreApplication::translate("QDeclarativeCompiler", str);
 }
 
 QT_END_NAMESPACE

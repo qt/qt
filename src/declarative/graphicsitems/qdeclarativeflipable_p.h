@@ -81,6 +81,9 @@ public:
 Q_SIGNALS:
     void sideChanged();
 
+private Q_SLOTS:
+    void retransformBack();
+
 private:
     Q_DISABLE_COPY(QDeclarativeFlipable)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeFlipable)

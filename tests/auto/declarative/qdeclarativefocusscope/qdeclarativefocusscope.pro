@@ -4,3 +4,4 @@ SOURCES += tst_qdeclarativefocusscope.cpp
 macx:CONFIG -= app_bundle
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+

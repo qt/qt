@@ -111,7 +111,9 @@ public:
     //   socket).
 
     virtual void open() = 0;
+#ifndef QT_NO_BEARERMANAGEMENT
     virtual bool start();
+#endif
     virtual void closeDownstreamChannel() = 0;
     virtual bool waitForDownstreamReadyRead(int msecs) = 0;
 

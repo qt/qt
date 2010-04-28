@@ -66,6 +66,7 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -148,6 +149,7 @@ private:
 class QMetaObjectBuilder;
 class Q_DECLARATIVE_EXPORT QDeclarativeCompiler
 {
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativeCompiler)
 public:
     QDeclarativeCompiler();
 
@@ -158,8 +160,6 @@ public:
 
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
-
-    static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
 
     int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
 
@@ -186,7 +186,6 @@ private:
 
 
     bool buildObject(QDeclarativeParser::Object *obj, const BindingContext &);
-    bool buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script);
     bool buildComponent(QDeclarativeParser::Object *obj, const BindingContext &);
     bool buildSubObject(QDeclarativeParser::Object *obj, const BindingContext &);
     bool buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj, 
@@ -275,13 +274,10 @@ private:
 
     static QDeclarativeType *toQmlType(QDeclarativeParser::Object *from);
     bool canCoerce(int to, QDeclarativeParser::Object *from);
-    bool canCoerce(int to, int from);
 
     QStringList deferredProperties(QDeclarativeParser::Object *);
 
     void addId(const QString &, QDeclarativeParser::Object *);
-
-    QString tr(const char *);
 
     void dumpStats();
 

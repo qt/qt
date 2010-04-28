@@ -656,10 +656,8 @@ Grid {
 
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
-    QDeclarativeBasePositioner(Both, parent)
+    QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
 {
-    _columns=-1;
-    _rows=-1;
 }
 
 /*!
@@ -682,54 +680,101 @@ QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
 
 void QDeclarativeGrid::setColumns(const int columns)
 {
-    if (columns == _columns)
+    if (columns == m_columns)
         return;
-    _columns = columns;
+    m_columns = columns;
     prePositioning();
     emit columnsChanged();
 }
 
 void QDeclarativeGrid::setRows(const int rows)
 {
-    if (rows == _rows)
+    if (rows == m_rows)
         return;
-    _rows = rows;
+    m_rows = rows;
     prePositioning();
     emit rowsChanged();
 }
 
+/*!
+    \qmlproperty enumeration Flow::flow
+    This property holds the flow of the layout.
+
+    Possible values are \c LeftToRight (default) and \c TopToBottom.
+
+    If \a flow is \c LeftToRight, the items are positioned next to
+    to each other from left to right, then wrapped to the next line.
+    If \a flow is \c TopToBottom, the items are positioned next to each
+    other from top to bottom, then wrapped to the next column.
+*/
+QDeclarativeGrid::Flow QDeclarativeGrid::flow() const
+{
+    return m_flow;
+}
+
+void QDeclarativeGrid::setFlow(Flow flow)
+{
+    if (m_flow != flow) {
+        m_flow = flow;
+        prePositioning();
+        emit flowChanged();
+    }
+}
+
 void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 {
-    int c=_columns,r=_rows;//Actual number of rows/columns
+    int c = m_columns;
+    int r = m_rows;
     int numVisible = positionedItems.count();
-    if (_columns==-1 && _rows==-1){
+    if (m_columns <= 0 && m_rows <= 0){
         c = 4;
         r = (numVisible+3)/4;
-    }else if (_rows==-1){
-        r = (numVisible+(_columns-1))/_columns;
-    }else if (_columns==-1){
-        c = (numVisible+(_rows-1))/_rows;
+    } else if (m_rows <= 0){
+        r = (numVisible+(m_columns-1))/m_columns;
+    } else if (m_columns <= 0){
+        c = (numVisible+(m_rows-1))/m_rows;
     }
 
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
-    for (int i=0; i<r; i++){
-        for (int j=0; j<c; j++){
-            if (j==0)
-                maxRowHeight << 0;
-            if (i==0)
-                maxColWidth << 0;
+    if (m_flow == LeftToRight) {
+        for (int i=0; i < r; i++){
+            for (int j=0; j < c; j++){
+                if (j==0)
+                    maxRowHeight << 0;
+                if (i==0)
+                    maxColWidth << 0;
 
-            if (childIndex == positionedItems.count())
-                continue;
-            const PositionedItem &child = positionedItems.at(childIndex++);
-            if (!child.item || isInvisible(child.item))
-                continue;
-            if (child.item->width() > maxColWidth[j])
-                maxColWidth[j] = child.item->width();
-            if (child.item->height() > maxRowHeight[i])
-                maxRowHeight[i] = child.item->height();
+                if (childIndex == positionedItems.count())
+                    continue;
+                const PositionedItem &child = positionedItems.at(childIndex++);
+                if (!child.item || isInvisible(child.item))
+                    continue;
+                if (child.item->width() > maxColWidth[j])
+                    maxColWidth[j] = child.item->width();
+                if (child.item->height() > maxRowHeight[i])
+                    maxRowHeight[i] = child.item->height();
+            }
+        }
+    } else {
+        for (int j=0; j < c; j++){
+            for (int i=0; i < r; i++){
+                if (j==0)
+                    maxRowHeight << 0;
+                if (i==0)
+                    maxColWidth << 0;
+
+                if (childIndex == positionedItems.count())
+                    continue;
+                const PositionedItem &child = positionedItems.at(childIndex++);
+                if (!child.item || isInvisible(child.item))
+                    continue;
+                if (child.item->width() > maxColWidth[j])
+                    maxColWidth[j] = child.item->width();
+                if (child.item->height() > maxRowHeight[i])
+                    maxRowHeight[i] = child.item->height();
+            }
         }
     }
 
@@ -746,18 +791,34 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
             positionY(yoffset, child);
         }
 
-        contentSize->setWidth(qMax(contentSize->width(), xoffset + child.item->width()));
-        contentSize->setHeight(yoffset + maxRowHeight[curRow]);
+        if (m_flow == LeftToRight) {
+            contentSize->setWidth(qMax(contentSize->width(), xoffset + child.item->width()));
+            contentSize->setHeight(yoffset + maxRowHeight[curRow]);
 
-        xoffset+=maxColWidth[curCol]+spacing();
-        curCol++;
-        curCol%=c;
-        if (!curCol){
+            xoffset+=maxColWidth[curCol]+spacing();
+            curCol++;
+            curCol%=c;
+            if (!curCol){
+                yoffset+=maxRowHeight[curRow]+spacing();
+                xoffset=0;
+                curRow++;
+                if (curRow>=r)
+                    break;
+            }
+        } else {
+            contentSize->setHeight(qMax(contentSize->height(), yoffset + child.item->height()));
+            contentSize->setWidth(xoffset + maxColWidth[curCol]);
+
             yoffset+=maxRowHeight[curRow]+spacing();
-            xoffset=0;
             curRow++;
-            if (curRow>=r)
-                break;
+            curRow%=r;
+            if (!curRow){
+                xoffset+=maxColWidth[curCol]+spacing();
+                yoffset=0;
+                curCol++;
+                if (curCol>=c)
+                    break;
+            }
         }
     }
 }

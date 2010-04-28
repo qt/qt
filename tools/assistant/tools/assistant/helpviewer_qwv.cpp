@@ -129,26 +129,30 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     const QNetworkRequest &request, QIODevice* /*outgoingData*/)
 {
     TRACE_OBJ
-    const QUrl& url = request.url();
-    QString mimeType = url.toString();
-    if (mimeType.endsWith(QLatin1String(".svg"))
-        || mimeType.endsWith(QLatin1String(".svgz"))) {
-            mimeType = QLatin1String("image/svg+xml");
-    } else if (mimeType.endsWith(QLatin1String(".css"))) {
-        mimeType = QLatin1String("text/css");
-    } else if (mimeType.endsWith(QLatin1String(".js"))) {
-        mimeType = QLatin1String("text/javascript");
-    } else if (mimeType.endsWith(QLatin1String(".txt"))) {
-        mimeType = QLatin1String("text/plain");
-    } else {
-        mimeType = QLatin1String("text/html");
+    QString url = request.url().toString();
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+
+    // TODO: For some reason the url to load is already wrong (passed from webkit)
+    // though the css file and the references inside should work that way. One 
+    // possible problem might be that the css is loaded at the same level as the
+    // html, thus a path inside the css like (../images/foo.png) might cd out of
+    // the virtual folder
+    if (!helpEngine.findFile(url).isValid()) {
+        if (url.startsWith(AbstractHelpViewer::DocPath)) {
+            QUrl newUrl = request.url();
+            if (!newUrl.path().startsWith(QLatin1String("/qdoc/"))) {
+                newUrl.setPath(QLatin1String("qdoc") + newUrl.path());
+                url = newUrl.toString();
+            }
+        }
     }
 
-    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    const QString &mimeType = AbstractHelpViewer::mimeFromUrl(url);
     const QByteArray &data = helpEngine.findFile(url).isValid()
         ? helpEngine.fileData(url)
-        : AbstractHelpViewer::PageNotFoundMessage.arg(url.toString()).toUtf8();
-    return new HelpNetworkReply(request, data, mimeType);
+        : AbstractHelpViewer::PageNotFoundMessage.arg(url).toUtf8();
+    return new HelpNetworkReply(request, data, mimeType.isEmpty()
+        ? QLatin1String("application/octet-stream") : mimeType);
 }
 
 class HelpPage : public QWebPage
@@ -312,6 +316,22 @@ void HelpViewer::resetScale()
     setTextSizeMultiplier(1.0);
 }
 
+bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *e)
+{
+    TRACE_OBJ
+    if (e->button() == Qt::XButton1) {
+        triggerPageAction(QWebPage::Back);
+        return true;
+    }
+
+    if (e->button() == Qt::XButton2) {
+        triggerPageAction(QWebPage::Forward);
+        return true;
+    }
+
+    return false;
+}
+
 void HelpViewer::setSource(const QUrl &url)
 {
     TRACE_OBJ
@@ -339,15 +359,10 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
 void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 {
     TRACE_OBJ
-    if (e->button() == Qt::XButton1) {
-        triggerPageAction(QWebPage::Back);
+#ifndef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(e))
         return;
-    }
-
-    if (e->button() == Qt::XButton2) {
-        triggerPageAction(QWebPage::Forward);
-        return;
-    }
+#endif
 
     QWebView::mouseReleaseEvent(e);
 }
@@ -367,6 +382,11 @@ void HelpViewer::actionChanged()
 void HelpViewer::mousePressEvent(QMouseEvent *event)
 {
     TRACE_OBJ
+#ifdef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(event))
+        return;
+#endif
+
     HelpPage *currentPage = static_cast<HelpPage*>(page());
     if (currentPage) {
         currentPage->m_pressedButtons = event->buttons();

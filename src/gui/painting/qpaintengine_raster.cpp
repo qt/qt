@@ -103,7 +103,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 #define qreal_to_fixed_26_6(f) (int(f * 64))
 #define qt_swap_int(x, y) { int tmp = (x); (x) = (y); (y) = tmp; }
@@ -2552,7 +2552,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     int sr_t = qFloor(sr.top());
     int sr_b = qCeil(sr.bottom()) - 1;
 
-    if (!s->flags.antialiased && sr_l == sr_r && sr_t == sr_b) {
+    if (s->matrix.type() <= QTransform::TxScale && !s->flags.antialiased && sr_l == sr_r && sr_t == sr_b) {
         // as fillRect will apply the aliased coordinate delta we need to
         // subtract it here as we don't use it for image drawing
         QTransform old = s->matrix;
@@ -4996,7 +4996,7 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
     clip = pe ? pe->d_func()->clip() : 0;
 }
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_GUI_EXPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
 {

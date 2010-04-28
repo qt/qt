@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_defaultDpi();
+Q_GUI_EXPORT extern int qt_defaultDpi();
 
 #ifndef QT_NO_PRINTER
 

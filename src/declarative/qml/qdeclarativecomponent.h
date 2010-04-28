@@ -99,8 +99,6 @@ public:
     virtual QObject *beginCreate(QDeclarativeContext *);
     virtual void completeCreate();
 
-    Q_INVOKABLE QScriptValue createObject();
-
     void loadUrl(const QUrl &url);
     void setData(const QByteArray &, const QUrl &baseUrl);
 
@@ -114,10 +112,12 @@ Q_SIGNALS:
 
 protected:
     QDeclarativeComponent(QDeclarativeComponentPrivate &dd, QObject* parent);
+    Q_INVOKABLE QScriptValue createObject();
 
 private:
     QDeclarativeComponent(QDeclarativeEngine *, QDeclarativeCompiledData *, int, int, QObject *parent);
 
+    Q_DISABLE_COPY(QDeclarativeComponent)
     friend class QDeclarativeVME;
     friend class QDeclarativeCompositeTypeData;
 };

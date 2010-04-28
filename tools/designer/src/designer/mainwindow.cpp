@@ -75,7 +75,7 @@ static void addActionsToToolBar(const ActionList &actions, QToolBar *t)
     const ActionList::const_iterator cend = actions.constEnd();
     for (ActionList::const_iterator it = actions.constBegin(); it != cend; ++it) {
         QAction *action = *it;
-        if (!action->icon().isNull())
+        if (action->property(QDesignerActions::defaultToolbarPropertyName).toBool())
             t->addAction(action);
     }
 }
@@ -113,6 +113,8 @@ void MainWindowBase::closeEvent(QCloseEvent *e)
 
 QList<QToolBar *>  MainWindowBase::createToolBars(const QDesignerActions *actions, bool singleToolBar)
 {
+    // Note that whenever you want to add a new tool bar here, you also have to update the default
+    // action groups added to the toolbar manager in the mainwindow constructor
     QList<QToolBar *> rc;
     if (singleToolBar) {
         //: Not currently used (main tool bar)
@@ -251,6 +253,22 @@ ToolBarManager::ToolBarManager(QMainWindow *configureableMainWindow,
         if (QAction *action = tw->action())
             m_manager->addAction(action, dockTitle);
     }
+
+    QString category(tr("File"));
+    foreach(QAction *action, actions->fileActions()->actions())
+        m_manager->addAction(action, category);
+
+    category = tr("Edit");
+    foreach(QAction *action, actions->editActions()->actions())
+        m_manager->addAction(action, category);
+
+    category = tr("Tools");
+    foreach(QAction *action, actions->toolActions()->actions())
+        m_manager->addAction(action, category);
+
+    category = tr("Form");
+    foreach(QAction *action, actions->formActions()->actions())
+        m_manager->addAction(action, category);
 
     m_manager->addAction(m_configureAction, tr("Toolbars"));
     updateToolBarMenu();

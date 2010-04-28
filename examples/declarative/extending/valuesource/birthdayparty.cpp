@@ -57,18 +57,18 @@ void BirthdayPartyAttached::setRsvp(const QDate &d)
 
 
 BirthdayParty::BirthdayParty(QObject *parent)
-: QObject(parent), m_celebrant(0)
+: QObject(parent), m_host(0)
 {
 }
 
-Person *BirthdayParty::celebrant() const
+Person *BirthdayParty::host() const
 {
-    return m_celebrant;
+    return m_host;
 }
 
-void BirthdayParty::setCelebrant(Person *c)
+void BirthdayParty::setHost(Person *c)
 {
-    m_celebrant = c;
+    m_host = c;
 }
 
 QDeclarativeListProperty<Person> BirthdayParty::guests() 
@@ -92,12 +92,12 @@ void BirthdayParty::startParty()
     emit partyStarted(time);
 }
 
-QString BirthdayParty::speaker() const
+QString BirthdayParty::announcement() const
 {
     return QString();
 }
 
-void BirthdayParty::setSpeaker(const QString &speak)
+void BirthdayParty::setAnnouncement(const QString &speak)
 {
     qWarning() << qPrintable(speak);
 }

@@ -123,6 +123,8 @@ private slots:
     void doneSignal();
     void queueMoreCommandsInDoneSlot();
 
+    void qtbug7359Crash();
+
 protected slots:
     void stateChanged( int );
     void listInfo( const QUrlInfo & );
@@ -2050,6 +2052,30 @@ void tst_QFtp::cdUpSlot(bool error)
         ftp->cd("..");
         ftp->cd("qt");
     }
+}
+
+void tst_QFtp::qtbug7359Crash()
+{
+    QFtp ftp;
+    ftp.connectToHost("127.0.0.1");
+
+    QTime t;
+    int elapsed;
+
+    t.start();
+    while ((elapsed = t.elapsed()) < 200)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 200 - elapsed);
+
+    ftp.close();
+    t.restart();
+    while ((elapsed = t.elapsed()) < 1000)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000 - elapsed);
+
+    ftp.connectToHost("127.0.0.1");
+
+    t.restart();
+    while ((elapsed = t.elapsed()) < 2000)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 2000 - elapsed);
 }
 
 QTEST_MAIN(tst_QFtp)

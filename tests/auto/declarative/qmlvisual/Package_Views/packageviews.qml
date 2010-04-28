@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 Rectangle {
     id: root
@@ -63,8 +63,9 @@ Rectangle {
                     Transition {
                         from: "*"; to: "*"
                         SequentialAnimation {
-                            ParentAction{}
-                            NumberAnimation { properties: "x,y,width"; easing.type: "InOutQuad" }
+                            ParentAnimation{
+                                NumberAnimation { properties: "x,y,width"; easing.type: "InOutQuad" }
+                            }
                         }
                     }
                 ]

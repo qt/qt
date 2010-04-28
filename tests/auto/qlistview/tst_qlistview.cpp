@@ -123,6 +123,8 @@ private slots:
     void taskQTBUG_435_deselectOnViewportClick();
     void taskQTBUG_2678_spacingAndWrappedText();
     void taskQTBUG_5877_skippingItemInPageDownUp();
+    void taskQTBUG_9455_wrongScrollbarRanges();
+    void styleOptionViewItem();
 };
 
 // Testing get/set functions
@@ -1939,6 +1941,65 @@ void tst_QListView::taskQTBUG_5877_skippingItemInPageDownUp()
         newCurrent = qMax(currentItemIndexes[i] - scrolledRowCount, 0);
         QCOMPARE(idx, model.index(newCurrent, 0));
     }
+}
+
+class ListView_9455 : public QListView
+{
+public:
+    QSize contentsSize() const
+    {
+        return QListView::contentsSize();
+    }
+};
+
+void tst_QListView::taskQTBUG_9455_wrongScrollbarRanges()
+{
+    QStringList list;
+    const int nrItems = 8;
+    for (int i = 0; i < nrItems; i++)
+        list << QString().sprintf("item %d", i);
+
+    QStringListModel model(list);
+    ListView_9455 w;
+    w.setModel(&model);
+    w.setViewMode(QListView::IconMode);
+    w.resize(116, 132);
+    w.setMovement(QListView::Static);
+    const int spacing = 40;
+    w.setSpacing(spacing);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QCOMPARE(w.verticalScrollBar()->maximum(), w.contentsSize().height() - w.viewport()->geometry().height());
+}
+
+void tst_QListView::styleOptionViewItem()
+{
+    class MyDelegate : public QStyledItemDelegate
+    {
+        public:
+            void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+            {
+                QVERIFY(qstyleoption_cast<const QStyleOptionViewItemV4 *>(&option));
+                QStyleOptionViewItemV4 opt(option);
+                initStyleOption(&opt, index);
+
+                QCOMPARE(opt.index, index);
+
+                QStyledItemDelegate::paint(painter, option, index);
+            }
+    };
+
+    QListView view;
+    QStandardItemModel model;
+    view.setModel(&model);
+    MyDelegate delegate;
+    view.setItemDelegate(&delegate);
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+
+    // Run test
+    view.showMaximized();
+    QApplication::processEvents();
 }
 
 QTEST_MAIN(tst_QListView)

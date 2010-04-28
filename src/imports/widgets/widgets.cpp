@@ -44,7 +44,7 @@
 #include <QGraphicsWidget>
 
 #include "graphicslayouts_p.h"
-
+#include <private/qdeclarativegraphicswidget_p.h>
 QT_BEGIN_NAMESPACE
 
 class QWidgetsQmlModule : public QDeclarativeExtensionPlugin
@@ -57,10 +57,9 @@ public:
 
         qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
         qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,6,"QGraphicsLinearLayoutStretchItem");
-        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,6,"QGraphicsLinearLayout");
-        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,6,"QGraphicsGridLayout");
-        qmlRegisterType<QGraphicsWidget>(uri,4,6,"QGraphicsWidget");
+        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,7,"QGraphicsLinearLayoutStretchItem");
+        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,7,"QGraphicsLinearLayout");
+        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,7,"QGraphicsGridLayout");
     }
 };
 

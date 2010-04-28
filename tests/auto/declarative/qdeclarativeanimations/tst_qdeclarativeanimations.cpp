@@ -339,13 +339,13 @@ void tst_qdeclarativeanimations::badProperties()
         QDeclarativeEngine engine;
 
         QDeclarativeComponent c1(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml"));
-        QByteArray message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml").toString().toUtf8() + ":18:9) Cannot animate non-existent property \"border.colr\"";
+        QByteArray message = QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml").toString().toUtf8() + ":18:9: QML ColorAnimation: Cannot animate non-existent property \"border.colr\"";
         QTest::ignoreMessage(QtWarningMsg, message);
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c1.create());
         QVERIFY(rect);
 
         QDeclarativeComponent c2(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml"));
-        message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml").toString().toUtf8() + ":18:9) Cannot animate read-only property \"border\"";
+        message = QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml").toString().toUtf8() + ":18:9: QML ColorAnimation: Cannot animate read-only property \"border\"";
         QTest::ignoreMessage(QtWarningMsg, message);
         rect = qobject_cast<QDeclarativeRectangle*>(c2.create());
         QVERIFY(rect);
@@ -549,12 +549,12 @@ void tst_qdeclarativeanimations::propertiesTransition()
 void tst_qdeclarativeanimations::invalidDuration()
 {
     QDeclarativePropertyAnimation *animation = new QDeclarativePropertyAnimation;
-    QTest::ignoreMessage(QtWarningMsg, "QML PropertyAnimation (unknown location) Cannot set a duration of < 0");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML PropertyAnimation: Cannot set a duration of < 0");
     animation->setDuration(-1);
     QCOMPARE(animation->duration(), 250);
 
     QDeclarativePauseAnimation *pauseAnimation = new QDeclarativePauseAnimation;
-    QTest::ignoreMessage(QtWarningMsg, "QML PauseAnimation (unknown location) Cannot set a duration of < 0");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML PauseAnimation: Cannot set a duration of < 0");
     pauseAnimation->setDuration(-1);
     QCOMPARE(pauseAnimation->duration(), 250);
 }
@@ -620,7 +620,8 @@ void tst_qdeclarativeanimations::dontStart()
 
         QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QDeclarativeAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        QString warning = c.url().toString() + ":14:13: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.";
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -634,7 +635,8 @@ void tst_qdeclarativeanimations::dontStart()
 
         QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart2.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QDeclarativeAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        QString warning = c.url().toString() + ":15:17: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.";
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -648,7 +650,7 @@ void tst_qdeclarativeanimations::easingProperties()
 {
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nNumberAnimation { easing.type: \"InOutQuad\" }";
+        QString componentStr = "import Qt 4.7\nNumberAnimation { easing.type: \"InOutQuad\" }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -659,7 +661,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
+        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -671,7 +673,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
+        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -684,7 +686,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
+        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());

@@ -432,7 +432,7 @@ MainWindow::MainWindow()
 #endif
 #ifndef QT_NO_OPENGL
     videomodeCombo->addItem(tr("OpenGL"), QLatin1String("OpenGL"));
-    videomodeCombo->setItemData(videomodeCombo->findText(tr("OpenGL")), tr("Use OpenGL if avaiable"), Qt::ToolTipRole);
+    videomodeCombo->setItemData(videomodeCombo->findText(tr("OpenGL")), tr("Use OpenGL if available"), Qt::ToolTipRole);
 #endif
     videomodeCombo->addItem(tr("Software"), QLatin1String("Software"));
     videomodeCombo->setItemData(videomodeCombo->findText(tr("Software")), tr("Use simple software rendering"), Qt::ToolTipRole);

@@ -83,6 +83,8 @@ public:
     QDeclarativeExpression *expression() const;
     QDeclarativeExpression *setExpression(QDeclarativeExpression *);
 
+    bool isEvaluating() const { return m_isEvaluating; }
+
     static QDeclarativeBoundSignal *cast(QObject *);
 
 protected:
@@ -91,7 +93,8 @@ protected:
 private:
     QDeclarativeExpression *m_expression;
     QMetaMethod m_signal;
-    bool m_paramsValid;
+    bool m_paramsValid : 1;
+    bool m_isEvaluating : 1;
     QDeclarativeBoundSignalParameters *m_params;
 };
 

@@ -362,7 +362,7 @@ bool ScrollbarThemeMac::paint(Scrollbar* scrollbar, GraphicsContext* context, co
     trackInfo.min = 0;
     trackInfo.max = scrollbar->maximum();
     trackInfo.value = scrollbar->currentPos();
-    trackInfo.trackInfo.scrollbar.viewsize = scrollbar->pageStep();
+    trackInfo.trackInfo.scrollbar.viewsize = scrollbar->visibleSize();
     trackInfo.attributes = 0;
     if (scrollbar->orientation() == HorizontalScrollbar)
         trackInfo.attributes |= kThemeTrackHorizontal;
@@ -396,7 +396,7 @@ bool ScrollbarThemeMac::paint(Scrollbar* scrollbar, GraphicsContext* context, co
             return true;
         
         HIThemeDrawTrack(&trackInfo, 0, imageBuffer->context()->platformContext(), kHIThemeOrientationNormal);
-        context->drawImage(imageBuffer->image(), scrollbar->frameRect().location());
+        context->drawImage(imageBuffer->image(), DeviceColorSpace, scrollbar->frameRect().location());
     }
 
     return true;

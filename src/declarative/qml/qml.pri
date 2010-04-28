@@ -40,6 +40,7 @@ SOURCES += \
     $$PWD/qdeclarativepropertycache.cpp \
     $$PWD/qdeclarativenotifier.cpp \
     $$PWD/qdeclarativeintegercache.cpp \
+    $$PWD/qdeclarativetypenotavailable.cpp \
     $$PWD/qdeclarativetypenamecache.cpp \
     $$PWD/qdeclarativescriptstring.cpp \
     $$PWD/qdeclarativeobjectscriptclass.cpp \
@@ -94,7 +95,7 @@ HEADERS += \
     $$PWD/qdeclarativecompositetypemanager_p.h \
     $$PWD/qdeclarativelist.h \
     $$PWD/qdeclarativelist_p.h \
-    $$PWD/qdeclarativedeclarativedata_p.h \
+    $$PWD/qdeclarativedata_p.h \
     $$PWD/qdeclarativeerror.h \
     $$PWD/qdeclarativescriptparser_p.h \
     $$PWD/qdeclarativeenginedebug_p.h \
@@ -112,6 +113,7 @@ HEADERS += \
     $$PWD/qdeclarativepropertycache_p.h \
     $$PWD/qdeclarativenotifier_p.h \
     $$PWD/qdeclarativeintegercache_p.h \
+    $$PWD/qdeclarativetypenotavailable_p.h \
     $$PWD/qdeclarativetypenamecache_p.h \
     $$PWD/qdeclarativescriptstring.h \
     $$PWD/qdeclarativeobjectscriptclass_p.h \

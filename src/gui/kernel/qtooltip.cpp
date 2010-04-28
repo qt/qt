@@ -168,9 +168,9 @@ QTipLabel *QTipLabel::instance = 0;
 
 QTipLabel::QTipLabel(const QString &text, QWidget *w)
 #ifndef QT_NO_STYLE_STYLESHEET
-    : QLabel(w, Qt::ToolTip), styleSheetParent(0), widget(0)
+    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), styleSheetParent(0), widget(0)
 #else
-    : QLabel(w, Qt::ToolTip), widget(0)
+    : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), widget(0)
 #endif
 {
     delete instance;

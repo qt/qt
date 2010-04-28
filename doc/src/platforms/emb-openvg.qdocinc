@@ -259,6 +259,12 @@ at present.
         \o Convolution, colorize, drop shadow, and blur filters are
 accelerated using OpenVG operations.
 
+    \row
+        \o Scrolling
+        \o Accelerated scrolling is implemented but disabled by default
+unless QVG_BUFFER_SCROLLING is defined. This should only be enabled on
+OpenVG engines where vgCopyPixels() is known to be efficient.
+
 \endtable
 
 \section2 Known issues

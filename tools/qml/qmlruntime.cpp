@@ -55,11 +55,6 @@
 #include <QAbstractAnimation>
 #include "deviceskin.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 3))
-#include <private/qzipreader_p.h>
-#define QDECLARATIVEVIEWER_ZIP_SUPPORT
-#endif
-
 #include <QSettings>
 #include <QXmlStreamReader>
 #include <QBuffer>
@@ -112,33 +107,47 @@
 
 QT_BEGIN_NAMESPACE
 
-class Screen : public QObject
+class Runtime : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(Orientation orientation READ orientation NOTIFY orientationChanged)
-    Q_ENUMS(Orientation)
+    Q_PROPERTY(bool isActiveWindow READ isActiveWindow NOTIFY isActiveWindowChanged)
+    Q_PROPERTY(DeviceOrientation::Orientation orientation READ orientation NOTIFY orientationChanged)
 
 public:
-    Screen(QObject *parent=0) : QObject(parent) {
+    static Runtime* instance()
+    {
+        static Runtime *instance = 0;
+        if (!instance)
+            instance = new Runtime;
+        return instance;
+    }
+
+    bool isActiveWindow() const { return activeWindow; }
+    void setActiveWindow(bool active)
+    {
+        if (active == activeWindow)
+            return;
+        activeWindow = active;
+        emit isActiveWindowChanged();
+    }
+
+    DeviceOrientation::Orientation orientation() const { return DeviceOrientation::instance()->orientation(); }
+
+Q_SIGNALS:
+    void isActiveWindowChanged();
+    void orientationChanged();
+
+private:
+    Runtime(QObject *parent=0) : QObject(parent), activeWindow(false)
+    {
         connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
                 this, SIGNAL(orientationChanged()));
     }
 
-    enum Orientation { UnknownOrientation = DeviceOrientation::UnknownOrientation,
-                       Portrait = DeviceOrientation::Portrait,
-                       Landscape = DeviceOrientation::Landscape };
-    Orientation orientation() const { return Orientation(DeviceOrientation::instance()->orientation()); }
-
-signals:
-    void orientationChanged();
+    bool activeWindow;
 };
 
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(Screen)
-
-QT_BEGIN_NAMESPACE
 
 class SizedMenuBar : public QMenuBar
 {
@@ -332,14 +341,14 @@ private:
                 data.append("\n");
             }
         }
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         settings.setValue("Cookies",data);
     }
 
     void load()
     {
         QMutexLocker lock(&mutex);
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         QByteArray data = settings.value("Cookies").toByteArray();
         setAllCookies(QNetworkCookie::parseCookies(data));
     }
@@ -456,6 +465,9 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , portraitOrientation(0), landscapeOrientation(0)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
+    QDeclarativeViewer::registerTypes();
+    setWindowTitle(tr("Qt Qml Runtime"));
+
     devicemode = false;
     skin = 0;
     canvas = 0;
@@ -485,7 +497,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas = new QDeclarativeView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
-    canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
+
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
@@ -508,7 +520,6 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 #else
     setCentralWidget(canvas);
 #endif
-
     namFactory = new NetworkAccessManagerFactory;
     canvas->engine()->setNetworkAccessManagerFactory(namFactory);
 
@@ -527,6 +538,14 @@ QDeclarativeViewer::~QDeclarativeViewer()
     delete namFactory;
 }
 
+int QDeclarativeViewer::menuBarHeight() const
+{
+    if (!(windowFlags() & Qt::FramelessWindowHint))
+        return menuBar()->height();
+    else
+        return 0; // don't create menu
+}
+
 QMenuBar *QDeclarativeViewer::menuBar() const
 {
 #if !defined(Q_OS_SYMBIAN)
@@ -537,6 +556,11 @@ QMenuBar *QDeclarativeViewer::menuBar() const
 #endif
 
     return mb;
+}
+
+QDeclarativeView *QDeclarativeViewer::view() const
+{
+    return canvas;
 }
 
 void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
@@ -737,10 +761,11 @@ void QDeclarativeViewer::setScaleSkin()
     if (scaleSkin)
         return;
     scaleSkin = true;
-    canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
     if (skin) {
-        canvas->setFixedSize(canvas->sizeHint());
-        skin->setScreenSize(canvas->sizeHint());
+        canvas->resize(initialSize);
+        canvas->setFixedSize(initialSize);
+        canvas->setResizeMode(QDeclarativeView::SizeViewToRootObject);
+        updateSizeHints();
     }
 }
 
@@ -750,11 +775,8 @@ void QDeclarativeViewer::setScaleView()
         return;
     scaleSkin = false;
     if (skin) {
-        canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
-        canvas->setMinimumSize(QSize(0,0));
-        canvas->setMaximumSize(QSize(16777215,16777215));
-        canvas->resize(skin->standardScreenSize());
-        skin->setScreenSize(skin->standardScreenSize());
+        canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+        updateSizeHints();
     }
 }
 
@@ -877,120 +899,19 @@ void QDeclarativeViewer::addPluginPath(const QString& plugin)
 
 void QDeclarativeViewer::reload()
 {
-    openQml(currentFileOrUrl);
-}
-
-void QDeclarativeViewer::open(const QString& doc)
-{
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-    if (doc.endsWith(".wgt",Qt::CaseInsensitive)
-     || doc.endsWith(".wgz",Qt::CaseInsensitive)
-     || doc.endsWith(".zip",Qt::CaseInsensitive))
-        openWgt(doc);
-    else
-#endif
-        openQml(doc);
-}
-
-void QDeclarativeViewer::openWgt(const QString& doc)
-{
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-    // XXX This functionality could be migrated to QDeclarativeView once refined
-
-    QUrl url(doc);
-    if (url.isRelative())
-        url = QUrl::fromLocalFile(doc);
-    delete canvas->rootObject();
-    canvas->engine()->clearComponentCache();
-    QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    wgtreply = nam->get(QNetworkRequest(url));
-    connect(wgtreply,SIGNAL(finished()),this,SLOT(unpackWgt()));
-#endif
-}
-
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-static void removeRecursive(const QString& dirname)
-{
-    QDir dir(dirname);
-    QFileInfoList entries(dir.entryInfoList(QDir::Dirs|QDir::Files|QDir::NoDotAndDotDot));
-    for (int i = 0; i < entries.count(); ++i)
-        if (entries[i].isDir())
-            removeRecursive(entries[i].filePath());
-        else
-            dir.remove(entries[i].fileName());
-    QDir().rmdir(dirname);
-}
-#endif
-
-void QDeclarativeViewer::unpackWgt()
-{
-#ifdef QDECLARATIVEVIEWER_ZIP_SUPPORT
-    QByteArray all = wgtreply->readAll();
-    QBuffer buf(&all);
-    buf.open(QIODevice::ReadOnly);
-    QZipReader zip(&buf);
-    /*
-    for (int i=0; i<zip.count(); ++i) {
-        QZipReader::FileInfo info = zip.entryInfoAt(i);
-        qDebug() << "zip:" << info.filePath;
-    }
-    */
-    wgtdir = QDir::tempPath()+QDir::separator()+QLatin1String("qml-wgt");
-    removeRecursive(wgtdir);
-    QDir().mkpath(wgtdir);
-    zip.extractAll(wgtdir);
-
-    QString rootfile;
-
-    if (wgtreply->header(QNetworkRequest::ContentTypeHeader).toString() == "application/widget" || wgtreply->url().path().endsWith(".wgt",Qt::CaseInsensitive)) {
-        // W3C Draft http://www.w3.org/TR/2009/CR-widgets-20091201
-        QFile configfile(wgtdir+QDir::separator()+"config.xml");
-        if (configfile.open(QIODevice::ReadOnly)) {
-            QXmlStreamReader config(&configfile);
-            if (config.readNextStartElement() && config.name() == "widget") {
-                while (config.readNextStartElement()) {
-                    if (config.name() == "content") {
-                        rootfile = wgtdir + QDir::separator();
-                        rootfile += config.attributes().value(QLatin1String("src"));
-                    }
-                    // XXX process other config
-
-                    config.skipCurrentElement();
-                }
-            }
-        } else {
-            qWarning("No config.xml found - non-standard WGT file");
-        }
-        if (rootfile.isEmpty()) {
-            QString def = wgtdir+QDir::separator()+"index.qml";
-            if (QFile::exists(def))
-                rootfile = def;
-        }
-    } else {
-        // Just find index.qml, preferably at the root
-        for (int i=0; i<zip.count(); ++i) {
-            QZipReader::FileInfo info = zip.entryInfoAt(i);
-            if (info.filePath.compare(QLatin1String("index.qml"),Qt::CaseInsensitive)==0)
-                rootfile = wgtdir+QDir::separator()+info.filePath;
-            if (rootfile.isEmpty() && info.filePath.endsWith("/index.qml",Qt::CaseInsensitive))
-                rootfile = wgtdir+QDir::separator()+info.filePath;
-        }
-    }
-
-    openQml(rootfile);
-#endif
+    open(currentFileOrUrl);
 }
 
 void QDeclarativeViewer::openFile()
 {
     QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
-        openQml("qrc:/content/Browser.qml");
+        open("qrc:/content/Browser.qml");
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
         if (!fileName.isEmpty()) {
             QFileInfo fi(fileName);
-            openQml(fi.absoluteFilePath());
+            open(fi.absoluteFilePath());
         }
     }
 }
@@ -1001,29 +922,22 @@ void QDeclarativeViewer::statusChanged()
         tester->executefailure();
 
     if (canvas->status() == QDeclarativeView::Ready) {
-        if (!skin) {
-            canvas->updateGeometry();
-            if (mb)
-                mb->updateGeometry();
-            if (!isFullScreen() && !isMaximized())
-                resize(sizeHint());
-        } else {
-            if (scaleSkin)
-                canvas->resize(canvas->sizeHint());
-            else {
-                canvas->setFixedSize(skin->standardScreenSize());
-                canvas->resize(skin->standardScreenSize());
-            }
+        initialSize = canvas->sizeHint();
+        if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
+            QSize newWindowSize = initialSize;
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+            updateSizeHints();
+            resize(newWindowSize);
         }
     }
 }
 
 void QDeclarativeViewer::launch(const QString& file_or_url)
 {
-    QMetaObject::invokeMethod(this, "openQml", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
+    QMetaObject::invokeMethod(this, "open", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
 }
 
-void QDeclarativeViewer::openQml(const QString& file_or_url)
+bool QDeclarativeViewer::open(const QString& file_or_url)
 {
     currentFileOrUrl = file_or_url;
 
@@ -1033,9 +947,9 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
     else
         url = QUrl(file_or_url);
-    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
+    setWindowTitle(tr("%1 - Qt Qml Runtime").arg(file_or_url));
 
-    if (!m_script.isEmpty()) 
+    if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
 
     delete canvas->rootObject();
@@ -1048,13 +962,15 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
     ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
 #endif
 
+    ctxt->setContextProperty("runtime", Runtime::instance());
+
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
         QFileInfo fi(fileName);
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;
-                return;
+                return false;
             }
 
             QDir dir(fi.path()+"/dummydata", "*.qml");
@@ -1085,7 +1001,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
             }
         } else {
             qWarning() << "qml cannot find file:" << fileName;
-            return;
+            return false;
         }
     }
 
@@ -1094,11 +1010,7 @@ void QDeclarativeViewer::openQml(const QString& file_or_url)
 
     canvas->setSource(url);
 
-    qWarning() << "Wall startup time:" << t.elapsed();
-
-#ifdef QTOPIA
-    show();
-#endif
+    return true;
 }
 
 void QDeclarativeViewer::startNetwork()
@@ -1141,41 +1053,45 @@ void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
         skin->deleteLater();
     }
 
-    canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
-
     DeviceSkinParameters parameters;
     if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
         layout()->setEnabled(false);
-        //setMenuBar(0);
         if (mb)
             mb->hide();
         if (!err.isEmpty())
             qWarning() << err;
         skin = new PreviewDeviceSkin(parameters,this);
-        canvas->resize(canvas->sizeHint());
         if (scaleSkin)
             skin->setPreviewAndScale(canvas);
         else
             skin->setPreview(canvas);
         createMenu(0,skin->menu);
+        if (scaleSkin) {
+            canvas->setResizeMode(QDeclarativeView::SizeViewToRootObject);
+        }
+        updateSizeHints();
         skin->show();
-    } else {
+    } else if (skin) {
         skin = 0;
         clearMask();
-        menuBar()->clear();
+        if ((windowFlags() & Qt::FramelessWindowHint)) {
+            menuBar()->clear();
+            createMenu(menuBar(),0);
+        }
         canvas->setParent(this, Qt::SubWindow);
-        createMenu(menuBar(),0);
-        mb->show();
-        setMinimumSize(QSize(0,0));
-        setMaximumSize(QSize(16777215,16777215));
-        canvas->setMinimumSize(QSize(0,0));
-        canvas->setMaximumSize(QSize(16777215,16777215));
-        QRect g = geometry();
-        g.setSize(sizeHint());
         setParent(0,windowFlags()); // recreate
-        canvas->move(0,menuBar()->sizeHint().height());
-        setGeometry(g);
+        mb->show();
+        canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+        updateSizeHints();
+
         layout()->setEnabled(true);
+        if (!scaleSkin) {
+            canvas->resize(initialSize);
+            canvas->setFixedSize(initialSize);
+        }
+        QSize newWindowSize = canvas->size();
+        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+        resize(newWindowSize);
         show();
     }
     canvas->show();
@@ -1207,9 +1123,10 @@ void QDeclarativeViewer::setRecordRate(int fps)
 void QDeclarativeViewer::sceneResized(QSize size)
 {
     if (size.width() > 0 && size.height() > 0) {
-        if (skin && scaleSkin)
-            skin->setScreenSize(size);
-    }
+        if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
+            updateSizeHints();
+        }
+     }
 }
 
 void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
@@ -1247,6 +1164,16 @@ void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+bool QDeclarativeViewer::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowActivate) {
+        Runtime::instance()->setActiveWindow(true);
+    } else if (event->type() == QEvent::WindowDeactivate) {
+        Runtime::instance()->setActiveWindow(false);
+    }
+    return QWidget::event(event);
 }
 
 void QDeclarativeViewer::senseImageMagick()
@@ -1472,9 +1399,50 @@ void QDeclarativeViewer::setUseNativeFileBrowser(bool use)
     useQmlFileBrowser = !use;
 }
 
+void QDeclarativeViewer::setSizeToView(bool sizeToView)
+{
+    QDeclarativeView::ResizeMode resizeMode = sizeToView ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject;
+    if (resizeMode != canvas->resizeMode()) {
+        canvas->setResizeMode(resizeMode);
+        updateSizeHints();
+    }
+}
+
+void QDeclarativeViewer::updateSizeHints()
+{
+    if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
+        QSize newWindowSize = canvas->sizeHint();
+        if (!skin)
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+        if (!isFullScreen() && !isMaximized()) {
+            resize(newWindowSize);
+            setFixedSize(newWindowSize);
+            if (skin && scaleSkin) {
+                skin->setScreenSize(newWindowSize);
+            }
+        }
+    } else { // QDeclarativeView::SizeRootObjectToView
+        canvas->setMinimumSize(QSize(0,0));
+        canvas->setMaximumSize(QSize(16777215,16777215));
+        setMinimumSize(QSize(0,0));
+        setMaximumSize(QSize(16777215,16777215));
+        if (skin && !scaleSkin) {
+            canvas->setFixedSize(skin->standardScreenSize());
+            skin->setScreenSize(skin->standardScreenSize());
+        }
+    }
+    updateGeometry();
+}
+
 void QDeclarativeViewer::registerTypes()
 {
-    qmlRegisterType<Screen>("QDeclarativeViewer", 1, 0, "Screen");
+    static bool registered = false;
+
+    if (!registered) {
+        // registering only for exposing the DeviceOrientation::Orientation enum
+        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
+        registered = true;
+    }
 }
 
 QT_END_NAMESPACE

@@ -1,10 +1,11 @@
 import Qt 4.7
 
-Item { 
-    id:block
-    
-    Image { id: img
-        source: "../shared/pics/redStone.png";
+Item {
+    id: block
+
+    Image {
+        id: img
         anchors.fill: parent
+        source: "../shared/pics/redStone.png";
     }
 }

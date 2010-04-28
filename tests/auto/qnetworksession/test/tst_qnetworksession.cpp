@@ -44,10 +44,11 @@
 #include <QLocalSocket>
 #include <QTimer>
 #include "../../qbearertestcommon.h"
-#include <qnetworkconfigmanager.h>
-#include <qnetworksession.h>
 
-#ifdef Q_WS_MAEMO_6
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworksession.h>
+
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -71,6 +72,8 @@ public slots:
     void cleanupTestCase();
 
 private slots:
+
+    void robustnessBombing();
 
     void outOfProcessSession();
     void invalidSession();
@@ -100,7 +103,7 @@ private:
 
     int inProcessSessionManagementCount;
 
-#ifdef Q_WS_MAEMO_6
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -123,7 +126,7 @@ void tst_QNetworkSession::initTestCase()
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfiguration::Type>("QNetworkConfiguration::Type");
 
-#ifdef Q_WS_MAEMO_6
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -209,7 +212,7 @@ void tst_QNetworkSession::cleanupTestCase()
                  "inProcessSessionManagement()");
     }
 
-#ifdef Q_WS_MAEMO_6
+#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();
@@ -231,6 +234,23 @@ void tst_QNetworkSession::cleanupTestCase()
     icd_stub->waitForFinished();
 #endif
 }
+
+// Robustness test for calling interfaces in nonsense order / with nonsense parameters
+void tst_QNetworkSession::robustnessBombing() 
+{
+    QNetworkConfigurationManager mgr;
+    QNetworkSession testSession(mgr.defaultConfiguration());
+    // Should not reset even session is not opened
+    testSession.migrate();
+    testSession.accept();
+    testSession.ignore();
+    testSession.reject();
+    quint64 temp;
+    temp = testSession.bytesWritten();
+    temp = testSession.bytesReceived();
+    temp = testSession.activeTime();
+}
+
 
 void tst_QNetworkSession::invalidSession()
 {

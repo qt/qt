@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -34,12 +32,13 @@ namespace WebCore {
         virtual ~SVGFEBlendElement();
 
         virtual void parseMappedAttribute(MappedAttribute*);
+        virtual void synchronizeProperty(const QualifiedName&);
         virtual bool build(SVGResourceFilter*);
 
     private:
-        ANIMATED_PROPERTY_DECLARATIONS(SVGFEBlendElement, SVGNames::feBlendTagString, SVGNames::inAttrString, String, In1, in1)
-        ANIMATED_PROPERTY_DECLARATIONS(SVGFEBlendElement, SVGNames::feBlendTagString, SVGNames::in2AttrString, String, In2, in2)
-        ANIMATED_PROPERTY_DECLARATIONS(SVGFEBlendElement, SVGNames::feBlendTagString, SVGNames::modeAttrString, int, Mode, mode)
+        DECLARE_ANIMATED_PROPERTY(SVGFEBlendElement, SVGNames::inAttr, String, In1, in1)
+        DECLARE_ANIMATED_PROPERTY(SVGFEBlendElement, SVGNames::in2Attr, String, In2, in2)
+        DECLARE_ANIMATED_PROPERTY(SVGFEBlendElement, SVGNames::modeAttr, int, Mode, mode)
     };
 
 } // namespace WebCore

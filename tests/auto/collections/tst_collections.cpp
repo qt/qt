@@ -2260,7 +2260,6 @@ void tst_Collections::qstring()
     QVERIFY(s.isNull());
     QVERIFY(s.toLocal8Bit().size() == 0);
     QVERIFY(s.toLocal8Bit().isEmpty());
-    QVERIFY(!s.toLocal8Bit().isNull());
 
     s = "first-ascii";
     QVERIFY(s.toAscii() == "first-ascii");

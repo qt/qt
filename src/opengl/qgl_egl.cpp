@@ -147,7 +147,7 @@ void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config)
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable
     // to the surface type.  Such errors don't matter.
-    QEgl::clearError();
+    eglGetError();
 }
 
 bool QGLFormat::hasOpenGL()

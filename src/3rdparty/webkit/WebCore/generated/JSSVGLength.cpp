@@ -41,11 +41,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGLength);
 
 static const HashTableValue JSSVGLengthTableValues[6] =
 {
-    { "unitType", DontDelete|ReadOnly, (intptr_t)jsSVGLengthUnitType, (intptr_t)0 },
-    { "value", DontDelete, (intptr_t)jsSVGLengthValue, (intptr_t)setJSSVGLengthValue },
-    { "valueInSpecifiedUnits", DontDelete, (intptr_t)jsSVGLengthValueInSpecifiedUnits, (intptr_t)setJSSVGLengthValueInSpecifiedUnits },
-    { "valueAsString", DontDelete, (intptr_t)jsSVGLengthValueAsString, (intptr_t)setJSSVGLengthValueAsString },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGLengthConstructor, (intptr_t)0 },
+    { "unitType", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthUnitType), (intptr_t)0 },
+    { "value", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthValue), (intptr_t)setJSSVGLengthValue },
+    { "valueInSpecifiedUnits", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthValueInSpecifiedUnits), (intptr_t)setJSSVGLengthValueInSpecifiedUnits },
+    { "valueAsString", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthValueAsString), (intptr_t)setJSSVGLengthValueAsString },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -60,17 +60,17 @@ static JSC_CONST_HASHTABLE HashTable JSSVGLengthTable =
 
 static const HashTableValue JSSVGLengthConstructorTableValues[12] =
 {
-    { "SVG_LENGTHTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_UNKNOWN, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_NUMBER", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_NUMBER, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_EMS", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_EMS, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_EXS", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_EXS, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PX", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PX, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_CM", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_CM, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_MM", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_MM, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_IN", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_IN, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PT", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PT, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PC", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PC, (intptr_t)0 },
+    { "SVG_LENGTHTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_UNKNOWN), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_NUMBER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_NUMBER), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_EMS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_EMS), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_EXS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_EXS), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PX), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_CM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_CM), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_MM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_MM), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_IN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_IN), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PT), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PC", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PC), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -95,7 +95,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -118,19 +118,19 @@ bool JSSVGLengthConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 static const HashTableValue JSSVGLengthPrototypeTableValues[14] =
 {
-    { "SVG_LENGTHTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_UNKNOWN, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_NUMBER", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_NUMBER, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_EMS", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_EMS, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_EXS", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_EXS, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PX", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PX, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_CM", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_CM, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_MM", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_MM, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_IN", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_IN, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PT", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PT, (intptr_t)0 },
-    { "SVG_LENGTHTYPE_PC", DontDelete|ReadOnly, (intptr_t)jsSVGLengthSVG_LENGTHTYPE_PC, (intptr_t)0 },
-    { "newValueSpecifiedUnits", DontDelete|Function, (intptr_t)jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits, (intptr_t)2 },
-    { "convertToSpecifiedUnits", DontDelete|Function, (intptr_t)jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits, (intptr_t)1 },
+    { "SVG_LENGTHTYPE_UNKNOWN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_UNKNOWN), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_NUMBER", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_NUMBER), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PERCENTAGE", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_EMS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_EMS), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_EXS", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_EXS), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PX", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PX), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_CM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_CM), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_MM", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_MM), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_IN", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_IN), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PT", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PT), (intptr_t)0 },
+    { "SVG_LENGTHTYPE_PC", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGLengthSVG_LENGTHTYPE_PC), (intptr_t)0 },
+    { "newValueSpecifiedUnits", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits), (intptr_t)2 },
+    { "convertToSpecifiedUnits", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -160,16 +160,16 @@ bool JSSVGLengthPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSSVGLength::s_info = { "SVGLength", 0, &JSSVGLengthTable, 0 };
 
-JSSVGLength::JSSVGLength(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> > impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGLength::JSSVGLength(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> > impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
 
 JSSVGLength::~JSSVGLength()
 {
-    JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::forgetWrapper(m_impl.get());
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGLength::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -187,40 +187,43 @@ bool JSSVGLength::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pr
     return getStaticValueDescriptor<JSSVGLength, Base>(exec, &JSSVGLengthTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGLengthUnitType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLengthUnitType(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
+    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGLength imp(*castedThis->impl());
-    return jsNumber(exec, imp.unitType());
+    JSValue result =  jsNumber(exec, imp.unitType());
+    return result;
 }
 
-JSValue jsSVGLengthValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLengthValue(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
+    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slotBase));
     return castedThis->value(exec);
 }
 
-JSValue jsSVGLengthValueInSpecifiedUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLengthValueInSpecifiedUnits(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
+    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGLength imp(*castedThis->impl());
-    return jsNumber(exec, imp.valueInSpecifiedUnits());
+    JSValue result =  jsNumber(exec, imp.valueInSpecifiedUnits());
+    return result;
 }
 
-JSValue jsSVGLengthValueAsString(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLengthValueAsString(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
+    JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGLength imp(*castedThis->impl());
-    return jsString(exec, imp.valueAsString());
+    JSValue result =  jsString(exec, imp.valueAsString());
+    return result;
 }
 
-JSValue jsSVGLengthConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGLengthConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    UNUSED_PARAM(slot);
-    return JSSVGLength::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
+    JSSVGLength* domObject = static_cast<JSSVGLength*>(asObject(slotBase));
+    return JSSVGLength::getConstructor(exec, domObject->globalObject());
 }
 void JSSVGLength::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -229,23 +232,29 @@ void JSSVGLength::put(ExecState* exec, const Identifier& propertyName, JSValue v
 
 void setJSSVGLengthValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGLength imp(*static_cast<JSSVGLength*>(thisObject)->impl());
-    imp.setValue(value.toFloat(exec));
-        static_cast<JSSVGLength*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGLength*>(thisObject)->context());
+    JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(thisObject);
+    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
+    SVGLength podImp(*imp);
+    podImp.setValue(value.toFloat(exec));
+    imp->commitChange(podImp, castedThisObj);
 }
 
 void setJSSVGLengthValueInSpecifiedUnits(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGLength imp(*static_cast<JSSVGLength*>(thisObject)->impl());
-    imp.setValueInSpecifiedUnits(value.toFloat(exec));
-        static_cast<JSSVGLength*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGLength*>(thisObject)->context());
+    JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(thisObject);
+    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
+    SVGLength podImp(*imp);
+    podImp.setValueInSpecifiedUnits(value.toFloat(exec));
+    imp->commitChange(podImp, castedThisObj);
 }
 
 void setJSSVGLengthValueAsString(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGLength imp(*static_cast<JSSVGLength*>(thisObject)->impl());
-    imp.setValueAsString(valueToStringWithNullCheck(exec, value));
-        static_cast<JSSVGLength*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGLength*>(thisObject)->context());
+    JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(thisObject);
+    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
+    SVGLength podImp(*imp);
+    podImp.setValueAsString(valueToStringWithNullCheck(exec, value));
+    imp->commitChange(podImp, castedThisObj);
 }
 
 JSValue JSSVGLength::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -259,13 +268,13 @@ JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(ExecSta
     if (!thisValue.inherits(&JSSVGLength::s_info))
         return throwError(exec, TypeError);
     JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGLength>* wrapper = castedThisObj->impl();
-    SVGLength imp(*wrapper);
+    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
+    SVGLength podImp(*imp);
     unsigned short unitType = args.at(0).toInt32(exec);
     float valueInSpecifiedUnits = args.at(1).toFloat(exec);
 
-    imp.newValueSpecifiedUnits(unitType, valueInSpecifiedUnits);
-    wrapper->commitChange(imp, castedThisObj->context());
+    podImp.newValueSpecifiedUnits(unitType, valueInSpecifiedUnits);
+    imp->commitChange(podImp, castedThisObj);
     return jsUndefined();
 }
 
@@ -280,57 +289,57 @@ JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits(ExecSt
 
 // Constant getters
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_UNKNOWN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_NUMBER(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_NUMBER(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_EMS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_EMS(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_EXS(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_EXS(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_PX(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_PX(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_CM(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_CM(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(6));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_MM(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_MM(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(7));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_IN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_IN(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(8));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_PT(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_PT(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(9));
 }
 
-JSValue jsSVGLengthSVG_LENGTHTYPE_PC(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGLengthSVG_LENGTHTYPE_PC(ExecState* exec, JSValue, const Identifier&)
 {
     return jsNumber(exec, static_cast<int>(10));
 }

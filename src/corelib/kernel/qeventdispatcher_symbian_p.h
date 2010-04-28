@@ -259,8 +259,9 @@ private:
     bool sendPostedEvents();
     bool sendDeferredSocketEvents();
 
+    QSelectThread& selectThread();
 private:
-    QSelectThread m_selectThread;
+    QSelectThread *m_selectThread;
 
     CQtActiveScheduler *m_activeScheduler;
 

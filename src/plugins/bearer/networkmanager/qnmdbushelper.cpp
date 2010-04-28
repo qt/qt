@@ -52,6 +52,8 @@
 
 #include <QDebug>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 QNmDBusHelper::QNmDBusHelper(QObject * parent)
@@ -124,3 +126,5 @@ void QNmDBusHelper::slotSettingsRemoved()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS

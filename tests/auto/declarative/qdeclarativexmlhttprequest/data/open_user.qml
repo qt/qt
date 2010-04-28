@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property string url
@@ -20,6 +20,7 @@ QtObject {
             readyState = true;
 
         x.open("GET", url, true, "username", "password");
+        x.setRequestHeader("Accept-Language","en-US");
 
         if (x.readyState  == XMLHttpRequest.OPENED)
             openedState = true;

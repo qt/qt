@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeState;
-struct QDeclarativeAnchorLine;
+class QDeclarativeAnchorLine;
 class QDeclarativeTransition;
 class QDeclarativeKeyEvent;
 class QDeclarativeAnchors;
@@ -91,7 +91,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeItem : public QGraphicsObject, public QDe
     Q_PROPERTY(QDeclarativeListProperty<QGraphicsTransform> transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
-    Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
@@ -158,6 +157,7 @@ public:
 
     Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
     Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
+    Q_INVOKABLE void forceFocus();
 
     QDeclarativeAnchorLine left() const;
     QDeclarativeAnchorLine right() const;

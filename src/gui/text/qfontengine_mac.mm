@@ -226,8 +226,19 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
     QFixed *outAdvances_y = glyphs->advances_y;
     glyph_t *initialGlyph = outGlyphs;
 
-    if (arraySize == 0)
-        return false;
+    if (arraySize == 0) {
+        // CoreText failed to shape the text we gave it, so we assume one glyph
+        // per character and build a list of invalid glyphs with zero advance
+        *nglyphs = len;
+        for (int i = 0; i < len; ++i) {
+            outGlyphs[i] = 0;
+            logClusters[i] = i;
+            outAdvances_x[i] = QFixed();
+            outAdvances_y[i] = QFixed();
+            outAttributes[i].clusterStart = true;
+        }
+        return true;
+    }
 
     const bool rtl = (CTRunGetStatus(static_cast<CTRunRef>(CFArrayGetValueAtIndex(array, 0))) & kCTRunStatusRightToLeft);
 

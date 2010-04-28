@@ -84,14 +84,14 @@ public:
 
     QString bearerName() const;
 
+    QNetworkConfigurationPrivatePointer serviceNetworkPtr;
+
+    QString mappingName;
+
     Bearer bearer;
 
     TUint32 numericId;
     TUint connectionId;
-
-    QNetworkConfigurationPrivatePointer serviceNetworkPtr;
-
-    QString mappingName;
 };
 
 inline SymbianNetworkConfigurationPrivate *toSymbianConfig(QNetworkConfigurationPrivatePointer ptr)
@@ -110,6 +110,7 @@ public:
 
     bool hasIdentifier(const QString &id);
 
+    Q_INVOKABLE void initialize();
     Q_INVOKABLE void requestUpdate();
 
     QNetworkConfigurationManager::Capabilities capabilities() const;

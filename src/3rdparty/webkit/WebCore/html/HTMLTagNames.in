@@ -8,6 +8,8 @@ acronym interfaceName=HTMLElement
 address interfaceName=HTMLElement
 applet
 area
+article interfaceName=HTMLElement
+aside interfaceName=HTMLElement
 audio wrapperOnlyIfMediaIsAvailable, conditional=VIDEO, createWithNew
 b interfaceName=HTMLElement
 base createWithNew
@@ -41,6 +43,7 @@ em interfaceName=HTMLElement
 embed
 fieldset interfaceName=HTMLFieldSetElement, constructorNeedsFormElement, createWithNew
 font createWithNew
+footer interfaceName=HTMLElement
 form createWithNew
 frame
 frameset interfaceName=HTMLFrameSetElement, createWithNew
@@ -51,6 +54,8 @@ h4 interfaceName=HTMLHeadingElement, createWithNew
 h5 interfaceName=HTMLHeadingElement, createWithNew
 h6 interfaceName=HTMLHeadingElement, createWithNew
 head createWithNew
+header interfaceName=HTMLElement
+hgroup interfaceName=HTMLElement
 hr interfaceName=HTMLHRElement, createWithNew
 html createWithNew
 i interfaceName=HTMLElement
@@ -85,13 +90,15 @@ p interfaceName=HTMLParagraphElement, createWithNew
 param createWithNew
 plaintext interfaceName=HTMLElement
 pre createWithNew
+progress interfaceName=HTMLProgressElement, conditional=PROGRESS_TAG
 q interfaceName=HTMLQuoteElement, createWithNew
-rp interfaceName=HTMLElement
-rt interfaceName=HTMLElement
-ruby interfaceName=HTMLElement
+rp interfaceName=HTMLElement, conditional=RUBY
+rt interfaceName=HTMLElement, conditional=RUBY
+ruby interfaceName=HTMLElement, conditional=RUBY
 s interfaceName=HTMLElement
 samp interfaceName=HTMLElement
 script constructorNeedsCreatedByParser, createWithNew
+section interfaceName=HTMLElement
 select constructorNeedsFormElement, createWithNew
 small interfaceName=HTMLElement
 source wrapperOnlyIfMediaIsAvailable, conditional=VIDEO, createWithNew

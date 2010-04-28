@@ -84,11 +84,11 @@ extern QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set;
 
 enum { QObjectPrivateVersion = QT_VERSION };
 
-class Q_CORE_EXPORT QDeclarativeData
+class Q_CORE_EXPORT QAbstractDeclarativeData
 {
 public:
-    static void (*destroyed)(QDeclarativeData *, QObject *);
-    static void (*parentChanged)(QDeclarativeData *, QObject *, QObject *);
+    static void (*destroyed)(QAbstractDeclarativeData *, QObject *);
+    static void (*parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
@@ -156,9 +156,9 @@ public:
     void removePendingChildInsertedEvents(QObject *child);
 #endif
 
-    static Sender *setCurrentSender(QObject *receiver,
+    static inline Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);
-    static void resetCurrentSender(QObject *receiver,
+    static inline void resetCurrentSender(QObject *receiver,
                                    Sender *currentSender,
                                    Sender *previousSender);
     static int *setDeleteWatch(QObjectPrivate *d, int *newWatch);
@@ -194,7 +194,7 @@ public:
     QList<QPointer<QObject> > eventFilters;
     union {
         QObject *currentChildBeingDeleted;
-        QDeclarativeData *declarativeData; //extra data used by the DeclarativeUI project.
+        QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module
     };
 
     // these objects are all used to indicate that a QObject was deleted
@@ -215,9 +215,29 @@ public:
 inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
 {
     return signal_index >= sizeof(connectedSignals) * 8
+        || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f))
         || qt_signal_spy_callback_set.signal_begin_callback
-        || qt_signal_spy_callback_set.signal_end_callback
-        || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f)));
+        || qt_signal_spy_callback_set.signal_end_callback);
+}
+
+inline QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
+                                                         Sender *sender)
+{
+    Sender *previousSender = receiver->d_func()->currentSender;
+    receiver->d_func()->currentSender = sender;
+    return previousSender;
+}
+
+inline void QObjectPrivate::resetCurrentSender(QObject *receiver,
+                                        Sender *currentSender,
+                                        Sender *previousSender)
+{
+    // ref is set to zero when this object is deleted during the metacall
+    if (currentSender->ref == 1)
+        receiver->d_func()->currentSender = previousSender;
+    // if we've recursed, we need to tell the caller about the objects deletion
+    if (previousSender)
+        previousSender->ref = currentSender->ref;
 }
 
 

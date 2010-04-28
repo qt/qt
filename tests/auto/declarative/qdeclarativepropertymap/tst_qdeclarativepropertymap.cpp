@@ -138,7 +138,7 @@ void tst_QDeclarativePropertyMap::changed()
     QDeclarativeContext *ctxt = engine.rootContext();
     ctxt->setContextProperty(QLatin1String("testdata"), &map);
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nText { text: { testdata.key1 = 'Hello World'; 'X' } }",
+    component.setData("import Qt 4.7\nText { text: { testdata.key1 = 'Hello World'; 'X' } }",
             QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
     QDeclarativeText *txt = qobject_cast<QDeclarativeText*>(component.create());
@@ -179,7 +179,7 @@ void tst_QDeclarativePropertyMap::crashBug()
     context.setContextProperty("map", &map);
 
     QDeclarativeComponent c(&engine);
-    c.setData("import Qt 4.6\nBinding { target: map; property: \"myProp\"; value: 10 + 23 }",QUrl());
+    c.setData("import Qt 4.7\nBinding { target: map; property: \"myProp\"; value: 10 + 23 }",QUrl());
     QObject *obj = c.create(&context);
     delete obj;
 }

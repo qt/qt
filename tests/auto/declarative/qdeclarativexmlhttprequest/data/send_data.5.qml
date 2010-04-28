@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property string url
@@ -9,6 +9,7 @@ QtObject {
         var x = new XMLHttpRequest;
         x.open("POST", url);
         x.setRequestHeader("Content-Type", "charset=latin1;text/plain");
+        x.setRequestHeader("Accept-Language","en-US");
 
         // Test to the end
         x.onreadystatechange = function() {

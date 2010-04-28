@@ -67,6 +67,7 @@ public:
     ~QDeclarativeValueTypeScriptClass();
 
     QScriptValue newObject(QObject *object, int coreIndex, QDeclarativeValueType *);
+    QScriptValue newObject(const QVariant &, QDeclarativeValueType *);
 
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);

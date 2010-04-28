@@ -54,8 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT extern int qt_defaultDpiX();
+Q_GUI_EXPORT extern int qt_defaultDpiY();
 extern void qt_format_text(const QFont &font,
                            const QRectF &_r, int tf, const QTextOption *option, const QString& str, QRectF *brect,
                            int tabstops, int* tabarray, int tabarraylen,
@@ -312,6 +312,7 @@ int QPaintBuffer::processCommands(QPainter *painter, int begin, int end) const
     return depth;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QString QPaintBuffer::commandDescription(int command) const
 {
     QString desc;
@@ -563,6 +564,7 @@ QString QPaintBuffer::commandDescription(int command) const
 
     return desc;
 }
+#endif
 
 QRectF QPaintBuffer::boundingRect() const
 {

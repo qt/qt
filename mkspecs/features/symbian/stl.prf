@@ -21,8 +21,8 @@ STL_LIB = -llibstdcppv5.dll
 STL_MMP_RULE = "STDCPP"
 
 # Fall back to old implementation if that is the only one that is found
-exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcpp.dll)|exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcpp.dll) {
-    !exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcppv5.dll):!exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcppv5.dll) {
+exists($${EPOCROOT}epoc32/release/armv5/lib/libstdcpp.dso)|exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcpp.dll) {
+    !exists($${EPOCROOT}epoc32/release/armv5/lib/libstdcppv5.dso):!exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcppv5.dll) {
         STL_LIB = -llibstdcpp.dll
         STL_MMP_RULE =
     }

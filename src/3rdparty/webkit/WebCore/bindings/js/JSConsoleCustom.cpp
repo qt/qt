@@ -24,11 +24,13 @@
  */
 
 #include "config.h"
+
 #include "JSConsole.h"
-#include "JavaScriptProfile.h"
-#include <runtime/JSArray.h>
 
 #include "Console.h"
+#include "JavaScriptProfile.h"
+#include "ScriptCallStack.h"
+#include <runtime/JSArray.h>
 
 using namespace JSC;
 

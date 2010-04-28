@@ -82,6 +82,9 @@ public:
 
     A GestureArea is like a MouseArea, but it has signals for gesture events.
 
+    \e {Elements in the Qt.labs module are not guaranteed to remain compatible
+    in future versions.}
+
     \e {This element is only functional on devices with touch input.}
 
     \qml

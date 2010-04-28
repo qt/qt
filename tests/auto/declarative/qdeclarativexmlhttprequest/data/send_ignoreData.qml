@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property string reqType
@@ -9,6 +9,7 @@ QtObject {
     Component.onCompleted: {
         var x = new XMLHttpRequest;
         x.open(reqType, url);
+        x.setRequestHeader("Accept-Language","en-US");
 
         // Test to the end
         x.onreadystatechange = function() {

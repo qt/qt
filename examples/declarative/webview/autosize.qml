@@ -5,15 +5,16 @@ import org.webkit 1.0
 // preferredWidth, and preferredHeight properties.
 Rectangle {
     id: rect
-    color: "white"
     width: 200
     height: layout.height
+
     Column {
         id: layout
         spacing: 2
         WebView {
             html: "No width defined."
-            Rectangle {                color: "#10000000"
+            Rectangle {
+                color: "#10000000"
                 anchors.fill: parent
             }
         }

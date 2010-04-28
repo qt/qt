@@ -35,9 +35,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLPreElement);
 
 static const HashTableValue JSHTMLPreElementTableValues[4] =
 {
-    { "width", DontDelete, (intptr_t)jsHTMLPreElementWidth, (intptr_t)setJSHTMLPreElementWidth },
-    { "wrap", DontDelete, (intptr_t)jsHTMLPreElementWrap, (intptr_t)setJSHTMLPreElementWrap },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLPreElementConstructor, (intptr_t)0 },
+    { "width", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLPreElementWidth), (intptr_t)setJSHTMLPreElementWidth },
+    { "wrap", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLPreElementWrap), (intptr_t)setJSHTMLPreElementWrap },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsHTMLPreElementConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -138,25 +138,27 @@ bool JSHTMLPreElement::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSHTMLPreElement, Base>(exec, &JSHTMLPreElementTable, this, propertyName, descriptor);
 }
 
-JSValue jsHTMLPreElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLPreElementWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLPreElement* castedThis = static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()));
+    JSHTMLPreElement* castedThis = static_cast<JSHTMLPreElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThis->impl());
-    return jsNumber(exec, imp->width());
+    JSValue result = jsNumber(exec, imp->width());
+    return result;
 }
 
-JSValue jsHTMLPreElementWrap(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLPreElementWrap(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLPreElement* castedThis = static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()));
+    JSHTMLPreElement* castedThis = static_cast<JSHTMLPreElement*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThis->impl());
-    return jsBoolean(imp->wrap());
+    JSValue result = jsBoolean(imp->wrap());
+    return result;
 }
 
-JSValue jsHTMLPreElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLPreElementConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSHTMLPreElement* domObject = static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()));
+    JSHTMLPreElement* domObject = static_cast<JSHTMLPreElement*>(asObject(slotBase));
     return JSHTMLPreElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLPreElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -166,13 +168,15 @@ void JSHTMLPreElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLPreElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(thisObject)->impl());
+    JSHTMLPreElement* castedThisObj = static_cast<JSHTMLPreElement*>(thisObject);
+    HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThisObj->impl());
     imp->setWidth(value.toInt32(exec));
 }
 
 void setJSHTMLPreElementWrap(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(thisObject)->impl());
+    JSHTMLPreElement* castedThisObj = static_cast<JSHTMLPreElement*>(thisObject);
+    HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThisObj->impl());
     imp->setWrap(value.toBoolean(exec));
 }
 

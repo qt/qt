@@ -3,8 +3,6 @@
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
     Copyright (C) 2008 Apple Inc. All rights reserved.
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -64,7 +62,7 @@ static bool parseNumberValueAndUnit(const String& in, double& value, String& uni
         unitLength = 4;
     String newUnit = parse.right(unitLength);
     String number = parse.left(parse.length() - unitLength);
-    if (!unit.isEmpty() && newUnit != unit || number.isEmpty())
+    if ((!unit.isEmpty() && newUnit != unit) || number.isEmpty())
         return false;
     UChar last = number[number.length() - 1];
     if (last < '0' || last > '9')

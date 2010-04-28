@@ -1,4 +1,14 @@
 =============================================================================
+The changes below are pre Qt 4.7.0 RC
+
+Flickable: overShoot is replaced by boundsBehavior enumeration.
+
+C++ API
+-------
+QDeclarativeExpression::value() has been renamed to
+QDeclarativeExpression::evaluate()
+
+=============================================================================
 The changes below are pre Qt 4.7.0 beta
 
 TextEdit: wrap property is replaced by wrapMode enumeration.
@@ -19,6 +29,8 @@ Animation: replace repeat with loops (loops: Animation.Infinite gives the old re
 AnchorChanges: use natural form to specify anchors (anchors.left instead of left)
 AnchorChanges: removed reset property. (reset: "left" should now be anchors.left: undefined)
 PathView: snapPosition replaced by preferredHighlightBegin, preferredHighlightEnd
+createQmlObject: Moved to the Qt object, now use Qt.createQmlObject()
+createComponent: Moved to the Qt object, now use Qt.createComponent()
 
 C++ API
 -------
@@ -55,22 +67,22 @@ automatically 'followed' anymore.
 
 If you want to follow an hypothetical rect1, you should do now:
 
-     Rectangle {
-         color: "green"
-         width: 60; height: 60;
-         x: rect1.x - 5; y: rect1.y - 5;
-         Behavior on x { SmoothedAnimation { velocity: 200 } }
-         Behavior on y { SmoothedAnimation { velocity: 200 } }
-     }
+     Rectangle {
+         color: "green"
+         width: 60; height: 60;
+         x: rect1.x - 5; y: rect1.y - 5;
+         Behavior on x { SmoothedAnimation { velocity: 200 } }
+         Behavior on y { SmoothedAnimation { velocity: 200 } }
+     }
 
 instead of the old automatic source changed tracking:
 
-     Rectangle {
-         color: "green"
-         width: 60; height: 60;
-         EaseFollow on x { source: rect1.x - 5; velocity: 200 }
-         EaseFollow on y { source: rect1.y - 5; velocity: 200 }
-    }
+     Rectangle {
+         color: "green"
+         width: 60; height: 60;
+         EaseFollow on x { source: rect1.x - 5; velocity: 200 }
+         EaseFollow on y { source: rect1.y - 5; velocity: 200 }
+    }
 
 This is a syntax and behavior change.
 

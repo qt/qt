@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
-extern bool qt_blockCocoaSettingModalWindowLevel; // qeventdispatcher_mac_p.h
 
 Q_GLOBAL_STATIC(QPointer<QWidget>, currentDragTarget);
 
@@ -102,28 +101,15 @@ QT_END_NAMESPACE
     return !(isPopup || isToolTip || isTool);
 }
 
-- (void)orderWindow:(NSWindowOrderingMode)orderingMode relativeTo:(NSInteger)otherWindowNumber
+- (void)becomeMainWindow
 {
-    if (qt_blockCocoaSettingModalWindowLevel) {
-        // To avoid windows popping in front while restoring modal sessions
-        // in the event dispatcher, we block cocoa from ordering this window
-        // to front. The result of not doing this can be seen if executing
-        // a native color dialog on top of another executing dialog.
-        return;
-    }
-    [super orderWindow:orderingMode relativeTo:otherWindowNumber];
-}
-
-- (void)setLevel:(NSInteger)windowLevel
-{
-    if (qt_blockCocoaSettingModalWindowLevel) {
-        // To avoid windows popping in front while restoring modal sessions
-        // in the event dispatcher, we block cocoa from ordering this window
-        // to front. The result of not doing this can be seen if executing
-        // a native color dialog on top of another executing dialog.
-        return;
-    }
-    [super setLevel:windowLevel];
+    [super becomeMainWindow];
+    // Cocoa sometimes tell a hidden window to become the
+    // main window (and as such, show it). This can e.g
+    // happend when the application gets activated. If
+    // this is the case, we tell it to hide again:
+    if (![self isVisible])
+        [self orderOut:self];
 }
 
 - (void)toggleToolbarShown:(id)sender

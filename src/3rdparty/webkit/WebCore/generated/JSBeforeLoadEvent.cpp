@@ -37,8 +37,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSBeforeLoadEvent);
 
 static const HashTableValue JSBeforeLoadEventTableValues[3] =
 {
-    { "url", DontDelete|ReadOnly, (intptr_t)jsBeforeLoadEventUrl, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsBeforeLoadEventConstructor, (intptr_t)0 },
+    { "url", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsBeforeLoadEventUrl), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsBeforeLoadEventConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -100,7 +100,7 @@ bool JSBeforeLoadEventConstructor::getOwnPropertyDescriptor(ExecState* exec, con
 
 static const HashTableValue JSBeforeLoadEventPrototypeTableValues[2] =
 {
-    { "initBeforeLoadEvent", DontDelete|Function, (intptr_t)jsBeforeLoadEventPrototypeFunctionInitBeforeLoadEvent, (intptr_t)4 },
+    { "initBeforeLoadEvent", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsBeforeLoadEventPrototypeFunctionInitBeforeLoadEvent), (intptr_t)4 },
     { 0, 0, 0, 0 }
 };
 
@@ -150,17 +150,18 @@ bool JSBeforeLoadEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifi
     return getStaticValueDescriptor<JSBeforeLoadEvent, Base>(exec, &JSBeforeLoadEventTable, this, propertyName, descriptor);
 }
 
-JSValue jsBeforeLoadEventUrl(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsBeforeLoadEventUrl(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSBeforeLoadEvent* castedThis = static_cast<JSBeforeLoadEvent*>(asObject(slot.slotBase()));
+    JSBeforeLoadEvent* castedThis = static_cast<JSBeforeLoadEvent*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     BeforeLoadEvent* imp = static_cast<BeforeLoadEvent*>(castedThis->impl());
-    return jsString(exec, imp->url());
+    JSValue result = jsString(exec, imp->url());
+    return result;
 }
 
-JSValue jsBeforeLoadEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsBeforeLoadEventConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSBeforeLoadEvent* domObject = static_cast<JSBeforeLoadEvent*>(asObject(slot.slotBase()));
+    JSBeforeLoadEvent* domObject = static_cast<JSBeforeLoadEvent*>(asObject(slotBase));
     return JSBeforeLoadEvent::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSBeforeLoadEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

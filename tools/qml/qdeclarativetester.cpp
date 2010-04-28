@@ -181,7 +181,7 @@ void QDeclarativeTester::save()
     file.open(QIODevice::WriteOnly);
     QTextStream ts(&file);
 
-    ts << "import Qt.VisualTest 4.6\n\n";
+    ts << "import Qt.VisualTest 4.7\n\n";
     ts << "VisualTest {\n";
 
     int imgCount = 0;
@@ -240,6 +240,8 @@ void QDeclarativeTester::save()
 void QDeclarativeTester::updateCurrentTime(int msec)
 {
     QDeclarativeItemPrivate::setConsistentTime(msec);
+    if (!testscript && msec > 16 && options & QDeclarativeViewer::Snapshot)
+        return;
 
     QImage img(m_view->width(), m_view->height(), QImage::Format_RGB32);
 
@@ -249,11 +251,14 @@ void QDeclarativeTester::updateCurrentTime(int msec)
         m_view->render(&p);
     }
 
+    bool snapshot = msec == 16 && (options & QDeclarativeViewer::Snapshot
+                                   || (testscript && testscript->count() == 2));
+
     FrameEvent fe;
     fe.msec = msec;
     if (msec == 0 || !(options & QDeclarativeViewer::TestImages)) {
         // Skip first frame, skip if not doing images
-    } else if (0 == (m_savedFrameEvents.count() % 60)) {
+    } else if (0 == (m_savedFrameEvents.count() % 60) || snapshot) {
         fe.image = img;
     } else {
         QCryptographicHash hash(QCryptographicHash::Md5);
@@ -328,6 +333,24 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                     qWarning() << "QDeclarativeTester: Image mismatch.  Reject saved to:" 
                                << reject;
                     img.save(reject);
+                    bool doDiff = (goodImage.size() == img.size());
+                    if (doDiff) {
+                        QImage diffimg(m_view->width(), m_view->height(), QImage::Format_RGB32);
+                        diffimg.fill(qRgb(255,255,255));
+                        QPainter p(&diffimg);
+                        int diffCount = 0;
+                        for (int x = 0; x < img.width(); ++x) {
+                            for (int y = 0; y < img.height(); ++y) {
+                                if (goodImage.pixel(x,y) != img.pixel(x,y)) {
+                                    ++diffCount;
+                                    p.drawPoint(x,y);
+                                }
+                            }
+                        }
+                        QString diff(frame->image().toLocalFile() + ".diff.png");
+                        diffimg.save(diff);
+                        qWarning().nospace() << "                    Diff (" << diffCount << " pixels differed) saved to: " << diff;
+                    }
                     imagefailure();
                 }
             }
@@ -366,16 +389,19 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
     filterEvents = true;
 
-    if (testscript && testscript->count() <= testscriptidx)
+    if (testscript && testscript->count() <= testscriptidx) {
+        //if (msec == 16) //for a snapshot, leave it up long enough to see
+        //    (void)::sleep(1);
         complete();
+    }
 }
 
 void QDeclarativeTester::registerTypes()
 {
-    qmlRegisterType<QDeclarativeVisualTest>("Qt.VisualTest", 4,6, "VisualTest");
-    qmlRegisterType<QDeclarativeVisualTestFrame>("Qt.VisualTest", 4,6, "Frame");
-    qmlRegisterType<QDeclarativeVisualTestMouse>("Qt.VisualTest", 4,6, "Mouse");
-    qmlRegisterType<QDeclarativeVisualTestKey>("Qt.VisualTest", 4,6, "Key");
+    qmlRegisterType<QDeclarativeVisualTest>("Qt.VisualTest", 4,7, "VisualTest");
+    qmlRegisterType<QDeclarativeVisualTestFrame>("Qt.VisualTest", 4,7, "Frame");
+    qmlRegisterType<QDeclarativeVisualTestMouse>("Qt.VisualTest", 4,7, "Mouse");
+    qmlRegisterType<QDeclarativeVisualTestKey>("Qt.VisualTest", 4,7, "Key");
 }
 
 QT_END_NAMESPACE

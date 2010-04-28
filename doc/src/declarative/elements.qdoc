@@ -44,9 +44,7 @@
 \target elements
 \title QML Elements
 
-The following table lists the QML elements provided by the Qt Declarative module.
-
-\bold {Standard Qt Declarative Elements}
+The following table lists the QML elements provided by the \l {QtDeclarative}{Qt Declarative} module.
 
 \table 80%
 \header
@@ -81,6 +79,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l PropertyAction
 \o \l ScriptAction
 \o \l Transition
+\o \l SmoothedFollow
 \o \l SpringFollow
 \o \l Behavior
 \endlist
@@ -109,11 +108,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l QtObject
 \o \l WorkerScript
 \endlist
-\endtable
 
-\bold {QML Items}
-
-\table 80%
 \header
 \o \bold {Basic Visual Items}
 \o \bold {Basic Interaction Items}
@@ -127,6 +122,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Rectangle
 \o \l Image
 \o \l BorderImage
+\o \l AnimatedImage
 \o \l Text
 \o \l TextInput
 \o \l TextEdit

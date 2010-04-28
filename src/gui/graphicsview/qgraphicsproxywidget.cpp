@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
 */
 
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *);
-extern bool qt_tab_all_widgets;
+Q_GUI_EXPORT extern bool qt_tab_all_widgets;
 
 /*!
     \internal
@@ -897,6 +897,29 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         }
         break;
     }
+#ifndef QT_NO_TOOLTIP
+    case QEvent::GraphicsSceneHelp: {
+        // Propagate the help event (for tooltip) to the widget under mouse
+        if (d->lastWidgetUnderMouse) {
+            QGraphicsSceneHelpEvent *he = static_cast<QGraphicsSceneHelpEvent *>(event);
+            QPoint pos = d->mapToReceiver(mapFromScene(he->scenePos()), d->lastWidgetUnderMouse).toPoint();
+            QHelpEvent e(QEvent::ToolTip, pos, he->screenPos());
+            QApplication::sendEvent(d->lastWidgetUnderMouse, &e);
+            event->setAccepted(e.isAccepted());
+            return e.isAccepted();
+        }
+        break;
+    }
+    case QEvent::ToolTipChange: {
+        // Propagate tooltip change to the widget
+        if (!d->tooltipChangeMode) {
+            d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::ProxyToWidgetMode;
+            d->widget->setToolTip(toolTip());
+            d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
+        }
+        break;
+    }
+#endif
     default:
         break;
     }
@@ -952,6 +975,14 @@ bool QGraphicsProxyWidget::eventFilter(QObject *object, QEvent *event)
                 d->styleChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
             }
             break;
+        case QEvent::ToolTipChange:
+            // Propagate tooltip change to the proxy.
+            if (!d->tooltipChangeMode) {
+                d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::WidgetToProxyMode;
+                setToolTip(d->widget->toolTip());
+                d->tooltipChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
+            }
+            break;
         default:
             break;
         }
@@ -993,9 +1024,18 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
     // Map event position from us to the receiver
     pos = d->mapToReceiver(pos, receiver);
 
+    QPoint globalPos = receiver->mapToGlobal(pos.toPoint());
+    //If the receiver by-pass the proxy its popups
+    //will be top level QWidgets therefore they need
+    //the screen position. mapToGlobal expect the widget to
+    //have proper coordinates in regards of the windowing system
+    //but it's not true because the widget is embedded.
+    if (bypassGraphicsProxyWidget(receiver))
+        globalPos = event->screenPos();
+
     // Send mouse event. ### Doesn't propagate the event.
     QContextMenuEvent contextMenuEvent(QContextMenuEvent::Reason(event->reason()),
-                                       pos.toPoint(), receiver->mapToGlobal(pos.toPoint()), event->modifiers());
+                                       pos.toPoint(), globalPos, event->modifiers());
     QApplication::sendEvent(receiver, &contextMenuEvent);
 
     event->setAccepted(contextMenuEvent.isAccepted());

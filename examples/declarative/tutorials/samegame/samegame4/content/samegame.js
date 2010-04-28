@@ -13,8 +13,8 @@ function index(column, row) {
 }
 
 function startNewGame() {
+    //Delete blocks from previous game
     for (var i = 0; i < maxIndex; i++) {
-        //Delete blocks from previous game
         if (board[i] != null)
             board[i].destroy();
     }
@@ -43,7 +43,7 @@ function startNewGame() {
 
 function createBlock(column, row) {
     if (component == null)
-        component = createComponent("content/BoomBlock.qml");
+        component = Qt.createComponent("content/BoomBlock.qml");
 
     // Note that if Block.qml was not a local file, component.isReady would be
     // false and we should wait for the component's statusChanged() signal to
@@ -51,8 +51,8 @@ function createBlock(column, row) {
     if (component.isReady) {
         var dynamicObject = component.createObject();
         if (dynamicObject == null) {
-            print("error creating block");
-            print(component.errorsString());
+            console.log("error creating block");
+            console.log(component.errorsString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
@@ -65,8 +65,8 @@ function createBlock(column, row) {
         dynamicObject.spawned = true;
         board[index(column, row)] = dynamicObject;
     } else {
-        print("error loading block component");
-        print(component.errorsString());
+        console.log("error loading block component");
+        console.log(component.errorsString());
         return false;
     }
     return true;

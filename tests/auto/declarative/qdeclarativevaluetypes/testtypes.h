@@ -129,8 +129,10 @@ public:
 signals:
     void changed();
     void runScript();
+
+public slots:
+    QSize method() { return QSize(13, 14); }
 };
-QML_DECLARE_TYPE(MyTypeObject);
 
 class MyConstantValueSource : public QObject, public QDeclarativePropertyValueSource
 {
@@ -139,7 +141,6 @@ class MyConstantValueSource : public QObject, public QDeclarativePropertyValueSo
 public:
     virtual void setTarget(const QDeclarativeProperty &p) { p.write(3345); }
 };
-QML_DECLARE_TYPE(MyConstantValueSource);
 
 class MyOffsetValueInterceptor : public QObject, public QDeclarativePropertyValueInterceptor
 {
@@ -152,7 +153,6 @@ public:
 private:
     QDeclarativeProperty prop;
 };
-QML_DECLARE_TYPE(MyOffsetValueInterceptor);
 
 void registerTypes();
 

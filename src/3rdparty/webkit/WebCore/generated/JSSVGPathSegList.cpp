@@ -38,30 +38,78 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegList);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPathSegListTableValues[2] =
+static const HashTableValue JSSVGPathSegListTableValues[3] =
 {
-    { "numberOfItems", DontDelete|ReadOnly, (intptr_t)jsSVGPathSegListNumberOfItems, (intptr_t)0 },
+    { "numberOfItems", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegListNumberOfItems), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsSVGPathSegListConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGPathSegListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGPathSegListTableValues, 0 };
+    { 3, JSSVGPathSegListTableValues, 0 };
 #else
-    { 2, 1, JSSVGPathSegListTableValues, 0 };
+    { 4, 3, JSSVGPathSegListTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGPathSegListConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegListConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGPathSegListConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGPathSegListConstructorTableValues, 0 };
+#endif
+
+class JSSVGPathSegListConstructor : public DOMConstructorObject {
+public:
+    JSSVGPathSegListConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPathSegListConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGPathSegListPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGPathSegListConstructor::s_info = { "SVGPathSegListConstructor", 0, &JSSVGPathSegListConstructorTable, 0 };
+
+bool JSSVGPathSegListConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGPathSegListConstructor, DOMObject>(exec, &JSSVGPathSegListConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGPathSegListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegListConstructor, DOMObject>(exec, &JSSVGPathSegListConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
 static const HashTableValue JSSVGPathSegListPrototypeTableValues[8] =
 {
-    { "clear", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionClear, (intptr_t)0 },
-    { "initialize", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionInitialize, (intptr_t)1 },
-    { "getItem", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionGetItem, (intptr_t)1 },
-    { "insertItemBefore", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionInsertItemBefore, (intptr_t)2 },
-    { "replaceItem", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionReplaceItem, (intptr_t)2 },
-    { "removeItem", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionRemoveItem, (intptr_t)1 },
-    { "appendItem", DontDelete|Function, (intptr_t)jsSVGPathSegListPrototypeFunctionAppendItem, (intptr_t)1 },
+    { "clear", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionClear), (intptr_t)0 },
+    { "initialize", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionInitialize), (intptr_t)1 },
+    { "getItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionGetItem), (intptr_t)1 },
+    { "insertItemBefore", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionInsertItemBefore), (intptr_t)2 },
+    { "replaceItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionReplaceItem), (intptr_t)2 },
+    { "removeItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionRemoveItem), (intptr_t)1 },
+    { "appendItem", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsSVGPathSegListPrototypeFunctionAppendItem), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -91,8 +139,8 @@ bool JSSVGPathSegListPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGPathSegList::s_info = { "SVGPathSegList", 0, &JSSVGPathSegListTable, 0 };
 
-JSSVGPathSegList::JSSVGPathSegList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegList> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGPathSegList::JSSVGPathSegList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegList> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -100,6 +148,7 @@ JSSVGPathSegList::JSSVGPathSegList(NonNullPassRefPtr<Structure> structure, JSDOM
 JSSVGPathSegList::~JSSVGPathSegList()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGPathSegList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -117,12 +166,23 @@ bool JSSVGPathSegList::getOwnPropertyDescriptor(ExecState* exec, const Identifie
     return getStaticValueDescriptor<JSSVGPathSegList, Base>(exec, &JSSVGPathSegListTable, this, propertyName, descriptor);
 }
 
-JSValue jsSVGPathSegListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegListNumberOfItems(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSSVGPathSegList* castedThis = static_cast<JSSVGPathSegList*>(asObject(slot.slotBase()));
+    JSSVGPathSegList* castedThis = static_cast<JSSVGPathSegList*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     SVGPathSegList* imp = static_cast<SVGPathSegList*>(castedThis->impl());
-    return jsNumber(exec, imp->numberOfItems());
+    JSValue result = jsNumber(exec, imp->numberOfItems());
+    return result;
+}
+
+JSValue jsSVGPathSegListConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
+{
+    JSSVGPathSegList* domObject = static_cast<JSSVGPathSegList*>(asObject(slotBase));
+    return JSSVGPathSegList::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGPathSegList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGPathSegListConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

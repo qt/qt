@@ -123,7 +123,6 @@ public:
     virtual void renderHintsChanged();
     virtual void transformChanged();
 
-    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
     virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
                                      QPainter::PixmapFragmentHints hints);
@@ -135,6 +134,8 @@ public:
     virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
 
     virtual void drawStaticTextItem(QStaticTextItem *textItem);
+
+    bool drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
 
     Type type() const { return OpenGL2; }
 
@@ -154,10 +155,10 @@ public:
 
     void setRenderTextActive(bool);
 
+    bool isNativePaintingActive() const;
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
-
 
 class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
 {
@@ -178,6 +179,7 @@ public:
             elementIndicesVBOId(0),
             snapToPixelGrid(false),
             addOffset(false),
+            nativePaintingActive(false),
             inverseScale(1),
             lastMaskTextureUsed(0)
     { }
@@ -280,6 +282,7 @@ public:
 
     bool snapToPixelGrid;
     bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
+    bool nativePaintingActive;
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;
 
@@ -288,7 +291,6 @@ public:
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;
-    bool deviceHasAlpha;
 
     GLfloat depthRange[2];
 

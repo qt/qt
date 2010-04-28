@@ -83,18 +83,42 @@ void RenderTableCell::updateFromElement()
 Length RenderTableCell::styleOrColWidth() const
 {
     Length w = style()->width();
-    if (colSpan() > 1 || !w.isAuto())
+    if (!w.isAuto())
         return w;
+
     RenderTableCol* tableCol = table()->colElement(col());
+
     if (tableCol) {
-        w = tableCol->style()->width();
-        
+        int colSpanCount = colSpan();
+
+        Length colWidthSum = Length(0, Fixed);
+        for (int i = 1; i <= colSpanCount; i++) {
+            Length colWidth = tableCol->style()->width();
+
+            // Percentage value should be returned only for colSpan == 1.
+            // Otherwise we return original width for the cell.
+            if (!colWidth.isFixed()) {
+                if (colSpanCount > 1)
+                    return w;
+                return colWidth;
+            }
+
+            colWidthSum = Length(colWidthSum.value() + colWidth.value(), Fixed);
+
+            tableCol = table()->nextColElement(tableCol);
+            // If no next <col> tag found for the span we just return what we have for now.
+            if (!tableCol)
+                break;
+        }
+
         // Column widths specified on <col> apply to the border box of the cell.
         // Percentages don't need to be handled since they're always treated this way (even when specified on the cells).
         // See Bugzilla bug 8126 for details.
-        if (w.isFixed() && w.value() > 0)
-            w = Length(max(0, w.value() - borderLeft() - borderRight() - paddingLeft() - paddingRight()), Fixed);
+        if (colWidthSum.isFixed() && colWidthSum.value() > 0)
+            colWidthSum = Length(max(0, colWidthSum.value() - borderLeft() - borderRight() - paddingLeft() - paddingRight()), Fixed);
+        return colWidthSum;
     }
+
     return w;
 }
 
@@ -152,6 +176,17 @@ void RenderTableCell::setOverrideSize(int size)
 {
     clearIntrinsicPadding();
     RenderBlock::setOverrideSize(size);
+}
+
+IntSize RenderTableCell::offsetFromContainer(RenderObject* o, const IntPoint& point) const
+{
+    ASSERT(o == container());
+
+    IntSize offset = RenderBlock::offsetFromContainer(o, point);
+    if (parent())
+        offset.expand(-parentBox()->x(), -parentBox()->y());
+
+    return offset;
 }
 
 IntRect RenderTableCell::clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer)
@@ -212,33 +247,9 @@ void RenderTableCell::computeRectForRepaint(RenderBoxModelObject* repaintContain
         return;
     r.setY(r.y());
     RenderView* v = view();
-    if ((!v || !v->layoutStateEnabled()) && parent())
+    if ((!v || !v->layoutStateEnabled() || repaintContainer) && parent())
         r.move(-parentBox()->x(), -parentBox()->y()); // Rows are in the same coordinate space, so don't add their offset in.
     RenderBlock::computeRectForRepaint(repaintContainer, r, fixed);
-}
-
-void RenderTableCell::mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool fixed, bool useTransforms, TransformState& transformState) const
-{
-    if (repaintContainer == this)
-        return;
-
-    RenderView* v = view();
-    if ((!v || !v->layoutStateEnabled()) && parent()) {
-        // Rows are in the same coordinate space, so don't add their offset in.
-        // FIXME: this is wrong with transforms
-        transformState.move(-parentBox()->x(), -parentBox()->y());
-    }
-    RenderBlock::mapLocalToContainer(repaintContainer, fixed, useTransforms, transformState);
-}
-
-void RenderTableCell::mapAbsoluteToLocalPoint(bool fixed, bool useTransforms, TransformState& transformState) const
-{
-    RenderBlock::mapAbsoluteToLocalPoint(fixed, useTransforms, transformState);
-    if (parent()) {
-        // Rows are in the same coordinate space, so add their offset back in.
-        // FIXME: this is wrong with transforms
-        transformState.move(parentBox()->x(), parentBox()->y());
-    }
 }
 
 int RenderTableCell::baselinePosition(bool firstLine, bool isRootLineBox) const
@@ -642,6 +653,9 @@ int RenderTableCell::borderHalfBottom(bool outer) const
 void RenderTableCell::paint(PaintInfo& paintInfo, int tx, int ty)
 {
     if (paintInfo.phase == PaintPhaseCollapsedTableBorders && style()->visibility() == VISIBLE) {
+        if (!shouldPaintWithinRoot(paintInfo))
+            return;
+
         tx += x();
         ty += y();
         int os = 2 * maximalOutlineSize(paintInfo.phase);
@@ -800,6 +814,9 @@ void RenderTableCell::paintCollapsedBorder(GraphicsContext* graphicsContext, int
 
 void RenderTableCell::paintBackgroundsBehindCell(PaintInfo& paintInfo, int tx, int ty, RenderObject* backgroundObject)
 {
+    if (!shouldPaintWithinRoot(paintInfo))
+        return;
+
     if (!backgroundObject)
         return;
 
@@ -831,7 +848,7 @@ void RenderTableCell::paintBackgroundsBehindCell(PaintInfo& paintInfo, int tx, i
             paintInfo.context->save();
             paintInfo.context->clip(clipRect);
         }
-        paintFillLayers(paintInfo, c, bgLayer, tx, ty, w, h);
+        paintFillLayers(paintInfo, c, bgLayer, tx, ty, w, h, CompositeSourceOver, backgroundObject);
         if (shouldClip)
             paintInfo.context->restore();
     }
@@ -839,6 +856,9 @@ void RenderTableCell::paintBackgroundsBehindCell(PaintInfo& paintInfo, int tx, i
 
 void RenderTableCell::paintBoxDecorations(PaintInfo& paintInfo, int tx, int ty)
 {
+    if (!shouldPaintWithinRoot(paintInfo))
+        return;
+
     RenderTable* tableElt = table();
     if (!tableElt->collapseBorders() && style()->emptyCells() == HIDE && !firstChild())
         return;

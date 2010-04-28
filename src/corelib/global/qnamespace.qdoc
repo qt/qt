@@ -1742,6 +1742,8 @@
     \value Key_unknown
 
     \value Key_Call
+    \value Key_Camera
+    \value Key_CameraFocus
     \value Key_Context1
     \value Key_Context2
     \value Key_Context3

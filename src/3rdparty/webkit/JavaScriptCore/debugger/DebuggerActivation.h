@@ -42,8 +42,8 @@ namespace JSC {
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual void putWithAttributes(ExecState*, const Identifier& propertyName, JSValue, unsigned attributes);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
-        virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
+        virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
         virtual void defineGetter(ExecState*, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes);
         virtual void defineSetter(ExecState*, const Identifier& propertyName, JSObject* setterFunction, unsigned attributes);
         virtual JSValue lookupGetter(ExecState*, const Identifier& propertyName);
@@ -51,7 +51,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype) 
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags)); 
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
         }
 
     protected:

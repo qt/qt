@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010 Nokia Inc. All rights reserved.
  * Copyright (C) 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Google Inc.  All rights reserved.
  *
@@ -42,6 +43,7 @@ namespace WebCore {
     class AuthenticationChallenge;
     class Credential;
     class SocketStreamHandleClient;
+    class SocketStreamHandlePrivate;
 
     class SocketStreamHandle : public RefCounted<SocketStreamHandle>, public SocketStreamHandleBase {
     public:
@@ -61,6 +63,8 @@ namespace WebCore {
         void receivedCredential(const AuthenticationChallenge&, const Credential&);
         void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
         void receivedCancellation(const AuthenticationChallenge&);
+        SocketStreamHandlePrivate* m_p;
+        friend class SocketStreamHandlePrivate;
     };
 
 }  // namespace WebCore

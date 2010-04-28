@@ -570,7 +570,13 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
              * check if socket is in exception set
              * then signal RequestComplete for it
              */
-            qWarning("exception on %d", i.key()->socket());
+            qWarning("exception on %d [will close the socket handle - hack]", i.key()->socket());
+            // quick fix; there is a bug
+            // when doing read on socket
+            // errors not preoperly mapped
+            // after offline-ing the device
+            // on some devices we do get exception
+            ::close(i.key()->socket());
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
@@ -632,6 +638,7 @@ void QSocketActiveObject::deleteLater()
 
 QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
     : QAbstractEventDispatcher(parent),
+      m_selectThread(0),
       m_activeScheduler(0),
       m_wakeUpAO(0),
       m_completeDeferredAOs(0),
@@ -659,11 +666,19 @@ void QEventDispatcherSymbian::startingUp()
     wakeUp();
 }
 
+QSelectThread& QEventDispatcherSymbian::selectThread() {
+    if (!m_selectThread)
+        m_selectThread = new QSelectThread;
+    return *m_selectThread;
+}
+
 void QEventDispatcherSymbian::closingDown()
 {
-    if (m_selectThread.isRunning()) {
-        m_selectThread.stop();
+    if (m_selectThread && m_selectThread->isRunning()) {
+        m_selectThread->stop();
     }
+    delete m_selectThread;
+    m_selectThread = 0;
 
     delete m_completeDeferredAOs;
     delete m_wakeUpAO;
@@ -935,12 +950,13 @@ void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifie
 {
     QSocketActiveObject *socketAO = q_check_ptr(new QSocketActiveObject(this, notifier));
     m_notifiers.insert(notifier, socketAO);
-    m_selectThread.requestSocketEvents(notifier, &socketAO->iStatus);
+    selectThread().requestSocketEvents(notifier, &socketAO->iStatus);
 }
 
 void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notifier )
 {
-    m_selectThread.cancelSocketEvents(notifier);
+    if (m_selectThread)
+        m_selectThread->cancelSocketEvents(notifier);
     if (m_notifiers.contains(notifier)) {
         QSocketActiveObject *sockObj = *m_notifiers.find(notifier);
         m_deferredSocketEvents.removeAll(sockObj);
@@ -951,7 +967,7 @@ void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notif
 
 void QEventDispatcherSymbian::reactivateSocketNotifier(QSocketNotifier *notifier)
 {
-    m_selectThread.requestSocketEvents(notifier, &m_notifiers[notifier]->iStatus);
+    selectThread().requestSocketEvents(notifier, &m_notifiers[notifier]->iStatus);
 }
 
 void QEventDispatcherSymbian::registerTimer ( int timerId, int interval, QObject * object )

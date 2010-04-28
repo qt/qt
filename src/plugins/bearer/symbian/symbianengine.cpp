@@ -69,6 +69,8 @@
     #include <aputils.h> 
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 static const int KValueThatWillBeAddedToSNAPId = 1000;
@@ -135,7 +137,12 @@ SymbianEngine::SymbianEngine(QObject *parent)
         return;
     }
 #endif
-    
+}
+
+void SymbianEngine::initialize()
+{
+    QMutexLocker locker(&mutex);
+
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     cpPriv->name = "UserChoice";
     cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
@@ -1130,3 +1137,5 @@ void AccessPointsAvailabilityScanner::RunL()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT

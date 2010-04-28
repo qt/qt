@@ -23,7 +23,6 @@
 
 #if ENABLE(WORKERS)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -45,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -70,7 +69,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSWorkerLocationPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -82,15 +81,15 @@ protected:
 JSC::JSValue JSC_HOST_CALL jsWorkerLocationPrototypeFunctionToString(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsWorkerLocationHref(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationProtocol(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationHost(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationHostname(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationPort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationPathname(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationSearch(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationHash(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsWorkerLocationConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsWorkerLocationHref(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationProtocol(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationHost(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationHostname(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationPort(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationPathname(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationSearch(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationHash(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsWorkerLocationConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 

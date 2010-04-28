@@ -898,7 +898,7 @@ Q_GUI_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, in
         expblur<12, 10, false>(blurImage, radius, quality, transposed);
 }
 
-bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 /*!
     \internal

@@ -47,6 +47,8 @@
 #include <QMap>
 #include <QTimer>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
@@ -68,6 +70,7 @@ public:
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
+    Q_INVOKABLE void initialize();
     Q_INVOKABLE void requestUpdate();
 
     QNetworkSession::State sessionStateForId(const QString &id);
@@ -88,6 +91,8 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif
 

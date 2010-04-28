@@ -116,10 +116,11 @@ public:
       _stateGroup(0), origin(QDeclarativeItem::Center),
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
-      smooth(false), keyHandler(0),
+      smooth(false), transformOriginDirty(true), keyHandler(0),
       mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
+        isDeclarativeItem = 1;
         QGraphicsItemPrivate::flags = QGraphicsItem::GraphicsItemFlags(
                                       QGraphicsItem::ItemHasNoContents
                                       | QGraphicsItem::ItemIsFocusable
@@ -183,7 +184,7 @@ public:
     QDeclarativeNullableValue<qreal> _baselineOffset;
 
     struct AnchorLines {
-        AnchorLines(QDeclarativeItem *);
+        AnchorLines(QGraphicsObject *);
         QDeclarativeAnchorLine left;
         QDeclarativeAnchorLine right;
         QDeclarativeAnchorLine hCenter;
@@ -232,6 +233,7 @@ public:
     bool _componentComplete:1;
     bool _keepMouse:1;
     bool smooth:1;
+    bool transformOriginDirty : 1;
 
     QDeclarativeItemKeyFilter *keyHandler;
 
@@ -267,6 +269,9 @@ public:
             }
         }
     }
+
+    // Reimplemented from QGraphicsItemPrivate
+    virtual void transformChanged();
 
     virtual void focusChanged(bool);
 

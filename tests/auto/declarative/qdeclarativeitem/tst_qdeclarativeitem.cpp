@@ -293,7 +293,7 @@ void tst_QDeclarativeItem::keyNavigation()
 void tst_QDeclarativeItem::smooth()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7; Item { smooth: false; }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(smoothChanged(bool)));
 
@@ -322,7 +322,7 @@ void tst_QDeclarativeItem::smooth()
 void tst_QDeclarativeItem::clip()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\nItem { clip: false\n }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(clipChanged(bool)));
 
@@ -385,12 +385,15 @@ void tst_QDeclarativeItem::mapCoordinates()
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QCOMPARE(result.value<QPointF>(), qobject_cast<QGraphicsItem*>(a)->mapFromScene(x, y));
 
-    QTest::ignoreMessage(QtWarningMsg, "mapToItem() given argument \"1122\" which is neither null nor an Item");
+    QString warning1 = QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml").toString() + ":7:5: QML Item: mapToItem() given argument \"1122\" which is neither null nor an Item";
+    QString warning2 = QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml").toString() + ":7:5: QML Item: mapFromItem() given argument \"1122\" which is neither null nor an Item";
+
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QVERIFY(QMetaObject::invokeMethod(root, "checkMapAToInvalid",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QVERIFY(result.toBool());
 
-    QTest::ignoreMessage(QtWarningMsg, "mapFromItem() given argument \"1122\" which is neither null nor an Item");
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
     QVERIFY(QMetaObject::invokeMethod(root, "checkMapAFromInvalid",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QVERIFY(result.toBool());
@@ -426,7 +429,7 @@ void tst_QDeclarativeItem::transforms()
     QFETCH(QByteArray, qml);
     QFETCH(QMatrix, matrix);
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(item->sceneMatrix(), matrix);

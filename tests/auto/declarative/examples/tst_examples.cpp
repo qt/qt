@@ -43,6 +43,9 @@
 #include <QDir>
 #include <QProcess>
 #include <QDebug>
+#include "qmlruntime.h"
+#include <QDeclarativeView>
+#include <QDeclarativeError>
 
 class tst_examples : public QObject
 {
@@ -78,9 +81,19 @@ tst_examples::tst_examples()
 
     // Add directories you want excluded here
     excludedDirs << "examples/declarative/extending";
+    excludedDirs << "examples/declarative/tutorials/extending";
     excludedDirs << "examples/declarative/plugins";
     excludedDirs << "examples/declarative/proxywidgets";
     excludedDirs << "examples/declarative/gestures";
+
+    excludedDirs << "examples/declarative/imageprovider";
+    excludedDirs << "demos/declarative/minehunt";
+
+#ifdef QT_NO_WEBKIT
+    excludedDirs << "examples/declarative/webview";
+    excludedDirs << "demos/declarative/webbrowser";
+#endif
+
 #ifdef QT_NO_XMLPATTERNS
     excludedDirs << "examples/declarative/xmldata";
     excludedDirs << "demos/declarative/twitter";
@@ -101,19 +114,19 @@ void tst_examples::namingConvention(const QDir &d)
             return;
     }
 
-    QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"), 
+    QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"),
                                     QDir::Files);
 
     bool seenQml = !files.isEmpty();
     bool seenLowercase = false;
 
     foreach (const QString &file, files) {
-        if (file.at(0).isLower()) 
+        if (file.at(0).isLower())
             seenLowercase = true;
     }
 
     if (!seenQml) {
-        QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot | 
+        QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot |
                 QDir::NoSymLinks);
         foreach (const QString &dir, dirs) {
             QDir sub = d;
@@ -144,7 +157,7 @@ QStringList tst_examples::findQmlFiles(const QDir &d)
 
     QStringList rv;
 
-    QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"), 
+    QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"),
                                     QDir::Files);
     foreach (const QString &file, files) {
         if (file.at(0).isLower()) {
@@ -152,7 +165,7 @@ QStringList tst_examples::findQmlFiles(const QDir &d)
         }
     }
 
-    QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot | 
+    QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot |
                                    QDir::NoSymLinks);
     foreach (const QString &dir, dirs) {
         QDir sub = d;
@@ -164,18 +177,18 @@ QStringList tst_examples::findQmlFiles(const QDir &d)
 }
 
 /*
-This test runs all the examples in the declarative UI source tree and ensures 
+This test runs all the examples in the declarative UI source tree and ensures
 that they start and exit cleanly.
 
 Examples are any .qml files under the examples/ or demos/ directory that start
-with a lower case letter.  
+with a lower case letter.
 */
 void tst_examples::examples_data()
 {
     QTest::addColumn<QString>("file");
 
-    QString examples = QLibraryInfo::location(QLibraryInfo::ExamplesPath);
-    QString demos = QLibraryInfo::location(QLibraryInfo::DemosPath);
+    QString examples = QLatin1String(SRCDIR) + "/../../../../demos/declarative/";
+    QString demos = QLatin1String(SRCDIR) + "/../../../../examples/declarative/";
     QString snippets = QLatin1String(SRCDIR) + "/../../../../doc/src/snippets/";
 
     QStringList files;
@@ -184,32 +197,30 @@ void tst_examples::examples_data()
     files << findQmlFiles(QDir(snippets));
 
     foreach (const QString &file, files)
-        QTest::newRow(file.toLatin1().constData()) << file;
+        QTest::newRow(qPrintable(file)) << file;
+}
+
+static void silentErrorsMsgHandler(QtMsgType, const char *)
+{
 }
 
 void tst_examples::examples()
 {
     QFETCH(QString, file);
 
-    QFileInfo fi(file);
-    QFileInfo dir(fi.path());
-    QString script = SRCDIR "/data/"+dir.baseName()+"/"+fi.baseName();
-    QFileInfo testdata(script+".qml");
-    QStringList arguments;
-    arguments << "-script" << (testdata.exists() ? script : QLatin1String(SRCDIR "/data/dummytest"))
-              << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
-              << file;
-#ifdef Q_WS_QWS
-    arguments << "-qws";
-#endif
+    QDeclarativeViewer viewer;
 
-    QProcess p;
-    p.start(qmlruntime, arguments);
-    QVERIFY(p.waitForFinished());
-    if (p.exitStatus() != QProcess::NormalExit || p.exitCode() != 0)
-        qWarning() << p.readAllStandardOutput() << p.readAllStandardError();
-    QCOMPARE(p.exitStatus(), QProcess::NormalExit);
-    QCOMPARE(p.exitCode(), 0);
+    QtMsgHandler old = qInstallMsgHandler(silentErrorsMsgHandler);
+    QVERIFY(viewer.open(file));
+    qInstallMsgHandler(old);
+
+    if (viewer.view()->status() == QDeclarativeView::Error)
+        qWarning() << viewer.view()->errors();
+
+    QCOMPARE(viewer.view()->status(), QDeclarativeView::Ready);
+    viewer.show();
+
+    QTest::qWaitForWindowShown(&viewer);
 }
 
 QTEST_MAIN(tst_examples)

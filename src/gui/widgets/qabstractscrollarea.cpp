@@ -394,7 +394,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     if ((frameStyle != QFrame::NoFrame) &&
         q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, &opt, q)) {
         controlsRect = widgetRect;
-        const int extra = q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing);
+        const int extra = q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, q);
         const QPoint cornerExtra(needv ? extra : 0, needh ? extra : 0);
         QRect frameRect = widgetRect;
         frameRect.adjust(0, 0, -cornerOffset.x() - cornerExtra.x(), -cornerOffset.y() - cornerExtra.y());
@@ -983,6 +983,7 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
     case QEvent::ApplicationLayoutDirectionChange:
+    case QEvent::LayoutRequest:
         d->layoutChildren();
         // fall through
     default:

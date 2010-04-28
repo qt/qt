@@ -73,8 +73,12 @@ public:
     QWidget *window() const;
 
     virtual QPaintDevice *paintDevice() = 0;
-    virtual void flush(QWidget *widget, const QRegion &region,
-                       const QPoint &offset) = 0;
+
+    // 'widget' can be a child widget, in which case 'region' is in child widget coordinates and
+    // offset is the (child) widget's offset in relation to the window surface. On QWS, 'offset'
+    // can be larger than just the offset from the top-level widget as there may also be window
+    // decorations which are painted into the window surface.
+    virtual void flush(QWidget *widget, const QRegion &region, const QPoint &offset) = 0;
     virtual void setGeometry(const QRect &rect);
     QRect geometry() const;
 
@@ -90,6 +94,7 @@ public:
     inline QRect rect(const QWidget *widget) const;
 
     bool hasStaticContentsSupport() const;
+    bool hasPartialUpdateSupport() const;
 
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;
@@ -97,6 +102,7 @@ public:
 protected:
     bool hasStaticContents() const;
     void setStaticContentsSupport(bool enable);
+    void setPartialUpdateSupport(bool enable);
 
 private:
     QWindowSurfacePrivate *d_ptr;

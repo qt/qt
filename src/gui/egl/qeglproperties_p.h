@@ -90,8 +90,6 @@ public:
 
     QString toString() const;
 
-    static void dumpAllConfigs();
-
 private:
     QVarLengthArray<int> props;
 };

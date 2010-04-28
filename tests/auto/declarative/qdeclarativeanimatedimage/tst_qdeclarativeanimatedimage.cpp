@@ -141,12 +141,12 @@ void tst_qdeclarativeanimatedimage::remote()
     QFETCH(QString, fileName);
     QFETCH(bool, paused);
 
-    TestHTTPServer server(14445);
+    TestHTTPServer server(14449);
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14445/" + fileName));
+    QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14449/" + fileName));
     TRY_WAIT(component.isReady());
 
     QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
@@ -196,10 +196,10 @@ void tst_qdeclarativeanimatedimage::invalidSource()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
+    component.setData("import Qt 4.7\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
 
-    QTest::ignoreMessage(QtWarningMsg, "Error Reading Animated Image File  QUrl( \"file:no-such-file.gif\" )  ");
+    QTest::ignoreMessage(QtWarningMsg, "file::2:2: QML AnimatedImage: Error Reading Animated Image File file:no-such-file.gif");
 
     QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
     QVERIFY(anim);

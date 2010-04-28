@@ -77,11 +77,13 @@ Component {
             }
             ]
 
-            GridView.onAdd: NumberAnimation { target: albumWrapper; properties: "scale"; from: 0.0; to: 1.0 }
+            GridView.onAdd: NumberAnimation {
+                target: albumWrapper; properties: "scale"; from: 0.0; to: 1.0; easing.type: "OutQuad"
+            }
             GridView.onRemove: SequentialAnimation {
-                PropertyAction { target: albumWrapper.GridView; property: "delayRemove"; value: true }
-                NumberAnimation { target: albumWrapper; property: "scale"; from: 1.0; to: 0.0 }
-                PropertyAction { target: albumWrapper.GridView; property: "delayRemove"; value: false }
+                PropertyAction { target: albumWrapper; property: "GridView.delayRemove"; value: true }
+                NumberAnimation { target: albumWrapper; property: "scale"; from: 1.0; to: 0.0; easing.type: "OutQuad" }
+                PropertyAction { target: albumWrapper; property: "GridView.delayRemove"; value: false }
             }
 
             transitions: [

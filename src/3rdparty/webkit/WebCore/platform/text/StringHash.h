@@ -24,11 +24,15 @@
 
 #include "AtomicString.h"
 #include "PlatformString.h"
-#include <wtf/HashFunctions.h>
 #include <wtf/HashTraits.h>
+#include <wtf/StringHashFunctions.h>
 #include <wtf/unicode/Unicode.h>
 
 namespace WebCore {
+
+    // The hash() functions on StringHash and CaseFoldingHash do not support
+    // null strings. get(), contains(), and add() on HashMap<String,..., StringHash>
+    // cause a null-pointer dereference when passed null strings.
 
     // FIXME: We should really figure out a way to put the computeHash function that's
     // currently a member function of StringImpl into this file so we can be a little
@@ -48,7 +52,9 @@ namespace WebCore {
             if (aLength != bLength)
                 return false;
 
-#if PLATFORM(ARM) || PLATFORM(SH4)
+            // FIXME: perhaps we should have a more abstract macro that indicates when
+            // going 4 bytes at a time is unsafe
+#if CPU(ARM) || CPU(SH4)
             const UChar* aChars = a->characters();
             const UChar* bChars = b->characters();
             for (unsigned i = 0; i != aLength; ++i) {

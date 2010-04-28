@@ -1478,7 +1478,7 @@ QWidget::~QWidget()
     QObjectPrivate::clearGuards(this);
 
     if (d->declarativeData) {
-        QDeclarativeData::destroyed(d->declarativeData, this);
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
@@ -7327,7 +7327,7 @@ void QWidgetPrivate::hide_helper()
 
     bool isEmbedded = false;
 #if !defined QT_NO_GRAPHICSVIEW
-    isEmbedded = q->isWindow() && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
+    isEmbedded = q->isWindow() && !bypassGraphicsProxyWidget(q) && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
 #else
     Q_UNUSED(isEmbedded);
 #endif

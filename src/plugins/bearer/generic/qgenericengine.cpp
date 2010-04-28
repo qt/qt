@@ -64,6 +64,8 @@
 #include <unistd.h>
 #endif
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_NETWORKINTERFACE
@@ -173,6 +175,11 @@ void QGenericEngine::connectToId(const QString &id)
 void QGenericEngine::disconnectFromId(const QString &id)
 {
     emit connectionError(id, OperationNotSupported);
+}
+
+void QGenericEngine::initialize()
+{
+    doRequestUpdate();
 }
 
 void QGenericEngine::requestUpdate()
@@ -349,3 +356,4 @@ bool QGenericEngine::requiresPolling() const
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_BEARERMANAGEMENT

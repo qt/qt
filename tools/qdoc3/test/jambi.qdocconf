@@ -16,7 +16,8 @@ outputdir               = $JAMBI/doc/html/com/trolltech/qt
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples \
                           $JAMBI/doc/src/images \
-                          ../doc/src/images
+                          ../doc/src/images \
+			  $QTDIR/doc/src/template/images
 
 extraimages.javadoc     = qt-logo \
                           qt-logo.png

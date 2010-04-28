@@ -142,7 +142,7 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_call_post_routines();
+Q_DECL_IMPORT extern void qt_call_post_routines();
 
 int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
 
@@ -5936,6 +5936,7 @@ static const char * const link_xpm[] = {
 
 QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 {
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
     if (!move_cursor) {
         move_cursor = new QPixmap((const char **)move_xpm);
         copy_cursor = new QPixmap((const char **)copy_xpm);
@@ -5959,6 +5960,7 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     default:
         break;
     }
+#endif
     return QPixmap();
 }
 

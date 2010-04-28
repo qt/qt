@@ -43,6 +43,7 @@
 #include "private/qdeclarativeborderimage_p_p.h"
 
 #include <qdeclarativeengine.h>
+#include <qdeclarativeinfo.h>
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -81,7 +82,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
         QDeclarativePixmapCache::cancel(d->sciurl, this);
 }
 /*!
-    \qmlproperty enum BorderImage::status
+    \qmlproperty enumeration BorderImage::status
 
     This property holds the status of image loading.  It can be one of:
     \list
@@ -218,7 +219,8 @@ void QDeclarativeBorderImage::load()
             }
         } else {
             QSize impsize;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async);
+            QString errorString;
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async);
             if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
                 d->pendingPixmapCache = true;
@@ -230,8 +232,10 @@ void QDeclarativeBorderImage::load()
                 setImplicitWidth(impsize.width());
                 setImplicitHeight(impsize.height());
 
-                if (d->pix.isNull())
+                if (d->pix.isNull()) {
                     d->status = Error;
+                    qmlInfo(this) << errorString;
+                }
                 if (d->status == Loading)
                     d->status = Ready;
                 d->progress = 1.0;
@@ -260,9 +264,9 @@ void QDeclarativeBorderImage::load()
     When the image is scaled:
     \list
     \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i the middle (section 5) is scaled according to BorderImage::horizontalTileMode and BorderImage::verticalTileMode
-    \i sections 2 and 8 are scaled according to BorderImage::horizontalTileMode
-    \i sections 4 and 6 are scaled according to BorderImage::verticalTileMode
+    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
+    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
     \endlist
 
     Each border line (left, right, top, and bottom) specifies an offset from the respective side. For example, \c{border.bottom: 10} sets the bottom line 10 pixels up from the bottom of the image.
@@ -278,8 +282,8 @@ QDeclarativeScaleGrid *QDeclarativeBorderImage::border()
 }
 
 /*!
-    \qmlproperty TileMode BorderImage::horizontalTileMode
-    \qmlproperty TileMode BorderImage::verticalTileMode
+    \qmlproperty enumeration BorderImage::horizontalTileMode
+    \qmlproperty enumeration BorderImage::verticalTileMode
 
     This property describes how to repeat or stretch the middle parts of the border image.
 
@@ -338,7 +342,8 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
         QSize impsize;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, &impsize, d->async);
+        QString errorString;
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, &errorString, &impsize, d->async);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->sciurl);
             d->sciPendingPixmapCache = true;
@@ -367,8 +372,10 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
             setImplicitWidth(impsize.width());
             setImplicitHeight(impsize.height());
 
-            if (d->pix.isNull())
+            if (d->pix.isNull()) {
                 d->status = Error;
+                qmlInfo(this) << errorString;
+            }
             if (d->status == Loading)
                 d->status = Ready;
             d->progress = 1.0;
@@ -386,11 +393,18 @@ void QDeclarativeBorderImage::requestFinished()
     QSize impsize;
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QDeclarativePixmapCache::get(d->sciurl, &d->pix, &impsize, d->async);
+        QString errorString;
+        if (QDeclarativePixmapCache::get(d->sciurl, &d->pix, &errorString, &impsize, d->async) != QDeclarativePixmapReply::Ready) {
+            d->status = Error;
+            qmlInfo(this) << errorString;
+        }
     } else {
         d->pendingPixmapCache = false;
-        if (QDeclarativePixmapCache::get(d->url, &d->pix, &impsize, d->async) != QDeclarativePixmapReply::Ready)
+        QString errorString;
+        if (QDeclarativePixmapCache::get(d->url, &d->pix, &errorString, &impsize, d->async) != QDeclarativePixmapReply::Ready) {
             d->status = Error;
+            qmlInfo(this) << errorString;
+        }
     }
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());

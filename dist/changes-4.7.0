@@ -8,11 +8,11 @@ The Qt version 4.7 series is binary compatible with the 4.6.x series.
 Applications compiled for 4.6 will continue to run with 4.7.
 
 Some of the changes listed in this file include issue tracking numbers
-corresponding to tasks in the Task Tracker:
+corresponding to tasks in the Qt Bug Tracker:
 
-  http://qt.nokia.com/developer/task-tracker
+  http://bugreports.qt.nokia.com/
 
-Each of these identifiers can be entered in the task tracker to obtain more
+Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
@@ -56,6 +56,10 @@ QtGui
       functions, and replaced them with setCopyCount(), copyCount() and
       supportsMultipleCopies().
 
+ - QCommonStyle
+    * Fixed a bug that led to missing text pixels in QTabBar when using
+      small font sizes. (QTBUG-7137)
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -72,6 +76,13 @@ Qt for Linux/X11
 Qt for Windows
 --------------
 
+ - QLocalSocket
+    * Pipe handle leak fixed, when closing a QLocalSocket that still has
+      unwritten data. (QTBUG-7815)
+    * Fixed closing state for local sockets with unwritten data. (QTBUG-9681)
+    * Detection of Windows mobile 6.5 fixed. (QTBUG-8418)
+    * Improved performance of writing to QLocalSocket.
+
 
 Qt for Mac OS X
 ---------------
@@ -84,6 +95,17 @@ Qt for Embedded Linux
 Qt for Windows CE
 -----------------
 
+ - Core changes
+    * Fixed menu handling on Windows mobile. (QTBUG-8754)
+    * Fixed a crash when receiving a certain type of WM_SETTINGSCHANGE
+      message. (QTBUG-7943)
+
+ - QWindowsMobileStyle
+    * Huge performance penalty for QTabWidget fixed for
+      Windows mobile 6.5. (QTBUG-8419)
+    * QTabBar scroll button size has been fixed. (QTBUG-8757)
+
+
 
 ****************************************************************************
 *                      Compiler Specific Changes                           *
@@ -95,6 +117,9 @@ Qt for Windows CE
 ****************************************************************************
 
 - Build System
+
+  - "configure -fast" on Windows now also works for other make tools than
+    nmake. (QTBUG-8562)
 
 - Assistant
 

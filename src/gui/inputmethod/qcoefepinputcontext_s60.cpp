@@ -58,6 +58,11 @@
 // MAknEdStateObserver::EAknActivatePenInputRequest
 #define QT_EAknActivatePenInputRequest MAknEdStateObserver::EAknEdwinStateEvent(7)
 
+// EAknEditorFlagSelectionVisible is only valid from 3.2 onwards.
+// Sym^3 AVKON FEP manager expects that this flag is used for FEP-aware editors
+// that support text selection.
+#define QT_EAknEditorFlagSelectionVisible 0x100000
+
 QT_BEGIN_NAMESPACE
 
 QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
@@ -75,7 +80,10 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_hasTempPreeditString(false)
 {
     m_fepState->SetObjectProvider(this);
-    m_fepState->SetFlags(EAknEditorFlagDefault);
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
+        m_fepState->SetFlags(EAknEditorFlagDefault | QT_EAknEditorFlagSelectionVisible);
+    else
+        m_fepState->SetFlags(EAknEditorFlagDefault);
     m_fepState->SetDefaultInputMode( EAknEditorTextInputMode );
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
     m_fepState->SetDefaultCase( EAknEditorLowerCase );
@@ -432,7 +440,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     m_fepState->SetPermittedCases(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateCaseModeUpdate);
 
-    flags = 0;
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
+        flags = QT_EAknEditorFlagSelectionVisible;
+    else 
+        flags = 0;
     if (hints & ImhUppercaseOnly && !(hints & ImhLowercaseOnly)
             || hints & ImhLowercaseOnly && !(hints & ImhUppercaseOnly)) {
         flags |= EAknEditorFlagFixedCase;
@@ -771,7 +782,6 @@ void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
             if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
                 longPress = 1;
         }
-        return;
     }
 
     QList<QInputMethodEvent::Attribute> attributes;

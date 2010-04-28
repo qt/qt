@@ -40,6 +40,8 @@
 ****************************************************************************/
 #include <qtest.h>
 #include <QSignalSpy>
+#include <QtGui/QGraphicsWidget>
+#include <private/qgraphicsitem_p.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeview.h>
@@ -47,7 +49,7 @@
 #include <private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativeanchors_p_p.h>
 
-Q_DECLARE_METATYPE(QDeclarativeAnchors::UsedAnchor)
+Q_DECLARE_METATYPE(QDeclarativeAnchors::Anchor)
 Q_DECLARE_METATYPE(QDeclarativeAnchorLine::AnchorLine)
 
 
@@ -59,9 +61,11 @@ public:
 
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &id);
+    QGraphicsObject *findObject(QGraphicsObject *parent, const QString &objectName);
 
 private slots:
     void basicAnchors();
+    void basicAnchorsQGraphicsWidget();
     void loops();
     void illegalSets();
     void illegalSets_data();
@@ -98,6 +102,25 @@ T *tst_qdeclarativeanchors::findItem(QGraphicsObject *parent, const QString &obj
 
     return 0;
 }
+
+QGraphicsObject *tst_qdeclarativeanchors::findObject(QGraphicsObject *parent, const QString &objectName)
+{
+    QList<QGraphicsItem *> children = parent->childItems();
+    for (int i = 0; i < children.count(); ++i) {
+        QGraphicsObject *item = children.at(i)->toGraphicsObject();
+        if (item) {
+            if (objectName.isEmpty() || item->objectName() == objectName) {
+                return item;
+            }
+            item = findObject(item, objectName);
+            if (item)
+                return item;
+        }
+    }
+
+    return 0;
+}
+
 
 void tst_qdeclarativeanchors::basicAnchors()
 {
@@ -166,13 +189,80 @@ void tst_qdeclarativeanchors::basicAnchors()
     delete view;
 }
 
+void tst_qdeclarativeanchors::basicAnchorsQGraphicsWidget()
+{
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/anchorsqgraphicswidget.qml"));
+
+    qApp->processEvents();
+
+    //sibling horizontal
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect1"))->x(), 26.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect2"))->x(), 122.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect3"))->x(), 74.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect4"))->x(), 16.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect5"))->x(), 112.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect6"))->x(), 64.0);
+
+    //parent horizontal
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect7"))->x(), 0.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect8"))->x(), 240.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect9"))->x(), 120.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect10"))->x(), -10.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect11"))->x(), 230.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect12"))->x(), 110.0);
+
+    //vertical
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect13"))->y(), 20.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect14"))->y(), 155.0);
+
+    //stretch
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect15"))->x(), 26.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect15"))->property("width").toReal(), 96.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect16"))->x(), 26.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect16"))->property("width").toReal(), 192.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect17"))->x(), -70.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect17"))->property("width").toReal(), 192.0);
+
+    //vertical stretch
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect18"))->y(), 20.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect18"))->property("height").toReal(), 40.0);
+
+    //more parent horizontal
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect19"))->x(), 115.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect20"))->x(), 235.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect21"))->x(), -5.0);
+
+    //centerIn
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect22"))->x(), 69.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect22"))->y(), 5.0);
+
+     //margins
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect23"))->x(), 31.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect23"))->y(), 5.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect23"))->property("width").toReal(), 86.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect23"))->property("height").toReal(), 10.0);
+
+    // offsets
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect24"))->x(), 26.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect25"))->y(), 60.0);
+    QCOMPARE(findObject(view->rootObject(), QLatin1String("rect26"))->y(), 5.0);
+
+    //baseline
+    QDeclarativeText *text1 = findItem<QDeclarativeText>(view->rootObject(), QLatin1String("text1"));
+    QDeclarativeText *text2 = findItem<QDeclarativeText>(view->rootObject(), QLatin1String("text2"));
+    QCOMPARE(text1->y(), text2->y());
+
+    delete view;
+}
+
 // mostly testing that we don't crash
 void tst_qdeclarativeanchors::loops()
 {
     {
         QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop1.qml"));
 
-        QString expect = "QML Text (" + source.toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = source.toString() + ":6:5: QML Text: Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -187,7 +277,7 @@ void tst_qdeclarativeanchors::loops()
     {
         QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop2.qml"));
 
-        QString expect = "QML Image (" + source.toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = source.toString() + ":8:3: QML Image: Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
 
         QDeclarativeView *view = new QDeclarativeView;
@@ -207,7 +297,7 @@ void tst_qdeclarativeanchors::illegalSets()
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\n" + qml.toUtf8()), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import Qt 4.7\n" + qml.toUtf8()), QUrl::fromLocalFile(""));
     if (!component.isReady())
         qWarning() << "Test errors:" << component.errors();
     QVERIFY(component.isReady());
@@ -222,62 +312,62 @@ void tst_qdeclarativeanchors::illegalSets_data()
 
     QTest::newRow("H - too many anchors")
         << "Rectangle { id: rect; Rectangle { anchors.left: rect.left; anchors.right: rect.right; anchors.horizontalCenter: rect.horizontalCenter } }"
-        << "QML Rectangle (file::2:23) Cannot specify left, right, and hcenter anchors.";
+        << "file::2:23: QML Rectangle: Cannot specify left, right, and hcenter anchors.";
 
     foreach (const QString &side, QStringList() << "left" << "right") {
         QTest::newRow("H - anchor to V")
             << QString("Rectangle { Rectangle { anchors.%1: parent.top } }").arg(side)
-            << "QML Rectangle (file::2:13) Cannot anchor a horizontal edge to a vertical edge.";
+            << "file::2:13: QML Rectangle: Cannot anchor a horizontal edge to a vertical edge.";
 
         QTest::newRow("H - anchor to non parent/sibling")
             << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
-            << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+            << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 
         QTest::newRow("H - anchor to self")
             << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
-            << "QML Rectangle (file::2:1) Cannot anchor item to self.";
+            << "file::2:1: QML Rectangle: Cannot anchor item to self.";
     }
 
 
     QTest::newRow("V - too many anchors")
         << "Rectangle { id: rect; Rectangle { anchors.top: rect.top; anchors.bottom: rect.bottom; anchors.verticalCenter: rect.verticalCenter } }"
-        << "QML Rectangle (file::2:23) Cannot specify top, bottom, and vcenter anchors.";
+        << "file::2:23: QML Rectangle: Cannot specify top, bottom, and vcenter anchors.";
 
     QTest::newRow("V - too many anchors with baseline")
         << "Rectangle { Text { id: text1; text: \"Hello\" } Text { anchors.baseline: text1.baseline; anchors.top: text1.top; } }"
-        << "QML Text (file::2:47) Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.";
+        << "file::2:47: QML Text: Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.";
 
     foreach (const QString &side, QStringList() << "top" << "bottom" << "baseline") {
 
         QTest::newRow("V - anchor to H")
             << QString("Rectangle { Rectangle { anchors.%1: parent.left } }").arg(side)
-            << "QML Rectangle (file::2:13) Cannot anchor a vertical edge to a horizontal edge.";
+            << "file::2:13: QML Rectangle: Cannot anchor a vertical edge to a horizontal edge.";
 
         QTest::newRow("V - anchor to non parent/sibling")
             << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
-            << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+            << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 
         QTest::newRow("V - anchor to self")
             << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
-            << "QML Rectangle (file::2:1) Cannot anchor item to self.";
+            << "file::2:1: QML Rectangle: Cannot anchor item to self.";
     }
 
 
     QTest::newRow("centerIn - anchor to non parent/sibling")
         << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.centerIn: rect} }"
-        << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+        << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 
 
     QTest::newRow("fill - anchor to non parent/sibling")
         << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.fill: rect} }"
-        << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
+        << "file::2:45: QML Rectangle: Cannot anchor to an item that isn't a parent or sibling.";
 }
 
 void tst_qdeclarativeanchors::reset()
 {
     QFETCH(QString, side);
     QFETCH(QDeclarativeAnchorLine::AnchorLine, anchorLine);
-    QFETCH(QDeclarativeAnchors::UsedAnchor, usedAnchor);
+    QFETCH(QDeclarativeAnchors::Anchor, usedAnchor);
 
     QDeclarativeItem *baseItem = new QDeclarativeItem;
 
@@ -304,16 +394,16 @@ void tst_qdeclarativeanchors::reset_data()
 {
     QTest::addColumn<QString>("side");
     QTest::addColumn<QDeclarativeAnchorLine::AnchorLine>("anchorLine");
-    QTest::addColumn<QDeclarativeAnchors::UsedAnchor>("usedAnchor");
+    QTest::addColumn<QDeclarativeAnchors::Anchor>("usedAnchor");
 
-    QTest::newRow("left") << "left" << QDeclarativeAnchorLine::Left << QDeclarativeAnchors::HasLeftAnchor;
-    QTest::newRow("top") << "top" << QDeclarativeAnchorLine::Top << QDeclarativeAnchors::HasTopAnchor;
-    QTest::newRow("right") << "right" << QDeclarativeAnchorLine::Right << QDeclarativeAnchors::HasRightAnchor;
-    QTest::newRow("bottom") << "bottom" << QDeclarativeAnchorLine::Bottom << QDeclarativeAnchors::HasBottomAnchor;
+    QTest::newRow("left") << "left" << QDeclarativeAnchorLine::Left << QDeclarativeAnchors::LeftAnchor;
+    QTest::newRow("top") << "top" << QDeclarativeAnchorLine::Top << QDeclarativeAnchors::TopAnchor;
+    QTest::newRow("right") << "right" << QDeclarativeAnchorLine::Right << QDeclarativeAnchors::RightAnchor;
+    QTest::newRow("bottom") << "bottom" << QDeclarativeAnchorLine::Bottom << QDeclarativeAnchors::BottomAnchor;
 
-    QTest::newRow("hcenter") << "horizontalCenter" << QDeclarativeAnchorLine::HCenter << QDeclarativeAnchors::HasHCenterAnchor;
-    QTest::newRow("vcenter") << "verticalCenter" << QDeclarativeAnchorLine::VCenter << QDeclarativeAnchors::HasVCenterAnchor;
-    QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::HasBaselineAnchor;
+    QTest::newRow("hcenter") << "horizontalCenter" << QDeclarativeAnchorLine::HCenter << QDeclarativeAnchors::HCenterAnchor;
+    QTest::newRow("vcenter") << "verticalCenter" << QDeclarativeAnchorLine::VCenter << QDeclarativeAnchors::VCenterAnchor;
+    QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::BaselineAnchor;
 }
 
 void tst_qdeclarativeanchors::resetConvenience()
@@ -347,7 +437,7 @@ void tst_qdeclarativeanchors::nullItem()
     const QMetaObject *meta = item->anchors()->metaObject();
     QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML Item (unknown location) Cannot anchor to a null item.");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML Item: Cannot anchor to a null item.");
     QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
 
     delete item;
@@ -371,7 +461,7 @@ void tst_qdeclarativeanchors::crash1()
 {
     QUrl source(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
 
-    QString expect = "QML Text (" + source.toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+    QString expect = source.toString() + ":4:5: QML Text: Possible anchor loop detected on fill.";
 
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
 

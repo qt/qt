@@ -99,8 +99,8 @@ EXPORTS
 	_ZN16QDeclarativeGrid7setRowsEi @ 98 NONAME
 	_ZN16QDeclarativeGridC1EP16QDeclarativeItem @ 99 NONAME
 	_ZN16QDeclarativeGridC2EP16QDeclarativeItem @ 100 NONAME
-	_ZN16QDeclarativeInfoC1EPK7QObject @ 101 NONAME
-	_ZN16QDeclarativeInfoC2EPK7QObject @ 102 NONAME
+	_ZN16QDeclarativeInfoC1EPK7QObject @ 101 NONAME ABSENT
+	_ZN16QDeclarativeInfoC2EPK7QObject @ 102 NONAME ABSENT
 	_ZN16QDeclarativeInfoD1Ev @ 103 NONAME
 	_ZN16QDeclarativeInfoD2Ev @ 104 NONAME
 	_ZN16QDeclarativeItem10classBeginEv @ 105 NONAME
@@ -179,7 +179,7 @@ EXPORTS
 	_ZN16QDeclarativeText11qt_metacallEN11QMetaObject4CallEiPPv @ 178 NONAME
 	_ZN16QDeclarativeText11qt_metacastEPKc @ 179 NONAME
 	_ZN16QDeclarativeText11textChangedERK7QString @ 180 NONAME
-	_ZN16QDeclarativeText11wrapChangedEb @ 181 NONAME
+	_ZN16QDeclarativeText11wrapChangedEb @ 181 NONAME ABSENT
 	_ZN16QDeclarativeText12colorChangedERK6QColor @ 182 NONAME
 	_ZN16QDeclarativeText12setElideModeENS_13TextElideModeE @ 183 NONAME
 	_ZN16QDeclarativeText12styleChangedENS_9TextStyleE @ 184 NONAME
@@ -200,7 +200,7 @@ EXPORTS
 	_ZN16QDeclarativeText5paintEP8QPainterPK24QStyleOptionGraphicsItemP7QWidget @ 199 NONAME
 	_ZN16QDeclarativeText7setFontERK5QFont @ 200 NONAME
 	_ZN16QDeclarativeText7setTextERK7QString @ 201 NONAME
-	_ZN16QDeclarativeText7setWrapEb @ 202 NONAME
+	_ZN16QDeclarativeText7setWrapEb @ 202 NONAME ABSENT
 	_ZN16QDeclarativeText8setColorERK6QColor @ 203 NONAME
 	_ZN16QDeclarativeText8setStyleENS_9TextStyleE @ 204 NONAME
 	_ZN16QDeclarativeText9setHAlignENS_10HAlignmentE @ 205 NONAME
@@ -222,7 +222,7 @@ EXPORTS
 	_ZN16QDeclarativeView11qt_metacastEPKc @ 221 NONAME
 	_ZN16QDeclarativeView11resizeEventEP12QResizeEvent @ 222 NONAME
 	_ZN16QDeclarativeView11rootContextEv @ 223 NONAME
-	_ZN16QDeclarativeView11sizeChangedEv @ 224 NONAME
+	_ZN16QDeclarativeView11sizeChangedEv @ 224 NONAME ABSENT
 	_ZN16QDeclarativeView12sceneResizedE5QSize @ 225 NONAME
 	_ZN16QDeclarativeView13setResizeModeENS_10ResizeModeE @ 226 NONAME
 	_ZN16QDeclarativeView13setRootObjectEP7QObject @ 227 NONAME
@@ -337,7 +337,7 @@ EXPORTS
 	_ZN18QDeclarativeEngine11qt_metacastEPKc @ 336 NONAME
 	_ZN18QDeclarativeEngine11rootContextEv @ 337 NONAME
 	_ZN18QDeclarativeEngine13addImportPathERK7QString @ 338 NONAME
-	_ZN18QDeclarativeEngine15importExtensionERK7QStringS2_ @ 339 NONAME
+	_ZN18QDeclarativeEngine15importExtensionERK7QStringS2_ @ 339 NONAME ABSENT
 	_ZN18QDeclarativeEngine15objectOwnershipEP7QObject @ 340 NONAME
 	_ZN18QDeclarativeEngine16addImageProviderERK7QStringP25QDeclarativeImageProvider @ 341 NONAME
 	_ZN18QDeclarativeEngine16contextForObjectEPK7QObject @ 342 NONAME
@@ -431,7 +431,7 @@ EXPORTS
 	_ZN19QDeclarativeAnchors11qt_metacastEPKc @ 430 NONAME
 	_ZN19QDeclarativeAnchors11resetBottomEv @ 431 NONAME
 	_ZN19QDeclarativeAnchors11setBaselineERK22QDeclarativeAnchorLine @ 432 NONAME
-	_ZN19QDeclarativeAnchors11setCenterInEP16QDeclarativeItem @ 433 NONAME
+	_ZN19QDeclarativeAnchors11setCenterInEP16QDeclarativeItem @ 433 NONAME ABSENT
 	_ZN19QDeclarativeAnchors12rightChangedEv @ 434 NONAME
 	_ZN19QDeclarativeAnchors12setTopMarginEf @ 435 NONAME
 	_ZN19QDeclarativeAnchors13bottomChangedEv @ 436 NONAME
@@ -463,16 +463,16 @@ EXPORTS
 	_ZN19QDeclarativeAnchors27verticalCenterOffsetChangedEv @ 462 NONAME
 	_ZN19QDeclarativeAnchors29horizontalCenterOffsetChangedEv @ 463 NONAME
 	_ZN19QDeclarativeAnchors6setTopERK22QDeclarativeAnchorLine @ 464 NONAME
-	_ZN19QDeclarativeAnchors7setFillEP16QDeclarativeItem @ 465 NONAME
+	_ZN19QDeclarativeAnchors7setFillEP16QDeclarativeItem @ 465 NONAME ABSENT
 	_ZN19QDeclarativeAnchors7setLeftERK22QDeclarativeAnchorLine @ 466 NONAME
 	_ZN19QDeclarativeAnchors8resetTopEv @ 467 NONAME
 	_ZN19QDeclarativeAnchors8setRightERK22QDeclarativeAnchorLine @ 468 NONAME
 	_ZN19QDeclarativeAnchors9resetFillEv @ 469 NONAME
 	_ZN19QDeclarativeAnchors9resetLeftEv @ 470 NONAME
 	_ZN19QDeclarativeAnchors9setBottomERK22QDeclarativeAnchorLine @ 471 NONAME
-	_ZN19QDeclarativeAnchorsC1EP16QDeclarativeItemP7QObject @ 472 NONAME
+	_ZN19QDeclarativeAnchorsC1EP16QDeclarativeItemP7QObject @ 472 NONAME ABSENT
 	_ZN19QDeclarativeAnchorsC1EP7QObject @ 473 NONAME
-	_ZN19QDeclarativeAnchorsC2EP16QDeclarativeItemP7QObject @ 474 NONAME
+	_ZN19QDeclarativeAnchorsC2EP16QDeclarativeItemP7QObject @ 474 NONAME ABSENT
 	_ZN19QDeclarativeAnchorsC2EP7QObject @ 475 NONAME
 	_ZN19QDeclarativeAnchorsD0Ev @ 476 NONAME
 	_ZN19QDeclarativeAnchorsD1Ev @ 477 NONAME
@@ -547,7 +547,7 @@ EXPORTS
 	_ZN20QDeclarativeBehaviorD1Ev @ 546 NONAME
 	_ZN20QDeclarativeBehaviorD2Ev @ 547 NONAME
 	_ZN20QDeclarativeCompiler11buildObjectEPN18QDeclarativeParser6ObjectERKNS_14BindingContextE @ 548 NONAME
-	_ZN20QDeclarativeCompiler11buildScriptEPN18QDeclarativeParser6ObjectES2_ @ 549 NONAME
+	_ZN20QDeclarativeCompiler11buildScriptEPN18QDeclarativeParser6ObjectES2_ @ 549 NONAME ABSENT
 	_ZN20QDeclarativeCompiler11buildSignalEPN18QDeclarativeParser8PropertyEPNS0_6ObjectERKNS_14BindingContextE @ 550 NONAME
 	_ZN20QDeclarativeCompiler11compileTreeEPN18QDeclarativeParser6ObjectE @ 551 NONAME
 	_ZN20QDeclarativeCompiler12buildBindingEPN18QDeclarativeParser5ValueEPNS0_8PropertyERKNS_14BindingContextE @ 552 NONAME
@@ -566,7 +566,7 @@ EXPORTS
 	_ZN20QDeclarativeCompiler16buildDynamicMetaEPN18QDeclarativeParser6ObjectENS_15DynamicMetaModeE @ 565 NONAME
 	_ZN20QDeclarativeCompiler16checkDynamicMetaEPN18QDeclarativeParser6ObjectE @ 566 NONAME
 	_ZN20QDeclarativeCompiler16componentTypeRefEv @ 567 NONAME
-	_ZN20QDeclarativeCompiler16findSignalByNameEPK11QMetaObjectRK10QByteArray @ 568 NONAME
+	_ZN20QDeclarativeCompiler16findSignalByNameEPK11QMetaObjectRK10QByteArray @ 568 NONAME ABSENT
 	_ZN20QDeclarativeCompiler16genValuePropertyEPN18QDeclarativeParser8PropertyEPNS0_6ObjectE @ 569 NONAME
 	_ZN20QDeclarativeCompiler16genValueTypeDataEPN18QDeclarativeParser8PropertyES2_ @ 570 NONAME
 	_ZN20QDeclarativeCompiler17buildListPropertyEPN18QDeclarativeParser8PropertyEPNS0_6ObjectERKNS_14BindingContextE @ 571 NONAME
@@ -597,7 +597,7 @@ EXPORTS
 	_ZN20QDeclarativeCompiler5resetEP24QDeclarativeCompiledData @ 596 NONAME
 	_ZN20QDeclarativeCompiler7compileEP18QDeclarativeEngineP29QDeclarativeCompositeTypeDataP24QDeclarativeCompiledData @ 597 NONAME
 	_ZN20QDeclarativeCompiler9canCoerceEiPN18QDeclarativeParser6ObjectE @ 598 NONAME
-	_ZN20QDeclarativeCompiler9canCoerceEii @ 599 NONAME
+	_ZN20QDeclarativeCompiler9canCoerceEii @ 599 NONAME ABSENT
 	_ZN20QDeclarativeCompiler9dumpStatsEv @ 600 NONAME
 	_ZN20QDeclarativeCompiler9genObjectEPN18QDeclarativeParser6ObjectE @ 601 NONAME
 	_ZN20QDeclarativeCompiler9toQmlTypeEPN18QDeclarativeParser6ObjectE @ 602 NONAME
@@ -897,7 +897,7 @@ EXPORTS
 	_ZN20QDeclarativeTextEdit11qt_metacastEPKc @ 896 NONAME
 	_ZN20QDeclarativeTextEdit11setReadOnlyEb @ 897 NONAME
 	_ZN20QDeclarativeTextEdit11textChangedERK7QString @ 898 NONAME
-	_ZN20QDeclarativeTextEdit11wrapChangedEb @ 899 NONAME
+	_ZN20QDeclarativeTextEdit11wrapChangedEb @ 899 NONAME ABSENT
 	_ZN20QDeclarativeTextEdit12colorChangedERK6QColor @ 900 NONAME
 	_ZN20QDeclarativeTextEdit12drawContentsEP8QPainterRK5QRect @ 901 NONAME
 	_ZN20QDeclarativeTextEdit13keyPressEventEP9QKeyEvent @ 902 NONAME
@@ -946,7 +946,7 @@ EXPORTS
 	_ZN20QDeclarativeTextEdit5eventEP6QEvent @ 945 NONAME
 	_ZN20QDeclarativeTextEdit7setFontERK5QFont @ 946 NONAME
 	_ZN20QDeclarativeTextEdit7setTextERK7QString @ 947 NONAME
-	_ZN20QDeclarativeTextEdit7setWrapEb @ 948 NONAME
+	_ZN20QDeclarativeTextEdit7setWrapEb @ 948 NONAME ABSENT
 	_ZN20QDeclarativeTextEdit8setColorERK6QColor @ 949 NONAME
 	_ZN20QDeclarativeTextEdit9selectAllEv @ 950 NONAME
 	_ZN20QDeclarativeTextEdit9setHAlignENS_10HAlignmentE @ 951 NONAME
@@ -1234,7 +1234,7 @@ EXPORTS
 	_ZN21QDeclarativeTextInput24selectedTextColorChangedERK6QColor @ 1233 NONAME
 	_ZN21QDeclarativeTextInput26horizontalAlignmentChangedENS_10HAlignmentE @ 1234 NONAME
 	_ZN21QDeclarativeTextInput5eventEP6QEvent @ 1235 NONAME
-	_ZN21QDeclarativeTextInput6xToPosEi @ 1236 NONAME
+	_ZN21QDeclarativeTextInput6xToPosEi @ 1236 NONAME ABSENT
 	_ZN21QDeclarativeTextInput7setFontERK5QFont @ 1237 NONAME
 	_ZN21QDeclarativeTextInput7setTextERK7QString @ 1238 NONAME
 	_ZN21QDeclarativeTextInput8acceptedEv @ 1239 NONAME
@@ -1283,7 +1283,7 @@ EXPORTS
 	_ZN22QDeclarativeDebugWatchD0Ev @ 1282 NONAME
 	_ZN22QDeclarativeDebugWatchD1Ev @ 1283 NONAME
 	_ZN22QDeclarativeDebugWatchD2Ev @ 1284 NONAME
-	_ZN22QDeclarativeExpression10__q_notifyEv @ 1285 NONAME
+	_ZN22QDeclarativeExpression10__q_notifyEv @ 1285 NONAME ABSENT
 	_ZN22QDeclarativeExpression10clearErrorEv @ 1286 NONAME
 	_ZN22QDeclarativeExpression11qt_metacallEN11QMetaObject4CallEiPPv @ 1287 NONAME
 	_ZN22QDeclarativeExpression11qt_metacastEPKc @ 1288 NONAME
@@ -1293,7 +1293,7 @@ EXPORTS
 	_ZN22QDeclarativeExpression17setSourceLocationERK7QStringi @ 1292 NONAME
 	_ZN22QDeclarativeExpression19getStaticMetaObjectEv @ 1293 NONAME
 	_ZN22QDeclarativeExpression23setNotifyOnValueChangedEb @ 1294 NONAME
-	_ZN22QDeclarativeExpression5valueEPb @ 1295 NONAME
+	_ZN22QDeclarativeExpression5valueEPb @ 1295 NONAME ABSENT
 	_ZN22QDeclarativeExpressionC1EP19QDeclarativeContextRK7QStringP7QObject @ 1296 NONAME
 	_ZN22QDeclarativeExpressionC1EP23QDeclarativeContextDataPvP20QDeclarativeRefCountP7QObjectRK7QStringiR29QDeclarativeExpressionPrivate @ 1297 NONAME
 	_ZN22QDeclarativeExpressionC1EP23QDeclarativeContextDataRK7QStringP7QObject @ 1298 NONAME
@@ -1511,7 +1511,7 @@ EXPORTS
 	_ZN23QDeclarativePathPercent19getStaticMetaObjectEv @ 1510 NONAME
 	_ZN23QDeclarativePathPercent8setValueEf @ 1511 NONAME
 	_ZN23QDeclarativePixmapCache15pendingRequestsEv @ 1512 NONAME
-	_ZN23QDeclarativePixmapCache3getERK4QUrlP7QPixmapP5QSizebii @ 1513 NONAME
+	_ZN23QDeclarativePixmapCache3getERK4QUrlP7QPixmapP5QSizebii @ 1513 NONAME ABSENT
 	_ZN23QDeclarativePixmapCache6cancelERK4QUrlP7QObject @ 1514 NONAME
 	_ZN23QDeclarativePixmapCache7requestEP18QDeclarativeEngineRK4QUrlii @ 1515 NONAME
 	_ZN23QDeclarativePixmapReply10setLoadingEv @ 1516 NONAME
@@ -1573,12 +1573,12 @@ EXPORTS
 	_ZN24QDeclarativeDebugService11sendMessageERK10QByteArray @ 1572 NONAME
 	_ZN24QDeclarativeDebugService14enabledChangedEb @ 1573 NONAME
 	_ZN24QDeclarativeDebugService14objectToStringEP7QObject @ 1574 NONAME
-	_ZN24QDeclarativeDebugService14waitForClientsEv @ 1575 NONAME
+	_ZN24QDeclarativeDebugService14waitForClientsEv @ 1575 NONAME ABSENT
 	_ZN24QDeclarativeDebugService15messageReceivedERK10QByteArray @ 1576 NONAME
 	_ZN24QDeclarativeDebugService16staticMetaObjectE @ 1577 NONAME DATA 16
 	_ZN24QDeclarativeDebugService18isDebuggingEnabledEv @ 1578 NONAME
 	_ZN24QDeclarativeDebugService19getStaticMetaObjectEv @ 1579 NONAME
-	_ZN24QDeclarativeDebugService19notifyOnServerStartEP7QObjectPKc @ 1580 NONAME
+	_ZN24QDeclarativeDebugService19notifyOnServerStartEP7QObjectPKc @ 1580 NONAME ABSENT
 	_ZN24QDeclarativeDebugServiceC1ERK7QStringP7QObject @ 1581 NONAME
 	_ZN24QDeclarativeDebugServiceC2ERK7QStringP7QObject @ 1582 NONAME
 	_ZN24QDeclarativeDomComponentC1ERKS_ @ 1583 NONAME
@@ -1611,8 +1611,8 @@ EXPORTS
 	_ZN24QDeclarativeParentChange4setYEf @ 1610 NONAME
 	_ZN24QDeclarativeParentChange6rewindEv @ 1611 NONAME
 	_ZN24QDeclarativeParentChange7actionsEv @ 1612 NONAME
-	_ZN24QDeclarativeParentChange7executeEv @ 1613 NONAME
-	_ZN24QDeclarativeParentChange7reverseEv @ 1614 NONAME
+	_ZN24QDeclarativeParentChange7executeEv @ 1613 NONAME ABSENT
+	_ZN24QDeclarativeParentChange7reverseEv @ 1614 NONAME ABSENT
 	_ZN24QDeclarativeParentChange8overrideEP23QDeclarativeActionEvent @ 1615 NONAME
 	_ZN24QDeclarativeParentChange8setScaleEf @ 1616 NONAME
 	_ZN24QDeclarativeParentChange8setWidthEf @ 1617 NONAME
@@ -1652,7 +1652,7 @@ EXPORTS
 	_ZN24QDeclarativeSpringFollow11syncChangedEv @ 1651 NONAME
 	_ZN24QDeclarativeSpringFollow12valueChangedEf @ 1652 NONAME
 	_ZN24QDeclarativeSpringFollow14modulusChangedEv @ 1653 NONAME
-	_ZN24QDeclarativeSpringFollow14setSourceValueEf @ 1654 NONAME
+	_ZN24QDeclarativeSpringFollow14setSourceValueEf @ 1654 NONAME ABSENT
 	_ZN24QDeclarativeSpringFollow16staticMetaObjectE @ 1655 NONAME DATA 16
 	_ZN24QDeclarativeSpringFollow19getStaticMetaObjectEv @ 1656 NONAME
 	_ZN24QDeclarativeSpringFollow7setMassEf @ 1657 NONAME
@@ -1721,8 +1721,8 @@ EXPORTS
 	_ZN25QDeclarativeAnchorChanges6rewindEv @ 1720 NONAME
 	_ZN25QDeclarativeAnchorChanges7actionsEv @ 1721 NONAME
 	_ZN25QDeclarativeAnchorChanges7anchorsEv @ 1722 NONAME
-	_ZN25QDeclarativeAnchorChanges7executeEv @ 1723 NONAME
-	_ZN25QDeclarativeAnchorChanges7reverseEv @ 1724 NONAME
+	_ZN25QDeclarativeAnchorChanges7executeEv @ 1723 NONAME ABSENT
+	_ZN25QDeclarativeAnchorChanges7reverseEv @ 1724 NONAME ABSENT
 	_ZN25QDeclarativeAnchorChanges8overrideEP23QDeclarativeActionEvent @ 1725 NONAME
 	_ZN25QDeclarativeAnchorChanges9setObjectEP16QDeclarativeItem @ 1726 NONAME
 	_ZN25QDeclarativeAnchorChangesC1EP7QObject @ 1727 NONAME
@@ -1918,7 +1918,7 @@ EXPORTS
 	_ZN27QDeclarativeVisualDataModel11stringValueEiRK7QString @ 1917 NONAME
 	_ZN27QDeclarativeVisualDataModel12_q_rowsMovedERK11QModelIndexiiS2_i @ 1918 NONAME
 	_ZN27QDeclarativeVisualDataModel12completeItemEv @ 1919 NONAME
-	_ZN27QDeclarativeVisualDataModel12setRootIndexERK11QModelIndex @ 1920 NONAME
+	_ZN27QDeclarativeVisualDataModel12setRootIndexERK11QModelIndex @ 1920 NONAME ABSENT
 	_ZN27QDeclarativeVisualDataModel13_q_itemsMovedEiii @ 1921 NONAME
 	_ZN27QDeclarativeVisualDataModel13_q_modelResetEv @ 1922 NONAME
 	_ZN27QDeclarativeVisualDataModel14_q_dataChangedERK11QModelIndexS2_ @ 1923 NONAME
@@ -2034,7 +2034,7 @@ EXPORTS
 	_ZN29QDeclarativeStateChangeScript16staticMetaObjectE @ 2033 NONAME DATA 16
 	_ZN29QDeclarativeStateChangeScript19getStaticMetaObjectEv @ 2034 NONAME
 	_ZN29QDeclarativeStateChangeScript7actionsEv @ 2035 NONAME
-	_ZN29QDeclarativeStateChangeScript7executeEv @ 2036 NONAME
+	_ZN29QDeclarativeStateChangeScript7executeEv @ 2036 NONAME ABSENT
 	_ZN29QDeclarativeStateChangeScript7setNameERK7QString @ 2037 NONAME
 	_ZN29QDeclarativeStateChangeScript9setScriptERK24QDeclarativeScriptString @ 2038 NONAME
 	_ZN29QDeclarativeStateChangeScriptC1EP7QObject @ 2039 NONAME
@@ -2130,19 +2130,19 @@ EXPORTS
 	_ZN34QDeclarativeDebugPropertyReferenceC2ERKS_ @ 2129 NONAME
 	_ZN34QDeclarativeDebugPropertyReferenceC2Ev @ 2130 NONAME
 	_ZN34QDeclarativeDebugPropertyReferenceaSERKS_ @ 2131 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 2132 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer11eventFilterEP7QObjectP6QEvent @ 2133 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer11qt_metacallEN11QMetaObject4CallEiPPv @ 2134 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer11qt_metacastEPKc @ 2135 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer16staticMetaObjectE @ 2136 NONAME DATA 16
-	_ZN35QDeclarativeGraphicsObjectContainer17setGraphicsObjectEP15QGraphicsObject @ 2137 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer19getStaticMetaObjectEv @ 2138 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainer23setSynchronizedResizingEb @ 2139 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainerC1EP16QDeclarativeItem @ 2140 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainerC2EP16QDeclarativeItem @ 2141 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainerD0Ev @ 2142 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainerD1Ev @ 2143 NONAME
-	_ZN35QDeclarativeGraphicsObjectContainerD2Ev @ 2144 NONAME
+	_ZN35QDeclarativeGraphicsObjectContainer10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 2132 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer11eventFilterEP7QObjectP6QEvent @ 2133 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer11qt_metacallEN11QMetaObject4CallEiPPv @ 2134 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer11qt_metacastEPKc @ 2135 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer16staticMetaObjectE @ 2136 NONAME DATA 16 ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer17setGraphicsObjectEP15QGraphicsObject @ 2137 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer19getStaticMetaObjectEv @ 2138 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainer23setSynchronizedResizingEb @ 2139 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainerC1EP16QDeclarativeItem @ 2140 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainerC2EP16QDeclarativeItem @ 2141 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainerD0Ev @ 2142 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainerD1Ev @ 2143 NONAME ABSENT
+	_ZN35QDeclarativeGraphicsObjectContainerD2Ev @ 2144 NONAME ABSENT
 	_ZN36QDeclarativeDomValueValueInterceptorC1ERKS_ @ 2145 NONAME
 	_ZN36QDeclarativeDomValueValueInterceptorC1Ev @ 2146 NONAME
 	_ZN36QDeclarativeDomValueValueInterceptorC2ERKS_ @ 2147 NONAME
@@ -2234,7 +2234,7 @@ EXPORTS
 	_ZNK16QDeclarativeText10textFormatEv @ 2233 NONAME
 	_ZNK16QDeclarativeText4fontEv @ 2234 NONAME
 	_ZNK16QDeclarativeText4textEv @ 2235 NONAME
-	_ZNK16QDeclarativeText4wrapEv @ 2236 NONAME
+	_ZNK16QDeclarativeText4wrapEv @ 2236 NONAME ABSENT
 	_ZNK16QDeclarativeText5colorEv @ 2237 NONAME
 	_ZNK16QDeclarativeText5styleEv @ 2238 NONAME
 	_ZNK16QDeclarativeText6hAlignEv @ 2239 NONAME
@@ -2515,7 +2515,7 @@ EXPORTS
 	_ZNK20QDeclarativeTextEdit20textInteractionFlagsEv @ 2514 NONAME
 	_ZNK20QDeclarativeTextEdit4fontEv @ 2515 NONAME
 	_ZNK20QDeclarativeTextEdit4textEv @ 2516 NONAME
-	_ZNK20QDeclarativeTextEdit4wrapEv @ 2517 NONAME
+	_ZNK20QDeclarativeTextEdit4wrapEv @ 2517 NONAME ABSENT
 	_ZNK20QDeclarativeTextEdit5colorEv @ 2518 NONAME
 	_ZNK20QDeclarativeTextEdit6hAlignEv @ 2519 NONAME
 	_ZNK20QDeclarativeTextEdit6vAlignEv @ 2520 NONAME
@@ -2765,7 +2765,7 @@ EXPORTS
 	_ZNK24QDeclarativeScriptString6scriptEv @ 2764 NONAME
 	_ZNK24QDeclarativeScriptString7contextEv @ 2765 NONAME
 	_ZNK24QDeclarativeSpringFollow10metaObjectEv @ 2766 NONAME
-	_ZNK24QDeclarativeSpringFollow11sourceValueEv @ 2767 NONAME
+	_ZNK24QDeclarativeSpringFollow11sourceValueEv @ 2767 NONAME ABSENT
 	_ZNK24QDeclarativeSpringFollow4massEv @ 2768 NONAME
 	_ZNK24QDeclarativeSpringFollow5valueEv @ 2769 NONAME
 	_ZNK24QDeclarativeSpringFollow6inSyncEv @ 2770 NONAME
@@ -2874,7 +2874,7 @@ EXPORTS
 	_ZNK28QDeclarativeCustomParserNode8locationEv @ 2873 NONAME
 	_ZNK28QDeclarativeDebugObjectQuery10metaObjectEv @ 2874 NONAME
 	_ZNK28QDeclarativeDebugObjectQuery6objectEv @ 2875 NONAME
-	_ZNK28QDeclarativeValueTypeFactoryixEi @ 2876 NONAME
+	_ZNK28QDeclarativeValueTypeFactoryixEi @ 2876 NONAME ABSENT
 	_ZNK28QDeclarativeXmlListModelRole10metaObjectEv @ 2877 NONAME
 	_ZNK29QDeclarativeDebugEnginesQuery10metaObjectEv @ 2878 NONAME
 	_ZNK29QDeclarativeDebugEnginesQuery7enginesEv @ 2879 NONAME
@@ -2933,9 +2933,9 @@ EXPORTS
 	_ZNK34QDeclarativeDebugPropertyReference4nameEv @ 2932 NONAME
 	_ZNK34QDeclarativeDebugPropertyReference5valueEv @ 2933 NONAME
 	_ZNK34QDeclarativeDebugPropertyReference7bindingEv @ 2934 NONAME
-	_ZNK35QDeclarativeGraphicsObjectContainer10metaObjectEv @ 2935 NONAME
-	_ZNK35QDeclarativeGraphicsObjectContainer14graphicsObjectEv @ 2936 NONAME
-	_ZNK35QDeclarativeGraphicsObjectContainer20synchronizedResizingEv @ 2937 NONAME
+	_ZNK35QDeclarativeGraphicsObjectContainer10metaObjectEv @ 2935 NONAME ABSENT
+	_ZNK35QDeclarativeGraphicsObjectContainer14graphicsObjectEv @ 2936 NONAME ABSENT
+	_ZNK35QDeclarativeGraphicsObjectContainer20synchronizedResizingEv @ 2937 NONAME ABSENT
 	_ZNK36QDeclarativeDomValueValueInterceptor6objectEv @ 2938 NONAME
 	_ZNK38QDeclarativeDebugObjectExpressionWatch10expressionEv @ 2939 NONAME
 	_ZNK38QDeclarativeDebugObjectExpressionWatch10metaObjectEv @ 2940 NONAME
@@ -3039,7 +3039,7 @@ EXPORTS
 	_ZTI31QDeclarativePropertyValueSource @ 3038 NONAME
 	_ZTI32QDeclarativeDebugExpressionQuery @ 3039 NONAME
 	_ZTI33QDeclarativeDebugRootContextQuery @ 3040 NONAME
-	_ZTI35QDeclarativeGraphicsObjectContainer @ 3041 NONAME
+	_ZTI35QDeclarativeGraphicsObjectContainer @ 3041 NONAME ABSENT
 	_ZTI36QDeclarativePropertyValueInterceptor @ 3042 NONAME
 	_ZTI38QDeclarativeDebugObjectExpressionWatch @ 3043 NONAME
 	_ZTI39QDeclarativeNetworkAccessManagerFactory @ 3044 NONAME
@@ -3142,7 +3142,7 @@ EXPORTS
 	_ZTV31QDeclarativePropertyValueSource @ 3141 NONAME
 	_ZTV32QDeclarativeDebugExpressionQuery @ 3142 NONAME
 	_ZTV33QDeclarativeDebugRootContextQuery @ 3143 NONAME
-	_ZTV35QDeclarativeGraphicsObjectContainer @ 3144 NONAME
+	_ZTV35QDeclarativeGraphicsObjectContainer @ 3144 NONAME ABSENT
 	_ZTV36QDeclarativePropertyValueInterceptor @ 3145 NONAME
 	_ZTV38QDeclarativeDebugObjectExpressionWatch @ 3146 NONAME
 	_ZTV39QDeclarativeNetworkAccessManagerFactory @ 3147 NONAME
@@ -3198,8 +3198,8 @@ EXPORTS
 	_ZThn16_N26QDeclarativeBasePositioner17componentCompleteEv @ 3197 NONAME
 	_ZThn16_N26QDeclarativeBasePositionerD0Ev @ 3198 NONAME
 	_ZThn16_N26QDeclarativeBasePositionerD1Ev @ 3199 NONAME
-	_ZThn16_N35QDeclarativeGraphicsObjectContainerD0Ev @ 3200 NONAME
-	_ZThn16_N35QDeclarativeGraphicsObjectContainerD1Ev @ 3201 NONAME
+	_ZThn16_N35QDeclarativeGraphicsObjectContainerD0Ev @ 3200 NONAME ABSENT
+	_ZThn16_N35QDeclarativeGraphicsObjectContainerD1Ev @ 3201 NONAME ABSENT
 	_ZThn8_N16QDeclarativeBind17componentCompleteEv @ 3202 NONAME
 	_ZThn8_N16QDeclarativeBindD0Ev @ 3203 NONAME
 	_ZThn8_N16QDeclarativeBindD1Ev @ 3204 NONAME
@@ -3310,8 +3310,8 @@ EXPORTS
 	_ZThn8_N24QDeclarativeParentChange13saveOriginalsEv @ 3309 NONAME
 	_ZThn8_N24QDeclarativeParentChange17saveCurrentValuesEv @ 3310 NONAME
 	_ZThn8_N24QDeclarativeParentChange6rewindEv @ 3311 NONAME
-	_ZThn8_N24QDeclarativeParentChange7executeEv @ 3312 NONAME
-	_ZThn8_N24QDeclarativeParentChange7reverseEv @ 3313 NONAME
+	_ZThn8_N24QDeclarativeParentChange7executeEv @ 3312 NONAME ABSENT
+	_ZThn8_N24QDeclarativeParentChange7reverseEv @ 3313 NONAME ABSENT
 	_ZThn8_N24QDeclarativeParentChange8overrideEP23QDeclarativeActionEvent @ 3314 NONAME
 	_ZThn8_N24QDeclarativeParentChangeD0Ev @ 3315 NONAME
 	_ZThn8_N24QDeclarativeParentChangeD1Ev @ 3316 NONAME
@@ -3333,8 +3333,8 @@ EXPORTS
 	_ZThn8_N25QDeclarativeAnchorChanges16saveTargetValuesEv @ 3332 NONAME
 	_ZThn8_N25QDeclarativeAnchorChanges17saveCurrentValuesEv @ 3333 NONAME
 	_ZThn8_N25QDeclarativeAnchorChanges6rewindEv @ 3334 NONAME
-	_ZThn8_N25QDeclarativeAnchorChanges7executeEv @ 3335 NONAME
-	_ZThn8_N25QDeclarativeAnchorChanges7reverseEv @ 3336 NONAME
+	_ZThn8_N25QDeclarativeAnchorChanges7executeEv @ 3335 NONAME ABSENT
+	_ZThn8_N25QDeclarativeAnchorChanges7reverseEv @ 3336 NONAME ABSENT
 	_ZThn8_N25QDeclarativeAnchorChanges8overrideEP23QDeclarativeActionEvent @ 3337 NONAME
 	_ZThn8_N25QDeclarativeAnchorChangesD0Ev @ 3338 NONAME
 	_ZThn8_N25QDeclarativeAnchorChangesD1Ev @ 3339 NONAME
@@ -3348,12 +3348,12 @@ EXPORTS
 	_ZThn8_N27QDeclarativeExtensionPluginD1Ev @ 3347 NONAME
 	_ZThn8_N29QDeclarativeSmoothedAnimationD0Ev @ 3348 NONAME
 	_ZThn8_N29QDeclarativeSmoothedAnimationD1Ev @ 3349 NONAME
-	_ZThn8_N29QDeclarativeStateChangeScript7executeEv @ 3350 NONAME
+	_ZThn8_N29QDeclarativeStateChangeScript7executeEv @ 3350 NONAME ABSENT
 	_ZThn8_N29QDeclarativeStateChangeScriptD0Ev @ 3351 NONAME
 	_ZThn8_N29QDeclarativeStateChangeScriptD1Ev @ 3352 NONAME
-	_ZThn8_N35QDeclarativeGraphicsObjectContainer10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 3353 NONAME
-	_ZThn8_N35QDeclarativeGraphicsObjectContainerD0Ev @ 3354 NONAME
-	_ZThn8_N35QDeclarativeGraphicsObjectContainerD1Ev @ 3355 NONAME
+	_ZThn8_N35QDeclarativeGraphicsObjectContainer10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 3353 NONAME ABSENT
+	_ZThn8_N35QDeclarativeGraphicsObjectContainerD0Ev @ 3354 NONAME ABSENT
+	_ZThn8_N35QDeclarativeGraphicsObjectContainerD1Ev @ 3355 NONAME ABSENT
 	_ZThn8_NK16QDeclarativeItem12boundingRectEv @ 3356 NONAME
 	_ZThn8_NK16QDeclarativeItem16inputMethodQueryEN2Qt16InputMethodQueryE @ 3357 NONAME
 	_ZThn8_NK19QDeclarativeBinding10expressionEv @ 3358 NONAME
@@ -3394,4 +3394,106 @@ EXPORTS
 	_ZNK18QDeclarativeParser7Variant8asScriptEv @ 3393 NONAME
 	_ZNK18QDeclarativeParser7Variant8asStringEv @ 3394 NONAME
 	_ZNK18QDeclarativeParser7Variant9asBooleanEv @ 3395 NONAME
+	_ZN16QDeclarativeDrag11resetTargetEv @ 3396 NONAME
+	_ZN16QDeclarativeText11setWrapModeENS_8WrapModeE @ 3397 NONAME
+	_ZN16QDeclarativeText15wrapModeChangedEv @ 3398 NONAME
+	_ZN18QDeclarativeActionC1EP7QObjectRK7QStringP19QDeclarativeContextRK8QVariant @ 3399 NONAME
+	_ZN18QDeclarativeActionC2EP7QObjectRK7QStringP19QDeclarativeContextRK8QVariant @ 3400 NONAME
+	_ZN18QDeclarativeEngine12importPluginERK7QStringS2_ @ 3401 NONAME ABSENT
+	_ZN18QDeclarativeEngine13addPluginPathERK7QString @ 3402 NONAME
+	_ZN18QDeclarativeEngine17setPluginPathListERK11QStringList @ 3403 NONAME
+	_ZN20QDeclarativeCompiler2trEPKc @ 3404 NONAME ABSENT
+	_ZN20QDeclarativeGridView24setHighlightMoveDurationEi @ 3405 NONAME
+	_ZN20QDeclarativeGridView28highlightMoveDurationChangedEv @ 3406 NONAME
+	_ZN20QDeclarativeListView24setHighlightMoveDurationEi @ 3407 NONAME
+	_ZN20QDeclarativeListView26setHighlightResizeDurationEi @ 3408 NONAME
+	_ZN20QDeclarativeListView28highlightMoveDurationChangedEv @ 3409 NONAME
+	_ZN20QDeclarativeListView30highlightResizeDurationChangedEv @ 3410 NONAME
+	_ZN20QDeclarativePathView24setHighlightMoveDurationEi @ 3411 NONAME
+	_ZN20QDeclarativePathView28highlightMoveDurationChangedEv @ 3412 NONAME
+	_ZN20QDeclarativeTextEdit11setWrapModeENS_8WrapModeE @ 3413 NONAME
+	_ZN20QDeclarativeTextEdit15wrapModeChangedEv @ 3414 NONAME
+	_ZN21QDeclarativeTextInput11xToPositionEi @ 3415 NONAME
+	_ZN21QDeclarativeTextInput13setAutoScrollEb @ 3416 NONAME
+	_ZN21QDeclarativeTextInput14mouseMoveEventEP24QGraphicsSceneMouseEvent @ 3417 NONAME
+	_ZN21QDeclarativeTextInput17autoScrollChangedEb @ 3418 NONAME
+	_ZN21QDeclarativeTextInput18displayTextChangedERK7QString @ 3419 NONAME
+	_ZN21QDeclarativeTextInput19moveCursorSelectionEi @ 3420 NONAME
+	_ZN21QDeclarativeTextInput20setPasswordCharacterERK7QString @ 3421 NONAME
+	_ZN21QDeclarativeTextInput24passwordCharacterChangedEv @ 3422 NONAME
+	_ZN24QDeclarativeSpringFollow5setToEf @ 3423 NONAME
+	_ZN25QDeclarativeAnimatedImage17sourceSizeChangedEv @ 3424 NONAME
+	_ZN26QDeclarativeSmoothedFollow10setEnabledEb @ 3425 NONAME
+	_ZN26QDeclarativeSmoothedFollow11qt_metacallEN11QMetaObject4CallEiPPv @ 3426 NONAME
+	_ZN26QDeclarativeSmoothedFollow11qt_metacastEPKc @ 3427 NONAME
+	_ZN26QDeclarativeSmoothedFollow11setDurationEi @ 3428 NONAME
+	_ZN26QDeclarativeSmoothedFollow11setVelocityEf @ 3429 NONAME
+	_ZN26QDeclarativeSmoothedFollow14enabledChangedEv @ 3430 NONAME
+	_ZN26QDeclarativeSmoothedFollow15durationChangedEv @ 3431 NONAME
+	_ZN26QDeclarativeSmoothedFollow15velocityChangedEv @ 3432 NONAME
+	_ZN26QDeclarativeSmoothedFollow16setReversingModeENS_13ReversingModeE @ 3433 NONAME
+	_ZN26QDeclarativeSmoothedFollow16staticMetaObjectE @ 3434 NONAME DATA 16
+	_ZN26QDeclarativeSmoothedFollow19getStaticMetaObjectEv @ 3435 NONAME
+	_ZN26QDeclarativeSmoothedFollow20reversingModeChangedEv @ 3436 NONAME
+	_ZN26QDeclarativeSmoothedFollow20setMaximumEasingTimeEi @ 3437 NONAME
+	_ZN26QDeclarativeSmoothedFollow24maximumEasingTimeChangedEv @ 3438 NONAME
+	_ZN26QDeclarativeSmoothedFollow5setToEf @ 3439 NONAME
+	_ZN26QDeclarativeSmoothedFollow9setTargetERK20QDeclarativeProperty @ 3440 NONAME
+	_ZN26QDeclarativeSmoothedFollowC1EP7QObject @ 3441 NONAME
+	_ZN26QDeclarativeSmoothedFollowC2EP7QObject @ 3442 NONAME
+	_ZN26QDeclarativeSmoothedFollowD0Ev @ 3443 NONAME
+	_ZN26QDeclarativeSmoothedFollowD1Ev @ 3444 NONAME
+	_ZN26QDeclarativeSmoothedFollowD2Ev @ 3445 NONAME
+	_ZNK16QDeclarativeText8wrapModeEv @ 3446 NONAME
+	_ZNK16QDeclarativeType10createSizeEv @ 3447 NONAME
+	_ZNK16QDeclarativeType14createFunctionEv @ 3448 NONAME
+	_ZNK16QDeclarativeType14isExtendedTypeEv @ 3449 NONAME
+	_ZNK18QDeclarativeEngine14pluginPathListEv @ 3450 NONAME
+	_ZNK20QDeclarativeGridView21highlightMoveDurationEv @ 3451 NONAME
+	_ZNK20QDeclarativeListView21highlightMoveDurationEv @ 3452 NONAME
+	_ZNK20QDeclarativeListView23highlightResizeDurationEv @ 3453 NONAME
+	_ZNK20QDeclarativePathView21highlightMoveDurationEv @ 3454 NONAME
+	_ZNK20QDeclarativeTextEdit8wrapModeEv @ 3455 NONAME
+	_ZNK21QDeclarativeTextInput10autoScrollEv @ 3456 NONAME
+	_ZNK21QDeclarativeTextInput11displayTextEv @ 3457 NONAME
+	_ZNK21QDeclarativeTextInput17passwordCharacterEv @ 3458 NONAME
+	_ZNK24QDeclarativeSpringFollow2toEv @ 3459 NONAME
+	_ZNK26QDeclarativeSmoothedFollow10metaObjectEv @ 3460 NONAME
+	_ZNK26QDeclarativeSmoothedFollow13reversingModeEv @ 3461 NONAME
+	_ZNK26QDeclarativeSmoothedFollow17maximumEasingTimeEv @ 3462 NONAME
+	_ZNK26QDeclarativeSmoothedFollow2toEv @ 3463 NONAME
+	_ZNK26QDeclarativeSmoothedFollow7enabledEv @ 3464 NONAME
+	_ZNK26QDeclarativeSmoothedFollow8durationEv @ 3465 NONAME
+	_ZNK26QDeclarativeSmoothedFollow8velocityEv @ 3466 NONAME
+	_ZTI26QDeclarativeSmoothedFollow @ 3467 NONAME
+	_ZTV26QDeclarativeSmoothedFollow @ 3468 NONAME
+	_ZThn8_N21QDeclarativeTextInput14mouseMoveEventEP24QGraphicsSceneMouseEvent @ 3469 NONAME
+	_ZThn8_N26QDeclarativeSmoothedFollow9setTargetERK20QDeclarativeProperty @ 3470 NONAME
+	_ZThn8_N26QDeclarativeSmoothedFollowD0Ev @ 3471 NONAME
+	_ZThn8_N26QDeclarativeSmoothedFollowD1Ev @ 3472 NONAME
+	_ZN16QDeclarativeGrid11flowChangedEv @ 3473 NONAME
+	_ZN16QDeclarativeGrid7setFlowENS_4FlowE @ 3474 NONAME
+	_ZN16QDeclarativeText19reloadWithResourcesEv @ 3475 NONAME
+	_ZN18QDeclarativeEngine12importPluginERK7QStringS2_PS0_ @ 3476 NONAME
+	_ZN19QDeclarativeAnchors11setCenterInEP15QGraphicsObject @ 3477 NONAME
+	_ZN19QDeclarativeAnchors7setFillEP15QGraphicsObject @ 3478 NONAME
+	_ZN19QDeclarativeAnchorsC1EP15QGraphicsObjectP7QObject @ 3479 NONAME
+	_ZN19QDeclarativeAnchorsC2EP15QGraphicsObjectP7QObject @ 3480 NONAME
+	_ZN19QDeclarativePrivate30qdeclarativeelement_destructorEP7QObject @ 3481 NONAME
+	_ZN23QDeclarativePixmapCache3getERK4QUrlP7QPixmapP7QStringP5QSizebii @ 3482 NONAME
+	_ZN27QDeclarativePropertyPrivate16findSignalByNameEPK11QMetaObjectRK10QByteArray @ 3483 NONAME
+	_ZNK16QDeclarativeGrid4flowEv @ 3484 NONAME
+	_ZNK16QDeclarativeText16resourcesLoadingEv @ 3485 NONAME
+	_ZNK19QDeclarativeContext7isValidEv @ 3486 NONAME
+	_ZNK23QDeclarativePixmapReply11errorStringEv @ 3487 NONAME
+	_ZTI26QDeclarativeAnimationGroup @ 3488 NONAME ABSENT
+	_ZTI26QDeclarativeTimeLineObject @ 3489 NONAME ABSENT
+	_ZTI29QDeclarativeAbstractAnimation @ 3490 NONAME ABSENT
+	_ZTI29QDeclarativePropertyAnimation @ 3491 NONAME ABSENT
+	_ZTI30QDeclarativeAbstractExpression @ 3492 NONAME ABSENT
+	_ZTIN14QDeclarativeJS3AST14ExpressionNodeE @ 3493 NONAME ABSENT
+	_ZTIN14QDeclarativeJS3AST14UiObjectMemberE @ 3494 NONAME ABSENT
+	_ZTIN14QDeclarativeJS3AST18FunctionExpressionE @ 3495 NONAME ABSENT
+	_ZTIN14QDeclarativeJS3AST4NodeE @ 3496 NONAME ABSENT
+	_ZTIN14QDeclarativeJS3AST9StatementE @ 3497 NONAME ABSENT
 

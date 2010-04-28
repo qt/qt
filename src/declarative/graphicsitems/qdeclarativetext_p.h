@@ -69,7 +69,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeText : public QDeclarativeItem
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapModeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
 
@@ -123,8 +122,6 @@ public:
     VAlignment vAlign() const;
     void setVAlign(VAlignment align);
 
-    bool wrap() const;
-    void setWrap(bool w);
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 
@@ -137,6 +134,8 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
     virtual void componentComplete();
+
+    int resourcesLoading() const; // mainly for testing
 
 Q_SIGNALS:
     void textChanged(const QString &text);
@@ -160,6 +159,9 @@ protected:
 private:
     Q_DISABLE_COPY(QDeclarativeText)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeText)
+
+    friend class QTextDocumentWithImageResources;
+    void reloadWithResources();
 };
 
 QT_END_NAMESPACE

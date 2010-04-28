@@ -67,14 +67,14 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
 
 /*!
     \class QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeComponent class encapsulates a QML component description.
     \mainclass
 */
 
 /*!
     \qmlclass Component QDeclarativeComponent
-  \since 4.7
+    \since 4.7
     \brief The Component element encapsulates a QML component description.
 
     Components are reusable, encapsulated Qml element with a well-defined interface.
@@ -86,26 +86,26 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
     file containing it.
 
     \qml
-Item {
-    Component {
-        id: redSquare
-        Rectangle {
-            color: "red"
-            width: 10
-            height: 10
+    Item {
+        Component {
+            id: redSquare
+            Rectangle {
+                color: "red"
+                width: 10
+                height: 10
+            }
         }
+        Loader { sourceComponent: redSquare }
+        Loader { sourceComponent: redSquare; x: 20 }
     }
-    Loader { sourceComponent: redSquare }
-    Loader { sourceComponent: redSquare; x: 20 }
-}
     \endqml
+*/
 
-    \section1 Attached Properties
-
-    \e onCompleted
+/*!
+    \qmlattachedsignal Component::onCompleted()
 
     Emitted after component "startup" has completed.  This can be used to
-    execute script code at startup, once the full QML environment has been 
+    execute script code at startup, once the full QML environment has been
     established.
 
     The \c {Component::onCompleted} attached property can be applied to
@@ -123,6 +123,30 @@ Item {
 */
 
 /*!
+    \qmlattachedsignal Component::onDestruction()
+
+    Emitted as the component begins destruction.  This can be used to undo
+    work done in the onCompleted signal, or other imperative code in your
+    application.
+
+    The \c {Component::onDestruction} attached property can be applied to
+    any element.  However, it applies to the destruction of the component as
+    a whole, and not the destruction of the specific object.  The order of
+    running the \c onDestruction scripts is undefined.
+
+    \qml
+    Rectangle {
+        Component.onDestruction: console.log("Destruction Beginning!")
+        Rectangle {
+            Component.onDestruction: console.log("Nested Destruction Beginning!")
+        }
+    }
+    \endqml
+
+    \sa QtDeclarative
+*/
+
+/*!
     \enum QDeclarativeComponent::Status
     
     Specifies the loading status of the QDeclarativeComponent.
@@ -130,7 +154,7 @@ Item {
     \value Null This QDeclarativeComponent has no data.  Call loadUrl() or setData() to add QML content.
     \value Ready This QDeclarativeComponent is ready and create() may be called.
     \value Loading This QDeclarativeComponent is loading network data.
-    \value Error An error has occured.  Calling errorDescription() to retrieve a description.
+    \value Error An error has occured.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
 */
 
 void QDeclarativeComponentPrivate::typeDataReady()
@@ -215,6 +239,18 @@ QDeclarativeComponent::~QDeclarativeComponent()
 }
 
 /*!
+    \qmlproperty enumeration Component::status
+    This property holds the status of component loading.  It can be one of:
+    \list
+    \o Null - no data is available for the component
+    \o Ready - the component has been loaded, and can be used to create instances.
+    \o Loading - the component is currently being loaded
+    \o Error - an error occurred while loading the component.
+               Calling errorsString() will provide a human-readable description of any errors.
+    \endlist
+ */
+
+/*!
     \property QDeclarativeComponent::status
     The component's current \l{QDeclarativeComponent::Status} {status}.
  */
@@ -233,6 +269,14 @@ QDeclarativeComponent::Status QDeclarativeComponent::status() const
 }
 
 /*!
+    \qmlproperty bool Component::isNull
+
+    Is true if the component is in the Null state, false otherwise.
+
+    Equivalent to status == Component.Null.
+*/
+
+/*!
     \property QDeclarativeComponent::isNull
 
     Is true if the component is in the Null state, false otherwise.
@@ -243,6 +287,14 @@ bool QDeclarativeComponent::isNull() const
 {
     return status() == Null;
 }
+
+/*!
+    \qmlproperty bool Component::isReady
+
+    Is true if the component is in the Ready state, false otherwise.
+
+    Equivalent to status == Component.Ready.
+*/
 
 /*!
     \property QDeclarativeComponent::isReady
@@ -257,6 +309,16 @@ bool QDeclarativeComponent::isReady() const
 }
 
 /*!
+    \qmlproperty bool Component::isError
+
+    Is true if the component is in the Error state, false otherwise.
+
+    Equivalent to status == Component.Error.
+
+    Calling errorsString() will provide a human-readable description of any errors.
+*/
+
+/*!
     \property QDeclarativeComponent::isError
 
     Is true if the component is in the Error state, false otherwise.
@@ -269,6 +331,14 @@ bool QDeclarativeComponent::isError() const
 }
 
 /*!
+    \qmlproperty bool Component::isLoading
+
+    Is true if the component is in the Loading state, false otherwise.
+
+    Equivalent to status == Component::Loading.
+*/
+
+/*!
     \property QDeclarativeComponent::isLoading
 
     Is true if the component is in the Loading state, false otherwise.
@@ -279,6 +349,12 @@ bool QDeclarativeComponent::isLoading() const
 {
     return status() == Loading;
 }
+
+/*!
+    \qmlproperty real Component::progress
+    The progress of loading the component, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+*/
 
 /*!
     \property QDeclarativeComponent::progress
@@ -319,6 +395,9 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, QObject
 /*!
     Create a QDeclarativeComponent from the given \a url and give it the
     specified \a parent and \a engine.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
 
     \sa loadUrl()
 */
@@ -409,6 +488,9 @@ QDeclarativeContext *QDeclarativeComponent::creationContext() const
 
 /*!
     Load the QDeclarativeComponent from the provided \a url.
+
+    Ensure that the URL provided is full and correct, in particular, use
+    \l QUrl::fromLocalFile() when loading a file from the local filesystem.
 */
 void QDeclarativeComponent::loadUrl(const QUrl &url)
 {
@@ -460,6 +542,17 @@ QList<QDeclarativeError> QDeclarativeComponent::errors() const
 }
 
 /*!
+    \qmlmethod string Component::errorsString()
+
+    Returns a human-readable description of any errors.
+
+    The string includes the file, location, and description of each error.
+    If multiple errors are present they are separated by a newline character.
+
+    If no errors are present, an empty string is returned.
+*/
+
+/*!
     \internal
     errorsString is only meant as a way to get the errors in script
 */
@@ -476,6 +569,11 @@ QString QDeclarativeComponent::errorsString() const
     }
     return ret;
 }
+
+/*!
+    \qmlproperty url Component::url
+    The component URL.  This is the URL that was used to construct the component.
+*/
 
 /*!
     \property QDeclarativeComponent::url
@@ -497,6 +595,13 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
+    \qmlmethod object Component::createObject()
+    Returns an object instance from this component, or null if object creation fails.
+
+    The object will be created in the same context as the component was created in.
+*/
+
+/*!
     \internal
     A version of create which returns a scriptObject, for use in script
 */
@@ -504,15 +609,13 @@ QScriptValue QDeclarativeComponent::createObject()
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
-    if(!ctxt){
-        qWarning() << QLatin1String("createObject can only be used in QML");
-        return QScriptValue();
-    }
+    if(!ctxt)
+        return QScriptValue(QScriptValue::NullValue);
     QObject* ret = create(ctxt);
     if (!ret)
-        return QScriptValue();
+        return QScriptValue(QScriptValue::NullValue);
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
-    QDeclarativeDeclarativeData::get(ret, true)->setImplicitDestructible();
+    QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
 }
 
@@ -575,7 +678,7 @@ QObject *QDeclarativeComponent::beginCreate(QDeclarativeContext *context)
     Q_D(QDeclarativeComponent);
     QObject *rv = d->beginCreate(context?QDeclarativeContextData::get(context):0, QBitField());
     if (rv) {
-        QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(rv);
+        QDeclarativeData *ddata = QDeclarativeData::get(rv);
         Q_ASSERT(ddata);
         ddata->indestructible = true;
     }
@@ -587,12 +690,17 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 {
     Q_Q(QDeclarativeComponent);
     if (!context) {
-        qWarning("QDeclarativeComponent::beginCreate(): Cannot create a component in a null context");
+        qWarning("QDeclarativeComponent: Cannot create a component in a null context");
+        return 0;
+    }
+
+    if (!context->isValid()) {
+        qWarning("QDeclarativeComponent: Cannot create a component in an invalid context");
         return 0;
     }
 
     if (context->engine != engine) {
-        qWarning("QDeclarativeComponent::beginCreate(): Must create component in context from the same QDeclarativeEngine");
+        qWarning("QDeclarativeComponent: Must create component in context from the same QDeclarativeEngine");
         return 0;
     }
 
@@ -646,11 +754,11 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
-        state->componentAttacheds = enginePriv->componentAttacheds;
-        if (state->componentAttacheds)
-            state->componentAttacheds->prev = &state->componentAttacheds;
+        state->componentAttached = enginePriv->componentAttached;
+        if (state->componentAttached)
+            state->componentAttached->prev = &state->componentAttached;
 
-        enginePriv->componentAttacheds = 0;
+        enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
         state->completePending = true;
@@ -660,7 +768,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
     return rv;
 }
 
-void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContextData *, QDeclarativeEnginePrivate *enginePriv,
+void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *enginePriv,
                                                  QObject *object, ConstructionState *state)
 {
     bool isRoot = !enginePriv->inBeginCreate;
@@ -677,11 +785,11 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeContextData *, QDec
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
-        state->componentAttacheds = enginePriv->componentAttacheds;
-        if (state->componentAttacheds)
-            state->componentAttacheds->prev = &state->componentAttacheds;
+        state->componentAttached = enginePriv->componentAttached;
+        if (state->componentAttached)
+            state->componentAttached->prev = &state->componentAttached;
 
-        enginePriv->componentAttacheds = 0;
+        enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
         state->completePending = true;
@@ -718,11 +826,13 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::clear(ps);
         }
 
-        while (state->componentAttacheds) {
-            QDeclarativeComponentAttached *a = state->componentAttacheds;
-            if (a->next) a->next->prev = &state->componentAttacheds;
-            state->componentAttacheds = a->next;
-            a->prev = 0; a->next = 0;
+        while (state->componentAttached) {
+            QDeclarativeComponentAttached *a = state->componentAttached;
+            a->rem();
+            QDeclarativeData *d = QDeclarativeData::get(a->parent());
+            Q_ASSERT(d);
+            Q_ASSERT(d->context);
+            a->add(&d->context->componentAttached);
             emit a->completed();
         }
 
@@ -733,7 +843,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
         enginePriv->inProgressCreations--;
         if (0 == enginePriv->inProgressCreations) {
             while (enginePriv->erroredBindings) {
-                qWarning().nospace() << qPrintable(enginePriv->erroredBindings->error.toString());
+                enginePriv->warning(enginePriv->erroredBindings->error);
                 enginePriv->erroredBindings->removeError();
             }
         }
@@ -782,15 +892,18 @@ QDeclarativeComponentAttached *QDeclarativeComponent::qmlAttachedProperties(QObj
     QDeclarativeComponentAttached *a = new QDeclarativeComponentAttached(obj);
 
     QDeclarativeEngine *engine = qmlEngine(obj);
-    if (!engine || !QDeclarativeEnginePrivate::get(engine)->inBeginCreate)
+    if (!engine)
         return a;
 
-    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
-
-    a->next = p->componentAttacheds;
-    a->prev = &p->componentAttacheds;
-    if (a->next) a->next->prev = &a->next;
-    p->componentAttacheds = a;
+    if (QDeclarativeEnginePrivate::get(engine)->inBeginCreate) {
+        QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
+        a->add(&p->componentAttached);
+    } else {
+        QDeclarativeData *d = QDeclarativeData::get(obj);
+        Q_ASSERT(d);
+        Q_ASSERT(d->context);
+        a->add(&d->context->componentAttached);
+    }
 
     return a;
 }

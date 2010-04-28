@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 QtObject {
     property string url
@@ -9,6 +9,7 @@ QtObject {
         var x = new XMLHttpRequest;
 
         x.open("GET", url);
+        x.setRequestHeader("Accept-Language","en-US");
 
         x.setRequestHeader("Test-header", "value");
         x.setRequestHeader("Test-header2", "value");

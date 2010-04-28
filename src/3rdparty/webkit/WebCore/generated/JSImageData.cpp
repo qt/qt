@@ -35,9 +35,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSImageData);
 
 static const HashTableValue JSImageDataTableValues[4] =
 {
-    { "width", DontDelete|ReadOnly, (intptr_t)jsImageDataWidth, (intptr_t)0 },
-    { "height", DontDelete|ReadOnly, (intptr_t)jsImageDataHeight, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsImageDataConstructor, (intptr_t)0 },
+    { "width", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsImageDataWidth), (intptr_t)0 },
+    { "height", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsImageDataHeight), (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsImageDataConstructor), (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -144,25 +144,27 @@ bool JSImageData::getOwnPropertyDescriptor(ExecState* exec, const Identifier& pr
     return getStaticValueDescriptor<JSImageData, Base>(exec, &JSImageDataTable, this, propertyName, descriptor);
 }
 
-JSValue jsImageDataWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsImageDataWidth(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSImageData* castedThis = static_cast<JSImageData*>(asObject(slot.slotBase()));
+    JSImageData* castedThis = static_cast<JSImageData*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     ImageData* imp = static_cast<ImageData*>(castedThis->impl());
-    return jsNumber(exec, imp->width());
+    JSValue result = jsNumber(exec, imp->width());
+    return result;
 }
 
-JSValue jsImageDataHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsImageDataHeight(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSImageData* castedThis = static_cast<JSImageData*>(asObject(slot.slotBase()));
+    JSImageData* castedThis = static_cast<JSImageData*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     ImageData* imp = static_cast<ImageData*>(castedThis->impl());
-    return jsNumber(exec, imp->height());
+    JSValue result = jsNumber(exec, imp->height());
+    return result;
 }
 
-JSValue jsImageDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsImageDataConstructor(ExecState* exec, JSValue slotBase, const Identifier&)
 {
-    JSImageData* domObject = static_cast<JSImageData*>(asObject(slot.slotBase()));
+    JSImageData* domObject = static_cast<JSImageData*>(asObject(slotBase));
     return JSImageData::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSImageData::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

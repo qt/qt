@@ -41,7 +41,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSXPathNSResolver);
 
 static const HashTableValue JSXPathNSResolverPrototypeTableValues[2] =
 {
-    { "lookupNamespaceURI", DontDelete|Function, (intptr_t)jsXPathNSResolverPrototypeFunctionLookupNamespaceURI, (intptr_t)1 },
+    { "lookupNamespaceURI", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsXPathNSResolverPrototypeFunctionLookupNamespaceURI), (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
