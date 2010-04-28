@@ -122,6 +122,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l Rectangle
 \o \l Image
 \o \l BorderImage
+\o \l AnimatedImage
 \o \l Text
 \o \l TextInput
 \o \l TextEdit

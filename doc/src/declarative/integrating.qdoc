@@ -152,8 +152,8 @@ Here is a screenshot of the result:
 \image declarative-integrating-graphicswidgets.png 
 
 
-Note this approach of creating your graphics widgets from QML does not work 
-with QGraphicsItem objects that are not QGraphicsWidget-based, since they are not QObjects.
+Note this approach of creating your graphics objects from QML does not work
+with QGraphicsItems that are not QGraphicsObject-based, since they are not QObjects.
 
 See \l{Extending QML in C++} for further information on using C++ types.
 

@@ -75,7 +75,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: print(factorial(10))
+        onClicked: console.log(factorial(10))
     }
 }
 \endcode
@@ -99,7 +99,7 @@ import "factorial.js" as MathFunctions
 Item {
     MouseArea {
         anchors.fill: parent
-        onClicked: print(MathFunctions.factorial(10))
+        onClicked: console.log(MathFunctions.factorial(10))
     }
 }
 \endcode
@@ -184,6 +184,9 @@ Any element in a QML file - including nested elements and nested QML component
 instances - can use this attached property.  If there is more than one \c onCompleted()
 handler to execute at startup, they are run sequentially in an undefined order.
 
+Likewise, the \l {Component::onDestruction} attached property is triggered on
+component destruction.
+
 \section1 QML JavaScript Restrictions
 
 QML executes standard JavaScript code, with the following restrictions:
@@ -204,16 +207,18 @@ is illegal in QML.
 \code
 // Illegal modification of undeclared variable
 a = 1;
-for (var ii = 1; ii < 10; ++ii) a = a * ii;
-    console.log("Result: " + a);
+for (var ii = 1; ii < 10; ++ii)
+    a = a * ii;
+console.log("Result: " + a);
 \endcode
 
 It can be trivially modified to this legal code.
 
 \code
 var a = 1;
-for (var ii = 1; ii < 10; ++ii) a = a * ii;
-    console.log("Result: " + a);
+for (var ii = 1; ii < 10; ++ii)
+    a = a * ii;
+console.log("Result: " + a);
 \endcode
 
 Any attempt to modify the global object - either implicitly or explicitly - will

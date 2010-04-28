@@ -1,5 +1,5 @@
-import Qt 4.7 as Qt
+import Qt 4.7 as Qt47
 
-Qt.QtObject {
-    Qt: 10
+Qt47.QtObject {
+    Qt47: 10
 }

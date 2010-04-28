@@ -247,7 +247,7 @@ static void clone(QMetaObjectBuilder &builder, const QMetaObject *mo,
         QMetaProperty property = mo->property(ii);
 
         int otherIndex = ignoreEnd->indexOfProperty(property.name());
-        if (otherIndex >= ignoreStart->classInfoOffset() + ignoreStart->classInfoCount()) {
+        if (otherIndex >= ignoreStart->propertyOffset() + ignoreStart->propertyCount()) {
             builder.addProperty(QByteArray("__qml_ignore__") + property.name(), QByteArray("void"));
             // Skip 
         } else {

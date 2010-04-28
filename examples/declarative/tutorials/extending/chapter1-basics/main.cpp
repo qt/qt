@@ -38,12 +38,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+#include "musician.h"
+#include <qdeclarative.h>
+#include <QDeclarativeView>
+#include <QApplication>
 
-/*!
-    \title Focus
-    \example declarative/focus
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
-    This example shows how to handle keys and focus in QML.
+    qmlRegisterType<Musician>("Music", 1, 0, "Musician");
 
-    \image qml-focus-example.png
-*/
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("app.qml"));
+    view.show();
+    return app.exec();
+}
+//![0]

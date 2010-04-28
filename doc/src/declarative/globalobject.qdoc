@@ -223,7 +223,7 @@ of their use.
         function finishCreation(){
             if(component.isReady()){
                 sprite = component.createObject();
-                if(sprite == 0){
+                if(sprite == null){
                     // Error Handling
                 }else{
                     sprite.parent = page;
@@ -248,7 +248,7 @@ of their use.
     \code
         component = createComponent("Sprite.qml");
         sprite = component.createObject();
-        if(sprite == 0){
+        if(sprite == null){
             // Error Handling
             console.log(component.errorsString());
         }else{
