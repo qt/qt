@@ -43,6 +43,7 @@
 
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
+#include "openpagesmanager.h"
 #include "tracer.h"
 
 #include <QtCore/QFileInfo>
@@ -158,7 +159,7 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
 class HelpPage : public QWebPage
 {
 public:
-    HelpPage(CentralWidget *central, QObject *parent);
+    HelpPage(QObject *parent);
 
 protected:
     virtual QWebPage *createWindow(QWebPage::WebWindowType);
@@ -168,7 +169,6 @@ protected:
         const QNetworkRequest &request, NavigationType type);
 
 private:
-    CentralWidget *centralWidget;
     bool closeNewTabIfNeeded;
 
     friend class HelpViewer;
@@ -176,9 +176,8 @@ private:
     Qt::KeyboardModifiers m_keyboardModifiers;
 };
 
-HelpPage::HelpPage(CentralWidget *central, QObject *parent)
+HelpPage::HelpPage(QObject *parent)
     : QWebPage(parent)
-    , centralWidget(central)
     , closeNewTabIfNeeded(false)
     , m_pressedButtons(Qt::NoButton)
     , m_keyboardModifiers(Qt::NoModifier)
@@ -189,9 +188,8 @@ HelpPage::HelpPage(CentralWidget *central, QObject *parent)
 QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
 {
     TRACE_OBJ
-    HelpPage* newPage = static_cast<HelpPage*>(centralWidget->newEmptyTab()->page());
-    if (newPage)
-        newPage->closeNewTabIfNeeded = closeNewTabIfNeeded;
+    HelpPage* newPage = static_cast<HelpPage*>(OpenPagesManager::instance()->createPage()->page());
+    newPage->closeNewTabIfNeeded = closeNewTabIfNeeded;
     closeNewTabIfNeeded = false;
     return newPage;
 }
@@ -218,18 +216,17 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     const QUrl &url = request.url();
     if (AbstractHelpViewer::launchWithExternalApp(url)) {
         if (closeNewTab)
-            QMetaObject::invokeMethod(centralWidget, "closeTab");
+            QMetaObject::invokeMethod(OpenPagesManager::instance(), "closeCurrentTab");
         return false;
     }
 
     if (type == QWebPage::NavigationTypeLinkClicked
         && (m_keyboardModifiers & Qt::ControlModifier
         || m_pressedButtons == Qt::MidButton)) {
-            if (centralWidget->newEmptyTab())
-                centralWidget->setSource(url);
-            m_pressedButtons = Qt::NoButton;
-            m_keyboardModifiers = Qt::NoModifier;
-            return false;
+        OpenPagesManager::instance()->createPage(url);
+        m_pressedButtons = Qt::NoButton;
+        m_keyboardModifiers = Qt::NoModifier;
+        return false;
     }
 
     return true;
@@ -237,23 +234,18 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
 
 // -- HelpViewer
 
-HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
-    : QWebView(parent)
-    , parentWidget(parent)
-    , loadFinished(false)
+HelpViewer::HelpViewer(qreal zoom)
+    : loadFinished(false)
     , helpEngine(HelpEngineWrapper::instance())
 {
     TRACE_OBJ
     setAcceptDrops(false);
 
-    setPage(new HelpPage(parent, this));
-
+    setPage(new HelpPage(this));
     page()->setNetworkAccessManager(new HelpNetworkAccessManager(this));
 
     QAction* action = pageAction(QWebPage::OpenLinkInNewWindow);
     action->setText(tr("Open Link in New Tab"));
-    if (!parent)
-        action->setVisible(false);
 
     pageAction(QWebPage::DownloadLinkToDisk)->setVisible(false);
     pageAction(QWebPage::DownloadImageToDisk)->setVisible(false);
@@ -269,6 +261,7 @@ HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
+    connect(this, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged()));
 
     setFont(viewerFont());
     setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);

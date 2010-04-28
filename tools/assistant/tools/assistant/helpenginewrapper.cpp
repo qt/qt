@@ -569,18 +569,6 @@ void HelpEngineWrapper::setLastTabPage(int lastPage)
     CollectionConfiguration::setLastTabPage(*d->m_helpEngine, lastPage);
 }
 
-bool HelpEngineWrapper::searchWasAttached() const
-{
-    TRACE_OBJ
-    return d->m_helpEngine->customValue(SearchWasAttachedKey).toBool();
-}
-
-void HelpEngineWrapper::setSearchWasAttached(bool attached)
-{
-    TRACE_OBJ
-    d->m_helpEngine->setCustomValue(SearchWasAttachedKey, attached);
-}
-
 int HelpEngineWrapper::startOption() const
 {
     TRACE_OBJ
