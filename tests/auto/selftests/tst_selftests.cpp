@@ -117,19 +117,26 @@ static QList<QByteArray> splitLines(QByteArray ba)
     ba.replace('\r', "");
     QList<QByteArray> out = ba.split('\n');
 
-    // Replace any ` file="..."' in XML with a generic location.
-    static const char marker[] = " file=\"";
+    // Replace any ` file="..."' or ` line="..."'  in XML with a generic location.
+    static const char *markers[][2] = {
+        { " file=\"", " file=\"__FILE__\"" },
+        { " line=\"", " line=\"__LINE__\"" }
+    };
+    static const int markerCount = sizeof markers / sizeof markers[0];
+
     for (int i = 0; i < out.size(); ++i) {
         QByteArray& line = out[i];
-        int index = line.indexOf(marker);
-        if (index == -1) {
-            continue;
+        for (int j = 0; j < markerCount; ++j) {
+            int index = line.indexOf(markers[j][0]);
+            if (index == -1) {
+                continue;
+            }
+            int end = line.indexOf('"', index + strlen(markers[j][0]) + 1);
+            if (end == -1) {
+                continue;
+            }
+            line.replace(index, end-index, markers[j][1]);
         }
-        int end = line.indexOf('"', index + sizeof(marker));
-        if (end == -1) {
-            continue;
-        }
-        line.replace(index, end-index, " file=\"__FILE__\"");
     }
 
     return out;
