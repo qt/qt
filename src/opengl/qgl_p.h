@@ -209,8 +209,6 @@ public:
 class QGLContextResource;
 class QGLSharedResourceGuard;
 
-typedef QHash<QString, GLuint> QGLDDSCache;
-
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate maintains the reference counter and destroys
 // context groups when needed.
@@ -239,7 +237,6 @@ private:
     QHash<QGLContextResource *, void *> m_resources;
     QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
-    QGLDDSCache m_dds_cache;
 
     void cleanupResources(const QGLContext *ctx);
 

@@ -2089,20 +2089,10 @@ void QGLContextPrivate::syncGlState()
 
 GLuint QGLContext::bindTexture(const QString &fileName)
 {
-    Q_D(QGLContext);
-    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
-    QGLDDSCache::const_iterator it = dds_cache->constFind(fileName);
-    if (it != dds_cache->constEnd()) {
-        glBindTexture(GL_TEXTURE_2D, it.value());
-        return it.value();
-    }
-
     QGLTexture texture(this);
     QSize size = texture.bindCompressedTexture(fileName);
     if (!size.isValid())
         return 0;
-
-    dds_cache->insert(fileName, texture.id);
     return texture.id;
 }
 
@@ -2728,24 +2718,8 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, Q
 */
 void QGLContext::deleteTexture(GLuint id)
 {
-    Q_D(QGLContext);
-
     if (QGLTextureCache::instance()->remove(this, id))
         return;
-
-    // check the DDS cache if the texture wasn't found in the pixmap/image
-    // cache
-    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
-    QList<QString> ddsKeys = dds_cache->keys();
-    for (int i = 0; i < ddsKeys.size(); ++i) {
-        GLuint texture = dds_cache->value(ddsKeys.at(i));
-        if (id == texture) {
-            dds_cache->remove(ddsKeys.at(i));
-            break;
-        }
-    }
-
-    // Finally, actually delete the texture ID
     glDeleteTextures(1, &id);
 }
 
