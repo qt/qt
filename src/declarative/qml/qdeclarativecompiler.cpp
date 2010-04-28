@@ -688,14 +688,12 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     def.type = QDeclarativeInstruction::SetDefault;
     output->bytecode << def;
 
-    output->imports = unit->imports;
-
     output->importCache = new QDeclarativeTypeNameCache(engine);
 
     for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
         output->importCache->add(importedScriptIndexes.at(ii), ii);
 
-    output->imports.cache(output->importCache, engine);
+    unit->imports.cache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
