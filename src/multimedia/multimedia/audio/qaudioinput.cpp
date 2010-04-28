@@ -211,7 +211,7 @@ QAudioInput::~QAudioInput()
      If a problem occurs during this process the error() is set to QAudio::OpenError,
      state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
 
-     \sa {Symbian Platform Security Requirements}
+     \l{QAudioInput#Symbian Platform Security Requirements}
 
      \sa QIODevice
 */
@@ -233,7 +233,7 @@ void QAudioInput::start(QIODevice* device)
     If a problem occurs during this process the error() is set to QAudio::OpenError,
     state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
 
-    \sa {Symbian Platform Security Requirements}
+    \l{QAudioInput#Symbian Platform Security Requirements}
 
     \sa QIODevice
 */
