@@ -49,6 +49,11 @@
 #include <qregexp.h>
 #include <qstringlist.h>
 #include "../network-settings.h"
+
+#if defined(Q_OS_WIN)
+#define _WIN32_WINNT  0x500
+#endif
+
 #include "../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)

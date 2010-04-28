@@ -94,12 +94,6 @@ Yes, it is an informative comment ;-)
 
 #include <QtCore/qglobal.h>
 
-#undef OLD_DEBUG
-#ifdef DEBUG
-# define OLD_DEBUG DEBUG
-# undef DEBUG
-#endif
-#define DEBUG 0
 #ifdef qDebug
 #  define old_qDebug qDebug
 #  undef qDebug
@@ -177,12 +171,6 @@ typedef AERecord AppleEvent;
 
 #ifdef check
 #undef check
-#endif
-
-#undef DEBUG
-#ifdef OLD_DEBUG
-#  define DEBUG OLD_DEBUG
-#  undef OLD_DEBUG
 #endif
 
 #ifdef old_qDebug

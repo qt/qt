@@ -55,7 +55,9 @@
 #include <sys/stat.h>
 #endif
 #ifdef Q_OS_WIN
+#define _WIN32_WINNT  0x500
 #include <qt_windows.h>
+#include <qlibrary.h>
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
@@ -65,6 +67,7 @@
 #endif
 #include "../network-settings.h"
 #include <private/qfileinfo_p.h>
+#include "../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
@@ -161,6 +164,8 @@ private slots:
     void refresh();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    void ntfsJunctionPointsAndSymlinks_data();
+    void ntfsJunctionPointsAndSymlinks();
     void brokenShortcut();
 #endif
 
@@ -194,8 +199,15 @@ tst_QFileInfo::~tst_QFileInfo()
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QDir().rmdir("./.hidden-directory");
 #endif
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QDir().rmdir("./hidden-directory");
+    QDir().rmdir("abs_symlink");
+    QDir().rmdir("rel_symlink");
+    QDir().rmdir("junction_pwd");
+    QDir().rmdir("junction_root");
+    QDir().rmdir("mountpoint");
+    QFile::remove("abs_symlink.cpp");
+    QFile::remove("rel_symlink.cpp");
 #endif
 }
 
@@ -1082,7 +1094,7 @@ void tst_QFileInfo::isHidden_data()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QVERIFY(QDir("./hidden-directory").exists() || QDir().mkdir("./hidden-directory"));
-    QVERIFY(SetFileAttributesW(QString("./hidden-directory").utf16(),FILE_ATTRIBUTE_HIDDEN));
+    QVERIFY(SetFileAttributesW((wchar_t*)QString("./hidden-directory").utf16(),FILE_ATTRIBUTE_HIDDEN));
     QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
     QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif
@@ -1236,6 +1248,115 @@ void tst_QFileInfo::refresh()
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isSymLink");
+    QTest::addColumn<QString>("linkTarget");
+    QTest::addColumn<QString>("canonicalFilePath");
+
+    QDir pwd;
+    pwd.mkdir("target");
+
+    QLibrary kernel32("kernel32");
+    typedef BOOLEAN (WINAPI *PtrCreateSymbolicLink)(LPCWSTR, LPCWSTR, DWORD);
+    PtrCreateSymbolicLink createSymbolicLinkW = 0;
+    createSymbolicLinkW = (PtrCreateSymbolicLink) kernel32.resolve("CreateSymbolicLinkW");
+    if (!createSymbolicLinkW) {
+        //we need at least one data set for the test not to fail when skipping _data function
+        QDir target("target");
+        QTest::newRow("dummy") << target.path() << false << "" << target.canonicalPath();
+        QSKIP("symbolic links not supported by operating system",SkipSingle);
+    }
+    {
+        //Directory symlinks
+        QDir target("target");
+        QVERIFY(target.exists());
+
+        QString absTarget = QDir::toNativeSeparators(target.absolutePath());
+        QString absSymlink = QDir::toNativeSeparators(pwd.absolutePath()).append("\\abs_symlink");
+        QString relTarget = "target";
+        QString relSymlink = "rel_symlink";
+        QString fileInTarget(absTarget);
+        fileInTarget.append("\\file");
+        QString fileInSymlink(absSymlink);
+        fileInSymlink.append("\\file");
+        QFile file(fileInTarget);
+        file.open(QIODevice::ReadWrite);
+        file.close();
+
+        QVERIFY(pwd.exists("abs_symlink") || createSymbolicLinkW((wchar_t*)absSymlink.utf16(),(wchar_t*)absTarget.utf16(),0x1));
+        QVERIFY(pwd.exists(relSymlink) || createSymbolicLinkW((wchar_t*)relSymlink.utf16(),(wchar_t*)relTarget.utf16(),0x1));
+        QVERIFY(file.exists());
+
+        QTest::newRow("absolute dir symlink") << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
+        QTest::newRow("relative dir symlink") << relSymlink << true << QDir::fromNativeSeparators(relTarget) << target.canonicalPath();
+        QTest::newRow("file in symlink dir") << fileInSymlink << false << "" << target.canonicalPath().append("/file");
+    }
+    {
+        //File symlinks
+        QFileInfo target(SRCDIR "tst_qfileinfo.cpp");
+        QString absTarget = QDir::toNativeSeparators(target.absoluteFilePath());
+        QString absSymlink = QDir::toNativeSeparators(pwd.absolutePath()).append("\\abs_symlink.cpp");
+        QString relTarget = QDir::toNativeSeparators(pwd.relativeFilePath(target.absoluteFilePath()));
+        QString relSymlink = "rel_symlink.cpp";
+        QVERIFY(pwd.exists("abs_symlink.cpp") || createSymbolicLinkW((wchar_t*)absSymlink.utf16(),(wchar_t*)absTarget.utf16(),0x0));
+        QVERIFY(pwd.exists(relSymlink) || createSymbolicLinkW((wchar_t*)relSymlink.utf16(),(wchar_t*)relTarget.utf16(),0x0));
+
+        QTest::newRow("absolute file symlink") << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
+        QTest::newRow("relative file symlink") << relSymlink << true << QDir::fromNativeSeparators(relTarget) << target.canonicalFilePath();
+    }
+
+    //Junctions
+    QString target = "target";
+    QString junction = "junction_pwd";
+    FileSystem::createNtfsJunction(target, junction);
+    QFileInfo targetInfo(target);
+    QTest::newRow("junction_pwd") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+
+    QFileInfo fileInJunction(targetInfo.absoluteFilePath().append("/file"));
+    QFile file(fileInJunction.absoluteFilePath());
+    file.open(QIODevice::ReadWrite);
+    file.close();
+    QVERIFY(file.exists());
+    QTest::newRow("file in junction") << fileInJunction.absoluteFilePath() << false << "" << fileInJunction.canonicalFilePath();
+
+    target = QDir::rootPath();
+    junction = "junction_root";
+    FileSystem::createNtfsJunction(target, junction);
+    targetInfo.setFile(target);
+    QTest::newRow("junction_root") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+
+    //Mountpoint
+    typedef BOOLEAN (WINAPI *PtrGetVolumeNameForVolumeMountPointW)(LPCWSTR, LPWSTR, DWORD);
+    PtrGetVolumeNameForVolumeMountPointW getVolumeNameForVolumeMountPointW = 0;
+    getVolumeNameForVolumeMountPointW = (PtrGetVolumeNameForVolumeMountPointW) kernel32.resolve("GetVolumeNameForVolumeMountPointW");
+    if(getVolumeNameForVolumeMountPointW)
+    {
+        wchar_t buffer[MAX_PATH];
+        QString rootPath = QDir::toNativeSeparators(QDir::rootPath());
+        QVERIFY(getVolumeNameForVolumeMountPointW((wchar_t*)rootPath.utf16(), buffer, MAX_PATH));
+        QString rootVolume = QString::fromWCharArray(buffer);
+        junction = "mountpoint";
+        rootVolume.replace("\\\\?\\","\\??\\");
+        FileSystem::createNtfsJunction(rootVolume, junction);
+        QTest::newRow("mountpoint") << junction << true <<  QDir::fromNativeSeparators(rootPath) << QDir::rootPath();
+    }
+}
+
+void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isSymLink);
+    QFETCH(QString, linkTarget);
+    QFETCH(QString, canonicalFilePath);
+
+    QFileInfo fi(path);
+    QCOMPARE(fi.isSymLink(), isSymLink);
+    QCOMPARE(fi.symLinkTarget(), linkTarget);
+    QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+}
+
 void tst_QFileInfo::brokenShortcut()
 {
     QString linkName("borkenlink.lnk");

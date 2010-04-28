@@ -208,6 +208,8 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
             fi.setFile(prefix);
             if (fi.isSymLink()) {
                 QString target = fi.symLinkTarget();
+                if(QFileInfo(target).isRelative())
+                    target = fi.absolutePath() + slash + target;
                 if (separatorPos != -1) {
                     if (fi.isDir() && !target.endsWith(slash))
                         target.append(slash);

@@ -170,9 +170,6 @@ public:
     int startOption() const;
     void setStartOption(int option);
 
-    bool searchWasAttached() const;
-    void setSearchWasAttached(bool attached);
-
     bool hasFontSettings() const;
     bool usesAppFont() const;
     void setUseAppFont(bool useAppFont);
