@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <TestCase name="tst_LongString">
 <Environment>
-    <QtVersion>4.6.3</QtVersion>
-    <QTestVersion>4.6.3</QTestVersion>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />

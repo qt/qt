@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuite errors="6" failures="0" tests="4" name="tst_DataTable">
   <properties>
-    <property value="4.6.3" name="QTestVersion"/>
-    <property value="4.6.3" name="QtVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
   </properties>
   <testcase result="pass" name="initTestCase"/>
   <testcase result="pass" name="fiveTablePasses">

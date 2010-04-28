@@ -1,6 +1,6 @@
 <Environment>
-    <QtVersion>4.6.3</QtVersion>
-    <QTestVersion>4.6.3</QTestVersion>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
 <Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skipglobal/tst_skipglobal.cpp" line="72">

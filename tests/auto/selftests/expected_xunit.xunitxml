@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuite errors="5" failures="3" tests="9" name="tst_Xunit">
   <properties>
-    <property value="4.6.3" name="QTestVersion"/>
-    <property value="4.6.3" name="QtVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
   </properties>
   <testcase result="pass" name="initTestCase"/>
   <testcase result="pass" name="testFunc1">
