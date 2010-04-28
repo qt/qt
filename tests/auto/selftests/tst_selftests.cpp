@@ -428,7 +428,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
                    Are we expecting this line to be a benchmark result?
                    If so, don't do a literal comparison, since results have some natural variance.
                 */
-                if (benchmark) {
+                if (benchmark || line.startsWith("<BenchmarkResult")) {
                     QString error;
 
                     BenchmarkResult actualResult = BenchmarkResult::parse(output, &error);
@@ -458,6 +458,22 @@ void tst_Selftests::runSubTest()
     doRunSubTest(subdir, logger, arguments);
 }
 
+// attribute must contain ="
+QString extractXmlAttribute(const QString &line, const char *attribute)
+{
+    int index = line.indexOf(attribute);
+    if (index == -1)
+        return QString();
+    int end = line.indexOf('"', index + strlen(attribute));
+    if (end == -1)
+        return QString();
+
+    QString result = line.mid(index + strlen(attribute), end - index - strlen(attribute));
+    if (result.isEmpty())
+        return ""; // ensure empty but not null
+    return result;
+}
+
 /* Parse line into the BenchmarkResult it represents. */
 BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
 {
@@ -470,6 +486,56 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         if (error) *error = "Line is empty";
         return out;
     }
+
+    if (line.startsWith("<BenchmarkResult ")) {
+        // XML result
+        // format:
+        //   <BenchmarkResult metric="$unit" tag="$tag" value="$total" iterations="$iterations" />
+        if (!line.endsWith("/>")) {
+            if (error) *error = "unterminated XML";
+            return out;
+        }
+
+        QString unit = extractXmlAttribute(line, " metric=\"");
+        QString sTotal = extractXmlAttribute(line, " value=\"");
+        QString sIterations = extractXmlAttribute(line, " iterations=\"");
+        if (unit.isNull() || sTotal.isNull() || sIterations.isNull()) {
+            if (error) *error = "XML snippet did not contain all required values";
+            return out;
+        }
+
+        bool ok;
+#if QT_VERSION >= 0x040700
+        // Qt 4.7 uses floating point
+        double total = sTotal.toDouble(&ok);
+        if (!ok) {
+            if (error) *error = sTotal + " is not a valid number";
+            return out;
+        }
+        double iterations = sIterations.toDouble(&ok);
+        if (!ok) {
+            if (error) *error = sIterations + " is not a valid number";
+            return out;
+        }
+#else
+        qlonglong total = sTotal.toLongLong(&ok);
+        if (!ok) {
+            if (error) *error = sTotal + " is not a valid integer";
+            return out;
+        }
+        qlonglong iterations = sIterations.toLongLong(&ok);
+        if (!ok) {
+            if (error) *error = sIterations + " is not a valid integer";
+            return out;
+        }
+#endif
+
+        out.unit = unit;
+        out.total = total;
+        out.iterations = iterations;
+        return out;
+    }
+    // Text result
 
     /* This code avoids using a QRegExp because QRegExp might be broken. */
 
