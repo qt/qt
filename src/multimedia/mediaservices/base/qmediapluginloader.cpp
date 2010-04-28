@@ -108,7 +108,11 @@ void QMediaPluginLoader::load()
             if (!pluginDir.exists())
                 continue;
 
-            foreach (QString pluginLib, pluginDir.entryList(QDir::Files)) {
+            foreach (const QString &pluginLib, pluginDir.entryList(QDir::Files)) {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+                if (pluginLib.endsWith(QLatin1String(".debug")))
+                    continue;
+#endif
                 QPluginLoader   loader(pluginPathName + pluginLib);
 
                 QObject *o = loader.instance();

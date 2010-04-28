@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,43 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef Q_NATIVE_PLAYBACK
-#define Q_NATIVE_PLAYBACK
-
-#include <QtCore>
-#include "qnativeevents.h"
-
-class NativeEventList : public QObject
-{
-    Q_OBJECT;
-
-    public:
-    enum Playback {ReturnImmediately, WaitUntilFinished};
-
-    NativeEventList(int defaultWaitMs = 20);
-    ~NativeEventList();
-
-    void append(QNativeEvent *event);
-    void append(int waitMs, QNativeEvent *event = 0);
-
-    void play(Playback playback = WaitUntilFinished);
-    void stop();
-    void setTimeMultiplier(float multiplier);
-
-signals:
-    void done();
-
-private slots:
-    void sendNextEvent();
-
-private:
-    void waitNextEvent();
-
-    QList<QPair<int, QNativeEvent *> > eventList;
-    float playbackMultiplier;
-    int currIndex;
-    bool wait;
-    int defaultWaitMs;
-};
-
-#endif
+#include "../win32-msvc2005/qplatformdefs.h"
