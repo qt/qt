@@ -155,8 +155,8 @@ void QDeclarativeGradient::doUpdate()
     \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
 
-    A Rectangle is painted having a solid fill (color) and an optional border.
-    You can also create rounded rectangles using the radius property.
+    A Rectangle is painted using a solid fill (color) and an optional border.
+    You can also create rounded rectangles using the \l radius property.
 
     \qml
     Rectangle {
@@ -223,14 +223,22 @@ QDeclarativePen *QDeclarativeRectangle::border()
     \o \image declarative-rect_gradient.png
     \o
     \qml
-    Rectangle { y: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { y: 100; width: 80; height: 80
+    Rectangle {
+        y: 0; width: 80; height: 80
+        color: "lightsteelblue"
+    }
+
+    Rectangle {
+        y: 100; width: 80; height: 80
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    Rectangle { rotation: 90; y: 200; width: 80; height: 80
+
+    Rectangle {
+        y: 200; width: 80; height: 80
+        rotation: 90
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }

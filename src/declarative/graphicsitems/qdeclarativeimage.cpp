@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched and tiled.
+    The Image element supports untransformed, stretched and tiled images.
 
     For an explanation of stretching and tiling, see the fillMode property description.
 
