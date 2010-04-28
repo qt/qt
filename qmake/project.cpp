@@ -2250,8 +2250,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d: size(var) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            //QString target = args[0];
-            int size = values(args[0]).size();
+            int size = values(args[0], place).size();
             ret += QString::number(size);
         }
         break; }
