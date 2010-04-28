@@ -141,7 +141,7 @@ void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead()
 {
     QNetworkAccessManager manager;
     QTime t;
-    QNetworkRequest request(QUrl(testFile.fileName()));
+    QNetworkRequest request(QUrl::fromLocalFile(testFile.fileName()));
 
     // do 3 dry runs for cache warmup
     qnamImmediateFileRead_iteration(manager, request);
