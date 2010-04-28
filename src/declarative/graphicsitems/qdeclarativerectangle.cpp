@@ -342,21 +342,28 @@ void QDeclarativeRectangle::generateRoundedRect()
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         const int radius = qCeil(d->radius);    //ensure odd numbered width/height so we get 1-pixel center
-        d->rectImage = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
-        d->rectImage.fill(Qt::transparent);
-        QPainter p(&(d->rectImage));
-        p.setRenderHint(QPainter::Antialiasing);
-        if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(d->pen->color()), d->pen->width());
-            p.setPen(pn);
-        } else {
-            p.setPen(Qt::NoPen);
+
+        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name() % QLatin1Char('_') % QString::number(radius)
+                        % (d->pen && d->pen->isValid() ? d->pen->color().name() : QString());
+
+        if (!QPixmapCache::find(key, &d->rectImage)) {
+            d->rectImage = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
+            d->rectImage.fill(Qt::transparent);
+            QPainter p(&(d->rectImage));
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(d->pen->color()), d->pen->width());
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            if (pw%2)
+                p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
+            else
+                p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
+            QPixmapCache::insert(key, d->rectImage);
         }
-        p.setBrush(d->color);
-        if (pw%2)
-            p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
-        else
-            p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
     }
 }
 
@@ -365,22 +372,29 @@ void QDeclarativeRectangle::generateBorderedRect()
     Q_D(QDeclarativeRectangle);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
-        d->rectImage.fill(Qt::transparent);
-        QPainter p(&(d->rectImage));
-        p.setRenderHint(QPainter::Antialiasing);
-        if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(d->pen->color()), d->pen->width());
-            pn.setJoinStyle(Qt::MiterJoin);
-            p.setPen(pn);
-        } else {
-            p.setPen(Qt::NoPen);
+
+        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name()
+                      % (d->pen && d->pen->isValid() ? d->pen->color().name() : QString());
+
+        if (!QPixmapCache::find(key, &d->rectImage)) {
+            d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
+            d->rectImage.fill(Qt::transparent);
+            QPainter p(&(d->rectImage));
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(d->pen->color()), d->pen->width());
+                pn.setJoinStyle(Qt::MiterJoin);
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            if (pw%2)
+                p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
+            else
+                p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
+            QPixmapCache::insert(key, d->rectImage);
         }
-        p.setBrush(d->color);
-        if (pw%2)
-            p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
-        else
-            p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
     }
 }
 
