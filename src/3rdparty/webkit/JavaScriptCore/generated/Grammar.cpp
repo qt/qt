@@ -76,7 +76,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 3 "parser\\Grammar.y"
+#line 3 "parser/Grammar.y"
 
 
 /*
@@ -221,7 +221,7 @@ static inline void appendToVarDeclarationList(JSGlobalData* globalData, ParserAr
 
 
 /* Line 189 of yacc.c  */
-#line 225 "C:/dev/webkit-2.0/JavaScriptCore/generated\\Grammar.tab.c"
+#line 225 "/JavaScriptCore/generated/Grammar.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -321,7 +321,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 146 "parser\\Grammar.y"
+#line 146 "parser/Grammar.y"
 
     int                 intValue;
     double              doubleValue;
@@ -356,7 +356,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 360 "C:/dev/webkit-2.0/JavaScriptCore/generated\\Grammar.tab.c"
+#line 360 "/JavaScriptCore/generated/Grammar.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -380,7 +380,7 @@ typedef struct YYLTYPE
 /* Copy the second part of user declarations.  */
 
 /* Line 264 of yacc.c  */
-#line 178 "parser\\Grammar.y"
+#line 178 "parser/Grammar.y"
 
 
 template <typename T> inline void setStatementLocation(StatementNode* statement, const T& start, const T& end)
@@ -396,7 +396,7 @@ static inline void setExceptionLocation(ThrowableExpressionData* node, unsigned 
 
 
 /* Line 264 of yacc.c  */
-#line 400 "C:/dev/webkit-2.0/JavaScriptCore/generated\\Grammar.tab.c"
+#line 400 "/JavaScriptCore/generated/Grammar.tab.c"
 
 #ifdef short
 # undef short
@@ -2974,42 +2974,42 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 293 "parser\\Grammar.y"
+#line 293 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NullNode(GLOBAL_DATA), 0, 1); ;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 294 "parser\\Grammar.y"
+#line 294 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BooleanNode(GLOBAL_DATA, true), 0, 1); ;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 295 "parser\\Grammar.y"
+#line 295 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BooleanNode(GLOBAL_DATA, false), 0, 1); ;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 296 "parser\\Grammar.y"
+#line 296 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeNumberNode(GLOBAL_DATA, (yyvsp[(1) - (1)].doubleValue)), 0, 1); ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 297 "parser\\Grammar.y"
+#line 297 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StringNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident)), 0, 1); ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 298 "parser\\Grammar.y"
+#line 298 "parser/Grammar.y"
     {
                                             Lexer& l = *GLOBAL_DATA->lexer;
                                             const Identifier* pattern;
@@ -3026,7 +3026,7 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 309 "parser\\Grammar.y"
+#line 309 "parser/Grammar.y"
     {
                                             Lexer& l = *GLOBAL_DATA->lexer;
                                             const Identifier* pattern;
@@ -3043,35 +3043,35 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 323 "parser\\Grammar.y"
+#line 323 "parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(new (GLOBAL_DATA) PropertyNode(GLOBAL_DATA, *(yyvsp[(1) - (3)].ident), (yyvsp[(3) - (3)].expressionNode).m_node, PropertyNode::Constant), (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 324 "parser\\Grammar.y"
+#line 324 "parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(new (GLOBAL_DATA) PropertyNode(GLOBAL_DATA, *(yyvsp[(1) - (3)].ident), (yyvsp[(3) - (3)].expressionNode).m_node, PropertyNode::Constant), (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 325 "parser\\Grammar.y"
+#line 325 "parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(new (GLOBAL_DATA) PropertyNode(GLOBAL_DATA, (yyvsp[(1) - (3)].doubleValue), (yyvsp[(3) - (3)].expressionNode).m_node, PropertyNode::Constant), (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 326 "parser\\Grammar.y"
+#line 326 "parser/Grammar.y"
     { (yyval.propertyNode) = createNodeInfo<PropertyNode*>(makeGetterOrSetterPropertyNode(GLOBAL_DATA, *(yyvsp[(1) - (7)].ident), *(yyvsp[(2) - (7)].ident), 0, (yyvsp[(6) - (7)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line)), ClosureFeature, 0); setStatementLocation((yyvsp[(6) - (7)].functionBodyNode), (yylsp[(5) - (7)]), (yylsp[(7) - (7)])); if (!(yyval.propertyNode).m_node) YYABORT; ;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 328 "parser\\Grammar.y"
+#line 328 "parser/Grammar.y"
     {
                                                                  (yyval.propertyNode) = createNodeInfo<PropertyNode*>(makeGetterOrSetterPropertyNode(GLOBAL_DATA, *(yyvsp[(1) - (8)].ident), *(yyvsp[(2) - (8)].ident), (yyvsp[(4) - (8)].parameterList).m_node.head, (yyvsp[(7) - (8)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(6) - (8)].intValue), (yyvsp[(8) - (8)].intValue), (yylsp[(6) - (8)]).first_line)), (yyvsp[(4) - (8)].parameterList).m_features | ClosureFeature, 0); 
                                                                  if ((yyvsp[(4) - (8)].parameterList).m_features & ArgumentsFeature)
@@ -3085,7 +3085,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 339 "parser\\Grammar.y"
+#line 339 "parser/Grammar.y"
     { (yyval.propertyList).m_node.head = new (GLOBAL_DATA) PropertyListNode(GLOBAL_DATA, (yyvsp[(1) - (1)].propertyNode).m_node); 
                                           (yyval.propertyList).m_node.tail = (yyval.propertyList).m_node.head;
                                           (yyval.propertyList).m_features = (yyvsp[(1) - (1)].propertyNode).m_features;
@@ -3095,7 +3095,7 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 343 "parser\\Grammar.y"
+#line 343 "parser/Grammar.y"
     { (yyval.propertyList).m_node.head = (yyvsp[(1) - (3)].propertyList).m_node.head;
                                           (yyval.propertyList).m_node.tail = new (GLOBAL_DATA) PropertyListNode(GLOBAL_DATA, (yyvsp[(3) - (3)].propertyNode).m_node, (yyvsp[(1) - (3)].propertyList).m_node.tail);
                                           (yyval.propertyList).m_features = (yyvsp[(1) - (3)].propertyList).m_features | (yyvsp[(3) - (3)].propertyNode).m_features;
@@ -3105,70 +3105,70 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 351 "parser\\Grammar.y"
+#line 351 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ObjectLiteralNode(GLOBAL_DATA), 0, 0); ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 352 "parser\\Grammar.y"
+#line 352 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ObjectLiteralNode(GLOBAL_DATA, (yyvsp[(2) - (3)].propertyList).m_node.head), (yyvsp[(2) - (3)].propertyList).m_features, (yyvsp[(2) - (3)].propertyList).m_numConstants); ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 354 "parser\\Grammar.y"
+#line 354 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ObjectLiteralNode(GLOBAL_DATA, (yyvsp[(2) - (4)].propertyList).m_node.head), (yyvsp[(2) - (4)].propertyList).m_features, (yyvsp[(2) - (4)].propertyList).m_numConstants); ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 358 "parser\\Grammar.y"
+#line 358 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ThisNode(GLOBAL_DATA), ThisFeature, 0); ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 361 "parser\\Grammar.y"
+#line 361 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ResolveNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident), (yylsp[(1) - (1)]).first_column), (*(yyvsp[(1) - (1)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0, 0); ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 362 "parser\\Grammar.y"
+#line 362 "parser/Grammar.y"
     { (yyval.expressionNode) = (yyvsp[(2) - (3)].expressionNode); ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 366 "parser\\Grammar.y"
+#line 366 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ArrayNode(GLOBAL_DATA, (yyvsp[(2) - (3)].intValue)), 0, (yyvsp[(2) - (3)].intValue) ? 1 : 0); ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 367 "parser\\Grammar.y"
+#line 367 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ArrayNode(GLOBAL_DATA, (yyvsp[(2) - (3)].elementList).m_node.head), (yyvsp[(2) - (3)].elementList).m_features, (yyvsp[(2) - (3)].elementList).m_numConstants); ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 368 "parser\\Grammar.y"
+#line 368 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ArrayNode(GLOBAL_DATA, (yyvsp[(4) - (5)].intValue), (yyvsp[(2) - (5)].elementList).m_node.head), (yyvsp[(2) - (5)].elementList).m_features, (yyvsp[(4) - (5)].intValue) ? (yyvsp[(2) - (5)].elementList).m_numConstants + 1 : (yyvsp[(2) - (5)].elementList).m_numConstants); ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 372 "parser\\Grammar.y"
+#line 372 "parser/Grammar.y"
     { (yyval.elementList).m_node.head = new (GLOBAL_DATA) ElementNode(GLOBAL_DATA, (yyvsp[(1) - (2)].intValue), (yyvsp[(2) - (2)].expressionNode).m_node);
                                           (yyval.elementList).m_node.tail = (yyval.elementList).m_node.head;
                                           (yyval.elementList).m_features = (yyvsp[(2) - (2)].expressionNode).m_features;
@@ -3178,7 +3178,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 377 "parser\\Grammar.y"
+#line 377 "parser/Grammar.y"
     { (yyval.elementList).m_node.head = (yyvsp[(1) - (4)].elementList).m_node.head;
                                           (yyval.elementList).m_node.tail = new (GLOBAL_DATA) ElementNode(GLOBAL_DATA, (yyvsp[(1) - (4)].elementList).m_node.tail, (yyvsp[(3) - (4)].intValue), (yyvsp[(4) - (4)].expressionNode).m_node);
                                           (yyval.elementList).m_features = (yyvsp[(1) - (4)].elementList).m_features | (yyvsp[(4) - (4)].expressionNode).m_features;
@@ -3188,35 +3188,35 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 384 "parser\\Grammar.y"
+#line 384 "parser/Grammar.y"
     { (yyval.intValue) = 0; ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 389 "parser\\Grammar.y"
+#line 389 "parser/Grammar.y"
     { (yyval.intValue) = 1; ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 390 "parser\\Grammar.y"
+#line 390 "parser/Grammar.y"
     { (yyval.intValue) = (yyvsp[(1) - (2)].intValue) + 1; ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 395 "parser\\Grammar.y"
+#line 395 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>((yyvsp[(1) - (1)].funcExprNode).m_node, (yyvsp[(1) - (1)].funcExprNode).m_features, (yyvsp[(1) - (1)].funcExprNode).m_numConstants); ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 396 "parser\\Grammar.y"
+#line 396 "parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3226,7 +3226,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 400 "parser\\Grammar.y"
+#line 400 "parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants);
@@ -3236,7 +3236,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 404 "parser\\Grammar.y"
+#line 404 "parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].argumentsNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].argumentsNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].argumentsNode).m_numConstants);
@@ -3246,7 +3246,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 412 "parser\\Grammar.y"
+#line 412 "parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3256,7 +3256,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 416 "parser\\Grammar.y"
+#line 416 "parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants);
@@ -3266,7 +3266,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 420 "parser\\Grammar.y"
+#line 420 "parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].argumentsNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].argumentsNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].argumentsNode).m_numConstants);
@@ -3276,7 +3276,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 428 "parser\\Grammar.y"
+#line 428 "parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).last_column, (yylsp[(2) - (2)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); 
@@ -3286,7 +3286,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 436 "parser\\Grammar.y"
+#line 436 "parser/Grammar.y"
     { NewExprNode* node = new (GLOBAL_DATA) NewExprNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).last_column, (yylsp[(2) - (2)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants);
@@ -3296,21 +3296,21 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 443 "parser\\Grammar.y"
+#line 443 "parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 444 "parser\\Grammar.y"
+#line 444 "parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 445 "parser\\Grammar.y"
+#line 445 "parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3320,7 +3320,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 449 "parser\\Grammar.y"
+#line 449 "parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants); ;}
@@ -3329,21 +3329,21 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 455 "parser\\Grammar.y"
+#line 455 "parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 456 "parser\\Grammar.y"
+#line 456 "parser/Grammar.y"
     { (yyval.expressionNode) = makeFunctionCallNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode), (yyvsp[(2) - (2)].argumentsNode), (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column); ;}
     break;
 
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 457 "parser\\Grammar.y"
+#line 457 "parser/Grammar.y"
     { BracketAccessorNode* node = new (GLOBAL_DATA) BracketAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_node, (yyvsp[(3) - (4)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (4)]).first_column, (yylsp[(1) - (4)]).last_column, (yylsp[(4) - (4)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (4)].expressionNode).m_features | (yyvsp[(3) - (4)].expressionNode).m_features, (yyvsp[(1) - (4)].expressionNode).m_numConstants + (yyvsp[(3) - (4)].expressionNode).m_numConstants); 
@@ -3353,7 +3353,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 461 "parser\\Grammar.y"
+#line 461 "parser/Grammar.y"
     { DotAccessorNode* node = new (GLOBAL_DATA) DotAccessorNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, *(yyvsp[(3) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(1) - (3)]).last_column, (yylsp[(3) - (3)]).last_column);
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants); 
@@ -3363,21 +3363,21 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 468 "parser\\Grammar.y"
+#line 468 "parser/Grammar.y"
     { (yyval.argumentsNode) = createNodeInfo<ArgumentsNode*>(new (GLOBAL_DATA) ArgumentsNode(GLOBAL_DATA), 0, 0); ;}
     break;
 
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 469 "parser\\Grammar.y"
+#line 469 "parser/Grammar.y"
     { (yyval.argumentsNode) = createNodeInfo<ArgumentsNode*>(new (GLOBAL_DATA) ArgumentsNode(GLOBAL_DATA, (yyvsp[(2) - (3)].argumentList).m_node.head), (yyvsp[(2) - (3)].argumentList).m_features, (yyvsp[(2) - (3)].argumentList).m_numConstants); ;}
     break;
 
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 473 "parser\\Grammar.y"
+#line 473 "parser/Grammar.y"
     { (yyval.argumentList).m_node.head = new (GLOBAL_DATA) ArgumentListNode(GLOBAL_DATA, (yyvsp[(1) - (1)].expressionNode).m_node);
                                           (yyval.argumentList).m_node.tail = (yyval.argumentList).m_node.head;
                                           (yyval.argumentList).m_features = (yyvsp[(1) - (1)].expressionNode).m_features;
@@ -3387,7 +3387,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 477 "parser\\Grammar.y"
+#line 477 "parser/Grammar.y"
     { (yyval.argumentList).m_node.head = (yyvsp[(1) - (3)].argumentList).m_node.head;
                                           (yyval.argumentList).m_node.tail = new (GLOBAL_DATA) ArgumentListNode(GLOBAL_DATA, (yyvsp[(1) - (3)].argumentList).m_node.tail, (yyvsp[(3) - (3)].expressionNode).m_node);
                                           (yyval.argumentList).m_features = (yyvsp[(1) - (3)].argumentList).m_features | (yyvsp[(3) - (3)].expressionNode).m_features;
@@ -3397,252 +3397,252 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 495 "parser\\Grammar.y"
+#line 495 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 496 "parser\\Grammar.y"
+#line 496 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 501 "parser\\Grammar.y"
+#line 501 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 502 "parser\\Grammar.y"
+#line 502 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePostfixNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(1) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 506 "parser\\Grammar.y"
+#line 506 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeDeleteNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).last_column, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 507 "parser\\Grammar.y"
+#line 507 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) VoidNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants + 1); ;}
     break;
 
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 508 "parser\\Grammar.y"
+#line 508 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeTypeOfNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 509 "parser\\Grammar.y"
+#line 509 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 510 "parser\\Grammar.y"
+#line 510 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpPlusPlus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 511 "parser\\Grammar.y"
+#line 511 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 512 "parser\\Grammar.y"
+#line 512 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makePrefixNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node, OpMinusMinus, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column), (yyvsp[(2) - (2)].expressionNode).m_features | AssignFeature, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 513 "parser\\Grammar.y"
+#line 513 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) UnaryPlusNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 514 "parser\\Grammar.y"
+#line 514 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeNegateNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 515 "parser\\Grammar.y"
+#line 515 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeBitwiseNotNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 516 "parser\\Grammar.y"
+#line 516 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalNotNode(GLOBAL_DATA, (yyvsp[(2) - (2)].expressionNode).m_node), (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 530 "parser\\Grammar.y"
+#line 530 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeMultNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 531 "parser\\Grammar.y"
+#line 531 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeDivNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 532 "parser\\Grammar.y"
+#line 532 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ModNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 538 "parser\\Grammar.y"
+#line 538 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeMultNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 540 "parser\\Grammar.y"
+#line 540 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeDivNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 542 "parser\\Grammar.y"
+#line 542 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ModNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 547 "parser\\Grammar.y"
+#line 547 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAddNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 548 "parser\\Grammar.y"
+#line 548 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeSubNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 554 "parser\\Grammar.y"
+#line 554 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAddNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 556 "parser\\Grammar.y"
+#line 556 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeSubNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 561 "parser\\Grammar.y"
+#line 561 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeLeftShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 562 "parser\\Grammar.y"
+#line 562 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 101:
 
 /* Line 1455 of yacc.c  */
-#line 563 "parser\\Grammar.y"
+#line 563 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) UnsignedRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 568 "parser\\Grammar.y"
+#line 568 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeLeftShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 569 "parser\\Grammar.y"
+#line 569 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 570 "parser\\Grammar.y"
+#line 570 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) UnsignedRightShiftNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 575 "parser\\Grammar.y"
+#line 575 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 576 "parser\\Grammar.y"
+#line 576 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 577 "parser\\Grammar.y"
+#line 577 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 110:
 
 /* Line 1455 of yacc.c  */
-#line 578 "parser\\Grammar.y"
+#line 578 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 111:
 
 /* Line 1455 of yacc.c  */
-#line 579 "parser\\Grammar.y"
+#line 579 "parser/Grammar.y"
     { InstanceOfNode* node = new (GLOBAL_DATA) InstanceOfNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3651,7 +3651,7 @@ yyreduce:
   case 112:
 
 /* Line 1455 of yacc.c  */
-#line 582 "parser\\Grammar.y"
+#line 582 "parser/Grammar.y"
     { InNode* node = new (GLOBAL_DATA) InNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3660,35 +3660,35 @@ yyreduce:
   case 114:
 
 /* Line 1455 of yacc.c  */
-#line 589 "parser\\Grammar.y"
+#line 589 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 115:
 
 /* Line 1455 of yacc.c  */
-#line 590 "parser\\Grammar.y"
+#line 590 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 116:
 
 /* Line 1455 of yacc.c  */
-#line 591 "parser\\Grammar.y"
+#line 591 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 117:
 
 /* Line 1455 of yacc.c  */
-#line 592 "parser\\Grammar.y"
+#line 592 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 118:
 
 /* Line 1455 of yacc.c  */
-#line 594 "parser\\Grammar.y"
+#line 594 "parser/Grammar.y"
     { InstanceOfNode* node = new (GLOBAL_DATA) InstanceOfNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3697,35 +3697,35 @@ yyreduce:
   case 120:
 
 /* Line 1455 of yacc.c  */
-#line 601 "parser\\Grammar.y"
+#line 601 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 121:
 
 /* Line 1455 of yacc.c  */
-#line 602 "parser\\Grammar.y"
+#line 602 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 122:
 
 /* Line 1455 of yacc.c  */
-#line 603 "parser\\Grammar.y"
+#line 603 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LessEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 123:
 
 /* Line 1455 of yacc.c  */
-#line 604 "parser\\Grammar.y"
+#line 604 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) GreaterEqNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 124:
 
 /* Line 1455 of yacc.c  */
-#line 606 "parser\\Grammar.y"
+#line 606 "parser/Grammar.y"
     { InstanceOfNode* node = new (GLOBAL_DATA) InstanceOfNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3734,7 +3734,7 @@ yyreduce:
   case 125:
 
 /* Line 1455 of yacc.c  */
-#line 610 "parser\\Grammar.y"
+#line 610 "parser/Grammar.y"
     { InNode* node = new (GLOBAL_DATA) InNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column, (yylsp[(3) - (3)]).last_column);  
                                           (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(node, (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
@@ -3743,217 +3743,217 @@ yyreduce:
   case 127:
 
 /* Line 1455 of yacc.c  */
-#line 617 "parser\\Grammar.y"
+#line 617 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) EqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 128:
 
 /* Line 1455 of yacc.c  */
-#line 618 "parser\\Grammar.y"
+#line 618 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 129:
 
 /* Line 1455 of yacc.c  */
-#line 619 "parser\\Grammar.y"
+#line 619 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 130:
 
 /* Line 1455 of yacc.c  */
-#line 620 "parser\\Grammar.y"
+#line 620 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotStrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 132:
 
 /* Line 1455 of yacc.c  */
-#line 626 "parser\\Grammar.y"
+#line 626 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) EqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 628 "parser\\Grammar.y"
+#line 628 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 630 "parser\\Grammar.y"
+#line 630 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 135:
 
 /* Line 1455 of yacc.c  */
-#line 632 "parser\\Grammar.y"
+#line 632 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotStrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 137:
 
 /* Line 1455 of yacc.c  */
-#line 638 "parser\\Grammar.y"
+#line 638 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) EqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 138:
 
 /* Line 1455 of yacc.c  */
-#line 639 "parser\\Grammar.y"
+#line 639 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 139:
 
 /* Line 1455 of yacc.c  */
-#line 641 "parser\\Grammar.y"
+#line 641 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) StrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 140:
 
 /* Line 1455 of yacc.c  */
-#line 643 "parser\\Grammar.y"
+#line 643 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) NotStrictEqualNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 648 "parser\\Grammar.y"
+#line 648 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitAndNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 144:
 
 /* Line 1455 of yacc.c  */
-#line 654 "parser\\Grammar.y"
+#line 654 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitAndNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 146:
 
 /* Line 1455 of yacc.c  */
-#line 659 "parser\\Grammar.y"
+#line 659 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitAndNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 148:
 
 /* Line 1455 of yacc.c  */
-#line 664 "parser\\Grammar.y"
+#line 664 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitXOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 150:
 
 /* Line 1455 of yacc.c  */
-#line 670 "parser\\Grammar.y"
+#line 670 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitXOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 152:
 
 /* Line 1455 of yacc.c  */
-#line 676 "parser\\Grammar.y"
+#line 676 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitXOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 154:
 
 /* Line 1455 of yacc.c  */
-#line 681 "parser\\Grammar.y"
+#line 681 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 156:
 
 /* Line 1455 of yacc.c  */
-#line 687 "parser\\Grammar.y"
+#line 687 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 693 "parser\\Grammar.y"
+#line 693 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) BitOrNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 160:
 
 /* Line 1455 of yacc.c  */
-#line 698 "parser\\Grammar.y"
+#line 698 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalAnd), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 162:
 
 /* Line 1455 of yacc.c  */
-#line 704 "parser\\Grammar.y"
+#line 704 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalAnd), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 164:
 
 /* Line 1455 of yacc.c  */
-#line 710 "parser\\Grammar.y"
+#line 710 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalAnd), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 166:
 
 /* Line 1455 of yacc.c  */
-#line 715 "parser\\Grammar.y"
+#line 715 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalOr), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 168:
 
 /* Line 1455 of yacc.c  */
-#line 721 "parser\\Grammar.y"
+#line 721 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalOr), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 170:
 
 /* Line 1455 of yacc.c  */
-#line 726 "parser\\Grammar.y"
+#line 726 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) LogicalOpNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node, OpLogicalOr), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 172:
 
 /* Line 1455 of yacc.c  */
-#line 732 "parser\\Grammar.y"
+#line 732 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ConditionalNode(GLOBAL_DATA, (yyvsp[(1) - (5)].expressionNode).m_node, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].expressionNode).m_node), (yyvsp[(1) - (5)].expressionNode).m_features | (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].expressionNode).m_features, (yyvsp[(1) - (5)].expressionNode).m_numConstants + (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].expressionNode).m_numConstants); ;}
     break;
 
   case 174:
 
 /* Line 1455 of yacc.c  */
-#line 738 "parser\\Grammar.y"
+#line 738 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ConditionalNode(GLOBAL_DATA, (yyvsp[(1) - (5)].expressionNode).m_node, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].expressionNode).m_node), (yyvsp[(1) - (5)].expressionNode).m_features | (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].expressionNode).m_features, (yyvsp[(1) - (5)].expressionNode).m_numConstants + (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].expressionNode).m_numConstants); ;}
     break;
 
   case 176:
 
 /* Line 1455 of yacc.c  */
-#line 744 "parser\\Grammar.y"
+#line 744 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(new (GLOBAL_DATA) ConditionalNode(GLOBAL_DATA, (yyvsp[(1) - (5)].expressionNode).m_node, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].expressionNode).m_node), (yyvsp[(1) - (5)].expressionNode).m_features | (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].expressionNode).m_features, (yyvsp[(1) - (5)].expressionNode).m_numConstants + (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].expressionNode).m_numConstants); ;}
     break;
 
   case 178:
 
 /* Line 1455 of yacc.c  */
-#line 750 "parser\\Grammar.y"
+#line 750 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAssignNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(2) - (3)].op), (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(1) - (3)].expressionNode).m_features & AssignFeature, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature, 
                                                                                                      (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column + 1, (yylsp[(3) - (3)]).last_column), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); 
                                         ;}
@@ -3962,7 +3962,7 @@ yyreduce:
   case 180:
 
 /* Line 1455 of yacc.c  */
-#line 758 "parser\\Grammar.y"
+#line 758 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAssignNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(2) - (3)].op), (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(1) - (3)].expressionNode).m_features & AssignFeature, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature, 
                                                                                                      (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column + 1, (yylsp[(3) - (3)]).last_column), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants);
                                         ;}
@@ -3971,7 +3971,7 @@ yyreduce:
   case 182:
 
 /* Line 1455 of yacc.c  */
-#line 766 "parser\\Grammar.y"
+#line 766 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(makeAssignNode(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(2) - (3)].op), (yyvsp[(3) - (3)].expressionNode).m_node, (yyvsp[(1) - (3)].expressionNode).m_features & AssignFeature, (yyvsp[(3) - (3)].expressionNode).m_features & AssignFeature,
                                                                                                      (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column + 1, (yylsp[(3) - (3)]).last_column), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features | AssignFeature, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); 
                                         ;}
@@ -3980,112 +3980,112 @@ yyreduce:
   case 183:
 
 /* Line 1455 of yacc.c  */
-#line 772 "parser\\Grammar.y"
+#line 772 "parser/Grammar.y"
     { (yyval.op) = OpEqual; ;}
     break;
 
   case 184:
 
 /* Line 1455 of yacc.c  */
-#line 773 "parser\\Grammar.y"
+#line 773 "parser/Grammar.y"
     { (yyval.op) = OpPlusEq; ;}
     break;
 
   case 185:
 
 /* Line 1455 of yacc.c  */
-#line 774 "parser\\Grammar.y"
+#line 774 "parser/Grammar.y"
     { (yyval.op) = OpMinusEq; ;}
     break;
 
   case 186:
 
 /* Line 1455 of yacc.c  */
-#line 775 "parser\\Grammar.y"
+#line 775 "parser/Grammar.y"
     { (yyval.op) = OpMultEq; ;}
     break;
 
   case 187:
 
 /* Line 1455 of yacc.c  */
-#line 776 "parser\\Grammar.y"
+#line 776 "parser/Grammar.y"
     { (yyval.op) = OpDivEq; ;}
     break;
 
   case 188:
 
 /* Line 1455 of yacc.c  */
-#line 777 "parser\\Grammar.y"
+#line 777 "parser/Grammar.y"
     { (yyval.op) = OpLShift; ;}
     break;
 
   case 189:
 
 /* Line 1455 of yacc.c  */
-#line 778 "parser\\Grammar.y"
+#line 778 "parser/Grammar.y"
     { (yyval.op) = OpRShift; ;}
     break;
 
   case 190:
 
 /* Line 1455 of yacc.c  */
-#line 779 "parser\\Grammar.y"
+#line 779 "parser/Grammar.y"
     { (yyval.op) = OpURShift; ;}
     break;
 
   case 191:
 
 /* Line 1455 of yacc.c  */
-#line 780 "parser\\Grammar.y"
+#line 780 "parser/Grammar.y"
     { (yyval.op) = OpAndEq; ;}
     break;
 
   case 192:
 
 /* Line 1455 of yacc.c  */
-#line 781 "parser\\Grammar.y"
+#line 781 "parser/Grammar.y"
     { (yyval.op) = OpXOrEq; ;}
     break;
 
   case 193:
 
 /* Line 1455 of yacc.c  */
-#line 782 "parser\\Grammar.y"
+#line 782 "parser/Grammar.y"
     { (yyval.op) = OpOrEq; ;}
     break;
 
   case 194:
 
 /* Line 1455 of yacc.c  */
-#line 783 "parser\\Grammar.y"
+#line 783 "parser/Grammar.y"
     { (yyval.op) = OpModEq; ;}
     break;
 
   case 196:
 
 /* Line 1455 of yacc.c  */
-#line 788 "parser\\Grammar.y"
+#line 788 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 198:
 
 /* Line 1455 of yacc.c  */
-#line 793 "parser\\Grammar.y"
+#line 793 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 200:
 
 /* Line 1455 of yacc.c  */
-#line 798 "parser\\Grammar.y"
+#line 798 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (3)].expressionNode).m_node, (yyvsp[(3) - (3)].expressionNode).m_node), (yyvsp[(1) - (3)].expressionNode).m_features | (yyvsp[(3) - (3)].expressionNode).m_features, (yyvsp[(1) - (3)].expressionNode).m_numConstants + (yyvsp[(3) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 218:
 
 /* Line 1455 of yacc.c  */
-#line 822 "parser\\Grammar.y"
+#line 822 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BlockNode(GLOBAL_DATA, 0), 0, 0, 0, 0);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
     break;
@@ -4093,7 +4093,7 @@ yyreduce:
   case 219:
 
 /* Line 1455 of yacc.c  */
-#line 824 "parser\\Grammar.y"
+#line 824 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BlockNode(GLOBAL_DATA, (yyvsp[(2) - (3)].sourceElements).m_node), (yyvsp[(2) - (3)].sourceElements).m_varDeclarations, (yyvsp[(2) - (3)].sourceElements).m_funcDeclarations, (yyvsp[(2) - (3)].sourceElements).m_features, (yyvsp[(2) - (3)].sourceElements).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
     break;
@@ -4101,7 +4101,7 @@ yyreduce:
   case 220:
 
 /* Line 1455 of yacc.c  */
-#line 829 "parser\\Grammar.y"
+#line 829 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(makeVarStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].varDeclList).m_node), (yyvsp[(2) - (3)].varDeclList).m_varDeclarations, (yyvsp[(2) - (3)].varDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].varDeclList).m_features, (yyvsp[(2) - (3)].varDeclList).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
     break;
@@ -4109,7 +4109,7 @@ yyreduce:
   case 221:
 
 /* Line 1455 of yacc.c  */
-#line 831 "parser\\Grammar.y"
+#line 831 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(makeVarStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].varDeclList).m_node), (yyvsp[(2) - (3)].varDeclList).m_varDeclarations, (yyvsp[(2) - (3)].varDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].varDeclList).m_features, (yyvsp[(2) - (3)].varDeclList).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)]));
                                           AUTO_SEMICOLON; ;}
@@ -4118,7 +4118,7 @@ yyreduce:
   case 222:
 
 /* Line 1455 of yacc.c  */
-#line 837 "parser\\Grammar.y"
+#line 837 "parser/Grammar.y"
     { (yyval.varDeclList).m_node = 0;
                                           (yyval.varDeclList).m_varDeclarations = new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::VarStack>;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(1) - (1)].ident), 0);
@@ -4131,7 +4131,7 @@ yyreduce:
   case 223:
 
 /* Line 1455 of yacc.c  */
-#line 844 "parser\\Grammar.y"
+#line 844 "parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(1) - (2)].ident), (yyvsp[(2) - (2)].expressionNode).m_node, (yyvsp[(2) - (2)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column);
                                           (yyval.varDeclList).m_node = node;
@@ -4146,7 +4146,7 @@ yyreduce:
   case 224:
 
 /* Line 1455 of yacc.c  */
-#line 854 "parser\\Grammar.y"
+#line 854 "parser/Grammar.y"
     { (yyval.varDeclList).m_node = (yyvsp[(1) - (3)].varDeclList).m_node;
                                           (yyval.varDeclList).m_varDeclarations = (yyvsp[(1) - (3)].varDeclList).m_varDeclarations;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(3) - (3)].ident), 0);
@@ -4159,7 +4159,7 @@ yyreduce:
   case 225:
 
 /* Line 1455 of yacc.c  */
-#line 862 "parser\\Grammar.y"
+#line 862 "parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(3) - (4)].ident), (yyvsp[(4) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(3) - (4)]).first_column, (yylsp[(4) - (4)]).first_column + 1, (yylsp[(4) - (4)]).last_column);
                                           (yyval.varDeclList).m_node = combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
@@ -4174,7 +4174,7 @@ yyreduce:
   case 226:
 
 /* Line 1455 of yacc.c  */
-#line 874 "parser\\Grammar.y"
+#line 874 "parser/Grammar.y"
     { (yyval.varDeclList).m_node = 0;
                                           (yyval.varDeclList).m_varDeclarations = new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::VarStack>;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(1) - (1)].ident), 0);
@@ -4187,7 +4187,7 @@ yyreduce:
   case 227:
 
 /* Line 1455 of yacc.c  */
-#line 881 "parser\\Grammar.y"
+#line 881 "parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(1) - (2)].ident), (yyvsp[(2) - (2)].expressionNode).m_node, (yyvsp[(2) - (2)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(2) - (2)]).first_column + 1, (yylsp[(2) - (2)]).last_column);
                                           (yyval.varDeclList).m_node = node;
@@ -4202,7 +4202,7 @@ yyreduce:
   case 228:
 
 /* Line 1455 of yacc.c  */
-#line 891 "parser\\Grammar.y"
+#line 891 "parser/Grammar.y"
     { (yyval.varDeclList).m_node = (yyvsp[(1) - (3)].varDeclList).m_node;
                                           (yyval.varDeclList).m_varDeclarations = (yyvsp[(1) - (3)].varDeclList).m_varDeclarations;
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyval.varDeclList).m_varDeclarations, *(yyvsp[(3) - (3)].ident), 0);
@@ -4215,7 +4215,7 @@ yyreduce:
   case 229:
 
 /* Line 1455 of yacc.c  */
-#line 899 "parser\\Grammar.y"
+#line 899 "parser/Grammar.y"
     { AssignResolveNode* node = new (GLOBAL_DATA) AssignResolveNode(GLOBAL_DATA, *(yyvsp[(3) - (4)].ident), (yyvsp[(4) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].expressionNode).m_features & AssignFeature);
                                           setExceptionLocation(node, (yylsp[(3) - (4)]).first_column, (yylsp[(4) - (4)]).first_column + 1, (yylsp[(4) - (4)]).last_column);
                                           (yyval.varDeclList).m_node = combineCommaNodes(GLOBAL_DATA, (yyvsp[(1) - (4)].varDeclList).m_node, node);
@@ -4230,7 +4230,7 @@ yyreduce:
   case 230:
 
 /* Line 1455 of yacc.c  */
-#line 911 "parser\\Grammar.y"
+#line 911 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ConstStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].constDeclList).m_node.head), (yyvsp[(2) - (3)].constDeclList).m_varDeclarations, (yyvsp[(2) - (3)].constDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].constDeclList).m_features, (yyvsp[(2) - (3)].constDeclList).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
     break;
@@ -4238,7 +4238,7 @@ yyreduce:
   case 231:
 
 /* Line 1455 of yacc.c  */
-#line 914 "parser\\Grammar.y"
+#line 914 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ConstStatementNode(GLOBAL_DATA, (yyvsp[(2) - (3)].constDeclList).m_node.head), (yyvsp[(2) - (3)].constDeclList).m_varDeclarations, (yyvsp[(2) - (3)].constDeclList).m_funcDeclarations, (yyvsp[(2) - (3)].constDeclList).m_features, (yyvsp[(2) - (3)].constDeclList).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; ;}
     break;
@@ -4246,7 +4246,7 @@ yyreduce:
   case 232:
 
 /* Line 1455 of yacc.c  */
-#line 919 "parser\\Grammar.y"
+#line 919 "parser/Grammar.y"
     { (yyval.constDeclList).m_node.head = (yyvsp[(1) - (1)].constDeclNode).m_node;
                                           (yyval.constDeclList).m_node.tail = (yyval.constDeclList).m_node.head;
                                           (yyval.constDeclList).m_varDeclarations = new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::VarStack>;
@@ -4260,7 +4260,7 @@ yyreduce:
   case 233:
 
 /* Line 1455 of yacc.c  */
-#line 928 "parser\\Grammar.y"
+#line 928 "parser/Grammar.y"
     { (yyval.constDeclList).m_node.head = (yyvsp[(1) - (3)].constDeclList).m_node.head;
                                           (yyvsp[(1) - (3)].constDeclList).m_node.tail->m_next = (yyvsp[(3) - (3)].constDeclNode).m_node;
                                           (yyval.constDeclList).m_node.tail = (yyvsp[(3) - (3)].constDeclNode).m_node;
@@ -4274,42 +4274,42 @@ yyreduce:
   case 234:
 
 /* Line 1455 of yacc.c  */
-#line 939 "parser\\Grammar.y"
+#line 939 "parser/Grammar.y"
     { (yyval.constDeclNode) = createNodeInfo<ConstDeclNode*>(new (GLOBAL_DATA) ConstDeclNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident), 0), (*(yyvsp[(1) - (1)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0, 0); ;}
     break;
 
   case 235:
 
 /* Line 1455 of yacc.c  */
-#line 940 "parser\\Grammar.y"
+#line 940 "parser/Grammar.y"
     { (yyval.constDeclNode) = createNodeInfo<ConstDeclNode*>(new (GLOBAL_DATA) ConstDeclNode(GLOBAL_DATA, *(yyvsp[(1) - (2)].ident), (yyvsp[(2) - (2)].expressionNode).m_node), ((*(yyvsp[(1) - (2)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0) | (yyvsp[(2) - (2)].expressionNode).m_features, (yyvsp[(2) - (2)].expressionNode).m_numConstants); ;}
     break;
 
   case 236:
 
 /* Line 1455 of yacc.c  */
-#line 944 "parser\\Grammar.y"
+#line 944 "parser/Grammar.y"
     { (yyval.expressionNode) = (yyvsp[(2) - (2)].expressionNode); ;}
     break;
 
   case 237:
 
 /* Line 1455 of yacc.c  */
-#line 948 "parser\\Grammar.y"
+#line 948 "parser/Grammar.y"
     { (yyval.expressionNode) = (yyvsp[(2) - (2)].expressionNode); ;}
     break;
 
   case 238:
 
 /* Line 1455 of yacc.c  */
-#line 952 "parser\\Grammar.y"
+#line 952 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) EmptyStatementNode(GLOBAL_DATA), 0, 0, 0, 0); ;}
     break;
 
   case 239:
 
 /* Line 1455 of yacc.c  */
-#line 956 "parser\\Grammar.y"
+#line 956 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ExprStatementNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node), 0, 0, (yyvsp[(1) - (2)].expressionNode).m_features, (yyvsp[(1) - (2)].expressionNode).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
     break;
@@ -4317,7 +4317,7 @@ yyreduce:
   case 240:
 
 /* Line 1455 of yacc.c  */
-#line 958 "parser\\Grammar.y"
+#line 958 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ExprStatementNode(GLOBAL_DATA, (yyvsp[(1) - (2)].expressionNode).m_node), 0, 0, (yyvsp[(1) - (2)].expressionNode).m_features, (yyvsp[(1) - (2)].expressionNode).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
     break;
@@ -4325,7 +4325,7 @@ yyreduce:
   case 241:
 
 /* Line 1455 of yacc.c  */
-#line 964 "parser\\Grammar.y"
+#line 964 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) IfNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].statementNode).m_node), (yyvsp[(5) - (5)].statementNode).m_varDeclarations, (yyvsp[(5) - (5)].statementNode).m_funcDeclarations, (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].statementNode).m_features, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].statementNode).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
     break;
@@ -4333,7 +4333,7 @@ yyreduce:
   case 242:
 
 /* Line 1455 of yacc.c  */
-#line 967 "parser\\Grammar.y"
+#line 967 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) IfElseNode(GLOBAL_DATA, (yyvsp[(3) - (7)].expressionNode).m_node, (yyvsp[(5) - (7)].statementNode).m_node, (yyvsp[(7) - (7)].statementNode).m_node), 
                                                                                          mergeDeclarationLists((yyvsp[(5) - (7)].statementNode).m_varDeclarations, (yyvsp[(7) - (7)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(5) - (7)].statementNode).m_funcDeclarations, (yyvsp[(7) - (7)].statementNode).m_funcDeclarations),
@@ -4345,7 +4345,7 @@ yyreduce:
   case 243:
 
 /* Line 1455 of yacc.c  */
-#line 976 "parser\\Grammar.y"
+#line 976 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DoWhileNode(GLOBAL_DATA, (yyvsp[(2) - (7)].statementNode).m_node, (yyvsp[(5) - (7)].expressionNode).m_node), (yyvsp[(2) - (7)].statementNode).m_varDeclarations, (yyvsp[(2) - (7)].statementNode).m_funcDeclarations, (yyvsp[(2) - (7)].statementNode).m_features | (yyvsp[(5) - (7)].expressionNode).m_features, (yyvsp[(2) - (7)].statementNode).m_numConstants + (yyvsp[(5) - (7)].expressionNode).m_numConstants);
                                              setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (7)]), (yylsp[(3) - (7)])); ;}
     break;
@@ -4353,7 +4353,7 @@ yyreduce:
   case 244:
 
 /* Line 1455 of yacc.c  */
-#line 978 "parser\\Grammar.y"
+#line 978 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DoWhileNode(GLOBAL_DATA, (yyvsp[(2) - (7)].statementNode).m_node, (yyvsp[(5) - (7)].expressionNode).m_node), (yyvsp[(2) - (7)].statementNode).m_varDeclarations, (yyvsp[(2) - (7)].statementNode).m_funcDeclarations, (yyvsp[(2) - (7)].statementNode).m_features | (yyvsp[(5) - (7)].expressionNode).m_features, (yyvsp[(2) - (7)].statementNode).m_numConstants + (yyvsp[(5) - (7)].expressionNode).m_numConstants);
                                              setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (7)]), (yylsp[(3) - (7)])); ;}
     break;
@@ -4361,7 +4361,7 @@ yyreduce:
   case 245:
 
 /* Line 1455 of yacc.c  */
-#line 980 "parser\\Grammar.y"
+#line 980 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) WhileNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].statementNode).m_node), (yyvsp[(5) - (5)].statementNode).m_varDeclarations, (yyvsp[(5) - (5)].statementNode).m_funcDeclarations, (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].statementNode).m_features, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].statementNode).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
     break;
@@ -4369,7 +4369,7 @@ yyreduce:
   case 246:
 
 /* Line 1455 of yacc.c  */
-#line 983 "parser\\Grammar.y"
+#line 983 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ForNode(GLOBAL_DATA, (yyvsp[(3) - (9)].expressionNode).m_node, (yyvsp[(5) - (9)].expressionNode).m_node, (yyvsp[(7) - (9)].expressionNode).m_node, (yyvsp[(9) - (9)].statementNode).m_node, false), (yyvsp[(9) - (9)].statementNode).m_varDeclarations, (yyvsp[(9) - (9)].statementNode).m_funcDeclarations, 
                                                                                          (yyvsp[(3) - (9)].expressionNode).m_features | (yyvsp[(5) - (9)].expressionNode).m_features | (yyvsp[(7) - (9)].expressionNode).m_features | (yyvsp[(9) - (9)].statementNode).m_features,
                                                                                          (yyvsp[(3) - (9)].expressionNode).m_numConstants + (yyvsp[(5) - (9)].expressionNode).m_numConstants + (yyvsp[(7) - (9)].expressionNode).m_numConstants + (yyvsp[(9) - (9)].statementNode).m_numConstants);
@@ -4380,7 +4380,7 @@ yyreduce:
   case 247:
 
 /* Line 1455 of yacc.c  */
-#line 989 "parser\\Grammar.y"
+#line 989 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) ForNode(GLOBAL_DATA, (yyvsp[(4) - (10)].varDeclList).m_node, (yyvsp[(6) - (10)].expressionNode).m_node, (yyvsp[(8) - (10)].expressionNode).m_node, (yyvsp[(10) - (10)].statementNode).m_node, true),
                                                                                          mergeDeclarationLists((yyvsp[(4) - (10)].varDeclList).m_varDeclarations, (yyvsp[(10) - (10)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(4) - (10)].varDeclList).m_funcDeclarations, (yyvsp[(10) - (10)].statementNode).m_funcDeclarations),
@@ -4392,7 +4392,7 @@ yyreduce:
   case 248:
 
 /* Line 1455 of yacc.c  */
-#line 996 "parser\\Grammar.y"
+#line 996 "parser/Grammar.y"
     {
                                             ForInNode* node = new (GLOBAL_DATA) ForInNode(GLOBAL_DATA, (yyvsp[(3) - (7)].expressionNode).m_node, (yyvsp[(5) - (7)].expressionNode).m_node, (yyvsp[(7) - (7)].statementNode).m_node);
                                             setExceptionLocation(node, (yylsp[(3) - (7)]).first_column, (yylsp[(3) - (7)]).last_column, (yylsp[(5) - (7)]).last_column);
@@ -4406,7 +4406,7 @@ yyreduce:
   case 249:
 
 /* Line 1455 of yacc.c  */
-#line 1005 "parser\\Grammar.y"
+#line 1005 "parser/Grammar.y"
     { ForInNode *forIn = new (GLOBAL_DATA) ForInNode(GLOBAL_DATA, *(yyvsp[(4) - (8)].ident), 0, (yyvsp[(6) - (8)].expressionNode).m_node, (yyvsp[(8) - (8)].statementNode).m_node, (yylsp[(5) - (8)]).first_column, (yylsp[(5) - (8)]).first_column - (yylsp[(4) - (8)]).first_column, (yylsp[(6) - (8)]).last_column - (yylsp[(5) - (8)]).first_column);
                                           setExceptionLocation(forIn, (yylsp[(4) - (8)]).first_column, (yylsp[(5) - (8)]).first_column + 1, (yylsp[(6) - (8)]).last_column);
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyvsp[(8) - (8)].statementNode).m_varDeclarations, *(yyvsp[(4) - (8)].ident), DeclarationStacks::HasInitializer);
@@ -4417,7 +4417,7 @@ yyreduce:
   case 250:
 
 /* Line 1455 of yacc.c  */
-#line 1011 "parser\\Grammar.y"
+#line 1011 "parser/Grammar.y"
     { ForInNode *forIn = new (GLOBAL_DATA) ForInNode(GLOBAL_DATA, *(yyvsp[(4) - (9)].ident), (yyvsp[(5) - (9)].expressionNode).m_node, (yyvsp[(7) - (9)].expressionNode).m_node, (yyvsp[(9) - (9)].statementNode).m_node, (yylsp[(5) - (9)]).first_column, (yylsp[(5) - (9)]).first_column - (yylsp[(4) - (9)]).first_column, (yylsp[(5) - (9)]).last_column - (yylsp[(5) - (9)]).first_column);
                                           setExceptionLocation(forIn, (yylsp[(4) - (9)]).first_column, (yylsp[(6) - (9)]).first_column + 1, (yylsp[(7) - (9)]).last_column);
                                           appendToVarDeclarationList(GLOBAL_DATA, (yyvsp[(9) - (9)].statementNode).m_varDeclarations, *(yyvsp[(4) - (9)].ident), DeclarationStacks::HasInitializer);
@@ -4430,21 +4430,21 @@ yyreduce:
   case 251:
 
 /* Line 1455 of yacc.c  */
-#line 1021 "parser\\Grammar.y"
+#line 1021 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(0, 0, 0); ;}
     break;
 
   case 253:
 
 /* Line 1455 of yacc.c  */
-#line 1026 "parser\\Grammar.y"
+#line 1026 "parser/Grammar.y"
     { (yyval.expressionNode) = createNodeInfo<ExpressionNode*>(0, 0, 0); ;}
     break;
 
   case 255:
 
 /* Line 1455 of yacc.c  */
-#line 1031 "parser\\Grammar.y"
+#line 1031 "parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4454,7 +4454,7 @@ yyreduce:
   case 256:
 
 /* Line 1455 of yacc.c  */
-#line 1035 "parser\\Grammar.y"
+#line 1035 "parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4464,7 +4464,7 @@ yyreduce:
   case 257:
 
 /* Line 1455 of yacc.c  */
-#line 1039 "parser\\Grammar.y"
+#line 1039 "parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4474,7 +4474,7 @@ yyreduce:
   case 258:
 
 /* Line 1455 of yacc.c  */
-#line 1043 "parser\\Grammar.y"
+#line 1043 "parser/Grammar.y"
     { ContinueNode* node = new (GLOBAL_DATA) ContinueNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0);
@@ -4484,7 +4484,7 @@ yyreduce:
   case 259:
 
 /* Line 1455 of yacc.c  */
-#line 1050 "parser\\Grammar.y"
+#line 1050 "parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
@@ -4493,7 +4493,7 @@ yyreduce:
   case 260:
 
 /* Line 1455 of yacc.c  */
-#line 1053 "parser\\Grammar.y"
+#line 1053 "parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA);
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BreakNode(GLOBAL_DATA), 0, 0, 0, 0); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
@@ -4502,7 +4502,7 @@ yyreduce:
   case 261:
 
 /* Line 1455 of yacc.c  */
-#line 1056 "parser\\Grammar.y"
+#line 1056 "parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
@@ -4511,7 +4511,7 @@ yyreduce:
   case 262:
 
 /* Line 1455 of yacc.c  */
-#line 1059 "parser\\Grammar.y"
+#line 1059 "parser/Grammar.y"
     { BreakNode* node = new (GLOBAL_DATA) BreakNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident));
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) BreakNode(GLOBAL_DATA, *(yyvsp[(2) - (3)].ident)), 0, 0, 0, 0); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; ;}
@@ -4520,7 +4520,7 @@ yyreduce:
   case 263:
 
 /* Line 1455 of yacc.c  */
-#line 1065 "parser\\Grammar.y"
+#line 1065 "parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, 0); 
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
@@ -4529,7 +4529,7 @@ yyreduce:
   case 264:
 
 /* Line 1455 of yacc.c  */
-#line 1068 "parser\\Grammar.y"
+#line 1068 "parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, 0); 
                                           setExceptionLocation(node, (yylsp[(1) - (2)]).first_column, (yylsp[(1) - (2)]).last_column, (yylsp[(1) - (2)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, 0, 0); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
@@ -4538,7 +4538,7 @@ yyreduce:
   case 265:
 
 /* Line 1455 of yacc.c  */
-#line 1071 "parser\\Grammar.y"
+#line 1071 "parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node); 
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(3) - (3)])); ;}
@@ -4547,7 +4547,7 @@ yyreduce:
   case 266:
 
 /* Line 1455 of yacc.c  */
-#line 1074 "parser\\Grammar.y"
+#line 1074 "parser/Grammar.y"
     { ReturnNode* node = new (GLOBAL_DATA) ReturnNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node); 
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column); 
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; ;}
@@ -4556,7 +4556,7 @@ yyreduce:
   case 267:
 
 /* Line 1455 of yacc.c  */
-#line 1080 "parser\\Grammar.y"
+#line 1080 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) WithNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].statementNode).m_node, (yylsp[(3) - (5)]).last_column, (yylsp[(3) - (5)]).last_column - (yylsp[(3) - (5)]).first_column),
                                                                                          (yyvsp[(5) - (5)].statementNode).m_varDeclarations, (yyvsp[(5) - (5)].statementNode).m_funcDeclarations, (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].statementNode).m_features | WithFeature, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].statementNode).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
@@ -4565,7 +4565,7 @@ yyreduce:
   case 268:
 
 /* Line 1455 of yacc.c  */
-#line 1086 "parser\\Grammar.y"
+#line 1086 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) SwitchNode(GLOBAL_DATA, (yyvsp[(3) - (5)].expressionNode).m_node, (yyvsp[(5) - (5)].caseBlockNode).m_node), (yyvsp[(5) - (5)].caseBlockNode).m_varDeclarations, (yyvsp[(5) - (5)].caseBlockNode).m_funcDeclarations,
                                                                                          (yyvsp[(3) - (5)].expressionNode).m_features | (yyvsp[(5) - (5)].caseBlockNode).m_features, (yyvsp[(3) - (5)].expressionNode).m_numConstants + (yyvsp[(5) - (5)].caseBlockNode).m_numConstants);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (5)]), (yylsp[(4) - (5)])); ;}
@@ -4574,14 +4574,14 @@ yyreduce:
   case 269:
 
 /* Line 1455 of yacc.c  */
-#line 1092 "parser\\Grammar.y"
+#line 1092 "parser/Grammar.y"
     { (yyval.caseBlockNode) = createNodeDeclarationInfo<CaseBlockNode*>(new (GLOBAL_DATA) CaseBlockNode(GLOBAL_DATA, (yyvsp[(2) - (3)].clauseList).m_node.head, 0, 0), (yyvsp[(2) - (3)].clauseList).m_varDeclarations, (yyvsp[(2) - (3)].clauseList).m_funcDeclarations, (yyvsp[(2) - (3)].clauseList).m_features, (yyvsp[(2) - (3)].clauseList).m_numConstants); ;}
     break;
 
   case 270:
 
 /* Line 1455 of yacc.c  */
-#line 1094 "parser\\Grammar.y"
+#line 1094 "parser/Grammar.y"
     { (yyval.caseBlockNode) = createNodeDeclarationInfo<CaseBlockNode*>(new (GLOBAL_DATA) CaseBlockNode(GLOBAL_DATA, (yyvsp[(2) - (5)].clauseList).m_node.head, (yyvsp[(3) - (5)].caseClauseNode).m_node, (yyvsp[(4) - (5)].clauseList).m_node.head),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (5)].clauseList).m_varDeclarations, (yyvsp[(3) - (5)].caseClauseNode).m_varDeclarations), (yyvsp[(4) - (5)].clauseList).m_varDeclarations),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (5)].clauseList).m_funcDeclarations, (yyvsp[(3) - (5)].caseClauseNode).m_funcDeclarations), (yyvsp[(4) - (5)].clauseList).m_funcDeclarations),
@@ -4592,14 +4592,14 @@ yyreduce:
   case 271:
 
 /* Line 1455 of yacc.c  */
-#line 1102 "parser\\Grammar.y"
+#line 1102 "parser/Grammar.y"
     { (yyval.clauseList).m_node.head = 0; (yyval.clauseList).m_node.tail = 0; (yyval.clauseList).m_varDeclarations = 0; (yyval.clauseList).m_funcDeclarations = 0; (yyval.clauseList).m_features = 0; (yyval.clauseList).m_numConstants = 0; ;}
     break;
 
   case 273:
 
 /* Line 1455 of yacc.c  */
-#line 1107 "parser\\Grammar.y"
+#line 1107 "parser/Grammar.y"
     { (yyval.clauseList).m_node.head = new (GLOBAL_DATA) ClauseListNode(GLOBAL_DATA, (yyvsp[(1) - (1)].caseClauseNode).m_node);
                                           (yyval.clauseList).m_node.tail = (yyval.clauseList).m_node.head;
                                           (yyval.clauseList).m_varDeclarations = (yyvsp[(1) - (1)].caseClauseNode).m_varDeclarations;
@@ -4611,7 +4611,7 @@ yyreduce:
   case 274:
 
 /* Line 1455 of yacc.c  */
-#line 1113 "parser\\Grammar.y"
+#line 1113 "parser/Grammar.y"
     { (yyval.clauseList).m_node.head = (yyvsp[(1) - (2)].clauseList).m_node.head;
                                           (yyval.clauseList).m_node.tail = new (GLOBAL_DATA) ClauseListNode(GLOBAL_DATA, (yyvsp[(1) - (2)].clauseList).m_node.tail, (yyvsp[(2) - (2)].caseClauseNode).m_node);
                                           (yyval.clauseList).m_varDeclarations = mergeDeclarationLists((yyvsp[(1) - (2)].clauseList).m_varDeclarations, (yyvsp[(2) - (2)].caseClauseNode).m_varDeclarations);
@@ -4624,35 +4624,35 @@ yyreduce:
   case 275:
 
 /* Line 1455 of yacc.c  */
-#line 1123 "parser\\Grammar.y"
+#line 1123 "parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node), 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); ;}
     break;
 
   case 276:
 
 /* Line 1455 of yacc.c  */
-#line 1124 "parser\\Grammar.y"
+#line 1124 "parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, (yyvsp[(2) - (4)].expressionNode).m_node, (yyvsp[(4) - (4)].sourceElements).m_node), (yyvsp[(4) - (4)].sourceElements).m_varDeclarations, (yyvsp[(4) - (4)].sourceElements).m_funcDeclarations, (yyvsp[(2) - (4)].expressionNode).m_features | (yyvsp[(4) - (4)].sourceElements).m_features, (yyvsp[(2) - (4)].expressionNode).m_numConstants + (yyvsp[(4) - (4)].sourceElements).m_numConstants); ;}
     break;
 
   case 277:
 
 /* Line 1455 of yacc.c  */
-#line 1128 "parser\\Grammar.y"
+#line 1128 "parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, 0), 0, 0, 0, 0); ;}
     break;
 
   case 278:
 
 /* Line 1455 of yacc.c  */
-#line 1129 "parser\\Grammar.y"
+#line 1129 "parser/Grammar.y"
     { (yyval.caseClauseNode) = createNodeDeclarationInfo<CaseClauseNode*>(new (GLOBAL_DATA) CaseClauseNode(GLOBAL_DATA, 0, (yyvsp[(3) - (3)].sourceElements).m_node), (yyvsp[(3) - (3)].sourceElements).m_varDeclarations, (yyvsp[(3) - (3)].sourceElements).m_funcDeclarations, (yyvsp[(3) - (3)].sourceElements).m_features, (yyvsp[(3) - (3)].sourceElements).m_numConstants); ;}
     break;
 
   case 279:
 
 /* Line 1455 of yacc.c  */
-#line 1133 "parser\\Grammar.y"
+#line 1133 "parser/Grammar.y"
     { LabelNode* node = new (GLOBAL_DATA) LabelNode(GLOBAL_DATA, *(yyvsp[(1) - (3)].ident), (yyvsp[(3) - (3)].statementNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, (yyvsp[(3) - (3)].statementNode).m_varDeclarations, (yyvsp[(3) - (3)].statementNode).m_funcDeclarations, (yyvsp[(3) - (3)].statementNode).m_features, (yyvsp[(3) - (3)].statementNode).m_numConstants); ;}
@@ -4661,7 +4661,7 @@ yyreduce:
   case 280:
 
 /* Line 1455 of yacc.c  */
-#line 1139 "parser\\Grammar.y"
+#line 1139 "parser/Grammar.y"
     { ThrowNode* node = new (GLOBAL_DATA) ThrowNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)]));
@@ -4671,7 +4671,7 @@ yyreduce:
   case 281:
 
 /* Line 1455 of yacc.c  */
-#line 1143 "parser\\Grammar.y"
+#line 1143 "parser/Grammar.y"
     { ThrowNode* node = new (GLOBAL_DATA) ThrowNode(GLOBAL_DATA, (yyvsp[(2) - (3)].expressionNode).m_node);
                                           setExceptionLocation(node, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).last_column, (yylsp[(2) - (3)]).last_column);
                                           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(node, 0, 0, (yyvsp[(2) - (3)].expressionNode).m_features, (yyvsp[(2) - (3)].expressionNode).m_numConstants); setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (3)]), (yylsp[(2) - (3)])); AUTO_SEMICOLON; 
@@ -4681,7 +4681,7 @@ yyreduce:
   case 282:
 
 /* Line 1455 of yacc.c  */
-#line 1150 "parser\\Grammar.y"
+#line 1150 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) TryNode(GLOBAL_DATA, (yyvsp[(2) - (4)].statementNode).m_node, GLOBAL_DATA->propertyNames->nullIdentifier, false, 0, (yyvsp[(4) - (4)].statementNode).m_node),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (4)].statementNode).m_varDeclarations, (yyvsp[(4) - (4)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (4)].statementNode).m_funcDeclarations, (yyvsp[(4) - (4)].statementNode).m_funcDeclarations),
@@ -4693,7 +4693,7 @@ yyreduce:
   case 283:
 
 /* Line 1455 of yacc.c  */
-#line 1156 "parser\\Grammar.y"
+#line 1156 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) TryNode(GLOBAL_DATA, (yyvsp[(2) - (7)].statementNode).m_node, *(yyvsp[(5) - (7)].ident), ((yyvsp[(7) - (7)].statementNode).m_features & EvalFeature) != 0, (yyvsp[(7) - (7)].statementNode).m_node, 0),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (7)].statementNode).m_varDeclarations, (yyvsp[(7) - (7)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists((yyvsp[(2) - (7)].statementNode).m_funcDeclarations, (yyvsp[(7) - (7)].statementNode).m_funcDeclarations),
@@ -4705,7 +4705,7 @@ yyreduce:
   case 284:
 
 /* Line 1455 of yacc.c  */
-#line 1163 "parser\\Grammar.y"
+#line 1163 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) TryNode(GLOBAL_DATA, (yyvsp[(2) - (9)].statementNode).m_node, *(yyvsp[(5) - (9)].ident), ((yyvsp[(7) - (9)].statementNode).m_features & EvalFeature) != 0, (yyvsp[(7) - (9)].statementNode).m_node, (yyvsp[(9) - (9)].statementNode).m_node),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (9)].statementNode).m_varDeclarations, (yyvsp[(7) - (9)].statementNode).m_varDeclarations), (yyvsp[(9) - (9)].statementNode).m_varDeclarations),
                                                                                          mergeDeclarationLists(mergeDeclarationLists((yyvsp[(2) - (9)].statementNode).m_funcDeclarations, (yyvsp[(7) - (9)].statementNode).m_funcDeclarations), (yyvsp[(9) - (9)].statementNode).m_funcDeclarations),
@@ -4717,7 +4717,7 @@ yyreduce:
   case 285:
 
 /* Line 1455 of yacc.c  */
-#line 1172 "parser\\Grammar.y"
+#line 1172 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DebuggerStatementNode(GLOBAL_DATA), 0, 0, 0, 0);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(2) - (2)])); ;}
     break;
@@ -4725,7 +4725,7 @@ yyreduce:
   case 286:
 
 /* Line 1455 of yacc.c  */
-#line 1174 "parser\\Grammar.y"
+#line 1174 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) DebuggerStatementNode(GLOBAL_DATA), 0, 0, 0, 0);
                                           setStatementLocation((yyval.statementNode).m_node, (yylsp[(1) - (2)]), (yylsp[(1) - (2)])); AUTO_SEMICOLON; ;}
     break;
@@ -4733,14 +4733,14 @@ yyreduce:
   case 287:
 
 /* Line 1455 of yacc.c  */
-#line 1179 "parser\\Grammar.y"
+#line 1179 "parser/Grammar.y"
     { (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) FuncDeclNode(GLOBAL_DATA, *(yyvsp[(2) - (7)].ident), (yyvsp[(6) - (7)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line)), 0, new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::FunctionStack>, ((*(yyvsp[(2) - (7)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0) | ClosureFeature, 0); setStatementLocation((yyvsp[(6) - (7)].functionBodyNode), (yylsp[(5) - (7)]), (yylsp[(7) - (7)])); (yyval.statementNode).m_funcDeclarations->data.append(static_cast<FuncDeclNode*>((yyval.statementNode).m_node)->body()); ;}
     break;
 
   case 288:
 
 /* Line 1455 of yacc.c  */
-#line 1181 "parser\\Grammar.y"
+#line 1181 "parser/Grammar.y"
     {
           (yyval.statementNode) = createNodeDeclarationInfo<StatementNode*>(new (GLOBAL_DATA) FuncDeclNode(GLOBAL_DATA, *(yyvsp[(2) - (8)].ident), (yyvsp[(7) - (8)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(6) - (8)].intValue), (yyvsp[(8) - (8)].intValue), (yylsp[(6) - (8)]).first_line), (yyvsp[(4) - (8)].parameterList).m_node.head), 0, new (GLOBAL_DATA) ParserArenaData<DeclarationStacks::FunctionStack>, ((*(yyvsp[(2) - (8)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0) | (yyvsp[(4) - (8)].parameterList).m_features | ClosureFeature, 0);
           if ((yyvsp[(4) - (8)].parameterList).m_features & ArgumentsFeature)
@@ -4753,14 +4753,14 @@ yyreduce:
   case 289:
 
 /* Line 1455 of yacc.c  */
-#line 1191 "parser\\Grammar.y"
+#line 1191 "parser/Grammar.y"
     { (yyval.funcExprNode) = createNodeInfo(new (GLOBAL_DATA) FuncExprNode(GLOBAL_DATA, GLOBAL_DATA->propertyNames->nullIdentifier, (yyvsp[(5) - (6)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(4) - (6)].intValue), (yyvsp[(6) - (6)].intValue), (yylsp[(4) - (6)]).first_line)), ClosureFeature, 0); setStatementLocation((yyvsp[(5) - (6)].functionBodyNode), (yylsp[(4) - (6)]), (yylsp[(6) - (6)])); ;}
     break;
 
   case 290:
 
 /* Line 1455 of yacc.c  */
-#line 1193 "parser\\Grammar.y"
+#line 1193 "parser/Grammar.y"
     {
           (yyval.funcExprNode) = createNodeInfo(new (GLOBAL_DATA) FuncExprNode(GLOBAL_DATA, GLOBAL_DATA->propertyNames->nullIdentifier, (yyvsp[(6) - (7)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line), (yyvsp[(3) - (7)].parameterList).m_node.head), (yyvsp[(3) - (7)].parameterList).m_features | ClosureFeature, 0);
           if ((yyvsp[(3) - (7)].parameterList).m_features & ArgumentsFeature)
@@ -4772,14 +4772,14 @@ yyreduce:
   case 291:
 
 /* Line 1455 of yacc.c  */
-#line 1199 "parser\\Grammar.y"
+#line 1199 "parser/Grammar.y"
     { (yyval.funcExprNode) = createNodeInfo(new (GLOBAL_DATA) FuncExprNode(GLOBAL_DATA, *(yyvsp[(2) - (7)].ident), (yyvsp[(6) - (7)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(5) - (7)].intValue), (yyvsp[(7) - (7)].intValue), (yylsp[(5) - (7)]).first_line)), ClosureFeature, 0); setStatementLocation((yyvsp[(6) - (7)].functionBodyNode), (yylsp[(5) - (7)]), (yylsp[(7) - (7)])); ;}
     break;
 
   case 292:
 
 /* Line 1455 of yacc.c  */
-#line 1201 "parser\\Grammar.y"
+#line 1201 "parser/Grammar.y"
     {
           (yyval.funcExprNode) = createNodeInfo(new (GLOBAL_DATA) FuncExprNode(GLOBAL_DATA, *(yyvsp[(2) - (8)].ident), (yyvsp[(7) - (8)].functionBodyNode), GLOBAL_DATA->lexer->sourceCode((yyvsp[(6) - (8)].intValue), (yyvsp[(8) - (8)].intValue), (yylsp[(6) - (8)]).first_line), (yyvsp[(4) - (8)].parameterList).m_node.head), (yyvsp[(4) - (8)].parameterList).m_features | ClosureFeature, 0); 
           if ((yyvsp[(4) - (8)].parameterList).m_features & ArgumentsFeature)
@@ -4791,7 +4791,7 @@ yyreduce:
   case 293:
 
 /* Line 1455 of yacc.c  */
-#line 1210 "parser\\Grammar.y"
+#line 1210 "parser/Grammar.y"
     { (yyval.parameterList).m_node.head = new (GLOBAL_DATA) ParameterNode(GLOBAL_DATA, *(yyvsp[(1) - (1)].ident));
                                           (yyval.parameterList).m_features = (*(yyvsp[(1) - (1)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0;
                                           (yyval.parameterList).m_node.tail = (yyval.parameterList).m_node.head; ;}
@@ -4800,7 +4800,7 @@ yyreduce:
   case 294:
 
 /* Line 1455 of yacc.c  */
-#line 1213 "parser\\Grammar.y"
+#line 1213 "parser/Grammar.y"
     { (yyval.parameterList).m_node.head = (yyvsp[(1) - (3)].parameterList).m_node.head;
                                           (yyval.parameterList).m_features = (yyvsp[(1) - (3)].parameterList).m_features | ((*(yyvsp[(3) - (3)].ident) == GLOBAL_DATA->propertyNames->arguments) ? ArgumentsFeature : 0);
                                           (yyval.parameterList).m_node.tail = new (GLOBAL_DATA) ParameterNode(GLOBAL_DATA, (yyvsp[(1) - (3)].parameterList).m_node.tail, *(yyvsp[(3) - (3)].ident));  ;}
@@ -4809,28 +4809,28 @@ yyreduce:
   case 295:
 
 /* Line 1455 of yacc.c  */
-#line 1219 "parser\\Grammar.y"
+#line 1219 "parser/Grammar.y"
     { (yyval.functionBodyNode) = FunctionBodyNode::create(GLOBAL_DATA); ;}
     break;
 
   case 296:
 
 /* Line 1455 of yacc.c  */
-#line 1220 "parser\\Grammar.y"
+#line 1220 "parser/Grammar.y"
     { (yyval.functionBodyNode) = FunctionBodyNode::create(GLOBAL_DATA); ;}
     break;
 
   case 297:
 
 /* Line 1455 of yacc.c  */
-#line 1224 "parser\\Grammar.y"
+#line 1224 "parser/Grammar.y"
     { GLOBAL_DATA->parser->didFinishParsing(new (GLOBAL_DATA) SourceElements(GLOBAL_DATA), 0, 0, NoFeatures, (yylsp[(0) - (0)]).last_line, 0); ;}
     break;
 
   case 298:
 
 /* Line 1455 of yacc.c  */
-#line 1225 "parser\\Grammar.y"
+#line 1225 "parser/Grammar.y"
     { GLOBAL_DATA->parser->didFinishParsing((yyvsp[(1) - (1)].sourceElements).m_node, (yyvsp[(1) - (1)].sourceElements).m_varDeclarations, (yyvsp[(1) - (1)].sourceElements).m_funcDeclarations, (yyvsp[(1) - (1)].sourceElements).m_features, 
                                                                                 (yylsp[(1) - (1)]).last_line, (yyvsp[(1) - (1)].sourceElements).m_numConstants); ;}
     break;
@@ -4838,7 +4838,7 @@ yyreduce:
   case 299:
 
 /* Line 1455 of yacc.c  */
-#line 1230 "parser\\Grammar.y"
+#line 1230 "parser/Grammar.y"
     { (yyval.sourceElements).m_node = new (GLOBAL_DATA) SourceElements(GLOBAL_DATA);
                                           (yyval.sourceElements).m_node->append((yyvsp[(1) - (1)].statementNode).m_node);
                                           (yyval.sourceElements).m_varDeclarations = (yyvsp[(1) - (1)].statementNode).m_varDeclarations;
@@ -4851,7 +4851,7 @@ yyreduce:
   case 300:
 
 /* Line 1455 of yacc.c  */
-#line 1237 "parser\\Grammar.y"
+#line 1237 "parser/Grammar.y"
     { (yyval.sourceElements).m_node->append((yyvsp[(2) - (2)].statementNode).m_node);
                                           (yyval.sourceElements).m_varDeclarations = mergeDeclarationLists((yyvsp[(1) - (2)].sourceElements).m_varDeclarations, (yyvsp[(2) - (2)].statementNode).m_varDeclarations);
                                           (yyval.sourceElements).m_funcDeclarations = mergeDeclarationLists((yyvsp[(1) - (2)].sourceElements).m_funcDeclarations, (yyvsp[(2) - (2)].statementNode).m_funcDeclarations);
@@ -4863,259 +4863,259 @@ yyreduce:
   case 304:
 
 /* Line 1455 of yacc.c  */
-#line 1251 "parser\\Grammar.y"
+#line 1251 "parser/Grammar.y"
     { ;}
     break;
 
   case 305:
 
 /* Line 1455 of yacc.c  */
-#line 1252 "parser\\Grammar.y"
+#line 1252 "parser/Grammar.y"
     { ;}
     break;
 
   case 306:
 
 /* Line 1455 of yacc.c  */
-#line 1253 "parser\\Grammar.y"
+#line 1253 "parser/Grammar.y"
     { if (!GLOBAL_DATA->lexer->skipRegExp()) YYABORT; ;}
     break;
 
   case 307:
 
 /* Line 1455 of yacc.c  */
-#line 1254 "parser\\Grammar.y"
+#line 1254 "parser/Grammar.y"
     { if (!GLOBAL_DATA->lexer->skipRegExp()) YYABORT; ;}
     break;
 
   case 308:
 
 /* Line 1455 of yacc.c  */
-#line 1258 "parser\\Grammar.y"
+#line 1258 "parser/Grammar.y"
     { ;}
     break;
 
   case 309:
 
 /* Line 1455 of yacc.c  */
-#line 1259 "parser\\Grammar.y"
+#line 1259 "parser/Grammar.y"
     { ;}
     break;
 
   case 310:
 
 /* Line 1455 of yacc.c  */
-#line 1260 "parser\\Grammar.y"
+#line 1260 "parser/Grammar.y"
     { ;}
     break;
 
   case 311:
 
 /* Line 1455 of yacc.c  */
-#line 1261 "parser\\Grammar.y"
+#line 1261 "parser/Grammar.y"
     { if (*(yyvsp[(1) - (7)].ident) != "get" && *(yyvsp[(1) - (7)].ident) != "set") YYABORT; ;}
     break;
 
   case 312:
 
 /* Line 1455 of yacc.c  */
-#line 1262 "parser\\Grammar.y"
+#line 1262 "parser/Grammar.y"
     { if (*(yyvsp[(1) - (8)].ident) != "get" && *(yyvsp[(1) - (8)].ident) != "set") YYABORT; ;}
     break;
 
   case 316:
 
 /* Line 1455 of yacc.c  */
-#line 1272 "parser\\Grammar.y"
+#line 1272 "parser/Grammar.y"
     { ;}
     break;
 
   case 317:
 
 /* Line 1455 of yacc.c  */
-#line 1273 "parser\\Grammar.y"
+#line 1273 "parser/Grammar.y"
     { ;}
     break;
 
   case 318:
 
 /* Line 1455 of yacc.c  */
-#line 1275 "parser\\Grammar.y"
+#line 1275 "parser/Grammar.y"
     { ;}
     break;
 
   case 322:
 
 /* Line 1455 of yacc.c  */
-#line 1282 "parser\\Grammar.y"
+#line 1282 "parser/Grammar.y"
     { ;}
     break;
 
   case 517:
 
 /* Line 1455 of yacc.c  */
-#line 1650 "parser\\Grammar.y"
+#line 1650 "parser/Grammar.y"
     { ;}
     break;
 
   case 518:
 
 /* Line 1455 of yacc.c  */
-#line 1651 "parser\\Grammar.y"
+#line 1651 "parser/Grammar.y"
     { ;}
     break;
 
   case 520:
 
 /* Line 1455 of yacc.c  */
-#line 1656 "parser\\Grammar.y"
+#line 1656 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 521:
 
 /* Line 1455 of yacc.c  */
-#line 1660 "parser\\Grammar.y"
+#line 1660 "parser/Grammar.y"
     { ;}
     break;
 
   case 522:
 
 /* Line 1455 of yacc.c  */
-#line 1661 "parser\\Grammar.y"
+#line 1661 "parser/Grammar.y"
     { ;}
     break;
 
   case 525:
 
 /* Line 1455 of yacc.c  */
-#line 1667 "parser\\Grammar.y"
+#line 1667 "parser/Grammar.y"
     { ;}
     break;
 
   case 526:
 
 /* Line 1455 of yacc.c  */
-#line 1668 "parser\\Grammar.y"
+#line 1668 "parser/Grammar.y"
     { ;}
     break;
 
   case 530:
 
 /* Line 1455 of yacc.c  */
-#line 1675 "parser\\Grammar.y"
+#line 1675 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 533:
 
 /* Line 1455 of yacc.c  */
-#line 1684 "parser\\Grammar.y"
+#line 1684 "parser/Grammar.y"
     { ;}
     break;
 
   case 534:
 
 /* Line 1455 of yacc.c  */
-#line 1685 "parser\\Grammar.y"
+#line 1685 "parser/Grammar.y"
     { ;}
     break;
 
   case 539:
 
 /* Line 1455 of yacc.c  */
-#line 1702 "parser\\Grammar.y"
+#line 1702 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 555:
 
 /* Line 1455 of yacc.c  */
-#line 1733 "parser\\Grammar.y"
+#line 1733 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 557:
 
 /* Line 1455 of yacc.c  */
-#line 1735 "parser\\Grammar.y"
+#line 1735 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 559:
 
 /* Line 1455 of yacc.c  */
-#line 1740 "parser\\Grammar.y"
+#line 1740 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 561:
 
 /* Line 1455 of yacc.c  */
-#line 1742 "parser\\Grammar.y"
+#line 1742 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 563:
 
 /* Line 1455 of yacc.c  */
-#line 1747 "parser\\Grammar.y"
+#line 1747 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 565:
 
 /* Line 1455 of yacc.c  */
-#line 1749 "parser\\Grammar.y"
+#line 1749 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 568:
 
 /* Line 1455 of yacc.c  */
-#line 1761 "parser\\Grammar.y"
+#line 1761 "parser/Grammar.y"
     { ;}
     break;
 
   case 569:
 
 /* Line 1455 of yacc.c  */
-#line 1762 "parser\\Grammar.y"
+#line 1762 "parser/Grammar.y"
     { ;}
     break;
 
   case 578:
 
 /* Line 1455 of yacc.c  */
-#line 1786 "parser\\Grammar.y"
+#line 1786 "parser/Grammar.y"
     { ;}
     break;
 
   case 580:
 
 /* Line 1455 of yacc.c  */
-#line 1791 "parser\\Grammar.y"
+#line 1791 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 585:
 
 /* Line 1455 of yacc.c  */
-#line 1802 "parser\\Grammar.y"
+#line 1802 "parser/Grammar.y"
     { AUTO_SEMICOLON; ;}
     break;
 
   case 592:
 
 /* Line 1455 of yacc.c  */
-#line 1818 "parser\\Grammar.y"
+#line 1818 "parser/Grammar.y"
     { ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 5119 "C:/dev/webkit-2.0/JavaScriptCore/generated\\Grammar.tab.c"
+#line 5119 "/JavaScriptCore/generated/Grammar.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -5334,7 +5334,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1834 "parser\\Grammar.y"
+#line 1834 "parser/Grammar.y"
 
 
 #undef GLOBAL_DATA
