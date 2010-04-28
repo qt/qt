@@ -95,6 +95,8 @@ struct FileSystem
         }
         return false;
     }
+
+#if 0
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     static void createNtfsJunction(QString target, QString linkName)
     {
@@ -147,6 +149,7 @@ struct FileSystem
         CloseHandle( hFile );
         QVERIFY(ioc);
     }
+#endif
 #endif
 
 private:
