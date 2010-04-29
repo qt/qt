@@ -311,10 +311,6 @@ void VcxprojGenerator::initCompilerTool()
     }
 
     // Common for both release and debug
-    if(project->isActiveConfig("warn_off"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_OFF"));
-    else if(project->isActiveConfig("warn_on"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_ON"));
     if(project->isActiveConfig("windows"))
         conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
 
@@ -372,13 +368,6 @@ void VcxprojGenerator::initLinkerTool()
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
     }
-
-    if(project->isActiveConfig("console")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_CONSOLE"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_WINDOWS"));
-    }
-
 }
 
 void VcxprojGenerator::initResourceTool()

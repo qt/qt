@@ -649,7 +649,7 @@
     \list
     \o \l{graphicsview/collidingmice}{Colliding Mice}\raisedaster
     \o \l{graphicsview/diagramscene}{Diagram Scene}\raisedaster
-    \o \l{graphicsview/dragdroprobot}{Drag and Drop Robot}
+    \o \l{graphicsview/dragdroprobot}{Drag and Drop Robot}\raisedaster
     \o \l{graphicsview/elasticnodes}{Elastic Nodes}
     \o \l{graphicsview/portedasteroids}{Ported Asteroids}
     \o \l{graphicsview/portedcanvas}{Ported Canvas}
