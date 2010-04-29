@@ -365,7 +365,7 @@ void QDeclarativeMouseArea::setEnabled(bool a)
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MidButton
+    \o Qt.MiddleButton
     \endlist
 
     The code below displays "right" when the right mouse buttons is pressed:
@@ -684,7 +684,7 @@ void QDeclarativeMouseArea::setHovered(bool h)
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MidButton
+    \o Qt.MiddleButton
     \endlist
 
     To accept more than one button the flags can be combined with the

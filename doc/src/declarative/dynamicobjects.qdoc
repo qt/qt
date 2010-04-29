@@ -62,65 +62,49 @@ item which you want to manage dynamic instances of, and creating an item from
 a string of QML is intended for when the QML itself is generated at runtime.
 
 If you have a component specified in a QML file, you can dynamically load it with
-the \l {createComponent(url file)}{createComponent()} function on the \l{QML Global Object}. 
+the \l {Qt.createComponent(url file)}{Qt.createComponent()} function on the \l{QML Global Object}. 
 This function takes the URL of the QML file as its only argument and returns
 a component object which can be used to create and load that QML file.
 
 Once you have a component you can use its \c createObject() method to create an instance of
-the component. Example QML script is below. Remember that QML files that might be loaded
-    over the network cannot be expected to be ready immediately.
-    \code
-        var component;
-        var sprite;
-        function finishCreation() {
-            if(component.isReady()) {
-                sprite = component.createObject();
-                if(sprite == 0) {
-                    // Error Handling
-                } else {
-                    sprite.parent = page;
-                    sprite.x = 200;
-                    //...
-                }
-            } else if(component.isError()) {
-                // Error Handling
-            }
-        }
+the component. 
 
-        component = createComponent("Sprite.qml");
-        if(component.isReady()) {
-            finishCreation();
-        } else {
-            component.statusChanged.connect(finishCreation);
-        }
-    \endcode
+Here is an example. Here is a simple QML component defined in \c Sprite.qml:
 
-    If you are certain the files will be local, you could simplify to
+\quotefile doc/src/snippets/declarative/Sprite.qml
 
-    \code
-        component = createComponent("Sprite.qml");
-        sprite = component.createObject();
-        if(sprite == 0) {
-            // Error Handling
-            console.log(component.errorsString());
-        } else {
-            sprite.parent = page;
-            sprite.x = 200;
-            //...
-        }
-    \endcode
+Our main application file, \c main.qml, imports a \c componentCreation.js JavaScript file
+that will create \c Sprite objects:
 
-After creating the item, remember to set its parent to an item within the scene.
-Otherwise your dynamically created item will not appear in the scene. When using files with relative paths, the path should
-be relative to the file where \c createComponent() is executed.
+\quotefile doc/src/snippets/declarative/createComponent.qml
 
-If the QML does not exist until runtime, you can create a QML item from
-a string of QML using the \l{createQmlObject(string qml, object parent, string filepath)}{createQmlObject()} function, as in the following example:
+Here is \c componentCreation.js. Remember that QML files that might be loaded
+over the network cannot be expected to be ready immediately:
 
-    \code
-    newObject = createQmlObject('import Qt 4.7; Rectangle { color: "red"; width: 20; height: 20 }',
-        targetItem, "dynamicSnippet1");
-    \endcode
+\snippet doc/src/snippets/declarative/componentCreation.js 0
+\codeline
+\snippet doc/src/snippets/declarative/componentCreation.js 1
+\snippet doc/src/snippets/declarative/componentCreation.js 2
+\snippet doc/src/snippets/declarative/componentCreation.js 4
+\codeline
+\snippet doc/src/snippets/declarative/componentCreation.js 5
+
+If you are certain the files will be local, you could simplify to:
+
+\snippet doc/src/snippets/declarative/componentCreation.js 3
+
+Notice that once a \c Sprite object is created, its parent is set to \c appWindow (defined
+in \c main.qml). After creating an item, you must set its parent to an item within the scene.
+Otherwise your dynamically created item will not appear in the scene.
+
+When using files with relative paths, the path should
+be relative to the file where \l {Qt.createComponent(url file)}{Qt.createComponent()} is executed.
+
+If the QML component does not exist until runtime, you can create a QML item from
+a string of QML using the \l{Qt.createQmlObject(string qml, object parent, string filepath)}{Qt.createQmlObject()} function, as in the following example:
+
+\snippet doc/src/snippets/declarative/createQmlObject.qml 0
+
 The first argument is the string of QML to create. Just like in a new file, you will need to
 import any types you wish to use. For importing files with relative paths, the path should
 be relative to the file where the item in the second argument is defined. Remember to set the parent after
@@ -135,9 +119,9 @@ will not have an id in QML.
 
 A restriction which you need to manage with dynamically created items,
 is that the creation context must outlive the
-created item. The creation context is the QDeclarativeContext in which \c createComponent()
+created item. The creation context is the QDeclarativeContext in which \c Qt.createComponent()
 was called, or the context in which the Component element, or the item used as the
-second argument to \c createQmlObject(), was specified. If the creation
+second argument to \c Qt.createQmlObject(), was specified. If the creation
 context is destroyed before the dynamic item is, then bindings in the dynamic item will
 fail to work.
 

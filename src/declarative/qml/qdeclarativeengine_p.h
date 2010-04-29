@@ -217,7 +217,12 @@ public:
 
     QList<SimpleList<QDeclarativeAbstractBinding> > bindValues;
     QList<SimpleList<QDeclarativeParserStatus> > parserStatus;
+    QList<QPair<QDeclarativeGuard<QObject>,int> > finalizedParserStatus;
     QDeclarativeComponentAttached *componentAttached;
+
+    void registerFinalizedParserStatusObject(QObject *obj, int index) {
+        finalizedParserStatus.append(qMakePair(QDeclarativeGuard<QObject>(obj), index));
+    }
 
     bool inBeginCreate;
 
