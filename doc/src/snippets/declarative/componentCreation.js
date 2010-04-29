@@ -3,7 +3,7 @@ var component;
 var sprite;
 
 function finishCreation() {
-    if (component.isReady) {
+    if (component.status == Component.Ready) {
         sprite = component.createObject();
         if (sprite == null) {
             // Error Handling
@@ -13,7 +13,7 @@ function finishCreation() {
             sprite.y = 100;
             // ...
         }
-    } else if (component.isError()) {
+    } else if (component.status == Component.Error) {
         // Error Handling
         console.log("Error loading component:", component.errorsString());
     }
@@ -26,7 +26,7 @@ function createSpriteObjects() {
 
     //![2]
     component = Qt.createComponent("Sprite.qml");
-    if (component.isReady)
+    if (component.status == Component.Ready)
         finishCreation();
     else
         component.statusChanged.connect(finishCreation);
