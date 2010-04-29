@@ -175,7 +175,7 @@ function createBlock(column,row){
     // only work if the block QML is a local file. Otherwise the component will
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
-    if(component.isReady){
+    if(component.status == Component.Ready){
         var dynamicObject = component.createObject();
         if(dynamicObject == null){
             console.log("error creating block");
