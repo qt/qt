@@ -145,6 +145,7 @@ private slots:
     void qtcreatorbug_1289();
     void noSpuriousWarningsAtShutdown();
     void canAssignNullToQObject();
+    void functionAssignment();
 
     void callQtInvokables();
 private:
@@ -2290,6 +2291,44 @@ void tst_qdeclarativeecmascript::canAssignNullToQObject()
     delete o;
     }
 }
+
+void tst_qdeclarativeecmascript::functionAssignment()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.1.qml"));
+
+    QString url = component.url().toString();
+    QString warning = url + ":4: Unable to assign a function to a property.";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+
+    QVERIFY(!o->property("a").isValid());
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.2.qml"));
+
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+
+    QVERIFY(!o->property("a").isValid());
+    
+    QString url = component.url().toString();
+    QString warning = url + ":10: Error: Cannot assign a function to a property.";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    
+    o->setProperty("runTest", true);
+    
+    QVERIFY(!o->property("a").isValid());
+
+    delete o;
+    }
+}
+
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 
