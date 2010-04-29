@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QFontEngineS60Extensions::QFontEngineS60Extensions(CFont* fontOwner, COpenFont *font)
+QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* fontOwner, COpenFont *font)
     : m_font(font)
     , m_cmap(0)
     , m_symbolCMap(false)
@@ -68,7 +68,7 @@ QFontEngineS60Extensions::QFontEngineS60Extensions(CFont* fontOwner, COpenFont *
     Q_ASSERT(m_shapingExtension && m_trueTypeExtension);
 }
 
-QByteArray QFontEngineS60Extensions::getSfntTable(uint tag) const
+QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
 {
     Q_ASSERT(m_trueTypeExtension->HasTrueTypeTable(tag));
     TInt error = KErrNone;
@@ -79,7 +79,7 @@ QByteArray QFontEngineS60Extensions::getSfntTable(uint tag) const
     return result;
 }
 
-bool QFontEngineS60Extensions::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
     if (!m_trueTypeExtension->HasTrueTypeTable(tag))
         return false;
@@ -104,7 +104,7 @@ bool QFontEngineS60Extensions::getSfntTableData(uint tag, uchar *buffer, uint *l
     return result;
 }
 
-const unsigned char *QFontEngineS60Extensions::cmap() const
+const unsigned char *QSymbianTypeFaceExtras::cmap() const
 {
     if (!m_cmap) {
         m_cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
@@ -114,7 +114,7 @@ const unsigned char *QFontEngineS60Extensions::cmap() const
     return m_cmap;
 }
 
-QPainterPath QFontEngineS60Extensions::glyphOutline(glyph_t glyph) const
+QPainterPath QSymbianTypeFaceExtras::glyphOutline(glyph_t glyph) const
 {
     QPainterPath result;
     QPolygonF polygon;
@@ -134,7 +134,7 @@ QPainterPath QFontEngineS60Extensions::glyphOutline(glyph_t glyph) const
     return result;
 }
 
-CFont *QFontEngineS60Extensions::fontOwner() const
+CFont *QSymbianTypeFaceExtras::fontOwner() const
 {
     return m_fontOwner;
 }
@@ -192,8 +192,8 @@ void QFontEngineS60::releaseFont(CFont *&font)
     }
 }
 
-QFontEngineS60::QFontEngineS60(const QFontDef &request, const QFontEngineS60Extensions *extensions)
-    : m_extensions(extensions)
+QFontEngineS60::QFontEngineS60(const QFontDef &request, const QSymbianTypeFaceExtras *extras)
+    : m_extras(extras)
     , m_originalFont(0)
     , m_originalFontSizeInPixels((request.pixelSize >= 0)?
             request.pixelSize:pointsToPixels(request.pointSize))
@@ -220,7 +220,7 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
     }
 
     HB_Glyph *g = glyphs->glyphs;
-    const unsigned char* cmap = m_extensions->cmap();
+    const unsigned char* cmap = m_extras->cmap();
     const bool isRtl = (flags & QTextEngine::RightToLeft);
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(characters, i, len);
@@ -339,7 +339,7 @@ const char *QFontEngineS60::name() const
 
 bool QFontEngineS60::canRender(const QChar *string, int len)
 {
-    const unsigned char *cmap = m_extensions->cmap();
+    const unsigned char *cmap = m_extras->cmap();
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(string, i, len);
         if (QFontEngine::getTrueTypeGlyphIndex(cmap, uc) == 0)
@@ -350,12 +350,12 @@ bool QFontEngineS60::canRender(const QChar *string, int len)
 
 QByteArray QFontEngineS60::getSfntTable(uint tag) const
 {
-    return m_extensions->getSfntTable(tag);
+    return m_extras->getSfntTable(tag);
 }
 
 bool QFontEngineS60::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    return m_extensions->getSfntTableData(tag, buffer, length);
+    return m_extras->getSfntTableData(tag, buffer, length);
 }
 
 QFontEngine::Type QFontEngineS60::type() const
