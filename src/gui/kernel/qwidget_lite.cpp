@@ -686,6 +686,7 @@ void QWidgetPrivate::setModal_sys()
 {
 }
 
+#ifndef QT_NO_CURSOR
 void qt_lite_set_cursor(QWidget * w, bool force)
 {
     static QPointer<QWidget> lastUnderMouse = 0;
@@ -732,4 +733,6 @@ void qt_lite_set_cursor(QWidget * w, bool force)
     QCursor c = w->cursor();
     cursor->changeCursor(&c, w);
 }
+#endif //QT_NO_CURSOR 
+
 QT_END_NAMESPACE
