@@ -444,7 +444,7 @@ void QDeclarativeItemKeyFilter::componentComplete()
     If an item has been set for a direction and the KeyNavigation
     attached property receives the corresponding
     key press and release events, the events will be accepted by
-    KeyNaviagtion and will not propagate any further.
+    KeyNavigation and will not propagate any further.
 
     \sa {Keys}{Keys attached property}
 */

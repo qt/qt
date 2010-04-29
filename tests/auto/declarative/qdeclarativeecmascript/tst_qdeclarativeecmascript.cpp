@@ -1149,6 +1149,7 @@ static void transientErrorsMsgHandler(QtMsgType, const char *)
 // Check that transient binding errors are not displayed
 void tst_qdeclarativeecmascript::transientErrors()
 {
+    {
     QDeclarativeComponent component(&engine, TEST_FILE("transientErrors.qml"));
 
     transientErrorsMsgCount = 0;
@@ -1160,6 +1161,22 @@ void tst_qdeclarativeecmascript::transientErrors()
     qInstallMsgHandler(old);
 
     QCOMPARE(transientErrorsMsgCount, 0);
+    }
+
+    // One binding erroring multiple times, but then resolving
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("transientErrors.2.qml"));
+
+    transientErrorsMsgCount = 0;
+    QtMsgHandler old = qInstallMsgHandler(transientErrorsMsgHandler);
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    qInstallMsgHandler(old);
+
+    QCOMPARE(transientErrorsMsgCount, 0);
+    }
 }
 
 // Check that errors during shutdown are minimized
