@@ -2074,22 +2074,26 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
     } else if (part == "PHONON" || part == "MEDIA_BACKEND") {
-        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
-            && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
-            && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
-            && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
-            && findFile("d3d9.h");
+        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+            available = true;
+        } else {
+            available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
+                && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
+                && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
+                && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
+                && findFile("d3d9.h");
 
-        if (!available) {
-            cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
-                 << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
-                 << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
-            if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
-            if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
-            if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
-            if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
-            if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
-            if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
+            if (!available) {
+                cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
+                     << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
+                     << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
+                if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
+                if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
+                if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
+                if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
+                if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
+                if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
+            }
         }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
