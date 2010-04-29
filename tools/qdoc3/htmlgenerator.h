@@ -134,8 +134,9 @@ class HtmlGenerator : public PageGenerator
     void generateBreadCrumbs(const QString& title,
                              const Node *node,
                              CodeMarker *marker);
-    void generateHeader(const QString& title, const Node *node = 0,
-                        CodeMarker *marker = 0, bool mainPage = true);
+    void generateHeader(const QString& title, 
+                        const Node *node = 0,
+                        CodeMarker *marker = 0);
     void generateTitle(const QString& title, 
                        const Text &subTitle, 
                        SubTitleSize subTitleSize,
