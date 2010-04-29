@@ -820,13 +820,13 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
 #endif //QT_NO_IM
     }
 
-    if (item) {
+    if (item)
         focusItem = item;
+    updateInputMethodSensitivityInViews();
+    if (item) {
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
     }
-
-    updateInputMethodSensitivityInViews();
 }
 
 /*!
