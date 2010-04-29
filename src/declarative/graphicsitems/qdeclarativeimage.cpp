@@ -316,6 +316,32 @@ qreal QDeclarativeImage::paintedHeight() const
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+
+    The example below will ensure that the size of the image in memory is
+    no larger than 1024x1024 pixels, regardless of the size of the Image element.
+
+    \code
+    Image {
+       anchors.fill: parent
+       source: "images/reallyBigImage.jpg"
+       sourceSize.width: 1024
+       sourceSize.height: 1024
+    }
+    \endcode
+
+    The example below will ensure that the memory used by the image is
+    no more than necessary to display the image at the size of the Image element.
+    Of course if the Image element is resized a costly reload will be required, so
+    use this technique \e only when the Image size is fixed.
+
+    \code
+    Image {
+       anchors.fill: parent
+       source: "images/reallyBigImage.jpg"
+       sourceSize.width: width
+       sourceSize.height: height
+    }
+    \endcode
 */
 
 void QDeclarativeImage::updatePaintedGeometry()

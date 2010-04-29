@@ -44,6 +44,7 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativeanimation_p.h>
+#include <private/qdeclarativeitem_p.h>
 #include <QVariantAnimation>
 #include <QEasingCurve>
 
@@ -324,7 +325,7 @@ void tst_qdeclarativeanimations::badTypes()
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QVERIFY(rect);
 
-        rect->setState("state1");
+        QDeclarativeItemPrivate::get(rect)->setState("state1");
         QTest::qWait(1000 + 50);
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("MyRect");
         QVERIFY(myRect);
@@ -366,7 +367,7 @@ void tst_qdeclarativeanimations::mixedTypes()
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QVERIFY(rect);
 
-        rect->setState("state1");
+        QDeclarativeItemPrivate::get(rect)->setState("state1");
         QTest::qWait(500);
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("MyRect");
         QVERIFY(myRect);
@@ -382,7 +383,7 @@ void tst_qdeclarativeanimations::mixedTypes()
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QVERIFY(rect);
 
-        rect->setState("state1");
+        QDeclarativeItemPrivate::get(rect)->setState("state1");
         QTest::qWait(500);
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("MyRect");
         QVERIFY(myRect);
@@ -468,7 +469,7 @@ void tst_qdeclarativeanimations::propertiesTransition()
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QVERIFY(rect);
 
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
         QVERIFY(myRect);
         QTest::qWait(waitDuration);
@@ -483,7 +484,7 @@ void tst_qdeclarativeanimations::propertiesTransition()
 
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
         QVERIFY(myRect);
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
         QCOMPARE(myRect->y(),qreal(100));
         QTest::qWait(waitDuration);
@@ -498,7 +499,7 @@ void tst_qdeclarativeanimations::propertiesTransition()
 
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
         QVERIFY(myRect);
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
         QCOMPARE(myRect->y(),qreal(100));
     }
@@ -511,7 +512,7 @@ void tst_qdeclarativeanimations::propertiesTransition()
 
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
         QVERIFY(myRect);
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QCOMPARE(myRect->x(),qreal(100));
         QTest::qWait(waitDuration);
         QTIMED_COMPARE(myRect->x(),qreal(200));
@@ -525,7 +526,7 @@ void tst_qdeclarativeanimations::propertiesTransition()
 
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
         QVERIFY(myRect);
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QCOMPARE(myRect->x(),qreal(100));
         QTest::qWait(waitDuration);
         QTIMED_COMPARE(myRect->x(),qreal(200));
@@ -539,7 +540,7 @@ void tst_qdeclarativeanimations::propertiesTransition()
 
         QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
         QVERIFY(myRect);
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QCOMPARE(myRect->x(),qreal(100));
         QTest::qWait(waitDuration);
         QTIMED_COMPARE(myRect->x(),qreal(100));
@@ -709,7 +710,7 @@ void tst_qdeclarativeanimations::rotation()
     QDeclarativeRectangle *rr3 = rect->findChild<QDeclarativeRectangle*>("rr3");
     QDeclarativeRectangle *rr4 = rect->findChild<QDeclarativeRectangle*>("rr4");
 
-    rect->setState("state1");
+    QDeclarativeItemPrivate::get(rect)->setState("state1");
     QTest::qWait(800);
     qreal r1 = rr->rotation();
     qreal r2 = rr2->rotation();

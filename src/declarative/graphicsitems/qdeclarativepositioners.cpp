@@ -443,7 +443,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
-            QDeclarativeAnchors::Anchors usedAnchors = child.item->anchors()->usedAnchors();
+            QDeclarativeAnchors::Anchors usedAnchors = QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors();
             if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
                 usedAnchors & QDeclarativeAnchors::BottomAnchor ||
                 usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
@@ -578,7 +578,7 @@ void QDeclarativeRow::reportConflictingAnchors()
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
-            QDeclarativeAnchors::Anchors usedAnchors = child.item->anchors()->usedAnchors();
+            QDeclarativeAnchors::Anchors usedAnchors = QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors();
             if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
                 usedAnchors & QDeclarativeAnchors::RightAnchor ||
                 usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
@@ -868,7 +868,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
     bool childsWithConflictingAnchors(false);
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item && child.item->anchors()->usedAnchors()) {
+        if (child.item && QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors()) {
             childsWithConflictingAnchors = true;
             break;
         }
@@ -1025,7 +1025,7 @@ void QDeclarativeFlow::reportConflictingAnchors()
     bool childsWithConflictingAnchors(false);
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item && child.item->anchors()->usedAnchors()) {
+        if (child.item && QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors()) {
             childsWithConflictingAnchors = true;
             break;
         }

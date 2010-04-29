@@ -142,8 +142,10 @@ private slots:
     void libraryScriptAssert();
     void variantsAssignedUndefined();
     void qtbug_9792();
+    void qtcreatorbug_1289();
     void noSpuriousWarningsAtShutdown();
     void canAssignNullToQObject();
+    void functionAssignment();
 
     void callQtInvokables();
 private:
@@ -2205,6 +2207,27 @@ void tst_qdeclarativeecmascript::qtbug_9792()
     delete object;
 }
 
+// Verifies that QDeclarativeGuard<>s used in the vmemetaobject are cleaned correctly
+void tst_qdeclarativeecmascript::qtcreatorbug_1289()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtcreatorbug_1289.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QObject *nested = qvariant_cast<QObject *>(o->property("object"));
+    QVERIFY(nested != 0);
+
+    QVERIFY(qvariant_cast<QObject *>(nested->property("nestedObject")) == o);
+
+    delete nested;
+    nested = qvariant_cast<QObject *>(o->property("object"));
+    QVERIFY(nested == 0);
+
+    // If the bug is present, the next line will crash
+    delete o;
+}
+
 // Test that we shut down without stupid warnings
 void tst_qdeclarativeecmascript::noSpuriousWarningsAtShutdown()
 {
@@ -2268,6 +2291,44 @@ void tst_qdeclarativeecmascript::canAssignNullToQObject()
     delete o;
     }
 }
+
+void tst_qdeclarativeecmascript::functionAssignment()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.1.qml"));
+
+    QString url = component.url().toString();
+    QString warning = url + ":4: Unable to assign a function to a property.";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+
+    QVERIFY(!o->property("a").isValid());
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("functionAssignment.2.qml"));
+
+    MyQmlObject *o = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(o != 0);
+
+    QVERIFY(!o->property("a").isValid());
+    
+    QString url = component.url().toString();
+    QString warning = url + ":10: Error: Cannot assign a function to a property.";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    
+    o->setProperty("runTest", true);
+    
+    QVERIFY(!o->property("a").isValid());
+
+    delete o;
+    }
+}
+
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 
