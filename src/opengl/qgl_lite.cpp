@@ -68,6 +68,12 @@ QPlatformGLWidgetSurface::~QPlatformGLWidgetSurface()
 {
 }
 
+bool QPlatformGLWidgetSurface::filterEvent(QEvent*)
+{
+    // By default, return false to allow the event to pass through
+    return false;
+}
+
 
 bool QGLFormat::hasOpenGL()
 {
@@ -242,6 +248,14 @@ void QGLWidget::setMouseTracking(bool enable)
 
 bool QGLWidget::event(QEvent *e)
 {
+    Q_D(QGLWidget);
+
+    if (d->wsurf) {
+        bool eventFiltered = d->wsurf->filterEvent(e);
+        if (eventFiltered)
+            return true;
+    }
+
     return QWidget::event(e);
 }
 

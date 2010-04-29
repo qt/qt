@@ -59,6 +59,7 @@ public:
     virtual bool create(QGLWidget*, QGLFormat&) = 0;
 
     virtual void setGeometry(const QRect&) = 0;
+    virtual bool filterEvent(QEvent*);
 };
 
 
