@@ -53,6 +53,7 @@
 #define a_VALID         false
 #define so_VALID        false
 #define dll_VALID       false
+#define DLL_VALID       false
 
 #if defined(Q_OS_DARWIN)
 # undef bundle_VALID
@@ -88,6 +89,8 @@
 #elif defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 # undef dll_VALID
 # define dll_VALID      true
+# undef DLL_VALID
+# define DLL_VALID      true
 # define SUFFIX         ".dll"
 # define PREFIX         ""
 
@@ -352,6 +355,7 @@ void tst_QLibrary::isLibrary_data()
     QTest::newRow(".a") << QString("mylib.a") << a_VALID;
     QTest::newRow(".bundle") << QString("mylib.bundle") << bundle_VALID;
     QTest::newRow(".dll") << QString("mylib.dll") << dll_VALID;
+    QTest::newRow(".DLL") << QString("MYLIB.DLL") << DLL_VALID;
     QTest::newRow(".dl2" ) << QString("mylib.dl2") << false;
     QTest::newRow(".dylib") << QString("mylib.dylib") << dylib_VALID;
     QTest::newRow(".sl") << QString("mylib.sl") << sl_VALID;
@@ -556,7 +560,11 @@ void tst_QLibrary::fileName()
     }
 
     QVERIFY(ok);
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QCOMPARE(lib.fileName().toLower(), expectedFilename.toLower());
+#else
     QCOMPARE(lib.fileName(), expectedFilename);
+#endif
 
 }
 

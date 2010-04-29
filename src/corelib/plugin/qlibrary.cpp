@@ -496,7 +496,7 @@ bool QLibraryPrivate::loadPlugin()
 
     \table
     \header \i Platform \i Valid suffixes
-    \row \i Windows     \i \c .dll
+    \row \i Windows     \i \c .dll, \c .DLL
     \row \i Unix/Linux  \i \c .so
     \row \i AIX  \i \c .a
     \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
@@ -509,7 +509,7 @@ bool QLibraryPrivate::loadPlugin()
 bool QLibrary::isLibrary(const QString &fileName)
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    return fileName.endsWith(QLatin1String(".dll"));
+    return fileName.endsWith(QLatin1String(".dll"), Qt::CaseInsensitive);
 #elif defined(Q_OS_SYMBIAN)
     // Plugin stubs are also considered libraries in Symbian.
     return (fileName.endsWith(QLatin1String(".dll")) ||
