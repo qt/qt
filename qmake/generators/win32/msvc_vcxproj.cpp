@@ -294,14 +294,12 @@ void VcxprojGenerator::initCompilerTool()
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
     if(project->isActiveConfig("debug")){
         // Debug version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_DEBUG"));
         if((projectTarget == Application) || (projectTarget == StaticLib))
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DBG"));
         else
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DLLDBG"));
     } else {
         // Release version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_RELEASE"));
         conf.compiler.PreprocessorDefinitions += "QT_NO_DEBUG";
         conf.compiler.PreprocessorDefinitions += "NDEBUG";
         if((projectTarget == Application) || (projectTarget == StaticLib))
@@ -358,12 +356,6 @@ void VcxprojGenerator::initLinkerTool()
         conf.linker.OutputFile += '\\';
 
     conf.linker.OutputFile += project->first("MSVCPROJ_TARGET");
-
-    if(project->isActiveConfig("debug")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_DEBUG"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_RELEASE"));
-    }
 
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
