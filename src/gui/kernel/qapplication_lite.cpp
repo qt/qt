@@ -447,6 +447,7 @@ static void init_plugins(const QList<QByteArray> pluginList)
     }
 }
 
+#ifndef QT_NO_QWS_INPUTMETHODS
 class QDummyInputContext : public QInputContext
 {
 public:
@@ -459,6 +460,7 @@ public:
     bool isComposing() const { return false; }
 
 };
+#endif // QT_NO_QWS_INPUTMETHODS
 
 void qt_init(QApplicationPrivate *priv, int type)
 {
