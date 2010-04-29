@@ -57,6 +57,7 @@ public:
 
     virtual bool create(QGLWidget*, QGLFormat&);
     virtual void setGeometry(const QRect&);
+    virtual bool filterEvent(QEvent*);
 
     GLXFBConfig config() {return m_config;}
     Window      winId() {return m_winId;}
@@ -65,6 +66,7 @@ private:
     MyDisplay  *m_xd;
     GLXFBConfig m_config;
     Window      m_winId;
+    QGLWidget*  m_widget;
 };
 
 class QGLXGLContext : public QPlatformGLContext

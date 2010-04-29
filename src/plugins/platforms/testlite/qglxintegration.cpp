@@ -123,6 +123,7 @@ QGLXGLWidgetSurface::QGLXGLWidgetSurface(MyDisplay* xd)
     , m_xd(xd)
     , m_config(0)
     , m_winId(0)
+    , m_widget(0)
 {
 }
 
@@ -135,6 +136,8 @@ static Colormap qt_glx_integration_colormap = 0;
 
 bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
 {
+    m_widget = widget;
+
     m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
 
     Window parentWindow = widget->window()->winId();
@@ -166,6 +169,25 @@ bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
 void QGLXGLWidgetSurface::setGeometry(const QRect& rect)
 {
     XMoveResizeWindow(m_xd->display, m_winId, rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+bool QGLXGLWidgetSurface::filterEvent(QEvent *e)
+{
+    if (e->type() == QEvent::ParentAboutToChange) {
+        // We temporarily hide the window and re-parent it with the root window
+        // as it's quite likely that the parent window is about to be deleted,
+        // which would otherwise destroy our window along with it.
+        XUnmapWindow(m_xd->display, m_winId);
+        XReparentWindow(m_xd->display, m_winId, m_xd->rootWindow(), 0, 0);
+    }
+
+    if (e->type() == QEvent::ParentChange) {
+        // Once we've got a new parent, we need to reparent the window and show it again:
+        XReparentWindow(m_xd->display, m_winId, m_widget->window()->winId(), m_widget->x(), m_widget->y());
+        XMapWindow(m_xd->display, m_winId);
+    }
+
+    return false; // Allow the event to pass through to QGLWidget
 }
 
 
