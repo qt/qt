@@ -8,4 +8,6 @@ contains(QT_CONFIG, media-backend) {
     unix:!mac:!symbian:contains(QT_CONFIG, xvideo):contains(QT_CONFIG, gstreamer) {
         SUBDIRS += gstreamer
     }
+
+    symbian:SUBDIRS += symbian
 }
