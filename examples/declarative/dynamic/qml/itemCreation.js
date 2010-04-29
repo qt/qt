@@ -33,7 +33,7 @@ function loadComponent() {
 
     itemComponent = Qt.createComponent(itemButton.file);
     //console.log(itemButton.file)
-    if(itemComponent.isLoading){
+    if(itemComponent.status == Component.Loading){
         component.statusChanged.connect(finishCreation);
     }else{//Depending on the content, it can be ready or error immediately
         createItem();
@@ -41,7 +41,7 @@ function loadComponent() {
 }
 
 function createItem() {
-    if (itemComponent.isReady && draggedItem == null) {
+    if (itemComponent.status == Component.Ready && draggedItem == null) {
         draggedItem = itemComponent.createObject();
         draggedItem.parent = window;
         draggedItem.image = itemButton.image;
@@ -49,7 +49,7 @@ function createItem() {
         draggedItem.y = yOffset;
         startingZ = draggedItem.z;
         draggedItem.z = 4;//On top
-    } else if (itemComponent.isError) {
+    } else if (itemComponent.status == Component.Error) {
         draggedItem = null;
         console.log("error creating component");
         console.log(component.errorsString());

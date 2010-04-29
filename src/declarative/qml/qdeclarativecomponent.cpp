@@ -63,7 +63,6 @@
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
-int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeComponent::Status");
 
 /*!
     \class QDeclarativeComponent
@@ -269,19 +268,7 @@ QDeclarativeComponent::Status QDeclarativeComponent::status() const
 }
 
 /*!
-    \qmlproperty bool Component::isNull
-
-    Is true if the component is in the Null state, false otherwise.
-
-    Equivalent to status == Component.Null.
-*/
-
-/*!
-    \property QDeclarativeComponent::isNull
-
-    Is true if the component is in the Null state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Null.
+    Returns true if status() == QDeclarativeComponent::Null.
 */
 bool QDeclarativeComponent::isNull() const
 {
@@ -289,19 +276,7 @@ bool QDeclarativeComponent::isNull() const
 }
 
 /*!
-    \qmlproperty bool Component::isReady
-
-    Is true if the component is in the Ready state, false otherwise.
-
-    Equivalent to status == Component.Ready.
-*/
-
-/*!
-    \property QDeclarativeComponent::isReady
-
-    Is true if the component is in the Ready state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Ready.
+    Returns true if status() == QDeclarativeComponent::Ready.
 */
 bool QDeclarativeComponent::isReady() const
 {
@@ -309,21 +284,7 @@ bool QDeclarativeComponent::isReady() const
 }
 
 /*!
-    \qmlproperty bool Component::isError
-
-    Is true if the component is in the Error state, false otherwise.
-
-    Equivalent to status == Component.Error.
-
-    Calling errorsString() will provide a human-readable description of any errors.
-*/
-
-/*!
-    \property QDeclarativeComponent::isError
-
-    Is true if the component is in the Error state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Error.
+    Returns true if status() == QDeclarativeComponent::Error.
 */
 bool QDeclarativeComponent::isError() const
 {
@@ -331,19 +292,7 @@ bool QDeclarativeComponent::isError() const
 }
 
 /*!
-    \qmlproperty bool Component::isLoading
-
-    Is true if the component is in the Loading state, false otherwise.
-
-    Equivalent to status == Component::Loading.
-*/
-
-/*!
-    \property QDeclarativeComponent::isLoading
-
-    Is true if the component is in the Loading state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Loading.
+    Returns true if status() == QDeclarativeComponent::Loading.
 */
 bool QDeclarativeComponent::isLoading() const
 {
@@ -421,7 +370,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const Q
 {
     Q_D(QDeclarativeComponent);
     d->engine = engine;
-    loadUrl(QUrl::fromLocalFile(fileName));
+    loadUrl(d->engine->baseUrl().resolved(QUrl::fromLocalFile(fileName)));
 }
 
 /*!

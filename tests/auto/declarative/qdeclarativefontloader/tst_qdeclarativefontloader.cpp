@@ -122,6 +122,9 @@ void tst_qdeclarativefontloader::failLocalFont()
 {
     QString componentStr = "import Qt 4.7\nFontLoader { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\" }";
     QTest::ignoreMessage(QtWarningMsg, QString("file::2:1: QML FontLoader: Cannot load font: \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\"").toUtf8().constData());
+#ifdef Q_WS_QWS
+    QTest::ignoreMessage(QtDebugMsg, QString("FT_New_Face failed with index 0 : 51 ").toLatin1());
+#endif
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());

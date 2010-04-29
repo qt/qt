@@ -34,10 +34,10 @@ function createBlock(column, row) {
     if (component == null)
         component = Qt.createComponent("Block.qml");
 
-    // Note that if Block.qml was not a local file, component.isReady would be
-    // false and we should wait for the component's statusChanged() signal to
-    // know when the file is downloaded and fully loaded before calling createObject().
-    if (component.isReady) {
+    // Note that if Block.qml was not a local file, component.status would be
+    // Loading and we should wait for the component's statusChanged() signal to
+    // know when the file is downloaded and ready before calling createObject().
+    if (component.status == Component.Ready) {
         var dynamicObject = component.createObject();
         if (dynamicObject == null) {
             console.log("error creating block");

@@ -265,7 +265,7 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
             return Value(scriptEngine, rv);
-        } else if (lastData->propType == QMetaType::Int) {
+        } else if (lastData->propType == QMetaType::Int || lastData->flags & QDeclarativePropertyCache::Data::IsEnumType) {
             int rv = 0;
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);

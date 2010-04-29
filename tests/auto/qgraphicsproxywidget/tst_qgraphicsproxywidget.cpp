@@ -3436,6 +3436,21 @@ void tst_QGraphicsProxyWidget::inputMethod()
         qApp->sendEvent(proxy, &event);
         QCOMPARE(lineEdit->inputMethodEvents, i);
     }
+
+    scene.clear();
+    QGraphicsView view(&scene);
+    QWidget *w = new QWidget;
+    w->setLayout(new QVBoxLayout(w));
+    QLineEdit *lineEdit = new QLineEdit;
+    lineEdit->setEchoMode(QLineEdit::Password);
+    w->layout()->addWidget(lineEdit);
+    lineEdit->setAttribute(Qt::WA_InputMethodEnabled, true);
+    QGraphicsProxyWidget *proxy = scene.addWidget(w);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(!(proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod));
+    lineEdit->setFocus();
+    QVERIFY((proxy->flags() & QGraphicsItem::ItemAcceptsInputMethod));
 }
 
 void tst_QGraphicsProxyWidget::clickFocus()

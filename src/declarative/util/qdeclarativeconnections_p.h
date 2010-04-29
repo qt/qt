@@ -65,6 +65,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeConnections : public QObject, public QDec
 
     Q_INTERFACES(QDeclarativeParserStatus)
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(bool ignoreUnknownSignals READ ignoreUnknownSignals WRITE setIgnoreUnknownSignals)
 
 public:
     QDeclarativeConnections(QObject *parent=0);
@@ -72,6 +73,9 @@ public:
 
     QObject *target() const;
     void setTarget(QObject *);
+
+    bool ignoreUnknownSignals() const;
+    void setIgnoreUnknownSignals(bool ignore);
 
 Q_SIGNALS:
     void targetChanged();

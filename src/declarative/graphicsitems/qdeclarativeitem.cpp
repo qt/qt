@@ -1263,11 +1263,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \property QDeclarativeItem::baseline
-    \internal
-*/
-
-/*!
     \property QDeclarativeItem::focus
     \internal
 */
@@ -1472,11 +1467,6 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 */
 
 /*!
-    \property QDeclarativeItem::resources
-    \internal
-*/
-
-/*!
     Returns true if construction of the QML component is complete; otherwise
     returns false.
 
@@ -1489,18 +1479,6 @@ bool QDeclarativeItem::isComponentComplete() const
 {
     Q_D(const QDeclarativeItem);
     return d->_componentComplete;
-}
-
-/*!
-    \property QDeclarativeItem::anchors
-    \internal
-*/
-
-/*! \internal */
-QDeclarativeAnchors *QDeclarativeItem::anchors()
-{
-    Q_D(QDeclarativeItem);
-    return d->anchors();
 }
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
@@ -1625,14 +1603,13 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
  */
 
 /*!
-    \property QDeclarativeItem::data
     \internal
 */
 
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::data()
+QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::data_append);
+    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
 }
 
 /*!
@@ -1860,96 +1837,59 @@ QVariant QDeclarativeItem::inputMethodQuery(Qt::InputMethodQuery query) const
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::left() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::left() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->left;
+    return anchorLines()->left;
 }
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::right() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::right() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->right;
+    return anchorLines()->right;
 }
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::horizontalCenter() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::horizontalCenter() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->hCenter;
+    return anchorLines()->hCenter;
 }
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::top() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::top() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->top;
+    return anchorLines()->top;
 }
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::bottom() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::bottom() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->bottom;
+    return anchorLines()->bottom;
 }
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::verticalCenter() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::verticalCenter() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->vCenter;
+    return anchorLines()->vCenter;
 }
 
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::baseline() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->baseline;
+    return anchorLines()->baseline;
 }
-
-/*!
-  \property QDeclarativeItem::top
-  \internal
-*/
-
-/*!
-  \property QDeclarativeItem::bottom
-  \internal
-*/
-
-/*!
-  \property QDeclarativeItem::left
-  \internal
-*/
-
-/*!
-  \property QDeclarativeItem::right
-  \internal
-*/
-
-/*!
-  \property QDeclarativeItem::horizontalCenter
-  \internal
-*/
-
-/*!
-  \property QDeclarativeItem::verticalCenter
-  \internal
-*/
 
 /*!
   \qmlproperty AnchorLine Item::top
@@ -2291,9 +2231,9 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
 }
 
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
+QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append,
+    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
                                              QDeclarativeItemPrivate::resources_count,
                                              QDeclarativeItemPrivate::resources_at);
 }
@@ -2315,15 +2255,10 @@ QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
   \sa {qmlstate}{States}
 */
 
-/*!
-  \property QDeclarativeItem::states
-  \internal
-*/
 /*! \internal */
-QDeclarativeListProperty<QDeclarativeState> QDeclarativeItem::states()
+QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 {
-    Q_D(QDeclarativeItem);
-    return d->states()->statesProperty();
+    return _states()->statesProperty();
 }
 
 /*!
@@ -2343,16 +2278,11 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItem::states()
   \sa {state-transitions}{Transitions}
 */
 
-/*!
-  \property QDeclarativeItem::transitions
-  \internal
-*/
 
 /*! \internal */
-QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
+QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transitions()
 {
-    Q_D(QDeclarativeItem);
-    return d->states()->transitionsProperty();
+    return _states()->transitionsProperty();
 }
 
 /*
@@ -2426,20 +2356,18 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
 */
 
 /*! \internal */
-QString QDeclarativeItem::state() const
+QString QDeclarativeItemPrivate::state() const
 {
-    Q_D(const QDeclarativeItem);
-    if (!d->_stateGroup)
+    if (!_stateGroup)
         return QString();
     else
-        return d->_stateGroup->state();
+        return _stateGroup->state();
 }
 
 /*! \internal */
-void QDeclarativeItem::setState(const QString &state)
+void QDeclarativeItemPrivate::setState(const QString &state)
 {
-    Q_D(QDeclarativeItem);
-    d->states()->setState(state);
+    _states()->setState(state);
 }
 
 /*!
@@ -2502,7 +2430,7 @@ void QDeclarativeItem::componentComplete()
         d->keyHandler->componentComplete();
 }
 
-QDeclarativeStateGroup *QDeclarativeItemPrivate::states()
+QDeclarativeStateGroup *QDeclarativeItemPrivate::_states()
 {
     Q_Q(QDeclarativeItem);
     if (!_stateGroup) {
