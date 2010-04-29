@@ -421,7 +421,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const Q
 {
     Q_D(QDeclarativeComponent);
     d->engine = engine;
-    loadUrl(QUrl::fromLocalFile(fileName));
+    loadUrl(d->engine->baseUrl().resolved(QUrl::fromLocalFile(fileName)));
 }
 
 /*!
