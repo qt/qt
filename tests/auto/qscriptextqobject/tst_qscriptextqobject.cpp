@@ -1670,6 +1670,7 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->emitMySignalWithVariantArg(123);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isNumber());
     QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
 
@@ -1685,16 +1686,29 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.disconnect(myHandler)").isUndefined());
 
-    // signal with QVariant arg: argument conversion should work
+    // signal with QVariant arg: QVariant should be unwrapped only once
     m_myObject->clearConnectedSignal();
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
     QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
     m_engine->evaluate("gotSignal = false");
-    m_myObject->emitMySignalWithVariantArg(123);
+    QVariant tmp(123);
+    QVariant signalArg(QMetaType::QVariant, &tmp);
+    m_myObject->emitMySignalWithVariantArg(signalArg);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
-    QVERIFY(m_engine->evaluate("signalArgs[0]").isNumber());
-    QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isVariant());
+    QCOMPARE(m_engine->evaluate("signalArgs[0]").toVariant().toDouble(), 123.0);
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
+
+    // signal with QVariant arg: with an invalid QVariant
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
+    m_engine->evaluate("gotSignal = false");
+    m_myObject->emitMySignalWithVariantArg(QVariant());
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
 
     // signal with argument type that's unknown to the meta-type system

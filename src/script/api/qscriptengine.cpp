@@ -3071,7 +3071,7 @@ JSC::JSValue QScriptEnginePrivate::create(JSC::ExecState *exec, int type, const 
             break;
 #endif
         case QMetaType::QVariant:
-            result = jscValueFromVariant(exec, *reinterpret_cast<const QVariant*>(ptr));
+            result = eng->newVariant(*reinterpret_cast<const QVariant*>(ptr));
             break;
         default:
             if (type == qMetaTypeId<QScriptValue>()) {

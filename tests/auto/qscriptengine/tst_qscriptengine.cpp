@@ -2100,6 +2100,38 @@ void tst_QScriptEngine::valueConversion()
         QVERIFY(!val.isVariant());
         QVERIFY(val.isUndefined());
     }
+    // Checking nested QVariants
+    {
+        QVariant tmp1;
+        QVariant tmp2(QMetaType::QVariant, &tmp1);
+        QVERIFY(QMetaType::Type(tmp2.type()) == QMetaType::QVariant);
+
+        QScriptValue val1 = qScriptValueFromValue(&eng, tmp1);
+        QScriptValue val2 = qScriptValueFromValue(&eng, tmp2);
+        QVERIFY(val1.isValid());
+        QVERIFY(val2.isValid());
+        QVERIFY(val1.isUndefined());
+        QVERIFY(!val2.isUndefined());
+        QVERIFY(!val1.isVariant());
+        QVERIFY(val2.isVariant());
+    }
+    {
+        QVariant tmp1(123);
+        QVariant tmp2(QMetaType::QVariant, &tmp1);
+        QVariant tmp3(QMetaType::QVariant, &tmp2);
+        QVERIFY(QMetaType::Type(tmp1.type()) == QMetaType::Int);
+        QVERIFY(QMetaType::Type(tmp2.type()) == QMetaType::QVariant);
+        QVERIFY(QMetaType::Type(tmp3.type()) == QMetaType::QVariant);
+
+        QScriptValue val1 = qScriptValueFromValue(&eng, tmp2);
+        QScriptValue val2 = qScriptValueFromValue(&eng, tmp3);
+        QVERIFY(val1.isValid());
+        QVERIFY(val2.isValid());
+        QVERIFY(val1.isVariant());
+        QVERIFY(val2.isVariant());
+        QVERIFY(val1.toVariant().toInt() == 123);
+        QVERIFY(qScriptValueFromValue(&eng, val2.toVariant()).toVariant().toInt() == 123);
+    }
     {
         QScriptValue val = qScriptValueFromValue(&eng, QVariant(true));
         QVERIFY(!val.isVariant());
