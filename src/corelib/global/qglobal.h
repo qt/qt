@@ -216,6 +216,8 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_ULTRIX
 #elif defined(sinix)
 #  define Q_OS_RELIANT
+#elif defined(__native_client__)
+#  define Q_OS_NACL
 #elif defined(__linux__) || defined(__linux)
 #  define Q_OS_LINUX
 #elif defined(__FreeBSD__) || defined(__DragonFly__)
@@ -2659,6 +2661,10 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_SHAREDMEMORY
 // QNX currently doesn't support forking in a thread, so disable QProcess
 #  define QT_NO_PROCESS
+#endif
+
+#ifdef Q_OS_NACL
+#include <qnaclunimplemented.h>
 #endif
 
 QT_END_NAMESPACE

@@ -64,7 +64,7 @@
 #  include <sys/times.h>
 #else
 #  include <sys/time.h>
-#  if !defined(Q_OS_HPUX) || defined(__ia64)
+#  if (!defined(Q_OS_HPUX) || defined(__ia64)) && !defined(Q_OS_NACL)
 #    include <sys/select.h>
 #  endif
 #endif

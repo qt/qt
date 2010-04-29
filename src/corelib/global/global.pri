@@ -13,6 +13,10 @@ SOURCES += \
 	global/qmalloc.cpp \
         global/qnumeric.cpp
 
+nacl {
+    SOURCES += global/qnaclunimplemented.cpp
+}
+
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 

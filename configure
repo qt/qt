@@ -296,6 +296,12 @@ earlyArgParse()
                 VAL=$1
             fi
             ;;
+        -nacl)
+            shift;
+            VAR=nacl
+            VAL=$1
+            ;;
+
         -h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
@@ -353,6 +359,15 @@ earlyArgParse()
                 CFG_EMBEDDED=no
             fi
             ;;
+        nacl)
+            echo "Using NaCl at $VAL."
+            PLATFORM_X11=no
+            PLATFORM_MAC=no
+            PLATFORM_QWS=no
+            CFG_NACL_PATH=$VAL
+            CFG_EMBEDDED=nacl
+            ;;
+
         developer-build)
             CFG_DEV="yes"
             ;;
@@ -928,6 +943,44 @@ if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
 fi
 
 #-------------------------------------------------------------------------------
+# Set Default NaCl options
+#-------------------------------------------------------------------------------
+if [ "$CFG_EMBEDDED" = "nacl" ]; then
+    echo "Setting NaCl options:"
+    echo "-static"
+    CFG_SHARED=no
+    echo "-embedded-lite nacl"
+    PLATFORM_EMBLITE=yes
+    echo "-fast"
+    OPT_FAST=yes
+    echo "-release"
+    CFG_DEBUG=no
+    echo "-qconfig minimal-system-dependencies"
+    CFG_QCONFIG=minimal-system-dependencies
+
+    if [ `uname` = "Linux" ]; then
+        I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/include"
+        L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/lib"
+    else
+        I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/include"
+        L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
+    fi
+
+    echo "-no-multimedia -no-webkit -no-phonon -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
+    CFG_MULTIMEDIA=no
+    CFG_WEBKIT=no
+    CFG_PHONON=no
+    CFG_MULTIMEDIA=no
+    CFG_MEDIASERVICES=no
+    CFG_XMLPATTERNS=no
+    CFG_SCRIPT=no
+    CFG_SQLITE=no
+    CFG_SQL_sqlite=no
+    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS tests"
+    QT_CONFIG="$QT_CONFIG nacl"
+fi
+
+#-------------------------------------------------------------------------------
 # parse command line arguments
 #-------------------------------------------------------------------------------
 
@@ -1024,6 +1077,10 @@ while [ "$#" -gt 0 ]; do
             VAL=$1
         fi
 	;;
+    -nacl)
+        VAR=nacl
+        shift;
+    ;;
     -opengl)
         VAR=opengl
         # this option may or may not be followed by an argument
@@ -1261,6 +1318,8 @@ while [ "$#" -gt 0 ]; do
             echo "No license exists to enable Qt for Embedded Linux Lite. Disabling."
             CFG_EMBEDDED=no
         fi
+        ;;
+    nacl)
         ;;
     sse)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3112,6 +3171,10 @@ TEST_COMPILER="$CXX"
 if [ -z "$TEST_COMPILER" ]; then
     echo "ERROR: Cannot set the compiler for the configuration tests"
     exit 1
+fi
+
+if [ "$CFG_EMBEDDED" = "nacl" ]; then
+    TEST_COMPILER="nacl-gcc"
 fi
 
 # auto-detect precompiled header support
@@ -6599,6 +6662,13 @@ if [ "$PLATFORM_EMBLITE" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG embedded_lite"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
+
+if [ "$CFG_EMBEDDED" = "nacl" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG nacl pepper"
+    QT_CONFIG="$QT_CONFIG nacl pepper"
+    rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
+fi
+
 QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
 QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
 QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
@@ -7802,10 +7872,11 @@ QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 EOF
 
 # Ensure we can link to uninistalled libraries
-if linkerSupportsFlag -rpath-link "$outpath/lib"; then
-    echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+if [ "$CFG_EMBEDDED" != "nacl" ]; then
+    if linkerSupportsFlag -rpath-link "$outpath/lib"; then
+        echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+    fi
 fi
-
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"
 fi
