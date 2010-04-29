@@ -142,6 +142,7 @@ private slots:
     void libraryScriptAssert();
     void variantsAssignedUndefined();
     void qtbug_9792();
+    void qtcreatorbug_1289();
     void noSpuriousWarningsAtShutdown();
     void canAssignNullToQObject();
 
@@ -2203,6 +2204,27 @@ void tst_qdeclarativeecmascript::qtbug_9792()
     QCOMPARE(transientErrorsMsgCount, 0);
 
     delete object;
+}
+
+// Verifies that QDeclarativeGuard<>s used in the vmemetaobject are cleaned correctly
+void tst_qdeclarativeecmascript::qtcreatorbug_1289()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtcreatorbug_1289.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QObject *nested = qvariant_cast<QObject *>(o->property("object"));
+    QVERIFY(nested != 0);
+
+    QVERIFY(qvariant_cast<QObject *>(nested->property("nestedObject")) == o);
+
+    delete nested;
+    nested = qvariant_cast<QObject *>(o->property("object"));
+    QVERIFY(nested == 0);
+
+    // If the bug is present, the next line will crash
+    delete o;
 }
 
 // Test that we shut down without stupid warnings
