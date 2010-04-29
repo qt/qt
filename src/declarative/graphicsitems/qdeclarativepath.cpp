@@ -117,6 +117,7 @@ void QDeclarativePath::setStartX(qreal x)
         return;
     d->startX = x;
     emit startXChanged();
+    processPath();
 }
 
 qreal QDeclarativePath::startY() const
@@ -132,6 +133,7 @@ void QDeclarativePath::setStartY(qreal y)
         return;
     d->startY = y;
     emit startYChanged();
+    processPath();
 }
 
 /*!
@@ -220,6 +222,9 @@ void QDeclarativePath::processPath()
 {
     Q_D(QDeclarativePath);
 
+    if (!d->componentComplete)
+        return;
+
     d->_pointCache.clear();
     d->_attributePoints.clear();
     d->_path = QPainterPath();
@@ -284,10 +289,18 @@ void QDeclarativePath::processPath()
     emit changed();
 }
 
+void QDeclarativePath::classBegin()
+{
+    Q_D(QDeclarativePath);
+    d->componentComplete = false;
+}
+
 void QDeclarativePath::componentComplete()
 {
     Q_D(QDeclarativePath);
     QSet<QString> attrs;
+    d->componentComplete = true;
+
     // First gather up all the attributes
     foreach (QDeclarativePathElement *pathElement, d->_pathElements) {
         if (QDeclarativePathAttribute *attribute =
