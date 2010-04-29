@@ -208,7 +208,7 @@ for(symbian_resource, SYMBIAN_RESOURCES) {
 }
 
 symbianresources.input = SYMBIAN_RESOURCES
-symbianresources.output = $$symbian_resources_RCC_DIR/${QMAKE_FILE_BASE}.rsg
+symbianresources.output = $$symbian_resources_RCC_DIR/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsg
 symbianresources.commands = cpp -nostdinc -undef \
                             $$symbian_resources_INCLUDES \
                             $$symbian_resources_DEFINES \
@@ -216,8 +216,8 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             && rcomp -u -m045,046,047 \
                             -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
-                            -o$${symbianDestdir}/${QMAKE_FILE_BASE}.rsc \
-                            -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
+                            -o$${symbianDestdir}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsc \
+                            -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsg \
                             -i${QMAKE_FILE_NAME}
 symbianresources.dependency_type = TYPE_C
 symbianresources.CONFIG = no_link target_predeps
