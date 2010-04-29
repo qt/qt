@@ -43,29 +43,50 @@
 #define Q_GLX_CONTEXT_H
 
 #include <QtOpenGL/qglplatformintegration_lite.h>
-#include "x11util.h"
 #include <GL/glx.h>
 
 QT_BEGIN_NAMESPACE
 
+class MyDisplay;
+
+class QGLXGLWidgetSurface : public QPlatformGLWidgetSurface
+{
+public:
+    QGLXGLWidgetSurface(MyDisplay* xd);
+    virtual ~QGLXGLWidgetSurface();
+
+    virtual bool create(QGLWidget*, QGLFormat&);
+    virtual void setGeometry(const QRect&);
+
+    GLXFBConfig config() {return m_config;}
+    Window      winId() {return m_winId;}
+
+private:
+    MyDisplay  *m_xd;
+    GLXFBConfig m_config;
+    Window      m_winId;
+};
+
 class QGLXGLContext : public QPlatformGLContext
 {
 public:
-    QGLXGLContext(Display* xdpy);
+    QGLXGLContext(MyDisplay* xd);
     ~QGLXGLContext();
 
-    bool create(QPaintDevice* device, const QGLFormat& format, QPlatformGLContext* shareContext);
+    virtual bool create(QPaintDevice* device, QGLFormat& format, QPlatformGLContext* shareContext);
+    virtual void makeCurrent();
+    virtual void doneCurrent();
+    virtual void swapBuffers();
+    virtual void* getProcAddress(const QString& procName);
 
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
-
+    GLXContext glxContext() {return m_context;}
 private:
-    Display    *m_display;
+    MyDisplay  *m_xd;
+    Drawable    m_drawable;
+    GLXFBConfig m_config;
     GLXContext  m_context;
-    QWidget    *m_widget;
 };
+
 
 
 QT_END_NAMESPACE

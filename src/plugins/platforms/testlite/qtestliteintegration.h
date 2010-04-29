@@ -84,6 +84,7 @@ public:
 #ifndef QT_NO_OPENGL
     bool hasOpenGL() const;
     QPlatformGLContext * createGLContext();
+    QPlatformGLWidgetSurface * createGLWidgetSurface();
 #endif
 
     MyDisplay *xd;

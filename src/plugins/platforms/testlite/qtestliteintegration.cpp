@@ -52,7 +52,7 @@
 
 #ifndef QT_NO_OPENGL
 #include <GL/glx.h>
-#include "qglxglcontext.h"
+#include "qglxintegration.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -132,9 +132,14 @@ bool QTestLiteIntegration::hasOpenGL() const
     return glXQueryExtension(xd->display, 0, 0) != 0;
 }
 
-QPlatformGLContext * QTestLiteIntegration::createGLContext()
+QPlatformGLContext *QTestLiteIntegration::createGLContext()
 {
-    return new QGLXGLContext(xd->display);
+    return new QGLXGLContext(xd);
+}
+
+QPlatformGLWidgetSurface *QTestLiteIntegration::createGLWidgetSurface()
+{
+    return new QGLXGLWidgetSurface(xd);
 }
 
 #endif // QT_NO_OPENGL

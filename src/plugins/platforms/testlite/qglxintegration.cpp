@@ -39,11 +39,16 @@
 **
 ****************************************************************************/
 
-#include "x11util.h"
-#include "qglxglcontext.h"
-#include <QtCore/QLibrary>
+#include <QLibrary>
+#include <QGLFormat>
 
+#include "qtestlitewindow.h"
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <GL/glx.h>
+
+#include "qglxintegration.h"
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
 #include <dlfcn.h>
@@ -52,11 +57,124 @@
 
 QT_BEGIN_NAMESPACE
 
-QGLXGLContext::QGLXGLContext(Display *xdpy)
+GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, int drawableType)
+{
+    int configAttribs[] = {
+        GLX_DRAWABLE_TYPE, drawableType,
+        GLX_LEVEL, format.plane(),
+        GLX_RENDER_TYPE, GLX_RGBA_BIT,
+        GLX_DOUBLEBUFFER, format.doubleBuffer() ? True : False,
+        GLX_STEREO, format.stereo() ? True : False,
+
+        GLX_DEPTH_SIZE, (format.depthBufferSize() == -1) ? 0 : format.depthBufferSize(),
+        GLX_STENCIL_SIZE, (format.stencilBufferSize() == -1) ? 0 : format.stencilBufferSize(),
+        GLX_SAMPLE_BUFFERS_ARB, (format.samples() == -1) ? 0 : format.samples(),
+
+        GLX_RED_SIZE, (format.redBufferSize() == -1) ? 1 : format.redBufferSize(),
+        GLX_GREEN_SIZE, (format.greenBufferSize() == -1) ? 1 : format.greenBufferSize(),
+        GLX_BLUE_SIZE, (format.blueBufferSize() == -1) ? 1 : format.blueBufferSize(),
+        GLX_ALPHA_SIZE, (format.alphaBufferSize() == -1) ? 0 : format.alphaBufferSize(),
+
+        GLX_ACCUM_RED_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
+        GLX_ACCUM_GREEN_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
+        GLX_ACCUM_BLUE_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
+        GLX_ACCUM_ALPHA_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
+        XNone
+    };
+
+    GLXFBConfig *configs;
+    int configCount = 0;
+    configs = glXChooseFBConfig(xd->display, xd->screen, configAttribs, &configCount);
+
+    if (!configs)
+        return 0;
+
+    GLXFBConfig chosenConfig = 0;
+    for (int i = 0; i < configCount; ++i) {
+        chosenConfig = configs[i];
+
+        // Make sure we try to get an ARGB visual if the format asked for an alpha:
+        if (format.alpha()) {
+            XVisualInfo* vi;
+            vi = glXGetVisualFromFBConfig(xd->display, configs[i]);
+            if (!vi)
+                continue;
+
+            XRenderPictFormat *pictFormat = XRenderFindVisualFormat(xd->display, vi->visual);
+            XFree(vi);
+
+            if (pictFormat && (pictFormat->type == PictTypeDirect) && pictFormat->direct.alphaMask) {
+                // The pict format for the visual matching the FBConfig indicates ARGB
+                break;
+            }
+        } else
+            break; // Just choose the first in the list if there's no alpha requested
+    }
+
+    // TODO: Populate the QGLFormat with the values of the GLXFBConfig
+
+    XFree(configs);
+    return chosenConfig;
+}
+
+
+QGLXGLWidgetSurface::QGLXGLWidgetSurface(MyDisplay* xd)
+    : QPlatformGLWidgetSurface()
+    , m_xd(xd)
+    , m_config(0)
+    , m_winId(0)
+{
+}
+
+QGLXGLWidgetSurface::~QGLXGLWidgetSurface()
+{
+}
+
+static Colormap qt_glx_integration_colormap = 0;
+
+
+bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
+{
+    m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
+
+    Window parentWindow = widget->window()->winId();
+
+    XVisualInfo* visualInfo;
+    visualInfo = glXGetVisualFromFBConfig(m_xd->display, m_config);
+
+    if (!qt_glx_integration_colormap) {
+        qt_glx_integration_colormap = XCreateColormap(m_xd->display, parentWindow,
+                                                      visualInfo->visual, AllocNone);
+    }
+
+    XSetWindowAttributes windowAttribs;
+    windowAttribs.background_pixel = m_xd->whitePixel();
+    windowAttribs.border_pixel = m_xd->blackPixel();
+    windowAttribs.colormap = qt_glx_integration_colormap;
+
+    m_winId = XCreateWindow(m_xd->display, parentWindow,
+                            widget->x(), widget->y(), widget->width(), widget->height(),
+                            0, visualInfo->depth, InputOutput, visualInfo->visual,
+                            CWBackPixel|CWBorderPixel|CWColormap, &windowAttribs);
+
+    XMapWindow(m_xd->display, m_winId);
+
+    XFree(visualInfo);
+    return true;
+}
+
+void QGLXGLWidgetSurface::setGeometry(const QRect& rect)
+{
+    XMoveResizeWindow(m_xd->display, m_winId, rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+
+QGLXGLContext::QGLXGLContext(MyDisplay *xd)
     : QPlatformGLContext()
-    , m_display(xdpy)
+    , m_xd(xd)
+    , m_drawable(0)
+    , m_config(0)
     , m_context(0)
-    , m_widget(0)
 {
 }
 
@@ -64,55 +182,75 @@ QGLXGLContext::~QGLXGLContext()
 {
     if (m_context) {
         qDebug("Destroying GLX context 0x%x", m_context);
-        glXDestroyContext(m_display, m_context);
+        glXDestroyContext(m_xd->display, m_context);
     }
 }
 
-bool QGLXGLContext::create(QPaintDevice* device, const QGLFormat& format, QPlatformGLContext* shareContext)
+bool QGLXGLContext::create(QPaintDevice* device, QGLFormat& format, QPlatformGLContext* shareContext)
 {
+    Q_UNUSED(format);
+
     if (device->devType() != QInternal::Widget) {
         qWarning("Creating a GL context is only supported on QWidgets");
         return false;
     }
 
-    m_widget = static_cast<QWidget*>(device);
-    if (!m_widget->isTopLevel()) {
-        qWarning("Creating a GL context is only supported on top-level QWidgets");
-        return false;
+    GLXContext shareGlxContext = 0;
+    if (shareContext)
+        shareGlxContext = static_cast<QGLXGLContext*>(shareContext)->glxContext();
+
+
+    QWidget* widget = static_cast<QWidget*>(device);
+    QGLWidget* glWidget = qobject_cast<QGLWidget*>(widget);
+    if (glWidget) {
+        // Take the config from the QGLWidget's glx surface:
+        QGLXGLWidgetSurface* surface = static_cast<QGLXGLWidgetSurface*>(glWidget->platformSurface());
+        m_config = surface->config();
+        m_drawable = (Drawable)surface->winId();
     }
+    else {
+        if (!widget->isTopLevel()) {
+            qWarning("Creating a GL context is only supported on top-level QWidgets");
+            return false;
+        }
+        m_drawable = (Drawable)widget->platformWindow()->winId();
+
+        // ### This might choose a config with a visual that isn't compatable with the native window:
+        m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
+    }
+
+    m_context = glXCreateNewContext(m_xd->display, m_config, GLX_RGBA_TYPE, shareGlxContext, True);
 
     // Get the XVisualInfo for the window:
 //    XWindowAttributes windowAttribs;
 //    XGetWindowAttributes(m_display, m_widget->winId(), &windowAttribs);
-    XVisualInfo visualInfoTemplate;
-    visualInfoTemplate.visualid = 33; //XVisualIDFromVisual(windowAttribs.visual);
-    XVisualInfo *visualInfo;
-    int matchingCount = 0;
-    visualInfo = XGetVisualInfo(m_display, VisualIDMask, &visualInfoTemplate, &matchingCount);
+//    XVisualInfo visualInfoTemplate;
+//    visualInfoTemplate.visualid = 33; //XVisualIDFromVisual(windowAttribs.visual);
+//    XVisualInfo *visualInfo;
+//    int matchingCount = 0;
+//    visualInfo = XGetVisualInfo(m_xd->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
 
-    m_context = glXCreateContext(m_display, visualInfo, 0, True);
+//    m_context = glXCreateContext(m_xd->display, visualInfo, 0, True);
 
-    qDebug("Created GLX context 0x%x for visual ID %d", m_context, visualInfoTemplate.visualid);
+//    qDebug("Created GLX context 0x%x for visual ID %d", m_context, visualInfoTemplate.visualid);
 
     return true;
 }
 
 void QGLXGLContext::makeCurrent()
 {
-    Window win = m_widget->winId();
-    qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", win, m_context);
-
-    glXMakeCurrent(m_display, win, m_context);
+    qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
+    glXMakeCurrent(m_xd->display, m_drawable, m_context);
 }
 
 void QGLXGLContext::doneCurrent()
 {
-    glXMakeCurrent(m_display, 0, 0);
+    glXMakeCurrent(m_xd->display, 0, 0);
 }
 
 void QGLXGLContext::swapBuffers()
 {
-    glXSwapBuffers(m_display, m_widget->winId());
+    glXSwapBuffers(m_xd->display, m_drawable);
 }
 
 void* QGLXGLContext::getProcAddress(const QString& procName)
@@ -124,7 +262,7 @@ void* QGLXGLContext::getProcAddress(const QString& procName)
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QList<QByteArray> glxExt = QByteArray(glXGetClientString(m_display, GLX_EXTENSIONS)).split(' ');
+        QList<QByteArray> glxExt = QByteArray(glXGetClientString(m_xd->display, GLX_EXTENSIONS)).split(' ');
         if (glxExt.contains("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);

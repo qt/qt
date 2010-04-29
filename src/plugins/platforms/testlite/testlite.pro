@@ -10,8 +10,8 @@ LIBS += -lX11 -lXext
 
 contains(QT_CONFIG, opengl) {
     QT += opengl
-    HEADERS += qglxglcontext.h
-    SOURCES += qglxglcontext.cpp
+    HEADERS += qglxintegration.h
+    SOURCES += qglxintegration.cpp
 }
 
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
