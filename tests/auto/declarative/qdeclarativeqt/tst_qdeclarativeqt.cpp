@@ -232,7 +232,7 @@ void tst_qdeclarativeqt::lighter()
     QDeclarativeComponent component(&engine, TEST_FILE("lighter.qml"));
 
     QString warning1 = component.url().toString() + ":5: Error: Qt.lighter(): Invalid arguments";
-    QString warning2 = component.url().toString() + ":6: Error: Qt.lighter(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":10: Error: Qt.lighter(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -241,7 +241,7 @@ void tst_qdeclarativeqt::lighter()
 
     QCOMPARE(qvariant_cast<QColor>(object->property("test1")), QColor::fromRgbF(1, 0.8, 0.3).lighter());
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor());
-    QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor::fromRgbF(1, 0.8, 0.3).lighter(180));
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor("red").lighter());
     QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor());
@@ -254,7 +254,7 @@ void tst_qdeclarativeqt::darker()
     QDeclarativeComponent component(&engine, TEST_FILE("darker.qml"));
 
     QString warning1 = component.url().toString() + ":5: Error: Qt.darker(): Invalid arguments";
-    QString warning2 = component.url().toString() + ":6: Error: Qt.darker(): Invalid arguments";
+    QString warning2 = component.url().toString() + ":10: Error: Qt.darker(): Invalid arguments";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
 
@@ -263,7 +263,7 @@ void tst_qdeclarativeqt::darker()
 
     QCOMPARE(qvariant_cast<QColor>(object->property("test1")), QColor::fromRgbF(1, 0.8, 0.3).darker());
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor());
-    QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor::fromRgbF(1, 0.8, 0.3).darker(280));
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor("red").darker());
     QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor());

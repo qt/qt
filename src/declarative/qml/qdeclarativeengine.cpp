@@ -1225,7 +1225,7 @@ QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine
 
 QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() != 1)
+    if(ctxt->argumentCount() != 1 && ctxt->argumentCount() != 2)
         return ctxt->throwError("Qt.lighter(): Invalid arguments");
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
@@ -1238,13 +1238,16 @@ QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEng
             return engine->nullValue();
     } else
         return engine->nullValue();
-    color = color.lighter();
+    qsreal factor = 1.5;
+    if (ctxt->argumentCount() == 2)
+        factor = ctxt->argument(1).toNumber();
+    color = color.lighter(int(qRound(factor*100.)));
     return qScriptValueFromValue(engine, qVariantFromValue(color));
 }
 
 QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() != 1)
+    if(ctxt->argumentCount() != 1 && ctxt->argumentCount() != 2)
         return ctxt->throwError("Qt.darker(): Invalid arguments");
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
@@ -1257,7 +1260,10 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
             return engine->nullValue();
     } else
         return engine->nullValue();
-    color = color.darker();
+    qsreal factor = 2.0;
+    if (ctxt->argumentCount() == 2)
+        factor = ctxt->argument(1).toNumber();
+    color = color.darker(int(qRound(factor*100.)));
     return qScriptValueFromValue(engine, qVariantFromValue(color));
 }
 

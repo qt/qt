@@ -166,10 +166,33 @@ If no format is specified the locale's short format is used. Alternatively, you 
 \section2 Functions
 The Qt object also contains the following miscellaneous functions which expose Qt functionality for use in QML.
 
-\section3 Qt.lighter(color baseColor)
-This function returns a color 50% lighter than \c baseColor. See QColor::lighter() for further details.
-\section3 Qt.darker(color baseColor)
-This function returns a color 50% darker than \c baseColor. See QColor::darker() for further details.
+\section3 Qt.lighter(color baseColor, real factor)
+This function returns a color lighter than \c baseColor by the \c factor provided.
+
+If the factor is greater than 1.0, this functions returns a lighter color.
+Setting factor to 1.5 returns a color that is 50% brighter. If the factor is less than 1.0,
+the return color is darker, but we recommend using the Qt.darker() function for this purpose.
+If the factor is 0 or negative, the return value is unspecified.
+
+The function converts the current RGB color to HSV, multiplies the value (V) component
+by factor and converts the color back to RGB.
+
+If \c factor is not supplied, returns a color 50% lighter than \c baseColor (factor 1.5).
+
+\section3 Qt.darker(color baseColor, real factor)
+This function returns a color darker than \c baseColor by the \c factor provided.
+
+If the factor is greater than 1.0, this function returns a darker color.
+Setting factor to 3.0 returns a color that has one-third the brightness.
+If the factor is less than 1.0, the return color is lighter, but we recommend using
+the Qt.lighter() function for this purpose. If the factor is 0 or negative, the return
+value is unspecified.
+
+The function converts the current RGB color to HSV, divides the value (V) component
+by factor and converts the color back to RGB.
+
+If \c factor is not supplied, returns a color 50% darker than \c baseColor (factor 2.0).
+
 \section3 Qt.tint(color baseColor, color tintColor)
     This function allows tinting one color with another.
 
