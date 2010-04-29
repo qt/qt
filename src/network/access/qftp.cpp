@@ -2311,7 +2311,7 @@ void QFtpPrivate::_q_piError(int errorCode, const QString &text)
     Q_Q(QFtp);
 
     if (pending.isEmpty()) {
-        qWarning() << "QFtpPrivate::_q_piError was called without pending command!";
+        qWarning("QFtpPrivate::_q_piError was called without pending command!");
         return;
     }
 

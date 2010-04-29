@@ -87,8 +87,9 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "          <div class=\"breadcrumb toolblock\">\n" \
 			  "            <ul>\n" \
 			  "              <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
-			  "              <!--  Bread crumbs goes here -->\n" \
-			  "            </ul>\n" \
+			  "              <!--  Bread crumbs goes here -->\n"
+
+HTML.postpostheader     = "            </ul>\n" \
 			  "          </div>\n" \
 			  "          <div class=\"toolbuttons toolblock\">\n" \
 			  "            <ul>\n" \
