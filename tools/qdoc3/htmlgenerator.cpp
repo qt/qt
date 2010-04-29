@@ -44,6 +44,7 @@
 */
 
 #include "codemarker.h"
+#include "codeparser.h"
 #include "helpprojectwriter.h"
 #include "htmlgenerator.h"
 #include "node.h"
@@ -1674,6 +1675,9 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
     return "html";
 }
 
+/*!
+  Output breadcrumb list in the html file.
+ */
 void HtmlGenerator::generateBreadCrumbs(const QString& title,
                                         const Node *node,
                                         CodeMarker *marker)
@@ -1713,9 +1717,28 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             if (fn->name() == QString("modules"))
                 out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
         }
+        else if (node->subType() == Node::Page) {
+            if (fn->name() == QString("examples.html")) {
+                out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+            }
+            else if (fn->name().startsWith("examples-")) {
+                out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
+        }
         else if (node->subType() == Node::QmlClass) {
         }
         else if (node->subType() == Node::Example) {
+            out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+            QStringList sl = fn->name().split('/');
+            QString name = "examples-" + sl.at(0) + ".html";
+            QString t = CodeParser::titleFromName(name);
+            out() << "              <li><a href=\"" << name << "\">"
+                  << t << "</a></li>";
+            out() << "              <li><a href=\"" << sl.at(0)
+                  << "-" << sl.at(sl.size()-1) << ".html\">"
+                  << title << "</a></li>";
         }
     }
     else if (node->type() == Node::Namespace) {
