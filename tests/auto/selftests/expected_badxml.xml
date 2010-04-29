@@ -16,7 +16,7 @@
     <DataTag><![CDATA[end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
-<BenchmarkResult metric="events" tag="end cdata ]]&gt; text ]]&gt; more text" value="0" iterations="1" />
+<BenchmarkResult metric="Events" tag="end cdata ]]&gt; text ]]&gt; more text" value="0" iterations="1" />
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[quotes " text" more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
@@ -25,7 +25,7 @@
     <DataTag><![CDATA[quotes " text" more text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
-<BenchmarkResult metric="events" tag="quotes &quot; text&quot; more text" value="0" iterations="1" />
+<BenchmarkResult metric="Events" tag="quotes &quot; text&quot; more text" value="0" iterations="1" />
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
@@ -34,7 +34,7 @@
     <DataTag><![CDATA[xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
-<BenchmarkResult metric="events" tag="xml close &gt; open &lt; tags &lt; text" value="0" iterations="1" />
+<BenchmarkResult metric="Events" tag="xml close &gt; open &lt; tags &lt; text" value="0" iterations="1" />
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a message]]></Description>
@@ -43,7 +43,7 @@
     <DataTag><![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
-<BenchmarkResult metric="events" tag="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
+<BenchmarkResult metric="Events" tag="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
 </TestFunction>
 <TestFunction name="badMessage">
 <Message type="qdebug" file="" line="0">

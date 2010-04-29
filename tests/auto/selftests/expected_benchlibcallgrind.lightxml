@@ -7,7 +7,7 @@
 </TestFunction>
 <TestFunction name="twoHundredMillionInstructions">
 <Incident type="pass" file="" line="0">
-<BenchmarkResult metric="callgrind" tag="" value="200000160" iterations="1" />
+<BenchmarkResult metric="InstructionReads" tag="" value="200000000" iterations="1" />
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
