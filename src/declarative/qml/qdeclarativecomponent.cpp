@@ -63,7 +63,6 @@
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
-int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeComponent::Status");
 
 /*!
     \class QDeclarativeComponent
