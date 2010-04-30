@@ -54,6 +54,7 @@
 #include <GL/glx.h>
 #include "qglxintegration.h"
 #include <private/qwindowsurface_gl_p.h>
+#include <private/qpixmapdata_gl_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -108,6 +109,10 @@ QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
 
 QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
+#ifndef QT_NO_OPENGL
+    if (mUseOpenGL)
+        return new QGLPixmapData(type);
+#endif
     return new QRasterPixmapData(type);
 }
 
