@@ -146,6 +146,8 @@ private slots:
     void noSpuriousWarningsAtShutdown();
     void canAssignNullToQObject();
     void functionAssignment();
+    void eval();
+    void function();
 
     void callQtInvokables();
 private:
@@ -2329,6 +2331,35 @@ void tst_qdeclarativeecmascript::functionAssignment()
     }
 }
 
+void tst_qdeclarativeecmascript::eval()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("eval.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+
+    delete o;
+}
+
+void tst_qdeclarativeecmascript::function()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("function.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+
+    delete o;
+}
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 
