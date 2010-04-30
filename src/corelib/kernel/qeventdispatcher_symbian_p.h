@@ -62,7 +62,6 @@
 #include <qmutex.h>
 #include <qwaitcondition.h>
 #include <qsocketnotifier.h>
-#include <qdatetime.h>
 
 #include <e32base.h>
 
@@ -280,9 +279,7 @@ private:
 
     QList<QActiveObject *> m_deferredActiveObjects;
 
-    int m_delay;
-    int m_avgEventTime;
-    QTime m_lastIdleRequestTimer;
+    RProcess m_processHandle;
 };
 
 #ifdef QT_DEBUG
