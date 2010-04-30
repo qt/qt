@@ -55,6 +55,9 @@ QStringList QTestLiteIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "TestLite";
+#ifndef QT_NO_OPENGL
+    list << "TestLiteGL";
+#endif
     return list;
 }
 
@@ -62,6 +65,10 @@ QPlatformIntegration* QTestLiteIntegrationPlugin::create(const QString& system)
 {
     if (system.toLower() == "testlite")
         return new QTestLiteIntegration;
+#ifndef QT_NO_OPENGL
+    if (system.toLower() == "testlitegl")
+        return new QTestLiteIntegration(true);
+#endif
 
     return 0;
 }

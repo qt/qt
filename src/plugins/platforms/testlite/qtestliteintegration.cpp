@@ -53,6 +53,7 @@
 #ifndef QT_NO_OPENGL
 #include <GL/glx.h>
 #include "qglxintegration.h"
+#include <private/qwindowsurface_gl_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -81,7 +82,10 @@ public:
 };
 
 
-QTestLiteIntegration::QTestLiteIntegration()
+QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
+#ifndef QT_NO_OPENGL
+    : mUseOpenGL(useOpenGL)
+#endif
 {
 
     xd = new MyDisplay;
@@ -109,6 +113,11 @@ QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type)
 
 QWindowSurface *QTestLiteIntegration::createWindowSurface(QWidget *widget, WId) const
 {
+#ifndef QT_NO_OPENGL
+    if (mUseOpenGL)
+        return new QGLWindowSurface(widget);
+#endif
+
     return new QTestLiteWindowSurface(mPrimaryScreen, widget);
 }
 

@@ -71,7 +71,7 @@ public:
 class QTestLiteIntegration : public QPlatformIntegration
 {
 public:
-    QTestLiteIntegration();
+    QTestLiteIntegration(bool useOpenGL = false);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -90,6 +90,9 @@ public:
     MyDisplay *xd;
 
 private:
+#ifndef QT_NO_OPENGL
+    bool mUseOpenGL;
+#endif
     QTestLiteScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
 };
