@@ -387,7 +387,10 @@ void QDeclarativeTimeLine::set(QDeclarativeTimeLineValue &timeLineValue, qreal v
 */
 int QDeclarativeTimeLine::accel(QDeclarativeTimeLineValue &timeLineValue, qreal velocity, qreal acceleration)
 {
-    if ((velocity > 0.0f) ==  (acceleration > 0.0f))
+    if (acceleration == 0.0f)
+        return -1;
+
+    if ((velocity > 0.0f) == (acceleration > 0.0f))
         acceleration = acceleration * -1.0f;
 
     int time = static_cast<int>(-1000 * velocity / acceleration);
@@ -410,13 +413,16 @@ int QDeclarativeTimeLine::accel(QDeclarativeTimeLineValue &timeLineValue, qreal 
 */
 int QDeclarativeTimeLine::accel(QDeclarativeTimeLineValue &timeLineValue, qreal velocity, qreal acceleration, qreal maxDistance)
 {
-    Q_ASSERT(acceleration >= 0.0f && maxDistance >= 0.0f);
+    if (maxDistance == 0.0f || acceleration == 0.0f)
+        return -1;
+
+    Q_ASSERT(acceleration > 0.0f && maxDistance > 0.0f);
 
     qreal maxAccel = (velocity * velocity) / (2.0f * maxDistance);
     if (maxAccel > acceleration)
         acceleration = maxAccel;
 
-    if ((velocity > 0.0f) ==  (acceleration > 0.0f))
+    if ((velocity > 0.0f) == (acceleration > 0.0f))
         acceleration = acceleration * -1.0f;
 
     int time = static_cast<int>(-1000 * velocity / acceleration);
@@ -438,6 +444,7 @@ int QDeclarativeTimeLine::accelDistance(QDeclarativeTimeLineValue &timeLineValue
 {
     if (distance == 0.0f || velocity == 0.0f)
         return -1;
+
     Q_ASSERT((distance >= 0.0f) == (velocity >= 0.0f));
 
     int time = static_cast<int>(1000 * (2.0f * distance) / velocity);
