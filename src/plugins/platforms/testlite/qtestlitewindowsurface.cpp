@@ -131,7 +131,6 @@ QTestLiteWindowSurface::QTestLiteWindowSurface (QTestLiteScreen */*screen*/, QWi
       painted(false), image_info(0)
 {
     xw = static_cast<QTestLiteWindow*>(window->platformWindow());
-    xw->windowSurface = this;
 //    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
 }
 

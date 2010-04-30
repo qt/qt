@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qtestlitewindowsurface.h"
 #include "qtestliteintegration.h"
 #include <QWindowSystemInterface>
 
@@ -184,7 +183,6 @@ QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration
     setWindowTitle(QLatin1String("Qt Lighthouse"));
 
     currentCursor = -1;
-    windowSurface = 0;
 
     setWindowFlags(window->windowFlags()); //##### This should not be the plugin's responsibility
 
@@ -678,7 +676,7 @@ void QTestLiteWindow::paintEvent()
     qDebug() << "QTestLiteWindow::paintEvent" << shm_img.size() << painted;
 #endif
 
-    windowSurface->flush(windowSurface->window(), QRect(xpos,ypos,width, height), QPoint());
+    widget()->windowSurface()->flush(widget(), QRect(xpos,ypos,width, height), QPoint());
 }
 
 

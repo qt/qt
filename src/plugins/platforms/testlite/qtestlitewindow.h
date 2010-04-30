@@ -94,8 +94,6 @@ public: //###
 
 struct MyShmImageInfo;
 
-class QWindowSurface;
-
 class QTestLiteWindow : public QPlatformWindow
 {
 public:
@@ -140,7 +138,6 @@ private:
 
     int currentCursor;
 
-    QWindowSurface *windowSurface;
     MyDisplay *xd;
 
     QTestLiteScreen *mScreen;
