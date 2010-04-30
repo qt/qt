@@ -57,7 +57,21 @@ QT_BEGIN_NAMESPACE
     import Qt 4.7
     import Qt.multimedia 4.7
 
-    Audio { source: "audio/song.mp3" }
+    Text {
+        text: "Click Me!";
+        font.pointSize: 24;
+        width: 150; height: 50;
+
+        Audio {
+            id: playMusic
+            source: "music.wav"
+        }
+        MouseArea {
+            id: playArea
+            anchors.fill: parent
+            onPressed:  { playMusic.play() }
+        }
+    }
     \endqml
 
     \sa Video
