@@ -82,6 +82,7 @@
 #include <QStack>
 #include <QMap>
 #include <QPluginLoader>
+#include <QtGui/qfontdatabase.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
@@ -225,6 +226,7 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
 
     //misc methods
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("fontFamilies"),newFunction(QDeclarativeEnginePrivate::fontFamilies, 0));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
     qtObject.setProperty(QLatin1String("atob"),newFunction(QDeclarativeEnginePrivate::atob, 1));
@@ -1075,7 +1077,7 @@ QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngi
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
-    return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QVector3D(x, y, z)));
 }
 
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
@@ -1198,7 +1200,7 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
     if (w < 0 || h < 0)
         return engine->nullValue();
 
-    return qScriptValueFromValue(engine, qVariantFromValue(QRectF(x, y, w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QRectF(x, y, w, h)));
 }
 
 QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1207,7 +1209,7 @@ QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngin
         return ctxt->throwError("Qt.point(): Invalid arguments");
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
-    return qScriptValueFromValue(engine, qVariantFromValue(QPointF(x, y)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QPointF(x, y)));
 }
 
 QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1216,7 +1218,7 @@ QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine
         return ctxt->throwError("Qt.size(): Invalid arguments");
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
-    return qScriptValueFromValue(engine, qVariantFromValue(QSizeF(w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QSizeF(w, h)));
 }
 
 QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1272,6 +1274,16 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
     ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
 #endif
     return QScriptValue(e, ret);
+}
+
+QScriptValue QDeclarativeEnginePrivate::fontFamilies(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() != 0)
+        return ctxt->throwError("Qt.fontFamilies(): Invalid arguments");
+
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(e);
+    QFontDatabase database;
+    return p->scriptValueFromVariant(database.families());
 }
 
 QScriptValue QDeclarativeEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *)

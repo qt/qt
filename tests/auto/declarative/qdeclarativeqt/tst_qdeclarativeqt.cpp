@@ -42,6 +42,7 @@
 #include <qtest.h>
 #include <QDebug>
 #include <QDeclarativeEngine>
+#include <QFontDatabase>
 #include <QFileInfo>
 #include <QDeclarativeComponent>
 #include <QDesktopServices>
@@ -76,6 +77,7 @@ private slots:
     void isQtObject();
     void btoa();
     void atob();
+    void fontFamilies();
 
 private:
     QDeclarativeEngine engine;
@@ -479,6 +481,22 @@ void tst_qdeclarativeqt::atob()
     QVERIFY(object != 0);
 
     QCOMPARE(object->property("test2").toString(), QString("Hello world!"));
+
+    delete object;
+}
+
+void tst_qdeclarativeqt::fontFamilies()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("fontFamilies.qml"));
+
+    QString warning1 = component.url().toString() + ":4: Error: Qt.fontFamilies(): Invalid arguments";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QFontDatabase database;
+    QCOMPARE(object->property("test2"), QVariant::fromValue(database.families()));
 
     delete object;
 }
