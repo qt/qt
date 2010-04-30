@@ -56,8 +56,8 @@ public:
     QDeclarativeParserStatus();
     virtual ~QDeclarativeParserStatus();
 
-    virtual void classBegin();
-    virtual void componentComplete();
+    virtual void classBegin()=0;
+    virtual void componentComplete()=0;
 
 private:
     friend class QDeclarativeVME;

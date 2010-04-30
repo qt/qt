@@ -82,6 +82,7 @@ Q_SIGNALS:
 
 private:
     void connectSignals();
+    void classBegin();
     void componentComplete();
 };
 

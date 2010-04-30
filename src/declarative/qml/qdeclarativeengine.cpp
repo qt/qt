@@ -82,6 +82,7 @@
 #include <QStack>
 #include <QMap>
 #include <QPluginLoader>
+#include <QtGui/qfontdatabase.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
@@ -225,6 +226,7 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
 
     //misc methods
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("fontFamilies"),newFunction(QDeclarativeEnginePrivate::fontFamilies, 0));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
     qtObject.setProperty(QLatin1String("atob"),newFunction(QDeclarativeEnginePrivate::atob, 1));
@@ -1272,6 +1274,16 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
     ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
 #endif
     return QScriptValue(e, ret);
+}
+
+QScriptValue QDeclarativeEnginePrivate::fontFamilies(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() != 0)
+        return ctxt->throwError("Qt.fontFamilies(): Invalid arguments");
+
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(e);
+    QFontDatabase database;
+    return p->scriptValueFromVariant(database.families());
 }
 
 QScriptValue QDeclarativeEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *)
