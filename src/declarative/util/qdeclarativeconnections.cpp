@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeConnectionsPrivate : public QObjectPrivate
 {
 public:
-    QDeclarativeConnectionsPrivate() : target(0), ignoreUnknownSignals(false), componentcomplete(false) {}
+    QDeclarativeConnectionsPrivate() : target(0), targetSet(false), ignoreUnknownSignals(false), componentcomplete(false) {}
 
     QList<QDeclarativeBoundSignal*> boundsignals;
     QObject *target;
