@@ -94,13 +94,12 @@ Q_GUI_EXPORT qint64 qt_pixmap_id(const QPixmap &pixmap)
 
 static bool qt_pixmap_thread_test()
 {
-    return true;
     if (!qApp) {
         qFatal("QPixmap: Must construct a QApplication before a QPaintDevice");
         return false;
     }
 #ifndef Q_WS_WIN
-    if (qApp->thread() != QThread::currentThread()) {
+    if (!QApplication::testAttribute(Qt::AA_X11InitThreads) && qApp->thread() != QThread::currentThread()) {
         qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
         return false;
     }
