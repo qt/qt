@@ -795,7 +795,7 @@ void QDeclarativePathView::setInteractive(bool interactive)
     The number of elements in the delegate has a direct effect on the
     flicking performance of the view when pathItemCount is specified.  If at all possible, place functionality
     that is not needed for the normal display of the delegate in a \l Loader which
-    can be created when needed.
+    can load additional elements when needed.
 
     Note that the PathView will layout the items based on the size of the root
     item in the delegate.
@@ -1051,7 +1051,11 @@ void QDeclarativePathView::componentComplete()
     Q_D(QDeclarativePathView);
     QDeclarativeItem::componentComplete();
     d->createHighlight();
-    d->regenerate();
+    // It is possible that a refill has already happended to to Path
+    // bindings being handled in the componentComplete().  If so
+    // don't do it again.
+    if (d->items.count() == 0)
+        d->regenerate();
     d->updateHighlight();
 }
 
