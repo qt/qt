@@ -547,7 +547,11 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     \qmlmethod object Component::createObject()
     Returns an object instance from this component, or null if object creation fails.
 
-    The object will be created in the same context as the component was created in.
+    The object will be created in the same context as the one in which the component
+    was created.
+
+    Note that if the returned object is to be displayed, its \c parent must be set to
+    an existing item in a scene, or else the object will not be visible.
 */
 
 /*!

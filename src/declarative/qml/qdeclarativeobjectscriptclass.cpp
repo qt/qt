@@ -444,7 +444,7 @@ QScriptValue QDeclarativeObjectScriptClass::destroy(QScriptContext *context, QSc
 
     QDeclarativeData *ddata = QDeclarativeData::get(data->object, false);
     if (!ddata || ddata->indestructible)
-        return engine->currentContext()->throwError(QLatin1String("Invalid attempt  to destroy() an indestructible object"));
+        return engine->currentContext()->throwError(QLatin1String("Invalid attempt to destroy() an indestructible object"));
 
     QObject *obj = data->object;
     int delay = 0;
