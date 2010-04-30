@@ -4035,8 +4035,6 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(Q_WS_X11)
-    // prevents X errors on some systems, where we get a flush to a
-    // hidden widget
     if (e->type() == QEvent::ParentChange) {
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id

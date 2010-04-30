@@ -398,7 +398,6 @@ Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_buffer_engine)
 /*! \reimp */
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
-    return qt_qgl_paint_engine();
 #if defined(QT_OPENGL_ES_1)
     return qt_buffer_engine()->engine();
 #elif defined(QT_OPENGL_ES_2)
