@@ -542,6 +542,8 @@ void QTabWidget::setTabEnabled(int index, bool enable)
 {
     Q_D(QTabWidget);
     d->tabs->setTabEnabled(index, enable);
+    if (QWidget *widget = d->stack->widget(index))
+        widget->setEnabled(enable);
 }
 
 /*!

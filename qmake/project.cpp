@@ -220,6 +220,11 @@ static QString varMap(const QString &x)
         ret = "QMAKE_FRAMEWORKPATH";
     else if(ret == "QMAKE_FRAMEWORKDIR_FLAGS")
         ret = "QMAKE_FRAMEWORKPATH_FLAGS";
+    else
+        return ret;
+    warn_msg(WarnDeprecated, "%s:%d: Variable %s is deprecated; use %s instead.",
+             parser.file.toLatin1().constData(), parser.line_no,
+             x.toLatin1().constData(), ret.toLatin1().constData());
     return ret;
 }
 
@@ -278,7 +283,7 @@ static QStringList split_arg_list(QString params)
     return args;
 }
 
-static QStringList split_value_list(const QString &vals, bool do_semicolon=false)
+static QStringList split_value_list(const QString &vals)
 {
     QString build;
     QStringList ret;
@@ -289,7 +294,6 @@ static QStringList split_value_list(const QString &vals, bool do_semicolon=false
     const ushort SINGLEQUOTE = '\'';
     const ushort DOUBLEQUOTE = '"';
     const ushort BACKSLASH = '\\';
-    const ushort SEMICOLON = ';';
 
     ushort unicode;
     const QChar *vals_data = vals.data();
@@ -309,8 +313,7 @@ static QStringList split_value_list(const QString &vals, bool do_semicolon=false
             ++parens;
         }
 
-        if(!parens && quote.isEmpty() && ((do_semicolon && unicode == SEMICOLON) ||
-                                           vals_data[x] == Option::field_sep)) {
+        if(!parens && quote.isEmpty() && (vals_data[x] == Option::field_sep)) {
             ret << build;
             build.clear();
         } else {
@@ -558,7 +561,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         QString path;
         int last_slash = Option::mkfile::cachefile.lastIndexOf(QDir::separator());
         if(last_slash != -1)
-            path = Option::fixPathToLocalOS(Option::mkfile::cachefile.left(last_slash));
+            path = Option::fixPathToLocalOS(Option::mkfile::cachefile.left(last_slash), false);
         for(QStringList::Iterator concat_it = concat.begin();
             concat_it != concat.end(); ++concat_it)
             feature_roots << (path + (*concat_it));
@@ -613,38 +616,6 @@ QStringList qmake_mkspec_paths()
 
     return ret;
 }
-
-class QMakeProjectEnv
-{
-    QStringList envs;
-public:
-    QMakeProjectEnv() { }
-    QMakeProjectEnv(QMakeProject *p) { execute(p->variables()); }
-    QMakeProjectEnv(const QMap<QString, QStringList> &values) { execute(values); }
-
-    void execute(QMakeProject *p) { execute(p->variables()); }
-    void execute(const QMap<QString, QStringList> &values) {
-#ifdef Q_OS_UNIX
-        for(QMap<QString, QStringList>::ConstIterator it = values.begin(); it != values.end(); ++it) {
-            const QString var = it.key(), val = it.value().join(" ");
-            if(!var.startsWith(".")) {
-                const QString env_var = Option::sysenv_mod + var;
-                if(!putenv(strdup(QString(env_var + "=" + val).toAscii().data())))
-                    envs.append(env_var);
-            }
-        }
-#else
-        Q_UNUSED(values);
-#endif
-    }
-    ~QMakeProjectEnv() {
-#ifdef Q_OS_UNIX
-        for(QStringList::ConstIterator it = envs.begin();it != envs.end(); ++it) {
-            putenv(strdup(QString(*it + "=").toAscii().data()));
-        }
-#endif
-    }
-};
 
 QMakeProject::~QMakeProject()
 {
@@ -1155,7 +1126,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
         QStringList vallist;
         {
             //doVariableReplace(vals, place);
-            QStringList tmp = split_value_list(vals, (var == "DEPENDPATH" || var == "INCLUDEPATH"));
+            QStringList tmp = split_value_list(vals);
             for(int i = 0; i < tmp.size(); ++i)
                 vallist += doVariableReplaceExpand(tmp[i], place);
         }
@@ -1836,7 +1807,11 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
     for(int i = 0; i < args_list.size(); ++i)
         args += args_list[i].join(QString(Option::field_sep));
 
-    ExpandFunc func_t = qmake_expandFunctions().value(func.toLower());
+    QString lfunc = func.toLower();
+    if (!lfunc.isSharedWith(func))
+        warn_msg(WarnDeprecated, "%s:%d: Using uppercased builtin functions is deprecated.",
+                 parser.file.toLatin1().constData(), parser.line_no);
+    ExpandFunc func_t = qmake_expandFunctions().value(lfunc);
     debug_msg(1, "Running project expand: %s(%s) [%d]",
               func.toLatin1().constData(), args.join("::").toLatin1().constData(), func_t);
 
@@ -2090,7 +2065,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d system(execut) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            QMakeProjectEnv env(place);
             char buff[256];
             bool singleLine = true;
             if(args.count() > 1)
@@ -2250,8 +2224,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d: size(var) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            //QString target = args[0];
-            int size = values(args[0]).size();
+            int size = values(args[0], place).size();
             ret += QString::number(size);
         }
         break; }
@@ -2377,12 +2350,9 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
                 if(d_off == d_len-1)
                     test += *(d+d_off);
                 if(!test.isEmpty()) {
-                    const bool success = doProjectTest(test, place);
-                    test = "";
-                    if(or_op)
-                        ret = ret || success;
-                    else
-                        ret = ret && success;
+                    if (or_op != ret)
+                        ret = doProjectTest(test, place);
+                    test.clear();
                 }
                 if(*(d+d_off) == QLatin1Char(':')) {
                     or_op = false;
@@ -2485,8 +2455,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
             }
         }
         return false; }
-    case T_SYSTEM: {
-        bool setup_env = true;
+    case T_SYSTEM:
         if(args.count() < 1 || args.count() > 2) {
             fprintf(stderr, "%s:%d: system(exec) requires one argument.\n", parser.file.toLatin1().constData(),
                     parser.line_no);
@@ -2494,13 +2463,11 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         }
         if(args.count() == 2) {
             const QString sarg = args[1];
-            setup_env = (sarg.toLower() == "true" || sarg.toInt());
+            if (sarg.toLower() == "true" || sarg.toInt())
+                warn_msg(WarnParser, "%s:%d: system()'s second argument is now hard-wired to false.\n",
+                         parser.file.toLatin1().constData(), parser.line_no);
         }
-        QMakeProjectEnv env;
-        if(setup_env)
-            env.execute(place);
-        bool ret = system(args[0].toLatin1().constData()) == 0;
-        return ret; }
+        return system(args[0].toLatin1().constData()) == 0;
     case T_RETURN:
         if(function_blocks.isEmpty()) {
             fprintf(stderr, "%s:%d unexpected return()\n",
@@ -3160,6 +3127,12 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
 #endif
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
+}
+
+bool QMakeProject::isEmpty(const QString &v)
+{
+    QMap<QString, QStringList>::ConstIterator it = vars.constFind(varMap(v));
+    return it == vars.constEnd() || it->isEmpty();
 }
 
 QT_END_NAMESPACE
