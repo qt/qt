@@ -64,10 +64,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeComponent : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeComponent)
-    Q_PROPERTY(bool isNull READ isNull NOTIFY statusChanged)
-    Q_PROPERTY(bool isReady READ isReady NOTIFY statusChanged)
-    Q_PROPERTY(bool isError READ isError NOTIFY statusChanged)
-    Q_PROPERTY(bool isLoading READ isLoading NOTIFY statusChanged)
+
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QUrl url READ url CONSTANT)

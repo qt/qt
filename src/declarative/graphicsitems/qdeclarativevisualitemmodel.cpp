@@ -55,6 +55,7 @@
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeglobal_p.h>
 
+#include <qgraphicsscene.h>
 #include <qlistmodelinterface_p.h>
 #include <qhash.h>
 #include <qlist.h>
@@ -966,10 +967,8 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
         if (inPackage) {
             emit destroyingPackage(qobject_cast<QDeclarativePackage*>(obj));
         } else {
-            if (item->hasFocus())
-                item->clearFocus();
-            item->setOpacity(0.0);
-            static_cast<QGraphicsItem*>(item)->setParentItem(0);
+            if (item->scene())
+                item->scene()->removeItem(item);
         }
         stat |= Destroyed;
         obj->deleteLater();

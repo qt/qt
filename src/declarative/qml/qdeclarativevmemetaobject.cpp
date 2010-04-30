@@ -106,8 +106,7 @@ QDeclarativeVMEVariant::~QDeclarativeVMEVariant()
 void QDeclarativeVMEVariant::cleanup()
 {
     if (type == QVariant::Invalid) {
-    } else if (type == QMetaType::QObjectStar ||
-               type == QMetaType::Int ||
+    } else if (type == QMetaType::Int ||
                type == QMetaType::Bool ||
                type == QMetaType::Double) {
         type = QVariant::Invalid;

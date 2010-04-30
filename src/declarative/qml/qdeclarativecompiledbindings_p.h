@@ -77,7 +77,7 @@ public:
         QDeclarativeParser::Property *property;
         QDeclarativeParser::Variant expression;
         QHash<QString, QDeclarativeParser::Object *> ids;
-        QDeclarativeEnginePrivate::Imports imports;
+        QDeclarativeImports imports;
     };
 
     // -1 on failure, otherwise the binding index to use

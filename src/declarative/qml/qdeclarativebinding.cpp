@@ -193,7 +193,18 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setColumn(-1);
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
-            } else if (data->property.object() && 
+            } else if (!scriptValue.isRegExp() && scriptValue.isFunction()) {
+
+                QUrl url = QUrl(data->url);
+                int line = data->line;
+                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
+
+                data->error.setUrl(url);
+                data->error.setLine(line);
+                data->error.setColumn(-1);
+                data->error.setDescription(QLatin1String("Unable to assign a function to a property."));
+
+            } else if (data->property.object() &&
                        !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);

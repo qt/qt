@@ -80,6 +80,7 @@ public:
     void setValue(const QVariant &);
 
 protected:
+    virtual void classBegin();
     virtual void componentComplete();
 
 private:

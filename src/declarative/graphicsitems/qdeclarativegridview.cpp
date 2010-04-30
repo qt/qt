@@ -108,7 +108,7 @@ public:
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , highlightMoveDuration(150)
-    , bufferMode(NoBuffer), snapMode(QDeclarativeGridView::NoSnap)
+    , bufferMode(BufferBefore | BufferAfter), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
     , deferredRelease(false), haveHighlightRange(false) {}
@@ -331,7 +331,7 @@ public:
     QSmoothedAnimation *highlightYAnimator;
     int highlightMoveDuration;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
-    BufferMode bufferMode;
+    int bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
 
     bool ownModel : 1;
@@ -855,10 +855,13 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             qreal adjDist = -data.flickTarget + data.move.value();
             if (qAbs(adjDist) > qAbs(dist)) {
                 // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
-                v2 = accel * 2.0f * qAbs(dist);
-                v = qSqrt(v2);
-                if (dist > 0)
-                    v = -v;
+                qreal adjv2 = accel * 2.0f * qAbs(adjDist);
+                if (adjv2 > v2) {
+                    v2 = adjv2;
+                    v = qSqrt(v2);
+                    if (dist > 0)
+                        v = -v;
+                }
             }
             dist = adjDist;
             accel = v2 / (2.0f * qAbs(dist));
@@ -1026,6 +1029,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
+        d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore | QDeclarativeGridViewPrivate::BufferAfter;
         if (isComponentComplete()) {
             refill();
             if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
@@ -1052,6 +1056,11 @@ void QDeclarativeGridView::setModel(const QVariant &model)
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
+
+    The number of elements in the delegate has a direct effect on the
+    flicking performance of the view.  If at all possible, place functionality
+    that is not needed for the normal display of the delegate in a \l Loader which
+    can load additional elements when needed.
 
     Note that the GridView will layout the items based on the size of the root item
     in the delegate.

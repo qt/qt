@@ -52,8 +52,8 @@ function startNewGame()
             link.spawned = false;
             link.dying = false;
         } else {
-            if(linkComponent.isReady == false){
-                if(linkComponent.isError == true)
+            if(linkComponent.status != Component.Ready) {
+                if(linkComponent.status == Component.Error) 
                     console.log(linkComponent.errorsString());
                 else
                     console.log("Still loading linkComponent");
@@ -293,8 +293,8 @@ function createCookie(value) {
         }
     }
 
-    if(cookieComponent.isReady == false){
-        if(cookieComponent.isError == true)
+    if(cookieComponent.status != Component.Ready) {
+        if(cookieComponent.status == Component.Error)
             console.log(cookieComponent.errorsString());
         else
             console.log("Still loading cookieComponent");

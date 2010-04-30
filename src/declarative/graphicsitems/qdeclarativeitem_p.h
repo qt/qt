@@ -150,6 +150,22 @@ public:
     void setHeight(qreal);
     void resetHeight();
 
+    QDeclarativeListProperty<QObject> data();
+    QDeclarativeListProperty<QObject> resources();
+
+    QDeclarativeListProperty<QDeclarativeState> states();
+    QDeclarativeListProperty<QDeclarativeTransition> transitions();
+
+    QString state() const;
+    void setState(const QString &);
+
+    QDeclarativeAnchorLine left() const;
+    QDeclarativeAnchorLine right() const;
+    QDeclarativeAnchorLine horizontalCenter() const;
+    QDeclarativeAnchorLine top() const;
+    QDeclarativeAnchorLine bottom() const;
+    QDeclarativeAnchorLine verticalCenter() const;
+    QDeclarativeAnchorLine baseline() const;
 
     // data property
     static void data_append(QDeclarativeListProperty<QObject> *, QObject *);
@@ -164,6 +180,11 @@ public:
     static void transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *);
     static QGraphicsTransform *transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int);
     static void transform_clear(QDeclarativeListProperty<QGraphicsTransform> *list);
+
+    static QDeclarativeItemPrivate* get(QDeclarativeItem *item)
+    {
+        return item->d_func();
+    }
 
     // Accelerated property accessors
     QDeclarativeNotifier parentNotifier;
@@ -224,7 +245,7 @@ public:
     void removeItemChangeListener(QDeclarativeItemChangeListener *, ChangeTypes types);
     QPODVector<ChangeListener,4> changeListeners;
 
-    QDeclarativeStateGroup *states();
+    QDeclarativeStateGroup *_states();
     QDeclarativeStateGroup *_stateGroup;
 
     QDeclarativeItem::TransformOrigin origin:4;

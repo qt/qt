@@ -84,7 +84,6 @@ public:
 
     QString name;
     QUrl url;
-    QDeclarativeEnginePrivate::Imports imports;
     QDeclarativeTypeNameCache *importCache;
 
     struct TypeReference 
@@ -192,7 +191,7 @@ private:
                      const BindingContext &);
     bool buildProperty(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj, 
                        const BindingContext &);
-    bool buildPropertyInNamespace(QDeclarativeEnginePrivate::ImportedNamespace *ns,
+    bool buildPropertyInNamespace(QDeclarativeImportedNamespace *ns,
                                   QDeclarativeParser::Property *prop, 
                                   QDeclarativeParser::Object *obj, 
                                   const BindingContext &);
@@ -336,6 +335,7 @@ private:
     QList<QDeclarativeError> exceptions;
     QDeclarativeCompiledData *output;
     QDeclarativeEngine *engine;
+    QDeclarativeEnginePrivate *enginePrivate;
     QDeclarativeParser::Object *unitRoot;
     QDeclarativeCompositeTypeData *unit;
 };

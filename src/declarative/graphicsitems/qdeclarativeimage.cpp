@@ -54,7 +54,27 @@ QT_BEGIN_NAMESPACE
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    The Image element supports untransformed, stretched and tiled.
+    Displays the image from the specified \l source.  If a size is not specified explicitly,
+    the Image element will be sized to the loaded image.
+
+    If the source resolves to a network resource, the image will be loaded asynchronously,
+    updating the \l progress and \l status properties appropriately.
+
+    Images which are available locally
+    will be loaded immediately, blocking the user interface.  This is typically the
+    correct behavior for user interface elements.  For large local images, which do not need
+    to be visible immediately, it may be preferable to enable \l asynchronous loading.
+    This will load the image in the background using a low priority thread.
+
+    Images are cached and shared internally, so if several Image elements have the same source
+    only one copy of the image will be loaded.
+
+    \bold Note: Images are often the greatest user of memory in QML UIs.  It is recommended
+    that images which do not form part of the user interface have their
+    size bounded via the \l sourceSize property. This is especially important for content
+    that is loaded from external sources or provided by the user.
+
+    The Image element supports untransformed, stretched and tiled images.
 
     For an explanation of stretching and tiling, see the fillMode property description.
 
@@ -107,7 +127,7 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
     \endtable
- */
+*/
 
 /*!
     \internal
@@ -296,6 +316,32 @@ qreal QDeclarativeImage::paintedHeight() const
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+
+    The example below will ensure that the size of the image in memory is
+    no larger than 1024x1024 pixels, regardless of the size of the Image element.
+
+    \code
+    Image {
+       anchors.fill: parent
+       source: "images/reallyBigImage.jpg"
+       sourceSize.width: 1024
+       sourceSize.height: 1024
+    }
+    \endcode
+
+    The example below will ensure that the memory used by the image is
+    no more than necessary to display the image at the size of the Image element.
+    Of course if the Image element is resized a costly reload will be required, so
+    use this technique \e only when the Image size is fixed.
+
+    \code
+    Image {
+       anchors.fill: parent
+       source: "images/reallyBigImage.jpg"
+       sourceSize.width: width
+       sourceSize.height: height
+    }
+    \endcode
 */
 
 void QDeclarativeImage::updatePaintedGeometry()

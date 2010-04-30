@@ -2,6 +2,8 @@
 The changes below are pre Qt 4.7.0 RC
 
 Flickable: overShoot is replaced by boundsBehavior enumeration.
+Component: isReady, isLoading, isError and isNull properties removed, use
+    status property instead
 
 C++ API
 -------
