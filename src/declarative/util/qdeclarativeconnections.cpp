@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeConnectionsPrivate : public QObjectPrivate
 {
 public:
-    QDeclarativeConnectionsPrivate() : target(0), targetSet(false), ignoreUnknownSignals(false), componentcomplete(false) {}
+    QDeclarativeConnectionsPrivate() : target(0), targetSet(false), ignoreUnknownSignals(false), componentcomplete(true) {}
 
     QList<QDeclarativeBoundSignal*> boundsignals;
     QObject *target;
@@ -269,6 +269,12 @@ void QDeclarativeConnections::connectSignals()
                 qmlInfo(this) << tr("Cannot assign to non-existent property \"%1\"").arg(propName);
         }
     }
+}
+
+void QDeclarativeConnections::classBegin()
+{
+    Q_D(QDeclarativeConnections);
+    d->componentcomplete=false;
 }
 
 void QDeclarativeConnections::componentComplete()

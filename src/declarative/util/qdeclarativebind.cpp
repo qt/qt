@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeBindPrivate : public QObjectPrivate
 {
 public:
-    QDeclarativeBindPrivate() : when(true), componentComplete(false), obj(0) {}
+    QDeclarativeBindPrivate() : when(true), componentComplete(true), obj(0) {}
 
     bool when : 1;
     bool componentComplete : 1;
@@ -196,6 +196,12 @@ void QDeclarativeBind::setValue(const QVariant &v)
     d->value.value = v;
     d->value.isNull = false;
     eval();
+}
+
+void QDeclarativeBind::classBegin()
+{
+    Q_D(QDeclarativeBind);
+    d->componentComplete = false;
 }
 
 void QDeclarativeBind::componentComplete()

@@ -99,7 +99,7 @@ private:
     int m_value2;
 };
 
-class MyQmlObject : public QObject, public MyInterface, public QDeclarativeParserStatus
+class MyQmlObject : public QObject, public MyInterface
 {
     Q_OBJECT
     Q_PROPERTY(int value READ value WRITE setValue FINAL)
@@ -113,7 +113,7 @@ class MyQmlObject : public QObject, public MyInterface, public QDeclarativeParse
     Q_PROPERTY(MyQmlObject *qmlobjectProperty READ qmlobject WRITE setQmlobject)
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
 
-    Q_INTERFACES(MyInterface QDeclarativeParserStatus)
+    Q_INTERFACES(MyInterface)
 public:
     MyQmlObject() : m_value(-1), m_interface(0), m_qmlobject(0) { qRegisterMetaType<MyCustomVariantType>("MyCustomVariantType"); }
 

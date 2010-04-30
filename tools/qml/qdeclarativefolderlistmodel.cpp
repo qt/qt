@@ -256,6 +256,10 @@ void QDeclarativeFolderListModel::setNameFilters(const QStringList &filters)
     d->model.setNameFilters(d->nameFilters);
 }
 
+void QDeclarativeFolderListModel::classBegin()
+{
+}
+
 void QDeclarativeFolderListModel::componentComplete()
 {
     if (!d->folder.isValid() || !QDir().exists(d->folder.toLocalFile()))
