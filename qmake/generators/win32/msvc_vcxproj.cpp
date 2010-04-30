@@ -384,20 +384,24 @@ void VcxprojGenerator::initPostBuildEventTools()
         QString cmdline = var("QMAKE_POST_LINK");
         conf.postBuild.CommandLine = cmdline;
         conf.postBuild.Description = cmdline;
+        conf.postBuild.UseInBuild = _True;
     }
 
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
-    if(useSignature)
-        conf.postBuild.CommandLine.prepend(QLatin1String("signtool sign /F ") + signature + " \"$(TargetPath)\"\n" +
-            (!conf.postBuild.CommandLine.isEmpty() ? " && " : ""));
+    if(useSignature) {
+         conf.postBuild.CommandLine.prepend(QLatin1String("signtool sign /F ") + signature + " \"$(TargetPath)\"\n" +
+             (!conf.postBuild.CommandLine.isEmpty() ? " && " : ""));
+        conf.postBuild.UseInBuild = _True;
+    }
 
     if(!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
         if(!conf.postBuild.CommandLine.isEmpty())
             conf.postBuild.CommandLine += " && ";
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
+        conf.postBuild.UseInBuild = _True;
     }
 }
 
@@ -530,6 +534,7 @@ void VcxprojGenerator::initPreLinkEventTools()
         QString cmdline = var("QMAKE_PRE_LINK");
         conf.preLink.Description = cmdline;
         conf.preLink.CommandLine = cmdline;
+        conf.preLink.UseInBuild = _True;
     }
 }
 
