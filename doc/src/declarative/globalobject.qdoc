@@ -226,6 +226,9 @@ This function causes the QML engine to emit the quit signal, which in
 This function returns \c url resolved relative to the URL of the
 caller.
 
+\section3 Qt.fontFamilies()
+This function returns a list of the font families available to the application.
+
 \section3 Qt.isQtObject(object)
 Returns true if \c object is a valid reference to a Qt or QML object, otherwise false.
 

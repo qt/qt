@@ -294,6 +294,7 @@ public:
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
+    static QScriptValue fontFamilies(QScriptContext*, QScriptEngine*);
     static QScriptValue md5(QScriptContext*, QScriptEngine*);
     static QScriptValue btoa(QScriptContext*, QScriptEngine*);
     static QScriptValue atob(QScriptContext*, QScriptEngine*);
