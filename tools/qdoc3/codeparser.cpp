@@ -252,7 +252,6 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setTitle(arg);
             nameToTitle.insert(fake->name(),arg);
-            qDebug() << "NAME TO TITLE:" << fake->name() << arg; 
         }
         else
 	    location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));

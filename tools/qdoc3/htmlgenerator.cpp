@@ -1224,7 +1224,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         namespasse = static_cast<const NamespaceNode *>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
-        title = rawTitle + " Namespace Reference";
+        title = rawTitle + " Namespace";
     }
     else if (inner->type() == Node::Class) {
         classe = static_cast<const ClassNode *>(inner);
@@ -1726,6 +1726,9 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
                 out() << "              <li><a href=\"" << fn->name() << "\">" << title
                       << "</a></li>";
             }
+            else if (fn->name() == QString("namespaces.html")) {
+                out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+            }
         }
         else if (node->subType() == Node::QmlClass) {
         }
@@ -1743,9 +1746,11 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
     }
     else if (node->type() == Node::Namespace) {
         const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
+        out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+        out() << "              <li><a href=\"" << fileName(nsn) << "\">" << title
+              << "</a></li>";
     }
 }
-
 
 void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
