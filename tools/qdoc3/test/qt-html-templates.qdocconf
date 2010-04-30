@@ -45,6 +45,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li><a href=\"modules.html\">All modules</a></li>\n" \
 			  "              <li><a href=\"classes.html\">All classes</a></li>\n" \
 			  "              <li><a href=\"functions.html\">All functions</a></li>\n" \
+			  "              <li><a href=\"namespaces.html\">All namespaces</a></li>\n" \
 			  "              <li><a href=\"platform-specific.html\">Platform specifics</a></li>\n" \
 			  "            </ul>\n" \
 			  "          </div>\n" \
