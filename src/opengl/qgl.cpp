@@ -5161,11 +5161,17 @@ Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)
 Q_OPENGL_EXPORT const QString qt_gl_library_name()
 {
     if (qt_gl_lib_name()->isNull()) {
-#if defined(Q_WS_X11) || defined(Q_WS_QWS)
-        return QLatin1String("GL");
-#else // Q_WS_MAC
+#ifdef Q_WS_MAC
         return QLatin1String("/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib");
-#endif
+#else
+# if defined(QT_OPENGL_ES_1)
+        return QLatin1String("GLES_CM");
+# elif defined(QT_OPENGL_ES_2)
+        return QLatin1String("GLESv2");
+# else
+        return QLatin1String("GL");
+# endif
+#endif // defined Q_WS_MAC
     }
     return *qt_gl_lib_name();
 }
