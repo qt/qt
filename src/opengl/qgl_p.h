@@ -471,8 +471,6 @@ private:
     QGLContext *m_ctx;
 };
 
-#include <qdebug.h>
-#include <qthread.h>
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -724,11 +722,9 @@ class QGLEngineThreadStorage
 {
 public:
     QPaintEngine *engine() {
-        QPaintEngine *localEngine = storage.localData();
-        if (!localEngine) {
+        QPaintEngine *&localEngine = storage.localData();
+        if (!localEngine)
             localEngine = new T;
-            storage.setLocalData(localEngine);
-        }
         return localEngine;
     }
 
