@@ -59,6 +59,17 @@ QT_BEGIN_NAMESPACE
 
 GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, int drawableType)
 {
+    int depthSize = 0;
+    int stencilSize = 0;
+    int sampleSize = 0;
+
+    if (format.depth())
+        depthSize = (format.depthBufferSize() == -1) ? 1 : format.depthBufferSize();
+    if (format.stencil())
+        stencilSize = (format.stencilBufferSize() == -1) ? 1 : format.stencilBufferSize();
+    if (format.sampleBuffers())
+        sampleSize = (format.samples() == -1) ? 1 : format.samples();
+
     int configAttribs[] = {
         GLX_DRAWABLE_TYPE, drawableType,
         GLX_LEVEL, format.plane(),
@@ -66,9 +77,9 @@ GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, i
         GLX_DOUBLEBUFFER, format.doubleBuffer() ? True : False,
         GLX_STEREO, format.stereo() ? True : False,
 
-        GLX_DEPTH_SIZE, (format.depthBufferSize() == -1) ? 0 : format.depthBufferSize(),
-        GLX_STENCIL_SIZE, (format.stencilBufferSize() == -1) ? 0 : format.stencilBufferSize(),
-        GLX_SAMPLE_BUFFERS_ARB, (format.samples() == -1) ? 0 : format.samples(),
+        GLX_DEPTH_SIZE, depthSize,
+        GLX_STENCIL_SIZE, stencilSize,
+        GLX_SAMPLE_BUFFERS_ARB, sampleSize,
 
         GLX_RED_SIZE, (format.redBufferSize() == -1) ? 1 : format.redBufferSize(),
         GLX_GREEN_SIZE, (format.greenBufferSize() == -1) ? 1 : format.greenBufferSize(),
@@ -145,10 +156,11 @@ bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
     XVisualInfo* visualInfo;
     visualInfo = glXGetVisualFromFBConfig(m_xd->display, m_config);
 
-    if (!qt_glx_integration_colormap) {
+    // ### This will leak the colormap, but we need a colormap for each visual
+//    if (!qt_glx_integration_colormap) {
         qt_glx_integration_colormap = XCreateColormap(m_xd->display, parentWindow,
                                                       visualInfo->visual, AllocNone);
-    }
+//    }
 
     XSetWindowAttributes windowAttribs;
     windowAttribs.background_pixel = m_xd->whitePixel();
