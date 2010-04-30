@@ -46,16 +46,21 @@ static bool areRectsFullyAligned(FocusDirection, const IntRect&, const IntRect&)
 static bool areRectsPartiallyAligned(FocusDirection, const IntRect&, const IntRect&);
 static bool isRectInDirection(FocusDirection, const IntRect&, const IntRect&);
 static void deflateIfOverlapped(IntRect&, IntRect&);
+static bool checkNegativeCoordsForNode(Node*, const IntRect&);
 
-long long distanceInDirection(Node* start, Node* dest, FocusDirection direction, FocusCandidate& candidate)
+void distanceDataForNode(FocusDirection direction, Node* start, FocusCandidate& candidate)
 {
     RenderObject* startRender = start->renderer();
-    if (!startRender)
-        return maxDistance();
+    if (!startRender) {
+        candidate.distance = maxDistance();
+        return;
+    }
 
-    RenderObject* destRender = dest->renderer();
-    if (!destRender)
-        return maxDistance();
+    RenderObject* destRender = candidate.node->renderer();
+    if (!destRender) {
+        candidate.distance = maxDistance();
+        return;
+    }
 
     IntRect curRect = renderRectRelativeToRootDocument(startRender);
     IntRect targetRect  = renderRectRelativeToRootDocument(destRender);
@@ -64,40 +69,34 @@ long long distanceInDirection(Node* start, Node* dest, FocusDirection direction,
     // deflate both.
     deflateIfOverlapped(curRect, targetRect);
 
+    // If empty rects or negative width or height, bail out.
     if (curRect.isEmpty() || targetRect.isEmpty()
-        || targetRect.x() < 0 || targetRect.y() < 0)
-        return maxDistance();
+     || targetRect.width() <= 0 || targetRect.height() <= 0) {
+        candidate.distance = maxDistance();
+        return;
+    }
 
-    if (!isRectInDirection(direction, curRect, targetRect))
-        return maxDistance();
+    // Negative coordinates can be used if node is scrolled up offscreen.
+    if (!checkNegativeCoordsForNode(start, curRect)) {
+        candidate.distance = maxDistance();
+        return;
+    }
+
+    if (!checkNegativeCoordsForNode(candidate.node, targetRect)) {
+        candidate.distance = maxDistance();
+        return;
+    }
+
+    if (!isRectInDirection(direction, curRect, targetRect)) {
+        candidate.distance = maxDistance();
+        return;
+    }
 
     // The distance between two nodes is not to be considered alone when evaluating/looking
     // for the best focus candidate node. Alignment of rects can be also a good point to be
     // considered in order to make the algorithm to behavior in a more intuitive way.
-    RectsAlignment alignment = alignmentForRects(direction, curRect, targetRect);
-
-    bool sameDocument = dest->document() == candidate.document();
-    if (sameDocument) {
-        if (candidate.alignment > alignment || (candidate.parentAlignment && alignment > candidate.parentAlignment))
-            return maxDistance();
-    } else if (candidate.alignment > alignment && (candidate.parentAlignment && alignment > candidate.parentAlignment))
-        return maxDistance();
-
-    // FIXME_tonikitoo: simplify the logic here !
-    if (alignment != None
-        || (!candidate.isNull() && candidate.parentAlignment >= alignment
-        && candidate.document() == dest->document())) {
-
-        // If we are now in an higher precedent case, lets reset the current |candidate|'s
-        // |distance| so we force it to be bigger than the result we will get from
-        // |spatialDistance| (see below).
-        if (candidate.alignment < alignment && candidate.parentAlignment < alignment)
-            candidate.distance = maxDistance();
-
-        candidate.alignment = alignment;
-    }
-
-    return spatialDistance(direction, curRect, targetRect);
+    candidate.alignment = alignmentForRects(direction, curRect, targetRect);
+    candidate.distance = spatialDistance(direction, curRect, targetRect);
 }
 
 // FIXME: This function does not behave correctly with transformed frames.
@@ -106,6 +105,11 @@ static IntRect renderRectRelativeToRootDocument(RenderObject* render)
     ASSERT(render);
 
     IntRect rect(render->absoluteClippedOverflowRect());
+
+    if (rect.isEmpty()) {
+        Element* e = static_cast<Element*>(render->node());
+        rect = e->getRect();
+    }
 
     // In cases when the |render|'s associated node is in a scrollable inner
     // document, we only consider its scrollOffset if it is not offscreen.
@@ -432,6 +436,9 @@ bool hasOffscreenRect(Node* node)
         return true;
 
     IntRect rect(render->absoluteClippedOverflowRect());
+    if (rect.isEmpty())
+        return true;
+
     return !containerViewportRect.intersects(rect);
 }
 
@@ -498,6 +505,26 @@ static void deflateIfOverlapped(IntRect& a, IntRect& b)
 
     if ((b.width() + 2 * fudgeFactor > 0) && (b.height() + 2 * fudgeFactor > 0))
         b.inflate(fudgeFactor);
+}
+
+static bool checkNegativeCoordsForNode(Node* node, const IntRect& curRect)
+{
+    ASSERT(node || node->renderer());
+
+    if (curRect.x() > 0 && curRect.y() > 0)
+        return true;
+
+    bool canBeScrolled = false;
+
+    RenderObject* renderer = node->renderer();
+    for (; renderer; renderer = renderer->parent()) {
+        if (renderer->isBox() && toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()) {
+            canBeScrolled = true;
+            break;
+        }
+    }
+
+    return canBeScrolled;
 }
 
 } // namespace WebCore

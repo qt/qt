@@ -112,7 +112,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 146 "parser\\Grammar.y"
+#line 146 "parser/Grammar.y"
 
     int                 intValue;
     double              doubleValue;
@@ -147,7 +147,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 151 "C:/dev/webkit-2.0/JavaScriptCore/generated\\Grammar.tab.h"
+#line 151 "/JavaScriptCore/generated/Grammar.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

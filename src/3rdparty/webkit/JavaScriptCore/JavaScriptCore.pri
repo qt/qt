@@ -1,12 +1,14 @@
 # JavaScriptCore - Qt4 build info
 VPATH += $$PWD
-# Output in JavaScriptCore/<config>
-CONFIG(debug, debug|release): JAVASCRIPTCORE_DESTDIR = debug
-CONFIG(release, debug|release): JAVASCRIPTCORE_DESTDIR = release
-# Use different targets to prevent parallel builds file clashes on Mac
-CONFIG(debug, debug|release): JAVASCRIPTCORE_TARGET = jscored
-CONFIG(release, debug|release): JAVASCRIPTCORE_TARGET = jscore
-
+CONFIG(debug, debug|release) {
+    # Output in JavaScriptCore/<config>
+    JAVASCRIPTCORE_DESTDIR = debug
+    # Use a config-specific target to prevent parallel builds file clashes on Mac
+    JAVASCRIPTCORE_TARGET = jscored
+} else {
+    JAVASCRIPTCORE_DESTDIR = release
+    JAVASCRIPTCORE_TARGET = jscore
+}
 CONFIG(standalone_package) {
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = $$PWD/generated
 } else {
@@ -74,10 +76,12 @@ defineTest(addJavaScriptCoreLib) {
     pathToJavaScriptCoreOutput = $$ARGS/$$JAVASCRIPTCORE_DESTDIR
 
     win32-msvc* {
-        QMAKE_LIBDIR += $$pathToJavaScriptCoreOutput
+        LIBS += -L$$pathToJavaScriptCoreOutput
         LIBS += -l$$JAVASCRIPTCORE_TARGET
     } else:symbian {
         LIBS += -l$${JAVASCRIPTCORE_TARGET}.lib
+        # The default symbian build system does not use library paths at all. However when building with
+        # qmake's symbian makespec that uses Makefiles
         QMAKE_LIBDIR += $$pathToJavaScriptCoreOutput
     } else {
         # Make sure jscore will be early in the list of libraries to workaround a bug in MinGW

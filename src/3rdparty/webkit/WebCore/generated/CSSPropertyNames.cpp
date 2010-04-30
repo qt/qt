@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.0.1 */
+/* ANSI-C code produced by gperf version 3.0.3 */
 /* Command-line: gperf -a -L ANSI-C -E -C -c -o -t --key-positions='*' -NfindProp -Hhash_prop -Wwordlist_prop -D -s 2 CSSPropertyNames.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -217,6 +217,9 @@ hash_prop (register const char *str, register unsigned int len)
 
 #ifdef __GNUC__
 __inline
+#ifdef __GNUC_STDC_INLINE__
+__attribute__ ((__gnu_inline__))
+#endif
 #endif
 const struct props *
 findProp (register const char *str, register unsigned int len)
