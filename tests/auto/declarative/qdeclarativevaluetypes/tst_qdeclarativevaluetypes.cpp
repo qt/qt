@@ -84,6 +84,7 @@ private slots:
     void enums();
     void conflictingBindings();
     void returnValues();
+    void varAssignment();
 
 private:
     QDeclarativeEngine engine;
@@ -907,6 +908,19 @@ void tst_qdeclarativevaluetypes::returnValues()
     QCOMPARE(object->property("test1").toBool(), true);
     QCOMPARE(object->property("test2").toBool(), true);
     QCOMPARE(object->property("size").toSize(), QSize(13, 14));
+
+    delete object;
+}
+
+void tst_qdeclarativevaluetypes::varAssignment()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("varAssignment.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("x").toInt(), 1);
+    QCOMPARE(object->property("y").toInt(), 2);
+    QCOMPARE(object->property("z").toInt(), 3);
 
     delete object;
 }
