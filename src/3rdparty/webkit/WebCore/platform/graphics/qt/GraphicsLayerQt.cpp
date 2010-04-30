@@ -1168,8 +1168,6 @@ public:
     {
         if (m_fillsForwards)
             setCurrentTime(1);
-        else if (m_layer && m_layer.data()->m_layer)
-            m_layer.data()->setBaseTransform(m_layer.data()->m_layer->transform());
     }
 
     // the idea is that we let WebCore manage the transform-operations
@@ -1180,33 +1178,25 @@ public:
     {
         TransformationMatrix transformMatrix;
 
-        // sometimes the animation values from WebCore are misleading and we have to use the actual matrix as source
-        // The Mac implementation simply doesn't try to accelerate those (e.g. 360deg rotation), but we do.
-        if (progress == 1 || !targetOperations.size() || sourceOperations == targetOperations) {
-            TransformationMatrix sourceMatrix;
-            sourceOperations.apply(m_boxSize, sourceMatrix);
-            transformMatrix = m_sourceMatrix;
-            transformMatrix.blend(sourceMatrix, 1 - progress);
-        } else {
-            bool validTransformLists = true;
-            const int sourceOperationCount = sourceOperations.size();
-            if (sourceOperationCount) {
-                if (targetOperations.size() != sourceOperationCount)
-                    validTransformLists = false;
-                else
-                    for (size_t j = 0; j < sourceOperationCount && validTransformLists; ++j)
-                        if (!sourceOperations.operations()[j]->isSameType(*targetOperations.operations()[j]))
-                            validTransformLists = false;
-            }
-
-            if (validTransformLists) {
-                for (size_t i = 0; i < targetOperations.size(); ++i)
-                    targetOperations.operations()[i]->blend(sourceOperations.at(i), progress)->apply(transformMatrix, m_boxSize);
-            } else {
-                targetOperations.apply(m_boxSize, transformMatrix);
-                transformMatrix.blend(m_sourceMatrix, progress);
-            }
+        bool validTransformLists = true;
+        const int sourceOperationCount = sourceOperations.size();
+        if (sourceOperationCount) {
+            if (targetOperations.size() != sourceOperationCount)
+                validTransformLists = false;
+            else
+                for (size_t j = 0; j < sourceOperationCount && validTransformLists; ++j)
+                    if (!sourceOperations.operations()[j]->isSameType(*targetOperations.operations()[j]))
+                        validTransformLists = false;
         }
+
+        if (validTransformLists) {
+            for (size_t i = 0; i < targetOperations.size(); ++i)
+                targetOperations.operations()[i]->blend(sourceOperations.at(i), progress)->apply(transformMatrix, m_boxSize);
+        } else {
+            targetOperations.apply(m_boxSize, transformMatrix);
+            transformMatrix.blend(m_sourceMatrix, progress);
+        }
+
         m_layer.data()->setBaseTransform(transformMatrix);
         if (m_fillsForwards)
             m_layer.data()->m_layer->setTransform(m_layer.data()->m_baseTransform);
@@ -1225,7 +1215,10 @@ public:
             m_sourceMatrix = m_layer.data()->m_layer->transform();
             m_layer.data()->m_transformAnimationRunning = true;
         } else if (newState == QAbstractAnimation::Stopped) {
+            // We update the transform back to the default. This already takes fill-modes into account.
             m_layer.data()->m_transformAnimationRunning = false;
+            if (m_layer && m_layer.data()->m_layer)
+                m_layer.data()->setBaseTransform(m_layer.data()->m_layer->transform());
         }
     }
 
@@ -1243,8 +1236,6 @@ public:
     {
         if (m_fillsForwards)
             setCurrentTime(1);
-        else if (m_layer && m_layer.data()->m_layer)
-            m_layer.data()->setOpacity(m_layer.data()->m_layer->opacity());
     }
     virtual void applyFrame(const qreal& fromValue, const qreal& toValue, qreal progress)
     {
@@ -1266,6 +1257,12 @@ public:
 
         if (m_layer)
             m_layer.data()->m_opacityAnimationRunning = (newState == QAbstractAnimation::Running);
+
+        // If stopped, we update the opacity back to the default. This already takes fill-modes into account.
+        if (newState == Stopped)
+            if (m_layer && m_layer.data()->m_layer)
+                m_layer.data()->setOpacity(m_layer.data()->m_layer->opacity());
+
     }
 };
 
@@ -1331,6 +1328,8 @@ void GraphicsLayerQt::removeAnimationsForProperty(AnimatedPropertyID id)
         if (*it) {
             AnimationQtBase* anim = static_cast<AnimationQtBase*>(it->data());
             if (anim && anim->m_webkitPropertyID == id) {
+                // We need to stop the animation right away, or it might flicker before it's deleted.
+                anim->stop();
                 anim->deleteLater();
                 it = m_impl->m_animations.erase(it);
                 --it;
@@ -1345,7 +1344,9 @@ void GraphicsLayerQt::removeAnimationsForKeyframes(const String& name)
         if (*it) {
             AnimationQtBase* anim = static_cast<AnimationQtBase*>((*it).data());
             if (anim && anim->m_keyframesName == QString(name)) {
-                (*it).data()->deleteLater();
+                // We need to stop the animation right away, or it might flicker before it's deleted.
+                anim->stop();
+                anim->deleteLater();
                 it = m_impl->m_animations.erase(it);
                 --it;
             }
