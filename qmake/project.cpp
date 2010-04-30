@@ -617,38 +617,6 @@ QStringList qmake_mkspec_paths()
     return ret;
 }
 
-class QMakeProjectEnv
-{
-    QStringList envs;
-public:
-    QMakeProjectEnv() { }
-    QMakeProjectEnv(QMakeProject *p) { execute(p->variables()); }
-    QMakeProjectEnv(const QMap<QString, QStringList> &values) { execute(values); }
-
-    void execute(QMakeProject *p) { execute(p->variables()); }
-    void execute(const QMap<QString, QStringList> &values) {
-#ifdef Q_OS_UNIX
-        for(QMap<QString, QStringList>::ConstIterator it = values.begin(); it != values.end(); ++it) {
-            const QString var = it.key(), val = it.value().join(" ");
-            if(!var.startsWith(".")) {
-                const QString env_var = Option::sysenv_mod + var;
-                if(!putenv(strdup(QString(env_var + "=" + val).toAscii().data())))
-                    envs.append(env_var);
-            }
-        }
-#else
-        Q_UNUSED(values);
-#endif
-    }
-    ~QMakeProjectEnv() {
-#ifdef Q_OS_UNIX
-        for(QStringList::ConstIterator it = envs.begin();it != envs.end(); ++it) {
-            putenv(strdup(QString(*it + "=").toAscii().data()));
-        }
-#endif
-    }
-};
-
 QMakeProject::~QMakeProject()
 {
     if(own_prop)
@@ -2097,7 +2065,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d system(execut) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            QMakeProjectEnv env(place);
             char buff[256];
             bool singleLine = true;
             if(args.count() > 1)
@@ -2488,8 +2455,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
             }
         }
         return false; }
-    case T_SYSTEM: {
-        bool setup_env = true;
+    case T_SYSTEM:
         if(args.count() < 1 || args.count() > 2) {
             fprintf(stderr, "%s:%d: system(exec) requires one argument.\n", parser.file.toLatin1().constData(),
                     parser.line_no);
@@ -2497,13 +2463,11 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         }
         if(args.count() == 2) {
             const QString sarg = args[1];
-            setup_env = (sarg.toLower() == "true" || sarg.toInt());
+            if (sarg.toLower() == "true" || sarg.toInt())
+                warn_msg(WarnParser, "%s:%d: system()'s second argument is now hard-wired to false.\n",
+                         parser.file.toLatin1().constData(), parser.line_no);
         }
-        QMakeProjectEnv env;
-        if(setup_env)
-            env.execute(place);
-        bool ret = system(args[0].toLatin1().constData()) == 0;
-        return ret; }
+        return system(args[0].toLatin1().constData()) == 0;
     case T_RETURN:
         if(function_blocks.isEmpty()) {
             fprintf(stderr, "%s:%d unexpected return()\n",
