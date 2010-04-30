@@ -870,14 +870,10 @@ void QDeclarativeData::destroyed(QObject *object)
     if (ownContext && context)
         context->destroy();
 
-    QDeclarativeGuard<QObject> *guard = guards;
-    while (guard) {
-        QDeclarativeGuard<QObject> *g = guard;
-        guard = guard->next;
-        g->o = 0;
-        g->prev = 0;
-        g->next = 0;
-        g->objectDestroyed(object);
+    while (guards) {
+        QDeclarativeGuard<QObject> *guard = guards;
+        *guard = (QObject *)0;
+        guard->objectDestroyed(object);
     }
 
     if (scriptValue)

@@ -125,7 +125,7 @@ void usage()
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
-    qWarning("  -nolog ................................... do not show log window");
+    qWarning("  -warnings ................................ show warnings in a separate log window");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -229,7 +229,8 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
-    bool showLogWidget = true;
+
+    bool showLogWidget = false;
     bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
@@ -290,8 +291,8 @@ int main(int argc, char ** argv)
             useGL = true;
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
-        } else if (arg == "-nolog") {
-            showLogWidget = false;
+        } else if (arg == "-warnings") {
+            showLogWidget = true;
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
                 qWarning("-L option provided for compatibility only, use -I instead");
