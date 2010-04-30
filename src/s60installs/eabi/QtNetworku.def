@@ -1166,4 +1166,5 @@ EXPORTS
 	_ZNK13QBearerEngine15requiresPollingEv @ 1165 NONAME
 	_ZNK13QBearerEngine19configurationsInUseEv @ 1166 NONAME
 	_ZNK21QNetworkAccessManager17networkAccessibleEv @ 1167 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate12capabilitiesEv @ 1168 NONAME
 

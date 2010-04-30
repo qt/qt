@@ -225,10 +225,8 @@ SYMBIANBUILD_DEPENDENCYOFF=1
 
 //! [34]
 cd src\s60installs
-patch_capabilities.pl Qt_template.pkg release-armv5
 make sis QT_SIS_OPTIONS=-i
 cd ..\3rdparty\webkit\WebCore
-patch_capabilities.pl QtWebkit_template.pkg release-armv5
 make sis QT_SIS_OPTIONS=-i
 //! [34]
 
@@ -240,3 +238,87 @@ cd ..\3rdparty\webkit\WebCore
 patch_capabilities.pl QtWebKit_template.pkg release-armv5 "ALL -Tcb -AllFiles -DRM"
 make sis QT_SIS_OPTIONS=-i QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
 //! [35]
+
+//! [36]
+EPOCROOT=/home/user/s60-sdk/
+export EPOCROOT
+//! [36]
+
+//! [37]
+PATH=/home/user/qt/%VERSION%/bin:$EPOCROOT/epoc32/tools:$PATH
+export PATH
+//! [37]
+
+//! [38]
+cd /home/user/qt/%VERSION%
+./configure -platform linux-g++ -xplatform symbian/linux-armcc -arch symbian
+//! [38]
+
+//! [39]
+cd /home/user/qt/%VERSION%
+./configure -platform linux-g++ -xplatform symbian/linux-gcce -arch symbian -no-webkit
+//! [39]
+
+//! [40]
+make
+//! [40]
+
+//! [41]
+cd src/s60installs
+make sis
+//! [41]
+
+//! [42]
+cd src/s60installs
+patch_capabilities.pl Qt_template.pkg - "ALL -Tcb -AllFiles -DRM"
+make sis QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
+cd ../3rdparty/webkit/WebCore
+patch_capabilities.pl QtWebKit_template.pkg - "ALL -Tcb -AllFiles -DRM"
+make sis QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
+//! [42]
+
+//! [43]
+lsusb
+//! [43]
+
+//! [44]
+sudo rmmod usbserial
+sudo modprobe usbserial vendor=0x0XXX product=0x0XXX
+//! [44]
+
+//! [45]
+$ qmake -version
+QMake version 2.01a
+Using Qt version 4.6.2 in /usr/lib/qt4
+//! [45]
+
+//! [46]
+cd $HOME/runonphone
+qmake
+make
+//! [46]
+
+//! [47]
+runonphone -s lib/Qt.sis
+//! [47]
+
+//! [48]
+cd demos/embedded/fluidlauncher
+runonphone -s fluidlauncher.sis fluidlauncher.exe
+//! [48]
+
+//! [49]
+cd myapp
+qmake
+make
+make sis
+runonphone -s myapp.sis myapp.exe
+//! [49]
+
+//! [50]
+nokia_plugin/openc/s60opencsis/openc_ssl_s60_1_6_ss.sis
+nokia_plugin/openc/s60opencsis/pips_s60_1_6_ss.sis
+nokia_plugin/opencpp/s60opencppsis/stdcpp_s60_1_6_ss.sis
+//! [50]
+
+
