@@ -108,7 +108,7 @@ public:
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , highlightMoveDuration(150)
-    , bufferMode(NoBuffer), snapMode(QDeclarativeGridView::NoSnap)
+    , bufferMode(BufferBefore | BufferAfter), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
     , deferredRelease(false), haveHighlightRange(false) {}
@@ -331,7 +331,7 @@ public:
     QSmoothedAnimation *highlightYAnimator;
     int highlightMoveDuration;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
-    BufferMode bufferMode;
+    int bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
 
     bool ownModel : 1;
@@ -1029,6 +1029,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
+        d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore | QDeclarativeGridViewPrivate::BufferAfter;
         if (isComponentComplete()) {
             refill();
             if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {

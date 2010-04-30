@@ -161,9 +161,9 @@ public:
         , highlightResizeSpeed(400), highlightResizeDuration(-1), highlightRange(QDeclarativeListView::NoHighlightRange)
         , snapMode(QDeclarativeListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
-        , bufferMode(NoBuffer)
+        , bufferMode(BufferBefore | BufferAfter)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
-        , correctFlick(true), inFlickCorrection(false), lazyRelease(false)
+        , correctFlick(false), inFlickCorrection(false), lazyRelease(false)
         , deferredRelease(false), layoutScheduled(false), minExtentDirty(true), maxExtentDirty(true)
     {}
 
@@ -1462,6 +1462,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
+        d->bufferMode = QDeclarativeListViewPrivate::BufferBefore | QDeclarativeListViewPrivate::BufferAfter;
         if (isComponentComplete()) {
             refill();
             if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
