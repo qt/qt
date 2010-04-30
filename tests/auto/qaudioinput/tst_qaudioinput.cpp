@@ -46,6 +46,9 @@
 #include <qaudio.h>
 #include <qaudioformat.h>
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR ""
+#endif
 
 class tst_QAudioInput : public QObject
 {
@@ -130,7 +133,7 @@ void tst_QAudioInput::notifyInterval()
 void tst_QAudioInput::pullFile()
 {
     if(available) {
-        QFile filename(SRCDIR "test.raw");
+        QFile filename(SRCDIR"test.raw");
         filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
         QSignalSpy readSignal(audio, SIGNAL(notify()));

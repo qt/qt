@@ -46,7 +46,11 @@
 //TESTED_FILES=
 
 #define EXISTING_SHARE "existing"
-#define LACKYLOC "../lackey"
+#ifdef Q_OS_WINCE
+#define LACKEYLOC "."
+#else
+#define LACKEYLOC "../lackey"
+#endif
 #define LACKYWAITTIME 10000
 
 class tst_QSystemSemaphore : public QObject
@@ -109,7 +113,7 @@ private:
 
 tst_QSystemSemaphore::tst_QSystemSemaphore()
 {
-    if (!QFile::exists(LACKYLOC "/lackey"))
+    if (!QFile::exists(LACKEYLOC "/lackey"))
         qWarning() << "lackey executable doesn't exists!";
 }
 
@@ -197,11 +201,11 @@ void tst_QSystemSemaphore::basicProcesses()
     QProcess release;
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    acquire.start(LACKYLOC "/lackey", acquireArguments);
+    acquire.start(LACKEYLOC "/lackey", acquireArguments);
     acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state() == QProcess::Running);
     acquire.kill();
-    release.start(LACKYLOC "/lackey", releaseArguments);
+    release.start(LACKEYLOC "/lackey", releaseArguments);
     acquire.waitForFinished(LACKYWAITTIME);
     release.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state() == QProcess::NotRunning);
@@ -235,7 +239,20 @@ void tst_QSystemSemaphore::processes()
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);
-        p->start(LACKYLOC "/lackey", arguments);
+#ifdef Q_OS_WINCE
+        // We can't start the same executable twice on Windows CE.
+        // Create a copy instead.
+        QString lackeyCopy = QLatin1String(LACKEYLOC "/lackey");
+        if (i > 0) {
+            lackeyCopy.append(QString::number(i));
+            lackeyCopy.append(QLatin1String(".exe"));
+            if (!QFile::exists(lackeyCopy))
+                QVERIFY(QFile::copy(LACKEYLOC "/lackey.exe", lackeyCopy));
+        }
+        p->start(lackeyCopy, arguments);
+#else
+        p->start(LACKEYLOC "/lackey", arguments);
+#endif
     }
 
     while (!consumers.isEmpty()) {
@@ -257,13 +274,13 @@ void tst_QSystemSemaphore::undo()
     QStringList acquireArguments = QStringList() << acquire_js();
     QProcess acquire;
     acquire.setProcessChannelMode(QProcess::ForwardedChannels);
-    acquire.start(LACKYLOC "/lackey", acquireArguments);
+    acquire.start(LACKEYLOC "/lackey", acquireArguments);
     acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 
     // At process exit the kernel should auto undo
 
-    acquire.start(LACKYLOC "/lackey", acquireArguments);
+    acquire.start(LACKEYLOC "/lackey", acquireArguments);
     acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
@@ -283,16 +300,16 @@ void tst_QSystemSemaphore::initialValue()
     QProcess release;
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    acquire.start(LACKYLOC "/lackey", acquireArguments);
+    acquire.start(LACKEYLOC "/lackey", acquireArguments);
     acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 
-    acquire.start(LACKYLOC "/lackey", acquireArguments << "2");
+    acquire.start(LACKEYLOC "/lackey", acquireArguments << "2");
     acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::Running);
     acquire.kill();
 
-    release.start(LACKYLOC "/lackey", releaseArguments);
+    release.start(LACKEYLOC "/lackey", releaseArguments);
     acquire.waitForFinished(LACKYWAITTIME);
     release.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);

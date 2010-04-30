@@ -69,7 +69,7 @@ void tst_QByteArrayMatcher::interface()
     matcher2.setPattern(QByteArray(needle));
 
     QByteArrayMatcher matcher3 = QByteArrayMatcher(QByteArray(needle));
-    QByteArrayMatcher matcher4(needle, sizeof(needle - 1));
+    QByteArrayMatcher matcher4(needle, sizeof(needle) - 1);
     QByteArrayMatcher matcher5(matcher2);
     QByteArrayMatcher matcher6;
     matcher6 = matcher3;

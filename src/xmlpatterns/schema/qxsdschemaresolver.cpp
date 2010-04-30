@@ -632,7 +632,14 @@ void XsdSchemaResolver::resolveSimpleContentComplexTypes(const XsdComplexType::P
                 } else {
                     // 1.2
                     const XsdSimpleType::Ptr anonType(new XsdSimpleType());
-                    anonType->setCategory(complexBaseType->contentType()->simpleType()->category());
+                    XsdSimpleType::TypeCategory baseCategory = complexBaseType->contentType()->simpleType()->category();
+                    anonType->setCategory(baseCategory);
+
+                    if (baseCategory == XsdSimpleType::SimpleTypeList) {
+                        const XsdSimpleType::Ptr baseSimpleType = complexBaseType->contentType()->simpleType();
+                        anonType->setItemType(baseSimpleType->itemType());
+                    }
+
                     anonType->setDerivationMethod(XsdSimpleType::DerivationRestriction);
                     anonType->setWxsSuperType(complexBaseType->contentType()->simpleType());
                     anonType->setFacets(complexTypeFacets(complexType));
