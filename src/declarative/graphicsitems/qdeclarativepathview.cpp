@@ -966,7 +966,12 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
             else
                 dist = qRound(dist - d->offset) + d->offset;
             // Calculate accel required to stop on item boundary
-            accel = v2 / (2.0f * qAbs(dist));
+            if (dist <= 0.) {
+                dist = 0.;
+                accel = 0.;
+            } else {
+                accel = v2 / (2.0f * qAbs(dist));
+            }
         }
         d->moveOffset.setValue(d->offset);
         d->tl.accel(d->moveOffset, velocity, accel, dist);
