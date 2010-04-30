@@ -443,12 +443,15 @@ void QDeclarativeColumn::reportConflictingAnchors()
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
-            QDeclarativeAnchors::Anchors usedAnchors = QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors();
-            if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
-                usedAnchors & QDeclarativeAnchors::BottomAnchor ||
-                usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
-                childsWithConflictingAnchors = true;
-                break;
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors) {
+                QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
+                if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
+                    usedAnchors & QDeclarativeAnchors::BottomAnchor ||
+                    usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
+                    childsWithConflictingAnchors = true;
+                    break;
+                }
             }
         }
     }
@@ -578,12 +581,15 @@ void QDeclarativeRow::reportConflictingAnchors()
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
-            QDeclarativeAnchors::Anchors usedAnchors = QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors();
-            if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
-                usedAnchors & QDeclarativeAnchors::RightAnchor ||
-                usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
-                childsWithConflictingAnchors = true;
-                break;
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors) {
+                QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
+                if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
+                    usedAnchors & QDeclarativeAnchors::RightAnchor ||
+                    usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
+                    childsWithConflictingAnchors = true;
+                    break;
+                }
             }
         }
     }
@@ -868,9 +874,12 @@ void QDeclarativeGrid::reportConflictingAnchors()
     bool childsWithConflictingAnchors(false);
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item && QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors()) {
-            childsWithConflictingAnchors = true;
-            break;
+        if (child.item) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors && anchors->usedAnchors()) {
+                childsWithConflictingAnchors = true;
+                break;
+            }
         }
     }
     if (childsWithConflictingAnchors) {
@@ -1025,9 +1034,12 @@ void QDeclarativeFlow::reportConflictingAnchors()
     bool childsWithConflictingAnchors(false);
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item && QDeclarativeItemPrivate::get(child.item)->anchors()->usedAnchors()) {
-            childsWithConflictingAnchors = true;
-            break;
+        if (child.item) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors && anchors->usedAnchors()) {
+                childsWithConflictingAnchors = true;
+                break;
+            }
         }
     }
     if (childsWithConflictingAnchors) {
