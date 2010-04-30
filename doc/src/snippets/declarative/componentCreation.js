@@ -20,38 +20,32 @@ function finishCreation() {
 }
 //![0]
 
-//![1]
 function createSpriteObjects() {
+
+//![1]
+component = Qt.createComponent("Sprite.qml");
+if (component.status == Component.Ready)
+    finishCreation();
+else
+    component.statusChanged.connect(finishCreation);
 //![1]
 
-    //![2]
-    component = Qt.createComponent("Sprite.qml");
-    if (component.status == Component.Ready)
-        finishCreation();
-    else
-        component.statusChanged.connect(finishCreation);
-    //![2]
+//![2]
+component = Qt.createComponent("Sprite.qml");
+sprite = component.createObject();
 
-    //![3]
-    component = Qt.createComponent("Sprite.qml");
-    sprite = component.createObject();
-
-    if (sprite == null) {
-        // Error Handling
-        console.log("Error loading component:", component.errorsString());
-    } else {
-        sprite.parent = appWindow;
-        sprite.x = 100;
-        sprite.y = 100;
-        // ...
-    }
-    //![3]
-
-//![4]
+if (sprite == null) {
+    // Error Handling
+    console.log("Error loading component:", component.errorsString());
+} else {
+    sprite.parent = appWindow;
+    sprite.x = 100;
+    sprite.y = 100;
+    // ...
 }
-//![4]
+//![2]
 
-//![5]
+}
+
 createSpriteObjects();
-//![5]
 
