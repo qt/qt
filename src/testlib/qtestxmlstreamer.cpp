@@ -111,12 +111,20 @@ void QTestXmlStreamer::formatStart(const QTestElement *element, QTestCharBuffer 
         QXmlTestLogger::xmlQuote(&quotedFile, element->attributeValue(QTest::AI_File));
         QXmlTestLogger::xmlCdata(&cdataDesc, element->attributeValue(QTest::AI_Description));
 
-        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n    <Description><![CDATA[%s]]></Description>\n</Message>\n",
+        QTestCharBuffer tagbuf;
+        if (element->attribute(QTest::AI_Tag)) {
+            QTestCharBuffer cdataTag;
+            QXmlTestLogger::xmlCdata(&cdataTag, element->attributeValue(QTest::AI_Tag));
+            QTest::qt_asprintf(&tagbuf, "    <DataTag><![CDATA[%s]]></DataTag>\n", cdataTag.constData());
+        }
+
+        QTest::qt_asprintf(formatted, "<Message type=\"%s\" %s=\"%s\" %s=\"%s\">\n%s    <Description><![CDATA[%s]]></Description>\n</Message>\n",
                            element->attributeValue(QTest::AI_Type),
                            element->attributeName(QTest::AI_File),
                            quotedFile.constData(),
                            element->attributeName(QTest::AI_Line),
                            element->attributeValue(QTest::AI_Line),
+                           tagbuf.constData(),
                            cdataDesc.constData());
         break;
     }
@@ -149,7 +157,29 @@ void QTestXmlStreamer::formatEnd(const QTestElement *element, QTestCharBuffer *f
         return;
 
     if (element->elementType() == QTest::LET_TestCase) {
-        QTest::qt_asprintf(formatted, "</TestFunction>\n");
+        bool failed = false;
+        for (QTestElement* child = element->childElements(); child; child = child->nextElement()) {
+            if (   child->elementType() == QTest::LET_Failure
+                && child->attribute(QTest::AI_Result)
+                && (    !strcmp(child->attributeValue(QTest::AI_Result), "fail")
+                    ||  !strcmp(child->attributeValue(QTest::AI_Result), "xpass"))
+                )
+            {
+                failed = true;
+                break;
+            }
+        }
+
+        // For passing functions, no Incident has been output yet.
+        // For failing functions, we already output one.
+        // Please note: we are outputting "pass" even if there was an xfail etc.
+        // This is by design (arguably bad design, but dangerous to change now!)
+        if (element->attribute(QTest::AI_Result) && !failed) {
+            QTest::qt_asprintf(formatted, "<Incident type=\"pass\" file=\"\" line=\"0\" />\n</TestFunction>\n");
+        }
+        else {
+            QTest::qt_asprintf(formatted, "</TestFunction>\n");
+        }
     } else {
         formatted->data()[0] = '\0';
     }
@@ -157,29 +187,11 @@ void QTestXmlStreamer::formatEnd(const QTestElement *element, QTestCharBuffer *f
 
 void QTestXmlStreamer::formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
 {
-    if(!element || !formatted)
+    Q_UNUSED(element);
+    if (!formatted)
         return;
 
-    if (element->elementType() == QTest::LET_TestCase && element->attribute(QTest::AI_Result)){
-        QTestCharBuffer buf;
-        QTestCharBuffer quotedFile;
-        QXmlTestLogger::xmlQuote(&quotedFile, element->attributeValue(QTest::AI_File));
-
-        QTest::qt_asprintf(&buf, "%s=\"%s\" %s=\"%s\"",
-                           element->attributeName(QTest::AI_File),
-                           quotedFile.constData(),
-                           element->attributeName(QTest::AI_Line),
-                           element->attributeValue(QTest::AI_Line));
-
-        if( !element->childElements() ) {
-            QTest::qt_asprintf(formatted, "<Incident type=\"%s\" %s/>\n",
-                               element->attributeValue(QTest::AI_Result), buf.constData());
-        } else {
-            formatted->data()[0] = '\0';
-        }
-    } else {
-        formatted->data()[0] = '\0';
-    }
+    formatted->data()[0] = '\0';
 }
 
 void QTestXmlStreamer::output(QTestElement *element) const

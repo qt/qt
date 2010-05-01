@@ -569,6 +569,7 @@ private slots:
     void clear() const;
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
+    void qtbug9196_crash() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1526,6 +1527,17 @@ void tst_QXmlStream::checkCommentIndentation() const // task 256468
         }
     }
     QCOMPARE(output, expectedOutput);
+}
+
+void tst_QXmlStream::qtbug9196_crash() const
+{
+    // the following input used to produce a crash in the stream reader
+    QByteArray ba("<a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a>"
+                  "<a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a></a>");
+    QXmlStreamReader xml(ba);
+    while (!xml.atEnd()) {
+         xml.readNext();
+    }
 }
 
 #include "tst_qxmlstream.moc"

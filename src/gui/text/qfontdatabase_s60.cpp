@@ -92,22 +92,22 @@ QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameF
 }
 
 #if defined(QT_NO_FREETYPE)
-class QFontDatabaseS60StoreImplementation : public QFontDatabaseS60Store
+class QSymbianFontDatabaseExtrasImplementation : public QSymbianFontDatabaseExtras
 {
 public:
-    QFontDatabaseS60StoreImplementation();
-    ~QFontDatabaseS60StoreImplementation();
+    QSymbianFontDatabaseExtrasImplementation();
+    ~QSymbianFontDatabaseExtrasImplementation();
 
-    const QFontEngineS60Extensions *extension(const QString &typeface) const;
+    const QSymbianTypeFaceExtras *extras(const QString &typeface) const;
 
 private:
     RHeap* m_heap;
     CFontStore *m_store;
     COpenFontRasterizer *m_rasterizer;
-    mutable QHash<QString, const QFontEngineS60Extensions *> m_extensions;
+    mutable QHash<QString, const QSymbianTypeFaceExtras *> m_extras;
 };
 
-QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
+QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementation()
 {
     m_heap = User::ChunkHeap(NULL, 0x1000, 0x100000);
     QT_TRAP_THROWING(
@@ -127,10 +127,10 @@ QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
         QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
     }
 }
-QFontDatabaseS60StoreImplementation::~QFontDatabaseS60StoreImplementation()
+QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
 {
-    typedef QHash<QString, const QFontEngineS60Extensions *>::iterator iterator;
-    for (iterator p = m_extensions.begin(); p != m_extensions.end(); ++p) {
+    typedef QHash<QString, const QSymbianTypeFaceExtras *>::iterator iterator;
+    for (iterator p = m_extras.begin(); p != m_extras.end(); ++p) {
         m_store->ReleaseFont((*p)->fontOwner());
         delete *p;
     }
@@ -156,9 +156,9 @@ COpenFont* OpenFontFromBitmapFont(const CBitmapFont* aBitmapFont)
 }
 #endif // FNTSTORE_H_INLINES_SUPPORT_FMM
 
-const QFontEngineS60Extensions *QFontDatabaseS60StoreImplementation::extension(const QString &typeface) const
+const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(const QString &typeface) const
 {
-    if (!m_extensions.contains(typeface)) {
+    if (!m_extras.contains(typeface)) {
         CFont* font = NULL;
         TFontSpec spec(qt_QString2TPtrC(typeface), 1);
         spec.iHeight = 1;
@@ -171,9 +171,9 @@ const QFontEngineS60Extensions *QFontDatabaseS60StoreImplementation::extension(c
 #else
             OpenFontFromBitmapFont(bitmapFont);
 #endif // FNTSTORE_H_INLINES_SUPPORT_FMM
-        m_extensions.insert(typeface, new QFontEngineS60Extensions(font, openFont));
+        m_extras.insert(typeface, new QSymbianTypeFaceExtras(font, openFont));
     }
-    return m_extensions.value(typeface);
+    return m_extras.value(typeface);
 }
 #else
 class QFontEngineFTS60 : public QFontEngineFT
@@ -240,14 +240,14 @@ static void initializeDb()
         return;
 
 #if defined(QT_NO_FREETYPE)
-    if (!db->s60Store)
-        db->s60Store = new QFontDatabaseS60StoreImplementation;
+    if (!db->symbianExtras)
+        db->symbianExtras = new QSymbianFontDatabaseExtrasImplementation;
 
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
     
     const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
-    const QFontDatabaseS60StoreImplementation *store =
-            static_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
+    const QSymbianFontDatabaseExtrasImplementation *dbExtras =
+            static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
     bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
@@ -273,8 +273,8 @@ static void initializeDb()
             style->smoothScalable = typefaceSupport.iIsScalable;
             style->pixelSize(0, true);
 
-            const QFontEngineS60Extensions *extension = store->extension(familyName);
-            const QByteArray os2Table = extension->getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
+            const QSymbianTypeFaceExtras *typeFaceExtras = dbExtras->extras(familyName);
+            const QByteArray os2Table = typeFaceExtras->getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
             const unsigned char* data = reinterpret_cast<const unsigned char*>(os2Table.constData());
             const unsigned char* ulUnicodeRange = data + 42;
             quint32 unicodeRange[4] = {
@@ -394,10 +394,10 @@ QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *, const QFo
         QFontDef request = req;
         request.family = fontFamily;
 #if defined(QT_NO_FREETYPE)
-        const QFontDatabaseS60StoreImplementation *store =
-                static_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
-        const QFontEngineS60Extensions *extension = store->extension(fontFamily);
-        fe = new QFontEngineS60(request, extension);
+        const QSymbianFontDatabaseExtrasImplementation *dbExtras =
+                static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
+        const QSymbianTypeFaceExtras *typeFaceExtras = dbExtras->extras(fontFamily);
+        fe = new QFontEngineS60(request, typeFaceExtras);
 #else
         QFontEngine::FaceId faceId;
         const QtFontFamily * const reqQtFontFamily = db->family(fontFamily);

@@ -58,8 +58,6 @@ QT_BEGIN_NAMESPACE
 
 //#define DEBUG_AUDIO 1
 
-static const int minimumIntervalTime = 50;
-
 QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
     settings(audioFormat)
 {
@@ -84,8 +82,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioF
     resuming = false;
     opened = false;
 
-    QStringList list1 = QString(QLatin1String(device)).split(QLatin1String(":"));
-    m_device = QByteArray(list1.at(0).toLocal8Bit().constData());
+    m_device = device;
 
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),SLOT(userFeed()));
@@ -282,11 +279,11 @@ bool QAudioOutputPrivate::open()
     int count=0;
     unsigned int freakuency=settings.frequency();
 
-    QString dev = QLatin1String(m_device.constData());
+    QString dev = QString(QLatin1String(m_device.constData()));
     QList<QByteArray> devices = QAudioDeviceInfoInternal::availableDevices(QAudio::AudioOutput);
     if(dev.compare(QLatin1String("default")) == 0) {
 #if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
-        dev = QLatin1String(devices.first().constData());
+        dev = QLatin1String(devices.first());
 #else
         dev = QLatin1String("hw:0,0");
 #endif
@@ -574,10 +571,7 @@ int QAudioOutputPrivate::bufferSize() const
 
 void QAudioOutputPrivate::setNotifyInterval(int ms)
 {
-    if(ms >= minimumIntervalTime)
-        intervalTime = ms;
-    else
-        intervalTime = minimumIntervalTime;
+    intervalTime = qMax(0, ms);
 }
 
 int QAudioOutputPrivate::notifyInterval() const
@@ -719,7 +713,7 @@ bool QAudioOutputPrivate::deviceReady()
     if(deviceState != QAudio::ActiveState)
         return true;
 
-    if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
+    if(intervalTime && (timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
         elapsedTimeOffset = timeStamp.elapsed() + elapsedTimeOffset - intervalTime;
         timeStamp.restart();
