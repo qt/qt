@@ -41,7 +41,7 @@
 
 #include "qfactoryloader_p.h"
 
-#if !defined (QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 #include "qfactoryinterface.h"
 #include "qmap.h"
 #include <qdir.h>

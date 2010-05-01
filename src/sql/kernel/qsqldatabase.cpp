@@ -98,7 +98,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QSqlDriverFactoryInterface_iid,
                            QLatin1String("/sqldrivers")))
@@ -576,7 +576,7 @@ QStringList QSqlDatabase::drivers()
     list << QLatin1String("QIBASE");
 #endif
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     if (QFactoryLoader *fl = loader()) {
         QStringList keys = fl->keys();
         for (QStringList::const_iterator i = keys.constBegin(); i != keys.constEnd(); ++i) {
@@ -774,7 +774,7 @@ void QSqlDatabasePrivate::init(const QString &type)
         }
     }
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     if (!driver && loader()) {
         if (QSqlDriverFactoryInterface *factory = qobject_cast<QSqlDriverFactoryInterface*>(loader()->instance(type)))
             driver = factory->create(type);

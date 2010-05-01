@@ -81,7 +81,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 #endif
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QStyleFactoryInterface_iid, QLatin1String("/styles"), Qt::CaseInsensitive))
 #endif

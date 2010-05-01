@@ -46,12 +46,13 @@
 
 class Node;
 
+//! [0]
 class GraphWidget : public QGraphicsView
 {
     Q_OBJECT
 
 public:
-    GraphWidget();
+    GraphWidget(QWidget *parent = 0);
 
     void itemMoved();
 
@@ -67,5 +68,6 @@ private:
     int timerId;
     Node *centerNode;
 };
+//! [0]
 
 #endif
