@@ -98,18 +98,26 @@ public:
     QSymbianFontDatabaseExtrasImplementation();
     ~QSymbianFontDatabaseExtrasImplementation();
 
-    const QSymbianTypeFaceExtras *extras(const QString &typeface) const;
+    const QSymbianTypeFaceExtras *extras(const QString &typeface, bool bold, bool italic) const;
 
 private:
     RHeap* m_heap;
     CFontStore *m_store;
     COpenFontRasterizer *m_rasterizer;
-    mutable QHash<QString, const QSymbianTypeFaceExtras *> m_extras;
+    mutable QList<const QSymbianTypeFaceExtras *> m_extras;
+    mutable QHash<QString, const QSymbianTypeFaceExtras *> m_extrasHash;
 };
 
 QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementation()
 {
-    m_heap = User::ChunkHeap(NULL, 0x1000, 0x100000);
+    QStringList filters;
+    filters.append(QLatin1String("*.ttf"));
+    filters.append(QLatin1String("*.ccc"));
+    const QFileInfoList fontFiles = alternativeFilePaths(QLatin1String("resource\\Fonts"), filters);
+
+    const TInt heapMinLength = 0x1000;
+    const TInt heapMaxLength = qMax(0x20000 * fontFiles.count(), heapMinLength);
+    m_heap = User::ChunkHeap(NULL, heapMinLength, heapMaxLength);
     QT_TRAP_THROWING(
         m_store = CFontStore::NewL(m_heap);
         m_rasterizer = COpenFontRasterizer::NewL(TUid::Uid(0x101F7F5E));
@@ -117,19 +125,16 @@ QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementati
         m_store->InstallRasterizerL(m_rasterizer);
         CleanupStack::Pop(m_rasterizer););
 
-    QStringList filters;
-    filters.append(QString::fromLatin1("*.ttf"));
-    filters.append(QString::fromLatin1("*.ccc"));
-    const QFileInfoList fontFiles = alternativeFilePaths(QString::fromLatin1("resource\\Fonts"), filters);
     foreach (const QFileInfo &fontFileInfo, fontFiles) {
         const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
         TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
         QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
     }
 }
+
 QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
 {
-    typedef QHash<QString, const QSymbianTypeFaceExtras *>::iterator iterator;
+    typedef QList<const QSymbianTypeFaceExtras *>::iterator iterator;
     for (iterator p = m_extras.begin(); p != m_extras.end(); ++p) {
         m_store->ReleaseFont((*p)->fontOwner());
         delete *p;
@@ -156,13 +161,18 @@ COpenFont* OpenFontFromBitmapFont(const CBitmapFont* aBitmapFont)
 }
 #endif // FNTSTORE_H_INLINES_SUPPORT_FMM
 
-const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(const QString &typeface) const
+const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(const QString &typeface,
+                                                                               bool bold, bool italic) const
 {
-    if (!m_extras.contains(typeface)) {
+    const QString searchKey = typeface + QString::number(int(bold)) + QString::number(int(italic));
+    if (!m_extrasHash.contains(searchKey)) {
         CFont* font = NULL;
-        TFontSpec spec(qt_QString2TPtrC(typeface), 1);
-        spec.iHeight = 1;
-        const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, spec);
+        TFontSpec searchSpec(qt_QString2TPtrC(typeface), 1);
+        if (bold)
+            searchSpec.iFontStyle.SetStrokeWeight(EStrokeWeightBold);
+        if (italic)
+            searchSpec.iFontStyle.SetPosture(EPostureItalic);
+        const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, searchSpec);
         Q_ASSERT(err == KErrNone && font);
         const CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
         COpenFont *openFont =
@@ -171,9 +181,20 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
 #else
             OpenFontFromBitmapFont(bitmapFont);
 #endif // FNTSTORE_H_INLINES_SUPPORT_FMM
-        m_extras.insert(typeface, new QSymbianTypeFaceExtras(font, openFont));
+        const TOpenFontFaceAttrib* const attrib = openFont->FaceAttrib();
+        const QString foundKey =
+                QString((const QChar*)attrib->FullName().Ptr(), attrib->FullName().Length());
+        if (!m_extrasHash.contains(foundKey)) {
+            QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font, openFont);
+            m_extras.append(extras);
+            m_extrasHash.insert(searchKey, extras);
+            m_extrasHash.insert(foundKey, extras);
+        } else {
+            m_store->ReleaseFont(font);
+            m_extrasHash.insert(searchKey, m_extrasHash.value(foundKey));
+        }
     }
-    return m_extras.value(typeface);
+    return m_extrasHash.value(searchKey);
 }
 #else
 class QFontEngineFTS60 : public QFontEngineFT
@@ -273,7 +294,8 @@ static void initializeDb()
             style->smoothScalable = typefaceSupport.iIsScalable;
             style->pixelSize(0, true);
 
-            const QSymbianTypeFaceExtras *typeFaceExtras = dbExtras->extras(familyName);
+            const QSymbianTypeFaceExtras *typeFaceExtras =
+                    dbExtras->extras(familyName, faceAttrib.IsBold(), faceAttrib.IsItalic());
             const QByteArray os2Table = typeFaceExtras->getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
             const unsigned char* data = reinterpret_cast<const unsigned char*>(os2Table.constData());
             const unsigned char* ulUnicodeRange = data + 42;
@@ -396,7 +418,8 @@ QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *, const QFo
 #if defined(QT_NO_FREETYPE)
         const QSymbianFontDatabaseExtrasImplementation *dbExtras =
                 static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
-        const QSymbianTypeFaceExtras *typeFaceExtras = dbExtras->extras(fontFamily);
+        const QSymbianTypeFaceExtras *typeFaceExtras =
+                dbExtras->extras(fontFamily, request.weight > QFont::Normal, request.style != QFont::StyleNormal);
         fe = new QFontEngineS60(request, typeFaceExtras);
 #else
         QFontEngine::FaceId faceId;
