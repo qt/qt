@@ -1120,9 +1120,9 @@ void tst_QFileInfo::isHidden_data()
         t << "foobar";
 
         QFile file2(notHiddenFileName);
-        QVERIFY(file2.open(QIODevice::WriteOnly))
-        QTextStream t(&file);
-        t << "foobar";
+        QVERIFY(file2.open(QIODevice::WriteOnly));
+        QTextStream t2(&file2);
+        t2 << "foobar";
     }
 
     RFs rfs;
