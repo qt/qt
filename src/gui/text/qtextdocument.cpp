@@ -1704,7 +1704,7 @@ void QTextDocument::print(QPrinter *printer) const
         return;
 
     const QTextDocument *doc = this;
-    QTextDocument *clonedDoc = 0;
+    QScopedPointer<QTextDocument> clonedDoc;
     (void)doc->documentLayout(); // make sure that there is a layout
 
     QRectF body = QRectF(QPointF(0, 0), d->pageSize);
@@ -1737,7 +1737,7 @@ void QTextDocument::print(QPrinter *printer) const
                 printerPageSize.height() / scaledPageSize.height());
     } else {
         doc = clone(const_cast<QTextDocument *>(this));
-        clonedDoc = const_cast<QTextDocument *>(doc);
+        clonedDoc.reset(const_cast<QTextDocument *>(doc));
 
         for (QTextBlock srcBlock = firstBlock(), dstBlock = clonedDoc->firstBlock();
              srcBlock.isValid() && dstBlock.isValid();
@@ -1812,7 +1812,7 @@ void QTextDocument::print(QPrinter *printer) const
             for (int j = 0; j < pageCopies; ++j) {
                 if (printer->printerState() == QPrinter::Aborted
                     || printer->printerState() == QPrinter::Error)
-                    goto UserCanceled;
+                    return;
                 printPage(page, &p, doc, body, pageNumberPos);
                 if (j < pageCopies - 1)
                     printer->newPage();
@@ -1832,9 +1832,6 @@ void QTextDocument::print(QPrinter *printer) const
         if ( i < docCopies - 1)
             printer->newPage();
     }
-
-UserCanceled:
-    delete clonedDoc;
 }
 #endif
 
