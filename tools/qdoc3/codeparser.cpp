@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 
 QList<CodeParser *> CodeParser::parsers;
 bool CodeParser::showInternal = false;
+QMap<QString,QString> CodeParser::nameToTitle;
 
 /*!
   The constructor adds this code parser to the static
@@ -250,10 +251,20 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	if (node->type() == Node::Fake) {
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setTitle(arg);
+            nameToTitle.insert(fake->name(),arg);
         }
         else
 	    location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));
     }
+}
+
+/*!
+  Find the page title given the page \a name and return it.
+ */
+const QString CodeParser::titleFromName(const QString& name)
+{
+    const QString t = nameToTitle.value(name);
+    return t;
 }
 
 QT_END_NAMESPACE

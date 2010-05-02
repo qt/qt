@@ -57,6 +57,7 @@
 
 #ifdef __OBJC__
 #include <Cocoa/Cocoa.h>
+#include <objc/runtime.h>
 #endif
 
 #include <CoreServices/CoreServices.h>

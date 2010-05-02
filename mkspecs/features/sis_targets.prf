@@ -1,5 +1,5 @@
 # Sis file creation
-contains(TEMPLATE, app)|!isEmpty(DEPLOYMENT) {
+contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
     symbian-abld|symbian-sbsv2 {
         sis_destdir =
         make_cache_name = .make.cache

@@ -97,6 +97,9 @@ void ExpectedEventList::compareMouseEvents(QEvent *received, QEvent *expected)
 {
     QMouseEvent *e1 = static_cast<QMouseEvent *>(received);
     QMouseEvent *e2 = static_cast<QMouseEvent *>(expected);
+
+    // Do a manual check first to be able to write more sensible
+    // debug output if we know we're going to fail:
     if (e1->pos() == e2->pos()
             && (e1->globalPos() == e2->globalPos())
             && (e1->button() == e2->button())
@@ -104,6 +107,9 @@ void ExpectedEventList::compareMouseEvents(QEvent *received, QEvent *expected)
             && (e1->modifiers() == e2->modifiers()))
         return; // equal
 
+    // INVARIANT: The two events are not equal. So we fail. Depending
+    // on whether debug mode is no or not, we let QTest fail. Otherwise
+    // we let the test continue for debugging puposes.
     int eventListNr = eventCount - eventList.size();
     if (!debug) {
         qWarning() << "Expected event" << eventListNr << "differs from received event:";
@@ -119,12 +125,34 @@ void ExpectedEventList::compareMouseEvents(QEvent *received, QEvent *expected)
     }
 }
 
-void ExpectedEventList::compareKeyEvents(QEvent *event1, QEvent *event2)
+void ExpectedEventList::compareKeyEvents(QEvent *received, QEvent *expected)
 {
-    QKeyEvent *e1 = static_cast<QKeyEvent *>(event1);
-    QKeyEvent *e2 = static_cast<QKeyEvent *>(event2);
-    Q_UNUSED(e1);
-    Q_UNUSED(e2);
+    QKeyEvent *e1 = static_cast<QKeyEvent *>(received);
+    QKeyEvent *e2 = static_cast<QKeyEvent *>(expected);
+
+    // Do a manual check first to be able to write more sensible
+    // debug output if we know we're going to fail:
+    if (e1->key() == e2->key()
+            && (e1->modifiers() == e2->modifiers())
+            && (e1->count() == e2->count())
+            && (e1->isAutoRepeat() == e2->isAutoRepeat()))
+        return; // equal
+
+    // INVARIANT: The two events are not equal. So we fail. Depending
+    // on whether debug mode is no or not, we let QTest fail. Otherwise
+    // we let the test continue for debugging puposes.
+    int eventListNr = eventCount - eventList.size();
+    if (!debug) {
+        qWarning() << "Expected event" << eventListNr << "differs from received event:";
+        QCOMPARE(e1->key(), e2->key());
+        QCOMPARE(e1->modifiers(), e2->modifiers());
+        QCOMPARE(e1->count(), e2->count());
+        QCOMPARE(e1->isAutoRepeat(), e2->isAutoRepeat());
+    } else {
+        qWarning() << "*** FAIL *** : Expected event" << eventListNr << "differs from received event:";
+        qWarning() << "Received:" << e1 << e1->key();
+        qWarning() << "Expected:" << e2 << e2->key();
+    }
 }
 
 bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
@@ -149,10 +177,9 @@ bool ExpectedEventList::eventFilter(QObject *, QEvent *received)
                 compareMouseEvents(received, expected);
                 break;
             }
-            case QEvent::KeyPress: {
-                break;
-            }
+            case QEvent::KeyPress:
             case QEvent::KeyRelease: {
+                compareKeyEvents(received, expected);
                 break;
             }
             case QEvent::Resize: {

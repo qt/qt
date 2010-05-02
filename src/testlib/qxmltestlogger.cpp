@@ -244,7 +244,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     QTestCharBuffer quotedTag;
 
     xmlQuote(&quotedMetric,
-        benchmarkMetricUnit(result.metric));
+        benchmarkMetricName(result.metric));
     xmlQuote(&quotedTag, result.context.tag.toAscii().constData());
 
     QTest::qt_asprintf(

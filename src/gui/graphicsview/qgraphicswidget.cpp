@@ -324,11 +324,9 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
-
   \fn QGraphicsWidget::geometryChanged()
 
-  This signal gets emitted whenever the geometry of the item changes
-  \internal
+  This signal gets emitted whenever the geometry is changed in setGeometry().
 */
 
 /*!
@@ -406,12 +404,6 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         QApplication::sendEvent(this, &re);
     }
 }
-
-/*!
-  \fn QGraphicsWidget::geometryChanged()
-
-  This signal gets emitted whenever the geometry is changed in setGeometry().
-*/
 
 /*!
     \fn QRectF QGraphicsWidget::rect() const
