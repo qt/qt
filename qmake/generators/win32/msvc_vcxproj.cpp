@@ -294,14 +294,12 @@ void VcxprojGenerator::initCompilerTool()
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
     if(project->isActiveConfig("debug")){
         // Debug version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_DEBUG"));
         if((projectTarget == Application) || (projectTarget == StaticLib))
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DBG"));
         else
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DLLDBG"));
     } else {
         // Release version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_RELEASE"));
         conf.compiler.PreprocessorDefinitions += "QT_NO_DEBUG";
         conf.compiler.PreprocessorDefinitions += "NDEBUG";
         if((projectTarget == Application) || (projectTarget == StaticLib))
@@ -311,10 +309,6 @@ void VcxprojGenerator::initCompilerTool()
     }
 
     // Common for both release and debug
-    if(project->isActiveConfig("warn_off"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_OFF"));
-    else if(project->isActiveConfig("warn_on"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_ON"));
     if(project->isActiveConfig("windows"))
         conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
 
@@ -363,22 +357,9 @@ void VcxprojGenerator::initLinkerTool()
 
     conf.linker.OutputFile += project->first("MSVCPROJ_TARGET");
 
-    if(project->isActiveConfig("debug")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_DEBUG"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_RELEASE"));
-    }
-
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
     }
-
-    if(project->isActiveConfig("console")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_CONSOLE"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_WINDOWS"));
-    }
-
 }
 
 void VcxprojGenerator::initResourceTool()
@@ -403,20 +384,24 @@ void VcxprojGenerator::initPostBuildEventTools()
         QString cmdline = var("QMAKE_POST_LINK");
         conf.postBuild.CommandLine = cmdline;
         conf.postBuild.Description = cmdline;
+        conf.postBuild.UseInBuild = _True;
     }
 
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
-    if(useSignature)
-        conf.postBuild.CommandLine.prepend(QLatin1String("signtool sign /F ") + signature + " \"$(TargetPath)\"\n" +
-            (!conf.postBuild.CommandLine.isEmpty() ? " && " : ""));
+    if(useSignature) {
+         conf.postBuild.CommandLine.prepend(QLatin1String("signtool sign /F ") + signature + " \"$(TargetPath)\"\n" +
+             (!conf.postBuild.CommandLine.isEmpty() ? " && " : ""));
+        conf.postBuild.UseInBuild = _True;
+    }
 
     if(!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
         if(!conf.postBuild.CommandLine.isEmpty())
             conf.postBuild.CommandLine += " && ";
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
+        conf.postBuild.UseInBuild = _True;
     }
 }
 
@@ -549,6 +534,7 @@ void VcxprojGenerator::initPreLinkEventTools()
         QString cmdline = var("QMAKE_PRE_LINK");
         conf.preLink.Description = cmdline;
         conf.preLink.CommandLine = cmdline;
+        conf.preLink.UseInBuild = _True;
     }
 }
 
