@@ -44,6 +44,7 @@
 
 #include <QGraphicsItem>
 
+//! [0]
 class ColorItem : public QGraphicsItem
 {
 public:
@@ -60,5 +61,6 @@ protected:
 private:
     QColor color;
 };
+//! [0]
 
 #endif
