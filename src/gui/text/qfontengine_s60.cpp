@@ -59,13 +59,10 @@ QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* fontOwner, COpenFont *font
     , m_symbolCMap(false)
     , m_fontOwner(fontOwner)
 {
-    TAny *shapingExtension = NULL;
-    m_font->ExtendedInterface(KUidOpenFontShapingExtension, shapingExtension);
-    m_shapingExtension = static_cast<MOpenFontShapingExtension*>(shapingExtension);
     TAny *trueTypeExtension = NULL;
     m_font->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
     m_trueTypeExtension = static_cast<MOpenFontTrueTypeExtension*>(trueTypeExtension);
-    Q_ASSERT(m_shapingExtension && m_trueTypeExtension);
+    Q_ASSERT(m_trueTypeExtension);
 }
 
 QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
@@ -112,26 +109,6 @@ const unsigned char *QSymbianTypeFaceExtras::cmap() const
         m_cmap = QFontEngineS60::getCMap(reinterpret_cast<const uchar *>(m_cmapTable.constData()), m_cmapTable.size(), &m_symbolCMap, &size);
     }
     return m_cmap;
-}
-
-QPainterPath QSymbianTypeFaceExtras::glyphOutline(glyph_t glyph) const
-{
-    QPainterPath result;
-    QPolygonF polygon;
-    TInt glyphIndex = glyph;
-    TInt pointNumber = 0;
-    TInt x, y;
-    while (m_shapingExtension->GlyphPointInFontUnits(glyphIndex, pointNumber++, x, y)) {
-        const QPointF point(qreal(x) / 0xffff, qreal(y) / 0xffff);
-        if (polygon.contains(point)) {
-            result.addPolygon(polygon);
-            result.closeSubpath();
-            polygon.clear();
-        } else {
-            polygon.append(point);
-        }
-    }
-    return result;
 }
 
 CFont *QSymbianTypeFaceExtras::fontOwner() const

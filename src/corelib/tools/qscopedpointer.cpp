@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     called resource acquisition is initialization(RAII).
 
     QScopedPointer guarantees that the object pointed to will get deleted when
-    the current scope dissapears.
+    the current scope disappears.
 
     Consider this function which does heap allocations, and have various exit points:
 
@@ -227,7 +227,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QScopedArrayPointer
-  
+
   \brief The QScopedArrayPointer class stores a pointer to a
   dynamically allocated array of objects, and deletes it upon
   destruction.
