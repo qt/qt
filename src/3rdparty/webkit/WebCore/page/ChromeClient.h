@@ -56,6 +56,7 @@ namespace WebCore {
     class Widget;
 
     struct FrameLoadRequest;
+    struct ViewportArguments;
     struct WindowFeatures;
 
 #if USE(ACCELERATED_COMPOSITING)
@@ -145,6 +146,8 @@ namespace WebCore {
 
         virtual void setToolTip(const String&, TextDirection) = 0;
 
+        virtual void didReceiveViewportArguments(Frame*, const ViewportArguments&) const { }
+
         virtual void print(Frame*) = 0;
 
 #if ENABLE(DATABASE)
@@ -211,6 +214,9 @@ namespace WebCore {
         // Sets a flag to specify that the view needs to be updated, so we need
         // to do an eager layout before the drawing.
         virtual void scheduleCompositingLayerSync() = 0;
+        // Returns whether or not the client can render the composited layer,
+        // regardless of the settings.
+        virtual bool allowsAcceleratedCompositing() const { return true; }
 #endif
 
         virtual bool supportsFullscreenForNode(const Node*) { return false; }
@@ -231,10 +237,11 @@ namespace WebCore {
 #endif
 
 #if ENABLE(WIDGETS_10_SUPPORT)
-        virtual bool isDocked() { return false; }
+        virtual bool isWindowed() { return false; }
         virtual bool isFloating() { return false; }
-        virtual bool isApplication() { return false; }
         virtual bool isFullscreen() { return false; }
+        virtual bool isMaximized() { return false; }
+        virtual bool isMinimized() { return false; }
 #endif
 
     protected:
