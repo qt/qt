@@ -115,7 +115,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 62 "css\\CSSGrammar.y"
+#line 62 "css/CSSGrammar.y"
 
     bool boolean;
     char character;
@@ -142,7 +142,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 144 "C:/dev/webkit-2.0/WebCore/generated/CSSGrammar.tab.h"
+#line 144 "/WebCore/generated/CSSGrammar.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

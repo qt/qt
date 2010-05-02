@@ -1226,6 +1226,8 @@
             'dom/UIEvent.h',
             'dom/UIEventWithKeyState.cpp',
             'dom/UIEventWithKeyState.h',
+            'dom/ViewportArguments.cpp',
+            'dom/ViewportArguments.h',
             'dom/WebKitAnimationEvent.cpp',
             'dom/WebKitAnimationEvent.h',
             'dom/WebKitTransitionEvent.cpp',

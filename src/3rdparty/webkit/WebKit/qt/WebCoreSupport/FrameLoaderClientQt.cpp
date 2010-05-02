@@ -1176,6 +1176,8 @@ public:
         platformWidget()->setMask(clipRegion);
 
         handleVisibility();
+
+        platformWidget()->update();
     }
 
     virtual void show()
