@@ -209,10 +209,9 @@ QString FilterWidget::text() const
 
 void FilterWidget::checkButton(const QString &text)
 {
-    static QString oldtext;
-    if (oldtext.isEmpty() || text.isEmpty())
+    if (m_oldText.isEmpty() || text.isEmpty())
         m_button->animateShow(!m_editor->text().isEmpty());
-    oldtext = text;
+    m_oldText = text;
 }
 
 void FilterWidget::reset()
