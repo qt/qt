@@ -78,9 +78,12 @@ public:
     static QPointer<QGraphicsSystemCursor> getInstance() { return instance; }
 
 protected:
-    static QPointer<QGraphicsSystemCursor> instance;    // limit 1 cursor at a time
-
     QPlatformScreen* screen;  // Where to request an update
+
+private:
+    static QPointer<QGraphicsSystemCursor> instance;    // limit 1 cursor at a time
+    friend void qt_lite_set_cursor(QWidget * w, bool force);
+    friend class QApplicationPrivate;
 };
 
 QT_END_NAMESPACE
