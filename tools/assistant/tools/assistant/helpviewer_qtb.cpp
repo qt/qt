@@ -68,7 +68,7 @@ HelpViewer::HelpViewer(qreal zoom)
     QFont font = viewerFont();
     font.setPointSize(int(font.pointSize() + zoom));
     setViewerFont(font);
-    connect(this, SIGNAL(sourceChanged(QUrl), this, SIGNAL(titleChanged()));
+    connect(this, SIGNAL(sourceChanged(QUrl)), this, SIGNAL(titleChanged()));
 }
 
 HelpViewer::~HelpViewer()
