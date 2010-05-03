@@ -181,6 +181,7 @@ namespace QTest {
                 hbuffer->Des().Copy(ptr.Mid(i, size));
                 RDebug::Print(format, hbuffer);
             }
+            delete hbuffer;
         }
         else {
             // fast, no allocations, but truncates silently
