@@ -2997,7 +2997,9 @@ bool qt_check_std3rules(const QChar *uc, int len)
         // only LDH is present
         if (c == '-' || (c >= '0' && c <= '9')
             || (c >= 'A' && c <= 'Z')
-            || (c >= 'a' && c <= 'z'))
+            || (c >= 'a' && c <= 'z')
+            //underscore is not supposed to be allowed, but other browser accept it (QTBUG-7434)
+            || c == '_')
             continue;
 
         return false;

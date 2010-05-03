@@ -3751,7 +3751,7 @@ bool QSvgHandler::characters(const QStringRef &str)
         QCss::Parser(css).parse(&sheet);
         m_selector->styleSheets.append(sheet);
         return true;
-    } else if (m_skipNodes.isEmpty() || m_skipNodes.top() == Unknown)
+    } else if (m_skipNodes.isEmpty() || m_skipNodes.top() == Unknown || m_nodes.isEmpty())
         return true;
 
     if (m_nodes.top()->type() == QSvgNode::TEXT || m_nodes.top()->type() == QSvgNode::TEXTAREA) {
