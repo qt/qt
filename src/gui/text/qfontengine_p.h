@@ -173,6 +173,10 @@ public:
 #endif
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                  QPainterPath *path, QTextItem::RenderFlags flags);
+
+    /* Creates a QFont object to represent this particular QFontEngine */
+    virtual QFont createExplicitFont() const;
+
     void getGlyphPositions(const QGlyphLayout &glyphs, const QTransform &matrix, QTextItem::RenderFlags flags,
                            QVarLengthArray<glyph_t> &glyphs_out, QVarLengthArray<QFixedPoint> &positions);
 
@@ -252,6 +256,7 @@ public:
     int glyphFormat;
 
 protected:
+    QFont createExplicitFontWithName(const QString &familyName) const;
     static const QVector<QRgb> &grayPalette();
 
 private:
@@ -454,7 +459,7 @@ public:
     virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
-
+    virtual QFont createExplicitFont() const;
 
 private:
     QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
@@ -519,6 +524,8 @@ public:
     virtual QFixed xHeight() const;
     virtual qreal maxCharWidth() const;
     virtual QFixed averageCharWidth() const;
+
+    virtual QFont createExplicitFont() const;
 
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs,
                                  QPainterPath *path, QTextItem::RenderFlags);
