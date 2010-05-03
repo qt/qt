@@ -45,7 +45,6 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qlabel.h>
-#include <qboxlayout.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -121,8 +120,6 @@ class tst_QTabWidget:public QObject {
     void clear();
     void keyboardNavigation();
     void paintEventCount();
-    void heightForWidth();
-    void heightForWidth_data();
 
   private:
     int addPage();
@@ -627,50 +624,6 @@ void tst_QTabWidget::paintEventCount()
     QCOMPARE(tab2->count, 1);
 }
 
-void tst_QTabWidget::heightForWidth_data()
-{
-    QTest::addColumn<int>("tabPosition");
-    QTest::newRow("West") << int(QTabWidget::West);
-    QTest::newRow("North") << int(QTabWidget::North);
-    QTest::newRow("East") << int(QTabWidget::East);
-    QTest::newRow("South") << int(QTabWidget::South);
-}
-
-void tst_QTabWidget::heightForWidth()
-{
-    QFETCH(int, tabPosition);
-
-    QWidget *window = new QWidget;
-    QVBoxLayout *lay = new QVBoxLayout(window);
-    lay->setMargin(0);
-    lay->setSpacing(0);
-    QTabWidget *tabWid = new QTabWidget(window);
-    QWidget *w = new QWidget;
-    tabWid->addTab(w, QLatin1String("HFW page"));
-    tabWid->setTabPosition(QTabWidget::TabPosition(tabPosition));
-    QVBoxLayout *lay2 = new QVBoxLayout(w);
-    QLabel *label = new QLabel("Label with wordwrap turned on makes it trade height for width."
-                               " Make it a really long text so that it spans on several lines"
-                               " when the label is on its narrowest."
-                               " I don't like to repeat myself."
-                               " I don't like to repeat myself."
-                               " I don't like to repeat myself."
-                               " I don't like to repeat myself."
-                               );
-    label->setWordWrap(true);
-    lay2->addWidget(label);
-    lay2->setMargin(0);
-
-    lay->addWidget(tabWid);
-    int h = window->heightForWidth(160);
-    window->resize(160, h);
-    window->show();
-
-    QTest::qWaitForWindowShown(window);
-    QVERIFY(label->height() >= label->heightForWidth(label->width()));
-
-    delete window;
-}
 
 QTEST_MAIN(tst_QTabWidget)
 #include "tst_qtabwidget.moc"
