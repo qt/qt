@@ -43,16 +43,18 @@
 
 #include "robot.h"
 
+//! [0]
 RobotPart::RobotPart(QGraphicsItem *parent)
-    : QGraphicsItem(parent), color(Qt::lightGray), dragOver(false)
+    : QGraphicsObject(parent), color(Qt::lightGray), dragOver(false)
 {
     setAcceptDrops(true);
 }
+//! [0]
 
+//! [1]
 void RobotPart::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-    if (event->mimeData()->hasColor()
-        || (qgraphicsitem_cast<RobotHead *>(this) && event->mimeData()->hasImage())) {
+    if (event->mimeData()->hasColor()) {
         event->setAccepted(true);
         dragOver = true;
         update();
@@ -60,34 +62,42 @@ void RobotPart::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
         event->setAccepted(false);
     }
 }
+//! [1]
 
+//! [2]
 void RobotPart::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 {
     Q_UNUSED(event);
     dragOver = false;
     update();
 }
+//! [2]
 
+//! [3]
 void RobotPart::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     dragOver = false;
     if (event->mimeData()->hasColor())
         color = qVariantValue<QColor>(event->mimeData()->colorData());
-    else if (event->mimeData()->hasImage())
-        pixmap = qVariantValue<QPixmap>(event->mimeData()->imageData());
     update();
 }
+//! [3]
 
+//! [4]
 RobotHead::RobotHead(QGraphicsItem *parent)
     : RobotPart(parent)
 {
 }
+//! [4]
 
+//! [5]
 QRectF RobotHead::boundingRect() const
 {
     return QRectF(-15, -50, 30, 50);
 }
+//! [5]
 
+//! [6]
 void RobotHead::paint(QPainter *painter,
            const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
@@ -110,11 +120,33 @@ void RobotHead::paint(QPainter *painter,
         painter->drawPixmap(QPointF(-15 * 4.4, -50 * 3.54), pixmap);
     }
 }
+//! [6]
 
-int RobotHead::type() const
+//! [7]
+void RobotHead::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-    return Type;
+    if (event->mimeData()->hasImage()) {
+        event->setAccepted(true);
+        dragOver = true;
+        update();
+    } else {
+        RobotPart::dragEnterEvent(event);
+    }
 }
+//! [7]
+
+//! [8]
+void RobotHead::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+    if (event->mimeData()->hasImage()) {
+        dragOver = false;
+        pixmap = qVariantValue<QPixmap>(event->mimeData()->imageData());
+        update();
+    } else {
+        RobotPart::dropEvent(event);
+    }
+}
+//! [8]
 
 RobotTorso::RobotTorso(QGraphicsItem *parent)
     : RobotPart(parent)
@@ -161,19 +193,25 @@ void RobotLimb::paint(QPainter *painter,
     painter->drawEllipse(-5, -5, 10, 10);
 }
 
-Robot::Robot()
+//! [10]
+Robot::Robot(QGraphicsItem *parent)
+    : RobotPart(parent)
 {
-    QGraphicsItem *torsoItem = new RobotTorso(this);    
-    QGraphicsItem *headItem = new RobotHead(torsoItem);
-    QGraphicsItem *upperLeftArmItem = new RobotLimb(torsoItem);
-    QGraphicsItem *lowerLeftArmItem = new RobotLimb(upperLeftArmItem);
-    QGraphicsItem *upperRightArmItem = new RobotLimb(torsoItem);
-    QGraphicsItem *lowerRightArmItem = new RobotLimb(upperRightArmItem);
-    QGraphicsItem *upperRightLegItem = new RobotLimb(torsoItem);
-    QGraphicsItem *lowerRightLegItem = new RobotLimb(upperRightLegItem);
-    QGraphicsItem *upperLeftLegItem = new RobotLimb(torsoItem);
-    QGraphicsItem *lowerLeftLegItem = new RobotLimb(upperLeftLegItem);
-    
+    setFlag(ItemHasNoContents);
+
+    QGraphicsObject *torsoItem = new RobotTorso(this);
+    QGraphicsObject *headItem = new RobotHead(torsoItem);
+    QGraphicsObject *upperLeftArmItem = new RobotLimb(torsoItem);
+    QGraphicsObject *lowerLeftArmItem = new RobotLimb(upperLeftArmItem);
+    QGraphicsObject *upperRightArmItem = new RobotLimb(torsoItem);
+    QGraphicsObject *lowerRightArmItem = new RobotLimb(upperRightArmItem);
+    QGraphicsObject *upperRightLegItem = new RobotLimb(torsoItem);
+    QGraphicsObject *lowerRightLegItem = new RobotLimb(upperRightLegItem);
+    QGraphicsObject *upperLeftLegItem = new RobotLimb(torsoItem);
+    QGraphicsObject *lowerLeftLegItem = new RobotLimb(upperLeftLegItem);
+//! [10]
+
+//! [11]
     headItem->setPos(0, -18);
     upperLeftArmItem->setPos(-15, -10);
     lowerLeftArmItem->setPos(30, 0);
@@ -183,82 +221,78 @@ Robot::Robot()
     lowerRightLegItem->setPos(30, 0);
     upperLeftLegItem->setPos(-10, 32);
     lowerLeftLegItem->setPos(30, 0);
+//! [11]
 
-    timeLine = new QTimeLine;
+//! [12]
+    QParallelAnimationGroup *animation = new QParallelAnimationGroup(this);
 
-    QGraphicsItemAnimation *headAnimation = new QGraphicsItemAnimation;
-    headAnimation->setItem(headItem);
-    headAnimation->setTimeLine(timeLine);
-    headAnimation->setRotationAt(0, 20);
-    headAnimation->setRotationAt(1, -20);
-    headAnimation->setScaleAt(1, 1.1, 1.1);
+    QPropertyAnimation *headAnimation = new QPropertyAnimation(headItem, "rotation");
+    headAnimation->setStartValue(20);
+    headAnimation->setEndValue(-20);
+    QPropertyAnimation *headScaleAnimation = new QPropertyAnimation(headItem, "scale");
+    headScaleAnimation->setEndValue(1.1);
+    animation->addAnimation(headAnimation);
+    animation->addAnimation(headScaleAnimation);
+//! [12]
 
-    QGraphicsItemAnimation *upperLeftArmAnimation = new QGraphicsItemAnimation;
-    upperLeftArmAnimation->setItem(upperLeftArmItem);
-    upperLeftArmAnimation->setTimeLine(timeLine);
-    upperLeftArmAnimation->setRotationAt(0, 190);
-    upperLeftArmAnimation->setRotationAt(1, 180);
+    QPropertyAnimation *upperLeftArmAnimation = new QPropertyAnimation(upperLeftArmItem, "rotation");
+    upperLeftArmAnimation->setStartValue(190);
+    upperLeftArmAnimation->setEndValue(180);
+    animation->addAnimation(upperLeftArmAnimation);
 
-    QGraphicsItemAnimation *lowerLeftArmAnimation = new QGraphicsItemAnimation;
-    lowerLeftArmAnimation->setItem(lowerLeftArmItem);
-    lowerLeftArmAnimation->setTimeLine(timeLine);
-    lowerLeftArmAnimation->setRotationAt(0, 50);
-    lowerLeftArmAnimation->setRotationAt(1, 10);
-    
-    QGraphicsItemAnimation *upperRightArmAnimation = new QGraphicsItemAnimation;
-    upperRightArmAnimation->setItem(upperRightArmItem);
-    upperRightArmAnimation->setTimeLine(timeLine);
-    upperRightArmAnimation->setRotationAt(0, 300);
-    upperRightArmAnimation->setRotationAt(1, 310);
+    QPropertyAnimation *lowerLeftArmAnimation = new QPropertyAnimation(lowerLeftArmItem, "rotation");
+    lowerLeftArmAnimation->setStartValue(50);
+    lowerLeftArmAnimation->setEndValue(10);
+    animation->addAnimation(lowerLeftArmAnimation);
 
-    QGraphicsItemAnimation *lowerRightArmAnimation = new QGraphicsItemAnimation;
-    lowerRightArmAnimation->setItem(lowerRightArmItem);
-    lowerRightArmAnimation->setTimeLine(timeLine);
-    lowerRightArmAnimation->setRotationAt(0, 0);
-    lowerRightArmAnimation->setRotationAt(1, -70);
+    QPropertyAnimation *upperRightArmAnimation = new QPropertyAnimation(upperRightArmItem, "rotation");
+    upperRightArmAnimation->setStartValue(300);
+    upperRightArmAnimation->setEndValue(310);
+    animation->addAnimation(upperRightArmAnimation);
 
-    QGraphicsItemAnimation *upperLeftLegAnimation = new QGraphicsItemAnimation;
-    upperLeftLegAnimation->setItem(upperLeftLegItem);
-    upperLeftLegAnimation->setTimeLine(timeLine);
-    upperLeftLegAnimation->setRotationAt(0, 150);
-    upperLeftLegAnimation->setRotationAt(1, 80);
+    QPropertyAnimation *lowerRightArmAnimation = new QPropertyAnimation(lowerRightArmItem, "rotation");
+    lowerRightArmAnimation->setStartValue(0);
+    lowerRightArmAnimation->setEndValue(-70);
+    animation->addAnimation(lowerRightArmAnimation);
 
-    QGraphicsItemAnimation *lowerLeftLegAnimation = new QGraphicsItemAnimation;
-    lowerLeftLegAnimation->setItem(lowerLeftLegItem);
-    lowerLeftLegAnimation->setTimeLine(timeLine);
-    lowerLeftLegAnimation->setRotationAt(0, 70);
-    lowerLeftLegAnimation->setRotationAt(1, 10);
+    QPropertyAnimation *upperLeftLegAnimation = new QPropertyAnimation(upperLeftLegItem, "rotation");
+    upperLeftLegAnimation->setStartValue(150);
+    upperLeftLegAnimation->setEndValue(80);
+    animation->addAnimation(upperLeftLegAnimation);
 
-    QGraphicsItemAnimation *upperRightLegAnimation = new QGraphicsItemAnimation;
-    upperRightLegAnimation->setItem(upperRightLegItem);
-    upperRightLegAnimation->setTimeLine(timeLine);
-    upperRightLegAnimation->setRotationAt(0, 40);
-    upperRightLegAnimation->setRotationAt(1, 120);
-    
-    QGraphicsItemAnimation *lowerRightLegAnimation = new QGraphicsItemAnimation;
-    lowerRightLegAnimation->setItem(lowerRightLegItem);
-    lowerRightLegAnimation->setTimeLine(timeLine);
-    lowerRightLegAnimation->setRotationAt(0, 10);
-    lowerRightLegAnimation->setRotationAt(1, 50);
-    
-    QGraphicsItemAnimation *torsoAnimation = new QGraphicsItemAnimation;
-    torsoAnimation->setItem(torsoItem);
-    torsoAnimation->setTimeLine(timeLine);
-    torsoAnimation->setRotationAt(0, 5);
-    torsoAnimation->setRotationAt(1, -20);
+    QPropertyAnimation *lowerLeftLegAnimation = new QPropertyAnimation(lowerLeftLegItem, "rotation");
+    lowerLeftLegAnimation->setStartValue(70);
+    lowerLeftLegAnimation->setEndValue(10);
+    animation->addAnimation(lowerLeftLegAnimation);
 
-    timeLine->setUpdateInterval(1000 / 25);
-    timeLine->setCurveShape(QTimeLine::SineCurve);
-    timeLine->setLoopCount(0);
-    timeLine->setDuration(2000);
-    timeLine->start();
+    QPropertyAnimation *upperRightLegAnimation = new QPropertyAnimation(upperRightLegItem, "rotation");
+    upperRightLegAnimation->setStartValue(40);
+    upperRightLegAnimation->setEndValue(120);
+    animation->addAnimation(upperRightLegAnimation);
+
+    QPropertyAnimation *lowerRightLegAnimation = new QPropertyAnimation(lowerRightLegItem, "rotation");
+    lowerRightLegAnimation->setStartValue(10);
+    lowerRightLegAnimation->setEndValue(50);
+    animation->addAnimation(lowerRightLegAnimation);
+
+    QPropertyAnimation *torsoAnimation = new QPropertyAnimation(torsoItem, "rotation");
+    torsoAnimation->setStartValue(5);
+    torsoAnimation->setEndValue(-20);
+    animation->addAnimation(torsoAnimation);
+
+//! [13]
+    for (int i = 0; i < animation->animationCount(); ++i) {
+        QPropertyAnimation *anim = qobject_cast<QPropertyAnimation *>(animation->animationAt(i));
+        anim->setEasingCurve(QEasingCurve::SineCurve);
+        anim->setDuration(2000);
+    }
+
+    animation->setLoopCount(-1);
+    animation->start();
+//! [13]
 }
 
-Robot::~Robot()
-{
-    delete timeLine;
-}
-
+//! [9]
 QRectF Robot::boundingRect() const
 {
     return QRectF();
@@ -271,3 +305,4 @@ void Robot::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 }
+//! [9]

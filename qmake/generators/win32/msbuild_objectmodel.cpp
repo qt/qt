@@ -2837,6 +2837,18 @@ XmlOutput &operator<<(XmlOutput &xml, const VCXProjectSingleConfig &tool)
     // ResourceCompiler
     xml << tool.Configuration.resource;
 
+    // Post build event
+    if ( tool.Configuration.postBuild.UseInBuild != unset )
+        xml << tool.Configuration.postBuild;
+    
+    // Pre build event
+    if ( tool.Configuration.preBuild.UseInBuild != unset )
+        xml << tool.Configuration.preBuild;
+
+    // Pre link event
+    if ( tool.Configuration.preLink.UseInBuild != unset )
+        xml << tool.Configuration.preLink;
+
     xml << closetag();
 
     QFile filterFile;
@@ -3265,6 +3277,18 @@ XmlOutput &operator<<(XmlOutput &xml, VCXProject &tool)
 
         // ResourceCompiler
         xml << tool.SingleProjects.at(i).Configuration.resource;
+
+        // Post build event
+        if ( tool.SingleProjects.at(i).Configuration.postBuild.UseInBuild != unset )
+            xml << tool.SingleProjects.at(i).Configuration.postBuild;
+        
+        // Pre build event
+        if ( tool.SingleProjects.at(i).Configuration.preBuild.UseInBuild != unset )
+            xml << tool.SingleProjects.at(i).Configuration.preBuild;
+
+        // Pre link event
+        if ( tool.SingleProjects.at(i).Configuration.preLink.UseInBuild != unset )
+            xml << tool.SingleProjects.at(i).Configuration.preLink;
 
         xml << closetag();
     }

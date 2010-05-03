@@ -46,10 +46,11 @@
 
 QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
-class QTimeLine;
+class QParallelAnimationGroup;
 QT_END_NAMESPACE
 
-class RobotPart : public QGraphicsItem
+//! [0]
+class RobotPart : public QGraphicsObject
 {
 public:
     RobotPart(QGraphicsItem *parent = 0);
@@ -59,11 +60,12 @@ protected:
     void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
     void dropEvent(QGraphicsSceneDragDropEvent *event);
 
-    QPixmap pixmap;
     QColor color;
     bool dragOver;
 };
+//! [0]
 
+//! [1]
 class RobotHead : public RobotPart
 {
 public:
@@ -72,10 +74,16 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
-    enum { Type = UserType + 1 };
-    int type() const;
-};
+protected:
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    void dropEvent(QGraphicsSceneDragDropEvent *event);
 
+private:
+    QPixmap pixmap;
+};
+//! [1]
+
+//! [2]
 class RobotTorso : public RobotPart
 {
 public:
@@ -84,7 +92,9 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 };
+//! [2]
 
+//! [3]
 class RobotLimb : public RobotPart
 {
 public:
@@ -93,18 +103,17 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 };
+//! [3]
 
+//! [4]
 class Robot : public RobotPart
 {
 public:
-    Robot();
-    ~Robot();
+    Robot(QGraphicsItem *parent = 0);
     
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
-
-private:
-    QTimeLine *timeLine;    
 };
+//! [4]
 
 #endif

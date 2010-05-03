@@ -81,7 +81,7 @@ QGuiPlatformPlugin *qt_guiPlatformPlugin()
     static QGuiPlatformPlugin *plugin;
     if (!plugin)
     {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 
         QString key = QString::fromLocal8Bit(qgetenv("QT_PLATFORM_PLUGIN"));
 #ifdef Q_WS_X11
