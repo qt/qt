@@ -45,6 +45,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li><a href=\"modules.html\">All modules</a></li>\n" \
 			  "              <li><a href=\"classes.html\">All classes</a></li>\n" \
 			  "              <li><a href=\"functions.html\">All functions</a></li>\n" \
+			  "              <li><a href=\"namespaces.html\">All namespaces</a></li>\n" \
 			  "              <li><a href=\"platform-specific.html\">Platform specifics</a></li>\n" \
 			  "            </ul>\n" \
 			  "          </div>\n" \
@@ -57,10 +58,15 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "          <div class=\"list\">\n" \
 			  "            <ul>\n" \
 			  "              <li><a href=\"object.html\">QObject model</a></li>\n" \
-			  "              <li><a href=\"eventsandfilters.html\">Events, signals &amp; slots</a></li>\n" \
-			  "              <li><a href=\"paintsystem.html\">Graphics &amp; Paint system</a></li>\n" \
+			  "              <li><a href=\"signalsandslots.html\">Signals &amp; Slots</a></li>\n" \
+			  "              <li><a href=\"eventsandfilters.html\">Event handling</a></li>\n" \
 			  "              <li><a href=\"declarativeui.html\">Qt Quick</a></li>\n" \
-			  "              <li><a href=\"widgets-and-layouts.html\">Widget style &amp; layout</a></li>\n" \
+			  "              <li><a href=\"mainwindow.html\">The main window</a></li>\n" \
+			  "              <li><a href=\"widgets-and-layouts.html\">Widgets &amp; Layouts</a></li>\n" \
+			  "              <li><a href=\"dialogs.html\">Dialog windows</a></li>\n" \
+			  "              <li><a href=\"paintsystem.html\">The paint system</a></li>\n" \
+			  "              <li><a href=\"graphicsview.html\">Graphics views</a></li>\n" \
+			  "              <li><a href=\"model-view-programming.html\">Model&#47;View programming</a></li>\n" \
 			  "            </ul>\n" \
 			  "          </div>\n" \
 			  "          <div class=\"live\">\n" \

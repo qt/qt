@@ -107,6 +107,8 @@ private Q_SLOTS:
     void getMultiple();
     void getMultipleWithPipeliningAndMultiplePriorities();
     void getMultipleWithPriorities();
+
+    void getEmptyWithPipelining();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -978,6 +980,53 @@ void tst_QHttpNetworkConnection::getMultipleWithPriorities()
     }
 
     QTestEventLoop::instance().enterLoop(40);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
+
+
+class GetEmptyWithPipeliningReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    int receivedCount;
+    int requestCount;
+    GetEmptyWithPipeliningReceiver(int rq) : receivedCount(0),requestCount(rq) { }
+public Q_SLOTS:
+    void finishedSlot() {
+        QHttpNetworkReply *reply = (QHttpNetworkReply*) sender();
+        receivedCount++;
+
+        if (receivedCount == requestCount)
+            QTestEventLoop::instance().exitLoop();
+    }
+};
+
+void tst_QHttpNetworkConnection::getEmptyWithPipelining()
+{
+    quint16 requestCount = 50;
+    // use 2 connections.
+    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+    GetEmptyWithPipeliningReceiver receiver(requestCount);
+
+    QUrl url("http://" + QtNetworkSettings::serverName() + "/cgi-bin/echo.cgi"); // a get on this = getting an empty file
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+        QHttpNetworkRequest *request = 0;
+        request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
+        request->setPipeliningAllowed(true);
+
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        connect(reply, SIGNAL(finished()), &receiver, SLOT(finishedSlot()));
+        replies.append(reply);
+    }
+
+    QTestEventLoop::instance().enterLoop(20);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     qDeleteAll(requests);

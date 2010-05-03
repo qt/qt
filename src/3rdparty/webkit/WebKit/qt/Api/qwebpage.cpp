@@ -1492,7 +1492,7 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
                 // We can't access absoluteCaretBounds() while the view needs to layout.
                 return QVariant();
             }
-            return QVariant(frame->selection()->absoluteCaretBounds());
+            return QVariant(view->contentsToWindow(frame->selection()->absoluteCaretBounds()));
         }
         case Qt::ImFont: {
             if (renderTextControl) {
@@ -2048,9 +2048,9 @@ QWebPage *QWebPage::createWindow(WebWindowType type)
 }
 
 /*!
-    This function is called whenever WebKit encounters a HTML object element with type "application/x-qt-plugin".
-    The \a classid, \a url, \a paramNames and \a paramValues correspond to the HTML object element attributes and
-    child elements to configure the embeddable object.
+    This function is called whenever WebKit encounters a HTML object element with type "application/x-qt-plugin". It is
+    called regardless of the value of QWebSettings::PluginsEnabled. The \a classid, \a url, \a paramNames and \a paramValues
+    correspond to the HTML object element attributes and child elements to configure the embeddable object.
 */
 QObject *QWebPage::createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
@@ -2208,7 +2208,6 @@ void QWebPage::setViewportSize(const QSize &size) const
     if (frame->d->frame && frame->d->frame->view()) {
         WebCore::FrameView* view = frame->d->frame->view();
         view->setFrameRect(QRect(QPoint(0, 0), size));
-        view->forceLayout();
         view->adjustViewSize();
     }
 }

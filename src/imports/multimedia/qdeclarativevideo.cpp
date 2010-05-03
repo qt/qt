@@ -79,7 +79,24 @@ void QDeclarativeVideo::_q_error(int errorCode, const QString &errorString)
     import Qt 4.7
     import Qt.multimedia 4.7
 
-    Video { source: "video/movie.mpg" }
+    Video {
+        id: video
+        width : 800
+        height : 600
+        source: "video.avi"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                video.play()
+            }
+        }
+
+        focus: true
+        Keys.onSpacePressed: video.paused = !video.paused
+        Keys.onLeftPressed: video.position -= 5000
+        Keys.onRightPressed: video.position += 5000
+    }
     \endqml
 
     The Video item supports untransformed, stretched, and uniformly scaled video presentation.

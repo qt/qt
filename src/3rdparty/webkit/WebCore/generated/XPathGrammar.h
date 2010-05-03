@@ -67,7 +67,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 60 "xml\\XPathGrammar.y"
+#line 60 "xml/XPathGrammar.y"
 
     Step::Axis axis;
     Step::NodeTest* nodeTest;
@@ -83,7 +83,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 87 "C:/dev/webkit-2.0/WebCore/generated/XPathGrammar.tab.h"
+#line 87 "/WebCore/generated/XPathGrammar.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

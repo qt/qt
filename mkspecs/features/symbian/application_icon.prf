@@ -31,7 +31,11 @@ contains( CONFIG, no_icon ) {
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         !symbian-sbsv2 {
-            !contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON #absolute path
+            # Absolute path required for shadow builds.
+            # However, in older Symbian environments abld toolchain can't handle even moderately long
+            # paths, so don't force absolute there.
+            !symbian-abld:!contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON
+
             #Makefile: requires paths with backslash
             ICON_backslashed = $$ICON
 

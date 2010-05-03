@@ -183,8 +183,12 @@ public:
         else
             QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
 #else
-        QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::ExcludeSocketNotifiers
-                                        | QEventLoop::ExcludeUserInputEvents);
+        // At this point either HIViewSetNeedsDisplay (Carbon) or setNeedsDisplay: YES (Cocoa)
+        // is called, which means there's a pending update request. We want to dispatch it
+        // now because otherwise graphics view updates would require two
+        // round-trips in the event loop before the item is painted.
+        extern void qt_mac_dispatchPendingUpdateRequests(QWidget *);
+        qt_mac_dispatchPendingUpdateRequests(viewport->window());
 #endif
     }
 

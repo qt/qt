@@ -3097,8 +3097,8 @@ fi
 
 # auto-detect support for separate debug info in objcopy
 if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
-    TEST_COMPILER_CFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CFLAGS[^_].*=%%p' | tr '\n' ' '`
-    TEST_COMPILER_CXXFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CXXFLAGS[^_].*=%%p' | tr '\n' ' '`
+    TEST_COMPILER_CFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CFLAGS[^_=]*[+*]*=%%p' | tr '\n' ' '`
+    TEST_COMPILER_CXXFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CXXFLAGS[^_=]*[+*]*=%%p' | tr '\n' ' '`
     TEST_OBJCOPY=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_OBJCOPY" | sed "s%.* *= *\(.*\)$%\1%" | tail -1`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     COMPILER_WITH_FLAGS=`echo "$COMPILER_WITH_FLAGS" | sed -e "s%\\$\\$QMAKE_CFLAGS%$TEST_COMPILER_CFLAGS%g"`
@@ -4420,8 +4420,7 @@ fi
 # is where the resulting variable is written to
 setBootstrapVariable()
 {
-    variableRegExp="^$1[^_A-Z0-9]"
-    getQMakeConf | grep "$variableRegExp" | ( [ -n "$2" ] && sed "$2" ; [ -z "$2" ] && cat ) | $AWK '
+    getQMakeConf | $AWK '/^('"$1"')[^_A-Z0-9]/ { print $0; }' | ( [ -n "$2" ] && sed "$2" ; [ -z "$2" ] && cat ) | $AWK '
 {
     varLength = index($0, "=") - 1
     valStart = varLength + 2
@@ -4536,10 +4535,10 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_DEBUG)"
         fi
 
-	if [ '!' -z "$RPATH_FLAGS" ] && [ '!' -z "`getQMakeConf \"$QMAKESPEC\" | grep QMAKE_RPATH | awk '{print $3;}'`" ]; then
-  	    setBootstrapVariable QMAKE_RPATH 's,\$\$LITERAL_WHITESPACE, ,'
-	    for rpath in $RPATH_FLAGS; do
-		EXTRA_LFLAGS="\$(QMAKE_RPATH)\"$rpath\" $EXTRA_LFLAGS"
+        if [ '!' -z "$RPATH_FLAGS" ] && [ '!' -z "`getQMakeConf \"$QMAKESPEC\" | $AWK '/QMAKE_(LFLAGS_)?RPATH/ {print $3;}'`" ]; then
+            setBootstrapVariable "QMAKE_(LFLAGS_)?RPATH" 's,\$\$LITERAL_WHITESPACE, ,;s,QMAKE_RPATH,QMAKE_LFLAGS_RPATH,'
+            for rpath in $RPATH_FLAGS; do
+                EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
         fi
         if [ "$PLATFORM_MAC" = "yes" ]; then
@@ -6679,10 +6678,10 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
     fi
-elif [ -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_RPATH | awk '{print $3;}'`" ]; then
+elif [ -z "`getQMakeConf \"$XQMAKESPEC\" | $AWK '/QMAKE_(LFLAGS_)?RPATH/ {print $3;}'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
         echo
-        echo "ERROR: -R cannot be used on this platform as \$QMAKE_RPATH is"
+        echo "ERROR: -R cannot be used on this platform as \$QMAKE_LFLAGS_RPATH is"
         echo "       undefined."
         echo
         exit 1

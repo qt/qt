@@ -150,11 +150,11 @@ public:
     bool isActiveConfig(const QString &x, bool regex=false,
                         QMap<QString, QStringList> *place=NULL);
 
-    bool isSet(const QString &v);
-    bool isEmpty(const QString &v);
-    QStringList &values(const QString &v);
-    QString first(const QString &v);
-    QMap<QString, QStringList> &variables();
+    bool isSet(const QString &v); // No compat mapping, no magic variables
+    bool isEmpty(const QString &v); // With compat mapping, but no magic variables
+    QStringList &values(const QString &v); // With compat mapping and magic variables
+    QString first(const QString &v); // ditto
+    QMap<QString, QStringList> &variables(); // No compat mapping and magic, obviously
 
     bool isRecursive() const { return recursive; }
 
@@ -178,9 +178,6 @@ inline QString QMakeProject::configFile()
 
 inline QStringList &QMakeProject::values(const QString &v)
 { return values(v, vars); }
-
-inline bool QMakeProject::isEmpty(const QString &v)
-{ return !isSet(v) || values(v).isEmpty(); }
 
 inline bool QMakeProject::isSet(const QString &v)
 { return vars.contains(v); }

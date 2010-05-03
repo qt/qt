@@ -3814,7 +3814,7 @@ QByteArray QByteArray::number(double n, char f, int prec)
     accepting a \c{const char *} expected to be '\\0'-terminated will
     fail.
 
-    \sa data(), constData()
+    \sa setRawData(), data(), constData()
 */
 
 QByteArray QByteArray::fromRawData(const char *data, int size)
@@ -3831,6 +3831,37 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
     x->alloc = x->size = size;
     *x->array = '\0';
     return QByteArray(x, 0, 0);
+}
+
+/*!
+    \since 4.7
+
+    Resets the QByteArray to use the first \a size bytes of the
+    \a data array. The bytes are \e not copied. The QByteArray will
+    contain the \a data pointer. The caller guarantees that \a data
+    will not be deleted or modified as long as this QByteArray and any
+    copies of it exist that have not been modified.
+
+    This function can be used instead of fromRawData() to re-use
+    existings QByteArray objects to save memory re-allocations.
+
+    \sa fromRawData(), data(), constData()
+*/
+QByteArray &QByteArray::setRawData(const char *data, uint size)
+{
+    if (d->ref != 1 || d->alloc) {
+        *this = fromRawData(data, size);
+    } else {
+        if (data) {
+            d->data = const_cast<char *>(data);
+        } else {
+            d->data = d->array;
+            size = 0;
+        }
+        d->alloc = d->size = size;
+        *d->array = '\0';
+    }
+    return *this;
 }
 
 /*!
@@ -4225,12 +4256,6 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     \note QByteArray uses implicit sharing so if you modify a copy, only the
     copy is changed.
-*/
-
-/*!
-    \fn QByteArray& QByteArray::setRawData(const char *a, uint n)
-
-    Use fromRawData() instead.
 */
 
 /*!

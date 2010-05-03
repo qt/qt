@@ -598,10 +598,10 @@ static QList<QFontDatabase::WritingSystem> determineWritingSystemsFromTrueTypeBi
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 // class with virtual destructor, derived in qfontdatabase_s60.cpp
-class QFontDatabaseS60Store
+class QSymbianFontDatabaseExtras
 {
 public:
-    virtual ~QFontDatabaseS60Store() {}
+    virtual ~QSymbianFontDatabaseExtras() {}
 };
 #endif
 
@@ -614,7 +614,7 @@ public:
           , stream(0)
 #endif
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-          , s60Store(0)
+          , symbianExtras(0)
 #endif
     { }
     ~QFontDatabasePrivate() {
@@ -628,9 +628,9 @@ public:
         families = 0;
         count = 0;
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-        if (s60Store) {
-            delete s60Store;
-            s60Store = 0;
+        if (symbianExtras) {
+            delete symbianExtras;
+            symbianExtras = 0;
         }
 #endif
         // don't clear the memory fonts!
@@ -675,7 +675,7 @@ public:
     QDataStream *stream;
     QStringList fallbackFamilies;
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-    const QFontDatabaseS60Store *s60Store;
+    const QSymbianFontDatabaseExtras *symbianExtras;
 #endif
 };
 

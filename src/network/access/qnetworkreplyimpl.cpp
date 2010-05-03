@@ -478,6 +478,37 @@ qint64 QNetworkReplyImplPrivate::nextDownstreamBlockSize() const
     return qMax<qint64>(0, readBufferMaxSize - readBuffer.byteAmount());
 }
 
+void QNetworkReplyImplPrivate::initCacheSaveDevice()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    // save the meta data
+    QNetworkCacheMetaData metaData;
+    metaData.setUrl(url);
+    metaData = backend->fetchCacheMetaData(metaData);
+
+    // save the redirect request also in the cache
+    QVariant redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
+    if (redirectionTarget.isValid()) {
+        QNetworkCacheMetaData::AttributesMap attributes = metaData.attributes();
+        attributes.insert(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
+        metaData.setAttributes(attributes);
+    }
+
+    cacheSaveDevice = networkCache()->prepare(metaData);
+
+    if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
+        if (cacheSaveDevice && !cacheSaveDevice->isOpen())
+            qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
+                  "class %s probably needs to be fixed",
+                  networkCache()->metaObject()->className());
+
+        networkCache()->remove(url);
+        cacheSaveDevice = 0;
+        cacheEnabled = false;
+    }
+}
+
 // we received downstream data and send this to the cache
 // and to our readBuffer (which in turn gets read by the user of QNetworkReply)
 void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
@@ -487,36 +518,12 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
         return;
 
     if (cacheEnabled && !cacheSaveDevice) {
-        // save the meta data
-        QNetworkCacheMetaData metaData;
-        metaData.setUrl(url);
-        metaData = backend->fetchCacheMetaData(metaData);
-
-        // save the redirect request also in the cache
-        QVariant redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
-        if (redirectionTarget.isValid()) {
-            QNetworkCacheMetaData::AttributesMap attributes = metaData.attributes();
-            attributes.insert(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
-            metaData.setAttributes(attributes);
-        }
-
-        cacheSaveDevice = networkCache()->prepare(metaData);
-
-        if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
-            if (cacheSaveDevice && !cacheSaveDevice->isOpen())
-                qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
-                      "class %s probably needs to be fixed",
-                      networkCache()->metaObject()->className());
-
-            networkCache()->remove(url);
-            cacheSaveDevice = 0;
-            cacheEnabled = false;
-        }
+        initCacheSaveDevice();
     }
 
     qint64 bytesWritten = 0;
     for (int i = 0; i < data.bufferCount(); i++) {
-        QByteArray item = data[i];
+        QByteArray const &item = data[i];
 
         if (cacheSaveDevice)
             cacheSaveDevice->write(item.constData(), item.size());
@@ -528,6 +535,13 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
 
     bytesDownloaded += bytesWritten;
     lastBytesDownloaded = bytesDownloaded;
+
+    appendDownstreamDataSignalEmissions();
+}
+
+void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
+{
+    Q_Q(QNetworkReplyImpl);
 
     QPointer<QNetworkReplyImpl> qq = q;
 
@@ -570,6 +584,15 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 
     // start the copy:
     _q_copyReadyRead();
+}
+
+void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
+{
+    // TODO implement
+
+    // TODO call
+
+    qFatal("QNetworkReplyImplPrivate::appendDownstreamData not implemented");
 }
 
 void QNetworkReplyImplPrivate::finished()
@@ -689,8 +712,13 @@ QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
 QNetworkReplyImpl::~QNetworkReplyImpl()
 {
     Q_D(QNetworkReplyImpl);
+
+    // This code removes the data from the cache if it was prematurely aborted.
+    // See QNetworkReplyImplPrivate::completeCacheSave(), we disable caching there after the cache
+    // save had been properly finished. So if it is still enabled it means we got deleted/aborted.
     if (d->isCachingEnabled())
         d->networkCache()->remove(url());
+
     if (d->outgoingDataBuffer)
         delete d->outgoingDataBuffer;
 }

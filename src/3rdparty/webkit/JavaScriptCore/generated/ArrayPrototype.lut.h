@@ -1,4 +1,4 @@
-// Automatically generated from runtime\ArrayPrototype.cpp using C:/dev/webkit-2.0/JavaScriptCore/create_hash_table. DO NOT EDIT!
+// Automatically generated from runtime/ArrayPrototype.cpp using /JavaScriptCore/create_hash_table. DO NOT EDIT!
 
 #include "Lookup.h"
 

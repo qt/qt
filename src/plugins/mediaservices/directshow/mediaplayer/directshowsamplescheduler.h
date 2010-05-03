@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 class DirectShowTimedSample;
 
-class DirectShowSampleScheduler : public QWinEventNotifier, public IMemInputPin
+class DirectShowSampleScheduler : public QObject, public IMemInputPin
 {
     Q_OBJECT
 public:
@@ -101,8 +101,6 @@ public:
 
     IMediaSample *takeSample(bool *eos);
 
-    bool event(QEvent *event);
-
 Q_SIGNALS:
     void sampleReady();
 
@@ -118,6 +116,7 @@ private:
     HANDLE m_timeoutEvent;
     QSemaphore m_semaphore;
     QMutex m_mutex;
+    QWinEventNotifier m_eventNotifier;
 };
 
 QT_END_NAMESPACE

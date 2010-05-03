@@ -44,6 +44,7 @@
 */
 
 #include "codemarker.h"
+#include "codeparser.h"
 #include "helpprojectwriter.h"
 #include "htmlgenerator.h"
 #include "node.h"
@@ -1223,7 +1224,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         namespasse = static_cast<const NamespaceNode *>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
-        title = rawTitle + " Namespace Reference";
+        title = rawTitle + " Namespace";
     }
     else if (inner->type() == Node::Class) {
         classe = static_cast<const ClassNode *>(inner);
@@ -1674,6 +1675,9 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
     return "html";
 }
 
+/*!
+  Output breadcrumb list in the html file.
+ */
 void HtmlGenerator::generateBreadCrumbs(const QString& title,
                                         const Node *node,
                                         CodeMarker *marker)
@@ -1712,17 +1716,51 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
                 out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+            else {
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
+        }
+        else if (node->subType() == Node::Page) {
+            if (fn->name() == QString("examples.html")) {
+                out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+            }
+            else if (fn->name().startsWith("examples-")) {
+                out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
+            else if (fn->name() == QString("namespaces.html")) {
+                out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+            }
+            else {
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
         }
         else if (node->subType() == Node::QmlClass) {
+            out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                  << "</a></li>";
         }
         else if (node->subType() == Node::Example) {
+            out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+            QStringList sl = fn->name().split('/');
+            QString name = "examples-" + sl.at(0) + ".html";
+            QString t = CodeParser::titleFromName(name);
+            out() << "              <li><a href=\"" << name << "\">"
+                  << t << "</a></li>";
+            out() << "              <li><a href=\"" << sl.at(0)
+                  << "-" << sl.at(sl.size()-1) << ".html\">"
+                  << title << "</a></li>";
         }
     }
     else if (node->type() == Node::Namespace) {
         const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
+        out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+        out() << "              <li><a href=\"" << fileName(nsn) << "\">" << title
+              << "</a></li>";
     }
 }
-
 
 void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,

@@ -137,6 +137,7 @@ namespace WebCore {
         virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*);
         virtual void setNeedsOneShotDrawingSynchronization();
         virtual void scheduleCompositingLayerSync();
+        virtual bool allowsAcceleratedCompositing() const;
 #endif
 
 #if ENABLE(TOUCH_EVENTS)
@@ -158,10 +159,11 @@ namespace WebCore {
         virtual void cancelGeolocationPermissionRequestForFrame(Frame*) { }
 
 #if ENABLE(WIDGETS_10_SUPPORT)
-        virtual bool isDocked();
+        virtual bool isWindowed();
         virtual bool isFloating();
-        virtual bool isApplication();
         virtual bool isFullscreen();
+        virtual bool isMaximized();
+        virtual bool isMinimized();
 #endif
 
         QtAbstractWebPopup* createSelectPopup();
