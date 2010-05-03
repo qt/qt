@@ -345,7 +345,7 @@ void PluginView::stop()
         WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtr(platformPluginWidget(), GWLP_WNDPROC);
 
         if (currentWndProc == PluginViewWndProc)
-            SetWindowLongPtr(platformPluginWidget(), GWLP_WNDPROC, (LONG)m_pluginWndProc);
+            SetWindowLongPtr(platformPluginWidget(), GWLP_WNDPROC, (LONG_PTR)m_pluginWndProc);
 #endif
     }
 #endif // XP_WIN
@@ -1296,9 +1296,7 @@ void PluginView::keepAlive(NPP instance)
 
     view->keepAlive();
 }
-#endif
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
 NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 {
     LOG(Plugins, "PluginView::getValueStatic(%s)", prettyNameForNPNVariable(variable).data());
@@ -1309,7 +1307,6 @@ NPError PluginView::getValueStatic(NPNVariable variable, void* value)
 
     return NPERR_GENERIC_ERROR;
 }
-#endif
 
 NPError PluginView::getValue(NPNVariable variable, void* value)
 {
@@ -1319,13 +1316,10 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
     if (platformGetValue(variable, value, &result))
         return result;
 
-#if ENABLE(NETSCAPE_PLUGIN_API)
     if (platformGetValueStatic(variable, value, &result))
         return result;
-#endif
 
     switch (variable) {
-#if ENABLE(NETSCAPE_PLUGIN_API)
     case NPNVWindowNPObject: {
         if (m_isJavaScriptPaused)
             return NPERR_GENERIC_ERROR;
@@ -1360,7 +1354,6 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
 
         return NPERR_NO_ERROR;
     }
-#endif
 
     case NPNVprivateModeBool: {
         Page* page = m_parentFrame->page();
@@ -1374,6 +1367,7 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
         return NPERR_GENERIC_ERROR;
     }
 }
+#endif
 
 void PluginView::privateBrowsingStateChanged(bool privateBrowsingEnabled)
 {

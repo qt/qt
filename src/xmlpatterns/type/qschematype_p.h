@@ -174,7 +174,7 @@ namespace QPatternist
          * a QXmlName instance stored as a member.
          *
          * If the type code was refactored to not be store globally and
-         * therfore by design would be tied to a name pool, this argument could
+         * therefore by design would be tied to a name pool, this argument could
          * be removed.
          */
         virtual QXmlName name(const NamePool::Ptr &np) const = 0;

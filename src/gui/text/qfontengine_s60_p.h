@@ -62,7 +62,7 @@ class CFont;
 
 QT_BEGIN_NAMESPACE
 
-// ..gives us access to truetype tables, UTF-16<->GlyphID mapping, and glyph outlines
+// ..gives us access to truetype tables
 class QSymbianTypeFaceExtras
 {
 public:
@@ -71,12 +71,10 @@ public:
     QByteArray getSfntTable(uint tag) const;
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     const unsigned char *cmap() const;
-    QPainterPath glyphOutline(glyph_t glyph) const;
     CFont *fontOwner() const;
 
 private:
     COpenFont *m_font;
-    const MOpenFontShapingExtension *m_shapingExtension;
     mutable MOpenFontTrueTypeExtension *m_trueTypeExtension;
     mutable const unsigned char *m_cmap;
     mutable bool m_symbolCMap;

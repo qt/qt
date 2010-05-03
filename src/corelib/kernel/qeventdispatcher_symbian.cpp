@@ -642,8 +642,8 @@ public:
     QIdleDetectorThread()
     : m_state(STATE_RUN), m_stop(false)
     {
-        qt_symbian_throwIfError(m_lock.CreateLocal());
-        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, &User::Allocator(), this);
+        qt_symbian_throwIfError(m_lock.CreateLocal(0));
+        TInt err = m_idleDetectorThread.Create(KNullDesC(), &idleDetectorThreadFunc, 1024, NULL, this);
         if (err != KErrNone)
             m_lock.Close();
         qt_symbian_throwIfError(err);
@@ -694,7 +694,7 @@ private:
     enum IdleStates {STATE_KICKED, STATE_RUN} m_state;
     bool m_stop;
     RThread m_idleDetectorThread;
-    RFastLock m_lock;
+    RSemaphore m_lock;
 };
 
 Q_GLOBAL_STATIC(QIdleDetectorThread, idleDetectorThread);

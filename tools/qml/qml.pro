@@ -14,10 +14,14 @@ target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 
 wince* {
-QT += scripttools \
-    xml \
-    phonon
+    QT += xml
 
+    contains(QT_CONFIG, scripttools) {
+        QT += scripttools
+    }
+    contains(QT_CONFIG, phonon) {
+        QT += phonon
+    }
     contains(QT_CONFIG, xmlpatterns) {
         QT += xmlpatterns
     }
