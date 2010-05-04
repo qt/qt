@@ -1812,7 +1812,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
-        d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+        d_ptr->updatePaintedViewBoundingRects(/*children=*/true);
 
     // Keep the old flags to compare the diff.
     GraphicsItemFlags oldFlags = GraphicsItemFlags(d_ptr->flags);
@@ -5430,6 +5430,24 @@ void QGraphicsItemPrivate::removeExtraItemCache()
         delete c;
     }
     unsetExtra(ExtraCacheData);
+}
+
+void QGraphicsItemPrivate::updatePaintedViewBoundingRects(bool updateChildren)
+{
+    if (!scene)
+        return;
+
+    for (int i = 0; i < scene->d_func()->views.size(); ++i) {
+        QGraphicsViewPrivate *viewPrivate = scene->d_func()->views.at(i)->d_func();
+        QRect rect = paintedViewBoundingRects.value(viewPrivate->viewport);
+        rect.translate(viewPrivate->dirtyScrollOffset);
+        viewPrivate->updateRect(rect);
+    }
+
+    if (updateChildren) {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->updatePaintedViewBoundingRects(true);
+    }
 }
 
 // Traverses all the ancestors up to the top-level and updates the pointer to

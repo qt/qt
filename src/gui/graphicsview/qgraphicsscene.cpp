@@ -5116,9 +5116,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
+        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
+        if (itemClipsChildrenToShape) {
+            // Make sure child updates are clipped to the item's bounding rect.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(item);
+        }
         if (!dirtyAncestorContainsChildren) {
             dirtyAncestorContainsChildren = item->d_ptr->fullUpdatePending
-                                            && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+                                            && itemClipsChildrenToShape;
         }
         const bool allChildrenDirty = item->d_ptr->allChildrenDirty;
         const bool parentIgnoresVisible = item->d_ptr->ignoreVisible;
@@ -5140,6 +5146,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 child->d_ptr->allChildrenDirty = 1;
             }
             processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
+        }
+
+        if (itemClipsChildrenToShape) {
+            // Reset updateClip.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(0);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();

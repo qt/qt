@@ -91,7 +91,8 @@ public:
     quint32 mustAllocateStyleOptions : 1;
     quint32 mustResizeBackgroundPixmap : 1;
     quint32 fullUpdatePending : 1;
-    quint32 padding : 19;
+    quint32 hasUpdateClip : 1;
+    quint32 padding : 18;
 
     QRectF sceneRect;
     void updateLastCenterPoint();
@@ -102,6 +103,7 @@ public:
     QRectF mapRectToScene(const QRect &rect) const;
     QRectF mapRectFromScene(const QRectF &rect) const;
 
+    QRect updateClip;
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
     QPoint mousePressViewPoint;
@@ -194,6 +196,8 @@ public:
         qt_mac_dispatchPendingUpdateRequests(viewport->window());
 #endif
     }
+
+    void setUpdateClip(QGraphicsItem *);
 
     inline bool updateRectF(const QRectF &rect)
     {
