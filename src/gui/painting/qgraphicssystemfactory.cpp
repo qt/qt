@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QGraphicsSystemFactoryInterface_iid, QLatin1String("/graphicssystems"), Qt::CaseInsensitive))
 #endif
@@ -79,7 +79,7 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
     else if (system.isEmpty() || system == QLatin1String("native"))
         return 0;
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     if (!ret) {
         if (QGraphicsSystemFactoryInterface *factory = qobject_cast<QGraphicsSystemFactoryInterface*>(loader()->instance(system)))
             ret = factory->create(system);
@@ -100,7 +100,7 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
 */
 QStringList QGraphicsSystemFactory::keys()
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
     QStringList list = loader()->keys();
 #else
     QStringList list;

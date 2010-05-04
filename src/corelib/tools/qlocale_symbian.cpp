@@ -46,8 +46,14 @@
 #include <QThread>
 
 #include <e32std.h>
+#include <e32const.h>
+#include <e32base.h>
+#include <e32property.h>
+#include <bacntf.h>
 #include "private/qcore_symbian_p.h"
-
+#include "private/qcoreapplication_p.h"
+#include "private/qlocale_p.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -771,13 +777,18 @@ static QLocale::MeasurementSystem symbianMeasurementSystem()
         return QLocale::MetricSystem;
 }
 
-QLocale QSystemLocale::fallbackLocale() const
+void qt_symbianUpdateSystemPrivate()
 {
     // load system data before query calls
-    static QBasicAtomicInt initDone = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (initDone.testAndSetRelaxed(0, 1)) {
-        _s60Locale.LoadSystemSettings();
+    _s60Locale.LoadSystemSettings();
+}
 
+void qt_symbianInitSystemLocale()
+{
+    static QBasicAtomicInt initDone = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (initDone == 2)
+        return;
+    if (initDone.testAndSetRelaxed(0, 1)) {
         // Initialize platform version dependent function pointers
         ptrTimeFormatL = reinterpret_cast<FormatFunc>
             (qt_resolveS60PluginFunc(S60Plugin_TimeFormatL));
@@ -801,7 +812,10 @@ QLocale QSystemLocale::fallbackLocale() const
     }
     while(initDone != 2)
         QThread::yieldCurrentThread();
+}
 
+QLocale QSystemLocale::fallbackLocale() const
+{
     TLanguage lang = User::Language();
     QString locale = QLatin1String(qt_symbianLocaleName(lang));
     return QLocale(locale);
@@ -883,5 +897,36 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     }
     return QVariant();
 }
+
+#if !defined(QT_NO_SYSTEMLOCALE)
+QEnvironmentChangeNotifier::QEnvironmentChangeNotifier()
+{
+    // Create the change notifier and install the callback function
+    const TCallBack callback(&QEnvironmentChangeNotifier::localeChanged, this);
+    QT_TRAP_THROWING(iChangeNotifier = CEnvironmentChangeNotifier::NewL(CActive::EPriorityStandard, callback));
+    iChangeNotifier->Start();
+}
+
+TInt QEnvironmentChangeNotifier::localeChanged(TAny *data)
+{
+    QEnvironmentChangeNotifier *that = reinterpret_cast<QEnvironmentChangeNotifier *>(data);
+
+    TInt flag = that->iChangeNotifier->Change();
+    if (flag & EChangesLocale) {
+        static bool first = true;
+        if (!first) { // skip the first notification on app startup
+            QT_TRYCATCH_LEAVING(QLocalePrivate::updateSystemPrivate());
+            QT_TRYCATCH_LEAVING(QCoreApplication::postEvent(qApp, new QEvent(QEvent::LocaleChange)));
+        }
+        first = false;
+    }
+    return KErrNone;
+}
+
+QEnvironmentChangeNotifier::~QEnvironmentChangeNotifier()
+{
+    delete iChangeNotifier;
+}
+#endif
 
 QT_END_NAMESPACE

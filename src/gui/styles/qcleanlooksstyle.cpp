@@ -3714,6 +3714,9 @@ int QCleanlooksStyle::pixelMetric(PixelMetric metric, const QStyleOption *option
 {
     int ret = -1;
     switch (metric) {
+    case PM_ToolTipLabelFrameWidth:
+        ret = 2;
+        break;
     case PM_ButtonDefaultIndicator:
         ret = 0;
         break;

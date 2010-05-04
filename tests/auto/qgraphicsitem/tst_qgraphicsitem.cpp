@@ -7293,7 +7293,7 @@ void tst_QGraphicsItem::update()
     QCOMPARE(item->repaints, 1);
     QCOMPARE(view.repaints, 1);
     QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
-                                                         .mapRect(item->boundingRect()).toRect();
+                                                         .mapRect(item->boundingRect()).toAlignedRect();
     QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
     QCOMPARE(view.paintedRegion, expectedRegion);
@@ -7372,7 +7372,7 @@ void tst_QGraphicsItem::update()
     scene.addItem(parent);
     QTest::qWait(50);
     itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
-                                                   .mapRect(item->boundingRect()).toRect();
+                                                   .mapRect(item->boundingRect()).toAlignedRect();
     expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     view.reset();
     item->repaints = 0;
@@ -7648,7 +7648,7 @@ void tst_QGraphicsItem::moveItem()
 
     // Item's boundingRect:  (-10, -10, 20, 20).
     QRect parentDeviceBoundingRect = parent->deviceTransform(view.viewportTransform())
-                                     .mapRect(parent->boundingRect()).toRect()
+                                     .mapRect(parent->boundingRect()).toAlignedRect()
                                      .adjusted(-2, -2, 2, 2); // Adjusted for antialiasing.
 
     parent->setPos(20, 20);
@@ -7711,8 +7711,14 @@ void tst_QGraphicsItem::moveLineItem()
     QTest::qWait(200);
     view.reset();
 
+    QRectF brect = item->boundingRect();
+    // Do same adjustments as in qgraphicsscene.cpp
+    if (!brect.width())
+        brect.adjust(qreal(-0.00001), 0, qreal(0.00001), 0);
+    if (!brect.height())
+        brect.adjust(0, qreal(-0.00001), 0, qreal(0.00001));
     const QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
-                                         .mapRect(item->boundingRect()).toRect();
+                                         .mapRect(brect).toAlignedRect();
     QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2); // antialiasing
 
     // Make sure the calculated region is correct.

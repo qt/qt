@@ -1,3 +1,36 @@
+2010-05-03  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix qtlibraryinfix not to contain space
+
+        List catenation with += adds whitespace cutting the infix
+        from the final target.
+
+        * WebCore.pro:
+
+2010-05-03  Thomas Zander <t.zander@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix library infix usage when compiling inside of Qt
+
+        Don't apply the infix when building inside Qt, as that's done through the
+        inclusion of qbase.pri.
+
+        * WebCore.pro:
+
+2010-04-29  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QtWebKit versioning added
+        https://bugs.webkit.org/show_bug.cgi?id=37207
+
+        QtWebkit releases separated from Qt release cycle.
+
+        * WebCore.pro:
+
 2010-03-27  Robert Hogan  <robert@webkit.org>
 
         Reviewed by nobody, fix typo in previous commit.
