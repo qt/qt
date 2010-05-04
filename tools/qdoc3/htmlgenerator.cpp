@@ -2399,6 +2399,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     */
     NodeMap paragraph[NumParagraphs+1];
     QString paragraphName[NumParagraphs+1];
+    QSet<char> usedParagraphNames;
 
     NodeMap::ConstIterator c = classMap.begin();
     while (c != classMap.end()) {
@@ -2422,6 +2423,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         }
 
         paragraphName[paragraphNo] = key[0].toUpper();
+        usedParagraphNames.insert(key[0].toLower().cell());
         paragraph[paragraphNo].insert(key, c.value());
         ++c;
     }
@@ -2469,12 +2471,12 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         out() << "<p  class=\"centerAlign functionIndex\"><b>";
         for (int i = 0; i < 26; i++) {
             QChar ch('a' + i);
-            out() << QString("<a href=\"#%1\">%2</a>&nbsp;").arg(ch).arg(ch.toUpper());
+            if (usedParagraphNames.contains(char('a' + i)))
+                out() << QString("<a href=\"#%1\">%2</a>&nbsp;").arg(ch).arg(ch.toUpper());
         }
         out() << "</b></p>\n";
     }
 
-    QSet<char> used;
     out() << "<table class=\"generic\">\n";
     for (k = 0; k < numRows; k++) {
         out() << "<tr>\n";
@@ -2502,7 +2504,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     if (includeAlphabet) {
                         QChar c = paragraphName[currentParagraphNo[i]][0].toLower();
                         out() << QString("<a name=\"%1\"></a>").arg(c);
-                        used.insert(c.cell());
                     }
                     out() << "<b>"
                           << paragraphName[currentParagraphNo[i]]
@@ -2545,12 +2546,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         out() << "</tr>\n";
     }
     out() << "</table>\n";
-    char C = 'a';
-    while (C <= 'z') {
-        if (!used.contains(C))
-            out() << QString("<a name=\"%1\"></a>").arg(C);
-        ++C;
-    }
 }
 
 void HtmlGenerator::generateFunctionIndex(const Node *relative,

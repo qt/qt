@@ -74,7 +74,7 @@ strengths}.  QML can be be used to incrementally extend an existing
 application or to build completely new applications.  QML is fully \l
 {Extending QML in C++}{extensible from C++}.
 
-\section1 Getting Started:
+\section1 Getting Started
 
 \list
 \o \l {Introduction to the QML language}
@@ -84,7 +84,7 @@ application or to build completely new applications.  QML is fully \l
 \o \l {QML for Qt programmers}
 \endlist
 
-\section1 Core QML Features:
+\section1 Core QML Features
 \list
 \o \l {QML Documents}
 \o \l {Property Binding}
@@ -102,7 +102,7 @@ application or to build completely new applications.  QML is fully \l
 \o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \endlist
 
-\section1 Using QML with C++:
+\section1 Using QML with C++
 \list
 \o \l {Tutorial: Writing QML extensions with C++}
 \o \l {Extending QML in C++}
@@ -110,7 +110,7 @@ application or to build completely new applications.  QML is fully \l
 \o \l {Integrating QML with existing Qt UI code}
 \endlist
 
-\section1 Reference:
+\section1 Reference
 \list
 \o \l {QML Elements}
 \o \l {QML Global Object}
