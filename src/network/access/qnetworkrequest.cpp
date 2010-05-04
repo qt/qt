@@ -200,6 +200,8 @@ QT_BEGIN_NAMESPACE
 
         See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
 
+        \since 4.7
+
      \value CookieSaveControlAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
         Indicates whether to save 'Cookie' headers received from the server in reply
@@ -210,6 +212,8 @@ QT_BEGIN_NAMESPACE
         Javascript that created the request.
 
         See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+
+        \since 4.7
 
      \value AuthenticationReuseControlAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
@@ -223,6 +227,8 @@ QT_BEGIN_NAMESPACE
         Javascript that created the request.
 
         See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+
+        \since 4.7
 
     \value User
         Special type. Additional information can be passed in
@@ -258,6 +264,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QNetworkRequest::LoadControl
+    \since 4.7
 
     Indicates if an aspect of the request's loading mechanism has been
     manually overridden, e.g. by QtWebKit.
