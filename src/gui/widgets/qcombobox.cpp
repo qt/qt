@@ -143,7 +143,10 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.icon = qvariant_cast<QPixmap>(variant);
         break;
     }
-
+    if (qVariantCanConvert<QBrush>(index.data(Qt::BackgroundRole))) {
+        menuOption.palette.setBrush(QPalette::All, QPalette::Background,
+                                    qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
+    }
     menuOption.text = index.model()->data(index, Qt::DisplayRole).toString()
                            .replace(QLatin1Char('&'), QLatin1String("&&"));
     menuOption.tabWidth = 0;
