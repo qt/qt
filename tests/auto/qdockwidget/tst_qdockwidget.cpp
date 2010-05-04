@@ -96,6 +96,7 @@ private slots:
     void task248604_infiniteResize();
     void task258459_visibilityChanged();
     void taskQTBUG_1665_closableChanged();
+	void taskQTBUG_9758_undockedGeometry();
 };
 
 // Testing get/set functions
@@ -877,6 +878,25 @@ void tst_QDockWidget::taskQTBUG_1665_closableChanged()
     dock.setFeatures(dock.features() ^ QDockWidget::DockWidgetClosable);
     QVERIFY(!(dock.windowFlags() & Qt::WindowCloseButtonHint));
 }
+
+void tst_QDockWidget::taskQTBUG_9758_undockedGeometry()
+{
+	QMainWindow window;
+	QDockWidget dock1(&window);
+	QDockWidget dock2(&window);
+	window.addDockWidget(Qt::RightDockWidgetArea, &dock1);
+	window.addDockWidget(Qt::RightDockWidgetArea, &dock2);
+	window.tabifyDockWidget(&dock1, &dock2);
+	dock1.hide();
+	dock2.hide();
+	window.show();
+	dock1.setFloating(true);
+	dock1.show();
+
+	QVERIFY(dock1.x() >= 0);
+	QVERIFY(dock1.y() >= 0);
+}
+
 
 
 QTEST_MAIN(tst_QDockWidget)
