@@ -259,7 +259,7 @@ int PvrEglScreen::transformation() const
     if (parent->classId() != QScreen::TransformedClass)
         return 0;
     return 90 * static_cast<const QTransformedScreen *>(parent)
-                    ->transformation();
+                    ->transformOrientation();
 }
 
 #else
