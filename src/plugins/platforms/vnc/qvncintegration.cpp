@@ -51,25 +51,16 @@
 #include <QtCore/QTimer>
 
 
-QVNCScreen::QVNCScreen()
+QVNCScreen::QVNCScreen(QRect screenSize, int screenId)
         : QFbScreen::QFbScreen()
 {
-    int w = 800;
-    int h = 600;
-    int ew, eh;
-    const char *str;
-    if ((str=::getenv("QT_VNC_SIZE")) && sscanf(str,"%dx%d",&ew,&eh)==2) {
-        w = ew;
-        h = eh;
-    }
-
-    setGeometry(QRect(0,0,w, h));
+    setGeometry(screenSize);
     setDepth(32);
     setFormat(QImage::Format_RGB32);
     setPhysicalSize((geometry().size()*254)/720);
 
 
-    d_ptr = new QVNCScreenPrivate(this);
+    d_ptr = new QVNCScreenPrivate(this, screenId);
 
     cursor = new QVNCCursor(d_ptr->vncServer, this);
     d_ptr->vncServer->setCursor(static_cast<QVNCCursor *>(cursor));
@@ -91,10 +82,45 @@ QRegion QVNCScreen::doRedraw()
     return touched;
 }
 
+static inline int defaultWidth() { return 800; }
+static inline int defaultHeight() { return 600; }
+static inline int defaultDisplay() { return 0; }
 
-QVNCIntegration::QVNCIntegration()
+static void usage()
 {
-    mPrimaryScreen = new QVNCScreen();
+    qWarning() << "VNC Platform Integration options:";
+    qWarning() << "    size=<Width>x<Height> - set the display width and height";
+    qWarning() << "         defaults to" << defaultWidth() << "x" << defaultHeight();
+    qWarning() << "    display=<ID> - set the VNC display port to ID + 5900";
+    qWarning() << "         defaults to" << defaultDisplay();
+}
+
+QVNCIntegration::QVNCIntegration(const QStringList& paramList)
+{
+    int sizeX = defaultWidth();
+    int sizeY = defaultHeight();
+    int display = defaultDisplay();
+    bool showUsage = false;
+
+    foreach(QString confString, paramList) {
+        if (confString.startsWith(QLatin1String("size="))) {
+            QString val = confString.section(QLatin1Char('='), 1, 1);
+            sizeX = val.section(QLatin1Char('x'), 0, 0).toInt();
+            sizeY = val.section(QLatin1Char('x'), 1, 1).toInt();
+        }
+        else if (confString.startsWith(QLatin1String("display="))) {
+            display = confString.section(QLatin1Char('='), 1, 1).toInt();
+        }
+        else {
+            qWarning() << "Unknown VNC option:" << confString;
+            showUsage = true;
+        }
+    }
+
+    if (showUsage)
+        usage();
+
+    mPrimaryScreen = new QVNCScreen(QRect(0, 0, sizeX, sizeY), display);
 
     mScreens.append(mPrimaryScreen);
 }

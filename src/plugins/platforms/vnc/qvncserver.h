@@ -249,7 +249,7 @@ public:
 class QVNCScreenPrivate : public QObject
 {
 public:
-    QVNCScreenPrivate(QVNCScreen *parent);
+    QVNCScreenPrivate(QVNCScreen *parent, int screenId);
     ~QVNCScreenPrivate();
 
     void setDirty(const QRect &rect, bool force = false);

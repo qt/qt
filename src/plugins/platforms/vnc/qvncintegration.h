@@ -56,7 +56,7 @@ class QVNCScreenPrivate;
 class QVNCScreen : public QFbScreen
 {
 public:
-    QVNCScreen();
+    QVNCScreen(QRect screenSize, int screenId);
 
     int linestep() const { return image() ? image()->bytesPerLine() : 0; }
     uchar *base() const { return image() ? image()->bits() : 0; }
@@ -76,7 +76,7 @@ class QVNCIntegrationPrivate;
 class QVNCIntegration : public QPlatformIntegration
 {
 public:
-    QVNCIntegration();
+    QVNCIntegration(const QStringList& paramList);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;

@@ -1885,7 +1885,7 @@ void QVNCServer::discardClient()
 
 
 
-QVNCScreenPrivate::QVNCScreenPrivate(QVNCScreen *parent)
+QVNCScreenPrivate::QVNCScreenPrivate(QVNCScreen *parent, int screenId)
     : dpiX(72), dpiY(72), doOnScreenSurface(false), refreshRate(25),
       vncServer(0), q_ptr(parent)
 {
@@ -1893,7 +1893,7 @@ QVNCScreenPrivate::QVNCScreenPrivate(QVNCScreen *parent)
     QWSSignalHandler::instance()->addObject(this);
 #endif
 
-    vncServer = new QVNCServer(q_ptr);
+    vncServer = new QVNCServer(q_ptr, screenId);
     vncServer->setRefreshRate(refreshRate);
 
 

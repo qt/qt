@@ -63,7 +63,7 @@ QPlatformIntegration* QVNCIntegrationPlugin::create(const QString& system, const
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "vnc")
-        return new QVNCIntegration;
+        return new QVNCIntegration(paramList);
 
     return 0;
 }
