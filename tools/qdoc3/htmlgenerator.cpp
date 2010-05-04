@@ -1739,6 +1739,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             }
         }
         else if (node->subType() == Node::QmlClass) {
+            out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
             out() << "              <li><a href=\"" << fn->name() << "\">" << title
                   << "</a></li>";
         }
