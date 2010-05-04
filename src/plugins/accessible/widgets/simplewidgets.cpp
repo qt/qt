@@ -605,7 +605,11 @@ int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterfa
 /*! \reimp */
 QString QAccessibleDisplay::imageDescription()
 {
+#ifndef QT_NO_TOOLTIP
     return widget()->toolTip();
+#else
+    return QString::null;
+#endif
 }
 
 /*! \reimp */

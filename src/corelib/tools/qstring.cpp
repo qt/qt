@@ -7056,7 +7056,7 @@ void QString::updateProperties() const
     '\\0'-terminated string (although utf16() does, at the cost of
     copying the raw data).
 
-    \sa fromUtf16()
+    \sa fromUtf16(), setRawData()
 */
 QString QString::fromRawData(const QChar *unicode, int size)
 {
@@ -7073,6 +7073,44 @@ QString QString::fromRawData(const QChar *unicode, int size)
     *x->array = '\0';
     x->clean = x->asciiCache = x->simpletext = x->righttoleft = x->capacity = 0;
     return QString(x, 0);
+}
+
+/*!
+    \since 4.7
+
+    Resets the QString to use the first \a size Unicode characters
+    in the array \a unicode. The data in \a unicode is \e not
+    copied. The caller must be able to guarantee that \a unicode will
+    not be deleted or modified as long as the QString (or an
+    unmodified copy of it) exists.
+
+    This function can be used instead of fromRawData() to re-use
+    existings QString objects to save memory re-allocations.
+
+    \sa fromRawData()
+*/
+QString &QString::setRawData(const QChar *unicode, int size)
+{
+    if (d->ref != 1 || d->alloc) {
+        *this = fromRawData(unicode, size);
+    } else {
+#ifdef QT3_SUPPORT
+        if (d->asciiCache) {
+            Q_ASSERT(asciiCache);
+            asciiCache->remove(d);
+        }
+#endif
+        if (unicode) {
+            d->data = (ushort *)unicode;
+        } else {
+            d->data = d->array;
+            size = 0;
+        }
+        d->alloc = d->size = size;
+        *d->array = '\0';
+        d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+    }
+    return *this;
 }
 
 /*! \class QLatin1String

@@ -209,6 +209,8 @@ private slots:
     void QTBUG_6852();
     void QTBUG_5765_data() { generic_data("QMYSQL"); }
     void QTBUG_5765();
+    void sqlite_constraint_data() { generic_data("QSQLITE"); }
+    void sqlite_constraint();
 
 #if 0
     void benchmark_data() { generic_data(); }
@@ -3076,6 +3078,31 @@ void tst_QSqlQuery::QTBUG_5765()
     QCOMPARE(q.value(0).toInt(), 12);
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 123);
+}
+
+void tst_QSqlQuery::sqlite_constraint()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    if (db.driverName() != QLatin1String("QSQLITE")) {
+        QSKIP("Sqlite3 specific test", SkipSingle);
+        return;
+    }
+
+    QSqlQuery q(db);
+    const QString trigger(qTableName("test_constraint", __FILE__));
+
+    QVERIFY_SQL(q, exec("CREATE TEMP TRIGGER "+trigger+" BEFORE DELETE ON "+qtest+
+                        "\nFOR EACH ROW "
+                        "\nBEGIN"
+                        "\n  SELECT RAISE(ABORT, 'Raised Abort successfully');"
+                        "\nEND;"
+                        ));
+
+    QVERIFY(!q.exec("DELETE FROM "+qtest));
+    QCOMPARE(q.lastError().databaseText(), QLatin1String("Raised Abort successfully"));
 }
 
 #if 0
