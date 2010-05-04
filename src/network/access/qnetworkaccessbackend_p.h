@@ -188,6 +188,7 @@ protected slots:
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
 #endif
     void authenticationRequired(QAuthenticator *auth);
+    void cacheCredentials(QAuthenticator *auth);
     void metaDataChanged();
     void redirectionRequested(const QUrl &destination);
     void sslErrors(const QList<QSslError> &errors);
