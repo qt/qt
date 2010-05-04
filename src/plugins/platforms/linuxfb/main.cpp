@@ -48,7 +48,7 @@ class QLinuxFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
 QStringList QLinuxFbIntegrationPlugin::keys() const
@@ -58,8 +58,9 @@ QStringList QLinuxFbIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system)
+QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "linuxfb")
         return new QLinuxFbIntegration;
 

@@ -49,7 +49,7 @@ class QVFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
 QStringList QVFbIntegrationPlugin::keys() const
@@ -59,8 +59,9 @@ QStringList QVFbIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration* QVFbIntegrationPlugin::create(const QString& system)
+QPlatformIntegration* QVFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "qvfb")
         return new QVFbIntegration;
 

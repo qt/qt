@@ -48,7 +48,7 @@ class QTestLiteIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
 QStringList QTestLiteIntegrationPlugin::keys() const
@@ -61,8 +61,9 @@ QStringList QTestLiteIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration* QTestLiteIntegrationPlugin::create(const QString& system)
+QPlatformIntegration* QTestLiteIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "testlite")
         return new QTestLiteIntegration;
 #ifndef QT_NO_OPENGL

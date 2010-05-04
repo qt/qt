@@ -57,12 +57,13 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key)
 {
     QPlatformIntegration *ret = 0;
-    QString platform = key.toLower();
+    QStringList paramList = key.split(QLatin1Char(':'));
+    QString platform = paramList.takeFirst().toLower();
 
     qDebug() << loader()->keys();
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     if (QPlatformIntegrationFactoryInterface *factory = qobject_cast<QPlatformIntegrationFactoryInterface*>(loader()->instance(platform)))
-        ret = factory->create(platform);
+        ret = factory->create(platform, paramList);
 #endif
 
     return ret;

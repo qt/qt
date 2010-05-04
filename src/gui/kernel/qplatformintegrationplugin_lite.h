@@ -66,7 +66,7 @@ class QPlatformIntegration;
 
 struct QPlatformIntegrationFactoryInterface : public QFactoryInterface
 {
-    virtual QPlatformIntegration *create(const QString &key) = 0;
+    virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList) = 0;
 };
 
 #define QPlatformIntegrationFactoryInterface_iid "com.nokia.Qt.QPlatformIntegrationFactoryInterface"
@@ -82,7 +82,7 @@ public:
     ~QPlatformIntegrationPlugin();
 
     virtual QStringList keys() const = 0;
-    virtual QPlatformIntegration *create(const QString &key) = 0;
+    virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList) = 0;
 };
 
 QT_END_NAMESPACE

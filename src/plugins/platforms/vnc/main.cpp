@@ -49,7 +49,7 @@ class QVNCIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList &);
 };
 
 QStringList QVNCIntegrationPlugin::keys() const
@@ -59,8 +59,9 @@ QStringList QVNCIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration* QVNCIntegrationPlugin::create(const QString& system)
+QPlatformIntegration* QVNCIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "vnc")
         return new QVNCIntegration;
 

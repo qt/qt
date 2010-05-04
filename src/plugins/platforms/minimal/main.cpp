@@ -48,7 +48,7 @@ class QMinimalIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
 QStringList QMinimalIntegrationPlugin::keys() const
@@ -58,8 +58,9 @@ QStringList QMinimalIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system)
+QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "minimal")
         return new QMinimalIntegration;
 

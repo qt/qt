@@ -48,7 +48,7 @@ class QDirectFbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
 QStringList QDirectFbIntegrationPlugin::keys() const
@@ -58,8 +58,9 @@ QStringList QDirectFbIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system)
+QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "directfb")
         return new QDirectFbIntegration;
 
