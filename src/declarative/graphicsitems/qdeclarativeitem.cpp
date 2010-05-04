@@ -230,62 +230,93 @@ QDeclarativeContents::QDeclarativeContents() : m_x(0), m_y(0), m_width(0), m_hei
 {
 }
 
+QDeclarativeContents::~QDeclarativeContents()
+{
+    QList<QGraphicsItem *> children = m_item->childItems();
+    for (int i = 0; i < children.count(); ++i) {
+        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
+            continue;
+        QDeclarativeItemPrivate::get(child)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+    }
+}
+
 QRectF QDeclarativeContents::rectF() const
 {
     return QRectF(m_x, m_y, m_width, m_height);
 }
 
-//TODO: optimization: only check sender(), if there is one
-void QDeclarativeContents::calcHeight()
+void QDeclarativeContents::calcHeight(QDeclarativeItem *changed)
 {
     qreal oldy = m_y;
     qreal oldheight = m_height;
 
-    qreal top = FLT_MAX;
-    qreal bottom = 0;
-
-    QList<QGraphicsItem *> children = m_item->childItems();
-    for (int i = 0; i < children.count(); ++i) {
-        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
-            continue;
-        qreal y = child->y();
-        if (y + child->height() > bottom)
-            bottom = y + child->height();
+    if (changed) {
+        qreal top = oldy;
+        qreal bottom = oldy + oldheight;
+        qreal y = changed->y();
+        if (y + changed->height() > bottom)
+            bottom = y + changed->height();
         if (y < top)
             top = y;
-    }
-    if (!children.isEmpty())
         m_y = top;
-    m_height = qMax(bottom - top, qreal(0.0));
+        m_height = bottom - top;
+    } else {
+        qreal top = FLT_MAX;
+        qreal bottom = 0;
+        QList<QGraphicsItem *> children = m_item->childItems();
+        for (int i = 0; i < children.count(); ++i) {
+            QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
+            if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
+                continue;
+            qreal y = child->y();
+            if (y + child->height() > bottom)
+                bottom = y + child->height();
+            if (y < top)
+                top = y;
+        }
+        if (!children.isEmpty())
+            m_y = top;
+        m_height = qMax(bottom - top, qreal(0.0));
+    }
 
     if (m_height != oldheight || m_y != oldy)
         emit rectChanged(rectF());
 }
 
-//TODO: optimization: only check sender(), if there is one
-void QDeclarativeContents::calcWidth()
+void QDeclarativeContents::calcWidth(QDeclarativeItem *changed)
 {
     qreal oldx = m_x;
     qreal oldwidth = m_width;
 
-    qreal left = FLT_MAX;
-    qreal right = 0;
-
-    QList<QGraphicsItem *> children = m_item->childItems();
-    for (int i = 0; i < children.count(); ++i) {
-        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
-            continue;
-        qreal x = child->x();
-        if (x + child->width() > right)
-            right = x + child->width();
+    if (changed) {
+        qreal left = oldx;
+        qreal right = oldx + oldwidth;
+        qreal x = changed->x();
+        if (x + changed->width() > right)
+            right = x + changed->width();
         if (x < left)
             left = x;
-    }
-    if (!children.isEmpty())
         m_x = left;
-    m_width = qMax(right - left, qreal(0.0));
+        m_width = right - left;
+    } else {
+        qreal left = FLT_MAX;
+        qreal right = 0;
+        QList<QGraphicsItem *> children = m_item->childItems();
+        for (int i = 0; i < children.count(); ++i) {
+            QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
+            if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
+                continue;
+            qreal x = child->x();
+            if (x + child->width() > right)
+                right = x + child->width();
+            if (x < left)
+                left = x;
+        }
+        if (!children.isEmpty())
+            m_x = left;
+        m_width = qMax(right - left, qreal(0.0));
+    }
 
     if (m_width != oldwidth || m_x != oldx)
         emit rectChanged(rectF());
@@ -294,21 +325,29 @@ void QDeclarativeContents::calcWidth()
 void QDeclarativeContents::setItem(QDeclarativeItem *item)
 {
     m_item = item;
+    //### optimize
+    connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
 
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
-        connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
-        connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
+        QDeclarativeItemPrivate::get(child)->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+        //###what about changes to visibility?
     }
 
+    //### defer until componentComplete
     calcHeight();
     calcWidth();
+}
+
+void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    if (newGeometry.width() != oldGeometry.width())
+        calcWidth(changed);
+    if (newGeometry.height() != oldGeometry.height())
+        calcHeight(changed);
 }
 
 QDeclarativeItemKeyFilter::QDeclarativeItemKeyFilter(QDeclarativeItem *item)
@@ -1349,6 +1388,7 @@ QDeclarativeItem::~QDeclarativeItem()
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
     delete d->_stateGroup; d->_stateGroup = 0;
+    delete d->_contents; d->_contents = 0;
 }
 
 /*!
@@ -1589,7 +1629,6 @@ QRectF QDeclarativeItem::childrenRect()
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
         d->_contents = new QDeclarativeContents;
-        QDeclarative_setParent_noEvent(d->_contents, this);
         d->_contents->setItem(this);
     }
     return d->_contents->rectF();

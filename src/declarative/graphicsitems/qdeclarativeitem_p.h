@@ -79,24 +79,29 @@ class QNetworkReply;
 class QDeclarativeItemKeyFilter;
 
 //### merge into private?
-class QDeclarativeContents : public QObject
+class QDeclarativeContents : public QObject, public QDeclarativeItemChangeListener
 {
     Q_OBJECT
 public:
     QDeclarativeContents();
+    ~QDeclarativeContents();
 
     QRectF rectF() const;
 
     void setItem(QDeclarativeItem *item);
 
-public Q_SLOTS:
-    void calcHeight();
-    void calcWidth();
-
 Q_SIGNALS:
     void rectChanged(QRectF);
 
+protected:
+    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
+    //void itemDestroyed(QDeclarativeItem *item);
+    //void itemVisibilityChanged(QDeclarativeItem *item)
+
 private:
+    void calcHeight(QDeclarativeItem *changed = 0);
+    void calcWidth(QDeclarativeItem *changed = 0);
+
     QDeclarativeItem *m_item;
     qreal m_x;
     qreal m_y;
