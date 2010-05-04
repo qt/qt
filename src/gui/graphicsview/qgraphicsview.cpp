@@ -327,16 +327,20 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       dragMode(QGraphicsView::NoDrag),
       sceneInteractionAllowed(true), hasSceneRect(false),
       connectedToScene(false),
-      mousePressButton(Qt::NoButton),
+      useLastMouseEvent(false),
       identityMatrix(true),
       dirtyScroll(true),
       accelerateScrolling(true),
+      keepLastCenterPoint(true),
+      transforming(false),
+      handScrolling(false),
+      mustAllocateStyleOptions(false),
+      mustResizeBackgroundPixmap(true),
+      fullUpdatePending(true),
+      mousePressButton(Qt::NoButton),
       leftIndent(0), topIndent(0),
       lastMouseEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
-      useLastMouseEvent(false),
-      keepLastCenterPoint(true),
       alignment(Qt::AlignCenter),
-      transforming(false),
       transformationAnchor(QGraphicsView::AnchorViewCenter), resizeAnchor(QGraphicsView::NoAnchor),
       viewportUpdateMode(QGraphicsView::MinimalViewportUpdate),
       optimizationFlags(0),
@@ -345,14 +349,11 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       rubberBanding(false),
       rubberBandSelectionMode(Qt::IntersectsItemShape),
 #endif
-      handScrolling(false), handScrollMotions(0), cacheMode(0),
-      mustAllocateStyleOptions(false),
-      mustResizeBackgroundPixmap(true),
+      handScrollMotions(0), cacheMode(0),
 #ifndef QT_NO_CURSOR
       hasStoredOriginalCursor(false),
 #endif
       lastDragDropEvent(0),
-      fullUpdatePending(true),
       updateSceneSlotReimplementedChecked(false)
 {
     styleOptions.reserve(QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS);
