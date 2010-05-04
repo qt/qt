@@ -830,7 +830,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                                 out() << "</a>"  << ":</p>\n";
 
                                 generateSection(nlist, 0, marker, CodeMarker::Summary);
-                                out() << "<br />";
+                                out() << "<br/>";
                                 ++pmap;
                             }
                         }
@@ -876,7 +876,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "</div>";
         break;
     case Atom::LineBreak:
-        out() << "<br />";
+        out() << "<br/>";
         break;
     case Atom::Link:
         {
@@ -926,7 +926,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << "<ol type=";
             if (atom->string() == ATOM_LIST_UPPERALPHA) {
                 out() << "\"A\"";
-            }
+            } /* why type? */
             else if (atom->string() == ATOM_LIST_LOWERALPHA) {
                 out() << "\"a\"";
             }
@@ -1585,7 +1585,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
             NodeList::ConstIterator m = (*s).members.begin();
             while (m != (*s).members.end()) {
                 generateDetailedQmlMember(*m, fake, marker);
-                out() << "<br />\n";
+                out() << "<br/>\n";
                 fakeSection.keywords += qMakePair((*m)->name(),
                                                   linkForNode(*m,0));
                 ++m;
@@ -1791,27 +1791,39 @@ void HtmlGenerator::generateHeader(const QString& title,
 
     //out() << "  <title>Qt Reference Documentation</title>";
     out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
-    out() << "  <!--[if IE]>\n";
-    out() << "	<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
-    out() << "	<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
-    out() << "	<![endif]-->\n";
-    out() << "  <!--[if lt IE 7]>\n";
-    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
-    out() << "	<![endif]-->\n";
-    out() << "  <!--[if IE 7]>\n";
-    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
-    out() << "	<![endif]-->\n";
-    out() << "  <!--[if IE 8]>\n";
-    out() << "	<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
-    out() << "	<![endif]-->\n";
     out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
-    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+	out() << "	<script type=\"text/javascript\">         \n";
+	out() << "	$(document).ready(function () {\n";
+	out() << "        $('#pageType').keyup(function () {\n";
+	out() << "          var searchString = document.getElementById('pageType').value;\n";
+	out() << "          if ((searchString == null) || (searchString.length < 3)) {\n";
+	out() << "removeResults();\n";
+	out() << "      	   		CheckEmptyAndLoadList();\n";
+	out() << "return;\n";
+	out() << "		   }\n";
+	out() << "            if (this.timer) clearTimeout(this.timer);\n";
+	out() << "            this.timer = setTimeout(function () {\n";
+	out() << "              $.ajax({\n";
+	out() << "                contentType: \"application/x-www-form-urlencoded\",\n";
+	out() << "                url: 'http://' + location.host + '/nokiasearch/GetDataServlet',\n";
+	out() << "                data: 'searchString='+searchString,\n";
+	out() << "                dataType:'xml',\n";
+	out() << "type: 'post',	 \n";
+	out() << "                success: function (response, textStatus) {\n";
+	out() << "                    removeResults();\n";
+	out() << "                    processNokiaData(response);\n";
+	out() << "}     \n";
+	out() << "              });\n";
+	out() << "            }, 500);\n";
+	out() << "        });\n";
+	out() << "      }); \n";
+	out() << "</script>\n";
     out() << "</head>\n";
 
     if (offlineDocs)
-        out() << "<body class=\"offline\">\n";
+        out() << "<body class=\"offline\"  onload=\"CheckEmptyAndLoadList();\">\n";
     else
-        out() << "<body class=\"\">\n";
+        out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
 
 #ifdef GENERATE_MAC_REFS    
     if (mainPage)
@@ -1834,18 +1846,16 @@ void HtmlGenerator::generateTitle(const QString& title,
                                   CodeMarker *marker)
 {
     if (!title.isEmpty())
-        out() << "<h1 class=\"title\">" << protectEnc(title);
+        out() << "<h1 class=\"title\">" << protectEnc(title) << "</h1>\n";
     if (!subTitle.isEmpty()) {
-        out() << "<br />";
-        if (subTitleSize == SmallSubTitle)
-            out() << "<span class=\"small-subtitle\">";
+ 			out() << "<span";
+       if (subTitleSize == SmallSubTitle)
+            out() << " class=\"small-subtitle\">";
         else
-            out() << "<span class=\"subtitle\">";
+            out() << " class=\"subtitle\">";
         generateText(subTitle, relative, marker);
         out() << "</span>\n";
     }
-    if (!title.isEmpty())
-        out() << "</h1>\n";
 }
 
 void HtmlGenerator::generateFooter(const Node *node)
@@ -1854,9 +1864,10 @@ void HtmlGenerator::generateFooter(const Node *node)
         out() << "<p>\n" << navigationLinks << "</p>\n";
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
-          << QString(address).replace("\\" + COMMAND_VERSION, myTree->version())
-          << "</body>\n"
-             "</html>\n";
+          << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
+	      out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+          out() << "</body>\n";
+          out() <<   "</html>\n";
 }
 
 void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
@@ -1877,7 +1888,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
-        out() << "<pre clas=\"highlightedCode\">"
+        out() << "<pre class=\"highlightedCode\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,
                                                         marker->markedUpIncludes(inner->includes())),
                                                  marker,inner))
@@ -2837,14 +2848,14 @@ void HtmlGenerator::generateSection(const NodeList& nl,
             else {
                 if (twoColumn && i == (int) (nl.count() + 1) / 2)
                     out() << "</ul></td><td  class=\"topAlign\"><ul>\n";
-                out() << "<li><div class=\"fn\">";
+                out() << "<li class=\"fn\">";
             }
 
             generateSynopsis(*m, relative, marker, style, name_alignment);
             if (name_alignment)
                 out() << "</td></tr>\n";
             else
-                out() << "</div></li>\n";
+                out() << "</li>\n";
             i++;
             ++m;
         }
@@ -2898,14 +2909,14 @@ void HtmlGenerator::generateSectionList(const Section& section,
             else {
                 if (twoColumn && i == (int) (section.members.count() + 1) / 2)
                     out() << "</ul></td><td class=\"topAlign\"><ul>\n";
-                out() << "<li><div class=\"fn\">";
+                out() << "<li class=\"fn\">";
             }
 
             generateSynopsis(*m, relative, marker, style, name_alignment);
             if (name_alignment)
                 out() << "</td></tr>\n";
             else
-                out() << "</div></li>\n";
+                out() << "</li>\n";
             i++;
             ++m;
         }
@@ -2933,9 +2944,9 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         if (nameAlignment)
-            out() << "<li><div bar=\"2\" class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
         else
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -3191,7 +3202,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
             if (twoColumn && i == (int) (section.members.count() + 1) / 2)
                 out() << "</ul></td><td class=\"topAlign\"><ul>\n";
 
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
             if (style == CodeMarker::Accessors)
                 out() << "<b>";
             generateSynopsis(*m, relative, marker, style);
@@ -3219,7 +3230,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div bar=\"2\" class=\"fn\"></div>";
+        out() << "<li class=\"fn\">";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -3789,7 +3800,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         out() << "<h3 class=\"flags\">";
         out() << "<a name=\"" + refForNode(node) + "\"></a>";
         generateSynopsis(enume, relative, marker, CodeMarker::Detailed);
-        out() << "<br />";
+        out() << "<br/>";
         generateSynopsis(enume->flagsType(),
                          relative,
                          marker,
@@ -4393,7 +4404,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
         while (m != section.members.end()) {
             if (twoColumn && row == (int) (count + 1) / 2)
                 out() << "</ul></td><td class=\"topAlign\"><ul>\n";
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<li class=\"fn\">";
             generateQmlItem(*m,relative,marker,true);
             out() << "</li>\n";
             row++;
