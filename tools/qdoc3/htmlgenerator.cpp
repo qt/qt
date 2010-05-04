@@ -599,7 +599,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             generateAnnotatedList(relative, marker, nonCompatClasses);
         }
         else if (atom->string() == "classes") {
-            generateCompactList(relative, marker, nonCompatClasses);
+            generateCompactList(relative, marker, nonCompatClasses, true);
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -647,10 +647,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             generateClassHierarchy(relative, marker, nonCompatClasses);
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(relative, marker, compatClasses);
+            generateCompactList(relative, marker, compatClasses, false);
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(relative, marker, obsoleteClasses);
+            generateCompactList(relative, marker, obsoleteClasses, false);
         }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative, marker);
@@ -659,10 +659,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(relative, marker, mainClasses);
+            generateCompactList(relative, marker, mainClasses, true);
         }
         else if (atom->string() == "services") {
-            generateCompactList(relative, marker, serviceClasses);
+            generateCompactList(relative, marker, serviceClasses, false);
         }
         else if (atom->string() == "overviews") {
             generateOverviewList(relative, marker);
@@ -802,9 +802,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                               << "\"></a>\n";
                         out() << "<h3>" << protectEnc((*s).name) << "</h3>\n";
                         if (idx == Class)
-                            generateCompactList(0, marker, ncmap.value(), QString("Q"));
+                            generateCompactList(0, marker, ncmap.value(), false, QString("Q"));
                         else if (idx == QmlClass)
-                            generateCompactList(0, marker, nqcmap.value(), QString("Q"));
+                            generateCompactList(0, marker, nqcmap.value(), false, QString("Q"));
                         else if (idx == MemberFunction) {
                             ParentMaps parentmaps;
                             ParentMaps::iterator pmap;
@@ -1739,6 +1739,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             }
         }
         else if (node->subType() == Node::QmlClass) {
+            out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
             out() << "              <li><a href=\"" << fn->name() << "\">" << title
                   << "</a></li>";
         }
@@ -2325,10 +2326,11 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
 void HtmlGenerator::generateCompactList(const Node *relative,
                                         CodeMarker *marker,
                                         const NodeMap &classMap,
+                                        bool includeAlphabet,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 3; // number of columns in the result
+    const int NumColumns = 2; // number of columns in the result
 
     if (classMap.isEmpty())
         return;
@@ -2439,15 +2441,15 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     for (j = 0; j < NumParagraphs; j++)         // j = 0..36
         paragraphOffset[j + 1] = paragraphOffset[j] + paragraph[j].count();
 
-    int firstOffset[NumColumns + 1];            // 4 + 1
-    int currentOffset[NumColumns];              // 4
-    int currentParagraphNo[NumColumns];         // 4
-    int currentOffsetInParagraph[NumColumns];   // 4
+    int firstOffset[NumColumns + 1];
+    int currentOffset[NumColumns];
+    int currentParagraphNo[NumColumns];
+    int currentOffsetInParagraph[NumColumns];
 
     int numRows = (classMap.count() + NumColumns - 1) / NumColumns;
     int curParagNo = 0;
 
-    for (i = 0; i < NumColumns; i++) {          // i = 0..3
+    for (i = 0; i < NumColumns; i++) {
         firstOffset[i] = qMin(i * numRows, classMap.size());
         currentOffset[i] = firstOffset[i];
 
@@ -2463,6 +2465,16 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     }
     firstOffset[NumColumns] = classMap.count();
 
+    if (includeAlphabet) {
+        out() << "<p  class=\"centerAlign functionIndex\"><b>";
+        for (int i = 0; i < 26; i++) {
+            QChar ch('a' + i);
+            out() << QString("<a href=\"#%1\">%2</a>&nbsp;").arg(ch).arg(ch.toUpper());
+        }
+        out() << "</b></p>\n";
+    }
+
+    QSet<char> used;
     out() << "<table class=\"generic\">\n";
     for (k = 0; k < numRows; k++) {
         out() << "<tr>\n";
@@ -2487,6 +2499,11 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                 out() << "<td  class=\"rightAlign\">";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
+                    if (includeAlphabet) {
+                        QChar c = paragraphName[currentParagraphNo[i]][0].toLower();
+                        out() << QString("<a name=\"%1\"></a>").arg(c);
+                        used.insert(c.cell());
+                    }
                     out() << "<b>"
                           << paragraphName[currentParagraphNo[i]]
                           << "&nbsp;</b>";
@@ -2528,6 +2545,12 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         out() << "</tr>\n";
     }
     out() << "</table>\n";
+    char C = 'a';
+    while (C <= 'z') {
+        if (!used.contains(C))
+            out() << QString("<a name=\"%1\"></a>").arg(C);
+        ++C;
+    }
 }
 
 void HtmlGenerator::generateFunctionIndex(const Node *relative,
