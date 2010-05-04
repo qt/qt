@@ -1,3 +1,55 @@
+2010-04-29  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QtWebKit versioning added
+        https://bugs.webkit.org/show_bug.cgi?id=37207
+
+        QtWebkit releases separated from Qt release cycle.
+
+        * qtwebkit_version.pri: Added.
+
+2010-05-02  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] QWebPage::userAgentForUrl is terrible API
+        https://bugs.webkit.org/show_bug.cgi?id=33875
+
+        Simplify the creation of the user agent string to avoid some
+        overhead for each loaded url.
+
+        The static part of the user agent is cached so it only have
+        to be made once.
+        This creation has been made in order to simplify the code.
+
+        The two variable: application name and current language are
+        set dynamically when needed.
+        The default locale is non longer created if the widget locale
+        is used.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::userAgentApplicationName):
+        (tst_QWebPage::userAgentLocaleChange):
+
+2010-05-02  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer: animation incorrect when scrolling
+        https://bugs.webkit.org/show_bug.cgi?id=38371
+
+        This is a regression introduced with the invalidate-on-scroll code path, that uses QGraphicsWebViewPrivate::update()
+        instead of QGraphicsWebViewPrivate::scroll(). The patch makes sure that the scrolling position is correct on
+        each content update - this shouldn't have a performance impact - the only overhead is an additional value-test on each update.
+
+        Tested by http://www.the-art-of-web.com/css/css-animation/
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::update):
+
 2010-04-29  Andreas Kling  <andreas.kling@nokia.com>
 
         Reviewed by Simon Hausmann.
