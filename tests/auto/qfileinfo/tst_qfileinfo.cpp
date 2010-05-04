@@ -1327,7 +1327,6 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         QTest::newRow("relative file symlink") << relSymlink << true << QDir::fromNativeSeparators(relTarget) << target.canonicalFilePath();
     }
 
-#if 0
     //Junctions
     QString target = "target";
     QString junction = "junction_pwd";
@@ -1363,7 +1362,6 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         FileSystem::createNtfsJunction(rootVolume, junction);
         QTest::newRow("mountpoint") << junction << true <<  QDir::fromNativeSeparators(rootPath) << QDir::rootPath();
     }
-#endif
 }
 
 void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
