@@ -219,46 +219,9 @@ QT_BEGIN_NAMESPACE
     The angle to rotate, in degrees clockwise.
 */
 
-
-/*!
-    \group group_animation
-    \title Animation
-*/
-
-/*!
-    \group group_coreitems
-    \title Basic Items
-*/
-
-/*!
-    \group group_layouts
-    \title Layouts
-*/
-
-/*!
-    \group group_states
-    \title States and Transitions
-*/
-
-/*!
-    \group group_utility
-    \title Utility
-*/
-
-/*!
-    \group group_views
-    \title Views
-*/
-
-/*!
-    \group group_widgets
-    \title Widgets
-*/
-
 /*!
     \internal
     \class QDeclarativeContents
-    \ingroup group_utility
     \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
 
 */
@@ -1258,8 +1221,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     changes. For many properties in Item or Item derivatives this can be used
     to add a touch of imperative logic to your application (when absolutely
     necessary).
-
-    \ingroup group_coreitems
 */
 
 /*!

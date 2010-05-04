@@ -292,8 +292,6 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     \class QDeclarativeMouseArea
     \brief The QDeclarativeMouseArea class provides a simple mouse handling abstraction for use within Qml.
 
-    \ingroup group_coreitems
-
     All QDeclarativeItem derived classes can do mouse handling but the QDeclarativeMouseArea class exposes mouse
     handling data as properties and tracks flicking and dragging of the mouse.
 

@@ -134,8 +134,6 @@ QT_BEGIN_NAMESPACE
     \class QDeclarativeImage Image
     \brief The QDeclarativeImage class provides an image item that you can add to a QDeclarativeView.
 
-    \ingroup group_coreitems
-
     Example:
     \qml
     Image { source: "pics/star.png" }

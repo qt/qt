@@ -255,7 +255,6 @@ qreal QDeclarativeTimeLinePrivate::value(const Op &op, int time, qreal base, boo
 /*!
     \internal
     \class QDeclarativeTimeLine
-    \ingroup group_animation
     \brief The QDeclarativeTimeLine class provides a timeline for controlling animations.
 
     QDeclarativeTimeLine is similar to QTimeLine except:
@@ -875,7 +874,6 @@ void QDeclarativeTimeLine::remove(QDeclarativeTimeLineObject *v)
 /*!
     \internal
     \class QDeclarativeTimeLineValue
-    \ingroup group_animation
     \brief The QDeclarativeTimeLineValue class provides a value that can be modified by QDeclarativeTimeLine.
 */
 
