@@ -345,19 +345,21 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \code
     Flickable {
-        width: 200; height: 200; contentWidth: image.width; contentHeight: image.height
-        Image { id: image; source: "bigimage.png" }
+        width: 200; height: 200
+        contentWidth: image.width; contentHeight: image.height
+
+        Image { id: image; source: "bigImage.png" }
     }
     \endcode
 
     \image flickable.gif
 
-    \note Flickable does not automatically clip its contents. If
-    it is not full-screen it is likely that \c clip should be set
-    to true.
+    Flickable does not automatically clip its contents. If
+    it is not full-screen it is likely that \l {Item::clip}{clip} should be set
+    to \c true.
 
-    \note Due to an implementation detail items placed inside a flickable cannot anchor to it by
-    id, use 'parent' instead.
+    \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
+    \c id. Use \c parent instead.
 */
 
 /*!
@@ -400,18 +402,17 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     These properties describe the position and size of the currently viewed area.
     The size is defined as the percentage of the full view currently visible,
     scaled to 0.0 - 1.0.  The page position is usually in the range 0.0 (beginning) to
-    1.0 minus size ratio (end), i.e. yPosition is in the range 0.0 to 1.0-heightRatio.
+    1.0 minus size ratio (end), i.e. \c yPosition is in the range 0.0 to 1.0-\c heightRatio.
     However, it is possible for the contents to be dragged outside of the normal
     range, resulting in the page positions also being outside the normal range.
 
-    These properties are typically used to draw a scrollbar, for example:
-    \code
-    Rectangle {
-        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
-        y: MyListView.visibleArea.yPosition * MyListView.height
-        height: MyListView.visibleArea.heightRatio * MyListView.height
-    }
-    \endcode
+    These properties are typically used to draw a scrollbar. For example:
+
+    \snippet doc/src/snippets/declarative/flickableScrollbar.qml 0
+    \dots 4
+    \snippet doc/src/snippets/declarative/flickableScrollbar.qml 1
+
+    \sa {declarative/scrollbar}{scrollbar example}
 */
 
 QDeclarativeFlickable::QDeclarativeFlickable(QDeclarativeItem *parent)
@@ -479,11 +480,12 @@ void QDeclarativeFlickable::setContentY(qreal pos)
 /*!
     \qmlproperty bool Flickable::interactive
 
-    A user cannot drag or flick a Flickable that is not interactive.
+    This property holds whether the user can interact with the Flickable. A user
+    cannot drag or flick a Flickable that is not interactive.
 
     This property is useful for temporarily disabling flicking. This allows
     special interaction with Flickable's children: for example, you might want to
-    freeze a flickable map while viewing detailed information on a location popup that is a child of the Flickable.
+    freeze a flickable map while scrolling through a pop-up dialog that is a child of the Flickable.
 */
 bool QDeclarativeFlickable::isInteractive() const
 {
@@ -1026,7 +1028,7 @@ void QDeclarativeFlickable::setOverShoot(bool o)
     This enables the feeling that the edges of the view are soft,
     rather than a hard physical boundary.
 
-    boundsBehavior can be one of:
+    The \c boundsBehavior can be one of:
 
     \list
     \o \e StopAtBounds - the contents can not be dragged beyond the boundary
@@ -1059,12 +1061,16 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
     \qmlproperty int Flickable::contentHeight
 
     The dimensions of the content (the surface controlled by Flickable). Typically this
-    should be set to the combined size of the items placed in the Flickable.
+    should be set to the combined size of the items placed in the Flickable. Note this
+    can be set automatically using \l {Item::childrenRect.width}{childrenRect.width}
+    and \l {Item::childrenRect.height}{childrenRect.height}. For example:
 
     \code
     Flickable {
-        width: 320; height: 480; contentWidth: image.width; contentHeight: image.height
-        Image { id: image; source: "bigimage.png" }
+        width: 320; height: 480
+        contentWidth: childrenRect.width; contentHeight: childrenRect.height
+
+        Image { id: image; source: "bigImage.png" }
     }
     \endcode
 */
