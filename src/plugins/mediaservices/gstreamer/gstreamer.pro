@@ -36,7 +36,7 @@ SOURCES += \
     qvideosurfacegstsink.cpp
 
 
-x11 {
+!win32:!embedded:!mac:!symbian {
     LIBS += -lXv
 
     HEADERS += \
