@@ -1667,9 +1667,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 alignment |= Qt::TextHideMnemonic;
             if (!optionTab.icon.isNull()) {
                 QSize iconSize = optionTab.iconSize;
-                int iconExtent = pixelMetric(PM_TabBarIconSize);
-                if (iconSize.height() > iconExtent || iconSize.width() > iconExtent)
+                if (!iconSize.isValid()) {
+                    const int iconExtent = pixelMetric(PM_TabBarIconSize);
                     iconSize = QSize(iconExtent, iconExtent);
+                }
                 QPixmap tabIcon = optionTab.icon.pixmap(iconSize,
                     (optionTab.state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
                 if (tab->text.isEmpty())
