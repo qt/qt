@@ -1085,7 +1085,7 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
     else
         d->viewport->setWidth(w);
     // Make sure that we're entirely in view.
-    if (!d->pressed) {
+    if (!d->pressed && !d->moving) {
         int oldDuration = d->fixupDuration;
         d->fixupDuration = 0;
         d->fixupX();
@@ -1112,7 +1112,7 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     else
         d->viewport->setHeight(h);
     // Make sure that we're entirely in view.
-    if (!d->pressed) {
+    if (!d->pressed && !d->moving) {
         int oldDuration = d->fixupDuration;
         d->fixupDuration = 0;
         d->fixupY();
