@@ -1337,9 +1337,12 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     d->drawCachedGlyphs(glyphType, textItem, true);
 }
 
-void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
+bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
 {
     Q_D(QGL2PaintEngineEx);
+    if (!d->shaderManager)
+        return false;
+
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
@@ -1354,6 +1357,7 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
     d->drawTexture(dest, srcRect, size, false);
+    return true;
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)

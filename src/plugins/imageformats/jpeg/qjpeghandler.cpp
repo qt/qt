@@ -121,8 +121,8 @@ static boolean qt_fill_input_buffer(j_decompress_ptr cinfo)
 {
     my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
     if (src->memDevice) {
-        src->next_input_byte = (const JOCTET *)src->memDevice->data().constData();
-        src->bytes_in_buffer = (size_t)src->memDevice->data().size();
+        src->next_input_byte = (const JOCTET *)(src->memDevice->data().constData() + src->memDevice->pos());
+        src->bytes_in_buffer = (size_t)(src->memDevice->data().size() - src->memDevice->pos());
         return true;
     }
     src->next_input_byte = src->buffer;
@@ -169,7 +169,13 @@ static void qt_term_source(j_decompress_ptr cinfo)
 {
     my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
     if (!src->device->isSequential())
-        src->device->seek(src->device->pos() - src->bytes_in_buffer);
+    {
+        // read() isn't used for memDevice, so seek past everything that was used
+        if (src->memDevice)
+            src->device->seek(src->device->pos() + (src->memDevice->data().size() - src->memDevice->pos() - src->bytes_in_buffer));
+        else
+            src->device->seek(src->device->pos() - src->bytes_in_buffer);
+    }
 }
 
 #if defined(Q_C_CALLBACKS)

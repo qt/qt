@@ -63,6 +63,7 @@
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
+#include <private/qlocale_p.h>
 
 #ifdef Q_OS_SYMBIAN
 #  include <exception>
@@ -514,13 +515,16 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY)
     // Refresh factoryloader, as text codecs are requested during lib path
     // resolving process and won't be therefore properly loaded.
     // Unknown if this is symbian specific issue.
     QFactoryLoader::refreshAll();
 #endif
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+    d_func()->symbianInit();
+#endif
 }
 
 // ### move to QCoreApplicationPrivate constructor?
@@ -596,6 +600,15 @@ void QCoreApplication::init()
 
     qt_startup_hook();
 }
+
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+void QCoreApplicationPrivate::symbianInit()
+{
+    if (!environmentChangeNotifier)
+        environmentChangeNotifier.reset(new QEnvironmentChangeNotifier);
+}
+#endif
+
 
 /*!
     Destroys the QCoreApplication object.
@@ -2189,7 +2202,7 @@ QString QCoreApplication::applicationVersion()
     return coreappdata()->applicationVersion;
 }
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
 
@@ -2291,13 +2304,11 @@ QStringList QCoreApplication::libraryPaths()
  */
 void QCoreApplication::setLibraryPaths(const QStringList &paths)
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QMutexLocker locker(libraryPathMutex());
     if (!coreappdata()->app_libpaths)
         coreappdata()->app_libpaths = new QStringList;
     *(coreappdata()->app_libpaths) = paths;
     QFactoryLoader::refreshAll();
-#endif
 }
 
 /*!
@@ -2318,7 +2329,6 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
  */
 void QCoreApplication::addLibraryPath(const QString &path)
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     if (path.isEmpty())
         return;
 
@@ -2333,7 +2343,6 @@ void QCoreApplication::addLibraryPath(const QString &path)
         coreappdata()->app_libpaths->prepend(canonicalPath);
         QFactoryLoader::refreshAll();
     }
-#endif
 }
 
 /*!
@@ -2344,7 +2353,6 @@ void QCoreApplication::addLibraryPath(const QString &path)
 */
 void QCoreApplication::removeLibraryPath(const QString &path)
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     if (path.isEmpty())
         return;
 
@@ -2356,7 +2364,6 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     QString canonicalPath = QDir(path).canonicalPath();
     coreappdata()->app_libpaths->removeAll(canonicalPath);
     QFactoryLoader::refreshAll();
-#endif
 }
 
 #endif //QT_NO_LIBRARY
