@@ -48,6 +48,7 @@
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativeanchors_p_p.h>
+#include <QtDeclarative/private/qdeclarativeitem_p.h>
 
 Q_DECLARE_METATYPE(QDeclarativeAnchors::Anchor)
 Q_DECLARE_METATYPE(QDeclarativeAnchorLine::AnchorLine)
@@ -376,15 +377,16 @@ void tst_qdeclarativeanchors::reset()
     anchor.anchorLine = anchorLine;
 
     QDeclarativeItem *item = new QDeclarativeItem;
+    QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
 
-    const QMetaObject *meta = item->anchors()->metaObject();
+    const QMetaObject *meta = itemPrivate->anchors()->metaObject();
     QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
 
-    QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
-    QCOMPARE(item->anchors()->usedAnchors().testFlag(usedAnchor), true);
+    QVERIFY(p.write(itemPrivate->anchors(), qVariantFromValue(anchor)));
+    QCOMPARE(itemPrivate->anchors()->usedAnchors().testFlag(usedAnchor), true);
 
-    QVERIFY(p.reset(item->anchors()));
-    QCOMPARE(item->anchors()->usedAnchors().testFlag(usedAnchor), false);
+    QVERIFY(p.reset(itemPrivate->anchors()));
+    QCOMPARE(itemPrivate->anchors()->usedAnchors().testFlag(usedAnchor), false);
 
     delete item;
     delete baseItem;
@@ -410,18 +412,19 @@ void tst_qdeclarativeanchors::resetConvenience()
 {
     QDeclarativeItem *baseItem = new QDeclarativeItem;
     QDeclarativeItem *item = new QDeclarativeItem;
+    QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
 
     //fill
-    item->anchors()->setFill(baseItem);
-    QVERIFY(item->anchors()->fill() == baseItem);
-    item->anchors()->resetFill();
-    QVERIFY(item->anchors()->fill() == 0);
+    itemPrivate->anchors()->setFill(baseItem);
+    QVERIFY(itemPrivate->anchors()->fill() == baseItem);
+    itemPrivate->anchors()->resetFill();
+    QVERIFY(itemPrivate->anchors()->fill() == 0);
 
     //centerIn
-    item->anchors()->setCenterIn(baseItem);
-    QVERIFY(item->anchors()->centerIn() == baseItem);
-    item->anchors()->resetCenterIn();
-    QVERIFY(item->anchors()->centerIn() == 0);
+    itemPrivate->anchors()->setCenterIn(baseItem);
+    QVERIFY(itemPrivate->anchors()->centerIn() == baseItem);
+    itemPrivate->anchors()->resetCenterIn();
+    QVERIFY(itemPrivate->anchors()->centerIn() == 0);
 
     delete item;
     delete baseItem;
@@ -433,12 +436,13 @@ void tst_qdeclarativeanchors::nullItem()
 
     QDeclarativeAnchorLine anchor;
     QDeclarativeItem *item = new QDeclarativeItem;
+    QDeclarativeItemPrivate *itemPrivate = QDeclarativeItemPrivate::get(item);
 
-    const QMetaObject *meta = item->anchors()->metaObject();
+    const QMetaObject *meta = itemPrivate->anchors()->metaObject();
     QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
 
     QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML Item: Cannot anchor to a null item.");
-    QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
+    QVERIFY(p.write(itemPrivate->anchors(), qVariantFromValue(anchor)));
 
     delete item;
 }
@@ -486,15 +490,16 @@ void tst_qdeclarativeanchors::fill()
 
     qApp->processEvents();
     QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("filler"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
     QCOMPARE(rect->x(), 0.0 + 10.0);
     QCOMPARE(rect->y(), 0.0 + 30.0);
     QCOMPARE(rect->width(), 200.0 - 10.0 - 20.0);
     QCOMPARE(rect->height(), 200.0 - 30.0 - 40.0);
     //Alter Offsets (tests QTBUG-6631)
-    rect->anchors()->setLeftMargin(20.0);
-    rect->anchors()->setRightMargin(0.0);
-    rect->anchors()->setBottomMargin(0.0);
-    rect->anchors()->setTopMargin(10.0);
+    rectPrivate->anchors()->setLeftMargin(20.0);
+    rectPrivate->anchors()->setRightMargin(0.0);
+    rectPrivate->anchors()->setBottomMargin(0.0);
+    rectPrivate->anchors()->setTopMargin(10.0);
     QCOMPARE(rect->x(), 0.0 + 20.0);
     QCOMPARE(rect->y(), 0.0 + 10.0);
     QCOMPARE(rect->width(), 200.0 - 20.0);
@@ -509,11 +514,12 @@ void tst_qdeclarativeanchors::centerIn()
 
     qApp->processEvents();
     QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("centered"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
     QCOMPARE(rect->x(), 75.0 + 10);
     QCOMPARE(rect->y(), 75.0 + 30);
     //Alter Offsets (tests QTBUG-6631)
-    rect->anchors()->setHorizontalCenterOffset(-20.0);
-    rect->anchors()->setVerticalCenterOffset(-10.0);
+    rectPrivate->anchors()->setHorizontalCenterOffset(-20.0);
+    rectPrivate->anchors()->setVerticalCenterOffset(-10.0);
     QCOMPARE(rect->x(), 75.0 - 20.0);
     QCOMPARE(rect->y(), 75.0 - 10.0);
 
@@ -526,13 +532,14 @@ void tst_qdeclarativeanchors::margins()
 
     qApp->processEvents();
     QDeclarativeRectangle* rect = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("filler"));
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
     QCOMPARE(rect->x(), 5.0);
     QCOMPARE(rect->y(), 6.0);
     QCOMPARE(rect->width(), 200.0 - 5.0 - 10.0);
     QCOMPARE(rect->height(), 200.0 - 6.0 - 10.0);
 
-    rect->anchors()->setTopMargin(0.0);
-    rect->anchors()->setMargins(20.0);
+    rectPrivate->anchors()->setTopMargin(0.0);
+    rectPrivate->anchors()->setMargins(20.0);
 
     QCOMPARE(rect->x(), 5.0);
     QCOMPARE(rect->y(), 20.0);

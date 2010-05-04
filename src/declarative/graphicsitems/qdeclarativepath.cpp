@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \class QDeclarativePathElement
-    \ingroup group_utility
 */
 
 /*!
@@ -86,7 +85,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \class QDeclarativePath
-    \ingroup group_utility
     \brief The QDeclarativePath class defines a path.
     \sa QDeclarativePathView
 */
@@ -117,6 +115,7 @@ void QDeclarativePath::setStartX(qreal x)
         return;
     d->startX = x;
     emit startXChanged();
+    processPath();
 }
 
 qreal QDeclarativePath::startY() const
@@ -132,6 +131,7 @@ void QDeclarativePath::setStartY(qreal y)
         return;
     d->startY = y;
     emit startYChanged();
+    processPath();
 }
 
 /*!
@@ -220,6 +220,9 @@ void QDeclarativePath::processPath()
 {
     Q_D(QDeclarativePath);
 
+    if (!d->componentComplete)
+        return;
+
     d->_pointCache.clear();
     d->_attributePoints.clear();
     d->_path = QPainterPath();
@@ -284,10 +287,18 @@ void QDeclarativePath::processPath()
     emit changed();
 }
 
+void QDeclarativePath::classBegin()
+{
+    Q_D(QDeclarativePath);
+    d->componentComplete = false;
+}
+
 void QDeclarativePath::componentComplete()
 {
     Q_D(QDeclarativePath);
     QSet<QString> attrs;
+    d->componentComplete = true;
+
     // First gather up all the attributes
     foreach (QDeclarativePathElement *pathElement, d->_pathElements) {
         if (QDeclarativePathAttribute *attribute =
@@ -500,7 +511,6 @@ void QDeclarativeCurve::setY(qreal y)
 /*!
     \internal
     \class QDeclarativePathAttribute
-    \ingroup group_utility
     \brief The QDeclarativePathAttribute class allows to set the value of an attribute at a given position in the path.
 
     \sa QDeclarativePath
@@ -573,7 +583,6 @@ void QDeclarativePathAttribute::setValue(qreal value)
 /*!
     \internal
     \class QDeclarativePathLine
-    \ingroup group_utility
     \brief The QDeclarativePathLine class defines a straight line.
 
     \sa QDeclarativePath
@@ -617,7 +626,6 @@ void QDeclarativePathLine::addToPath(QPainterPath &path)
 /*!
     \internal
     \class QDeclarativePathQuad
-    \ingroup group_utility
     \brief The QDeclarativePathQuad class defines a quadratic Bezier curve with a control point.
 
     \sa QDeclarativePath
@@ -705,7 +713,6 @@ void QDeclarativePathQuad::addToPath(QPainterPath &path)
 /*!
     \internal
     \class QDeclarativePathCubic
-    \ingroup group_utility
     \brief The QDeclarativePathCubic class defines a cubic Bezier curve with two control points.
 
     \sa QDeclarativePath
@@ -831,7 +838,6 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
 /*!
     \internal
     \class QDeclarativePathPercent
-    \ingroup group_utility
     \brief The QDeclarativePathPercent class manipulates the way a path is interpreted.
 
     QDeclarativePathPercent allows you to bunch up items (or spread out items) along various

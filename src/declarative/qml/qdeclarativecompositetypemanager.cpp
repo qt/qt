@@ -525,16 +525,15 @@ void QDeclarativeCompositeTypeManager::checkComplete(QDeclarativeCompositeTypeDa
 int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData *unit)
 {
     // not called until all resources are loaded (they include import URLs)
-
     int waiting = 0;
 
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+    QDeclarativeImportDatabase &importDatabase = ep->importDatabase;
 
-    /*
-     For local urls, add an implicit import "." as first (most overridden) lookup. This will also trigger
-     the loading of the qmldir and the import of any native types from available plugins.
-     */
+    // For local urls, add an implicit import "." as first (most overridden) lookup. 
+    // This will also trigger the loading of the qmldir and the import of any native 
+    // types from available plugins.
     {
-
         QDeclarativeDirComponents qmldircomponentsnetwork;
         if (QDeclarativeCompositeTypeResource *resource
             = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
@@ -544,14 +543,9 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             qmldircomponentsnetwork = parser.components();
         }
 
-        QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports,
-                            qmldircomponentsnetwork,
-                            QLatin1String("."),
-                            QString(),
-                            -1, -1,
-                            QDeclarativeScriptParser::Import::File,
-                            0); // error ignored (just means no fallback)
+        importDatabase.addToImport(&unit->imports, qmldircomponentsnetwork, QLatin1String("."),
+                                   QString(), -1, -1, QDeclarativeScriptParser::Import::File,
+                                   0); // error ignored (just means no fallback)
     }
 
 
@@ -588,9 +582,8 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         }
 
         QString errorString;
-        if (!QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type, &errorString))
-        {
+        if (!importDatabase.addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, 
+                                        vmaj, vmin, imp.type, &errorString)) {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
             error.setDescription(errorString);
@@ -616,11 +609,10 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         QUrl url;
         int majorVersion;
         int minorVersion;
-        QDeclarativeEnginePrivate::ImportedNamespace *typeNamespace = 0;
+        QDeclarativeImportedNamespace *typeNamespace = 0;
         QString errorString;
-        if (!QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace, &errorString)
-                || typeNamespace)
-        {
+        if (!importDatabase.resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, 
+                                        &typeNamespace, &errorString) || typeNamespace) {
             // Known to not be a type:
             //  - known to be a namespace (Namespace {})
             //  - type with unknown namespace (UnknownNamespace.SomeType {})

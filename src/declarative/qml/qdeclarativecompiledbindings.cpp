@@ -572,7 +572,7 @@ struct QDeclarativeBindingCompilerPrivate
     QDeclarativeParser::Object *component;
     QDeclarativeParser::Property *destination;
     QHash<QString, QDeclarativeParser::Object *> ids;
-    QDeclarativeEnginePrivate::Imports imports;
+    QDeclarativeImports imports;
     QDeclarativeEnginePrivate *engine;
 
     QString contextName() const { return QLatin1String("$$$SCOPE_") + QString::number((intptr_t)context, 16); }
@@ -1795,8 +1795,8 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
             if (nameParts.at(ii + 1).at(0).isUpper())
                 return false;
 
-            QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
-            if (!engine->resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
+            QDeclarativeImportedNamespace *ns = 0;
+            if (!engine->importDatabase.resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
                 return false;
             if (ns || !attachType || !attachType->attachedPropertiesType())
                 return false;

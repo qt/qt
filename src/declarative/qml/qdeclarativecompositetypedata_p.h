@@ -83,7 +83,7 @@ public:
 
     QList<QDeclarativeError> errors;
 
-    QDeclarativeEnginePrivate::Imports imports;
+    QDeclarativeImports imports;
 
     QList<QDeclarativeCompositeTypeData *> dependants;
 
