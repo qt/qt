@@ -1029,7 +1029,10 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     if (!component.isReady())
         return ctxt->throwError("Qt.createQmlObject(): Component is not ready");
 
-    QObject *obj = component.create(context->asQDeclarativeContext());
+    QObject *obj = component.beginCreate(context->asQDeclarativeContext());
+    if(obj)
+        QDeclarativeData::get(obj, true)->setImplicitDestructible();
+    component.completeCreate();
 
     if(component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
