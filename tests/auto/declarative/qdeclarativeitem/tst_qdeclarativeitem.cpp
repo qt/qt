@@ -63,6 +63,7 @@ private slots:
     void propertyChanges();
     void transforms();
     void transforms_data();
+    void childrenRect();
 
     void childrenProperty();
     void resourcesProperty();
@@ -535,6 +536,33 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(wantsFocusArguments.at(0).toBool(), true);
 
     delete canvas;
+}
+
+void tst_QDeclarativeItem::childrenRect()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/childrenRect.qml"));
+    canvas->show();
+
+    QGraphicsObject *o = canvas->rootObject();
+    QDeclarativeItem *item = o->findChild<QDeclarativeItem*>("testItem");
+    QCOMPARE(item->width(), qreal(0));
+    QCOMPARE(item->height(), qreal(0));
+
+    o->setProperty("childCount", 1);
+    QCOMPARE(item->width(), qreal(10));
+    QCOMPARE(item->height(), qreal(20));
+
+    o->setProperty("childCount", 5);
+    QCOMPARE(item->width(), qreal(50));
+    QCOMPARE(item->height(), qreal(100));
+
+    o->setProperty("childCount", 0);
+    QCOMPARE(item->width(), qreal(0));
+    QCOMPARE(item->height(), qreal(0));
+
+    delete o;
 }
 
 template<typename T>

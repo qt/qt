@@ -237,7 +237,7 @@ QDeclarativeContents::~QDeclarativeContents()
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        QDeclarativeItemPrivate::get(child)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+        QDeclarativeItemPrivate::get(child)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
     }
 }
 
@@ -333,7 +333,7 @@ void QDeclarativeContents::setItem(QDeclarativeItem *item)
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        QDeclarativeItemPrivate::get(child)->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+        QDeclarativeItemPrivate::get(child)->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
         //###what about changes to visibility?
     }
 
@@ -348,6 +348,30 @@ void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const 
         calcWidth(changed);
     if (newGeometry.height() != oldGeometry.height())
         calcHeight(changed);
+}
+
+void QDeclarativeContents::itemDestroyed(QDeclarativeItem *item)
+{
+    if (item)
+        QDeclarativeItemPrivate::get(item)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    calcWidth();
+    calcHeight();
+}
+
+void QDeclarativeContents::childRemoved(QDeclarativeItem *item)
+{
+    if (item)
+        QDeclarativeItemPrivate::get(item)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    calcWidth();
+    calcHeight();
+}
+
+void QDeclarativeContents::childAdded(QDeclarativeItem *item)
+{
+    if (item)
+        QDeclarativeItemPrivate::get(item)->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    calcWidth(item);
+    calcHeight(item);
 }
 
 QDeclarativeItemKeyFilter::QDeclarativeItemKeyFilter(QDeclarativeItem *item)
@@ -2550,6 +2574,16 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
                 }
             }
         }
+        break;
+    case ItemChildAddedChange:
+        if (d->_contents)
+            d->_contents->childAdded(qobject_cast<QDeclarativeItem*>(
+                    value.value<QGraphicsItem*>()));
+        break;
+    case ItemChildRemovedChange:
+        if (d->_contents)
+            d->_contents->childRemoved(qobject_cast<QDeclarativeItem*>(
+                    value.value<QGraphicsItem*>()));
         break;
     default:
         break;

@@ -90,12 +90,15 @@ public:
 
     void setItem(QDeclarativeItem *item);
 
+    void childRemoved(QDeclarativeItem *item);
+    void childAdded(QDeclarativeItem *item);
+
 Q_SIGNALS:
     void rectChanged(QRectF);
 
 protected:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
-    //void itemDestroyed(QDeclarativeItem *item);
+    void itemDestroyed(QDeclarativeItem *item);
     //void itemVisibilityChanged(QDeclarativeItem *item)
 
 private:
