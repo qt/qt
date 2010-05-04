@@ -44,6 +44,7 @@
 */
 
 #include "codemarker.h"
+#include "codeparser.h"
 #include "helpprojectwriter.h"
 #include "htmlgenerator.h"
 #include "node.h"
@@ -1223,7 +1224,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         namespasse = static_cast<const NamespaceNode *>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
-        title = rawTitle + " Namespace Reference";
+        title = rawTitle + " Namespace";
     }
     else if (inner->type() == Node::Class) {
         classe = static_cast<const ClassNode *>(inner);
@@ -1263,7 +1264,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         }
     }
 
-    generateHeader(title, inner, marker, true);
+    generateHeader(title, inner, marker);
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
     generateTableOfContents(inner,marker,&sections);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
@@ -1474,7 +1475,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         htmlTitle = fullTitle;
     }
 
-    generateHeader(htmlTitle, fake, marker, true);
+    generateHeader(htmlTitle, fake, marker);
         
     /*
       Generate the TOC for the new doc format.
@@ -1674,6 +1675,9 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
     return "html";
 }
 
+/*!
+  Output breadcrumb list in the html file.
+ */
 void HtmlGenerator::generateBreadCrumbs(const QString& title,
                                         const Node *node,
                                         CodeMarker *marker)
@@ -1682,6 +1686,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
     if (node->type() == Node::Class) {
         const ClassNode* cn = static_cast<const ClassNode*>(node);
         QString name =  node->moduleName();
+        out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
         if (!name.isEmpty()) {
             out() << "              <li>";
             breadcrumb << Atom(Atom::AutoLink,name);
@@ -1699,24 +1704,65 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
+            out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+            QString name =  node->name();
+            if (!name.isEmpty()) {
+                out() << "              <li>";
+                breadcrumb << Atom(Atom::AutoLink,name);
+                generateText(breadcrumb, 0, marker);
+                out() << "</li>\n";
+            }
+        }
+        else if (node->subType() == Node::Group) {
+            if (fn->name() == QString("modules"))
+                out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+            else {
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
         }
         else if (node->subType() == Node::Page) {
+            if (fn->name() == QString("examples.html")) {
+                out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+            }
+            else if (fn->name().startsWith("examples-")) {
+                out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
+            else if (fn->name() == QString("namespaces.html")) {
+                out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+            }
+            else {
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
         }
         else if (node->subType() == Node::QmlClass) {
         }
         else if (node->subType() == Node::Example) {
+            out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
+            QStringList sl = fn->name().split('/');
+            QString name = "examples-" + sl.at(0) + ".html";
+            QString t = CodeParser::titleFromName(name);
+            out() << "              <li><a href=\"" << name << "\">"
+                  << t << "</a></li>";
+            out() << "              <li><a href=\"" << sl.at(0)
+                  << "-" << sl.at(sl.size()-1) << ".html\">"
+                  << title << "</a></li>";
         }
     }
     else if (node->type() == Node::Namespace) {
         const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
+        out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+        out() << "              <li><a href=\"" << fileName(nsn) << "\">" << title
+              << "</a></li>";
     }
 }
 
-
 void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
-                                   CodeMarker *marker,
-                                   bool mainPage)
+                                   CodeMarker *marker)
 {
     out() << QString("<?xml version=\"1.0\" encoding=\"%1\"?>\n").arg(outputEncoding);
     out() << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
@@ -2082,7 +2128,7 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
     QString fileName = fileBase(inner) + "-members." + fileExtension(inner);
     beginSubPage(inner->location(), fileName);
     QString title = "List of All Members for " + inner->name();
-    generateHeader(title, inner, marker, false);
+    generateHeader(title, inner, marker);
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
     out() << "<p>This is the complete list of members for ";
     generateFullName(inner, 0, marker);
@@ -2126,7 +2172,7 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
     }
 
     beginSubPage(inner->location(), fileName);
-    generateHeader(title, inner, marker, false);
+    generateHeader(title, inner, marker);
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
 
     if (status == CodeMarker::Compat) {

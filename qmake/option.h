@@ -63,6 +63,7 @@ enum QMakeWarn {
     WarnNone    = 0x00,
     WarnParser  = 0x01,
     WarnLogic   = 0x02,
+    WarnDeprecated = 0x04,
     WarnAll     = 0xFF
 };
 void warn_msg(QMakeWarn t, const char *fmt, ...);

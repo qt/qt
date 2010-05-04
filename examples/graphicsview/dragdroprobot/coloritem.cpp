@@ -43,6 +43,7 @@
 
 #include "coloritem.h"
 
+//! [0]
 ColorItem::ColorItem()
     : color(qrand() % 256, qrand() % 256, qrand() % 256)
 {
@@ -50,13 +51,18 @@ ColorItem::ColorItem()
               .arg(color.red()).arg(color.green()).arg(color.blue())
               .arg("Click and drag this color onto the robot!"));
     setCursor(Qt::OpenHandCursor);
+    setAcceptedMouseButtons(Qt::LeftButton);
 }
+//! [0]
 
+//! [1]
 QRectF ColorItem::boundingRect() const
 {
     return QRectF(-15.5, -15.5, 34, 34);
 }
+//! [1]
 
+//! [2]
 void ColorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
@@ -68,17 +74,16 @@ void ColorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     painter->setBrush(QBrush(color));
     painter->drawEllipse(-15, -15, 30, 30);
 }
+//! [2]
 
+//! [3]
 void ColorItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() != Qt::LeftButton) {
-        event->ignore();
-        return;
-    }
-
     setCursor(Qt::ClosedHandCursor);
 }
+//! [3]
 
+//! [5]
 void ColorItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (QLineF(event->screenPos(), event->buttonDownScreenPos(Qt::LeftButton))
@@ -89,7 +94,9 @@ void ColorItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QDrag *drag = new QDrag(event->widget());
     QMimeData *mime = new QMimeData;
     drag->setMimeData(mime);
+//! [5]
 
+//! [6]
     static int n = 0;
     if (n++ > 2 && (qrand() % 3) == 0) {
         QImage image(":/images/head.png");
@@ -97,6 +104,8 @@ void ColorItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
         drag->setPixmap(QPixmap::fromImage(image).scaled(30, 40));
         drag->setHotSpot(QPoint(15, 30));
+//! [6]
+//! [7]
     } else {
         mime->setColorData(color);
         mime->setText(QString("#%1%2%3")
@@ -118,12 +127,17 @@ void ColorItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         drag->setPixmap(pixmap);
         drag->setHotSpot(QPoint(15, 20));
     }
+//! [7]
 
+//! [8]
     drag->exec();
     setCursor(Qt::OpenHandCursor);
 }
+//! [8]
 
+//! [4]
 void ColorItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
     setCursor(Qt::OpenHandCursor);
 }
+//! [4]

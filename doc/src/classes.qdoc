@@ -59,7 +59,7 @@
 
 /*!
     \page classes.html
-    \title All Qt Classes (main index)
+    \title All Qt Classes
     \ingroup classlists
 
     \brief If you know the name of the class you want, find it here.
@@ -146,7 +146,7 @@
 
 /*!
     \page functions.html
-    \title All Functions (main index)
+    \title All Functions
     \ingroup funclists
 
     \brief All documented Qt functions listed alphabetically with a

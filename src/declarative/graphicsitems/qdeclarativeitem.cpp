@@ -1263,6 +1263,11 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
+    \property QDeclarativeItem::baseline
+    \internal
+*/
+
+/*!
     \property QDeclarativeItem::focus
     \internal
 */

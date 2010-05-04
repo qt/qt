@@ -1,4 +1,4 @@
-// Automatically generated from runtime\RegExpConstructor.cpp using C:/dev/webkit-2.0/JavaScriptCore/create_hash_table. DO NOT EDIT!
+// Automatically generated from runtime/RegExpConstructor.cpp using /JavaScriptCore/create_hash_table. DO NOT EDIT!
 
 #include "Lookup.h"
 
