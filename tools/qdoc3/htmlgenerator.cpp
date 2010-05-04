@@ -2507,7 +2507,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     }
                     out() << "<b>"
                           << paragraphName[currentParagraphNo[i]]
-                          << "&nbsp;</b>";
+                          << "</b>";
                 }
                 out() << "</td>\n";
 
@@ -2677,7 +2677,7 @@ void HtmlGenerator::generateQmlItem(const Node *node,
     if (summary)
         marked.replace("@name>", "b>");
 
-    marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+    marked.replace("<@extra>", "<tt>");
     marked.replace("</@extra>", "</tt>");
 
     if (summary) {
@@ -2986,7 +2986,7 @@ void HtmlGenerator::generateSynopsis(const Node *node,
         extraRegExp.setMinimal(true);
         marked.replace(extraRegExp, "");
     } else {
-        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+        marked.replace("<@extra>", "<tt>");
         marked.replace("</@extra>", "</tt>");
     }
 
@@ -3265,7 +3265,7 @@ void HtmlGenerator::generateSynopsis(const Node *node,
         extraRegExp.setMinimal(true);
         marked.replace(extraRegExp, "");
     } else {
-        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+        marked.replace("<@extra>", "<tt>");
         marked.replace("</@extra>", "</tt>");
     }
 
@@ -4436,9 +4436,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 out() << "<tr><td>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
-                    out() << "<span class=\"qmlreadonly\">read-only&nbsp;</span>";
+                    out() << "<span class=\"qmlreadonly\">read-only</span>";
                 if (qpgn->isDefault())
-                    out() << "<span class=\"qmldefault\">default&nbsp;</span>";
+                    out() << "<span class=\"qmldefault\">default</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
                 if (qpgn->isDefault()) {

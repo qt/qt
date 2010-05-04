@@ -58,6 +58,10 @@
     {
         vertical-align: baseline;
     }
+	tt, .qmlreadonly span, .qmldefault span
+	{
+		word-spacing:5px;
+	}
     .heading
     {
         font: normal 600 16px/1.0 Arial;
@@ -483,7 +487,7 @@
     .wrap .content p
     {
         line-height: 20px;
-        padding: 10px 5px 10px 5px;
+        padding: 5px 5px 5px 5px;
     }
     .wrap .content ul
     {
@@ -499,7 +503,11 @@
         color: #4c0033;
         text-decoration: none;
     }
-    .footer
+     .content a:visited:hover
+    {
+        color: #4c0033;
+        text-decoration: underline;
+    }   .footer
     {
         min-height: 100px;
         color: #797775;
@@ -665,6 +673,10 @@
     {
         font-variant: normal;
     }
+	    .shortCut-topleft-inactive span a:hover,     .shortCut-topleft-active a:hover
+	{
+		text-decoration:none;
+	}
     #shortCut
     {
         padding-top: 10px;
@@ -732,12 +744,16 @@
     }
     th
     {
-        padding: 3px 15px 3px 15px;
+        padding: 5px 15px 5px 15px;
     }
     td
     {
         padding: 3px 15px 3px 20px;
     }
+	td.rightAlign
+	{
+        padding: 3px 15px 3px 10px;
+	}
     table tr.odd
     {
         border-left: 1px solid #E6E6E6;
@@ -758,7 +774,7 @@
     {
         background-color: #E6E6E6;
     }
-
+		
     span.comment
     {
         color: #8B0000;
@@ -856,11 +872,35 @@
         width: 200px;
     }
 
-    .toc h3
+    .toc h3, .generic a
     {
         font: 600 12px/1.2 Arial;
     }
 
+	.generic{}
+	.alignedsummary{}
+	.propsummary{}
+	.memItemLeft{}
+	.memItemRight{}
+	.bottomAlign{}
+	.highlightedCode{}
+	.LegaleseLeft{}
+	.valuelist{}
+	.annotated{}
+	.obsolete{}
+	.compat{}
+	.flags{}
+	.qmlsummary{}
+	.qmlitem{}
+	.qmlproto{}
+	.qmlname{}
+	.qmlreadonly{}
+	.qmldefault{}
+	.qmldoc{}
+	.qt-style{}
+	.redFont{}
+	code{}
+	
     .wrap .content .toc ul
     {
         padding-left: 0px;
@@ -901,8 +941,42 @@
         border-style: solid;
         border-color: #E6E6E6;
         font-weight: bold;
+		word-spacing:3px;
     }
 
+	.functionIndex {
+	font-size:12pt;
+	word-spacing:10px;
+	margin-bottom:10px;
+    background-color: #F6F6F6;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #E6E6E6;
+	}
+	
+	.centerAlign
+	{
+	text-align:center;	
+	}
+	
+	.rightAlign
+	{
+	text-align:right;	
+	}
+
+	
+	.leftAlign
+	{
+	text-align:left;	
+	}
+
+	.topAlign{
+	vertical-align:top
+	}
+	
+	.functionIndex a{
+	display:inline-block;
+	}
 
     /* start index box */
     .indexbox
@@ -929,8 +1003,8 @@
     {
         display: inline-block;
         width: 49%; 
-        *width:42%;
-        _width:42%;
+       /* *width:42%;
+        _width:42%;*/
         padding:0 2% 0 1%;
         vertical-align:top;
 
@@ -939,8 +1013,8 @@
     .indexboxcont .indexIcon
     {
         width: 11%; 
-        *width:18%;
-        _width:18%;
+       /* *width:18%;
+        _width:18%;*/
         overflow:hidden;
 
 }
