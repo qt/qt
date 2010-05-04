@@ -1916,14 +1916,11 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
 
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
             bool ticksBelow = slider->tickPosition & QSlider::TicksBelow;
-            QColor activeHighlight = option->palette.color(QPalette::Normal, QPalette::Highlight);
 
-            QPixmap cache;
             QBrush oldBrush = painter->brush();
             QPen oldPen = painter->pen();
 
@@ -1932,6 +1929,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             QColor highlightAlpha(Qt::white);
             highlightAlpha.setAlpha(80);
 
+            QGtkStylePrivate::gtk_widget_set_direction(hScaleWidget, slider->upsideDown ?
+                                                       GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             GtkWidget *scaleWidget = horizontal ? hScaleWidget : vScaleWidget;
             style = scaleWidget->style;
 
@@ -1965,11 +1964,21 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QRect lowerGroove = grooveRect;
 
                     if (horizontal) {
-                        upperGroove.setLeft(handle.center().x());
-                        lowerGroove.setRight(handle.center().x());
+                        if (slider->upsideDown) {
+                            lowerGroove.setLeft(handle.center().x());
+                            upperGroove.setRight(handle.center().x());
+                        } else {
+                            upperGroove.setLeft(handle.center().x());
+                            lowerGroove.setRight(handle.center().x());
+                        }
                     } else {
-                        upperGroove.setBottom(handle.center().y());
-                        lowerGroove.setTop(handle.center().y());
+                        if (!slider->upsideDown) {
+                            lowerGroove.setBottom(handle.center().y());
+                            upperGroove.setTop(handle.center().y());
+                        } else {
+                            upperGroove.setBottom(handle.center().y());
+                            lowerGroove.setTop(handle.center().y());
+                        }
                     }
 
                     gtkPainter.paintBox( scaleWidget, "trough-upper", upperGroove, state,
