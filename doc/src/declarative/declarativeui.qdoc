@@ -48,10 +48,6 @@ highly dynamic, custom user interfaces.
 
 \section1 \l{QML Elements}{Fast QML Elements Reference Page}
 
-\raw HTML
-<br>
-\endraw
-
 \section1 Preamble
 
 Qt Declarative UI provides a declarative framework for building highly dynamic, custom
