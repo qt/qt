@@ -9,3 +9,4 @@ CONFIG += release
 
 
 SOURCES += tst_qtimer_vs_qmetaobject.cpp
+QT -= gui

@@ -46,12 +46,14 @@
 
 #include <math.h>
 
+//! [0]
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-
+//! [0]
+//! [1]
     QGraphicsScene scene(-200, -200, 400, 400);
 
     for (int i = 0; i < 10; ++i) {
@@ -66,7 +68,8 @@ int main(int argc, char **argv)
     robot->scale(1.2, 1.2);
     robot->setPos(0, -20);
     scene.addItem(robot);
-
+//! [1]
+//! [2]
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
@@ -76,3 +79,4 @@ int main(int argc, char **argv)
 
     return app.exec();
 }
+//! [2]

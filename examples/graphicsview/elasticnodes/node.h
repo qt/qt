@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
 QT_END_NAMESPACE
 
+//! [0]
 class Node : public QGraphicsItem
 {
 public:
@@ -80,5 +81,6 @@ private:
     QPointF newPos;
     GraphWidget *graph;
 };
+//! [0]
 
 #endif

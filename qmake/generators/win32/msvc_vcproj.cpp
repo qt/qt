@@ -917,14 +917,12 @@ void VcprojGenerator::initCompilerTool()
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
     if(project->isActiveConfig("debug")){
         // Debug version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_DEBUG"));
         if((projectTarget == Application) || (projectTarget == StaticLib))
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DBG"));
         else
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DLLDBG"));
     } else {
         // Release version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_RELEASE"));
         conf.compiler.PreprocessorDefinitions += "QT_NO_DEBUG";
         conf.compiler.PreprocessorDefinitions += "NDEBUG";
         if((projectTarget == Application) || (projectTarget == StaticLib))
@@ -934,10 +932,6 @@ void VcprojGenerator::initCompilerTool()
     }
 
     // Common for both release and debug
-    if(project->isActiveConfig("warn_off"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_OFF"));
-    else if(project->isActiveConfig("warn_on"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_ON"));
     if(project->isActiveConfig("windows"))
         conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
 
@@ -1000,22 +994,9 @@ void VcprojGenerator::initLinkerTool()
 
     conf.linker.OutputFile += project->first("MSVCPROJ_TARGET");
 
-    if(project->isActiveConfig("debug")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_DEBUG"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_RELEASE"));
-    }
-
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
     }
-
-    if(project->isActiveConfig("console")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_CONSOLE"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_WINDOWS"));
-    }
-
 }
 
 void VcprojGenerator::initResourceTool()

@@ -854,10 +854,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
     if (fullUpdatePending) {
         viewport->update();
     } else if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->update(dirtyBoundingRect.adjusted(-1, -1, 1, 1));
-        else
-            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+        viewport->update(dirtyBoundingRect);
     } else {
         viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
     }
@@ -882,46 +879,44 @@ static inline void QRect_unite(QRect *rect, const QRect &other)
     }
 }
 
-bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
+bool QGraphicsViewPrivate::updateRegion(const QRectF &rect, const QTransform &xform)
 {
-    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
+    if (rect.isEmpty())
         return false;
 
-    const QRect boundingRect = r.boundingRect();
-    if (!intersectsViewport(boundingRect, viewport->width(), viewport->height()))
-        return false; // Update region outside viewport.
-
-    switch (viewportUpdateMode) {
-    case QGraphicsView::FullViewportUpdate:
-        fullUpdatePending = true;
-        viewport->update();
-        break;
-    case QGraphicsView::BoundingRectViewportUpdate:
-        QRect_unite(&dirtyBoundingRect, boundingRect);
-        if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
-            fullUpdatePending = true;
-            viewport->update();
-        }
-        break;
-    case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
-    case QGraphicsView::MinimalViewportUpdate:
-    {
-        const QVector<QRect> &rects = r.rects();
-        for (int i = 0; i < rects.size(); ++i) {
-            if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-                dirtyRegion += rects.at(i).adjusted(-1, -1, 1, 1);
-            else
-                dirtyRegion += rects.at(i).adjusted(-2, -2, 2, 2);
-        }
-        break;
+    if (viewportUpdateMode != QGraphicsView::MinimalViewportUpdate
+        && viewportUpdateMode != QGraphicsView::SmartViewportUpdate) {
+        // No point in updating with QRegion granularity; use the rect instead.
+        return updateRectF(xform.mapRect(rect));
     }
-    default:
-        break;
+
+    // Update mode is either Minimal or Smart, so we have to do a potentially slow operation,
+    // which is clearly documented here: QGraphicsItem::setBoundingRegionGranularity.
+    const QRegion region = xform.map(QRegion(rect.toAlignedRect()));
+    QRect viewRect = region.boundingRect();
+    const bool dontAdjustForAntialiasing = optimizationFlags & QGraphicsView::DontAdjustForAntialiasing;
+    if (dontAdjustForAntialiasing)
+        viewRect.adjust(-1, -1, 1, 1);
+    else
+        viewRect.adjust(-2, -2, 2, 2);
+    if (!intersectsViewport(viewRect, viewport->width(), viewport->height()))
+        return false; // Update region for sure outside viewport.
+
+    const QVector<QRect> &rects = region.rects();
+    for (int i = 0; i < rects.size(); ++i) {
+        viewRect = rects.at(i);
+        if (dontAdjustForAntialiasing)
+            viewRect.adjust(-1, -1, 1, 1);
+        else
+            viewRect.adjust(-2, -2, 2, 2);
+        dirtyRegion += viewRect;
     }
 
     return true;
 }
 
+// NB! Assumes the rect 'r' is already aligned and adjusted for antialiasing.
+// For QRectF use updateRectF(const QRectF &) to ensure proper adjustments.
 bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
@@ -943,10 +938,7 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            dirtyRegion += r.adjusted(-1, -1, 1, 1);
-        else
-            dirtyRegion += r.adjusted(-2, -2, 2, 2);
+        dirtyRegion += r;
         break;
     default:
         break;
@@ -3403,8 +3395,14 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Items
     if (!(d->optimizationFlags & IndirectPainting)) {
+        const quint32 oldRectAdjust = d->scene->d_func()->rectAdjust;
+        if (d->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            d->scene->d_func()->rectAdjust = 1;
+        else
+            d->scene->d_func()->rectAdjust = 2;
         d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : 0,
                                       &d->exposedRegion, viewport());
+        d->scene->d_func()->rectAdjust = oldRectAdjust;
         // Make sure the painter's world transform is restored correctly when
         // drawing without painter state protection (DontSavePainterState).
         // We only change the worldTransform() so there's no need to do a full-blown

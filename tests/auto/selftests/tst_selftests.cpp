@@ -131,11 +131,11 @@ static QList<QByteArray> splitLines(QByteArray ba)
             if (index == -1) {
                 continue;
             }
-            int end = line.indexOf('"', index + strlen(markers[j][0]) + 1);
+            int end = line.indexOf('"', index + strlen(markers[j][0]));
             if (end == -1) {
                 continue;
             }
-            line.replace(index, end-index, markers[j][1]);
+            line.replace(index, end-index + 1, markers[j][1]);
         }
     }
 

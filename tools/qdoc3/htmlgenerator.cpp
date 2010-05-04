@@ -1716,6 +1716,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
                 out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+            else {
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
+            }
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("examples.html")) {
@@ -1728,6 +1732,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             }
             else if (fn->name() == QString("namespaces.html")) {
                 out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+            }
+            else {
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
             }
         }
         else if (node->subType() == Node::QmlClass) {

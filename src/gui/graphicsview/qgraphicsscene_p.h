@@ -136,8 +136,10 @@ public:
     QBrush backgroundBrush;
     QBrush foregroundBrush;
 
-    bool stickyFocus;
-    bool hasFocus;
+    quint32 stickyFocus : 1;
+    quint32 hasFocus : 1;
+    quint32 padding : 30;
+    quint32 rectAdjust;
     QGraphicsItem *focusItem;
     QGraphicsItem *lastFocusItem;
     QGraphicsWidget *tabFocusFirst;

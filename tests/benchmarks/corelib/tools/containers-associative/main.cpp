@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui>
 #include <QString>
 
 #include <qtest.h>
