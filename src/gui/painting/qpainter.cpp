@@ -7906,6 +7906,9 @@ start_lengthVariant:
         engine.option = *option;
     }
 
+    if (engine.option.tabStop() < 0 && tabstops > 0)
+        engine.option.setTabStop(tabstops);
+
     engine.option.setTextDirection(layout_direction);
     if (tf & Qt::AlignJustify)
         engine.option.setAlignment(Qt::AlignJustify);
