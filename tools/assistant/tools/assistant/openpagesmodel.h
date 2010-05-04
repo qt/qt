@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the Assistant module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,77 +38,39 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWERQTB_H
-#define HELPVIEWERQTB_H
 
-#include "helpviewer.h"
+#ifndef OPENPAGESMODEL_H
+#define OPENPAGESMODEL_H
 
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-
-#include <QtGui/QTextBrowser>
+#include <QtCore/QAbstractTableModel>
+#include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
 
-class HelpEngineWrapper;
-class QContextMenuEvent;
-class QKeyEvent;
-class QMouseEvent;
+class HelpViewer;
+class QUrl;
 
-class HelpViewer : public QTextBrowser, public AbstractHelpViewer
+class OpenPagesModel : public QAbstractTableModel
 {
     Q_OBJECT
-
 public:
-    HelpViewer(qreal zoom = 0.0);
-    ~HelpViewer();
+    OpenPagesModel(QObject *parent);
 
-    QFont viewerFont() const;
-    void setViewerFont(const QFont &font);
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
-    void scaleUp();
-    void scaleDown();
-    void resetScale();
-    qreal scale() const { return zoomCount; }
-
-    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
-
-    void setSource(const QUrl &url);
-
-    inline bool hasSelection() const
-    { return textCursor().hasSelection(); }
-
-signals:
-    void titleChanged();
-
-public Q_SLOTS:
-    void home();
-
-protected:
-    void wheelEvent(QWheelEvent *e);
-    bool eventFilter(QObject *obj, QEvent *event);
-
-private:
-    QVariant loadResource(int type, const QUrl &name);
-    void openLinkInNewTab(const QString &link);
-    bool hasAnchorAt(const QPoint& pos);
-    void contextMenuEvent(QContextMenuEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(QMouseEvent *e);
+    void addPage(const QUrl &url, qreal zoom = 0);
+    void removePage(int index);
+    HelpViewer *pageAt(int index) const;
 
 private slots:
-    void openLinkInNewTab();
+    void handleTitleChanged();
 
 private:
-    int zoomCount;
-    bool controlPressed;
-    QString lastAnchor;
-    HelpEngineWrapper &helpEngine;
-
-    bool forceFont;
+    QList<HelpViewer *> m_pages;
 };
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQTB_H
+#endif // OPENPAGESMODEL_H

@@ -154,6 +154,8 @@ static TRUSTEE_W worldTrusteeW;
 
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
+typedef BOOL (WINAPI *PtrGetVolumePathNamesForVolumeNameW)(LPCWSTR,LPWSTR,DWORD,PDWORD);
+static PtrGetVolumePathNamesForVolumeNameW ptrGetVolumePathNamesForVolumeNameW = 0;
 QT_END_INCLUDE_NAMESPACE
 
 
@@ -212,6 +214,9 @@ void QFSFileEnginePrivate::resolveLibs()
         HINSTANCE userenvHnd = LoadLibrary(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
+        HINSTANCE kernel32 = LoadLibrary(L"kernel32");
+        if(kernel32)
+            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)GetProcAddress(kernel32, "GetVolumePathNamesForVolumeNameW");
 #endif
     }
 }
@@ -1277,7 +1282,12 @@ static QString readSymLink(const QString &link)
         REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)qMalloc(bufsize);
         DWORD retsize = 0;
         if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
-            if (rdb->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
+            if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
+                int length = rdb->MountPointReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
+                int offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
+                const wchar_t* PathBuffer = &rdb->MountPointReparseBuffer.PathBuffer[offset];
+                result = QString::fromWCharArray(PathBuffer, length);
+            } else if (rdb->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
                 int length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
                 int offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
                 const wchar_t* PathBuffer = &rdb->SymbolicLinkReparseBuffer.PathBuffer[offset];
@@ -1289,6 +1299,20 @@ static QString readSymLink(const QString &link)
         }
         qFree(rdb);
         CloseHandle(handle);
+
+#if !defined(QT_NO_LIBRARY)
+        QFSFileEnginePrivate::resolveLibs();
+        if (ptrGetVolumePathNamesForVolumeNameW) {
+            QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
+            if(matchVolName.indexIn(result) == 0) {
+                DWORD len;
+                wchar_t buffer[MAX_PATH];
+                QString volumeName = result.mid(0, matchVolName.matchedLength()).prepend(QLatin1String("\\\\?\\"));
+                if(ptrGetVolumePathNamesForVolumeNameW((wchar_t*)volumeName.utf16(), buffer, MAX_PATH, &len) != 0)
+                    result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
+            }
+        }
+#endif
     }
 #else
     Q_UNUSED(link);
@@ -1540,7 +1564,7 @@ bool QFSFileEnginePrivate::isSymlink() const
             if (hFind != INVALID_HANDLE_VALUE) {
                 ::FindClose(hFind);
                 if ((findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-                    && findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK) {
+                    && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK || findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT)) {
                     is_link = true;
                 }
             }

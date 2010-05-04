@@ -96,7 +96,6 @@ private:
     QStringList m_docsBackup;
     QStringList m_regDocs;
     QStringList m_unregDocs;
-    QList<int> m_TabsToClose;
     FontPanel *m_appFontPanel;
     FontPanel *m_browserFontPanel;
     bool m_appFontChanged;

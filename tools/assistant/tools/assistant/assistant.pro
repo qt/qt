@@ -12,6 +12,8 @@ DESTDIR = ../../../../bin
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 DEPENDPATH += ../shared
+DEPENDPATH += .
+INCLUDEPATH += .
 
 # ## Work around a qmake issue when statically linking to
 # ## not-yet-installed plugins
@@ -40,11 +42,16 @@ HEADERS += aboutdialog.h \
     topicchooser.h \
     tracer.h \
     xbelsupport.h \
-    ../shared/collectionconfiguration.h
+    ../shared/collectionconfiguration.h \
+    openpagesmodel.h \
+    globalactions.h \
+    openpageswidget.h \
+    openpagesmanager.h
+
 contains(QT_CONFIG, webkit) {
     HEADERS += helpviewer_qwv.h
 } else {
-   HEADERS += helpviewer_qtb.h
+    HEADERS += helpviewer_qtb.h
  }
 win32:HEADERS += remotecontrol_win.h
 
@@ -72,7 +79,11 @@ SOURCES += aboutdialog.cpp \
     searchwidget.cpp \
     topicchooser.cpp \
     xbelsupport.cpp \
-    ../shared/collectionconfiguration.cpp
+    ../shared/collectionconfiguration.cpp \
+    openpagesmodel.cpp \
+    globalactions.cpp \
+    openpageswidget.cpp \
+    openpagesmanager.cpp
  contains(QT_CONFIG, webkit) {
     SOURCES += helpviewer_qwv.cpp
 } else {

@@ -795,7 +795,7 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
 /*!
     \fn void QPalette::setColor(ColorGroup group, ColorRole role, const QColor &color)
 
-    Sets the brush in the specified color \a group, used for the given
+    Sets the color in the specified color \a group, used for the given
     color \a role, to the specified solid \a color.
 
     \sa setBrush() color() ColorRole

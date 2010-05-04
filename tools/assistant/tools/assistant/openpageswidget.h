@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the Assistant module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,77 +38,51 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWERQTB_H
-#define HELPVIEWERQTB_H
 
-#include "helpviewer.h"
+#ifndef OPENPAGESWIDGET_H
+#define OPENPAGESWIDGET_H
 
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-
-#include <QtGui/QTextBrowser>
+#include <QtGui/QStyledItemDelegate>
+#include <QtGui/QTreeView>
 
 QT_BEGIN_NAMESPACE
 
-class HelpEngineWrapper;
-class QContextMenuEvent;
-class QKeyEvent;
-class QMouseEvent;
+class OpenPagesModel;
 
-class HelpViewer : public QTextBrowser, public AbstractHelpViewer
+class OpenPagesDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
-
 public:
-    HelpViewer(qreal zoom = 0.0);
-    ~HelpViewer();
+    explicit OpenPagesDelegate(QObject *parent = 0);
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+        const QModelIndex &index) const;
 
-    QFont viewerFont() const;
-    void setViewerFont(const QFont &font);
+    mutable QModelIndex pressedIndex;
+};
 
-    void scaleUp();
-    void scaleDown();
-    void resetScale();
-    qreal scale() const { return zoomCount; }
-
-    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
-
-    void setSource(const QUrl &url);
-
-    inline bool hasSelection() const
-    { return textCursor().hasSelection(); }
+class OpenPagesWidget : public QTreeView
+{
+    Q_OBJECT
+public:
+    OpenPagesWidget(OpenPagesModel *model);
+    ~OpenPagesWidget();
 
 signals:
-    void titleChanged();
-
-public Q_SLOTS:
-    void home();
-
-protected:
-    void wheelEvent(QWheelEvent *e);
-    bool eventFilter(QObject *obj, QEvent *event);
-
-private:
-    QVariant loadResource(int type, const QUrl &name);
-    void openLinkInNewTab(const QString &link);
-    bool hasAnchorAt(const QPoint& pos);
-    void contextMenuEvent(QContextMenuEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(QMouseEvent *e);
+    void setCurrentPage(const QModelIndex &index);
+    void closePage(const QModelIndex &index);
+    void closePagesExcept(const QModelIndex &index);
 
 private slots:
-    void openLinkInNewTab();
+    void contextMenuRequested(QPoint pos);
+    void handlePressed(const QModelIndex &index);
+    void handleClicked(const QModelIndex &index);
 
 private:
-    int zoomCount;
-    bool controlPressed;
-    QString lastAnchor;
-    HelpEngineWrapper &helpEngine;
+    bool eventFilter(QObject *obj, QEvent *event);
 
-    bool forceFont;
+    OpenPagesDelegate *m_delegate;
 };
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQTB_H
+#endif // OPENPAGESWIDGET_H
