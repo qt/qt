@@ -41,11 +41,7 @@
 #include "openpagesmodel.h"
 
 #include "helpenginewrapper.h"
-#if defined(QT_NO_WEBKIT)
-#include "helpviewer_qtb.h"
-#else
-#include "helpviewer_qwv.h"
-#endif // QT_NO_WEBKIT
+#include "helpviewer.h"
 #include "tracer.h"
 
 #include <QtCore/QStringList>
@@ -76,7 +72,7 @@ QVariant OpenPagesModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || index.row() >= rowCount() || index.column() > 0
         || role != Qt::DisplayRole)
         return QVariant();
-    QString title = m_pages.at(index.row())->documentTitle();
+    QString title = m_pages.at(index.row())->title();
     title.replace(QLatin1Char('&'), QLatin1String("&&"));
     return title.isEmpty() ? QLatin1String("(Untitled)") : title;
 }

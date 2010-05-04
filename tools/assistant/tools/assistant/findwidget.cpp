@@ -203,7 +203,7 @@ void FindWidget::updateButtons()
 void FindWidget::textChanged(const QString &text)
 {
     TRACE_OBJ
-    emit find(text, true);
+    emit find(text, true, true);
 }
 
 bool FindWidget::eventFilter(QObject *object, QEvent *e)

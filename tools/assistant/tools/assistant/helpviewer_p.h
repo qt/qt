@@ -38,77 +38,74 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWERQTB_H
-#define HELPVIEWERQTB_H
 
+#ifndef HELPVIEWERPRIVATE_H
+#define HELPVIEWERPRIVATE_H
+
+#include "centralwidget.h"
 #include "helpviewer.h"
+#include "openpagesmanager.h"
 
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-
+#include <QtCore/QObject>
 #include <QtGui/QTextBrowser>
 
 QT_BEGIN_NAMESPACE
 
-class HelpEngineWrapper;
-class QContextMenuEvent;
-class QKeyEvent;
-class QMouseEvent;
-
-class HelpViewer : public QTextBrowser, public AbstractHelpViewer
+class HelpViewer::HelpViewerPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    HelpViewer(qreal zoom = 0.0);
-    ~HelpViewer();
+    HelpViewerPrivate(int zoom)
+        : zoomCount(zoom)
+        , forceFont(false)
+        , lastAnchor(QString())
+        
+    {}
 
-    QFont viewerFont() const;
-    void setViewerFont(const QFont &font);
+    bool hasAnchorAt(QTextBrowser *browser, const QPoint& pos)
+    {
+        lastAnchor = browser->anchorAt(pos);
+        if (lastAnchor.isEmpty())
+            return false;
 
-    void scaleUp();
-    void scaleDown();
-    void resetScale();
-    qreal scale() const { return zoomCount; }
+        lastAnchor = browser->source().resolved(lastAnchor).toString();
+        if (lastAnchor.at(0) == QLatin1Char('#')) {
+            QString src = browser->source().toString();
+            int hsh = src.indexOf(QLatin1Char('#'));
+            lastAnchor = (hsh >= 0 ? src.left(hsh) : src) + lastAnchor;
+        }
+        return true;
+    }
 
-    bool handleForwardBackwardMouseButtons(QMouseEvent *e);
+    void openLink(bool newPage)
+    {
+        if(lastAnchor.isEmpty())
+            return;
+        if (newPage)
+            OpenPagesManager::instance()->createPage(lastAnchor);
+        else
+            CentralWidget::instance()->setSource(lastAnchor);
+        lastAnchor.clear();
+    }
 
-    void setSource(const QUrl &url);
+public slots:
+    void openLink()
+    {
+        openLink(false);
+    }
 
-    inline bool hasSelection() const
-    { return textCursor().hasSelection(); }
+    void openLinkInNewPage()
+    {
+        openLink(true);
+    }
 
-signals:
-    void titleChanged();
-
-public Q_SLOTS:
-    void home();
-
-protected:
-    void wheelEvent(QWheelEvent *e);
-    bool eventFilter(QObject *obj, QEvent *event);
-
-private:
-    QVariant loadResource(int type, const QUrl &name);
-    void openLinkInNewTab(const QString &link);
-    bool hasAnchorAt(const QPoint& pos);
-    void contextMenuEvent(QContextMenuEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(QMouseEvent *e);
-
-private slots:
-    void openLinkInNewTab();
-
-private:
+public:
     int zoomCount;
-    bool controlPressed;
-    QString lastAnchor;
-    HelpEngineWrapper &helpEngine;
-
     bool forceFont;
+    QString lastAnchor;
 };
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQTB_H
+#endif  // HELPVIEWERPRIVATE_H
