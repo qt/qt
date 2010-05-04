@@ -3097,8 +3097,8 @@ fi
 
 # auto-detect support for separate debug info in objcopy
 if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
-    TEST_COMPILER_CFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CFLAGS[^_].*=%%p' | tr '\n' ' '`
-    TEST_COMPILER_CXXFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CXXFLAGS[^_].*=%%p' | tr '\n' ' '`
+    TEST_COMPILER_CFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CFLAGS[^_=]*[+*]*=%%p' | tr '\n' ' '`
+    TEST_COMPILER_CXXFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CXXFLAGS[^_=]*[+*]*=%%p' | tr '\n' ' '`
     TEST_OBJCOPY=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_OBJCOPY" | sed "s%.* *= *\(.*\)$%\1%" | tail -1`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     COMPILER_WITH_FLAGS=`echo "$COMPILER_WITH_FLAGS" | sed -e "s%\\$\\$QMAKE_CFLAGS%$TEST_COMPILER_CFLAGS%g"`

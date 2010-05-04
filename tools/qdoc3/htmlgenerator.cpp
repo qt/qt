@@ -1739,6 +1739,8 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             }
         }
         else if (node->subType() == Node::QmlClass) {
+            out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                  << "</a></li>";
         }
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"examples.html\">All Examples</a></li>";
