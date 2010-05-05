@@ -55,6 +55,7 @@
 #include <qdeclarativemetatype_p.h>
 #include <qdeclarativevaluetype_p.h>
 #include <qdeclarativeproperty_p.h>
+#include <qdeclarativeengine_p.h>
 
 #include <qvariant.h>
 #include <qcolor.h>
@@ -178,6 +179,10 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         d->running = r;
         if (r == false)
             d->avoidPropertyValueSourceStart = true;
+        else {
+            QDeclarativeEnginePrivate *engPriv = QDeclarativeEnginePrivate::get(qmlEngine(this));
+            engPriv->registerFinalizedParserStatusObject(this, this->metaObject()->indexOfSlot("componentFinalized()"));
+        }
         return;
     }
 
@@ -268,6 +273,11 @@ void QDeclarativeAbstractAnimation::componentComplete()
 {
     Q_D(QDeclarativeAbstractAnimation);
     d->componentComplete = true;
+}
+
+void QDeclarativeAbstractAnimation::componentFinalized()
+{
+    Q_D(QDeclarativeAbstractAnimation);
     if (d->running) {
         d->running = false;
         setRunning(true);
