@@ -7132,7 +7132,11 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     // calculate their diff by mapping viewport coordinates
                     // directly to parent coordinates.
                     // COMBINE
-                    QTransform viewToParentTransform = (item->d_func()->transformData->computedFullTransform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
+                    QTransform itemTransform;
+                    if (item->d_ptr->transformData)
+                        itemTransform = item->d_ptr->transformData->computedFullTransform();
+                    itemTransform.translate(item->d_ptr->pos.x(), item->d_ptr->pos.y());
+                    QTransform viewToParentTransform = itemTransform
                                                        * (item->sceneTransform() * view->viewportTransform()).inverted();
                     currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
                     buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
