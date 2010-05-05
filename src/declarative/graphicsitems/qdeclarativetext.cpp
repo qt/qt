@@ -200,11 +200,11 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 
     The weight can be one of:
     \list
-    \o Light
-    \o Normal - the default
-    \o DemiBold
-    \o Bold
-    \o Black
+    \o Font.Light
+    \o Font.Normal - the default
+    \o Font.DemiBold
+    \o Font.Bold
+    \o Font.Black
     \endlist
 
     \qml
@@ -277,11 +277,11 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     Sets the capitalization for the text.
 
     \list
-    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
-    \o AllUppercase - This alters the text to be rendered in all uppercase type.
-    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
-    \o SmallCaps -	This alters the text to be rendered in small-caps type.
-    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \o Font.MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o Font.AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o Font.AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o Font.SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Font.Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
     \endlist
 
     \qml
@@ -380,10 +380,10 @@ QColor QDeclarativeText::color() const
 
     Supported text styles are:
     \list
-    \o Normal - the default
-    \o Outline
-    \o Raised
-    \o Sunken
+    \o Text.Normal - the default
+    \o Text.Outline
+    \o Text.Raised
+    \o Text.Sunken
     \endlist
 
     \qml
@@ -451,9 +451,14 @@ QColor QDeclarativeText::styleColor() const
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
-    and \c AlignVCenter.
+    The valid values for \c horizontalAlignment are \c Text.AlignLeft, \c Text.AlignRight and
+    \c Text.AlignHCenter.  The valid values for \c verticalAlignment are \c Text.AlignTop, \c Text.AlignBottom
+    and \c Text.AlignVCenter.
+
+    Note that for a single line of text, the size of the text is the area of the text. In this common case,
+    all alignments are equivalent. If you want the text to be, say, centered in it parent, then you will
+    need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
+    that of the parent.
 */
 QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 {
@@ -494,16 +499,16 @@ void QDeclarativeText::setVAlign(VAlignment align)
     wrap if an explicit width has been set.  wrapMode can be one of:
 
     \list
-    \o NoWrap - no wrapping will be performed.
-    \o WordWrap - wrapping is done on word boundaries. If the text cannot be
+    \o Text.NoWrap - no wrapping will be performed.
+    \o Text.WordWrap - wrapping is done on word boundaries. If the text cannot be
     word-wrapped to the specified width it will be partially drawn outside of the item's bounds.
     If this is undesirable then enable clipping on the item (Item::clip).
-    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+    \o Text.WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o Text.WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
        will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
-    The default is NoWrap.
+    The default is Text.NoWrap.
 */
 QDeclarativeText::WrapMode QDeclarativeText::wrapMode() const
 {
@@ -533,17 +538,17 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
     Supported text formats are:
     
     \list
-    \o AutoText
-    \o PlainText
-    \o RichText
-    \o StyledText
+    \o Text.AutoText
+    \o Text.PlainText
+    \o Text.RichText
+    \o Text.StyledText
     \endlist
 
-    The default is AutoText.  If the text format is AutoText the text element
+    The default is Text.AutoText.  If the text format is Text.AutoText the text element
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
-    StyledText is an optimized format supporting some basic text
+    Text.StyledText is an optimized format supporting some basic text
     styling markup, in the style of html 3.2:
 
     \code
@@ -554,7 +559,7 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
     &gt; &lt; &amp;
     \endcode
 
-    \c StyledText parser is strict, requiring tags to be correctly nested.
+    \c Text.StyledText parser is strict, requiring tags to be correctly nested.
 
     \table
     \row
@@ -622,13 +627,13 @@ void QDeclarativeText::setTextFormat(TextFormat format)
 
     Eliding can be:
     \list
-    \o ElideNone  - the default
-    \o ElideLeft
-    \o ElideMiddle
-    \o ElideRight
+    \o Text.ElideNone  - the default
+    \o Text.ElideLeft
+    \o Text.ElideMiddle
+    \o Text.ElideRight
     \endlist
 
-    If the text is a multi-length string, and the mode is not \c ElideNone,
+    If the text is a multi-length string, and the mode is not \c Text.ElideNone,
     the first string that fits will be used, otherwise the last will be elided.
 
     Multi-length strings are ordered from longest to shortest, separated by the

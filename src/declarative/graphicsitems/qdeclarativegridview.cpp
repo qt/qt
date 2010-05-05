@@ -1280,17 +1280,17 @@ void QDeclarativeGridView::setHighlightMoveDuration(int duration)
     highlight range. Furthermore, the behaviour of the current item index will occur
     whether or not a highlight exists.
 
-    If highlightRangeMode is set to \e ApplyRange the view will
+    If highlightRangeMode is set to \e GridView.ApplyRange the view will
     attempt to maintain the highlight within the range, however
     the highlight can move outside of the range at the ends of the list
     or due to a mouse interaction.
 
-    If highlightRangeMode is set to \e StrictlyEnforceRange the highlight will never
+    If highlightRangeMode is set to \e GridView.StrictlyEnforceRange the highlight will never
     move outside of the range.  This means that the current item will change
     if a keyboard or mouse action would cause the highlight to move
     outside of the range.
 
-    The default value is \e NoHighlightRange.
+    The default value is \e GridView.NoHighlightRange.
 
     Note that a valid range requires preferredHighlightEnd to be greater
     than or equal to preferredHighlightBegin.
@@ -1348,10 +1348,10 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \qmlproperty enumeration GridView::flow
   This property holds the flow of the grid.
 
-  Possible values are \c LeftToRight (default) and \c TopToBottom.
+  Possible values are \c GridView.LeftToRight (default) and \c GridView.TopToBottom.
 
-  If \a flow is \c LeftToRight, the view will scroll vertically.
-  If \a flow is \c TopToBottom, the view will scroll horizontally.
+  If \a flow is \c GridView.LeftToRight, the view will scroll vertically.
+  If \a flow is \c GridView.TopToBottom, the view will scroll horizontally.
 */
 QDeclarativeGridView::Flow QDeclarativeGridView::flow() const
 {
@@ -1474,10 +1474,10 @@ void QDeclarativeGridView::setCellHeight(int cellHeight)
     The allowed values are:
 
     \list
-    \o NoSnap (default) - the view will stop anywhere within the visible area.
-    \o SnapToRow - the view will settle with a row (or column for TopToBottom flow)
+    \o GridView.NoSnap (default) - the view will stop anywhere within the visible area.
+    \o GridView.SnapToRow - the view will settle with a row (or column for TopToBottom flow)
     aligned with the start of the view.
-    \o SnapOneRow - the view will settle no more than one row (or column for TopToBottom flow)
+    \o GridView.SnapOneRow - the view will settle no more than one row (or column for TopToBottom flow)
     away from the first visible row at the time the mouse button is released.
     This mode is particularly useful for moving one page at a time.
     \endlist

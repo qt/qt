@@ -618,12 +618,12 @@ QDeclarativeItem *QDeclarativePathView::highlightItem()
     These properties set the preferred range of the highlight (current item)
     within the view.  The preferred values must be in the range 0.0-1.0.
 
-    If highlightRangeMode is set to \e ApplyRange the view will
+    If highlightRangeMode is set to \e PathView.ApplyRange the view will
     attempt to maintain the highlight within the range, however
     the highlight can move outside of the range at the ends of the path
     or due to a mouse interaction.
 
-    If highlightRangeMode is set to \e StrictlyEnforceRange the highlight will never
+    If highlightRangeMode is set to \e PathView.StrictlyEnforceRange the highlight will never
     move outside of the range.  This means that the current item will change
     if a keyboard or mouse action would cause the highlight to move
     outside of the range.
@@ -631,14 +631,14 @@ QDeclarativeItem *QDeclarativePathView::highlightItem()
     Note that this is the correct way to influence where the
     current item ends up when the view moves. For example, if you want the
     currently selected item to be in the middle of the path, then set the
-    highlight range to be 0.5,0.5 and highlightRangeMode to StrictlyEnforceRange.
+    highlight range to be 0.5,0.5 and highlightRangeMode to PathView.StrictlyEnforceRange.
     Then, when the path scrolls,
     the currently selected item will be the item at that position. This also applies to
     when the currently selected item changes - it will scroll to within the preferred
     highlight range. Furthermore, the behaviour of the current item index will occur
     whether or not a highlight exists.
 
-    The default value is \e StrictlyEnforceRange.
+    The default value is \e PathView.StrictlyEnforceRange.
 
     Note that a valid range requires preferredHighlightEnd to be greater
     than or equal to preferredHighlightBegin.

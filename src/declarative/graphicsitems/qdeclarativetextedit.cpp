@@ -138,11 +138,11 @@ QString QDeclarativeTextEdit::text() const
 
     The weight can be one of:
     \list
-    \o Light
-    \o Normal - the default
-    \o DemiBold
-    \o Bold
-    \o Black
+    \o Font.Light
+    \o Font.Normal - the default
+    \o Font.DemiBold
+    \o Font.Bold
+    \o Font.Black
     \endlist
 
     \qml
@@ -215,11 +215,11 @@ QString QDeclarativeTextEdit::text() const
     Sets the capitalization for the text.
 
     \list
-    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
-    \o AllUppercase - This alters the text to be rendered in all uppercase type.
-    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
-    \o SmallCaps -	This alters the text to be rendered in small-caps type.
-    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \o Font.MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o Font.AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o Font.AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o Font.SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Font.Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
     \endlist
 
     \qml
@@ -255,13 +255,13 @@ void QDeclarativeTextEdit::setText(const QString &text)
     The way the text property should be displayed.
 
     \list
-    \o AutoText
-    \o PlainText
-    \o RichText
-    \o StyledText
+    \o TextEdit.AutoText
+    \o TextEdit.PlainText
+    \o TextEdit.RichText
+    \o TextEdit.StyledText
     \endlist
 
-    The default is AutoText.  If the text format is AutoText the text edit
+    The default is TextEdit.AutoText.  If the text format is TextEdit.AutoText the text edit
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
@@ -428,9 +428,9 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     Sets the horizontal and vertical alignment of the text within the TextEdit items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
-    and \c AlignVCenter.
+    The valid values for \c horizontalAlignment are \c TextEdit.AlignLeft, \c TextEdit.AlignRight and
+    \c TextEdit.AlignHCenter.  The valid values for \c verticalAlignment are \c TextEdit.AlignTop, \c TextEdit.AlignBottom
+    and \c TextEdit.AlignVCenter.
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -473,14 +473,14 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     The text will only wrap if an explicit width has been set.
 
     \list
-    \o NoWrap - no wrapping will be performed.
-    \o WordWrap - wrapping is done on word boundaries.
-    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+    \o TextEdit.NoWrap - no wrapping will be performed.
+    \o TextEdit.WordWrap - wrapping is done on word boundaries.
+    \o TextEdit.WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o TextEdit.WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
        will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
-    The default is NoWrap.
+    The default is TextEdit.NoWrap.
 */
 QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
 {

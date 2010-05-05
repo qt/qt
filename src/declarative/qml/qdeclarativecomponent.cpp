@@ -241,10 +241,10 @@ QDeclarativeComponent::~QDeclarativeComponent()
     \qmlproperty enumeration Component::status
     This property holds the status of component loading.  It can be one of:
     \list
-    \o Null - no data is available for the component
-    \o Ready - the component has been loaded, and can be used to create instances.
-    \o Loading - the component is currently being loaded
-    \o Error - an error occurred while loading the component.
+    \o Component.Null - no data is available for the component
+    \o Component.Ready - the component has been loaded, and can be used to create instances.
+    \o Component.Loading - the component is currently being loaded
+    \o Component.Error - an error occurred while loading the component.
                Calling errorsString() will provide a human-readable description of any errors.
     \endlist
  */
