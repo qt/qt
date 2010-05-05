@@ -437,8 +437,7 @@ int QDeclarativeVisualDataModelDataMetaObject::createProperty(const char *name, 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         if (model->m_listAccessor->type() == QDeclarativeListAccessor::ListProperty) {
             model->ensureRoles();
-            QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
-            if (object && (object->property(name).isValid() || qstrcmp(name,"modelData")==0))
+            if (qstrcmp(name,"modelData") == 0)
                 return QDeclarativeOpenMetaObject::createProperty(name, type);
         }
     }
@@ -1029,6 +1028,11 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         if (!ccontext) ccontext = qmlContext(this);
         QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
         QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
+        if ((!d->m_listModelInterface || !d->m_abstractItemModel) && d->m_listAccessor
+            && d->m_listAccessor->type() == QDeclarativeListAccessor::ListProperty) {
+            ctxt->setContextObject(d->m_listAccessor->at(index).value<QObject*>());
+            ctxt = new QDeclarativeContext(ctxt, ctxt);
+        }
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->setContextObject(data);
         d->m_completePending = false;
