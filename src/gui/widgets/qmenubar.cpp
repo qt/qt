@@ -1957,7 +1957,7 @@ bool QMenuBar::isNativeMenuBar() const
   to the right soft key.
 
   Currently there is only support for the default action on Windows
-  Mobile. All other platforms ignore the default action.
+  Mobile. On all other platforms this method is not available.
 
   \sa defaultAction()
 */
