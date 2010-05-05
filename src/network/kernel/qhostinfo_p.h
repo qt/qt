@@ -173,6 +173,8 @@ public:
     bool wasAborted(int id);
 
     QHostInfoCache cache;
+
+    friend class QHostInfoRunnable;
 protected:
     QList<QHostInfoRunnable*> currentLookups; // in progress
     QList<QHostInfoRunnable*> postponedLookups; // postponed because in progress for same host
