@@ -315,12 +315,13 @@
     }
     .sidebar .box ul
     {
+	padding:10px 0 0 10px;
     }
     .sidebar .box ul li
     {
         padding-left: 12px;
         background: url(../images/bullet_gt.png) no-repeat 0 5px;
-        margin-bottom: 15px;
+        margin-bottom: 5px;
     }
     .sidebar .bottombar
     {
@@ -492,6 +493,7 @@
     .wrap .content ul
     {
         padding-left: 25px;
+        padding-top: 10px;
     }
     a:hover
     {
@@ -1055,16 +1057,6 @@
         color: #00732f;
         text-decoration: none;
     }
-
-    .indexboxcont:after
-    {
-        content: ".";
-        display: block;
-        height: 0;
-        clear: both;
-        visibility: hidden;
-    }
-
     .indexbox .indexIcon span
     {
         display: block;
@@ -1085,6 +1077,17 @@
         background: url(../images/sprites-combined.png) no-repeat -111px -376px;
         padding: 0;
     }
+    .indexboxcont:after
+    {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
+	/*
+
+
 
     .lastcol
     {
@@ -1098,6 +1101,8 @@
     {
         margin-left: -6px;
     }
+	*/
+	
     /* end indexbox */
 }
 /* end of screen media */

@@ -956,7 +956,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << "<tr><td  class=\"topAlign\"><tt>"
                   << protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
                                                                  relative)))
-                  << "</tt></td><td class=\"centerAlign topAlign\">";
+                  << "</tt></td><td class=\" topAlign\">";
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
@@ -1093,13 +1093,13 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         if (!atom->string().isEmpty()) {
             if (atom->string().contains("%"))
-                out() << "<table class=\"generic centerAlign\" width=\"" << atom->string() << "\">\n ";
+                out() << "<table class=\"generic\" width=\"" << atom->string() << "\">\n ";
             else {
-                out() << "<table class=\"generic centerAlign\">\n";
+                out() << "<table class=\"generic\">\n";
             }
         }
         else {
-            out() << "<table class=\"generic centerAlign\">\n";
+            out() << "<table class=\"generic\">\n";
         }
         numTableRows = 0;
         break;
@@ -1243,8 +1243,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         subtitleText << "(" << Atom(Atom::AutoLink, fullTitle) << ")"
                      << Atom(Atom::LineBreak);
 
-#if 0
-    // No longer used because the modeule name is a breadcrumb.
     QString fixedModule = inner->moduleName();
     if (fixedModule == "Qt3SupportLight")
         fixedModule = "Qt3Support";
@@ -1265,7 +1263,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             subtitleText << "]";
         }
     }
-#endif    
 
     generateHeader(title, inner, marker);
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
