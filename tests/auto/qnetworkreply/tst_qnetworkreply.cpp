@@ -1073,6 +1073,9 @@ void tst_QNetworkReply::getFromFileSpecial_data()
     QTest::newRow("resource") << ":/resource" <<  "qrc:/resource";
     QTest::newRow("search-path") << "srcdir:/rfc3252.txt" << "srcdir:/rfc3252.txt";
     QTest::newRow("bigfile-path") << "srcdir:/bigfile" << "srcdir:/bigfile";
+#ifdef Q_OS_WIN
+    QTest::newRow("smb-path") << "srcdir:/smb-file.txt" << "file://" + QtNetworkSettings::winServerName() + "/testshare/test.pri";
+#endif
 }
 
 void tst_QNetworkReply::getFromFileSpecial()
