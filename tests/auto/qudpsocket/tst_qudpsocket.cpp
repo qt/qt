@@ -94,6 +94,7 @@ private slots:
     void outOfProcessConnectedClientServerTest();
     void outOfProcessUnconnectedClientServerTest();
     void zeroLengthDatagram();
+    void multicast();
 
 protected slots:
     void empty_readyReadSlot();
@@ -842,6 +843,43 @@ void tst_QUdpSocket::zeroLengthDatagram()
 
     char buf;
     QCOMPARE(receiver.readDatagram(&buf, 1), qint64(0));
+}
+
+void tst_QUdpSocket::multicast()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("Multicast does not work with a proxy", SkipAll);
+
+    QHostAddress groupAddress("239.255.116.98");
+
+    QUdpSocket receiver;
+    QVERIFY2(receiver.bind(),
+             qPrintable(receiver.errorString()));
+    QVERIFY2(receiver.joinMulticastGroup(groupAddress, QUdpSocket::MulticastLoopback),
+             qPrintable(receiver.errorString()));
+
+    QList<QByteArray> datagrams = QList<QByteArray>()
+                                  << QByteArray("0123")
+                                  << QByteArray("4567")
+                                  << QByteArray("89ab")
+                                  << QByteArray("cdef");
+
+    QUdpSocket sender;
+    foreach (const QByteArray &datagram, datagrams)
+        sender.writeDatagram(datagram, receiver.localAddress(), receiver.localPort());
+
+    QVERIFY2(receiver.waitForReadyRead(),
+             qPrintable(receiver.errorString()));
+    QVERIFY(receiver.hasPendingDatagrams());
+    QList<QByteArray> receivedDatagrams;
+    while (receiver.hasPendingDatagrams()) {
+        QByteArray datagram;
+        datagram.resize(receiver.pendingDatagramSize());
+        receiver.readDatagram(datagram.data(), datagram.size(), 0, 0);
+        receivedDatagrams << datagram;
+    }
+    QCOMPARE(receivedDatagrams, datagrams);
 }
 
 QTEST_MAIN(tst_QUdpSocket)
