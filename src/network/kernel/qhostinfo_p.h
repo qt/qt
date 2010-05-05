@@ -84,7 +84,7 @@ public Q_SLOTS:
     }
 
 Q_SIGNALS:
-    void resultsReady(const QHostInfo info);
+    void resultsReady(const QHostInfo &info);
 };
 
 // needs to be QObject because fromName calls tr()
