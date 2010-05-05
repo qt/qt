@@ -54,7 +54,7 @@
 
 QT_USE_NAMESPACE
 
-QtMsgHandler systemMsgOutput;
+QtMsgHandler systemMsgOutput = 0;
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
