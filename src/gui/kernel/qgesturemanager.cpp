@@ -185,6 +185,9 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
 #ifndef QT_NO_GRAPHICSVIEW
     } else {
         Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(object);
+        if (graphicsObject->QGraphicsItem::d_func()->inDestructor)
+            return 0;
 #endif
     }
 
