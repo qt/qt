@@ -40,6 +40,8 @@ QtCore
 QtGui
 -----
 
+ - QTabBar: reduced minimumSizeHint if ElideMode is set.
+
 
 ****************************************************************************
 *                          Database Drivers                                *
