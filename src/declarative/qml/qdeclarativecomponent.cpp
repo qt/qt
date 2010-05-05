@@ -59,6 +59,7 @@
 #include <QFileInfo>
 #include <QtCore/qdebug.h>
 #include <QApplication>
+#include <QGraphicsObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -557,8 +558,11 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 /*!
     \internal
     A version of create which returns a scriptObject, for use in script
+
+    Sets graphics object parent because forgetting to do this is a frequent
+    and serious problem.
 */
-QScriptValue QDeclarativeComponent::createObject()
+QScriptValue QDeclarativeComponent::createObject(QObject* parent)
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
@@ -567,6 +571,20 @@ QScriptValue QDeclarativeComponent::createObject()
     QObject* ret = create(ctxt);
     if (!ret)
         return QScriptValue(QScriptValue::NullValue);
+
+    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(ret);
+    bool needParent = (gobj != 0);
+    if(parent){
+        ret->setParent(parent);
+        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
+        if(gparent){
+            gobj->setParentItem(gparent);
+            needParent = false;
+        }
+    }
+    if(needParent)
+        qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
+
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);

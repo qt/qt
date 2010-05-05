@@ -21,8 +21,7 @@ Rectangle {
     }
 
     function createRectangle() {
-        var object = rectComponent.createObject();
-        object.parent = rootItem;
+        var object = rectComponent.createObject(rootItem);
     } 
 
     Component.onCompleted: createRectangle()

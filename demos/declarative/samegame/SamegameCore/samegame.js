@@ -176,14 +176,13 @@ function createBlock(column,row){
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
     if(component.status == Component.Ready){
-        var dynamicObject = component.createObject();
+        var dynamicObject = component.createObject(gameCanvas);
         if(dynamicObject == null){
             console.log("error creating block");
             console.log(component.errorsString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
-        dynamicObject.parent = gameCanvas;
         dynamicObject.x = column*gameCanvas.blockSize;
         dynamicObject.targetX = column*gameCanvas.blockSize;
         dynamicObject.targetY = row*gameCanvas.blockSize;

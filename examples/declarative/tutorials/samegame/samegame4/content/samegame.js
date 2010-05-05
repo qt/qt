@@ -49,14 +49,13 @@ function createBlock(column, row) {
     // Loading and we should wait for the component's statusChanged() signal to
     // know when the file is downloaded and ready before calling createObject().
     if (component.status == Component.Ready) {
-        var dynamicObject = component.createObject();
+        var dynamicObject = component.createObject(gameCanvas);
         if (dynamicObject == null) {
             console.log("error creating block");
             console.log(component.errorsString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
-        dynamicObject.parent = gameCanvas;
         dynamicObject.x = column * gameCanvas.blockSize;
         dynamicObject.targetX = column * gameCanvas.blockSize;
         dynamicObject.targetY = row * gameCanvas.blockSize;

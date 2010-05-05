@@ -4,11 +4,10 @@ var sprite;
 
 function finishCreation() {
     if (component.status == Component.Ready) {
-        sprite = component.createObject();
+        sprite = component.createObject(appWindow);
         if (sprite == null) {
             // Error Handling
         } else {
-            sprite.parent = appWindow;
             sprite.x = 100;
             sprite.y = 100;
             // ...
@@ -32,13 +31,12 @@ else
 
 //![2]
 component = Qt.createComponent("Sprite.qml");
-sprite = component.createObject();
+sprite = component.createObject(appWindow);
 
 if (sprite == null) {
     // Error Handling
     console.log("Error loading component:", component.errorsString());
 } else {
-    sprite.parent = appWindow;
     sprite.x = 100;
     sprite.y = 100;
     // ...
@@ -46,6 +44,4 @@ if (sprite == null) {
 //![2]
 
 }
-
-createSpriteObjects();
 

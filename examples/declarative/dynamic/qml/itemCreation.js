@@ -42,8 +42,7 @@ function loadComponent() {
 
 function createItem() {
     if (itemComponent.status == Component.Ready && draggedItem == null) {
-        draggedItem = itemComponent.createObject();
-        draggedItem.parent = window;
+        draggedItem = itemComponent.createObject(window);
         draggedItem.image = itemButton.image;
         draggedItem.x = xOffset;
         draggedItem.y = yOffset;
