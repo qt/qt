@@ -2373,7 +2373,7 @@ void Configure::generateBuildKey()
                        + buildSymbianKey + "\"\n"
                        "#else\n"
                        // Debug builds
-                       "# if (defined(_DEBUG) || defined(DEBUG))\n"
+                       "# if (!QT_NO_DEBUG)\n"
                        "#  if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
                        + build64Key.arg("debug") + "\"\n"
                        "#  else\n"
