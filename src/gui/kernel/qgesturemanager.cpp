@@ -140,9 +140,10 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
         ObjectGesture objectGesture = iter.key();
         if (objectGesture.gesture == type) {
             foreach (QGesture *g, iter.value()) {
-                QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
-                m_gestureToRecognizer.remove(g);
-                m_obsoleteGestures[recognizer].append(g);
+                if (QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g)) {
+                    m_gestureToRecognizer.remove(g);
+                    m_obsoleteGestures[recognizer].insert(g);
+                }
             }
         }
         ++iter;
@@ -155,7 +156,14 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
         if (objectGesture.gesture == type && target == objectGesture.object.data()) {
-            qDeleteAll(iter.value());
+            QSet<QGesture *> gestures = iter.value().toSet();
+            for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
+                 it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
+                it.value() -= gestures;
+            }
+            foreach (QGesture *g, gestures)
+                m_deletedRecognizers.remove(g);
+            qDeleteAll(gestures);
             iter = m_objectGestures.erase(iter);
         } else {
             ++iter;
