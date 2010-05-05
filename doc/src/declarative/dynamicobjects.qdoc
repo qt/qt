@@ -132,36 +132,24 @@ do not have an id in QML.
 
 
 \section1 Deleting Objects Dynamically
-You should generally avoid dynamically deleting objects that you did not
-dynamically create. In many UIs, it is sufficient to set the opacity to 0 or
-to move the item off of the edge of the screen. If you have lots of dynamically
-created items however, deleting them when they are no longer used will provide
-a worthwhile performance benefit. Note that you should never manually delete
-items which were dynamically created by QML Elements such as \l{Loader}.
 
-To manually delete a QML item, call its destroy method. This method has one
-argument, which is an approximate delay in milliseconds and which defaults to zero. This
-allows you to wait until the completion of an animation or transition. An example:
+In many user interfaces, it is sufficient to set an item's opacity to 0 or
+to move the item off the screen instead of deleting the item. If you have
+lots of dynamically created items, however, you may receive a worthwhile
+performance benefit if unused items are deleted.
 
-\code
-    Component {
-        id: fadesOut
-        Rectangle{
-            id: rect
-            width: 40; height: 40;
-            NumberAnimation on opacity { from:1; to:0; duration: 1000 }
-            Component.onCompleted: rect.destroy(1000);
-        }
-    }
-    function createFadesOut(parentItem)
-    {
-        var object = fadesOut.createObject();
-        object.parent = parentItem;
-    }
-\endcode
+Note that you should never manually delete items that were dynamically created
+by QML elements (such as \l Loader). Also, you should generally avoid deleting
+items that you did not dynamically create yourself.
 
-In the above example, the dynamically created rectangle calls destroy as soon as it is created,
- but delays long enough for its fade out animation to be played.
+Items can be deleted using the \c destroy() method. This method has an optional
+argument (which defaults to 0) that specifies the approximate delay in milliseconds
+before the object is to be destroyed. This allows you to wait until the completion of
+an animation or transition. An example:
 
+\snippet doc/src/snippets/declarative/dynamicObjects.qml 0
+
+Here, \c Rectangle objects are destroyed one second after they are created, which is long
+enough for the \c NumberAnimation to be played before the object is destroyed.
 */
 

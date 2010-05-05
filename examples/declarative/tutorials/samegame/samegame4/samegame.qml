@@ -25,7 +25,7 @@ Rectangle {
             property int score: 0
             property int blockSize: 40
 
-            z: 20; anchors.centerIn: parent
+            anchors.centerIn: parent
             width: parent.width - (parent.width % blockSize);
             height: parent.height - (parent.height % blockSize);
 
@@ -35,53 +35,41 @@ Rectangle {
         }
     }
 
-    Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+    Dialog {
+        id: dialog
+        anchors.centerIn: parent
+        z: 100
+    }
 
     //![0]
     Dialog {
         id: nameInputDialog
-
         anchors.centerIn: parent
-        z: 22
+        z: 100
 
-        Text {
-            id: dialogText
-            opacity: 0
-            text: "   You won! Please enter your name:"
-        }
-
-        TextInput {
-            id: nameInput
-            width: 72
-            anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
-            focus: true
-
-            onAccepted: {
-                if (nameInputDialog.opacity == 1 && nameInput.text != "")
-                    SameGame.saveHighScore(nameInput.text);
-                nameInputDialog.forceClose();
-            }
+        onClosed: {
+            if (nameInputDialog.inputText != "")
+                SameGame.saveHighScore(nameInputDialog.inputText);
         }
     }
     //![0]
 
     Rectangle {
         id: toolBar
-        width: parent.width; height: 32
+        width: parent.width; height: 30
         color: activePalette.window
         anchors.bottom: screen.bottom
 
         Button {
-            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            anchors { left: parent.left; verticalCenter: parent.verticalCenter }
             text: "New Game"
             onClicked: SameGame.startNewGame()
         }
 
         Text {
             id: score
-            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            anchors { right: parent.right; verticalCenter: parent.verticalCenter }
             text: "Score: " + gameCanvas.score
-            font.bold: true
         }
     }
 }

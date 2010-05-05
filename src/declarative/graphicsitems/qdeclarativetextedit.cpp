@@ -85,7 +85,6 @@ TextEdit {
     \internal
     \class QDeclarativeTextEdit
     \qmlclass TextEdit
-    \ingroup group_coreitems
 
     \brief The QDeclarativeTextEdit class provides an editable formatted text item that you can add to a QDeclarativeView.
 
