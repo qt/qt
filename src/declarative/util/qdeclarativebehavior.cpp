@@ -82,7 +82,7 @@ public:
         y: 200  // initial value
         Behavior on y {
             NumberAnimation {
-                easing.type: "OutBounce"
+                easing.type: Easing.OutBounce
                 easing.amplitude: 100
                 duration: 200
             }

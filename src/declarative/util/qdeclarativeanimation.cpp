@@ -1615,7 +1615,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Animate any objects that have changed their x or y properties in the target state using
     an InOutQuad easing curve:
     \qml
-    Transition { PropertyAnimation { properties: "x,y"; easing.type: "InOutQuad" } }
+    Transition { PropertyAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } }
     \endqml
     \o In a Behavior
 

@@ -377,7 +377,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            easing.type: "OutBounce"
+            easing.type: Easing.OutBounce
         }
     }
 }
