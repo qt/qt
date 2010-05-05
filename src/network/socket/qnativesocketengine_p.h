@@ -123,6 +123,13 @@ public:
     int accept();
     void close();
 
+    bool joinMulticastGroup(const QHostAddress &groupAddress,
+                            const QHostAddress &sourceAddress,
+                            const QNetworkInterface &interface);
+    bool leaveMulticastGroup(const QHostAddress &groupAddress,
+                             const QHostAddress &sourceAddress,
+                             const QNetworkInterface &interface);
+
     qint64 bytesAvailable() const;
 
     qint64 read(char *data, qint64 maxlen);
@@ -237,6 +244,12 @@ public:
     bool nativeBind(const QHostAddress &address, quint16 port);
     bool nativeListen(int backlog);
     int nativeAccept();
+    bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
+                                  const QHostAddress &sourceAddress,
+                                  const QNetworkInterface &interface);
+    bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
+                                   const QHostAddress &sourceAddress,
+                                   const QNetworkInterface &interface);
     qint64 nativeBytesAvailable() const;
 
     bool nativeHasPendingDatagrams() const;
