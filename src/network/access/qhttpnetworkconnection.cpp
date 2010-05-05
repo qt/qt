@@ -716,6 +716,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
 
 // This function must be called from the event loop. The only
 // exception is documented in QHttpNetworkConnectionPrivate::queueRequest
+// although it is called _q_startNextRequest, it will actually start multiple requests when possible
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
     //resend the necessary ones.
@@ -733,26 +734,23 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 
     // dequeue new ones
 
-    QAbstractSocket *socket = 0;
+    // return fast if there is nothing to do
+    if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
+        return;
+    // try to get a free AND connected socket
     for (int i = 0; i < channelCount; ++i) {
-        QAbstractSocket *chSocket = channels[i].socket;
-        // try to get a free AND connected socket
         if (!channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
-            socket = chSocket;
-            dequeueAndSendRequest(socket);
-            break;
+            dequeueAndSendRequest(channels[i].socket);
         }
     }
 
-    if (!socket) {
-        for (int i = 0; i < channelCount; ++i) {
-            QAbstractSocket *chSocket = channels[i].socket;
-            // try to get a free unconnected socket
-            if (!channels[i].isSocketBusy()) {
-                socket = chSocket;
-                dequeueAndSendRequest(socket);
-                break;
-            }
+    // return fast if there is nothing to do
+    if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
+        return;
+    // try to get a free unconnected socket
+    for (int i = 0; i < channelCount; ++i) {
+        if (!channels[i].isSocketBusy()) {
+            dequeueAndSendRequest(channels[i].socket);
         }
     }
 
