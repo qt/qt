@@ -691,7 +691,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterface::MouseEvent *
 
     QMouseEvent ev(type, localPoint, globalPoint, button, buttons, modifiers);
 
-    QList<QWeakPointer<QGraphicsSystemCursor> > cursors = QGraphicsSystemCursor::getInstances();
+    QList<QWeakPointer<QGraphicsSystemCursor> > cursors = QGraphicsSystemCursorPrivate::getInstances();
     foreach (QWeakPointer<QGraphicsSystemCursor> cursor, cursors) {
         if (cursor)
             cursor.data()->pointerEvent(ev);

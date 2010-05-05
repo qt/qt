@@ -67,6 +67,14 @@ private:
     QPoint hot;
 };
 
+class QGraphicsSystemCursor;
+
+class QGraphicsSystemCursorPrivate {
+public:
+    static QList<QWeakPointer<QGraphicsSystemCursor> > getInstances() { return instances; }
+    static QList<QWeakPointer<QGraphicsSystemCursor> > instances;
+};
+
 class Q_GUI_EXPORT QGraphicsSystemCursor : public QObject {
 public:
     QGraphicsSystemCursor(QPlatformScreen *);
@@ -79,8 +87,7 @@ protected:
     QPlatformScreen* screen;  // Where to request an update
 
 private:
-    static QList<QWeakPointer<QGraphicsSystemCursor> > getInstances() { return instances; }
-    static QList<QWeakPointer<QGraphicsSystemCursor> > instances;
+    Q_DECLARE_PRIVATE(QGraphicsSystemCursor);
     friend void qt_lite_set_cursor(QWidget * w, bool force);
     friend class QApplicationPrivate;
 };
