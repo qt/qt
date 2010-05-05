@@ -145,6 +145,7 @@
 */
 
 #include "qhostaddress.h"
+#include "qnetworkinterface.h"
 #include "qabstractsocket_p.h"
 #include "qudpsocket.h"
 
@@ -326,6 +327,48 @@ bool QUdpSocket::bind(quint16 port)
 bool QUdpSocket::bind(quint16 port, BindMode mode)
 {
     return bind(QHostAddress::Any, port, mode);
+}
+
+/*!
+    \since 4.6
+*/
+bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress, MulticastMode mode)
+{
+    return joinMulticastGroup(groupAddress, QHostAddress::Any, QNetworkInterface(), mode);
+}
+
+/*!
+    \since 4.6
+    \overload
+*/
+bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
+                                    const QHostAddress &sourceAddress,
+                                    const QNetworkInterface &interface,
+                                    MulticastMode mode)
+{
+    Q_D(QUdpSocket);
+    d->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopback,
+                               (mode & MulticastLoopback) ? 1 : 0);
+    return d->socketEngine->joinMulticastGroup(groupAddress, sourceAddress, interface);
+}
+
+/*!
+    \since 4.6
+*/
+bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
+{
+    return leaveMulticastGroup(groupAddress, QHostAddress::Any, QNetworkInterface());
+}
+
+/*!
+    \since 4.6
+    \overload
+*/
+bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
+                                     const QHostAddress &sourceAddress,
+                                     const QNetworkInterface &interface)
+{
+    return d_func()->socketEngine->leaveMulticastGroup(groupAddress, sourceAddress, interface);
 }
 
 /*!
