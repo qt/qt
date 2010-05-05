@@ -76,7 +76,6 @@ void QDeclarativeBasePositionerPrivate::unwatchChanges(QDeclarativeItem* other)
 /*!
     \internal
     \class QDeclarativeBasePositioner
-    \ingroup group_layouts
     \brief The QDeclarativeBasePositioner class provides a base for QDeclarativeGraphics layouts.
 
     To create a QDeclarativeGraphics Positioner, simply subclass QDeclarativeBasePositioner and implement
@@ -404,7 +403,6 @@ Column {
     \internal
     \class QDeclarativeColumn
     \brief The QDeclarativeColumn class lines up items vertically.
-    \ingroup group_positioners
 */
 QDeclarativeColumn::QDeclarativeColumn(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Vertical, parent)
@@ -547,7 +545,6 @@ Row {
     \internal
     \class QDeclarativeRow
     \brief The QDeclarativeRow class lines up items horizontally.
-    \ingroup group_positioners
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Horizontal, parent)
@@ -698,8 +695,6 @@ Grid {
     \internal
     \class QDeclarativeGrid
     \brief The QDeclarativeGrid class lays out items in a grid.
-    \ingroup group_layouts
-
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
     QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
