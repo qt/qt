@@ -110,6 +110,7 @@ private slots:
     void illegalObjectCreation();
     void whenOrdering();
     void urlResolution();
+    void unnamedWhen();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -1047,6 +1048,25 @@ void tst_qdeclarativestates::urlResolution()
     QCOMPARE(image1->source(), resolved);
     QCOMPARE(image2->source(), resolved);
     QCOMPARE(image3->source(), resolved);
+}
+
+void tst_qdeclarativestates::unnamedWhen()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/unnamedWhen.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QCOMPARE(rectPrivate->state(), QLatin1String(""));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String(""));
+    rect->setProperty("triggerState", true);
+    QCOMPARE(rectPrivate->state(), QLatin1String("anonymousState1"));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String("inState"));
+    rect->setProperty("triggerState", false);
+    QCOMPARE(rectPrivate->state(), QLatin1String(""));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String(""));
 }
 
 QTEST_MAIN(tst_qdeclarativestates)
