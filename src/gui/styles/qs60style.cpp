@@ -653,6 +653,8 @@ void QS60StylePrivate::setFont(QWidget *widget) const
         fontCategory = QS60StyleEnums::FC_Primary;
     } else if (qobject_cast<QMenu *>(widget)){
         fontCategory = QS60StyleEnums::FC_Primary;
+    } else if (qobject_cast<QCalendarWidget *>(widget)){
+        fontCategory = QS60StyleEnums::FC_Secondary;
     }
     if (fontCategory != QS60StyleEnums::FC_Undefined) {
         const bool resolveFontSize = widget->testAttribute(Qt::WA_SetFont)
@@ -2478,6 +2480,12 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             //double the top layout margin for dialogs, it is very close to real value
             //without having to define custom pixel metric
             metricValue *= 2;
+
+    if (widget && (metric == PM_FocusFrameHMargin))
+        if (qobject_cast<const QTableView *>(widget))
+            //Halve the focus frame margin for table items
+            metricValue /= 2;
+
     return metricValue;
 }
 
