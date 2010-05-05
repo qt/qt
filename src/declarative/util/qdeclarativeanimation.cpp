@@ -874,7 +874,7 @@ void QDeclarativePropertyActionPrivate::init()
     This property holds an explicit target object to animate.
 
     The exact effect of the \c target property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
+    is being used.  Refer to the \l {QML Animation} documentation for details.
 */
 
 QObject *QDeclarativePropertyAction::target() const

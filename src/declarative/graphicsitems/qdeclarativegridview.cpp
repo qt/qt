@@ -1405,12 +1405,20 @@ void QDeclarativeGridView::setWrapEnabled(bool wrap)
 }
 
 /*!
-  \qmlproperty int GridView::cacheBuffer
-  This property holds the number of off-screen pixels to cache.
+    \qmlproperty int GridView::cacheBuffer
+    This property determines whether delegates are retained outside the
+    visible area of the view.
 
-  This property determines the number of pixels above the top of the view
-  and below the bottom of the view to cache.  Setting this value can make
-  scrolling the view smoother at the expense of additional memory usage.
+    If non-zero the view will keep as many delegates
+    instantiated as will fit within the buffer specified.  For example,
+    if in a vertical view the delegate is 20 pixels high and \c cacheBuffer is
+    set to 40, then up to 2 delegates above and 2 delegates below the visible
+    area may be retained.
+
+    Setting this value can make scrolling the list smoother at the expense
+    of additional memory usage.  It is not a substitute for creating efficient
+    delegates; the fewer elements in a delegate, the faster a view may be
+    scrolled.
 */
 int QDeclarativeGridView::cacheBuffer() const
 {
