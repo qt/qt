@@ -543,6 +543,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 
 QDeclarativeViewer::~QDeclarativeViewer()
 {
+    delete loggerWindow;
     canvas->engine()->setNetworkAccessManagerFactory(0);
     delete namFactory;
 }
