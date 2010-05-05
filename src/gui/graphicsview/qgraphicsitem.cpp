@@ -5489,8 +5489,9 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 // Adjust with 2 pixel margin. Notice the loss of precision
                 // when converting to QRect.
                 int adjust = 2;
+                QRectF scrollRect = !rect.isNull() ? rect : boundingRect();
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
-                QRect irect = rect.toRect().translated(-br.x(), -br.y());
+                QRect irect = scrollRect.toRect().translated(-br.x(), -br.y());
 
                 pix.scroll(dx, dy, irect);
 
@@ -5498,11 +5499,11 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
 
                 // Translate the existing expose.
                 foreach (QRectF exposedRect, c->exposed)
-                    c->exposed += exposedRect.translated(dx, dy) & rect;
+                    c->exposed += exposedRect.translated(dx, dy) & scrollRect;
 
                 // Calculate exposure.
                 QRegion exposed;
-                QRect r = rect.toRect();
+                QRect r = scrollRect.toRect();
                 exposed += r;
                 exposed -= r.translated(dx, dy);
                 foreach (QRect rect, exposed.rects())
