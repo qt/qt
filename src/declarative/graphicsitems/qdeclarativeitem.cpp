@@ -1432,7 +1432,7 @@ QDeclarativeItem::~QDeclarativeItem()
     }
     \endqml
 
-    The default transform origin is \c Center.
+    The default transform origin is \c Item.Center.
 */
 
 /*!
