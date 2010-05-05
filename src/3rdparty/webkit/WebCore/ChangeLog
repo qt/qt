@@ -1,3 +1,59 @@
+2010-05-03  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix rendering of <button> elements on Mac OS X
+
+        The <button> element has ButtonPart appearance, not PushButton part,
+        so we have to include ButtonPart when we decide if we should draw the
+        button as raised on Mac OS X.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38458
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::initializeCommonQStyleOptions):
+
+2010-04-26  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        View modes names in CSSValueKeywords.in
+        https://bugs.webkit.org/show_bug.cgi?id=38125
+
+        View mode names has changed in previous patch but CSSValueKeywords.in file was
+        not updated.
+
+        * css/CSSValueKeywords.in:
+
+2010-04-28  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Simon Fraser.
+
+        Media queries empty values
+        https://bugs.webkit.org/show_bug.cgi?id=38116
+
+        Adding isValid() method to MediaQueryExp to make it possible to differentiate
+        between queries with empty values and queries with invalid values.
+
+        Test: fast/media/media-query-invalid-value.html
+
+        * css/MediaQueryEvaluator.cpp:
+        (WebCore::MediaQueryEvaluator::eval):
+        * css/MediaQueryExp.cpp:
+        (WebCore::MediaQueryExp::MediaQueryExp):
+        * css/MediaQueryExp.h:
+        (WebCore::MediaQueryExp::isValid):
+
+2010-05-05  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Disable Qt Multimedia backend for HTML 5 Audio and Video elements
+
+        Fall back to the Phonon backend until the release situation has been cleared up.
+
+        * WebCore.pro:
+
 2010-05-03  Janne Koskinen  <janne.p.koskinen@digia.com>
 
         Reviewed by Simon Hausmann.
