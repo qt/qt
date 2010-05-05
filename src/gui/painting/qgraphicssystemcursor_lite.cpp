@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QList <QWeakPointer<QGraphicsSystemCursor> > QGraphicsSystemCursor::instances;
+QList <QWeakPointer<QGraphicsSystemCursor> > QGraphicsSystemCursorPrivate::instances;
 
 /*!
     \class QGraphicsSystemCursor
@@ -98,7 +98,7 @@ QList <QWeakPointer<QGraphicsSystemCursor> > QGraphicsSystemCursor::instances;
 QGraphicsSystemCursor::QGraphicsSystemCursor(QPlatformScreen *scr )
         : screen(scr)
 {
-    instances.append(this);
+    QGraphicsSystemCursorPrivate::instances.append(this);
 }
 
 // End of display and pointer event handling code

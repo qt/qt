@@ -734,7 +734,7 @@ void qt_lite_set_cursor(QWidget * w, bool force)
         cursorCursor = w->cursor();
         cursorWidget = w;
     } while (0);
-    foreach (QWeakPointer<QGraphicsSystemCursor> cursor, QGraphicsSystemCursor::getInstances())
+    foreach (QWeakPointer<QGraphicsSystemCursor> cursor, QGraphicsSystemCursorPrivate::getInstances())
         if (cursor)
             cursor.data()->changeCursor(&cursorCursor, cursorWidget);
 }
