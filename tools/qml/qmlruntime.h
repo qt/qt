@@ -59,6 +59,7 @@ class QDeclarativeTester;
 class QNetworkReply;
 class QNetworkCookieJar;
 class NetworkAccessManagerFactory;
+class QTranslator;
 
 class QDeclarativeViewer
 #if defined(Q_OS_SYMBIAN)
@@ -192,6 +193,11 @@ private:
     NetworkAccessManagerFactory *namFactory;
 
     bool useQmlFileBrowser;
+
+    QTranslator *translator;
+    void loadTranslationFile(const QString& directory);
+
+    void loadDummyDataFiles(const QString& directory);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeViewer::ScriptOptions)
 
