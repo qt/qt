@@ -775,7 +775,8 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         return QScriptDeclarativeClass::Value(engine, *((QString *)&data));
     } else if (type == QMetaType::QObjectStar) {
         QObject *object = *((QObject **)&data);
-        QDeclarativeData::get(object, true)->setImplicitDestructible();
+        if (object)
+            QDeclarativeData::get(object, true)->setImplicitDestructible();
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
         return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(object));
     } else if (type == qMetaTypeId<QList<QObject *> >()) {
