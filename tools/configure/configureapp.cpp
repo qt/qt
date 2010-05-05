@@ -3457,7 +3457,7 @@ void Configure::displayConfig()
         cout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
         cout << "library names through OPENSSL_LIBS." << endl;
         cout << "For example:" << endl;
-        cout << "    configure -openssl-linked OPENSSL_LIBS='-lssleay32 -llibeay32'" << endl;
+        cout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
     }
     if( dictionary[ "ZLIB_FORCED" ] == "yes" ) {
         QString which_zlib = "supplied";
