@@ -46,6 +46,7 @@
 #include "qhostaddress.h"
 #include "qelapsedtimer.h"
 #include "qvarlengtharray.h"
+#include "qnetworkinterface.h"
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -585,6 +586,12 @@ int QNativeSocketEnginePrivate::nativeAccept()
     return acceptedDescriptor;
 }
 
+#if !defined(IP_ADD_SOURCE_MEMBERSHIP)
+#  define QT_NO_MULTICAST_SSM
+#  define IP_ADD_SOURCE_MEMBERSHIP -1
+#  define IP_DROP_SOURCE_MEMBERSHIP -1
+#endif
+
 static bool doMulticast(QNativeSocketEnginePrivate *d,
                         int howAsm6,
                         int howAsm4,
@@ -593,12 +600,16 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
                         const QHostAddress &sourceAddress,
                         const QNetworkInterface &interface)
 {
+    Q_UNUSED(howSsm4);
+
     int sockOpt = 0;
     void *sockArg;
     int sockArgSize;
 
     ip_mreq asm4;
+#ifndef QT_NO_MULTICAST_SSM
     ip_mreq_source ssm4;
+#endif
 #ifndef QT_NO_IPV6
     ipv6_mreq asm6;
 
@@ -615,12 +626,19 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
 #endif
     if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
         if (!sourceAddress.isNull()) {
+#ifndef QT_NO_MULTICAST_SSM
             sockOpt = howSsm4;
             sockArg = &ssm4;
             sockArgSize = sizeof(ssm4);
             memset(&ssm4, 0, sizeof(ssm4));
             ssm4.imr_multiaddr.s_addr = htonl(groupAddress.toIPv4Address());
             ssm4.imr_sourceaddr.s_addr = htonl(sourceAddress.toIPv4Address());
+#else
+            // unreachable
+            d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+                        QNativeSocketEnginePrivate::ProtocolUnsupportedErrorString);
+            return false;
+#endif
         } else {
             sockOpt = howAsm4;
             sockArg = &asm4;
