@@ -64,6 +64,7 @@ SUBDIRS += \
            qdeclarativestyledtext \          # Cover
            qdeclarativesqldatabase \         # Cover
            qdeclarativevisualdatamodel \     # Cover
+           qdeclarativeviewer \                      # Cover
            qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {
