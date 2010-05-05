@@ -69,6 +69,8 @@
 #undef ATOM
 #undef X11
 
+//#define MYX11_DEBUG
+
 QT_BEGIN_NAMESPACE
 
 static int (*original_x_errhandler)(Display *dpy, XErrorEvent *);
@@ -158,6 +160,9 @@ QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration
                                        x, y, w, h, 0 /*border_width*/,
                                        xd->blackPixel(), xd->whitePixel());
 
+#ifdef MYX11_DEBUG
+        qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;
+#endif
     }
 
     width = -1;
@@ -673,7 +678,7 @@ GC QTestLiteWindow::createGC()
 void QTestLiteWindow::paintEvent()
 {
 #ifdef MYX11_DEBUG
-    qDebug() << "QTestLiteWindow::paintEvent" << shm_img.size() << painted;
+//    qDebug() << "QTestLiteWindow::paintEvent" << shm_img.size() << painted;
 #endif
 
     widget()->windowSurface()->flush(widget(), QRect(xpos,ypos,width, height), QPoint());
@@ -694,7 +699,7 @@ void QTestLiteWindow::resizeEvent(XConfigureEvent *e)
     height = e->height;
 
 #ifdef MYX11_DEBUG
-    qDebug() << hex << window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height << "img:" << shm_img.size();
+    qDebug() << hex << x_window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height;
 #endif
 
     QWindowSystemInterface::handleGeometryChange(widget(), QRect(xpos, ypos, width, height));
@@ -833,7 +838,7 @@ Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
 #ifdef MYX11_DEBUG
-    qDebug() << "QTestLiteWindow::setWindowFlags" << hex << window << "flags" << flags;
+    qDebug() << "QTestLiteWindow::setWindowFlags" << hex << x_window << "flags" << flags;
 #endif
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
@@ -963,7 +968,7 @@ Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
 void QTestLiteWindow::setVisible(bool visible)
 {
 #ifdef MYX11_DEBUG
-    qDebug() << "QTestLiteWindow::setVisible" << visible << hex << window;
+    qDebug() << "QTestLiteWindow::setVisible" << visible << hex << x_window;
 #endif
     if (visible)
          XMapWindow(xd->display, x_window);

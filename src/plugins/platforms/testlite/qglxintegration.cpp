@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <QDebug>
 #include <QLibrary>
 #include <QGLFormat>
 
@@ -53,7 +54,6 @@
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
 #include <dlfcn.h>
 #endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -171,7 +171,11 @@ bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
                             widget->x(), widget->y(), widget->width(), widget->height(),
                             0, visualInfo->depth, InputOutput, visualInfo->visual,
                             CWBackPixel|CWBorderPixel|CWColormap, &windowAttribs);
+#ifdef MYX11_DEBUG
+    qDebug() << "QGLXGLWidgetSurface::create" << hex << "parent" << parentWindow << "win:" << m_winId << widget;
+#endif
 
+    XSetWindowBackgroundPixmap(m_xd->display, m_winId, XNone);
     XMapWindow(m_xd->display, m_winId);
 
     XFree(visualInfo);
@@ -180,7 +184,15 @@ bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
 
 void QGLXGLWidgetSurface::setGeometry(const QRect& rect)
 {
-    XMoveResizeWindow(m_xd->display, m_winId, rect.x(), rect.y(), rect.width(), rect.height());
+#ifdef MYX11_DEBUG
+    qDebug() << "QGLXGLWidgetSurface::setGeometry" << rect << hex << m_xd->display << m_winId << "toplevel?" << m_widget->isWindow();
+#endif
+    //### toplevel QGLWidgets do have a separate X window owned by the surface, but it has a
+    // local geometry
+    if (m_widget->isWindow())
+        XMoveResizeWindow(m_xd->display, m_winId, 0, 0, rect.width(), rect.height());
+    else
+        XMoveResizeWindow(m_xd->display, m_winId, rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 bool QGLXGLWidgetSurface::filterEvent(QEvent *e)
@@ -191,12 +203,18 @@ bool QGLXGLWidgetSurface::filterEvent(QEvent *e)
         // which would otherwise destroy our window along with it.
         XUnmapWindow(m_xd->display, m_winId);
         XReparentWindow(m_xd->display, m_winId, m_xd->rootWindow(), 0, 0);
+#ifdef MYX11_DEBUG
+        qDebug() << "filterEvent unmap" << hex << m_winId;
+#endif
     }
 
     if (e->type() == QEvent::ParentChange) {
         // Once we've got a new parent, we need to reparent the window and show it again:
         XReparentWindow(m_xd->display, m_winId, m_widget->window()->winId(), m_widget->x(), m_widget->y());
         XMapWindow(m_xd->display, m_winId);
+#ifdef MYX11_DEBUG
+        qDebug() << "filterEvent reparent" << hex << m_winId << "to:" << m_widget->window()->winId();
+#endif
     }
 
     return false; // Allow the event to pass through to QGLWidget
@@ -241,6 +259,9 @@ bool QGLXGLContext::create(QPaintDevice* device, QGLFormat& format, QPlatformGLC
         QGLXGLWidgetSurface* surface = static_cast<QGLXGLWidgetSurface*>(glWidget->platformSurface());
         m_config = surface->config();
         m_drawable = (Drawable)surface->winId();
+#ifdef MYX11_DEBUG
+        qDebug() << "QGLXGLContext::create" << hex << m_config << m_drawable;
+#endif
     }
     else {
         if (!widget->isTopLevel()) {
@@ -254,6 +275,9 @@ bool QGLXGLContext::create(QPaintDevice* device, QGLFormat& format, QPlatformGLC
     }
 
     m_context = glXCreateNewContext(m_xd->display, m_config, GLX_RGBA_TYPE, shareGlxContext, True);
+#ifdef MYX11_DEBUG
+    qDebug() << "QGLXGLContext::create context" << m_context;
+#endif
 
     // Get the XVisualInfo for the window:
 //    XWindowAttributes windowAttribs;
@@ -273,7 +297,9 @@ bool QGLXGLContext::create(QPaintDevice* device, QGLFormat& format, QPlatformGLC
 
 void QGLXGLContext::makeCurrent()
 {
+#ifdef MYX11_DEBUG
     qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
+#endif
     glXMakeCurrent(m_xd->display, m_drawable, m_context);
 }
 
