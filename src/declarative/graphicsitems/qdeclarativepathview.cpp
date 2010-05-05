@@ -308,11 +308,15 @@ void QDeclarativePathViewPrivate::regenerate()
 
     The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
 
-    The items are laid out along a path defined by a \l Path and may be flicked to scroll.
+    The \l delegate is instantiated for each item on the \l path.
+    The items may be flicked to move them along the path.
 
     \snippet doc/src/snippets/declarative/pathview/pathview.qml 0
 
     \image pathview.gif
+
+    Delegates are instantiated as needed and may be destroyed at any time.
+    State should \e never be stored in a delegate.
 
     \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
