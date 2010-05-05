@@ -1243,6 +1243,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         subtitleText << "(" << Atom(Atom::AutoLink, fullTitle) << ")"
                      << Atom(Atom::LineBreak);
 
+#if 0
+    // No longer used because the modeule name is a breadcrumb.
     QString fixedModule = inner->moduleName();
     if (fixedModule == "Qt3SupportLight")
         fixedModule = "Qt3Support";
@@ -1263,6 +1265,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             subtitleText << "]";
         }
     }
+#endif    
 
     generateHeader(title, inner, marker);
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
