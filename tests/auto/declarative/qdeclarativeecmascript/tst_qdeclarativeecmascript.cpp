@@ -1104,7 +1104,7 @@ void tst_qdeclarativeecmascript::exceptionClearsOnReeval()
     QDeclarativeComponent component(&engine, TEST_FILE("exceptionClearsOnReeval.qml"));
     QString url = component.url().toString();
 
-    QString warning = url + ":4: TypeError: Result of expression 'objectProperty.objectProperty' [undefined] is not an object.";
+    QString warning = url + ":4: TypeError: Result of expression 'objectProperty' [null] is not an object.";
 
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());

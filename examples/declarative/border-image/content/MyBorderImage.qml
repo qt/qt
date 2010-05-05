@@ -20,14 +20,26 @@ Item {
 
         SequentialAnimation on width {
             loops: Animation.Infinite
-            NumberAnimation { from: container.minWidth; to: container.maxWidth; duration: 2000; easing.type: "InOutQuad"}
-            NumberAnimation { from: container.maxWidth; to: container.minWidth; duration: 2000; easing.type: "InOutQuad" }
+            NumberAnimation {
+                from: container.minWidth; to: container.maxWidth
+                duration: 2000; easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+                from: container.maxWidth; to: container.minWidth
+                duration: 2000; easing.type: Easing.InOutQuad
+            }
         }
 
         SequentialAnimation on height {
             loops: Animation.Infinite
-            NumberAnimation { from: container.minHeight; to: container.maxHeight; duration: 2000; easing.type: "InOutQuad"}
-            NumberAnimation { from: container.maxHeight; to: container.minHeight; duration: 2000; easing.type: "InOutQuad" }
+            NumberAnimation {
+                from: container.minHeight; to: container.maxHeight
+                duration: 2000; easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+                from: container.maxHeight; to: container.minHeight
+                duration: 2000; easing.type: Easing.InOutQuad
+            }
         }
 
         border.top: container.margin

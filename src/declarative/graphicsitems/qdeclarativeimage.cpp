@@ -199,12 +199,12 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     than the size of the item.
 
     \list
-    \o Stretch - the image is scaled to fit
-    \o PreserveAspectFit - the image is scaled uniformly to fit without cropping
-    \o PreserveAspectCrop - the image is scaled uniformly to fill, cropping if necessary
-    \o Tile - the image is duplicated horizontally and vertically
-    \o TileVertically - the image is stretched horizontally and tiled vertically
-    \o TileHorizontally - the image is stretched vertically and tiled horizontally
+    \o Image.Stretch - the image is scaled to fit
+    \o Image.PreserveAspectFit - the image is scaled uniformly to fit without cropping
+    \o Image.PreserveAspectCrop - the image is scaled uniformly to fill, cropping if necessary
+    \o Image.Tile - the image is duplicated horizontally and vertically
+    \o Image.TileVertically - the image is stretched horizontally and tiled vertically
+    \o Image.TileHorizontally - the image is stretched vertically and tiled horizontally
     \endlist
 
     \image declarative-image_fillMode.gif
@@ -243,10 +243,10 @@ qreal QDeclarativeImage::paintedHeight() const
 
     This property holds the status of image loading.  It can be one of:
     \list
-    \o Null - no image has been set
-    \o Ready - the image has been loaded
-    \o Loading - the image is currently being loaded
-    \o Error - an error occurred while loading the image
+    \o Image.Null - no image has been set
+    \o Image.Ready - the image has been loaded
+    \o Image.Loading - the image is currently being loaded
+    \o Image.Error - an error occurred while loading the image
     \endlist
 
     Note that a change in the status property does not cause anything to happen

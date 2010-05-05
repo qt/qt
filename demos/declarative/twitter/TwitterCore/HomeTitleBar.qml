@@ -113,7 +113,7 @@ Item {
     transitions: [
         Transition {
             from: "*"; to: "*"
-            NumberAnimation { properties: "x,y,width,height"; easing.type: "InOutQuad" }
+            NumberAnimation { properties: "x,y,width,height"; easing.type: Easing.InOutQuad }
         }
     ]
 }

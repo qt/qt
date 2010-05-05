@@ -8,10 +8,10 @@ Rectangle {
         id: layout1
         y: 0
         move: Transition {
-            NumberAnimation { properties: "y"; easing.type: "OutBounce" }
+            NumberAnimation { properties: "y"; easing.type: Easing.OutBounce }
         }
         add: Transition {
-            NumberAnimation { properties: "y"; easing.type: "OutQuad" }
+            NumberAnimation { properties: "y"; easing.type: Easing.OutQuad }
         }
 
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
@@ -43,10 +43,10 @@ Rectangle {
         id: layout2
         y: 300 
         move: Transition {
-            NumberAnimation { properties: "x"; easing.type: "OutBounce" }
+            NumberAnimation { properties: "x"; easing.type: Easing.OutBounce }
         }
         add: Transition {
-            NumberAnimation { properties: "x"; easing.type: "OutQuad" }
+            NumberAnimation { properties: "x"; easing.type: Easing.OutQuad }
         }
 
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
@@ -117,11 +117,11 @@ Rectangle {
         columns: 3
 
         move: Transition {
-            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
+            NumberAnimation { properties: "x,y"; easing.type: Easing.OutBounce }
         }
 
         add: Transition {
-            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
+            NumberAnimation { properties: "x,y"; easing.type: Easing.OutBounce }
         }
 
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
@@ -167,11 +167,11 @@ Rectangle {
         x: 260; y: 250; width: 150
 
         move: Transition {
-            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
+            NumberAnimation { properties: "x,y"; easing.type: Easing.OutBounce }
         }
 
         add: Transition {
-            NumberAnimation { properties: "x,y"; easing.type: "OutBounce" }
+            NumberAnimation { properties: "x,y"; easing.type: Easing.OutBounce }
         }
 
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }

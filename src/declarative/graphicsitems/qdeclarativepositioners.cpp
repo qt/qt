@@ -377,7 +377,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            easing.type: "OutBounce"
+            easing.type: Easing.OutBounce
         }
     }
 }
@@ -738,14 +738,14 @@ void QDeclarativeGrid::setRows(const int rows)
 }
 
 /*!
-    \qmlproperty enumeration Flow::flow
+    \qmlproperty enumeration Grid::flow
     This property holds the flow of the layout.
 
-    Possible values are \c LeftToRight (default) and \c TopToBottom.
+    Possible values are \c Grid.LeftToRight (default) and \c Grid.TopToBottom.
 
-    If \a flow is \c LeftToRight, the items are positioned next to
+    If \a flow is \c Grid.LeftToRight, the items are positioned next to
     to each other from left to right, then wrapped to the next line.
-    If \a flow is \c TopToBottom, the items are positioned next to each
+    If \a flow is \c Grid.TopToBottom, the items are positioned next to each
     other from top to bottom, then wrapped to the next column.
 */
 QDeclarativeGrid::Flow QDeclarativeGrid::flow() const
@@ -952,12 +952,12 @@ QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
     \qmlproperty enumeration Flow::flow
     This property holds the flow of the layout.
 
-    Possible values are \c LeftToRight (default) and \c TopToBottom.
+    Possible values are \c Flow.LeftToRight (default) and \c Flow.TopToBottom.
 
-    If \a flow is \c LeftToRight, the items are positioned next to
+    If \a flow is \c Flow.LeftToRight, the items are positioned next to
     to each other from left to right until the width of the Flow
     is exceeded, then wrapped to the next line.
-    If \a flow is \c TopToBottom, the items are positioned next to each
+    If \a flow is \c Flow.TopToBottom, the items are positioned next to each
     other from top to bottom until the height of the Flow is exceeded,
     then wrapped to the next column.
 */

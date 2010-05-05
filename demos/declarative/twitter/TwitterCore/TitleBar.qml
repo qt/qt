@@ -70,6 +70,6 @@ Item {
     }
 
     transitions: Transition {
-        NumberAnimation { properties: "x"; easing.type: "InOutQuad" }
+        NumberAnimation { properties: "x"; easing.type: Easing.InOutQuad }
     }
 }

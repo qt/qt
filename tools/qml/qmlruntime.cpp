@@ -66,6 +66,7 @@
 #include <QDeclarativeComponent>
 #include <QWidget>
 #include <QApplication>
+#include <QTranslator>
 #include <QDir>
 #include <QTextBrowser>
 #include <QFile>
@@ -464,6 +465,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , frame_stream(0), scaleSkin(true), mb(0)
       , portraitOrientation(0), landscapeOrientation(0)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
+      , translator(0)
 {
     QDeclarativeViewer::registerTypes();
     setWindowTitle(tr("Qt Qml Runtime"));
@@ -937,6 +939,46 @@ void QDeclarativeViewer::launch(const QString& file_or_url)
     QMetaObject::invokeMethod(this, "open", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
 }
 
+void QDeclarativeViewer::loadTranslationFile(const QString& directory)
+{
+    if (!translator) {
+        translator = new QTranslator(this);
+        QApplication::installTranslator(translator);
+    }
+
+    translator->load(QLatin1String("qml_" )+QLocale::system().name(), directory + QLatin1String("/i18n"));
+}
+
+void QDeclarativeViewer::loadDummyDataFiles(const QString& directory)
+{
+    QDir dir(directory+"/dummydata", "*.qml");
+    QStringList list = dir.entryList();
+    for (int i = 0; i < list.size(); ++i) {
+        QString qml = list.at(i);
+        QFile f(dir.filePath(qml));
+        f.open(QIODevice::ReadOnly);
+        QByteArray data = f.readAll();
+        QDeclarativeComponent comp(canvas->engine());
+        comp.setData(data, QUrl());
+        QObject *dummyData = comp.create();
+
+        if(comp.isError()) {
+            QList<QDeclarativeError> errors = comp.errors();
+            foreach (const QDeclarativeError &error, errors) {
+                qWarning() << error;
+            }
+            if (tester) tester->executefailure();
+        }
+
+        if (dummyData) {
+            qWarning() << "Loaded dummy data:" << dir.filePath(qml);
+            qml.truncate(qml.length()-4);
+            canvas->rootContext()->setContextProperty(qml, dummyData);
+            dummyData->setParent(this);
+        }
+    }
+}
+
 bool QDeclarativeViewer::open(const QString& file_or_url)
 {
     currentFileOrUrl = file_or_url;
@@ -966,39 +1008,15 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
-        QFileInfo fi(fileName);
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;
                 return false;
             }
 
-            QDir dir(fi.path()+"/dummydata", "*.qml");
-            QStringList list = dir.entryList();
-            for (int i = 0; i < list.size(); ++i) {
-                QString qml = list.at(i);
-                QFile f(dir.filePath(qml));
-                f.open(QIODevice::ReadOnly);
-                QByteArray data = f.readAll();
-                QDeclarativeComponent comp(canvas->engine());
-                comp.setData(data, QUrl());
-                QObject *dummyData = comp.create();
-
-                if(comp.isError()) {
-                    QList<QDeclarativeError> errors = comp.errors();
-                    foreach (const QDeclarativeError &error, errors) {
-                        qWarning() << error;
-                    }
-                    if (tester) tester->executefailure();
-                }
-
-                if (dummyData) {
-                    qWarning() << "Loaded dummy data:" << dir.filePath(qml);
-                    qml.truncate(qml.length()-4);
-                    ctxt->setContextProperty(qml, dummyData);
-                    dummyData->setParent(this);
-                }
-            }
+            QFileInfo fi(fileName);
+            loadTranslationFile(fi.path());
+            loadDummyDataFiles(fi.path());
         } else {
             qWarning() << "qml cannot find file:" << fileName;
             return false;

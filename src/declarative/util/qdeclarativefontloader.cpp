@@ -185,10 +185,10 @@ void QDeclarativeFontLoader::setName(const QString &name)
 
     This property holds the status of font loading.  It can be one of:
     \list
-    \o Null - no font has been set
-    \o Ready - the font has been loaded
-    \o Loading - the font is currently being loaded
-    \o Error - an error occurred while loading the font
+    \o FontLoader.Null - no font has been set
+    \o FontLoader.Ready - the font has been loaded
+    \o FontLoader.Loading - the font is currently being loaded
+    \o FontLoader.Error - an error occurred while loading the font
     \endlist
 
     Note that a change in the status property does not cause anything to happen

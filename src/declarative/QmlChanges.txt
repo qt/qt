@@ -4,6 +4,10 @@ The changes below are pre Qt 4.7.0 RC
 Flickable: overShoot is replaced by boundsBehavior enumeration.
 Component: isReady, isLoading, isError and isNull properties removed, use
     status property instead
+QList<QObject*> models no longer provide properties in model object.  The
+properties are now updated when the object changes.  An object's property
+"foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"
+
 
 C++ API
 -------

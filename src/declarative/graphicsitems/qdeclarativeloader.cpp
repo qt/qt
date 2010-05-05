@@ -329,10 +329,10 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 
     This property holds the status of QML loading.  It can be one of:
     \list
-    \o Null - no QML source has been set
-    \o Ready - the QML source has been loaded
-    \o Loading - the QML source is currently being loaded
-    \o Error - an error occurred while loading the QML source
+    \o Loader.Null - no QML source has been set
+    \o Loader.Ready - the QML source has been loaded
+    \o Loader.Loading - the QML source is currently being loaded
+    \o Loader.Error - an error occurred while loading the QML source
     \endlist
 
     Note that a change in the status property does not cause anything to happen

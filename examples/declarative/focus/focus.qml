@@ -38,7 +38,7 @@ Rectangle {
         }
 
         transitions: Transition {
-            NumberAnimation { properties: "y"; duration: 600; easing.type: "OutQuint" }
+            NumberAnimation { properties: "y"; duration: 600; easing.type: Easing.OutQuint }
         }
     }
 
@@ -64,6 +64,6 @@ Rectangle {
     }
 
     transitions: Transition {
-        NumberAnimation { properties: "x,opacity"; duration: 600; easing.type: "OutQuint" }
+        NumberAnimation { properties: "x,opacity"; duration: 600; easing.type: Easing.OutQuint }
     }
 }

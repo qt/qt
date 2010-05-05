@@ -16,7 +16,7 @@ Rectangle {
         id: img
         source: "pics/qtlogo.png"
         x: 60-width/2
-        y: 100
+        y: 200-img.height
         SequentialAnimation on y {
             loops: Animation.Infinite
             NumberAnimation {
@@ -24,7 +24,7 @@ Rectangle {
                 easing.type: "InOutQuad"
             }
             NumberAnimation {
-                to: 100
+                to: 200-img.height
                 easing.type: "OutBounce"
                 duration: 2000
             }
