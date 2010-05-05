@@ -1029,7 +1029,10 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     if (!component.isReady())
         return ctxt->throwError("Qt.createQmlObject(): Component is not ready");
 
-    QObject *obj = component.create(context->asQDeclarativeContext());
+    QObject *obj = component.beginCreate(context->asQDeclarativeContext());
+    if(obj)
+        QDeclarativeData::get(obj, true)->setImplicitDestructible();
+    component.completeCreate();
 
     if(component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
@@ -1550,7 +1553,7 @@ QStringList QDeclarativeEngine::importPathList() const
 }
 
 /*!
-  Sets the list of directories where the engine searches for
+  Sets \a paths as the list of directories where the engine searches for
   installed modules in a URL-based directory structure.
 
   By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment

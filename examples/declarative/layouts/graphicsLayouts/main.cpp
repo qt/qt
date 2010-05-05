@@ -39,33 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
+#include <QApplication>
 #include <QtDeclarative/qdeclarative.h>
-#include <QGraphicsWidget>
-
 #include "graphicslayouts_p.h"
-#include <private/qdeclarativegraphicswidget_p.h>
-QT_BEGIN_NAMESPACE
+#include <QtDeclarative/QDeclarativeView>
 
-class QWidgetsQmlModule : public QDeclarativeExtensionPlugin
+int main(int argc, char* argv[])
 {
-    Q_OBJECT
-public:
-    virtual void registerTypes(const char *uri)
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.widgets"));
-
-        qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
-        qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,7,"QGraphicsLinearLayoutStretchItem");
-        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,7,"QGraphicsLinearLayout");
-        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,7,"QGraphicsGridLayout");
-    }
+    QApplication app(argc, argv);
+    QDeclarativeView view;
+    qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
+    qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
+    qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>("GraphicsLayouts",4,7,"QGraphicsLinearLayoutStretchItem");
+    qmlRegisterType<QGraphicsLinearLayoutObject>("GraphicsLayouts",4,7,"QGraphicsLinearLayout");
+    qmlRegisterType<QGraphicsGridLayoutObject>("GraphicsLayouts",4,7,"QGraphicsGridLayout");
+    view.setSource(QUrl(":graphicslayouts.qml"));
+    view.show();
+    return app.exec();
 };
-
-QT_END_NAMESPACE
-
-#include "widgets.moc"
-
-Q_EXPORT_PLUGIN2(qtwidgetsqmlmodule, QT_PREPEND_NAMESPACE(QWidgetsQmlModule));
 

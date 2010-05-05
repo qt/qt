@@ -118,11 +118,11 @@ void QDeclarativeTextInput::setText(const QString &s)
 
     The weight can be one of:
     \list
-    \o Light
-    \o Normal - the default
-    \o DemiBold
-    \o Bold
-    \o Black
+    \o Font.Light
+    \o Font.Normal - the default
+    \o Font.DemiBold
+    \o Font.Bold
+    \o Font.Black
     \endlist
 
     \qml
@@ -195,11 +195,11 @@ void QDeclarativeTextInput::setText(const QString &s)
     Sets the capitalization for the text.
 
     \list
-    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
-    \o AllUppercase - This alters the text to be rendered in all uppercase type.
-    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
-    \o SmallCaps -	This alters the text to be rendered in small-caps type.
-    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \o Font.MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o Font.AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o Font.AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o Font.SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Font.Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
     \endlist
 
     \qml
@@ -308,8 +308,8 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
     vertically. You can use anchors to align it however you want within
     another item.
 
-    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.
+    The valid values for \c horizontalAlignment are \c TextInput.AlignLeft, \c TextInput.AlignRight and
+    \c TextInput.AlignHCenter.
 */
 QDeclarativeTextInput::HAlignment QDeclarativeTextInput::hAlign() const
 {
@@ -600,9 +600,9 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     This property holds the notation of how a string can describe a number.
 
     The values for this property are DoubleValidator.StandardNotation or DoubleValidator.ScientificNotation.
-    If this property is set to ScientificNotation, the written number may have an exponent part(i.e. 1.5E-2).
+    If this property is set to DoubleValidator.ScientificNotation, the written number may have an exponent part(i.e. 1.5E-2).
 
-    By default, this property is set to ScientificNotation.
+    By default, this property is set to DoubleValidator.ScientificNotation.
 */
 
 /*!
@@ -828,7 +828,7 @@ void QDeclarativeTextInput::moveCursor()
 }
 
 /*!
-    \qmlmethod int xToPosition(int x)
+    \qmlmethod int TextInput::xToPosition(int x)
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -1097,7 +1097,7 @@ QString QDeclarativeTextInput::displayText() const
 }
 
 /*!
-    \qmlmethod void moveCursorSelection(int position)
+    \qmlmethod void TextInput::moveCursorSelection(int position)
 
     Moves the cursor to \a position and updates the selection accordingly.
     (To only move the cursor, set the \l cursorPosition property.)

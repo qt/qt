@@ -1432,7 +1432,7 @@ QDeclarativeItem::~QDeclarativeItem()
     }
     \endqml
 
-    The default transform origin is \c Center.
+    The default transform origin is \c Item.Center.
 */
 
 /*!
@@ -1632,10 +1632,6 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     specify it.
  */
 
-/*!
-    \internal
-*/
-
 /*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
@@ -1646,7 +1642,7 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
     \property QDeclarativeItem::childrenRect
     \brief The geometry of an item's children.
 
-    childrenRect provides an easy way to access the (collective) position and size of the item's children.
+    This property holds the (collective) position and size of the item's children.
 */
 QRectF QDeclarativeItem::childrenRect()
 {
@@ -2966,7 +2962,6 @@ void QDeclarativeItem::setFocus(bool focus)
 }
 
 /*!
-    \reimp
     \internal
 */
 void QDeclarativeItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
@@ -2974,7 +2969,6 @@ void QDeclarativeItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidg
 }
 
 /*!
-    \reimp
     \internal
 */
 bool QDeclarativeItem::event(QEvent *ev)

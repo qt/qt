@@ -17,7 +17,7 @@ function startNewGame() {
     maxIndex = maxRow * maxColumn;
 
     //Close dialogs
-    dialog.forceClose();
+    dialog.hide();
 
     //Initialize Board
     board = new Array(maxIndex);
@@ -58,10 +58,9 @@ function createBlock(column, row) {
     return true;
 }
 
-var fillFound;
-//Set after a floodFill call to the number of blocks found
-var floodBoard;
-//Set to 1 if the floodFill reaches off that node
+var fillFound; //Set after a floodFill call to the number of blocks found
+var floodBoard; //Set to 1 if the floodFill reaches off that node
+
 //![1]
 function handleClick(xPos, yPos) {
     var column = Math.floor(xPos / gameCanvas.blockSize);

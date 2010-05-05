@@ -114,7 +114,7 @@ Flipable {
     transitions: Transition {
         SequentialAnimation {
             PropertyAction { target: bigImage; property: "smooth"; value: false }
-            NumberAnimation { easing.type: "InOutQuad"; properties: "angle"; duration: 500 }
+            NumberAnimation { easing.type: Easing.InOutQuad; properties: "angle"; duration: 500 }
             PropertyAction { target: bigImage; property: "smooth"; value: !flickable.moving }
         }
     }

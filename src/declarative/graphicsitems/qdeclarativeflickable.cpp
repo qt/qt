@@ -587,13 +587,13 @@ QDeclarativeFlickableVisibleArea *QDeclarativeFlickable::visibleArea()
     This property determines which directions the view can be flicked.
 
     \list
-    \o AutoFlickDirection (default) - allows flicking vertically if the
+    \o Flickable.AutoFlickDirection (default) - allows flicking vertically if the
     \e contentHeight is not equal to the \e height of the Flickable.
     Allows flicking horizontally if the \e contentWidth is not equal
     to the \e width of the Flickable.
-    \o HorizontalFlick - allows flicking horizontally.
-    \o VerticalFlick - allows flicking vertically.
-    \o HorizontalAndVerticalFlick - allows flicking in both directions.
+    \o Flickable.HorizontalFlick - allows flicking horizontally.
+    \o Flickable.VerticalFlick - allows flicking vertically.
+    \o Flickable.HorizontalAndVerticalFlick - allows flicking in both directions.
     \endlist
 */
 QDeclarativeFlickable::FlickDirection QDeclarativeFlickable::flickDirection() const
@@ -1031,11 +1031,11 @@ void QDeclarativeFlickable::setOverShoot(bool o)
     The \c boundsBehavior can be one of:
 
     \list
-    \o \e StopAtBounds - the contents can not be dragged beyond the boundary
+    \o \e Flickable.StopAtBounds - the contents can not be dragged beyond the boundary
     of the flickable, and flicks will not overshoot.
-    \o \e DragOverBounds - the contents can be dragged beyond the boundary
+    \o \e Flickable.DragOverBounds - the contents can be dragged beyond the boundary
     of the Flickable, but flicks will not overshoot.
-    \o \e DragAndOvershootBounds (default) - the contents can be dragged
+    \o \e Flickable.DragAndOvershootBounds (default) - the contents can be dragged
     beyond the boundary of the Flickable, and can overshoot the
     boundary when flicked.
     \endlist
@@ -1091,7 +1091,7 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
     else
         d->viewport->setWidth(w);
     // Make sure that we're entirely in view.
-    if (!d->pressed) {
+    if (!d->pressed && !d->moving) {
         int oldDuration = d->fixupDuration;
         d->fixupDuration = 0;
         d->fixupX();
@@ -1118,7 +1118,7 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     else
         d->viewport->setHeight(h);
     // Make sure that we're entirely in view.
-    if (!d->pressed) {
+    if (!d->pressed && !d->moving) {
         int oldDuration = d->fixupDuration;
         d->fixupDuration = 0;
         d->fixupY();

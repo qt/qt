@@ -9,7 +9,7 @@ ListView {
         Rectangle {
             height: 25
             width: 100
-            color: model.color
+            color: model.modelData.color
             Text { text: name }
         }
     }
