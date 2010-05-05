@@ -69,6 +69,7 @@
 
 QT_BEGIN_NAMESPACE
 
+
 inline static bool verticalTabs(QTabBar::Shape shape)
 {
     return shape == QTabBar::RoundedWest
@@ -95,9 +96,20 @@ void QTabBarPrivate::updateMacBorderMetrics()
         metrics.left = 0;
         metrics.right = 0;
         qt_mac_updateContentBorderMetricts(window, metrics);
-        
-        // hide the base line separator if the tabs have docuemnt mode enabled (Cocoa)
-        qt_mac_showBaseLineSeparator(window, !documentMode);
+#if QT_MAC_USE_COCOA
+        // In Cocoa we need to keep track of the drawRect method.
+        // If documentMode is enabled we need to change it, unless
+        // a toolbar is present.
+        // Notice that all the information is kept in the window,
+        // that's why we get the private widget for it instead of
+        // the private widget for this widget.
+        QWidgetPrivate *privateWidget = qt_widget_private(q->window());
+        if(privateWidget)
+            privateWidget->changeMethods = documentMode;
+        // Since in Cocoa there is no simple way to remove the baseline, so we just ask the
+        // top level to do the magic for us.
+        privateWidget->syncUnifiedMode();
+#endif // QT_MAC_USE_COCOA
     }
 #endif
 }
@@ -580,16 +592,10 @@ void QTabBarPrivate::layoutTab(int index)
     }
 }
 
-void QTabBarPrivate::layoutWidgets(int index)
+void QTabBarPrivate::layoutWidgets(int start)
 {
     Q_Q(QTabBar);
-    int start = 0;
-    int end = q->count();
-    if (index != -1) {
-        start = qMax(index, 0);
-        end = qMin(end, start + 1);
-    }
-    for (int i = start; i < end; ++i) {
+    for (int i = start; i < q->count(); ++i) {
         layoutTab(i);
     }
 }
@@ -1171,8 +1177,9 @@ void QTabBar::setCurrentIndex(int index)
         update();
         d->makeVisible(index);
         d->tabList[index].lastTab = oldIndex;
-        d->layoutWidgets(oldIndex);
-        d->layoutWidgets(index);
+        if (oldIndex >= 0 && oldIndex < count())
+            d->layoutTab(oldIndex);
+        d->layoutTab(index);
 #ifdef QT3_SUPPORT
         emit selected(index);
 #endif
@@ -2198,6 +2205,7 @@ bool QTabBar::documentMode() const
 void QTabBar::setDocumentMode(bool enabled)
 {
     Q_D(QTabBar);
+
     d->documentMode = enabled;
     d->updateMacBorderMetrics();
 }

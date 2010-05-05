@@ -67,6 +67,7 @@ private slots:
     void testDragWindow();
     void testMouseEnter();
     void testChildDialogInFrontOfModalParent();
+    void testKeyPressOnToplevel();
 };
 
 void tst_MacNativeEvents::testMouseMoveLocation()
@@ -305,6 +306,28 @@ void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
     native.play();
     QTest::qWait(100);
     QVERIFY(!child.isVisible());
+}
+
+void tst_MacNativeEvents::testKeyPressOnToplevel()
+{
+    // Check that we receive keyevents for
+    // toplevel widgets. For leagacy reasons, and according to Qt on
+    // other platforms (carbon port + linux), we should get these events
+    // even when the focus policy is set to Qt::NoFocus when there is no
+    // other focus widget on screen:
+    QWidget w;
+    w.show();
+
+    NativeEventList native;
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, true, Qt::NoModifier));
+    native.append(new QNativeKeyEvent(QNativeKeyEvent::Key_A, false, Qt::NoModifier));
+
+    ExpectedEventList expected(&w);
+    expected.append(new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier));
+    expected.append(new QKeyEvent(QEvent::KeyRelease, Qt::Key_A, Qt::NoModifier));
+
+    native.play();
+    QVERIFY2(expected.waitForAllEvents(), "the test did not receive all expected events!");
 }
 
 #include "tst_macnativeevents.moc"

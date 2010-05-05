@@ -101,6 +101,17 @@ QT_END_NAMESPACE
     return !(isPopup || isToolTip || isTool);
 }
 
+- (void)becomeMainWindow
+{
+    [super becomeMainWindow];
+    // Cocoa sometimes tell a hidden window to become the
+    // main window (and as such, show it). This can e.g
+    // happend when the application gets activated. If
+    // this is the case, we tell it to hide again:
+    if (![self isVisible])
+        [self orderOut:self];
+}
+
 - (void)toggleToolbarShown:(id)sender
 {
     macSendToolbarChangeEvent([self QT_MANGLE_NAMESPACE(qt_qwidget)]);
@@ -351,4 +362,58 @@ QT_END_NAMESPACE
             bs->sync(qwidget, qwidget->rect());
     }
     [super displayIfNeeded];
+}
+
+// This is a hack and it should be removed once we find the real cause for
+// the painting problems.
+// We have a static variable that signals if we have been called before or not.
+static bool firstDrawingInvocation = true;
+
+// The method below exists only as a workaround to draw/not draw the baseline
+// in the title bar. This is to support unifiedToolbar look.
+
+// This method is very special. To begin with, it is a
+// method that will get called only if we enable documentMode.
+// Furthermore, it won't get called as a normal method, we swap
+// this method with the normal implementation of drawRect in
+// _NSThemeFrame. When this method is active, its mission is to
+// first call the original drawRect implementation so the widget
+// gets proper painting. After that, it needs to detect if there
+// is a toolbar or not, in order to decide how to handle the unified
+// look. The distinction is important since the presence and
+// visibility of a toolbar change the way we enter into unified mode.
+// When there is a toolbar and that toolbar is visible, the problem
+// is as simple as to tell the toolbar not to draw its baseline.
+// However when there is not toolbar or the toolbar is not visible,
+// we need to draw a line on top of the baseline, because the baseline
+// in that case will belong to the title. For this case we need to draw
+// a line on top of the baseline.
+// As usual, there is a special case. When we first are called, we might
+// need to repaint ourselves one more time. We only need that if we
+// didn't get the activation, i.e. when we are launched via the command
+// line. And this only if the toolbar is visible from the beginning,
+// so we have a special flag that signals if we need to repaint or not.
+- (void)drawRectSpecial:(NSRect)rect
+{
+    // Call the original drawing method.
+    [self drawRectOriginal:rect];
+    NSWindow *window = [self window];
+    NSToolbar *toolbar = [window toolbar];
+    if(!toolbar) {
+        // There is no toolbar, we have to draw a line on top of the line drawn by Cocoa.
+        macDrawRectOnTop((void *)window);
+    } else {
+        if([toolbar isVisible]) {
+            // We tell Cocoa to avoid drawing the line at the end.
+            if(firstDrawingInvocation) {
+                firstDrawingInvocation = false;
+                macSyncDrawingOnFirstInvocation((void *)window);
+            } else
+                [toolbar setShowsBaselineSeparator:NO];
+        } else {
+            // There is a toolbar but it is not visible so
+            // we have to draw a line on top of the line drawn by Cocoa.
+            macDrawRectOnTop((void *)window);
+        }
+    }
 }

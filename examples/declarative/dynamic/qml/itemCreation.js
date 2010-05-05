@@ -31,8 +31,8 @@ function loadComponent() {
     if (itemComponent != null) //Already loaded the component
         createItem();
 
-    itemComponent = createComponent(itemButton.file);
-    //print(itemButton.file)
+    itemComponent = Qt.createComponent(itemButton.file);
+    //console.log(itemButton.file)
     if(itemComponent.isLoading){
         component.statusChanged.connect(finishCreation);
     }else{//Depending on the content, it can be ready or error immediately
@@ -51,8 +51,8 @@ function createItem() {
         draggedItem.z = 4;//On top
     } else if (itemComponent.isError) {
         draggedItem = null;
-        print("error creating component");
-        print(component.errorsString());
+        console.log("error creating component");
+        console.log(component.errorsString());
     }
 }
 

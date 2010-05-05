@@ -1,0 +1,420 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+
+\page qml-extending-tutorial-index.html
+\title Tutorial: Writing QML extensions with C++
+
+The QtDeclarative module provides a set of APIs for extending QML through
+C++ extensions. You can write extensions to add your own QML types, extend existing
+Qt types, or call C/C++ functions that are not accessible from ordinary QML code.
+
+This tutorial shows how to write a QML extension using C++ that includes 
+core QML features, including properties, signals and bindings. It also shows how
+extensions can be deployed through plugins.
+
+You can find the source code for this tutorial in \c Qt's
+examples/declarative/tutorials/extending directory.
+
+Tutorial chapters:
+
+\list 1
+\o \l{declarative/tutorials/extending/chapter1-basics}{Creating a New Type}
+\o \l{declarative/tutorials/extending/chapter2-methods}{Connecting to C++ Methods and Signals}
+\o \l{declarative/tutorials/extending/chapter3-bindings}{Adding Property Bindings}
+\o \l{declarative/tutorials/extending/chapter4-customPropertyTypes}{Using Custom Property Types}
+\o \l{declarative/tutorials/extending/chapter5-plugins}{Writing an Extension Plugin}
+\o \l{qml-extending-tutorial6.html}{In Summary}
+\endlist
+
+*/
+
+/*!
+\title Chapter 1: Creating a New Type
+
+\example declarative/tutorials/extending/chapter1-basics
+
+Let's create a new QML type called "Musician" that has two properties: a name
+and an instrument.  We will make it available in a \l {Modules}{module} called "Music", with
+a module version of 1.0. 
+We want this \c Musician type to be usable from QML like this:
+
+\code
+    import Music 1.0
+    
+    Musician {
+        name: "Reddy the Rocker"
+        instrument: "Guitar"
+    }
+\endcode
+
+To do this, we need a C++ class that encapsulates this \c Musician type and its two
+properties. Since QML relies heavily on Qt's \l{Meta-Object System}{meta object system},
+this new class must:
+
+\list
+\o inherit from QObject
+\o declare its properties using the Q_PROPERTY() macro
+\endlist
+
+Here is our \c Musician class, defined in \c musician.h:
+
+\snippet declarative/tutorials/extending/chapter1-basics/musician.h 0
+
+It defines the two properties, \c name and \c instrument, with the Q_PROPERTY() macro.
+The class implementation in \c musician.cpp simply sets and returns the \c m_name and
+\c m_instrument values as appropriate.
+
+Our QML file, \c app.qml, creates a \c Musician item and display the musician's details
+using a standard QML \l Text item:
+
+\quotefile declarative/tutorials/extending/chapter1-basics/app.qml
+
+We'll also create a C++ application that uses a QDeclarativeView to run and
+display \c app.qml. The application must register the \c Musician type
+using the qmlRegisterType() function, to allow it to be used from QML. If
+you don't register the type, \c app.qml won't be able to create a \c Musician.
+
+Here is the application \c main.cpp:
+
+\snippet declarative/tutorials/extending/chapter1-basics/main.cpp 0
+
+This call to qmlRegisterType() registers the \c Musician type as a type called "Musician", in a module named "Music",
+with a module version of 1.0.
+
+Lastly, we write a \c .pro project file that includes the files and the \c declarative library:
+
+\quotefile declarative/tutorials/extending/chapter1-basics/chapter1-basics.pro
+
+Now we can build and run the application. Try it yourself with the code in Qt's \c examples/tutorials/extending/chapter1-basics directory.
+
+\example declarative/tutorials/extending/chapter1-basics
+
+At the moment, the \c app.qml is run from within a C++ application.
+This may seem odd if you're used to running QML files with the standard \c qml tool.
+Later on, we'll show how to create a plugin so that you can run \c app.qml using the 
+\c qml tool instead.
+
+*/
+
+
+/*!
+\title Chapter 2: Connecting to C++ Methods and Signals 
+
+\example declarative/tutorials/extending/chapter2-methods
+
+Suppose we want \c Musician to have a "perform" method that prints a message
+to the console and then emits a "performanceEnded" signal.
+Other elements would be able to call \c perform() and receive
+\c performanceEnded() signals like this:
+
+\quotefile declarative/tutorials/extending/chapter2-methods/app.qml
+
+To do this, we add a \c perform() method and a \c performanceEnded() signal
+to our C++ class:
+
+\snippet declarative/tutorials/extending/chapter2-methods/musician.h 0
+\dots
+\snippet declarative/tutorials/extending/chapter2-methods/musician.h 1
+\dots
+\snippet declarative/tutorials/extending/chapter2-methods/musician.h 2
+\dots
+\snippet declarative/tutorials/extending/chapter2-methods/musician.h 3
+
+The use of Q_INVOKABLE makes the \c perform() method available to the
+Qt Meta-Object system, and in turn, to QML. Note that it could have
+been declared as as a Qt slot instead of using Q_INVOKABLE, as
+slots are also callable from QML. Both of these approaches are valid.
+
+The \c perform() method simply prints a message to the console and
+then emits \c performanceEnded():
+
+\snippet declarative/tutorials/extending/chapter2-methods/musician.cpp 0
+
+Now when we run the application and click the window, the application outputs:
+
+\code
+    "Reddy the Rocker" is playing the "Guitar"
+    The performance has now ended
+\endcode
+
+Try out the example yourself with the updated code in Qt's \c examples/tutorials/extending/chapter2-methods directory.
+
+*/
+
+/*!
+\title Chapter 3: Adding Property Bindings
+
+\example declarative/tutorials/extending/chapter3-bindings
+
+Property bindings is a powerful feature of QML that allows values of different
+elements to be synchronized automatically. It uses signals to notify and update
+other elements' values when property values change.
+
+Let's enable property bindings for the \c instrument property. That means 
+if we have code like this:
+
+\quotefile declarative/tutorials/extending/chapter3-bindings/app.qml
+
+The "instrument: reddy.instrument" statement binds the \c instrument value of
+\c craig to the \c instrument of \c reddy.
+Whenever \c reddy's \c instrument value changes, \c craig's \c instrument value
+updates to the same value. When the window is clicked, the application outputs:
+
+\code
+    "Reddy the Rocker" is playing the "Guitar"
+    "Craig the Copycat" is playing the "Guitar"
+    "Reddy the Rocker" is playing the "Drums"
+    "Craig the Copycat" is playing the "Drums"
+\endcode
+
+It's easy to enable property binding for the \c instrument property. 
+We add a \l{Qt's Property System}{NOTIFY} feature to its Q_PROPERTY() declaration to indicate that a "instrumentChanged" signal
+is emitted whenever the value changes.
+
+\snippet declarative/tutorials/extending/chapter3-bindings/musician.h 0
+\dots
+\snippet declarative/tutorials/extending/chapter3-bindings/musician.h 1
+\dots
+\snippet declarative/tutorials/extending/chapter3-bindings/musician.h 2
+\dots
+\snippet declarative/tutorials/extending/chapter3-bindings/musician.h 3
+
+Then, we emit this signal in \c setInstrument():
+
+\snippet declarative/tutorials/extending/chapter3-bindings/musician.cpp 0
+
+It's important for \c setInstrument() to check that the instrument value has actually changed
+before emitting \c instrumentChanged(). This ensures the signal is not emitted unnecessarily and
+also prevents loops when other elements respond to the value change.
+
+*/
+
+/*!
+\title Chapter 4: Using Custom Property Types
+
+\example declarative/tutorials/extending/chapter4-customPropertyTypes
+
+The \c Musician type currently has two properties that are both strings. 
+It could have all sorts of other properties. For example, we could add an
+integer-type property to store the age of each musician:
+
+\code
+    class Musician : public QObject
+    {
+        ...
+        Q_PROPERTY(int age READ age WRITE setAge)
+    public:
+        ...
+        int age() const;
+        void setAge(int age);
+        ...
+    };
+\endcode
+
+We can also use various other property types. QML has built-in support for the following
+types:
+
+\list
+\o bool
+\o unsigned int, int
+\o float, double, qreal
+\o QString
+\o QUrl
+\o QColor
+\o QDate, QTime, QDateTime
+\o QPoint, QPointF
+\o QSize, QSizeF
+\o QRect, QRectF
+\o QVariant
+\endlist
+
+If we want to create a property whose type is not supported by QML by default,
+we need to register the type with QML.
+
+For example, let's change the type of the \c instrument property from a string to a
+new type called "Instrument". Instead of assigning a string value to \c instrument,
+we assign an \c Instrument value:
+
+\quotefile declarative/tutorials/extending/chapter4-customPropertyTypes/app.qml
+
+Like \c Musician, this new \c Instrument type has to inherit from QObject and declare
+its properties with Q_PROPERTY():
+
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/instrument.h 0
+
+To use it from \c Musician, we modify the \c instrument property declaration
+and associated method signatures:
+
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/musician.h 0
+\dots
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/musician.h 1
+\dots
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/musician.h 2
+\dots
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/musician.h 3
+
+Like the \c Musician type, the \c Instrument type has to be registered
+using qmlRegisterType() to be used from QML. As with \c Musician, we'll add the
+type to the "Music" module, version 1.0:
+
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/main.cpp 0
+\dots
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/main.cpp 1
+\dots
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/main.cpp 2
+
+Try it out with the code in Qt's \c examples/tutorials/extending/chapter4-customPropertyTypes directory.
+
+*/
+
+/*!
+\title Chapter 5: Writing an Extension Plugin
+
+\example declarative/tutorials/extending/chapter5-plugins
+
+Currently the \c Musician and \c Instrument types are used by \c app.qml,
+which is displayed using a QDeclarativeView in a C++ application. An alternative
+way to use our QML extension is to create a plugin library to make it available
+to the QML engine. This means we could load \c app.qml using the standard \c qml tool
+(or some other QML runtime application) instead of writing a \c main.cpp file and
+loading our own C++ application.
+
+To create a plugin library, we need:
+
+\list
+\o A plugin class that registers our QML types
+\o A project file that describes the plugin 
+\o A "qmldir" file that tells the QML engine to load the plugin
+\endlist
+
+First, we create a plugin class named \c MusicPlugin. It subclasses QDeclarativeExtensionPlugin
+and registers our QML types in the inherited \l{QDeclarativeExtensionPlugin::}{registerTypes()} method. It also calls
+Q_EXPORT_PLUGIN2 for Qt's \l{How to Create Qt Plugins}{plugin system}.
+
+Here is the \c MusicPlugin definition in \c musicplugin.h:
+
+\snippet declarative/tutorials/extending/chapter5-plugins/musicplugin.h 0
+
+And its implementation in \c musicplugin.cpp:
+
+\snippet declarative/tutorials/extending/chapter5-plugins/musicplugin.cpp 0
+
+Then, we write a \c .pro project file that defines the project as a plugin library
+and specifies with DESTDIR that library files should be built into a "lib" subdirectory:
+
+\quotefile declarative/tutorials/extending/chapter5-plugins/chapter5-plugins.pro
+
+Finally, we add a \c qmldir file that is automatically parsed by the QML engine.
+Here, we specify that a plugin named "chapter5-plugin" (the name
+of the example project) can be found in the "lib" subdirectory:
+
+\quotefile declarative/tutorials/extending/chapter5-plugins/qmldir
+
+Now we have a plugin, and instead of having a main.cpp and an executable, we can build
+the project and then run the QML file directly using the \c qml tool:
+
+\code
+    qml app.qml
+\endcode
+
+Notice the "import Music 1.0" statement has disappeared from \c app.qml. This is
+because the \c qmldir file is in the same directory as \c app.qml: this is equivalent to
+having Musician.qml and Instrument.qml files inside the project directory, which could both
+be used by \c app.qml without import statements.
+*/
+
+/*!
+\page qml-extending-tutorial6.html
+\title Chapter 6: In Summary
+
+In this tutorial, we've shown the basic steps for creating a QML extension:
+
+\list
+\o Define new QML types by subclassing QObject and registering them with qmlRegisterType()
+\o Add callable methods using Q_INVOKABLE or Qt slots, and connect to Qt signals with an \c onSignal syntax
+\o Add property bindings by defining \l{Qt's Property System}{NOTIFY} signals
+\o Define custom property types if the built-in types are not sufficient
+\o Create a plugin library by defining a Qt plugin and writing a \c qmldir file
+\endlist
+
+
+The \l {Extending QML in C++} reference documentation shows other useful features that can be added to
+QML extensions. For example, we could use \l{Object and List Property Types}{list properties} to allow multiple instruments for a \c Musician:
+
+\code
+    Musician {
+        instruments: [
+            Instrument { type: "Guitar" }
+            Instrument { type: "Drums" }
+            Instrument { type: "Keyboard" }
+        ]
+    }
+\endcode
+
+Or use \l{Default Property}{default properties} and avoid an
+\c instruments property altogether:
+
+\code
+    Musician {
+        Instrument { type: "Guitar" }
+        Instrument { type: "Drums" }
+        Instrument { type: "Keyboard" }
+    }
+\endcode
+
+Or even change the \c instrument of a \c Musician from time to time using \l{Property Value Sources}{property value sources}:
+
+\code
+    Musician {
+        InstrumentRandomizer on instrument {}
+    }
+\endcode
+
+
+See the \l{Extending QML in C++}{reference documentation} for more information.
+
+Additionally, \l {Integrating QML with existing Qt UI code} shows how to create
+and integrate with QML extensions that have drawing and graphical capabilities (through QGraphicsWidget).
+
+*/
+

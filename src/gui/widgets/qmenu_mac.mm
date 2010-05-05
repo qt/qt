@@ -665,6 +665,7 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
         }
     }
 #else
+    bool modalWindowOnScreen = qApp->activeModalWidget() != 0;
     for (NSMenuItem *item in [menu itemArray]) {
         OSMenuRef submenu = [item submenu];
         if (submenu != merge) {
@@ -674,10 +675,20 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
                 // The item should follow what the QAction has.
                 if ([item tag]) {
                     QAction *action = reinterpret_cast<QAction *>([item tag]);
-                     syncNSMenuItemEnabled(item, action->isEnabled());
-                 } else {
-                     syncNSMenuItemEnabled(item, YES);
-                 }
+                    syncNSMenuItemEnabled(item, action->isEnabled());
+                } else {
+                    syncNSMenuItemEnabled(item, YES);
+                }
+                // We sneak in some extra code here to handle a menu problem:
+                // If there is no window on screen, we cannot set 'nil' as
+                // menu item target, because then cocoa will disable the item
+                // (guess it assumes that there will be no first responder to
+                // catch the trigger anyway?) OTOH, If we have a modal window,
+                // then setting the menu loader as target will make cocoa not
+                // deliver the trigger because the loader is then seen as modally
+                // shaddowed). So either way there are shortcomings. Instead, we
+                // decide the target as late as possible:
+                [item setTarget:modalWindowOnScreen ? nil : getMenuLoader()];
             } else {
                 syncNSMenuItemEnabled(item, NO);
             }
@@ -1820,7 +1831,7 @@ void QMenuBarPrivate::macDestroyMenuBar()
     menubars()->remove(tlw);
     mac_menubar = 0;
 
-    if (qt_mac_current_menubar.qmenubar == q) {
+    if (!qt_mac_current_menubar.qmenubar || qt_mac_current_menubar.qmenubar == q) {
 #ifdef QT_MAC_USE_COCOA
         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
         [loader removeActionsFromAppMenu];
@@ -2055,6 +2066,7 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
     cancelAllMenuTracking();
     QWidget *w = findWindowThatShouldDisplayMenubar();
     QMenuBar *mb = findMenubarForWindow(w);
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
 
     // We need to see if we are in full screen mode, if so we need to
     // switch the full screen mode to be able to show or hide the menubar.
@@ -2063,12 +2075,14 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
         if(w->isFullScreen()) {
             // Ok, switch to showing the menubar when hovering over it.
             SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
+            qt_mac_app_fullscreen = true;
         }
     } else if(w) {
         // Removing a menubar
         if(w->isFullScreen()) {
             // Ok, switch to not showing the menubar when hovering on it
             SetSystemUIMode(kUIModeAllHidden, 0);
+            qt_mac_app_fullscreen = true;
         }
     }
 

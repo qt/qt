@@ -81,6 +81,7 @@ tst_examples::tst_examples()
 
     // Add directories you want excluded here
     excludedDirs << "examples/declarative/extending";
+    excludedDirs << "examples/declarative/tutorials/extending";
     excludedDirs << "examples/declarative/plugins";
     excludedDirs << "examples/declarative/proxywidgets";
     excludedDirs << "examples/declarative/gestures";

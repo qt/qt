@@ -1,5 +1,0 @@
-
-These are the tests for QTestLib itself.
-
-Adding a new test for QTestlib is a complicated process. See change 282716
-for an example of what changes that has to be done.

@@ -1,7 +1,7 @@
-TARGET = gstengine
+TARGET = qgstengine
 include(../../qpluginbase.pri)
 
-QT += multimedia
+QT += mediaservices
 
 unix:contains(QT_CONFIG, alsa) {
     DEFINES += HAVE_ALSA
@@ -9,39 +9,48 @@ unix:contains(QT_CONFIG, alsa) {
 }
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_GSTREAMER
-LIBS += -lXv $$QT_LIBS_GSTREAMER -lgstinterfaces-0.10 -lgstvideo-0.10 -lgstbase-0.10 -lgstaudio-0.10
+LIBS += $$QT_LIBS_GSTREAMER -lgstinterfaces-0.10 -lgstvideo-0.10 -lgstbase-0.10 -lgstaudio-0.10
 
 # Input
 HEADERS += \
     qgstreamermessage.h \
     qgstreamerbushelper.h \
     qgstreamervideooutputcontrol.h \
-    qgstreamervideorendererinterface.h \
-    qgstreamervideowidget.h \
+    qgstreamervideorendererinterface.h \    
     qgstreamerserviceplugin.h \
     qgstreamervideoinputdevicecontrol.h \
-    qgstreamervideooverlay.h \
     qgstreamervideorenderer.h \
     qgstvideobuffer.h \
-    qvideosurfacegstsink.h \
-    qx11videosurface.h \
-    qgstxvimagebuffer.h
+    qvideosurfacegstsink.h
 
 
 SOURCES += \
     qgstreamermessage.cpp \
     qgstreamerbushelper.cpp \
     qgstreamervideooutputcontrol.cpp \
-    qgstreamervideorendererinterface.cpp \
-    qgstreamervideowidget.cpp \
+    qgstreamervideorendererinterface.cpp \    
     qgstreamerserviceplugin.cpp \
     qgstreamervideoinputdevicecontrol.cpp \
-    qgstreamervideooverlay.cpp \
     qgstreamervideorenderer.cpp \
     qgstvideobuffer.cpp \
-    qvideosurfacegstsink.cpp \
-    qx11videosurface.cpp \
-    qgstxvimagebuffer.cpp
+    qvideosurfacegstsink.cpp
+
+
+x11 {
+    LIBS += -lXv
+
+    HEADERS += \
+        qgstreamervideooverlay.h \
+        qgstreamervideowidget.h \
+        qx11videosurface.h \
+        qgstxvimagebuffer.h
+
+    SOURCES += \
+        qgstreamervideooverlay.cpp \
+        qgstreamervideowidget.cpp \
+        qx11videosurface.cpp \
+        qgstxvimagebuffer.cpp
+}
 
 include(mediaplayer/mediaplayer.pri)
 

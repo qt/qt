@@ -1999,7 +1999,7 @@ Qt for Embedded Linux
    * Made the SL5000, USB, VR41xx and Yopy drivers available as plugins.
 
  - Decoration drivers
-   * Made the Styled, Windows and Default decorations avaiable as plugins
+   * Made the Styled, Windows and Default decorations available as plugins
 
  - Demo applications
    * Added embeddedsvgviewer, styledemo & fluidlauncher applications to

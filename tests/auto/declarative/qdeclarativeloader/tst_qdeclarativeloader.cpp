@@ -138,7 +138,7 @@ void tst_QDeclarativeLoader::component()
 
 void tst_QDeclarativeLoader::invalidUrl()
 {
-    QTest::ignoreMessage(QtWarningMsg, QString("(:-1: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ") ").toUtf8().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString("<Unknown File>: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString()).toUtf8().constData());
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray("import Qt 4.7\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
@@ -190,6 +190,26 @@ void tst_QDeclarativeLoader::clear()
         QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
 
         loader->setSourceComponent(0);
+
+        QVERIFY(loader->item() == 0);
+        QCOMPARE(loader->progress(), 0.0);
+        QCOMPARE(loader->status(), QDeclarativeLoader::Null);
+        QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
+
+        delete item;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("/SetSourceComponent.qml"));
+        QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+        QVERIFY(item);
+
+        QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(item->QGraphicsObject::children().at(1)); 
+        QVERIFY(loader);
+        QVERIFY(loader->item());
+        QCOMPARE(loader->progress(), 1.0);
+        QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
+
+        QMetaObject::invokeMethod(item, "clear");
 
         QVERIFY(loader->item() == 0);
         QCOMPARE(loader->progress(), 0.0);
@@ -465,7 +485,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
-    QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14450/IDontExist.qml) ");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: Network error for URL http://127.0.0.1:14450/IDontExist.qml");
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray("import Qt 4.7\nLoader { source: \"http://127.0.0.1:14450/IDontExist.qml\" }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
@@ -505,7 +525,7 @@ void tst_QDeclarativeLoader::deleteComponentCrash()
 void tst_QDeclarativeLoader::nonItem()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("nonItem.qml"));
-    QString err = QString("QML Loader (") + QUrl::fromLocalFile(SRCDIR).toString() + QString("/data/nonItem.qml:3:1) Loader does not support loading non-visual elements.");
+    QString err = QUrl::fromLocalFile(SRCDIR).toString() + "/data/nonItem.qml:3:1: QML Loader: Loader does not support loading non-visual elements.";
 
     QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -518,9 +538,8 @@ void tst_QDeclarativeLoader::nonItem()
 void tst_QDeclarativeLoader::vmeErrors()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vmeErrors.qml"));
-    //ignore message for now
-    //QString err = QUrl::fromLocalFile(SRCDIR "/data/VmeError.qml:6: Cannot assign object type QObject with no default method\n        onSomethingHappened: QtObject {}) ");
-    //QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
+    QString err = QUrl::fromLocalFile(SRCDIR).toString() + "/data/VmeError.qml:6: Cannot assign object type QObject with no default method";
+    QTest::ignoreMessage(QtWarningMsg, err.toLatin1().constData());
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader);
     QVERIFY(loader->item() == 0);

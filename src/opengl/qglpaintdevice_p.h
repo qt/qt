@@ -81,6 +81,7 @@ public:
     static QGLPaintDevice* getDevice(QPaintDevice*);
 
 protected:
+    int metric(QPaintDevice::PaintDeviceMetric metric) const;
     GLuint m_previousFBO;
     GLuint m_thisFBO;
 };

@@ -1834,7 +1834,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     QSize size = sizeHint();
     QRect screen;
 #ifndef QT_NO_GRAPHICSVIEW
-    bool isEmbedded = d->nearestGraphicsProxyWidget(this);
+    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
     if (isEmbedded)
         screen = d->popupGeometry(this);
     else
@@ -2803,7 +2803,9 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
 
     QAction *action = d->actionAt(e->pos());
     if (!action) {
-        if (d->hasHadMouse)
+        if (d->hasHadMouse
+            && (!d->currentAction
+                || !(d->currentAction->menu() && d->currentAction->menu()->isVisible())))
             d->setCurrentAction(0);
         return;
     } else if(e->buttons()) {

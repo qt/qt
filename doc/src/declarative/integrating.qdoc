@@ -115,8 +115,7 @@ any custom C++ types and create a plugin that registers the custom types
 so that they can be used from your QML file.
 
 Here is an example. Suppose you have two classes, \c RedSquare and \c BlueCircle,
-that both inherit from QGraphicsWidget. First, you need to register these two types
-using the \c QML_DECLARE_TYPE macro from \c <QtDeclarative/qdeclarative.h>, like this:
+that both inherit from QGraphicsWidget:
 
 \c [graphicswidgets/redsquare.h]
 \snippet doc/src/declarative/snippets/integrating/graphicswidgets/redsquare.h 0
@@ -153,8 +152,8 @@ Here is a screenshot of the result:
 \image declarative-integrating-graphicswidgets.png 
 
 
-Note this approach of creating your graphics widgets from QML does not work 
-with QGraphicsItem objects that are not QGraphicsWidget-based, since they are not QObjects.
+Note this approach of creating your graphics objects from QML does not work
+with QGraphicsItems that are not QGraphicsObject-based, since they are not QObjects.
 
 See \l{Extending QML in C++} for further information on using C++ types.
 

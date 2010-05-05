@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 DynamicPropertiesNestedType {
     property int a: 13

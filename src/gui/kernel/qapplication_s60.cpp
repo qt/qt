@@ -73,6 +73,7 @@
 # endif
 # include <private/qs60mainapplication_p.h>
 # include <centralrepository.h>
+# include "qs60mainappui.h"
 #endif
 
 #include "private/qstylesheetstyle_p.h"
@@ -439,7 +440,7 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
                 state |= Qt::TouchPointPrimary;
             touchPoint.setState(state);
 
-            QPointF screenPos = QPointF(event->iPosition.iX, event->iPosition.iY);
+            QPointF screenPos = qwidget->mapToGlobal(QPoint(event->iPosition.iX, event->iPosition.iY));
             touchPoint.setScreenPos(screenPos);
             touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
                                                 screenPos.y() / screenGeometry.height()));
@@ -538,6 +539,14 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 
     sendMouseEvent(receiver, type, globalPos, button, modifiers);
 }
+
+#ifdef Q_WS_S60
+void QSymbianControl::HandleStatusPaneSizeChange()
+{
+    QS60MainAppUi *s60AppUi = static_cast<QS60MainAppUi *>(S60->appUi());
+    s60AppUi->HandleStatusPaneSizeChange();
+}
+#endif
 
 void QSymbianControl::sendMouseEvent(
         QWidget *receiver,
@@ -982,15 +991,6 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             const TBool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
             const TBool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
             buttonGroup->MakeVisible(visible || (isFullscreen && cbaVisibilityHint));
-
-            // Responsiviness
-            CEikCba *cba = static_cast<CEikCba *>( buttonGroup->ButtonGroup() ); // downcast from MEikButtonGroup
-            TUint cbaFlags = cba->ButtonGroupFlags();
-            if(qwidget->windowFlags() & Qt::WindowSoftkeysRespondHint)
-                cbaFlags |= EAknCBAFlagRespondWhenInvisible;
-            else
-                cbaFlags &= ~EAknCBAFlagRespondWhenInvisible;
-            cba->SetButtonGroupFlags(cbaFlags);
         }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {

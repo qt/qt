@@ -206,8 +206,16 @@ The default role names set by Qt are:
 \endtable
 
 QAbstractItemModel presents a heirachy of tables.  Views currently provided by QML
-can only display list data.  In order to display child lists of a heirachical model
-use the VisualDataModel element with \e rootIndex set to a parent node.
+can only display list data.  
+In order to display child lists of a heirachical model
+the VisualDataModel element provides several properties and functions for use
+with models of type QAbstractItemModel:
+\list
+\o \e hasModelChildren role property to determine whether a node has child nodes.
+\o \l VisualDataModel::rootIndex allows the root node to be specifed
+\o \l VisualDataModel::modelIndex() returns a QModelIndex which can be assigned to VisualDataModel::rootIndex
+\o \l VisualDataModel::parentModelIndex() returns a QModelIndex which can be assigned to VisualDataModel::rootIndex
+\endlist
 
 
 \section2 QStringList
@@ -225,7 +233,7 @@ dataList.append("Ginger");
 dataList.append("Skipper");
 
 QDeclarativeContext *ctxt = view.rootContext();
-ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));
+ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 \endcode
 
 \o

@@ -80,8 +80,11 @@ void IconButton::paintEvent(QPaintEvent *)
     QPainter painter(this);
     // Note isDown should really use the active state but in most styles
     // this has no proper feedback
-    QPixmap iconpixmap = icon().pixmap(ICONBUTTON_SIZE, ICONBUTTON_SIZE, isDown() ?
-                                       QIcon::Selected : QIcon::Normal);
+    QIcon::Mode state = QIcon::Disabled;
+    if (isEnabled())
+        state = isDown() ? QIcon::Selected : QIcon::Normal;
+    QPixmap iconpixmap = icon().pixmap(QSize(ICONBUTTON_SIZE, ICONBUTTON_SIZE),
+                                       state, QIcon::Off);
     QRect pixmapRect = QRect(0, 0, iconpixmap.width(), iconpixmap.height());
     pixmapRect.moveCenter(rect().center());
     painter.setOpacity(m_fader);
@@ -204,9 +207,11 @@ QString FilterWidget::text() const
     return m_editor->text();
 }
 
-void FilterWidget::checkButton(const QString &)
+void FilterWidget::checkButton(const QString &text)
 {
-    m_button->animateShow(!m_editor->text().isEmpty());
+    if (m_oldText.isEmpty() || text.isEmpty())
+        m_button->animateShow(!m_editor->text().isEmpty());
+    m_oldText = text;
 }
 
 void FilterWidget::reset()

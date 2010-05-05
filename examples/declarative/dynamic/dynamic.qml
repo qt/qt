@@ -7,6 +7,34 @@ Item {
     //This is a desktop-sized example
     width: 1024; height: 512
     property int activeSuns: 0
+    
+    //This is the message that pops up when there's an error
+    Rectangle{
+        id: dialog
+        opacity: 0
+        anchors.centerIn: parent
+        width: dialogText.width + 6
+        height: dialogText.height + 6
+        border.color: 'black'
+        color: 'lightsteelblue'
+        z: 65535 //Arbitrary number chosen to be above all the items, including the scaled perspective ones.
+        function show(str){
+            dialogText.text = str;
+            dialogAnim.start();
+        }
+        Text{
+            id: dialogText
+            x:3
+            y:3
+            font.pixelSize: 14
+        }
+        SequentialAnimation{
+            id: dialogAnim
+            NumberAnimation{target: dialog; property:"opacity"; to: 1; duration: 1000}
+            PauseAnimation{duration: 5000}
+            NumberAnimation{target: dialog; property:"opacity"; to: 0; duration: 1000}
+        }
+    }
 
     // sky
     Rectangle { id: sky
@@ -114,7 +142,14 @@ Item {
             }
             Button {
                 text: "Create"
-                onClicked: createQmlObject(qmlText.text, window, 'CustomObject');
+                function makeCustom() {
+                    try{ 
+                        Qt.createQmlObject(qmlText.text, window, 'CustomObject');
+                    }catch(err){
+                        dialog.show('Error on line ' + err.qmlErrors[0].lineNumber + '\n' + err.qmlErrors[0].message );
+                    }
+                }
+                onClicked: makeCustom();
             }
         }
     }

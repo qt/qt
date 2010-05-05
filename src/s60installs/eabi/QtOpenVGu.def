@@ -199,4 +199,6 @@ EXPORTS
 	_ZN14QVGPaintEngine16drawCachedGlyphsEiPKjRK5QFontP11QFontEngineRK7QPointF @ 198 NONAME
 	_ZN14QVGPaintEngine18drawStaticTextItemEP15QStaticTextItem @ 199 NONAME
 	_ZN14QVGPaintEngine19drawPixmapFragmentsEPKN8QPainter14PixmapFragmentEiRK7QPixmap6QFlagsINS0_18PixmapFragmentHintEE @ 200 NONAME
+	_ZN25QVGEGLWindowSurfaceDirect6scrollEP7QWidgetRK7QRegionii @ 201 NONAME
+	_ZNK25QVGEGLWindowSurfaceDirect22supportsStaticContentsEv @ 202 NONAME
 

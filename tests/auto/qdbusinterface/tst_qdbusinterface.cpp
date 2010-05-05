@@ -157,6 +157,18 @@ public slots:
     }
 };
 
+class DerivedFromQDBusInterface: public QDBusInterface
+{
+    Q_OBJECT
+public:
+    DerivedFromQDBusInterface()
+        : QDBusInterface("com.example.Test", "/")
+    {}
+
+public slots:
+    void method() {}
+};
+
 // helper function
 void emitSignal(const QString &interface, const QString &name, const QString &arg)
 {
@@ -183,6 +195,7 @@ private slots:
 
     void notConnected();
     void notValid();
+    void notValidDerived();
     void invalidAfterServiceOwnerChanged();
     void introspect();
     void callMethod();
@@ -219,6 +232,7 @@ void tst_QDBusInterface::notConnected()
                              connection);
 
     QVERIFY(!interface.isValid());
+    QVERIFY(!QMetaObject::invokeMethod(&interface, "ListNames", Qt::DirectConnection));
 }
 
 void tst_QDBusInterface::notValid()
@@ -230,6 +244,14 @@ void tst_QDBusInterface::notValid()
                              connection);
 
     QVERIFY(!interface.isValid());
+    QVERIFY(!QMetaObject::invokeMethod(&interface, "ListNames", Qt::DirectConnection));
+}
+
+void tst_QDBusInterface::notValidDerived()
+{
+    DerivedFromQDBusInterface c;
+    QVERIFY(!c.isValid());
+    QMetaObject::invokeMethod(&c, "method", Qt::DirectConnection);
 }
 
 void tst_QDBusInterface::invalidAfterServiceOwnerChanged()

@@ -41,19 +41,19 @@
 
 #include <QtTest/QtTest>
 
-#include <QtMultimedia/qgraphicsvideoitem.h>
+#include <QtMediaServices/qgraphicsvideoitem.h>
 
 #include <QtGui/qapplication.h>
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qgraphicsview.h>
 #include <QtMultimedia/qabstractvideosurface.h>
-#include <QtMultimedia/qmediaobject.h>
-#include <QtMultimedia/qmediaservice.h>
-#include <QtMultimedia/qvideooutputcontrol.h>
-#include <QtMultimedia/qvideorenderercontrol.h>
+#include <QtMediaServices/qmediaobject.h>
+#include <QtMediaServices/qmediaservice.h>
+#include <QtMediaServices/qvideooutputcontrol.h>
+#include <QtMediaServices/qvideorenderercontrol.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
 
-#include <QtMultimedia/private/qpaintervideosurface_p.h>
+#include <QtMediaServices/private/qpaintervideosurface_p.h>
 
 class tst_QGraphicsVideoItem : public QObject
 {

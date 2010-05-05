@@ -68,56 +68,60 @@
 #include "private/qdeclarativetransitionmanager_p_p.h"
 #include "private/qdeclarativetransition_p.h"
 #include "qdeclarativeview.h"
+#include "qdeclarativeinfo.h"
+#include "private/qdeclarativetypenotavailable_p.h"
 #ifndef QT_NO_XMLPATTERNS
 #include "private/qdeclarativexmllistmodel_p.h"
 #endif
 
 void QDeclarativeUtilModule::defineModule()
 {
-    qmlRegisterType<QDeclarativeAnchorAnimation>("Qt",4,6,"AnchorAnimation");
-    qmlRegisterType<QDeclarativeAnchorChanges>("Qt",4,6,"AnchorChanges");
-    qmlRegisterType<QDeclarativeBehavior>("Qt",4,6,"Behavior");
-    qmlRegisterType<QDeclarativeBind>("Qt",4,6,"Binding");
-    qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,6,"ColorAnimation");
-    qmlRegisterType<QDeclarativeConnections>("Qt",4,6,"Connections");
-    qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,6,"SmoothedAnimation");
-    qmlRegisterType<QDeclarativeSmoothedFollow>("Qt",4,6,"SmoothedFollow");
-    qmlRegisterType<QDeclarativeFontLoader>("Qt",4,6,"FontLoader");
-    qmlRegisterType<QDeclarativeListElement>("Qt",4,6,"ListElement");
-    qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,6,"NumberAnimation");
-    qmlRegisterType<QDeclarativePackage>("Qt",4,6,"Package");
-    qmlRegisterType<QDeclarativeParallelAnimation>("Qt",4,6,"ParallelAnimation");
-    qmlRegisterType<QDeclarativeParentAnimation>("Qt",4,6,"ParentAnimation");
-    qmlRegisterType<QDeclarativeParentChange>("Qt",4,6,"ParentChange");
-    qmlRegisterType<QDeclarativePauseAnimation>("Qt",4,6,"PauseAnimation");
-    qmlRegisterType<QDeclarativePropertyAction>("Qt",4,6,"PropertyAction");
-    qmlRegisterType<QDeclarativePropertyAnimation>("Qt",4,6,"PropertyAnimation");
-    qmlRegisterType<QDeclarativeRotationAnimation>("Qt",4,6,"RotationAnimation");
-    qmlRegisterType<QDeclarativeScriptAction>("Qt",4,6,"ScriptAction");
-    qmlRegisterType<QDeclarativeSequentialAnimation>("Qt",4,6,"SequentialAnimation");
-    qmlRegisterType<QDeclarativeSpringFollow>("Qt",4,6,"SpringFollow");
-    qmlRegisterType<QDeclarativeStateChangeScript>("Qt",4,6,"StateChangeScript");
-    qmlRegisterType<QDeclarativeStateGroup>("Qt",4,6,"StateGroup");
-    qmlRegisterType<QDeclarativeState>("Qt",4,6,"State");
-    qmlRegisterType<QDeclarativeSystemPalette>("Qt",4,6,"SystemPalette");
-    qmlRegisterType<QDeclarativeTimer>("Qt",4,6,"Timer");
-    qmlRegisterType<QDeclarativeTransition>("Qt",4,6,"Transition");
-    qmlRegisterType<QDeclarativeVector3dAnimation>("Qt",4,6,"Vector3dAnimation");
-#ifndef QT_NO_XMLPATTERNS
-    qmlRegisterType<QDeclarativeXmlListModel>("Qt",4,6,"XmlListModel");
-    qmlRegisterType<QDeclarativeXmlListModelRole>("Qt",4,6,"XmlRole");
+    qmlRegisterType<QDeclarativeAnchorAnimation>("Qt",4,7,"AnchorAnimation");
+    qmlRegisterType<QDeclarativeAnchorChanges>("Qt",4,7,"AnchorChanges");
+    qmlRegisterType<QDeclarativeBehavior>("Qt",4,7,"Behavior");
+    qmlRegisterType<QDeclarativeBind>("Qt",4,7,"Binding");
+    qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,7,"ColorAnimation");
+    qmlRegisterType<QDeclarativeConnections>("Qt",4,7,"Connections");
+    qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,7,"SmoothedAnimation");
+    qmlRegisterType<QDeclarativeSmoothedFollow>("Qt",4,7,"SmoothedFollow");
+    qmlRegisterType<QDeclarativeFontLoader>("Qt",4,7,"FontLoader");
+    qmlRegisterType<QDeclarativeListElement>("Qt",4,7,"ListElement");
+    qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,7,"NumberAnimation");
+    qmlRegisterType<QDeclarativePackage>("Qt",4,7,"Package");
+    qmlRegisterType<QDeclarativeParallelAnimation>("Qt",4,7,"ParallelAnimation");
+    qmlRegisterType<QDeclarativeParentAnimation>("Qt",4,7,"ParentAnimation");
+    qmlRegisterType<QDeclarativeParentChange>("Qt",4,7,"ParentChange");
+    qmlRegisterType<QDeclarativePauseAnimation>("Qt",4,7,"PauseAnimation");
+    qmlRegisterType<QDeclarativePropertyAction>("Qt",4,7,"PropertyAction");
+    qmlRegisterType<QDeclarativePropertyAnimation>("Qt",4,7,"PropertyAnimation");
+    qmlRegisterType<QDeclarativeRotationAnimation>("Qt",4,7,"RotationAnimation");
+    qmlRegisterType<QDeclarativeScriptAction>("Qt",4,7,"ScriptAction");
+    qmlRegisterType<QDeclarativeSequentialAnimation>("Qt",4,7,"SequentialAnimation");
+    qmlRegisterType<QDeclarativeSpringFollow>("Qt",4,7,"SpringFollow");
+    qmlRegisterType<QDeclarativeStateChangeScript>("Qt",4,7,"StateChangeScript");
+    qmlRegisterType<QDeclarativeStateGroup>("Qt",4,7,"StateGroup");
+    qmlRegisterType<QDeclarativeState>("Qt",4,7,"State");
+    qmlRegisterType<QDeclarativeSystemPalette>("Qt",4,7,"SystemPalette");
+    qmlRegisterType<QDeclarativeTimer>("Qt",4,7,"Timer");
+    qmlRegisterType<QDeclarativeTransition>("Qt",4,7,"Transition");
+    qmlRegisterType<QDeclarativeVector3dAnimation>("Qt",4,7,"Vector3dAnimation");
+#ifdef QT_NO_XMLPATTERNS
+    qmlRegisterTypeNotAvailable("Qt",4,7,"XmlListModel",
+        qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
+    qmlRegisterTypeNotAvailable("Qt",4,7,"XmlRole",
+        qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
+#else
+    qmlRegisterType<QDeclarativeXmlListModel>("Qt",4,7,"XmlListModel");
+    qmlRegisterType<QDeclarativeXmlListModelRole>("Qt",4,7,"XmlRole");
 #endif
 
     qmlRegisterType<QDeclarativeAnchors>();
     qmlRegisterType<QDeclarativeStateOperation>();
     qmlRegisterType<QDeclarativeAnchorSet>();
 
-    qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,6,"Animation");
+    qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,7,"Animation",QDeclarativeAbstractAnimation::tr("Animation is an abstract class"));
 
-    qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,6, "ListModel", "QDeclarativeListModel",
-                                                 new QDeclarativeListModelParser);
-    qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 6, "PropertyChanges", "QDeclarativePropertyChanges",
-                                                       new QDeclarativePropertyChangesParser);
-    qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 6, "Connections", "QDeclarativeConnections",
-                                                   new QDeclarativeConnectionsParser);
+    qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,7, "ListModel", new QDeclarativeListModelParser);
+    qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 7, "PropertyChanges", new QDeclarativePropertyChangesParser);
+    qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 7, "Connections", new QDeclarativeConnectionsParser);
 }

@@ -15,9 +15,6 @@ ListView {
     WorkerScript {
         id: worker
         source: "dataloader.js"
-        onMessage: {
-            console.log("Worker said", messageObject.msg);
-        }
     }
 
     Timer {

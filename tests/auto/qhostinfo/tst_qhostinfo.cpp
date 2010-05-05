@@ -128,6 +128,7 @@ private slots:
     void threadSafety();
 
     void multipleSameLookups();
+    void multipleDifferentLookups_data();
     void multipleDifferentLookups();
 
     void cache();
@@ -441,36 +442,46 @@ void tst_QHostInfo::multipleSameLookups()
     for (int i = 0; i < COUNT; i++)
         QHostInfo::lookupHost("localhost", this, SLOT(resultsReady(const QHostInfo)));
 
-    QTRY_VERIFY(lookupsDoneCounter == COUNT);
-
-    // spin two seconds more to see if it is not more :)
-    QTestEventLoop::instance().enterLoop(2);
-    QTRY_VERIFY(lookupsDoneCounter == COUNT);
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < 10000 && lookupsDoneCounter < COUNT) {
+        QTestEventLoop::instance().enterLoop(2);
+    }
+    QCOMPARE(lookupsDoneCounter, COUNT);
 }
 
 // this test is for the multi-threaded QHostInfo rewrite. It is about getting results at all,
 // not about getting correct IPs
+void tst_QHostInfo::multipleDifferentLookups_data()
+{
+    QTest::addColumn<int>("repeats");
+    QTest::newRow("1") << 1;
+    QTest::newRow("2") << 2;
+    QTest::newRow("5") << 5;
+    QTest::newRow("10") << 10;
+}
+
 void tst_QHostInfo::multipleDifferentLookups()
 {
     QStringList hostnameList;
     hostnameList << "www.ovi.com" << "www.nokia.com" << "qt.nokia.com" << "www.trolltech.com" << "troll.no"
-            << "www.qtcentre.org" << "forum.nokia.com" << "www.forum.nokia.com" << "wiki.forum.nokia.com"
-            << "www.nokia.no" << "nokia.de" << "127.0.0.1" << "----";
+            << "www.qtcentre.org" << "forum.nokia.com" << "www.nokia.com" << "wiki.forum.nokia.com"
+            << "www.nokia.com" << "nokia.de" << "127.0.0.1" << "----";
 
+    QFETCH(int, repeats);
     const int COUNT = hostnameList.size();
     lookupsDoneCounter = 0;
 
     for (int i = 0; i < hostnameList.size(); i++)
-        QHostInfo::lookupHost(hostnameList.at(i), this, SLOT(resultsReady(const QHostInfo)));
+        for (int j = 0; j < repeats; ++j)
+            QHostInfo::lookupHost(hostnameList.at(i), this, SLOT(resultsReady(const QHostInfo)));
 
-    // give some time
-    QTestEventLoop::instance().enterLoop(5);
-    // try_verify gives some more time
-    QTRY_VERIFY(lookupsDoneCounter == COUNT);
-
-    // spin two seconds more to see if it is not more than expected
-    QTestEventLoop::instance().enterLoop(2);
-    QTRY_VERIFY(lookupsDoneCounter == COUNT);
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < 10000 && lookupsDoneCounter < repeats*COUNT) {
+        QTestEventLoop::instance().enterLoop(2);
+    }
+    QCOMPARE(lookupsDoneCounter, repeats*COUNT);
 }
 
 void tst_QHostInfo::cache()
@@ -517,7 +528,7 @@ void tst_QHostInfo::resultsReady(const QHostInfo &hi)
     lookupDone = true;
     lookupResults = hi;
     lookupsDoneCounter++;
-    QTestEventLoop::instance().exitLoop();
+    QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
 }
 
 QTEST_MAIN(tst_QHostInfo)

@@ -142,8 +142,8 @@ Commenting in QML is similar to JavaScript.
 
 \quotefile doc/src/snippets/declarative/comments.qml
 
-Comments are ignored by the engine. The are useful for explaining what you
-are doing: for referring back to at a later date, or for others reading
+Comments are ignored by the engine. They are useful for explaining what you
+are doing; for referring back to at a later date, or for others reading
 your QML files.
 
 Comments can also be used to prevent the execution of code, which is

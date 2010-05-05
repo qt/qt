@@ -296,27 +296,12 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
         if (lastTypeDot >= 0)
             resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
 
-        bool isScript = resolvableObjectType == QLatin1String("Script");
-
-        if (isScript) {
-            if (_stateStack.isEmpty() || _stateStack.top().property) {
-                QDeclarativeError error;
-                error.setDescription(QCoreApplication::translate("QDeclarativeParser","Invalid use of Script block"));
-                error.setLine(typeLocation.startLine);
-                error.setColumn(typeLocation.startColumn);
-                _parser->_errors << error;
-                return 0;
-            }
-        }
-
         Object *obj = new Object;
 
-        if (!isScript) {
-            QDeclarativeScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
-            obj->type = typeRef->id;
+        QDeclarativeScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
+        obj->type = typeRef->id;
 
-            typeRef->refObjects.append(obj);
-        }
+        typeRef->refObjects.append(obj);
 
         // XXX this doesn't do anything (_scope never builds up)
         _scope.append(resolvableObjectType);
@@ -325,11 +310,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
 
         obj->location = location;
 
-        if (isScript) {
-
-            _stateStack.top().object->scriptBlockObjects.append(obj);
-
-        } else if (propertyCount) {
+        if (propertyCount) {
 
             Property *prop = currentProperty();
             Value *v = new Value;
@@ -468,6 +449,14 @@ bool ProcessAST::visit(AST::UiImport *node)
             _parser->_errors << error;
             return false;
         }
+        if (import.qualifier == QLatin1String("Qt")) {
+            QDeclarativeError error;
+            error.setDescription(QCoreApplication::translate("QDeclarativeParser","Reserved name \"Qt\" cannot be used as an qualifier"));
+            error.setLine(node->importIdToken.startLine);
+            error.setColumn(node->importIdToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
 
         // Check for script qualifier clashes
         bool isScript = import.type == QDeclarativeScriptParser::Import::Script;
@@ -535,7 +524,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         // { "time", Object::DynamicProperty::Time, "QTime" },
         // { "date", Object::DynamicProperty::Date, "QDate" },
         { "date", Object::DynamicProperty::DateTime, "QDateTime" },
-        { "var", Object::DynamicProperty::Variant, "QVariant" },
         { "variant", Object::DynamicProperty::Variant, "QVariant" }
     };
     const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
@@ -646,11 +634,6 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
-
-        if (memberType == QLatin1String("var")) 
-            qWarning().nospace() << qPrintable(_parser->_scriptFile) << ":" << property.location.start.line << ":" 
-                                 << property.location.start.column << ": var type has been replaced by variant.  "
-                                 << "Support will be removed entirely shortly.";
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
@@ -827,62 +810,29 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 {
     QDeclarativeParser::Object *obj = currentObject();
 
-    bool isScript = (obj && obj->typeName == "Script");
+    if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
 
-    if (!isScript) {
+        Object::DynamicSlot slot;
+        slot.location = location(funDecl->firstSourceLocation(), funDecl->lastSourceLocation());
 
-        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
-
-            Object::DynamicSlot slot;
-            slot.location = location(funDecl->firstSourceLocation(), funDecl->lastSourceLocation());
-
-            AST::FormalParameterList *f = funDecl->formals;
-            while (f) {
-                slot.parameterNames << f->name->asString().toUtf8();
-                f = f->finish();
-            }
-
-            QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
-            slot.name = funDecl->name->asString().toUtf8();
-            slot.body = body;
-            obj->dynamicSlots << slot;
-
-        } else {
-            QDeclarativeError error;
-            error.setDescription(QCoreApplication::translate("QDeclarativeParser","JavaScript declaration outside Script element"));
-            error.setLine(node->firstSourceLocation().startLine);
-            error.setColumn(node->firstSourceLocation().startColumn);
-            _parser->_errors << error;
+        AST::FormalParameterList *f = funDecl->formals;
+        while (f) {
+            slot.parameterNames << f->name->asString().toUtf8();
+            f = f->finish();
         }
-        return false;
+
+        QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
+        slot.name = funDecl->name->asString().toUtf8();
+        slot.body = body;
+        obj->dynamicSlots << slot;
 
     } else {
-        QString source;
-
-        int line = 0;
-        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
-            line = funDecl->functionToken.startLine;
-            source = asString(funDecl);
-        } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
-            // ignore variable declarations
-            line = varStmt->declarationKindToken.startLine;
-
-            QDeclarativeError error;
-            error.setDescription(QCoreApplication::translate("QDeclarativeParser", "Variable declarations not allow in inline Script blocks"));
-            error.setLine(node->firstSourceLocation().startLine);
-            error.setColumn(node->firstSourceLocation().startColumn);
-            _parser->_errors << error;
-            return false;
-        }
-
-        Value *value = new Value;
-        value->location = location(node->firstSourceLocation(),
-                                   node->lastSourceLocation());
-        value->value = QDeclarativeParser::Variant(source);
-
-        obj->getDefaultProperty()->addValue(value);
+        QDeclarativeError error;
+        error.setDescription(QCoreApplication::translate("QDeclarativeParser","JavaScript declaration outside Script element"));
+        error.setLine(node->firstSourceLocation().startLine);
+        error.setColumn(node->firstSourceLocation().startColumn);
+        _parser->_errors << error;
     }
-
     return false;
 }
 

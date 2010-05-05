@@ -19,7 +19,8 @@ VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/src/corelib/plugin \
          $$QT_SOURCE_TREE/src/corelib/xml \
          $$QT_SOURCE_TREE/src/corelib/io
-INCPATH += generators \
+INCLUDEPATH += . \
+           generators \
            generators/unix \
            generators/win32 \
            generators/mac \
@@ -29,7 +30,7 @@ INCPATH += generators \
            $$QT_SOURCE_TREE/qmake
 
 VPATH += $$QT_SOURCE_TREE/tools/shared
-INCPATH += $$QT_SOURCE_TREE/tools/shared
+INCLUDEPATH += $$QT_SOURCE_TREE/tools/shared
 
 include(qmake.pri)
 

@@ -66,13 +66,13 @@ control QML elements.
 Tutorial chapters:
 
 \list 1
-\o \l {QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks}{Creating the Game Canvas and Blocks}
-\o \l {QML Advanced Tutorial 2 - Populating the Game Canvas}{Populating the Game Canvas}}
-\o \l {QML Advanced Tutorial 3 - Implementing the Game Logic}{Implementing the Game Logic}
-\o \l {QML Advanced Tutorial 4 - Finishing Touches}{Finishing Touches}
+\o \l {declarative/tutorials/samegame/samegame1}{Creating the Game Canvas and Blocks}
+\o \l {declarative/tutorials/samegame/samegame2}{Populating the Game Canvas}
+\o \l {declarative/tutorials/samegame/samegame3}{Implementing the Game Logic}
+\o \l {declarative/tutorials/samegame/samegame4}{Finishing Touches}
 \endlist
 
-All the code in this tutorial can be found in the $QTDIR/examples/declarative/tutorials/samegame
+All the code in this tutorial can be found in Qt's \c examples/declarative/tutorials/samegame
 directory.
 */
 
@@ -83,11 +83,7 @@ directory.
 \previouspage QML Advanced Tutorial
 \nextpage QML Advanced Tutorial 2 - Populating the Game Canvas
 
-In this chapter:
-
-\tableofcontents
-
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame1.
+\example declarative/tutorials/samegame/samegame1
 
 \section2 Creating the application screen
 
@@ -109,7 +105,7 @@ is the \l SystemPalette item. This provides access to the Qt system palette
 and is used to give the button a more native look-and-feel.
 
 Notice the anchors for the \c Item, \c Button and \c Text elements are set using
-\l {Grouped Properties}{group notation} for readability.
+\l {codingconventions.html#Grouped-properties}{group notation} for readability.
 
 \section2 Adding \c Button and \c Block components
 
@@ -152,12 +148,7 @@ elements to get started. Next, we will populate the game canvas with some blocks
 \previouspage QML Advanced Tutorial 1 - Creating the Game Canvas and Blocks
 \nextpage QML Advanced Tutorial 3 - Implementing the Game Logic
 
-In this chapter:
-
-\tableofcontents
-
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame2.
-
+\example declarative/tutorials/samegame/samegame2
 
 \section2 Generating the blocks in JavaScript
 
@@ -224,11 +215,7 @@ Now, we have a screen of blocks, and we can begin to add the game mechanics.
 \previouspage QML Advanced Tutorial 2 - Populating the Game Canvas
 \nextpage QML Advanced Tutorial 4 - Finishing Touches
 
-In this chapter:
-
-\tableofcontents
-
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame3.
+\example declarative/tutorials/samegame/samegame3
 
 \section2 Making a playable game
 
@@ -313,11 +300,7 @@ until the next chapter - where your application becomes alive!
 \contentspage QML Advanced Tutorial
 \previouspage QML Advanced Tutorial 3 - Implementing the Game Logic
 
-In this chapter:
-
-\tableofcontents
-
-The files referenced on this page can be found in \c $QTDIR\examples\tutorials\samegame\samegame4.
+\example declarative/tutorials/samegame/samegame4
 
 \section2 Adding some flair
 
@@ -432,7 +415,7 @@ If the player enters a name, we send the data to the service using this code in 
 
 \snippet declarative/tutorials/samegame/samegame4/content/samegame.js 1
 
-The \c XMLHttpRequest in this code is the same \c XMLHttpRequest() as you'll find in standard browser JavaScript, and can be used in the same way to dynamically get XML
+The \l XMLHttpRequest in this code is the same as the \c XMLHttpRequest() as you'll find in standard browser JavaScript, and can be used in the same way to dynamically get XML
 or QML from the web service to display the high scores. We don't worry about the response in this case - we just post the high
 score data to the web server. If it had returned a QML file (or a URL to a QML file) you could instantiate it in much the same
 way as you did with the blocks.

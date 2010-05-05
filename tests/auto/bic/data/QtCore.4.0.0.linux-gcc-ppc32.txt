@@ -59,37 +59,10 @@ Class QBool
    base size=1 base align=1
 QBool (0x304f6620) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class QFlag
    size=4 align=4
    base size=4 base align=4
 QFlag (0x305301c0) 0
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QInternal
    size=1 align=1
@@ -107,7 +80,6 @@ Class QGenericReturnArgument
 QGenericReturnArgument (0x30187b80) 0
   QGenericArgument (0x30530cb0) 0
 
-
 Class QMetaObject
    size=16 align=4
    base size=16 base align=4
@@ -122,7 +94,6 @@ Class QChar
    size=2 align=2
    base size=2 base align=2
 QChar (0x30530f50) 0
-
 
 Class QBasicAtomic
    size=4 align=4
@@ -155,18 +126,10 @@ Class QByteRef
    base size=8 base align=4
 QByteRef (0x31457b98) 0
 
-
-
-
 Class wait
    size=4 align=4
    base size=4 base align=4
 wait (0x315381f8) 0
-
-
-
-
-
 
 Class timespec
    size=8 align=4
@@ -178,19 +141,6 @@ Class timeval
    base size=8 base align=4
 timeval (0x31538578) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class random_data
    size=28 align=4
    base size=28 base align=4
@@ -200,10 +150,6 @@ Class drand48_data
    size=24 align=8
    base size=24 base align=8
 drand48_data (0x31538b98) 0
-
-
-
-
 
 Class __gconv_trans_data
    size=20 align=4
@@ -225,8 +171,6 @@ Class __gconv_info
    base size=8 base align=4
 __gconv_info (0x31538ea8) 0
 
-
-
 Class _IO_marker
    size=12 align=4
    base size=12 base align=4
@@ -236,7 +180,6 @@ Class _IO_FILE
    size=152 align=8
    base size=152 base align=8
 _IO_FILE (0x3157f000) 0
-
 
 Class lconv
    size=56 align=4
@@ -253,7 +196,6 @@ Class __sched_param
    base size=4 base align=4
 __sched_param (0x3157f188) 0
 
-
 Class tm
    size=44 align=4
    base size=44 base align=4
@@ -268,8 +210,6 @@ Class _pthread_cleanup_buffer
    size=16 align=4
    base size=16 base align=4
 _pthread_cleanup_buffer (0x3157f428) 0
-
-
 
 Class __pthread_cleanup_frame
    size=16 align=4
@@ -295,24 +235,6 @@ Class __false_type
    size=1 align=1
    base size=0 base align=1
 __false_type (0x316453f0) 0 empty
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class std::input_iterator_tag
    size=1 align=1
@@ -345,20 +267,6 @@ std::random_access_iterator_tag (0x30187ec0) 0 empty
     std::forward_iterator_tag (0x30187f40) 0 empty
       std::input_iterator_tag (0x3165db60) 0 empty
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class __gnu_cxx::__pool_base::_Tune
    size=28 align=4
    base size=25 base align=4
@@ -374,51 +282,10 @@ Class __gnu_cxx::__pool_base
    base size=33 base align=4
 __gnu_cxx::__pool_base (0x316f73f0) 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Class std::__numeric_limits_base
    size=1 align=1
    base size=0 base align=1
 std::__numeric_limits_base (0x3175f9a0) 0 empty
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QString::Null
    size=1 align=1
@@ -440,14 +307,10 @@ Class QLatin1String
    base size=4 base align=4
 QLatin1String (0x31ad31c0) 0
 
-
 Class QCharRef
    size=8 align=4
    base size=8 base align=4
 QCharRef (0x31ad3540) 0
-
-
-
 
 Class std::locale
    size=4 align=4
@@ -521,63 +384,25 @@ Class std::ios_base
 std::ios_base (0x31c57188) 0
     vptr=((& std::ios_base::_ZTVSt8ios_base) + 8u)
 
-
-
-
-
 Class std::ctype_base
    size=1 align=1
    base size=0 base align=1
 std::ctype_base (0x31c57d58) 0 empty
-
-
-
-
-
-
-
-
-
-
 
 Class std::codecvt_base
    size=1 align=1
    base size=0 base align=1
 std::codecvt_base (0x31d157e0) 0 empty
 
-
-
-
-
-
-
-
-
 Class std::__num_base
    size=1 align=1
    base size=0 base align=1
 std::__num_base (0x31d15f50) 0 empty
 
-
-
-
-
-
-
-
-
 Class std::time_base
    size=1 align=1
    base size=0 base align=1
 std::time_base (0x31d7f6c8) 0 empty
-
-
-
-
-
-
-
-
 
 Class std::money_base::pattern
    size=4 align=1
@@ -589,26 +414,10 @@ Class std::money_base
    base size=0 base align=1
 std::money_base (0x31d7ff18) 0 empty
 
-
-
-
-
-
-
-
-
 Class std::messages_base
    size=1 align=1
    base size=0 base align=1
 std::messages_base (0x31e1d770) 0 empty
-
-
-
-
-
-
-
-
 
 Vtable for std::type_info
 std::type_info::_ZTVSt9type_info: 8u entries
@@ -659,95 +468,25 @@ std::bad_typeid (0x31e50200) 0 nearly-empty
   std::exception (0x31eb82d8) 0 nearly-empty
       primary-for std::bad_typeid (0x31e50200)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 VTT for std::basic_ostream<char, std::char_traits<char> >
 std::basic_ostream<char, std::char_traits<char> >::_ZTTSo: 2u entries
 0     ((& std::basic_ostream<char, std::char_traits<char> >::_ZTVSo) + 12u)
 4     ((& std::basic_ostream<char, std::char_traits<char> >::_ZTVSo) + 32u)
-
-
-
 
 VTT for std::basic_ostream<wchar_t, std::char_traits<wchar_t> >
 std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTTSt13basic_ostreamIwSt11char_traitsIwEE: 2u entries
 0     ((& std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE) + 12u)
 4     ((& std::basic_ostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_ostreamIwSt11char_traitsIwEE) + 32u)
 
-
-
-
 VTT for std::basic_istream<char, std::char_traits<char> >
 std::basic_istream<char, std::char_traits<char> >::_ZTTSi: 2u entries
 0     ((& std::basic_istream<char, std::char_traits<char> >::_ZTVSi) + 12u)
 4     ((& std::basic_istream<char, std::char_traits<char> >::_ZTVSi) + 32u)
 
-
-
 VTT for std::basic_istream<wchar_t, std::char_traits<wchar_t> >
 std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTTSt13basic_istreamIwSt11char_traitsIwEE: 2u entries
 0     ((& std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE) + 12u)
 4     ((& std::basic_istream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt13basic_istreamIwSt11char_traitsIwEE) + 32u)
-
-
-
 
 Construction vtable for std::basic_istream<char, std::char_traits<char> > (0x32084100 instance) in std::basic_iostream<char, std::char_traits<char> >
 std::basic_iostream<char, std::char_traits<char> >::_ZTCSd0_Si: 10u entries
@@ -785,9 +524,6 @@ std::basic_iostream<char, std::char_traits<char> >::_ZTTSd: 7u entries
 20    ((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 52u)
 24    ((& std::basic_iostream<char, std::char_traits<char> >::_ZTVSd) + 32u)
 
-
-
-
 Construction vtable for std::basic_istream<wchar_t, std::char_traits<wchar_t> > (0x32084200 instance) in std::basic_iostream<wchar_t, std::char_traits<wchar_t> >
 std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTCSt14basic_iostreamIwSt11char_traitsIwEE0_St13basic_istreamIwS1_E: 10u entries
 0     12u
@@ -824,7 +560,6 @@ std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTTSt14basic_iostream
 20    ((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 52u)
 24    ((& std::basic_iostream<wchar_t, std::char_traits<wchar_t> >::_ZTVSt14basic_iostreamIwSt11char_traitsIwEE) + 32u)
 
-
 Class std::_List_node_base
    size=8 align=4
    base size=8 base align=4
@@ -839,8 +574,6 @@ Class QListData
    size=4 align=4
    base size=4 base align=4
 QListData (0x321097e0) 0
-
-
 
 Vtable for QObjectData
 QObjectData::_ZTV11QObjectData: 4u entries
@@ -932,7 +665,6 @@ QIODevice (0x32084400) 0
   QObject (0x32238188) 0
       primary-for QIODevice (0x32084400)
 
-
 Vtable for QDataStream
 QDataStream::_ZTV11QDataStream: 4u entries
 0     (int (*)(...))0
@@ -973,7 +705,6 @@ Class QTextStream
    base size=8 base align=4
 QTextStream (0x323325e8) 0
     vptr=((& QTextStream::_ZTV11QTextStream) + 8u)
-
 
 Class QTextStreamManipulator
    size=24 align=4
@@ -1034,7 +765,6 @@ QFile (0x320846c0) 0
     QObject (0x32332ce8) 0
         primary-for QIODevice (0x32084700)
 
-
 Vtable for QTemporaryFile
 QTemporaryFile::_ZTV14QTemporaryFile: 31u entries
 0     (int (*)(...))0
@@ -1086,13 +816,10 @@ Class QRegExp
    base size=4 base align=4
 QRegExp (0x32332fc0) 0
 
-
 Class QStringMatcher
    size=1036 align=4
    base size=1036 base align=4
 QStringMatcher (0x32332f50) 0
-
-
 
 Class QStringList
    size=4 align=4
@@ -1192,42 +919,20 @@ Class QFileInfo
    base size=4 base align=4
 QFileInfo (0x324899d8) 0
 
-
 Class QDir
    size=4 align=4
    base size=4 base align=4
 QDir (0x32489af0) 0
-
-
 
 Class QUrl
    size=4 align=4
    base size=4 base align=4
 QUrl (0x32489d20) 0
 
-
-
 Class QMetaType
    size=1 align=1
    base size=0 base align=1
 QMetaType (0x32489f18) 0 empty
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Class QVariant::PrivateShared
    size=8 align=4
@@ -1254,15 +959,10 @@ Class QVariant
    base size=16 base align=8
 QVariant (0x325476c8) 0
 
-
-
-
-
 Class QVariantComparisonHelper
    size=4 align=4
    base size=4 base align=4
 QVariantComparisonHelper (0x32547ea8) 0
-
 
 Vtable for QSettings
 QSettings::_ZTV9QSettings: 14u entries
@@ -1347,7 +1047,6 @@ Class QFileEngineHandler
 QFileEngineHandler (0x325ca3f0) 0 nearly-empty
     vptr=((& QFileEngineHandler::_ZTV18QFileEngineHandler) + 8u)
 
-
 Class QHashData::Node
    size=8 align=4
    base size=8 base align=4
@@ -1363,54 +1062,45 @@ Class QHashDummyValue
    base size=0 base align=1
 QHashDummyValue (0x325ca770) 0 empty
 
-
 Class QPoint
    size=8 align=4
    base size=8 base align=4
 QPoint (0x325caea8) 0
-
 
 Class QPointF
    size=16 align=8
    base size=16 base align=8
 QPointF (0x326ae150) 0
 
-
 Class QLine
    size=16 align=4
    base size=16 base align=4
 QLine (0x326ae700) 0
-
 
 Class QLineF
    size=32 align=8
    base size=32 base align=8
 QLineF (0x326ae8c0) 0
 
-
 Class QSize
    size=8 align=4
    base size=8 base align=4
 QSize (0x326aeaf0) 0
-
 
 Class QSizeF
    size=16 align=8
    base size=16 base align=8
 QSizeF (0x326ae348) 0
 
-
 Class QRect
    size=16 align=4
    base size=16 base align=4
 QRect (0x327542a0) 0
 
-
 Class QRectF
    size=32 align=8
    base size=32 base align=8
 QRectF (0x327546c8) 0
-
 
 Class QLinkedListData
    size=20 align=4
@@ -1427,12 +1117,10 @@ Class QBitRef
    base size=8 base align=4
 QBitRef (0x328a2150) 0
 
-
 Class std::_Bit_reference
    size=8 align=4
    base size=8 base align=4
 std::_Bit_reference (0x328a24d0) 0
-
 
 Class std::_Bit_iterator_base
    size=8 align=4
@@ -1454,12 +1142,6 @@ std::_Bit_const_iterator (0x32084c40) 0
   std::_Bit_iterator_base (0x32084c80) 0
     std::iterator<std::random_access_iterator_tag, bool, ptrdiff_t, bool*, bool&> (0x328a29a0) 0 empty
 
-
-
-
-
-
-
 Class QVectorData
    size=16 align=4
    base size=16 base align=4
@@ -1480,24 +1162,20 @@ Class QLocale
    base size=4 base align=4
 QLocale (0x3296c818) 0
 
-
 Class QDate
    size=4 align=4
    base size=4 base align=4
 QDate (0x3296ca80) 0
-
 
 Class QTime
    size=4 align=4
    base size=4 base align=4
 QTime (0x3296ccb0) 0
 
-
 Class QDateTime
    size=4 align=4
    base size=4 base align=4
 QDateTime (0x3296cea8) 0
-
 
 Vtable for QFactoryInterface
 QFactoryInterface::_ZTV17QFactoryInterface: 5u entries
@@ -1571,7 +1249,6 @@ QTextCodecPlugin (0x32084f00) 0
       vptr=((& QTextCodecPlugin::_ZTV16QTextCodecPlugin) + 92u)
     QFactoryInterface (0x32acc1f8) 8 nearly-empty
         primary-for QTextCodecFactoryInterface (0x32084f40)
-
 
 Class QTextCodec::ConverterState
    size=28 align=4
@@ -1691,7 +1368,6 @@ QEventLoop (0x32b09040) 0
   QObject (0x32acca80) 0
       primary-for QEventLoop (0x32b09040)
 
-
 Vtable for QEvent
 QEvent::_ZTV6QEvent: 4u entries
 0     (int (*)(...))0
@@ -1767,12 +1443,10 @@ Class QModelIndex
    base size=16 base align=4
 QModelIndex (0x32b540a8) 0
 
-
 Class QPersistentModelIndex
    size=4 align=4
    base size=4 base align=4
 QPersistentModelIndex (0x32b542d8) 0
-
 
 Vtable for QAbstractItemModel
 QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
@@ -1992,7 +1666,6 @@ Class QBasicTimer
    base size=4 base align=4
 QBasicTimer (0x32b54ab8) 0
 
-
 Vtable for QSocketNotifier
 QSocketNotifier::_ZTV15QSocketNotifier: 14u entries
 0     (int (*)(...))0
@@ -2086,12 +1759,10 @@ Class QMetaMethod
    base size=8 base align=4
 QMetaMethod (0x32b54fc0) 0
 
-
 Class QMetaEnum
    size=8 align=4
    base size=8 base align=4
 QMetaEnum (0x32b54930) 0
-
 
 Class QMetaProperty
    size=20 align=4
@@ -2102,7 +1773,6 @@ Class QMetaClassInfo
    size=8 align=4
    base size=8 base align=4
 QMetaClassInfo (0x32bf0038) 0
-
 
 Vtable for QPluginLoader
 QPluginLoader::_ZTV13QPluginLoader: 14u entries
@@ -2224,5 +1894,4 @@ Class QWriteLocker
    size=4 align=4
    base size=4 base align=4
 QWriteLocker (0x32bf0930) 0
-
 

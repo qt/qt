@@ -63,6 +63,7 @@ private slots:
     void nested();
     void noFocus();
     void textEdit();
+    void forceFocus();
 };
 
 /*
@@ -272,6 +273,62 @@ void tst_qdeclarativefocusscope::textEdit()
 
     delete view;
 }
+
+void tst_qdeclarativefocusscope::forceFocus()
+{
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/forcefocus.qml"));
+
+    QDeclarativeRectangle *item0 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item0"));
+    QDeclarativeRectangle *item1 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item1"));
+    QDeclarativeRectangle *item2 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item2"));
+    QDeclarativeRectangle *item3 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item3"));
+    QDeclarativeRectangle *item4 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item4"));
+    QDeclarativeRectangle *item5 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item5"));
+    QVERIFY(item0 != 0);
+    QVERIFY(item1 != 0);
+    QVERIFY(item2 != 0);
+    QVERIFY(item3 != 0);
+    QVERIFY(item4 != 0);
+    QVERIFY(item5 != 0);
+
+    view->show();
+    qApp->setActiveWindow(view);
+    qApp->processEvents();
+
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(view);
+#endif
+
+    QVERIFY(view->hasFocus());
+    QVERIFY(view->scene()->hasFocus());
+    QVERIFY(item0->wantsFocus() == true);
+    QVERIFY(item1->hasFocus() == true);
+    QVERIFY(item2->hasFocus() == false);
+    QVERIFY(item3->wantsFocus() == false);
+    QVERIFY(item4->hasFocus() == false);
+    QVERIFY(item5->hasFocus() == false);
+
+    QTest::keyClick(view, Qt::Key_4);
+    QVERIFY(item0->wantsFocus() == true);
+    QVERIFY(item1->hasFocus() == true);
+    QVERIFY(item2->hasFocus() == false);
+    QVERIFY(item3->wantsFocus() == false);
+    QVERIFY(item4->hasFocus() == false);
+    QVERIFY(item5->hasFocus() == false);
+
+    QTest::keyClick(view, Qt::Key_5);
+    QVERIFY(item0->wantsFocus() == false);
+    QVERIFY(item1->hasFocus() == false);
+    QVERIFY(item2->hasFocus() == false);
+    QVERIFY(item3->wantsFocus() == true);
+    QVERIFY(item4->hasFocus() == false);
+    QVERIFY(item5->hasFocus() == true);
+
+    delete view;
+}
+
 
 QTEST_MAIN(tst_qdeclarativefocusscope)
 

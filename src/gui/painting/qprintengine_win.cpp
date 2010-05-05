@@ -965,12 +965,13 @@ void QWin32PrintEnginePrivate::queryDefault()
         return;
 
     QStringList info = output.split(QLatin1Char(','));
-    if (info.size() > 0) {
+    int infoSize = info.size();
+    if (infoSize > 0) {
         if (name.isEmpty())
             name = info.at(0);
-        if (program.isEmpty())
+        if (program.isEmpty() && infoSize > 1)
             program = info.at(1);
-        if (port.isEmpty())
+        if (port.isEmpty() && infoSize > 2)
             port = info.at(2);
     }
 }
