@@ -53,6 +53,7 @@ QT_MODULE(Network)
 
 #ifndef QT_NO_UDPSOCKET
 
+class QNetworkInterface;
 class QUdpSocketPrivate;
 
 class Q_NETWORK_EXPORT QUdpSocket : public QAbstractSocket
@@ -67,6 +68,12 @@ public:
     };
     Q_DECLARE_FLAGS(BindMode, BindFlag)
 
+    enum MulticastFlag {
+        DefaultMulticastFlagForPlatform = 0x0,
+        MulticastLoopback  = 0x1
+    };
+    Q_DECLARE_FLAGS(MulticastMode, MulticastFlag)
+
     explicit QUdpSocket(QObject *parent = 0);
     virtual ~QUdpSocket();
 
@@ -75,6 +82,17 @@ public:
     bool bind(const QHostAddress &address, quint16 port, BindMode mode);
     bool bind(quint16 port, BindMode mode);
     // ### Qt 5: Merge the bind functions
+
+    bool joinMulticastGroup(const QHostAddress &groupAddress,
+                            MulticastMode mode = DefaultMulticastFlagForPlatform);
+    bool joinMulticastGroup(const QHostAddress &groupAddress,
+                            const QHostAddress &sourceAddress,
+                            const QNetworkInterface &interface,
+                            MulticastMode mode = DefaultMulticastFlagForPlatform);
+    bool leaveMulticastGroup(const QHostAddress &groupAddress);
+    bool leaveMulticastGroup(const QHostAddress &groupAddress,
+                             const QHostAddress &sourceAddress,
+                             const QNetworkInterface &interface);
 
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;
