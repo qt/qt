@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDBus module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSMACROS_H
-#define QDBUSMACROS_H
+#include "frequencyspectrum.h"
 
-#include <QtCore/qglobal.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qvariant.h>
+FrequencySpectrum::FrequencySpectrum(int numPoints)
+    :   m_elements(numPoints)
+{
 
-#if defined(QDBUS_MAKEDLL)
-# define QDBUS_EXPORT Q_DECL_EXPORT
-#elif defined(QT_SHARED)
-# define QDBUS_EXPORT Q_DECL_IMPORT
-#else
-# define QDBUS_EXPORT
-#endif
+}
 
-#ifndef Q_MOC_RUN
-# define Q_NOREPLY
-#endif
+void FrequencySpectrum::reset()
+{
+    iterator i = begin();
+    for ( ; i != end(); ++i)
+        *i = Element();
+}
 
-#ifdef Q_CC_MSVC
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qvector.h>
-#endif
+int FrequencySpectrum::count() const
+{
+    return m_elements.count();
+}
 
-// prevent syncqt complaints
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
-QT_MODULE(DBus)
-QT_END_NAMESPACE
-QT_END_HEADER
+FrequencySpectrum::Element& FrequencySpectrum::operator[](int index)
+{
+    return m_elements[index];
+}
 
-#endif
+const FrequencySpectrum::Element& FrequencySpectrum::operator[](int index) const
+{
+    return m_elements[index];
+}
+
+FrequencySpectrum::iterator FrequencySpectrum::begin()
+{
+    return m_elements.begin();
+}
+
+FrequencySpectrum::iterator FrequencySpectrum::end()
+{
+    return m_elements.end();
+}
+
+FrequencySpectrum::const_iterator FrequencySpectrum::begin() const
+{
+    return m_elements.begin();
+}
+
+FrequencySpectrum::const_iterator FrequencySpectrum::end() const
+{
+    return m_elements.end();
+}

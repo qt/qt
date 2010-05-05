@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDBus module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSMACROS_H
-#define QDBUSMACROS_H
+#include <QtGui/QApplication>
+#include "mainwidget.h"
 
-#include <QtCore/qglobal.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qvariant.h>
+int main(int argc, char **argv)
+{
+    QApplication app(argc, argv);
+    app.setApplicationName("QtMultimedia spectrum analyser");
+    MainWidget w;
 
-#if defined(QDBUS_MAKEDLL)
-# define QDBUS_EXPORT Q_DECL_EXPORT
-#elif defined(QT_SHARED)
-# define QDBUS_EXPORT Q_DECL_IMPORT
+#ifdef Q_OS_SYMBIAN
+    w.showMaximized();
 #else
-# define QDBUS_EXPORT
+    w.show();
 #endif
 
-#ifndef Q_MOC_RUN
-# define Q_NOREPLY
-#endif
-
-#ifdef Q_CC_MSVC
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qvector.h>
-#endif
-
-// prevent syncqt complaints
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
-QT_MODULE(DBus)
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif
+    return app.exec();
+}
