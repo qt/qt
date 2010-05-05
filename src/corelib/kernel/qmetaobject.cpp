@@ -218,12 +218,20 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 */
 int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
 {
-    if (priv(d.data)->revision < 2)
-        return 0;
-    const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(d.extradata);
-    if (!extra || !extra->static_metacall)
-        return 0;
-    return extra->static_metacall(cl, idx, argv);
+    const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(d.extradata);
+    if (priv(d.data)->revision >= 6) {
+        if (!extra || !extra->static_metacall)
+            return 0;
+        extra->static_metacall(0, cl, idx, argv);
+        return -1;
+    } else if (priv(d.data)->revision >= 2) {
+        if (!extra || !extra->static_metacall)
+            return 0;
+        typedef int (*OldMetacall)(QMetaObject::Call, int, void **);
+        OldMetacall o = reinterpret_cast<OldMetacall>(extra->static_metacall);
+        return o(cl, idx, argv);
+    }
+    return 0;
 }
 
 /*!
@@ -639,20 +647,21 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
 */
 int QMetaObject::indexOfSlot(const char *slot) const
 {
-    int i = QMetaObjectPrivate::indexOfSlot(this, slot, false);
+    const QMetaObject *m = this;
+    int i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, false);
     if (i < 0)
-        i = QMetaObjectPrivate::indexOfSlot(this, slot, true);
+        i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, true);
+    if (i >= 0)
+        i += methodOffset();
     return i;
 }
 
-int QMetaObjectPrivate::indexOfSlot(const QMetaObject *m,
+// same as indexOfSignalRelative but for slots.
+int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,
                                     const char *slot,
                                     bool normalizeStringData)
 {
-    int i = indexOfMethodRelative<MethodSlot>(&m, slot, normalizeStringData);
-    if (i >= 0)
-        i += m->methodOffset();
-    return i;
+    return indexOfMethodRelative<MethodSlot>(m, slot, normalizeStringData);
 }
 
 static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, const char *name)

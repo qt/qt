@@ -108,19 +108,23 @@ public:
         QList<QVariant> propertyValues;
     };
 
+    typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection
     {
         QObject *sender;
         QObject *receiver;
-        int method;
-        uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
-        QBasicAtomicPointer<int> argumentTypes;
+        StaticMetaCallFunction callFunction;
         // The next pointer for the singly-linked ConnectionList
         Connection *nextConnectionList;
         //senders linked list
         Connection *next;
         Connection **prev;
+        QBasicAtomicPointer<int> argumentTypes;
+        ushort method_offset;
+        ushort method_relative;
+        ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ~Connection();
+        int method() const { return method_offset + method_relative; }
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {
