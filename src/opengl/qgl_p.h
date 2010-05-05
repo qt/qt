@@ -350,14 +350,17 @@ public:
     HBITMAP hbitmap;
     HDC hbitmap_hdc;
 #endif
-#if defined(Q_WS_LITE)
-    QPlatformGLContext *platformContext;
-#elif !defined(QT_NO_EGL)
+
+#if !defined(QT_NO_EGL)
     bool ownsEglContext;
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
     EGLSurface eglSurfaceForDevice() const;
+#endif
+
+#if defined(Q_WS_LITE)
+    QPlatformGLContext *platformContext;
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
