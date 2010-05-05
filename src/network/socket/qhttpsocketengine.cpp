@@ -239,6 +239,24 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
+                                           const QHostAddress &,
+                                           const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+bool QHttpSocketEngine::leaveMulticastGroup(const QHostAddress &,
+                                            const QHostAddress &,
+                                            const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
                                        quint16 *)
 {
