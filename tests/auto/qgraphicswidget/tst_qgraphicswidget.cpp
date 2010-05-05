@@ -166,6 +166,7 @@ private slots:
     void initialShow();
     void initialShow2();
     void itemChangeEvents();
+    void itemSendGeometryPosChangesDeactivated();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2970,6 +2971,34 @@ void tst_QGraphicsWidget::itemChangeEvents()
     item->setEnabled(false);
     QVERIFY(!item->isEnabled());
     QTRY_VERIFY(!item->valueDuringEvents.value(QEvent::EnabledChange).toBool());
+}
+
+void tst_QGraphicsWidget::itemSendGeometryPosChangesDeactivated()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsWidget *item = new QGraphicsWidget;
+    scene.addItem(item);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    item->setGeometry(QRectF(0, 0, 50, 50));
+    QTRY_COMPARE(item->geometry(), QRectF(0, 0, 50, 50));
+
+    item->setFlag(QGraphicsItem::ItemSendsGeometryChanges, false);
+    item->setGeometry(QRectF(0, 0, 60, 60));
+    QCOMPARE(item->geometry(), QRectF(0, 0, 60, 60));
+    QCOMPARE(item->pos(), QPointF(0, 0));
+    item->setPos(QPointF(10, 10));
+    QCOMPARE(item->pos(), QPointF(10, 10));
+    QCOMPARE(item->geometry(), QRectF(10, 10, 60, 60));
+
+    item->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, false);
+    item->setGeometry(QRectF(0, 0, 60, 60));
+    QCOMPARE(item->geometry(), QRectF(0, 0, 60, 60));
+    QCOMPARE(item->pos(), QPointF(0, 0));
+    item->setPos(QPointF(10, 10));
+    QCOMPARE(item->pos(), QPointF(10, 10));
+    QCOMPARE(item->geometry(), QRectF(10, 10, 60, 60));
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()

@@ -825,6 +825,18 @@ void QGraphicsWidgetPrivate::setLayout_helper(QGraphicsLayout *l)
     }
 }
 
+void QGraphicsWidgetPrivate::setGeometryFromSetPos()
+{
+    if (inSetGeometry)
+        return;
+    Q_Q(QGraphicsWidget);
+    inSetPos = 1;
+    // Ensure setGeometry is called (avoid recursion when setPos is
+    // called from within setGeometry).
+    q->setGeometry(QRectF(pos, q->size()));
+    inSetPos = 0 ;
+}
+
 QT_END_NAMESPACE
 
 #endif //QT_NO_GRAPHICSVIEW
