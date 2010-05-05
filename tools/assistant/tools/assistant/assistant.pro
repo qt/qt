@@ -32,6 +32,7 @@ HEADERS += aboutdialog.h \
     filternamedialog.h \
     helpenginewrapper.h \
     helpviewer.h \
+    helpviewer_p.h \
     indexwindow.h \
     installdialog.h \
     mainwindow.h \
@@ -47,12 +48,6 @@ HEADERS += aboutdialog.h \
     globalactions.h \
     openpageswidget.h \
     openpagesmanager.h
-
-contains(QT_CONFIG, webkit) {
-    HEADERS += helpviewer_qwv.h
-} else {
-    HEADERS += helpviewer_qtb.h
- }
 win32:HEADERS += remotecontrol_win.h
 
 SOURCES += aboutdialog.cpp \
@@ -84,7 +79,7 @@ SOURCES += aboutdialog.cpp \
     globalactions.cpp \
     openpageswidget.cpp \
     openpagesmanager.cpp
- contains(QT_CONFIG, webkit) {
+contains(QT_CONFIG, webkit) {
     SOURCES += helpviewer_qwv.cpp
 } else {
     SOURCES += helpviewer_qtb.cpp

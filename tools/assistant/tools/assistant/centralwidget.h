@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
@@ -55,12 +56,15 @@ class CentralWidget : public QWidget
     Q_OBJECT
 
 public:
-    CentralWidget(QWidget *parent);
+    CentralWidget(QWidget *parent = 0);
     ~CentralWidget();
 
-    bool hasSelection() const;
+    static CentralWidget *instance();
+
     QUrl currentSource() const;
     QString currentTitle() const;
+
+    bool hasSelection() const;
     bool isForwardAvailable() const;
     bool isBackwardAvailable() const;
 
@@ -69,32 +73,38 @@ public:
 
     void addPage(HelpViewer *page, bool fromSearch = false);
     void removePage(int index);
-    void setCurrentPage(HelpViewer *page);
-    int currentIndex() const;
 
-    static CentralWidget *instance();
+    int currentIndex() const;
+    void setCurrentPage(HelpViewer *page);
 
 public slots:
+    void copy();
+    void home();
+
     void zoomIn();
     void zoomOut();
     void resetZoom();
-    void copySelection();
-    void showTextSearch();
+
+    void forward();
+    void nextPage();
+
+    void backward();
+    void previousPage();
+
     void print();
     void pageSetup();
     void printPreview();
-    void updateBrowserFont();
+
     void setSource(const QUrl &url);
     void setSourceFromSearch(const QUrl &url);
-    void home();
-    void forward();
-    void backward();
-
-    void activateTab();
 
     void findNext();
     void findPrevious();
-    void find(const QString &text, bool forward);
+    void find(const QString &text, bool forward, bool incremental);
+
+    void activateTab();
+    void showTextSearch();
+    void updateBrowserFont();
 
 signals:
     void currentViewerChanged();
@@ -107,23 +117,24 @@ signals:
 
 protected:
     void keyPressEvent(QKeyEvent *);
+    void focusInEvent(QFocusEvent *event);
 
 private slots:
-    void printPreview(QPrinter *printer);
     void highlightSearchTerms();
+    void printPreview(QPrinter *printer);
     void handleSourceChanged(const QUrl &url);
 
 private:
+    void initPrinter();
     void connectSignals(HelpViewer *page);
     bool eventFilter(QObject *object, QEvent *e);
-    bool findInWebPage(const QString &ttf, bool forward);
-    bool findInTextBrowser(const QString &ttf, bool forward);
-    void initPrinter();
 
 private:
+#ifndef QT_NO_PRINTER
+    QPrinter *m_printer;
+#endif
+    FindWidget *m_findWidget;
     QStackedWidget *m_stackedWidget;
-    FindWidget *findWidget;
-    QPrinter *printer;
 };
 
 QT_END_NAMESPACE

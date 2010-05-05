@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "helpviewer_qwv.h"
+#include "helpviewer.h"
 
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
@@ -48,16 +48,20 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QString>
-#include <QtCore/QStringBuilder>
 #include <QtCore/QTimer>
 
+#include <QtGui/QApplication>
 #include <QtGui/QWheelEvent>
+
+#include <QtHelp/QHelpEngineCore>
 
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
 QT_BEGIN_NAMESPACE
+
+// -- HelpNetworkReply
 
 class HelpNetworkReply : public QNetworkReply
 {
@@ -110,6 +114,8 @@ qint64 HelpNetworkReply::readData(char *buffer, qint64 maxlen)
     return len;
 }
 
+// -- HelpNetworkAccessManager
+
 class HelpNetworkAccessManager : public QNetworkAccessManager
 {
 public:
@@ -131,15 +137,14 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
 {
     TRACE_OBJ
     QString url = request.url().toString();
-    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-
+    const HelpEngineWrapper &engine = HelpEngineWrapper::instance();
     // TODO: For some reason the url to load is already wrong (passed from webkit)
     // though the css file and the references inside should work that way. One 
     // possible problem might be that the css is loaded at the same level as the
     // html, thus a path inside the css like (../images/foo.png) might cd out of
     // the virtual folder
-    if (!helpEngine.findFile(url).isValid()) {
-        if (url.startsWith(AbstractHelpViewer::DocPath)) {
+    if (!engine.findFile(url).isValid()) {
+        if (url.startsWith(HelpViewer::DocPath)) {
             QUrl newUrl = request.url();
             if (!newUrl.path().startsWith(QLatin1String("/qdoc/"))) {
                 newUrl.setPath(QLatin1String("qdoc") + newUrl.path());
@@ -148,13 +153,15 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
         }
     }
 
-    const QString &mimeType = AbstractHelpViewer::mimeFromUrl(url);
-    const QByteArray &data = helpEngine.findFile(url).isValid()
-        ? helpEngine.fileData(url)
-        : AbstractHelpViewer::PageNotFoundMessage.arg(url).toUtf8();
+    const QString &mimeType = HelpViewer::mimeFromUrl(url);
+    const QByteArray &data = engine.findFile(url).isValid() ? engine.fileData(url)
+        : HelpViewer::PageNotFoundMessage.arg(url).toUtf8();
+
     return new HelpNetworkReply(request, data, mimeType.isEmpty()
         ? QLatin1String("application/octet-stream") : mimeType);
 }
+
+// -- HelpPage
 
 class HelpPage : public QWebPage
 {
@@ -188,7 +195,8 @@ HelpPage::HelpPage(QObject *parent)
 QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
 {
     TRACE_OBJ
-    HelpPage* newPage = static_cast<HelpPage*>(OpenPagesManager::instance()->createPage()->page());
+    HelpPage* newPage = static_cast<HelpPage*>(OpenPagesManager::instance()
+        ->createPage()->page());
     newPage->closeNewTabIfNeeded = closeNewTabIfNeeded;
     closeNewTabIfNeeded = false;
     return newPage;
@@ -214,19 +222,18 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     closeNewTabIfNeeded = false;
 
     const QUrl &url = request.url();
-    if (AbstractHelpViewer::launchWithExternalApp(url)) {
+    if (HelpViewer::launchWithExternalApp(url)) {
         if (closeNewTab)
-            QMetaObject::invokeMethod(OpenPagesManager::instance(), "closeCurrentTab");
+            QMetaObject::invokeMethod(OpenPagesManager::instance(), "closeCurrentPage");
         return false;
     }
 
     if (type == QWebPage::NavigationTypeLinkClicked
-        && (m_keyboardModifiers & Qt::ControlModifier
-        || m_pressedButtons == Qt::MidButton)) {
-        OpenPagesManager::instance()->createPage(url);
-        m_pressedButtons = Qt::NoButton;
-        m_keyboardModifiers = Qt::NoModifier;
-        return false;
+        && (m_keyboardModifiers & Qt::ControlModifier || m_pressedButtons == Qt::MidButton)) {
+            m_pressedButtons = Qt::NoButton;
+            m_keyboardModifiers = Qt::NoModifier;
+            OpenPagesManager::instance()->createPage(url);
+            return false;
     }
 
     return true;
@@ -234,18 +241,19 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
 
 // -- HelpViewer
 
-HelpViewer::HelpViewer(qreal zoom)
-    : loadFinished(false)
-    , helpEngine(HelpEngineWrapper::instance())
+HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
+    : QWebView(parent)
 {
     TRACE_OBJ
     setAcceptDrops(false);
+    settings()->setAttribute(QWebSettings::JavaEnabled, false);
+    settings()->setAttribute(QWebSettings::PluginsEnabled, false);
 
     setPage(new HelpPage(this));
     page()->setNetworkAccessManager(new HelpNetworkAccessManager(this));
 
     QAction* action = pageAction(QWebPage::OpenLinkInNewWindow);
-    action->setText(tr("Open Link in New Tab"));
+    action->setText(tr("Open Link in New Page"));
 
     pageAction(QWebPage::DownloadLinkToDisk)->setVisible(false);
     pageAction(QWebPage::DownloadImageToDisk)->setVisible(false);
@@ -257,7 +265,7 @@ HelpViewer::HelpViewer(qreal zoom)
         SLOT(actionChanged()));
     connect(pageAction(QWebPage::Forward), SIGNAL(changed()), this,
         SLOT(actionChanged()));
-    connect(page(), SIGNAL(linkHovered(QString,QString,QString)), this,
+    connect(page(), SIGNAL(linkHovered(QString, QString, QString)), this,
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
@@ -275,8 +283,8 @@ HelpViewer::~HelpViewer()
 QFont HelpViewer::viewerFont() const
 {
     TRACE_OBJ
-    if (helpEngine.usesBrowserFont())
-        return helpEngine.browserFont();
+    if (HelpEngineWrapper::instance().usesBrowserFont())
+        return HelpEngineWrapper::instance().browserFont();
 
     QWebSettings *webSettings = QWebSettings::globalSettings();
     return QFont(webSettings->fontFamily(QWebSettings::StandardFont),
@@ -309,56 +317,144 @@ void HelpViewer::resetScale()
     setTextSizeMultiplier(1.0);
 }
 
-bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *e)
+qreal HelpViewer::scale() const
 {
     TRACE_OBJ
-    if (e->button() == Qt::XButton1) {
-        triggerPageAction(QWebPage::Back);
-        return true;
-    }
+    return textSizeMultiplier();
+}
 
-    if (e->button() == Qt::XButton2) {
-        triggerPageAction(QWebPage::Forward);
-        return true;
-    }
+QString HelpViewer::title() const
+{
+    TRACE_OBJ
+    return QWebView::title();
+}
 
-    return false;
+void HelpViewer::setTitle(const QString &title)
+{
+    TRACE_OBJ
+    Q_UNUSED(title)
+}
+
+QUrl HelpViewer::source() const
+{
+    TRACE_OBJ
+    return url();
 }
 
 void HelpViewer::setSource(const QUrl &url)
 {
     TRACE_OBJ
-    loadFinished = false;
     load(url.toString() == QLatin1String("help") ? LocalHelpFile : url);
 }
 
-void HelpViewer::home()
+QString HelpViewer::selectedText() const
 {
     TRACE_OBJ
-    setSource(helpEngine.homePage());
+    return QWebView::selectedText();
 }
 
-void HelpViewer::wheelEvent(QWheelEvent *e)
+bool HelpViewer::isForwardAvailable() const
 {
     TRACE_OBJ
-    if (e->modifiers()& Qt::ControlModifier) {
-        e->accept();
-        e->delta() > 0 ? scaleUp() : scaleDown();
+    return pageAction(QWebPage::Forward)->isEnabled();
+}
+
+bool HelpViewer::isBackwardAvailable() const
+{
+    TRACE_OBJ
+    return pageAction(QWebPage::Back)->isEnabled();
+}
+
+bool HelpViewer::findText(const QString &text, FindFlags flags, bool incremental,
+    bool fromSearch)
+{
+    TRACE_OBJ
+    Q_UNUSED((incremental && fromSearch))
+    QWebPage::FindFlags options = QWebPage::FindWrapsAroundDocument;
+    if (flags & FindBackward)
+        options |= QWebPage::FindBackward;
+    if (flags & FindCaseSensitively)
+        options |= QWebPage::FindCaseSensitively;
+
+    bool found = QWebView::findText(text, options);
+    options = QWebPage::HighlightAllOccurrences;
+    QWebView::findText(QLatin1String(""), options); // clear first
+    QWebView::findText(text, options); // force highlighting of all other matches
+    return found;
+}
+
+// -- public slots
+
+void HelpViewer::copy()
+{
+    TRACE_OBJ
+    triggerPageAction(QWebPage::Copy);
+}
+
+void HelpViewer::forward()
+{
+    TRACE_OBJ
+    QWebView::forward();
+}
+
+void HelpViewer::backward()
+{
+    TRACE_OBJ
+    back();
+}
+
+// -- protected
+
+void HelpViewer::keyPressEvent(QKeyEvent *e)
+{
+    TRACE_OBJ
+    // TODO: remove this once we support multiple keysequences per command
+    if (e->key() == Qt::Key_Insert && e->modifiers() == Qt::CTRL) {
+        if (!selectedText().isEmpty())
+            copy();
+    }
+    QWebView::keyPressEvent(e);
+}
+
+void HelpViewer::wheelEvent(QWheelEvent *event)
+{
+    TRACE_OBJ
+    if (event->modifiers()& Qt::ControlModifier) {
+        event->accept();
+        event->delta() > 0 ? scaleUp() : scaleDown();
     } else {
-        QWebView::wheelEvent(e);
+        QWebView::wheelEvent(event);
     }
 }
 
-void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
+void HelpViewer::mousePressEvent(QMouseEvent *event)
 {
     TRACE_OBJ
-#ifndef Q_OS_LINUX
-    if (handleForwardBackwardMouseButtons(e))
+#ifdef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(event))
         return;
 #endif
 
-    QWebView::mouseReleaseEvent(e);
+    if (HelpPage *currentPage = static_cast<HelpPage*> (page())) {
+        currentPage->m_pressedButtons = event->buttons();
+        currentPage->m_keyboardModifiers = event->modifiers();
+    }
+
+    QWebView::mousePressEvent(event);
 }
+
+void HelpViewer::mouseReleaseEvent(QMouseEvent *event)
+{
+    TRACE_OBJ
+#ifndef Q_OS_LINUX
+    if (handleForwardBackwardMouseButtons(event))
+        return;
+#endif
+
+    QWebView::mouseReleaseEvent(event);
+}
+
+// -- private slots
 
 void HelpViewer::actionChanged()
 {
@@ -372,27 +468,18 @@ void HelpViewer::actionChanged()
         emit forwardAvailable(a->isEnabled());
 }
 
-void HelpViewer::mousePressEvent(QMouseEvent *event)
+// -- private
+
+bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 {
     TRACE_OBJ
-#ifdef Q_OS_LINUX
-    if (handleForwardBackwardMouseButtons(event))
-        return;
-#endif
-
-    HelpPage *currentPage = static_cast<HelpPage*>(page());
-    if (currentPage) {
-        currentPage->m_pressedButtons = event->buttons();
-        currentPage->m_keyboardModifiers = event->modifiers();
-    }
-    QWebView::mousePressEvent(event);
+    return QWebView::eventFilter(obj, event);
 }
 
-void HelpViewer::setLoadFinished(bool ok)
+void HelpViewer::contextMenuEvent(QContextMenuEvent *event)
 {
     TRACE_OBJ
-    loadFinished = ok;
-    emit sourceChanged(url());
+    QWebView::contextMenuEvent(event);
 }
 
 QT_END_NAMESPACE

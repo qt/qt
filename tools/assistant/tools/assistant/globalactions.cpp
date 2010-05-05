@@ -116,7 +116,7 @@ GlobalActions::GlobalActions(QObject *parent) : QObject(parent)
     m_copyAction->setIcon(QIcon(resourcePath + QLatin1String("/editcopy.png")));
     m_copyAction->setShortcuts(QKeySequence::Copy);
     m_copyAction->setEnabled(false);
-    connect(m_copyAction, SIGNAL(triggered()), centralWidget, SLOT(copySelection()));
+    connect(m_copyAction, SIGNAL(triggered()), centralWidget, SLOT(copy()));
     m_actionList << m_copyAction;
 
     m_printAction = new QAction(tr("&Print..."), parent);

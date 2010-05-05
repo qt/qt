@@ -67,11 +67,10 @@ public:
     void setTextWrappedVisible(bool visible);
 
 signals:
-    void escapePressed();
-
     void findNext();
     void findPrevious();
-    void find(const QString &text, bool forward);
+    void escapePressed();
+    void find(const QString &text, bool forward, bool incremental);
 
 protected:
     void hideEvent(QHideEvent* event);
