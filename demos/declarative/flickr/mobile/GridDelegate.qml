@@ -21,7 +21,7 @@
          Item {
              anchors.centerIn: parent
              scale: 0.0
-             Behavior on scale { NumberAnimation { easing.type: "InOutQuad"} }
+             Behavior on scale { NumberAnimation { easing.type: Easing.InOutQuad} }
              id: scaleMe
 
              Rectangle { height: 79; width: 79; id: blackRect;  anchors.centerIn: parent; color: "black"; smooth: true }
@@ -53,14 +53,14 @@
                  Transition {
                      from: "Show"; to: "Details"
                      ParentAnimation {
-                         NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                         NumberAnimation { properties: "x,y"; duration: 500; easing.type: Easing.InOutQuad }
                      }
                  },
                  Transition {
                      from: "Details"; to: "Show"
                      SequentialAnimation {
                          ParentAnimation {
-                            NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" }
+                            NumberAnimation { properties: "x,y"; duration: 500; easing.type: Easing.InOutQuad }
                          }
                          PropertyAction { targets: wrapper; properties: "z" }
                      }
