@@ -1550,7 +1550,7 @@ QStringList QDeclarativeEngine::importPathList() const
 }
 
 /*!
-  Sets the list of directories where the engine searches for
+  Sets \a paths as the list of directories where the engine searches for
   installed modules in a URL-based directory structure.
 
   By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
