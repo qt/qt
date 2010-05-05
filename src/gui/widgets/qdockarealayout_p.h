@@ -208,11 +208,9 @@ public:
     QRect tabContentRect() const;
     bool tabbed;
     QTabBar *tabBar;
-    QSize tabBarMin, tabBarHint;
     int tabBarShape;
-    bool tabBarVisible;
 
-    void updateTabBar() const;
+    bool updateTabBar() const;
     void setTabBarShape(int shape);
     QSize tabBarMinimumSize() const;
     QSize tabBarSizeHint() const;
