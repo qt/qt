@@ -86,8 +86,8 @@ private:
     Visibility m_visibility;
 };
 
-Q_DECLARE_METATYPE(LoggerWidget::Visibility);
-
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(LoggerWidget::Visibility)
 
 #endif // LOGGERWIDGET_H
