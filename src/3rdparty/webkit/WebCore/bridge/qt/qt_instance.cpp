@@ -171,8 +171,11 @@ QtInstance* QtInstance::getInstance(JSObject* object)
 
 Class* QtInstance::getClass() const
 {
-    if (!m_class)
+    if (!m_class) {
+        if (!m_object)
+            return 0;
         m_class = QtClass::classForObject(m_object);
+    }
     return m_class;
 }
 
@@ -238,7 +241,9 @@ void QtInstance::getPropertyNames(ExecState* exec, PropertyNameArray& array)
 
 JSValue QtInstance::getMethod(ExecState* exec, const Identifier& propertyName)
 {
-    MethodList methodList = getClass()->methodsNamed(propertyName, this);
+    if (!getClass())
+        return jsNull();
+    MethodList methodList = m_class->methodsNamed(propertyName, this);
     return new (exec) RuntimeMethod(exec, propertyName, methodList);
 }
 
@@ -259,12 +264,15 @@ JSValue QtInstance::defaultValue(ExecState* exec, PreferredPrimitiveType hint) c
 
 JSValue QtInstance::stringValue(ExecState* exec) const
 {
+    QObject* obj = getObject();
+    if (!obj)
+        return jsNull();
+
     // Hmm.. see if there is a toString defined
     QByteArray buf;
     bool useDefault = true;
     getClass();
-    QObject* obj = getObject();
-    if (m_class && obj) {
+    if (m_class) {
         // Cheat and don't use the full name resolution
         int index = obj->metaObject()->indexOfMethod("toString()");
         if (index >= 0) {
@@ -309,7 +317,7 @@ JSValue QtInstance::numberValue(ExecState* exec) const
 JSValue QtInstance::booleanValue() const
 {
     // ECMA 9.2
-    return jsBoolean(true);
+    return jsBoolean(getObject());
 }
 
 JSValue QtInstance::valueOf(ExecState* exec) const
