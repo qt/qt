@@ -27,6 +27,13 @@ General Improvements
 - Support for the GL_EXT_geometry_shader4, aka Geometry Shaders, was added
   to QGLShaderProgram.
 
+New features
+------------
+
+ - QNetworkSession, QNetworkConfiguration, QNetworkConfigurationManager
+    * New bearer management classes added.
+
+
 Third party components
 ----------------------
 
