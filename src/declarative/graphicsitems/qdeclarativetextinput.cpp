@@ -828,7 +828,7 @@ void QDeclarativeTextInput::moveCursor()
 }
 
 /*!
-    \qmlmethod int xToPosition(int x)
+    \qmlmethod int TextInput::xToPosition(int x)
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -1097,7 +1097,7 @@ QString QDeclarativeTextInput::displayText() const
 }
 
 /*!
-    \qmlmethod void moveCursorSelection(int position)
+    \qmlmethod void TextInput::moveCursorSelection(int position)
 
     Moves the cursor to \a position and updates the selection accordingly.
     (To only move the cursor, set the \l cursorPosition property.)

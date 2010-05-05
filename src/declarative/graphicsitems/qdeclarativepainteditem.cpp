@@ -231,7 +231,7 @@ void QDeclarativePaintedItem::setCacheFrozen(bool frozen)
 }
 
 /*!
-    \reimp
+    \internal
 */
 void QDeclarativePaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
