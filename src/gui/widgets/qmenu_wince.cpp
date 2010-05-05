@@ -312,14 +312,13 @@ bool QMenuBarPrivate::wceEmitSignals(QList<QWceMenuAction*> actions, uint comman
 {
     QAction *foundAction = 0;
     for (int i = 0; i < actions.size(); ++i) {
-        if (foundAction)
-            break;
         QWceMenuAction *action = actions.at(i);
         if (action->action->menu()) {
             foundAction = action->action->menu()->wceCommands(command);
+            if (foundAction)
+                break;
         }
         else if (action->command == command) {
-            emit q_func()->triggered(action->action);
             action->action->activate(QAction::Trigger);
             return true;
         }
@@ -361,7 +360,7 @@ QAction *QMenuPrivate::wceCommands(uint command)
             foundAction = action->action->menu()->d_func()->wceCommands(command);
         }
         else if (action->command == command) {
-            action->action->activate(QAction::Trigger);
+            activateAction(action->action, QAction::Trigger);
             return action->action;
         }
     }
