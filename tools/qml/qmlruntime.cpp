@@ -469,6 +469,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , m_scriptOptions(0)
       , tester(0)
       , useQmlFileBrowser(true)
+      , translator(0)
 {
     QDeclarativeViewer::registerTypes();
     setWindowTitle(tr("Qt Qml Runtime"));
