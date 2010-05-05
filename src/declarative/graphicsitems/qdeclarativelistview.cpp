@@ -1848,6 +1848,9 @@ void QDeclarativeListView::setWrapEnabled(bool wrap)
     set to 40, then up to 2 delegates above and 2 delegates below the visible
     area may be retained.
 
+    Note that cacheBuffer is not a pixel buffer - it only maintains additional
+    instantiated delegates.
+
     Setting this value can make scrolling the list smoother at the expense
     of additional memory usage.  It is not a substitute for creating efficient
     delegates; the fewer elements in a delegate, the faster a view may be
