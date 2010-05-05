@@ -6,8 +6,9 @@ import Qt 4.7
 //
 // The files are created/updated by running:
 //
-//   lupdate i18n.qml -ts i18n/*.ts
+//   lupdate i18n.qml -ts i18n/base.ts
 //
+// Translations for new languages are created by copying i18n/base.ts to i18n/qml_<lang>.ts
 // The .ts files can then be edited with Linguist:
 //
 //   linguist i18n/qml_fr.ts
@@ -16,18 +17,21 @@ import Qt 4.7
 //
 //   lrelease i18n/*.ts
 //
-// Translations for new languages are created by copying i18n/base.ts to i18n/qml_<lang>.ts
-// and editing the result with Linguist.
-//
 
-Column {
-    Text {
-        text: "If a translation is available for the system language (eg. Franch) then the string below will translated (eg. 'Bonjour'). Otherwise is will show 'Hello'."
-        width: 200
-        wrapMode: Text.WordWrap
-    }
-    Text {
-        text: qsTr("Hello")
-        font.pointSize: 25
+Rectangle {
+    width: 640; height: 480
+
+    Column {
+        anchors.fill: parent; spacing: 20
+
+        Text {
+            text: "If a translation is available for the system language (eg. French) then the string below will translated (eg. 'Bonjour'). Otherwise is will show 'Hello'."
+            width: parent.width; wrapMode: Text.WordWrap
+        }
+
+        Text {
+            text: qsTr("Hello")
+            font.pointSize: 25; anchors.horizontalCenter: parent.horizontalCenter
+        }
     }
 }

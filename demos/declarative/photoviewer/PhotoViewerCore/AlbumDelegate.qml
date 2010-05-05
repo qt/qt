@@ -56,7 +56,7 @@ Component {
 
             Tag {
                 anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 10 }
-                frontLabel: tag; backLabel: "Delete"; flipped: mainWindow.editMode
+                frontLabel: tag; backLabel: qsTr("Remove"); flipped: mainWindow.editMode
                 onTagChanged: rssModel.tags = tag
                 onBackClicked: if (mainWindow.editMode) photosModel.remove(index);
             }
