@@ -50,7 +50,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li><a href=\"classes.html\">All classes</a></li>\n" \
 			  "              <li><a href=\"functions.html\">All functions</a></li>\n" \
 			  "              <li><a href=\"namespaces.html\">All namespaces</a></li>\n" \
-			  "              <li><a href=\"platform-specific.html\">Platform specifics</a></li>\n" \
+			  "              <li><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "          <div  id=\"live001\" class=\"live\">\n" \
@@ -58,24 +58,17 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        </div>\n" \
 			  "        <div class=\"box bottombar\" id=\"topics\">\n" \
 			  "          <h2><span></span>\n" \
-			  "            API Topics</h2>\n" \
+			  "            Qt Topics</h2>\n" \
 			  "          <div id=\"list002\" class=\"list\">\n" \
 			  " <!-- TABLE - will be changed " \
 			  "			<table id=\"tbl002\" > \n" \
 			  "			</table> -->\n " \
 			  " <!-- TABLE - will be changed -->" \
 			  "            <ul id=\"tbl002\" >\n" \
-			  "              <li><a href=\"object.html\">QObject model</a></li>\n" \
-			  "              <li><a href=\"signalsandslots.html\">Signals &amp; Slots</a></li>\n" \
-			  "              <li><a href=\"eventsandfilters.html\">Event handling</a></li>\n" \
+			  "              <li><a href=\"qt-basic-concepts.html\">Basic Concepts</a></li>\n" \
+			  "              <li><a href=\"qt-gui-concepts.html\">GUI Construction</a></li>\n" \
+			  "              <li><a href=\"platform-specific.html\">Platform specifics</a></li>\n" \
 			  "              <li><a href=\"declarativeui.html\">Qt Quick</a></li>\n" \
-			  "              <li><a href=\"mainwindow.html\">The main window</a></li>\n" \
-			  "              <li><a href=\"widgets-and-layouts.html\">Widgets &amp; Layouts</a></li>\n" \
-			  "              <li><a href=\"dialogs.html\">Dialog windows</a></li>\n" \
-			  "              <li><a href=\"paintsystem.html\">The paint system</a></li>\n" \
-			  "              <li><a href=\"graphicsview.html\">Graphics views</a></li>\n" \
-			  "              <li><a href=\"model-view-programming.html\">Model&#47;View programming</a></li>\n" \
-			  "              <li><a href=\"widgets-and-layouts.html\">Widget style &amp; layout</a></li>\n" \
 			  "            </ul>  \n" \
 			  "          </div>\n" \
 			  "          <div  id=\"live002\" class=\"live\">\n" \
@@ -83,7 +76,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        </div>\n" \
 			  "        <div class=\"box\" id=\"examples\">\n" \
 			  "          <h2><span></span>\n" \
-			  "            API Examples</h2>\n" \
+			  "            Qt Examples</h2>\n" \
 			  "          <div id=\"list003\" class=\"list\">\n" \
 			  " <!-- TABLE - will be changed" \
 			  "			<table id=\"tbl003\"> \n"\

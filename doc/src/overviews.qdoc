@@ -48,6 +48,29 @@
 */
 
 /*!
+    \group qt-basic-concepts
+    \title Qt Basic Concepts
+
+    \brief The basic concepts of the Qt cross-platform application and UI framework.
+
+    Qt is a cross-platform application and UI framework for writing
+    web-enabled applications for desktop, mobile, and embedded
+    operating systems. These pages explain basic architectural
+    concepts of Qt:
+
+    \generatelist {related}
+ */
+
+/*!
+    \group qt-gui-concepts
+    \title Qt GUI Components
+
+    \brief The Qt components for constructing graphical user intefaces.
+
+    \generatelist {related}
+ */
+
+/*!
     \group frameworks-technologies
     \title Frameworks and Technologies
 

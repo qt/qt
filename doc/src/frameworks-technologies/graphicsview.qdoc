@@ -47,6 +47,7 @@
 /*!
     \page graphicsview.html
     \title The Graphics View Framework
+    \ingroup qt-gui-concepts
     \brief An overview of the Graphics View framework for interactive 2D
     graphics.
 
