@@ -689,6 +689,7 @@ void QWidgetPrivate::setModal_sys()
 #ifndef QT_NO_CURSOR
 void qt_lite_set_cursor(QWidget * w, bool force)
 {
+    static QCursor arrowCursor(Qt::ArrowCursor);
     static QPointer<QWidget> lastUnderMouse = 0;
 
     QCursor * override = QApplication::overrideCursor();
@@ -696,42 +697,46 @@ void qt_lite_set_cursor(QWidget * w, bool force)
     if (override && w != 0)
         return;
 
-    QPointer<QGraphicsSystemCursor> cursor = QGraphicsSystemCursor::getInstance();
-    if (!cursor)
-        return;
+    QWidget *cursorWidget;
+    QCursor cursorCursor;
 
-    if (w == 0) {
-        if (override) {
-            cursor->changeCursor(override, QApplication::topLevelAt(QCursor::pos()));
-            return;
+    do {
+        if (w == 0) {
+            if (override) {
+                cursorCursor = *override;
+                cursorWidget = QApplication::topLevelAt(QCursor::pos());
+                break;
+            }
+            w = QApplication::widgetAt(QCursor::pos());
+            if (w == 0) // clear the override cursor while over empty space
+                w = QApplication::desktop();
+        } else if (force) {
+            lastUnderMouse = w;
+        } else if (w->testAttribute(Qt::WA_WState_Created) && lastUnderMouse
+                   && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
+            w = lastUnderMouse;
         }
-        w = QApplication::widgetAt(QCursor::pos());
-        if (w == 0) // clear the override cursor while over empty space
-            w = QApplication::desktop();
-    } else if (force) {
-        lastUnderMouse = w;
-    } else if (w->testAttribute(Qt::WA_WState_Created) && lastUnderMouse
-               && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
-        w = lastUnderMouse;
-    }
+        if (w == QApplication::desktop() && !override) {
+            cursorCursor = arrowCursor;
+            cursorWidget = w;
+            break;
+        }
 
-    if (w == QApplication::desktop() && !override) {
-        QCursor c(Qt::ArrowCursor);
-        cursor->changeCursor(&c, w);
-        return;
-    }
+        QWidget * curWin = QApplication::activeWindow();
+        if (!curWin && w && w->internalWinId())
+            return;
+        QWidget* cW = w && !w->internalWinId() ? w : curWin;
 
-    QWidget * curWin = QApplication::activeWindow();
-    if (!curWin && w && w->internalWinId())
-        return;
-    QWidget* cW = w && !w->internalWinId() ? w : curWin;
+        if (!cW || cW->window() != w->window() ||
+            !cW->isVisible() || !cW->underMouse() || override)
+            return;
 
-    if (!cW || cW->window() != w->window() ||
-         !cW->isVisible() || !cW->underMouse() || override)
-        return;
-
-    QCursor c = w->cursor();
-    cursor->changeCursor(&c, w);
+        cursorCursor = w->cursor();
+        cursorWidget = w;
+    } while (0);
+    foreach (QWeakPointer<QGraphicsSystemCursor> cursor, QGraphicsSystemCursor::getInstances())
+        if (cursor)
+            cursor.data()->changeCursor(&cursorCursor, cursorWidget);
 }
 #endif //QT_NO_CURSOR 
 

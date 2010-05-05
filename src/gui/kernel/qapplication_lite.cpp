@@ -691,9 +691,11 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterface::MouseEvent *
 
     QMouseEvent ev(type, localPoint, globalPoint, button, buttons, modifiers);
 
-    QPointer<QGraphicsSystemCursor> cursor = QGraphicsSystemCursor::getInstance();
-    if (cursor)
-        cursor->pointerEvent(ev);
+    QList<QWeakPointer<QGraphicsSystemCursor> > cursors = QGraphicsSystemCursor::getInstances();
+    foreach (QWeakPointer<QGraphicsSystemCursor> cursor, cursors) {
+        if (cursor)
+            cursor.data()->pointerEvent(ev);
+    }
 
     QApplication::sendSpontaneousEvent(mouseWidget, &ev);
 }
