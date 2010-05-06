@@ -27,7 +27,7 @@ Component {
                 id: whiteRect; x: 6; width: 50; height: 50; color: "white"; smooth: true
                 anchors.verticalCenter: parent.verticalCenter
 
-                Loading { x: 1; y: 1; width: 48; height: 48; visible: realImage.status != 1 }
+                Loading { x: 1; y: 1; width: 48; height: 48; visible: realImage.status != Image.Ready }
                 Image { id: realImage; source: userImage; x: 1; y: 1; width:48; height:48 }
             }
             Text { id:txt; y:4; x: 56

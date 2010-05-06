@@ -145,7 +145,7 @@ Rectangle {
 
         width: 8; height: view.height; anchors.right: view.right
         opacity: 0
-        orientation: "Vertical"
+        orientation: Qt.Vertical
         position: view.visibleArea.yPosition
         pageSize: view.visibleArea.heightRatio
 

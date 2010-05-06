@@ -37,7 +37,7 @@ Item {
             UserModel { user: rssModel.authName; id: userModel }
             Component { id: imgDelegate;
                 Item {
-                    Loading { width:48; height:48; visible: realImage.status != 1 }
+                    Loading { width:48; height:48; visible: realImage.status != Image.Ready }
                     Image { source: image; width:48; height:48; id: realImage }
                 }
             }
