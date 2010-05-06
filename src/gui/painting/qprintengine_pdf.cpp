@@ -1225,7 +1225,7 @@ void QPdfEnginePrivate::printString(const QString &string) {
     const ushort *utf16 = string.utf16();
     
     for (int i=0; i < string.size(); ++i) {
-        char part[2] = {(*(utf16 + i)) >> 8, (*(utf16 + i)) & 0xff};
+        char part[2] = {char((*(utf16 + i)) >> 8), char((*(utf16 + i)) & 0xff)};
         for(int j=0; j < 2; ++j) {
             if (part[j] == '(' || part[j] == ')' || part[j] == '\\')
                 array.append('\\');
