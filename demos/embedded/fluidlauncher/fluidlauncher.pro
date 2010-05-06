@@ -99,6 +99,10 @@ symbian {
         reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/qmediaplayer_reg.rsc
     }
 
+    contains(QT_CONFIG, multimedia) {
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/spectrum_reg.rsc
+    }
+
 
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
 
@@ -177,6 +181,13 @@ symbian {
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.rsc
         mifs.sources += \
             $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.mif
+    }
+
+    contains(QT_CONFIG, multimedia) {
+        executables.sources += spectrum.exe fftreal.dll
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.rsc
+        mifs.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.mif
     }
 
     contains(QT_CONFIG, script) {
