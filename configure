@@ -5880,7 +5880,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
             fi
             CFG_EGL=no
             # If QtOpenGL would be built against OpenGL ES, disable it as we can't to that if EGL is missing
-            if [ "$CFG_OPENGL" = "es1" ||  "$CFG_OPENGL" = "es2" ]; then
+            if [ "$CFG_OPENGL" = "es1" -o "$CFG_OPENGL" = "es2" ]; then
                 CFG_OPENGL=no
             fi
         fi
