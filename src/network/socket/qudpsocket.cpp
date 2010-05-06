@@ -347,6 +347,7 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
                                     MulticastMode mode)
 {
     Q_D(QUdpSocket);
+    QT_CHECK_BOUND("QUdpSocket::joinMulticastGroup()", false);
     d->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopback,
                                (mode & MulticastLoopback) ? 1 : 0);
     return d->socketEngine->joinMulticastGroup(groupAddress, sourceAddress, interface);
@@ -368,6 +369,7 @@ bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
                                      const QHostAddress &sourceAddress,
                                      const QNetworkInterface &interface)
 {
+    QT_CHECK_BOUND("QUdpSocket::leaveMulticastGroup()", false);
     return d_func()->socketEngine->leaveMulticastGroup(groupAddress, sourceAddress, interface);
 }
 
