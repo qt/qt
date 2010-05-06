@@ -634,9 +634,9 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
             ssm4.imr_multiaddr.s_addr = htonl(groupAddress.toIPv4Address());
             ssm4.imr_sourceaddr.s_addr = htonl(sourceAddress.toIPv4Address());
 #else
-            // unreachable
+            // system doesn't support SSM
             d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                        QNativeSocketEnginePrivate::ProtocolUnsupportedErrorString);
+                        QNativeSocketEnginePrivate::OperationUnsupportedErrorString);
             return false;
 #endif
         } else {
@@ -675,6 +675,8 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
                         QNativeSocketEnginePrivate::OperationUnsupportedErrorString);
             break;
         default:
+            d->setError(QAbstractSocket::UnknownSocketError,
+                        QNativeSocketEnginePrivate::UnknownSocketErrorString);
             break;
         }
         return false;
