@@ -24,7 +24,7 @@ wince* {
 } else:symbian {
     DEFINES += QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     TARGET.EPOCHEAPSIZE="0x100 0x1000000"
-    TARGET.CAPABILITY="ALL -TCB"
+    TARGET.CAPABILITY=NetworkServices
 
     certFiles.sources = certs ssl.tar.gz
     certFiles.path    = .

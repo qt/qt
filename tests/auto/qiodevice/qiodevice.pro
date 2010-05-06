@@ -14,6 +14,7 @@ wince*: {
    addFiles.sources = tst_qiodevice.cpp
    addFiles.path = .
    DEPLOYMENT += addFiles
+   TARGET.CAPABILITY = NetworkServices
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
    contains(QT_CONFIG, qt3support):QT += qt3support
