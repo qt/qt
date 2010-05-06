@@ -1020,6 +1020,11 @@
         overflow:hidden;
 
 }
+
+.indexboxcont .section {
+  float: left;
+}
+
     .indexboxcont .section p
     {
         padding-top: 20px;
@@ -1028,7 +1033,7 @@
     .indexboxcont .sectionlist
     {
         display: inline-block;
-        width: 33%;
+		width: 32.5%;
         padding: 0;
     }
     .indexboxcont .sectionlist ul
@@ -1057,6 +1062,12 @@
         color: #00732f;
         text-decoration: none;
     }
+	
+	.indexbox .indexIcon {
+	width: 11%;
+	}
+
+	
     .indexbox .indexIcon span
     {
         display: block;
@@ -1085,25 +1096,11 @@
         clear: both;
         visibility: hidden;
     }
-	/*
-
-
-
-    .lastcol
-    {
-        display: inline-block;
-        vertical-align: top;
-        padding: 0;
-        max-width: 25%;
-    }
-
-    .tricol .lastcol
-    {
-        margin-left: -6px;
-    }
-	*/
 	
-    /* end indexbox */
+
+    /* end of screen media */
+
+	
 }
 /* end of screen media */
 

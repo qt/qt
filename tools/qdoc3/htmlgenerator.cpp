@@ -1795,32 +1795,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     //out() << "  <title>Qt Reference Documentation</title>";
     out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
     out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
-	out() << "	<script type=\"text/javascript\">         \n";
-	out() << "	$(document).ready(function () {\n";
-	out() << "        $('#pageType').keyup(function () {\n";
-	out() << "          var searchString = document.getElementById('pageType').value;\n";
-	out() << "          if ((searchString == null) || (searchString.length < 3)) {\n";
-	out() << "removeResults();\n";
-	out() << "      	   		CheckEmptyAndLoadList();\n";
-	out() << "return;\n";
-	out() << "		   }\n";
-	out() << "            if (this.timer) clearTimeout(this.timer);\n";
-	out() << "            this.timer = setTimeout(function () {\n";
-	out() << "              $.ajax({\n";
-	out() << "                contentType: \"application/x-www-form-urlencoded\",\n";
-	out() << "                url: 'http://' + location.host + '/nokiasearch/GetDataServlet',\n";
-	out() << "                data: 'searchString='+searchString,\n";
-	out() << "                dataType:'xml',\n";
-	out() << "type: 'post',	 \n";
-	out() << "                success: function (response, textStatus) {\n";
-	out() << "                    removeResults();\n";
-	out() << "                    processNokiaData(response);\n";
-	out() << "}     \n";
-	out() << "              });\n";
-	out() << "            }, 500);\n";
-	out() << "        });\n";
-	out() << "      }); \n";
-	out() << "</script>\n";
+    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
     out() << "</head>\n";
 
     if (offlineDocs)
@@ -1868,7 +1843,6 @@ void HtmlGenerator::generateFooter(const Node *node)
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
-	      out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
           out() << "</body>\n";
           out() <<   "</html>\n";
 }

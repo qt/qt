@@ -3,7 +3,6 @@ $('.t_button').mouseover(function() {
     $('.t_button').css('cursor','pointer');
 		/*document.getElementById(this.id).style.cursor='pointer';*/
 });
-
 /* END non link areas  */
 $('#smallA').click(function() {
 		$('.content .heading,.content h1, .content h2, .content h3, .content p, .content li, .content table').css('font-size','smaller');
@@ -38,120 +37,62 @@ $('#bigA').click(function() {
 var lookupCount = 0;
 var articleCount = 0;
 var exampleCount = 0;
-var qturl = ""; // change to  0
-function processNokiaData(response){
-	var propertyTags = response.getElementsByTagName('page');
-	var ulStartElement = "<ul>";
-	var ulEndElement = "</ul>";
-	 
-	for (var i=0; i< propertyTags.length; i++) {
-		
-		  var full_address_lookup   = "<li><a href='"+qturl+"";
-		  var full_address_topic    = "<li><a href='"+qturl+"";
-		  var full_address_examples = "<li><a href='"+qturl+"";
-		 
-		 if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
-			 lookupCount=0;
-			 document.getElementById('live001').style.display = "block";
-			 
-			 for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
-				    full_address_lookup = full_address_lookup + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
-					full_address_lookup =  full_address_lookup + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue
-					+ '</a></li>' ;
+var qturl = ""; // change from "http://doc.qt.nokia.com/4.6/" to 0 so we can have relative links
 
-// $('#list002 li').remove();
-// $('#tbl002').prepend('<li>foo1</li>');
-// $('#tbl002').prepend('<li>bar2</li>');
+function processNokiaData(response){
+	// debug $('.content').prepend('<li>handling search results</li>'); // debuging
+	var propertyTags = response.getElementsByTagName('page');
+	
+ 	for (var i=0; i< propertyTags.length; i++) {
+		var linkStart   = "<li class=\"liveResult\"><a href='"+qturl+"";
+		var linkEnd  = "</a></li>";
+		
+		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
+			lookupCount=0;
+			//$('.live001').css('display','block');
+			
+			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
+				full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+				full_li_element = full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd;
 					
-					$('ul001').prepend(full_address_lookup);
-					
+				$('#ul001').prepend(full_li_element);
 		   		}
 			}
-		 
-			if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
-				articleCount = 0;
-				 document.getElementById('live002').style.display = "block";
-				for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
-					full_address_topic = full_address_topic + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
-					full_address_topic =  full_address_topic + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue
-					+ '</a></li>';
-					
-					$('ul002').prepend(full_address_lookup);
-			   		}
-			}
-			if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
-				exampleCount = 0;
-				 document.getElementById('live003').style.display = "block";
-
-				 for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
-					full_address_examples = full_address_examples + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
-					full_address_examples =  full_address_examples + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue
-					+ '</a></li>';
-					
-					$('ul003').prepend(full_address_lookup);
-			   		}
-				}
-		
-	}	
-
-
 	 
-	if(lookupCount == 0){loadLookupList();}
-    if(articleCount == 0){loadArticleList();}
-	if(exampleCount == 0){loadExampleList();}
+		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
+			articleCount = 0;
+	 		//$('.live002').css('display','block');
+				 
+			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
+			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
+					
+				$('#ul002').prepend(full_li_element);
+	   		}
+		}
+		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
+			exampleCount = 0;
+	 		//$('.live003').css('display','block');
+
+			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
+			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
+					
+				$('#ul003').prepend(full_li_element);
+	   		}
+		} 
+	}	
+	 
+	if(lookupCount == 0){$('#ul001').prepend('<li>no result</li>');$('#ul001 li').css('display','block');}
+    if(articleCount == 0){$('#ul002').prepend('<li>no result</li>');$('#ul002 li').css('display','block');}
+	if(exampleCount == 0){$('#ul003').prepend('<li>no result</li>');$('#ul003 li').css('display','block');}
 	// reset count variables;
 	 lookupCount=0;
 	 articleCount = 0;
      exampleCount = 0;
 	
 }
-function removeResults() {
 
-// get hold of the non-default li elements and delete them
- $('.live li').remove();
-
-
-	/*  var resultsTableLookup = document.getElementById('div001');
-	var recordslookup = resultsTableLookup.rows.length;
-	
-	for (var i=(recordslookup-1); i> 0; i--){
-		// resultsTableLookup.deleteRow(i); 
-					    
-	}
-
-	var resultsTableTopic = document.getElementById('div002');
-	var recordstopic = resultsTableTopic.rows.length;
-	for (var i=(recordstopic-1); i> 0; i--){
-		// alert("delete: " + i);
-		// resultsTableTopic.deleteRow(i);
-	}
-
-	
-	var resultsTableexample = document.getElementById('div003');
-	var recordsexample = resultsTableexample.rows.length;
-	for (var i=(recordsexample-1); i> 0; i--)
-		// resultsTableexample.deleteRow(i);
-
-	removeList();	 */
-}
-       
-function removeList(){
- 	// var resultsTableLookuplist = document.getElementById('ul001');
-	// var recordlookuplist = resultsTableLookuplist.rows.length;
-	// for (var i=(recordlookuplist-1); i> 0; i--)
-		// resultsTableLookuplist.deleteRow(i);
-
-	// var resultsTableArticlelist = document.getElementById('ul002');
-	// var recordArticlelist = resultsTableArticlelist.rows.length;
-	// for (var i=(recordArticlelist-1); i> 0; i--)
-		// resultsTableArticlelist.deleteRow(i);
-
-	// var resultsTableExamplelist = document.getElementById('ul003');
-	// var recordExamplelist = resultsTableExamplelist.rows.length;
-	// for (var i=(recordExamplelist-1); i> 0; i--)
-		// resultsTableExamplelist.deleteRow(i);
- }
- 
 //build regular expression object to find empty string or any number of blank
 var blankRE=/^\s*$/;
 function CheckEmptyAndLoadList()
@@ -161,114 +102,44 @@ function CheckEmptyAndLoadList()
 	{
 	//empty inputbox
 		// load default li elements into the ul if empty
-		loadAllList(); 
-		//alert("loadAllList");
-        document.getElementById('live001').style.display = "none";
-        document.getElementById('live002').style.display = "none";
-        document.getElementById('live003').style.display = "none";	
-        document.getElementById('list001').style.display = "block";
-        document.getElementById('list002').style.display = "block";
-        document.getElementById('list003').style.display = "block";
+	//	loadAllList(); // replaced
+	 $('.defaultLink').css('display','block');
+	// $('.liveResult').css('display','none');
 	}else{
-		removeList();
-		//alert("removeList");
-		document.getElementById('live001').style.display = "block";
-		document.getElementById('live002').style.display = "block";
-		document.getElementById('live003').style.display = "block";
-		 
+	 $('.defaultLink').css('display','none');
 	}
 }
-function loadAllList(){
-
-	/*var fullAddressListLookup   = "<ul><li><a href='"+qturl+"modules.html'>All modules</a></li>" 
-		+ "<li><a href='"+qturl+"classes.html'>All classes</a></li>"  
-		+ "<li><a href='"+qturl+"functions.html'>All functions</a></li>"  
-		+ "<li><a href='"+qturl+"platform-specific.html'>Platform specifics</a></li>"  
-		+ "</ul>";
-	// var rowlistlookup = document.getElementById('ul001').insertRow(-1);
-	// var celllistlookup = rowlistlookup.insertCell(-1);
-	// celllistlookup.style.padding="0 0 0 0";
-	//celllistlookup.style.width="10px";
-	//celllistlookup.style.background = "yellow";
-	//celllistlookup.innerHTML = fullAddressListLookup ;
 
 
- 
-  
-	var fullAddressListArticle  = "<ul><li><a href='"+qturl+"object.html'>QObject model</a></li>" 
-		+ "<li><a href='"+qturl+"eventsandfilters.html'>Events, signals &amp; slots</a></li>"  
-		+ "<li><a href='"+qturl+"paintsystem.html'>Graphics &amp; Paint system</a></li>"  
-		+ "<li><a href='"+qturl+"declarativeui.html'>Qt Quick</a></li>"  
-		+ "<li><a href='"+qturl+"widgets-and-layouts.html'>Widget style &amp; layout</a></li>" 
-		+ "</ul>";
-	// var rowlistarticle = document.getElementById('ul002').insertRow(-1);
-	// var celllistarticle = rowlistarticle.insertCell(-1);
-	// celllistarticle.style.padding="0 0 0 0";
-	//celllistarticle.innerHTML = fullAddressListArticle ;
+// Loads on doc ready
+	$(document).ready(function () {
+        $('#pageType').keyup(function () {
+          var searchString = $('#pageType').val() ;
+          if ((searchString == null) || (searchString.length < 3)) {
+				 $('.liveResult').remove(); // replaces removeResults();
+      	   		CheckEmptyAndLoadList();
+				$('.report').remove();
+				// debug$('.content').prepend('<li>too short or blank</li>'); // debug
+				return;
+		   }
+            if (this.timer) clearTimeout(this.timer);
+            this.timer = setTimeout(function () {
+				// debug$('.content').prepend('<li>new search started </li>');// debug
+				// debug$('.content').prepend('<p class=\"report\">Search string ' +searchString +'</p>'); // debug
 
- 
-	var fullAddressListExample   = "<ul><li><a href='"+qturl+"examples.html'>All examples</a></li>" 
-		+ "<li><a href='"+qturl+"tutorials.html'>All tutorials</a></li>"  
-		+ "<li><a href='"+qturl+"#'>Qt Quick examples</a></li>"  
-		+ "<li><a href='"+qturl+"#'>Desktop examples</a></li>"  
-		+ "<li><a href='"+qturl+"#'>Device examples</a></li>"  
-		+ "</ul>";
-	// var rowlistexample = document.getElementById('ul003').insertRow(-1);
-	// var celllistexample = rowlistexample.insertCell(-1);
-	// celllistexample.style.padding="0 0 0 0";
-	//celllistexample.innerHTML = fullAddressListExample ;*/
-	
-}
+               $.ajax({
+                contentType: "application/x-www-form-urlencoded",
+                url: 'http://' + location.host + '/nokiasearch/GetDataServlet',
+                data: 'searchString='+searchString,
+                dataType:'xml',
+				type: 'post',	 
+                success: function (response, textStatus) {
 
-function loadLookupList(){
-	
-	/*var fullAddressListLookup   = "<ul><li><a href='"+qturl+"modules.html'>All modules</a></li>" 
-		+ "<li><a href='"+qturl+"classes.html'>All classes</a></li>"  
-		+ "<li><a href='"+qturl+"functions.html'>All functions</a></li>"  
-		+ "<li><a href='"+qturl+"platform-specific.html'>Platform specifics</a></li>"  
-		+ "</ul>";
-	// var rowlistlookup = document.getElementById('ul001').insertRow(-1);
-	// var celllistlookup = rowlistlookup.insertCell(-1);
-	// celllistlookup.style.padding="0 0 0 0";
-	//celllistlookup.style.width="10px";
-	//celllistlookup.style.background = "yellow";
-	celllistlookup.innerHTML = fullAddressListLookup ;
-	document.getElementById('live001').style.display = "none";
-	document.getElementById('list001').style.display = "block";
-	//alert("loadLookupList")
-*/
-}
-function loadArticleList(){ 
-  /*
-	var fullAddressListArticle  = "<ul><li><a href='"+qturl+"object.html'>QObject model</a></li>" 
-		+ "<li><a href='"+qturl+"eventsandfilters.html'>Events, signals &amp; slots</a></li>"  
-		+ "<li><a href='"+qturl+"paintsystem.html'>Graphics &amp; Paint system</a></li>"  
-		+ "<li><a href='"+qturl+"declarativeui.html'>Qt Quick</a></li>"  
-		+ "<li><a href='"+qturl+"widgets-and-layouts.html'>Widget style &amp; layout</a></li>" 
-		+ "</ul>";
-	// var rowlistarticle = document.getElementById('ul002').insertRow(-1);
-	// var celllistarticle = rowlistarticle.insertCell(-1);
-	// celllistarticle.style.padding="0 0 0 0";
-	celllistarticle.innerHTML = fullAddressListArticle ;
-	document.getElementById('live002').style.display = "none";
-	document.getElementById('list002').style.display = "block";*/
-	}
+				$('.liveResult').remove(); // replaces removeResults();
+                processNokiaData(response);
 
-function loadExampleList(){
- /*
-	var fullAddressListExample   = "<ul><li><a href='"+qturl+"examples.html'>All examples</a></li>" 
-		+ "<li><a href='"+qturl+"tutorials.html'>All tutorials</a></li>"  
-		+ "<li><a href='"+qturl+"#'>Qt Quick examples</a></li>"  
-		+ "<li><a href='"+qturl+"#'>Desktop examples</a></li>"  
-		+ "<li><a href='"+qturl+"#'>Desktop examples</a></li>"  
-		+ "</ul>";
-	// var rowlistexample = document.getElementById('ul003').insertRow(-1);
-	// var celllistexample = rowlistexample.insertCell(-1);
-	// celllistexample.style.padding="0 0 0 0";
-	celllistexample.innerHTML = fullAddressListExample ;
-	document.getElementById('live003').style.display = "none";
-	document.getElementById('list003').style.display = "block";*/
-	
-}
-
-
+ }     
+              });
+            }, 500);
+        });
+      }); 
