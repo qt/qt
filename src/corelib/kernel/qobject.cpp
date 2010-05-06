@@ -515,12 +515,14 @@ QMetaCallEvent::QMetaCallEvent(int id, const QObject *sender, int signalId,
  */
 QMetaCallEvent::~QMetaCallEvent()
 {
-    for (int i = 0; i < nargs_; ++i) {
-        if (types_[i] && args_[i])
-            QMetaType::destroy(types_[i], args_[i]);
+    if (types_) {
+        for (int i = 0; i < nargs_; ++i) {
+            if (types_[i] && args_[i])
+                QMetaType::destroy(types_[i], args_[i]);
+        }
+        qFree(types_);
+        qFree(args_);
     }
-    if (types_) qFree(types_);
-    if (args_) qFree(args_);
 #ifndef QT_NO_THREAD
     if (semaphore_)
         semaphore_->release();
