@@ -2535,7 +2535,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
     Q_Q(QWidget);
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QStyle *origStyle = 0;
+    QWeakPointer<QStyle> origStyle;
 #endif
 
 #ifdef Q_WS_MAC
@@ -2549,7 +2549,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         createExtra();
 
 #ifndef QT_NO_STYLE_STYLESHEET
-        origStyle = extra->style;
+        origStyle = extra->style.data();
 #endif
         extra->style = newStyle;
     }
@@ -2578,6 +2578,14 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         }
     }
 
+#ifndef QT_NO_STYLE_STYLESHEET
+    if (!qobject_cast<QStyleSheetStyle*>(newStyle)) {
+        if (const QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(origStyle.data())) {
+            cssStyle->clearWidgetFont(q);
+        }
+    }
+#endif
+
     QEvent e(QEvent::StyleChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -2585,16 +2593,8 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
 #endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (!qobject_cast<QStyleSheetStyle*>(newStyle)) {
-        if (const QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(origStyle)) {
-            cssStyle->clearWidgetFont(q);
-        }
-    }
-#endif
-
-#ifndef QT_NO_STYLE_STYLESHEET
     // dereference the old stylesheet style
-    if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(origStyle))
+    if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(origStyle.data()))
         proxy->deref();
 #endif
 }
