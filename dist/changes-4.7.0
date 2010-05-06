@@ -53,7 +53,8 @@ QtCore
 
  - QXmlStreamReader
     * [QTBUG-9196] fixed crash when parsing
-
+ - QTimer
+    * singleShot with 0 timeout will now avoid allocating objects
 
 QtGui
 -----
@@ -74,9 +75,25 @@ QtGui
 
 QtNetwork
 ---------
-
- - [QTBUG-8206] QNetworkAccessManager: add method to send custom requests
- - [QTBUG-9618] [MR 2372] send secure cookies only over secure connections
+ - QHostInfo: Added a small 60 second DNS cache
+ - QNetworkAccessManager
+  * Performance improvements for file:// and http://
+  * Crash fixes
+  * Improvements on HTTP pipelining
+  * Fix problem with canReadLine()
+  * Fix problem with HTTP 100 reply
+  * Some new attributes for QNetworkRequest
+  * [QTBUG-8206] add method to send custom requests
+  * [QTBUG-9618] [MR 2372] send secure cookies only over secure connections
+  * [QTBUG-7713] Fix bug related to re-sending request
+  * [QTBUG-7673] Fix issue with some webservers
+ - Sockets
+  * Better support for derived QTcpServer
+  * [QTBUG-7054] Fix error handling with waitFor*() for socket engine
+  * [QTBUG-7316, QTBUG-7317] Also handle unknown errors from socket engine
+ - SSL
+  * [QTBUG-2515] Do not make OpenSSL prompt for a password
+  * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
 
 QtXmlPatterns
 -------------
