@@ -8,7 +8,6 @@ Item {
     Image {
         anchors.horizontalCenter: parent.horizontalCenter
         source: "../pics/shadow.png"; y: smiley.minHeight + 58
-        transformOrigin: Item.Center
 
         // The scale property depends on the y position of the smiley face.
         scale: smiley.y * 0.5 / (smiley.minHeight - smiley.maxHeight)
@@ -32,7 +31,7 @@ Item {
                 from: smiley.minHeight; to: smiley.maxHeight
                 easing.type: Easing.OutExpo; duration: 300
             }
-            
+
             // Then move back to minHeight in 1 second, using the OutBounce easing function
             NumberAnimation {
                 from: smiley.maxHeight; to: smiley.minHeight
