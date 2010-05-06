@@ -625,7 +625,7 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
     } else
 #endif
     if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
-        if (!sourceAddress.isNull()) {
+        if (sourceAddress != QHostAddress::Any) {
 #ifndef QT_NO_MULTICAST_SSM
             sockOpt = howSsm4;
             sockArg = &ssm4;
