@@ -573,9 +573,11 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
         if (model->completePending()) {
             // complete
             listItem->item->setZValue(1);
+            listItem->item->setParentItem(q->viewport());
             model->completeItem();
+        } else {
+            listItem->item->setParentItem(q->viewport());
         }
-        listItem->item->setParentItem(q->viewport());
         QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
         if (sectionCriteria && sectionCriteria->delegate()) {

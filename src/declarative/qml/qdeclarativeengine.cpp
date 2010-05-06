@@ -329,8 +329,10 @@ void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
     QObjectPrivate *p = QObjectPrivate::get(o);
     Q_ASSERT(p->declarativeData);
     QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
-    if (d->ownContext)
+    if (d->ownContext && d->context) {
         d->context->destroy();
+        d->context = 0;
+    }
 }
 
 void QDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
