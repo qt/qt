@@ -755,7 +755,7 @@ void QDeclarativeScriptAction::setScript(const QDeclarativeScriptString &script)
 }
 
 /*!
-    \qmlproperty QString ScriptAction::scriptName
+    \qmlproperty string ScriptAction::scriptName
     This property holds the the name of the StateChangeScript to run.
 
     This property is only valid when ScriptAction is used as part of a transition.
@@ -791,7 +791,7 @@ void QDeclarativeScriptActionPrivate::execute()
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.evaluate();
-        if (expr.hasError()) 
+        if (expr.hasError())
             qmlInfo(q) << expr.error();
     }
 }
@@ -844,7 +844,7 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
     The PropertyAction is immediate -
     the target property is not animated to the selected value in any way.
-    
+
     \sa QtDeclarative
 */
 /*!
@@ -2347,7 +2347,7 @@ QDeclarativeParentAnimation::~QDeclarativeParentAnimation()
 }
 
 /*!
-    \qmlproperty item ParentAnimation::target
+    \qmlproperty Item ParentAnimation::target
     The item to reparent.
 
     When used in a transition, if no target is specified all
@@ -2370,7 +2370,7 @@ void QDeclarativeParentAnimation::setTarget(QDeclarativeItem *target)
 }
 
 /*!
-    \qmlproperty item ParentAnimation::newParent
+    \qmlproperty Item ParentAnimation::newParent
     The new parent to animate to.
 
     If not set, then the parent defined in the end state of the transition.
@@ -2392,7 +2392,7 @@ void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
 }
 
 /*!
-    \qmlproperty item ParentAnimation::via
+    \qmlproperty Item ParentAnimation::via
     The item to reparent via. This provides a way to do an unclipped animation
     when both the old parent and new parent are clipped
 
