@@ -51,6 +51,10 @@ Third party components
 QtCore
 ------
 
+ - QXmlStreamReader
+    * [QTBUG-9196] fixed crash when parsing
+
+
 QtGui
 -----
 
@@ -66,6 +70,21 @@ QtGui
  - QCommonStyle
     * Fixed a bug that led to missing text pixels in QTabBar when using
       small font sizes. (QTBUG-7137)
+
+
+QtNetwork
+---------
+
+ - [QTBUG-8206] QNetworkAccessManager: add method to send custom requests
+ - [QTBUG-9618] [MR 2372] send secure cookies only over secure connections
+
+QtXmlPatterns
+-------------
+
+ - [QTBUG-8920] fixed crash with anonymous types in XsdSchemaChecker
+ - [QTBUG-8394] include/import/redefine schemas only once
+ - QXmlSchema: fix crash with referencing elements
+
 
 ****************************************************************************
 *                          Database Drivers                                *
