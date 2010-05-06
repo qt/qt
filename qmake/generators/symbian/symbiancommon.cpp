@@ -464,9 +464,12 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
 QString SymbianCommonGenerator::removePathSeparators(QString &file)
 {
     QString ret = file;
-    while (ret.indexOf(QDir::separator()) > 0) {
-        ret.remove(0, ret.indexOf(QDir::separator()) + 1);
-    }
+
+    if (QDir::separator().unicode() != '/')
+        ret.replace(QDir::separator(), QLatin1Char('/'));
+
+    if (ret.indexOf(QLatin1Char('/')) > 0)
+        ret.remove(0, ret.lastIndexOf(QLatin1Char('/')) + 1);
 
     return ret;
 }

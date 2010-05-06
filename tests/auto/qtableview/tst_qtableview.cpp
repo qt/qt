@@ -202,6 +202,7 @@ private slots:
     void taskQTBUG_8585_crashForNoGoodReason();
     void taskQTBUG_7774_RtoLVisualRegionForSelection();
     void taskQTBUG_8777_scrollToSpans();
+    void taskQTBUG_10169_sizeHintForRow();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -476,6 +477,11 @@ public:
     QModelIndexList selectedIndexes() const
     {
         return QTableView::selectedIndexes();
+    }
+
+    int sizeHintForRow(int row) const
+    {
+        return QTableView::sizeHintForRow(row);
     }
 
     bool checkSignalOrder;
@@ -4040,6 +4046,21 @@ void tst_QTableView::taskQTBUG_8777_scrollToSpans()
         QTest::keyClick(&table, Qt::Key_Down);
 
     QVERIFY(table.verticalScrollBar()->value() > 10);
+}
+
+void tst_QTableView::taskQTBUG_10169_sizeHintForRow()
+{ 
+    QtTestTableView tableView; 
+    QStandardItemModel model(1, 3); 
+    model.setData(model.index(0, 0), "Word wrapping text goes here.");
+    tableView.setModel(&model);
+    tableView.verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    const int orderedHeight = tableView.sizeHintForRow(0);
+    tableView.horizontalHeader()->moveSection(2, 0);
+    const int reorderedHeight = tableView.sizeHintForRow(0);
+
+    //the order of the columns shouldn't matter.
+    QCOMPARE(orderedHeight, reorderedHeight);
 }
 
 QTEST_MAIN(tst_QTableView)

@@ -346,21 +346,26 @@ void QDeclarativeRepeater::itemsInserted(int index, int count)
 void QDeclarativeRepeater::itemsRemoved(int index, int count)
 {
     Q_D(QDeclarativeRepeater);
-    if (!isComponentComplete())
+    if (!isComponentComplete() || count <= 0)
         return;
     while (count--) {
         QDeclarativeItem *item = d->deletables.takeAt(index);
-        if (item) {
+        if (item)
             d->model->release(item);
-        }
+        else
+            break;
     }
 }
 
 void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
 {
     Q_D(QDeclarativeRepeater);
-    if (!isComponentComplete())
+    if (!isComponentComplete() || count <= 0)
         return;
+    if (from + count > d->deletables.count()) {
+        regenerate();
+        return;
+    }
     QList<QDeclarativeItem*> removed;
     int removedCount = count;
     while (removedCount--)

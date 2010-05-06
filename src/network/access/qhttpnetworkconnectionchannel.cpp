@@ -317,6 +317,13 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         return;
     }
 
+    // only run when the QHttpNetworkConnection is not currently being destructed, e.g.
+    // this function is called from _q_disconnected which is called because
+    // of ~QHttpNetworkConnectionPrivate
+    if (!qobject_cast<QHttpNetworkConnection*>(connection)) {
+        return;
+    }
+
     qint64 bytes = 0;
     QAbstractSocket::SocketState socketState = socket->state();
 
@@ -384,7 +391,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                 if (!replyPrivate->expectContent()) {
                     replyPrivate->state = QHttpNetworkReplyPrivate::AllDoneState;
                     allDone();
-                    return;
+                    break;
                 }
             }
             break;

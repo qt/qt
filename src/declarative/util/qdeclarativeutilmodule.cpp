@@ -122,6 +122,6 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,7,"Animation",QDeclarativeAbstractAnimation::tr("Animation is an abstract class"));
 
     qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,7, "ListModel", new QDeclarativeListModelParser);
-    qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 6, "PropertyChanges", new QDeclarativePropertyChangesParser);
-    qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 6, "Connections", new QDeclarativeConnectionsParser);
+    qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 7, "PropertyChanges", new QDeclarativePropertyChangesParser);
+    qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 7, "Connections", new QDeclarativeConnectionsParser);
 }

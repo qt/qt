@@ -146,6 +146,7 @@ private slots:
 
 private:
     QString getVideoFileName();
+    int menuBarHeight() const;
 
     PreviewDeviceSkin *skin;
     QSize skinscreensize;

@@ -43,14 +43,13 @@
 #include "edge.h"
 #include "node.h"
 
-#include <QDebug>
-#include <QGraphicsScene>
-#include <QWheelEvent>
+#include <QtGui>
 
 #include <math.h>
 
-GraphWidget::GraphWidget()
-    : timerId(0)
+//! [0]
+GraphWidget::GraphWidget(QWidget *parent)
+    : QGraphicsView(parent), timerId(0)
 {
     QGraphicsScene *scene = new QGraphicsScene(this);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -60,8 +59,12 @@ GraphWidget::GraphWidget()
     setViewportUpdateMode(BoundingRectViewportUpdate);
     setRenderHint(QPainter::Antialiasing);
     setTransformationAnchor(AnchorUnderMouse);
-    setResizeAnchor(AnchorViewCenter);
+    scale(qreal(0.8), qreal(0.8));
+    setMinimumSize(400, 400);
+    setWindowTitle(tr("Elastic Nodes"));
+//! [0]
 
+//! [1]
     Node *node1 = new Node(this);
     Node *node2 = new Node(this);
     Node *node3 = new Node(this);
@@ -102,18 +105,18 @@ GraphWidget::GraphWidget()
     node7->setPos(-50, 50);
     node8->setPos(0, 50);
     node9->setPos(50, 50);
-
-    scale(qreal(0.8), qreal(0.8));
-    setMinimumSize(400, 400);
-    setWindowTitle(tr("Elastic Nodes"));
 }
+//! [1]
 
+//! [2]
 void GraphWidget::itemMoved()
 {
     if (!timerId)
         timerId = startTimer(1000 / 25);
 }
+//! [2]
 
+//! [3]
 void GraphWidget::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
@@ -146,7 +149,9 @@ void GraphWidget::keyPressEvent(QKeyEvent *event)
         QGraphicsView::keyPressEvent(event);
     }
 }
+//! [3]
 
+//! [4]
 void GraphWidget::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
@@ -171,12 +176,16 @@ void GraphWidget::timerEvent(QTimerEvent *event)
         timerId = 0;
     }
 }
+//! [4]
 
+//! [5]
 void GraphWidget::wheelEvent(QWheelEvent *event)
 {
     scaleView(pow((double)2, -event->delta() / 240.0));
 }
+//! [5]
 
+//! [6]
 void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
 {
     Q_UNUSED(rect);
@@ -213,12 +222,15 @@ void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)
     painter->setPen(Qt::black);
     painter->drawText(textRect, message);
 }
+//! [6]
 
+//! [7]
 void GraphWidget::scaleView(qreal scaleFactor)
 {
-    qreal factor = matrix().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
+    qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
     if (factor < 0.07 || factor > 100)
         return;
 
     scale(scaleFactor, scaleFactor);
 }
+//! [7]

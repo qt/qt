@@ -99,7 +99,7 @@ int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
      * stack by doing a runtime check of the SDK version. */
 #if !defined(__SERIES60_31__)
     const int err = m_player->SetVolume(mmfVolume);
-    if (QSysInfo::s60Version() >= QSysInfo::SV_S60_5_0)
+    if (QSysInfo::s60Version() >= QSysInfo::SV_S60_3_2)
         return err;
     else
         return KErrNone;

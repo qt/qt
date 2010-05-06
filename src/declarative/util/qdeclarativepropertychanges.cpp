@@ -125,8 +125,9 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
 
-    Changes to an Item's parent or anchors should be done using the associated change elements
-    (ParentChange and AnchorChanges, respectively) rather than PropertyChanges.
+    Anchor margins should be changed with PropertyChanges, but other anchor changes or changes to
+    an Item's parent should be done using the associated change elements
+    (ParentChange and AnchorChanges, respectively).
 
     \sa {qmlstate}{States}, QtDeclarative
 */

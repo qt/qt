@@ -327,16 +327,21 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       dragMode(QGraphicsView::NoDrag),
       sceneInteractionAllowed(true), hasSceneRect(false),
       connectedToScene(false),
-      mousePressButton(Qt::NoButton),
+      useLastMouseEvent(false),
       identityMatrix(true),
       dirtyScroll(true),
       accelerateScrolling(true),
+      keepLastCenterPoint(true),
+      transforming(false),
+      handScrolling(false),
+      mustAllocateStyleOptions(false),
+      mustResizeBackgroundPixmap(true),
+      fullUpdatePending(true),
+      hasUpdateClip(false),
+      mousePressButton(Qt::NoButton),
       leftIndent(0), topIndent(0),
       lastMouseEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
-      useLastMouseEvent(false),
-      keepLastCenterPoint(true),
       alignment(Qt::AlignCenter),
-      transforming(false),
       transformationAnchor(QGraphicsView::AnchorViewCenter), resizeAnchor(QGraphicsView::NoAnchor),
       viewportUpdateMode(QGraphicsView::MinimalViewportUpdate),
       optimizationFlags(0),
@@ -345,14 +350,11 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       rubberBanding(false),
       rubberBandSelectionMode(Qt::IntersectsItemShape),
 #endif
-      handScrolling(false), handScrollMotions(0), cacheMode(0),
-      mustAllocateStyleOptions(false),
-      mustResizeBackgroundPixmap(true),
+      handScrollMotions(0), cacheMode(0),
 #ifndef QT_NO_CURSOR
       hasStoredOriginalCursor(false),
 #endif
       lastDragDropEvent(0),
-      fullUpdatePending(true),
       updateSceneSlotReimplementedChecked(false)
 {
     styleOptions.reserve(QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS);
@@ -854,10 +856,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
     if (fullUpdatePending) {
         viewport->update();
     } else if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->update(dirtyBoundingRect.adjusted(-1, -1, 1, 1));
-        else
-            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+        viewport->update(dirtyBoundingRect);
     } else {
         viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
     }
@@ -882,46 +881,92 @@ static inline void QRect_unite(QRect *rect, const QRect &other)
     }
 }
 
-bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
+/*
+   Calling this function results in update rects being clipped to the item's
+   bounding rect. Note that updates prior to this function call is not clipped.
+   The clip is removed by passing 0.
+*/
+void QGraphicsViewPrivate::setUpdateClip(QGraphicsItem *item)
 {
-    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
+    Q_Q(QGraphicsView);
+    // We simply ignore the request if the update mode is either FullViewportUpdate
+    // or NoViewportUpdate; in that case there's no point in clipping anything.
+    if (!item || viewportUpdateMode == QGraphicsView::NoViewportUpdate
+        || viewportUpdateMode == QGraphicsView::FullViewportUpdate) {
+        hasUpdateClip = false;
+        return;
+    }
+
+    // Calculate the clip (item's bounding rect in view coordinates).
+    // Optimized version of:
+    // QRect clip = item->deviceTransform(q->viewportTransform())
+    //              .mapRect(item->boundingRect()).toAlignedRect();
+    QRect clip;
+    if (item->d_ptr->itemIsUntransformable()) {
+        QTransform xform = item->deviceTransform(q->viewportTransform());
+        clip = xform.mapRect(item->boundingRect()).toAlignedRect();
+    } else if (item->d_ptr->sceneTransformTranslateOnly && identityMatrix) {
+        QRectF r(item->boundingRect());
+        r.translate(item->d_ptr->sceneTransform.dx() - horizontalScroll(),
+                    item->d_ptr->sceneTransform.dy() - verticalScroll());
+        clip = r.toAlignedRect();
+    } else if (!q->isTransformed()) {
+        clip = item->d_ptr->sceneTransform.mapRect(item->boundingRect()).toAlignedRect();
+    } else {
+        QTransform xform = item->d_ptr->sceneTransform;
+        xform *= q->viewportTransform();
+        clip = xform.mapRect(item->boundingRect()).toAlignedRect();
+    }
+
+    if (hasUpdateClip) {
+        // Intersect with old clip.
+        updateClip &= clip;
+    } else {
+        updateClip = clip;
+        hasUpdateClip = true;
+    }
+}
+
+bool QGraphicsViewPrivate::updateRegion(const QRectF &rect, const QTransform &xform)
+{
+    if (rect.isEmpty())
         return false;
 
-    const QRect boundingRect = r.boundingRect();
-    if (!intersectsViewport(boundingRect, viewport->width(), viewport->height()))
-        return false; // Update region outside viewport.
-
-    switch (viewportUpdateMode) {
-    case QGraphicsView::FullViewportUpdate:
-        fullUpdatePending = true;
-        viewport->update();
-        break;
-    case QGraphicsView::BoundingRectViewportUpdate:
-        QRect_unite(&dirtyBoundingRect, boundingRect);
-        if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
-            fullUpdatePending = true;
-            viewport->update();
-        }
-        break;
-    case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
-    case QGraphicsView::MinimalViewportUpdate:
-    {
-        const QVector<QRect> &rects = r.rects();
-        for (int i = 0; i < rects.size(); ++i) {
-            if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-                dirtyRegion += rects.at(i).adjusted(-1, -1, 1, 1);
-            else
-                dirtyRegion += rects.at(i).adjusted(-2, -2, 2, 2);
-        }
-        break;
+    if (viewportUpdateMode != QGraphicsView::MinimalViewportUpdate
+        && viewportUpdateMode != QGraphicsView::SmartViewportUpdate) {
+        // No point in updating with QRegion granularity; use the rect instead.
+        return updateRectF(xform.mapRect(rect));
     }
-    default:
-        break;
+
+    // Update mode is either Minimal or Smart, so we have to do a potentially slow operation,
+    // which is clearly documented here: QGraphicsItem::setBoundingRegionGranularity.
+    const QRegion region = xform.map(QRegion(rect.toAlignedRect()));
+    QRect viewRect = region.boundingRect();
+    const bool dontAdjustForAntialiasing = optimizationFlags & QGraphicsView::DontAdjustForAntialiasing;
+    if (dontAdjustForAntialiasing)
+        viewRect.adjust(-1, -1, 1, 1);
+    else
+        viewRect.adjust(-2, -2, 2, 2);
+    if (!intersectsViewport(viewRect, viewport->width(), viewport->height()))
+        return false; // Update region for sure outside viewport.
+
+    const QVector<QRect> &rects = region.rects();
+    for (int i = 0; i < rects.size(); ++i) {
+        viewRect = rects.at(i);
+        if (dontAdjustForAntialiasing)
+            viewRect.adjust(-1, -1, 1, 1);
+        else
+            viewRect.adjust(-2, -2, 2, 2);
+        if (hasUpdateClip)
+            viewRect &= updateClip;
+        dirtyRegion += viewRect;
     }
 
     return true;
 }
 
+// NB! Assumes the rect 'r' is already aligned and adjusted for antialiasing.
+// For QRectF use updateRectF(const QRectF &) to ensure proper adjustments.
 bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
@@ -935,7 +980,10 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        QRect_unite(&dirtyBoundingRect, r);
+        if (hasUpdateClip)
+            QRect_unite(&dirtyBoundingRect, r & updateClip);
+        else
+            QRect_unite(&dirtyBoundingRect, r);
         if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
             fullUpdatePending = true;
             viewport->update();
@@ -943,10 +991,10 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            dirtyRegion += r.adjusted(-1, -1, 1, 1);
+        if (hasUpdateClip)
+            dirtyRegion += r & updateClip;
         else
-            dirtyRegion += r.adjusted(-2, -2, 2, 2);
+            dirtyRegion += r;
         break;
     default:
         break;
@@ -1037,10 +1085,28 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 void QGraphicsViewPrivate::updateInputMethodSensitivity()
 {
     Q_Q(QGraphicsView);
-    bool enabled = scene && scene->focusItem()
-                   && (scene->focusItem()->flags() & QGraphicsItem::ItemAcceptsInputMethod);
+    QGraphicsItem *focusItem = 0;
+    bool enabled = scene && (focusItem = scene->focusItem())
+                   && (focusItem->d_ptr->flags & QGraphicsItem::ItemAcceptsInputMethod);
     q->setAttribute(Qt::WA_InputMethodEnabled, enabled);
     q->viewport()->setAttribute(Qt::WA_InputMethodEnabled, enabled);
+
+    if (!enabled) {
+        q->setInputMethodHints(0);
+        return;
+    }
+
+    QGraphicsProxyWidget *proxy = focusItem->d_ptr->isWidget && focusItem->d_ptr->isProxyWidget()
+                                    ? static_cast<QGraphicsProxyWidget *>(focusItem) : 0;
+    if (!proxy) {
+        q->setInputMethodHints(focusItem->inputMethodHints());
+    } else if (QWidget *widget = proxy->widget()) {
+    if (QWidget *fw = widget->focusWidget())
+        widget = fw;
+        q->setInputMethodHints(widget->inputMethodHints());
+    } else {
+        q->setInputMethodHints(0);
+    }
 }
 
 /*!
@@ -3385,8 +3451,14 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Items
     if (!(d->optimizationFlags & IndirectPainting)) {
+        const quint32 oldRectAdjust = d->scene->d_func()->rectAdjust;
+        if (d->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            d->scene->d_func()->rectAdjust = 1;
+        else
+            d->scene->d_func()->rectAdjust = 2;
         d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : 0,
                                       &d->exposedRegion, viewport());
+        d->scene->d_func()->rectAdjust = oldRectAdjust;
         // Make sure the painter's world transform is restored correctly when
         // drawing without painter state protection (DontSavePainterState).
         // We only change the worldTransform() so there's no need to do a full-blown

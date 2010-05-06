@@ -20,10 +20,10 @@ TARGET = ../tst_qsharedmemory
 wince*:{
 requires(contains(QT_CONFIG,script))
 QT += gui script
-addFiles.sources = ../../lackey/lackey.exe ../../lackey/scripts
-addFiles.path = lackey
+addFiles.sources = $$OUT_PWD/../../lackey/lackey.exe ../../lackey/scripts
+addFiles.path = .
 DEPLOYMENT += addFiles
-DEFINES += SRCDIR=\\\"\\\"
+DEFINES += SRCDIR=\\\".\\\"
 }else:symbian*{
 requires(contains(QT_CONFIG,script))
 QT += gui script

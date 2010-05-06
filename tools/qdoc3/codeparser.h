@@ -78,6 +78,7 @@ class CodeParser
     static void initialize(const Config& config);
     static void terminate();
     static CodeParser *parserForLanguage(const QString& language);
+    static const QString titleFromName(const QString& name);
 
  protected:
     QSet<QString> commonMetaCommands();
@@ -88,6 +89,7 @@ class CodeParser
  private:
     static QList<CodeParser *> parsers;
     static bool showInternal;
+    static QMap<QString,QString> nameToTitle;
 };
 
 QT_END_NAMESPACE

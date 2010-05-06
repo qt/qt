@@ -44,12 +44,16 @@
 #include <QtCore/qdebug.h>
 #include <QMap>
 #include <QThread>
+
+#include "qgstvideobuffer.h"
+
+#ifdef Q_WS_X11
 #include <QtGui/qx11info_x11.h>
+#include "qgstxvimagebuffer.h"
+#endif
 
 #include "qvideosurfacegstsink.h"
 
-#include "qgstvideobuffer.h"
-#include "qgstxvimagebuffer.h"
 
 
 
@@ -131,11 +135,13 @@ GstFlowReturn QVideoSurfaceGstDelegate::render(GstBuffer *buffer)
 
     QGstVideoBuffer *videoBuffer = 0;
 
+#ifdef Q_WS_X11
     if (G_TYPE_CHECK_INSTANCE_TYPE(buffer, QGstXvImageBuffer::get_type())) {
         QGstXvImageBuffer *xvBuffer = reinterpret_cast<QGstXvImageBuffer *>(buffer);
         QVariant handle = QVariant::fromValue(xvBuffer->xvImage);
         videoBuffer = new QGstVideoBuffer(buffer, m_bytesPerLine, XvHandleType, handle);
     } else
+#endif
         videoBuffer = new QGstVideoBuffer(buffer, m_bytesPerLine);
 
     m_frame = QVideoFrame(
@@ -387,7 +393,9 @@ void QVideoSurfaceGstSink::instance_init(GTypeInstance *instance, gpointer g_cla
     Q_UNUSED(g_class);
 
     sink->delegate = 0;
+#ifdef Q_WS_X11
     sink->pool = new QGstXvImageBufferPool();
+#endif
     sink->lastRequestedCaps = 0;
     sink->lastBufferCaps = 0;
     sink->lastSurfaceFormat = new QVideoSurfaceFormat;
@@ -396,8 +404,11 @@ void QVideoSurfaceGstSink::instance_init(GTypeInstance *instance, gpointer g_cla
 void QVideoSurfaceGstSink::finalize(GObject *object)
 {
     VO_SINK(object);
+#ifdef Q_WS_X11
     delete sink->pool;
     sink->pool = 0;
+#endif
+
     delete sink->lastSurfaceFormat;
     sink->lastSurfaceFormat = 0;
 
@@ -588,6 +599,8 @@ GstFlowReturn QVideoSurfaceGstSink::buffer_alloc(
 
     *buffer = 0;
 
+#ifdef Q_WS_X11
+
     if (sink->lastRequestedCaps && gst_caps_is_equal(sink->lastRequestedCaps, caps)) {
         //qDebug() << "reusing last caps";
         *buffer = GST_BUFFER(sink->pool->takeBuffer(*sink->lastSurfaceFormat, sink->lastBufferCaps));
@@ -649,6 +662,7 @@ GstFlowReturn QVideoSurfaceGstSink::buffer_alloc(
 
     *buffer =  GST_BUFFER(sink->pool->takeBuffer(surfaceFormat, intersection));
 
+#endif
     return GST_FLOW_OK;
 }
 

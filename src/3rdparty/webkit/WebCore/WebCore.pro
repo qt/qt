@@ -35,12 +35,12 @@ symbian: {
         # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
         QMAKE_LFLAGS.ARMCC += --rw-base 0xE00000
         MMP_RULES += ALWAYS_BUILD_AS_ARM
-    } else {
+    }  else {
         QMAKE_CFLAGS -= --thumb
         QMAKE_CXXFLAGS -= --thumb
     }
+    CONFIG(release, debug|release): QMAKE_CXXFLAGS.ARMCC += -OTime -O3
 }
-
 
 isEmpty(OUTPUT_DIR): OUTPUT_DIR = ..
 include($$PWD/../WebKit.pri)
@@ -55,8 +55,6 @@ CONFIG(standalone_package) {
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = $$PWD/../JavaScriptCore/generated
 
     PRECOMPILED_HEADER = $$PWD/../WebKit/qt/WebKit_pch.h
-
-    symbian: TARGET += $${QT_LIBINFIX}
 } else {
     isEmpty(WC_GENERATED_SOURCES_DIR):WC_GENERATED_SOURCES_DIR = generated
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = ../JavaScriptCore/generated
@@ -71,12 +69,13 @@ CONFIG(standalone_package) {
 
 CONFIG(QTDIR_build) {
     include($$QT_SOURCE_TREE/src/qbase.pri)
-    # Qt will set the version for us when building in Qt's tree
 } else {
-    VERSION = $${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
     DESTDIR = $$OUTPUT_DIR/lib
     !static: DEFINES += QT_MAKEDLL
+    symbian: TARGET =$$TARGET$${QT_LIBINFIX}
 }
+include($$PWD/../WebKit/qt/qtwebkit_version.pri)
+VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
 unix {
     QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork
@@ -531,6 +530,7 @@ SOURCES += \
     dom/TreeWalker.cpp \
     dom/UIEvent.cpp \
     dom/UIEventWithKeyState.cpp \
+    dom/ViewportArguments.cpp \
     dom/WebKitAnimationEvent.cpp \
     dom/WebKitTransitionEvent.cpp \
     dom/WheelEvent.cpp \
@@ -1242,6 +1242,7 @@ HEADERS += \
     dom/TreeWalker.h \
     dom/UIEvent.h \
     dom/UIEventWithKeyState.h \
+    dom/ViewportArguments.h \
     dom/WebKitAnimationEvent.h \
     dom/WebKitTransitionEvent.h \
     dom/WheelEvent.h \
@@ -2950,5 +2951,5 @@ symbian {
     }
 }
 
-# WebKit doesn't compile in C++0x mode
+# Disable C++0x mode in WebCore for those who enabled it in their Qt's mkspec
 *-g++*:QMAKE_CXXFLAGS -= -std=c++0x -std=gnu++0x

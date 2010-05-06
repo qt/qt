@@ -93,7 +93,7 @@ behaviour.  As it is a template, a single QML component can be "run" multiple ti
 produce several objects, each of which are said to be \e instances of the component.  
 
 Once created, instances are not dependent on the component that created them, so they can 
-operate on independent data.  Here is an example of a simple "button" component that is 
+operate on independent data.  Here is an example of a simple "Button" component that is 
 instantiated four times, each with a different value for its \c text property.
 
 \table

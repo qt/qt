@@ -1270,11 +1270,7 @@ void QDockWidget::setFloating(bool floating)
 
     d->setWindowState(floating, false, floating ? r : QRect());
     if (floating && r.isNull()) {
-        QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(this->layout());
-        QRect titleArea = layout->titleArea();
-        int h = layout->verticalTitleBar ? titleArea.width() : titleArea.height();
-        QPoint p = mapToGlobal(QPoint(h, h));
-        move(p);
+	    setAttribute(Qt::WA_Moved, false); //we want it at the default position
     }
 }
 

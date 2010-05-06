@@ -1812,7 +1812,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
-        d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+        d_ptr->updatePaintedViewBoundingRects(/*children=*/true);
 
     // Keep the old flags to compare the diff.
     GraphicsItemFlags oldFlags = GraphicsItemFlags(d_ptr->flags);
@@ -5432,6 +5432,24 @@ void QGraphicsItemPrivate::removeExtraItemCache()
     unsetExtra(ExtraCacheData);
 }
 
+void QGraphicsItemPrivate::updatePaintedViewBoundingRects(bool updateChildren)
+{
+    if (!scene)
+        return;
+
+    for (int i = 0; i < scene->d_func()->views.size(); ++i) {
+        QGraphicsViewPrivate *viewPrivate = scene->d_func()->views.at(i)->d_func();
+        QRect rect = paintedViewBoundingRects.value(viewPrivate->viewport);
+        rect.translate(viewPrivate->dirtyScrollOffset);
+        viewPrivate->updateRect(rect);
+    }
+
+    if (updateChildren) {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->updatePaintedViewBoundingRects(true);
+    }
+}
+
 // Traverses all the ancestors up to the top-level and updates the pointer to
 // always point to the top-most item that has a dirty scene transform.
 // It then backtracks to the top-most dirty item and start calculating the
@@ -5635,8 +5653,9 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 // Adjust with 2 pixel margin. Notice the loss of precision
                 // when converting to QRect.
                 int adjust = 2;
+                QRectF scrollRect = !rect.isNull() ? rect : boundingRect();
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
-                QRect irect = rect.toRect().translated(-br.x(), -br.y());
+                QRect irect = scrollRect.toRect().translated(-br.x(), -br.y());
 
                 pix.scroll(dx, dy, irect);
 
@@ -5644,11 +5663,11 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
 
                 // Translate the existing expose.
                 foreach (QRectF exposedRect, c->exposed)
-                    c->exposed += exposedRect.translated(dx, dy) & rect;
+                    c->exposed += exposedRect.translated(dx, dy) & scrollRect;
 
                 // Calculate exposure.
                 QRegion exposed;
-                QRect r = rect.toRect();
+                QRect r = scrollRect.toRect();
                 exposed += r;
                 exposed -= r.translated(dx, dy);
                 foreach (QRect rect, exposed.rects())
@@ -7131,7 +7150,11 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     // calculate their diff by mapping viewport coordinates
                     // directly to parent coordinates.
                     // COMBINE
-                    QTransform viewToParentTransform = (item->d_func()->transformData->computedFullTransform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
+                    QTransform itemTransform;
+                    if (item->d_ptr->transformData)
+                        itemTransform = item->d_ptr->transformData->computedFullTransform();
+                    itemTransform.translate(item->d_ptr->pos.x(), item->d_ptr->pos.y());
+                    QTransform viewToParentTransform = itemTransform
                                                        * (item->sceneTransform() * view->viewportTransform()).inverted();
                     currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
                     buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
@@ -7325,6 +7348,18 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 {
     Q_D(QGraphicsItem);
     d->imHints = hints;
+    if (!hasFocus())
+        return;
+    d->scene->d_func()->updateInputMethodSensitivityInViews();
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+    QWidget *fw = QApplication::focusWidget();
+    if (!fw)
+        return;
+    for (int i = 0 ; i < scene()->views().count() ; ++i)
+        if (scene()->views().at(i) == fw)
+            if (QInputContext *inputContext = fw->inputContext())
+                inputContext->update();
+#endif
 }
 
 /*!
@@ -7337,13 +7372,11 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 void QGraphicsItem::updateMicroFocus()
 {
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
-    if (QWidget *fw = qApp->focusWidget()) {
-        if (qt_widget_private(fw)->ic || qApp->d_func()->inputContext) {
-            if (QInputContext *ic = fw->inputContext()) {
-                if (ic)
-                    ic->update();
-            }
-        }
+    if (QWidget *fw = QApplication::focusWidget()) {
+        for (int i = 0 ; i < scene()->views().count() ; ++i)
+            if (scene()->views().at(i) == fw)
+                if (QInputContext *inputContext = fw->inputContext())
+                    inputContext->update();
 #ifndef QT_NO_ACCESSIBILITY
         // ##### is this correct
         QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);

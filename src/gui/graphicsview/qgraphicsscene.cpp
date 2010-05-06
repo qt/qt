@@ -290,13 +290,20 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       updateAll(false),
       calledEmitUpdated(false),
       processDirtyItemsEmitted(false),
-      selectionChanging(0),
       needSortTopLevelItems(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
       scenePosDescendantsUpdatePending(false),
       stickyFocus(false),
       hasFocus(false),
+      lastMouseGrabberItemHasImplicitMouseGrab(false),
+      allItemsIgnoreHoverEvents(true),
+      allItemsUseDefaultCursor(true),
+      painterStateProtection(true),
+      sortCacheEnabled(false),
+      allItemsIgnoreTouchEvents(true),
+      selectionChanging(0),
+      rectAdjust(2),
       focusItem(0),
       lastFocusItem(0),
       tabFocusFirst(0),
@@ -305,16 +312,10 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       activationRefCount(0),
       childExplicitActivation(0),
       lastMouseGrabberItem(0),
-      lastMouseGrabberItemHasImplicitMouseGrab(false),
       dragDropItem(0),
       enterWidget(0),
       lastDropAction(Qt::IgnoreAction),
-      allItemsIgnoreHoverEvents(true),
-      allItemsUseDefaultCursor(true),
-      painterStateProtection(true),
-      sortCacheEnabled(false),
-      style(0),
-      allItemsIgnoreTouchEvents(true)
+      style(0)
 {
 }
 
@@ -820,13 +821,13 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
 #endif //QT_NO_IM
     }
 
-    if (item) {
+    if (item)
         focusItem = item;
+    updateInputMethodSensitivityInViews();
+    if (item) {
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
     }
-
-    updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -3217,7 +3218,10 @@ void QGraphicsScene::update(const QRectF &rect)
             // Update all views.
             for (int i = 0; i < d->views.size(); ++i) {
                 QGraphicsView *view = d->views.at(i);
-                view->d_func()->updateRegion(QRegion(view->mapFromScene(rect).boundingRect()));
+                if (view->isTransformed())
+                    view->d_func()->updateRectF(view->viewportTransform().mapRect(rect));
+                else
+                    view->d_func()->updateRectF(rect);
             }
         } else {
             d->updatedRects << rect;
@@ -4701,11 +4705,11 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (drawItem) {
         const QRectF brect = adjustedItemEffectiveBoundingRect(item);
         ENSURE_TRANSFORM_PTR
-        QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toRect()
-                                                        : transformPtr->mapRect(brect).toRect();
+        QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toAlignedRect()
+                                                        : transformPtr->mapRect(brect).toAlignedRect();
+        viewBoundingRect.adjust(-rectAdjust, -rectAdjust, rectAdjust, rectAdjust);
         if (widget)
             item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
-        viewBoundingRect.adjust(-1, -1, 1, 1);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect)
                                  : !viewBoundingRect.normalized().isEmpty();
         if (!drawItem) {
@@ -4954,34 +4958,29 @@ static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate
     if (itemIsUntransformable) {
         const QTransform xform = itemq->deviceTransform(viewq->viewportTransform());
         if (!item->hasBoundingRegionGranularity)
-            return view->updateRect(xform.mapRect(rect).toRect());
-        return view->updateRegion(xform.map(QRegion(rect.toRect())));
+            return view->updateRectF(xform.mapRect(rect));
+        return view->updateRegion(rect, xform);
     }
 
     if (item->sceneTransformTranslateOnly && view->identityMatrix) {
         const qreal dx = item->sceneTransform.dx();
         const qreal dy = item->sceneTransform.dy();
-        if (!item->hasBoundingRegionGranularity) {
-            QRectF r(rect);
-            r.translate(dx - view->horizontalScroll(), dy - view->verticalScroll());
-            return view->updateRect(r.toRect());
-        }
-        QRegion r(rect.toRect());
-        r.translate(qRound(dx) - view->horizontalScroll(), qRound(dy) - view->verticalScroll());
-        return view->updateRegion(r);
+        QRectF r(rect);
+        r.translate(dx - view->horizontalScroll(), dy - view->verticalScroll());
+        return view->updateRectF(r);
     }
 
     if (!viewq->isTransformed()) {
         if (!item->hasBoundingRegionGranularity)
-            return view->updateRect(item->sceneTransform.mapRect(rect).toRect());
-        return view->updateRegion(item->sceneTransform.map(QRegion(rect.toRect())));
+            return view->updateRectF(item->sceneTransform.mapRect(rect));
+        return view->updateRegion(rect, item->sceneTransform);
     }
 
     QTransform xform = item->sceneTransform;
     xform *= viewq->viewportTransform();
     if (!item->hasBoundingRegionGranularity)
-        return view->updateRect(xform.mapRect(rect).toRect());
-    return view->updateRegion(xform.map(QRegion(rect.toRect())));
+        return view->updateRectF(xform.mapRect(rect));
+    return view->updateRegion(rect, xform);
 }
 
 void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren,
@@ -5117,9 +5116,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
+        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
+        if (itemClipsChildrenToShape) {
+            // Make sure child updates are clipped to the item's bounding rect.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(item);
+        }
         if (!dirtyAncestorContainsChildren) {
             dirtyAncestorContainsChildren = item->d_ptr->fullUpdatePending
-                                            && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+                                            && itemClipsChildrenToShape;
         }
         const bool allChildrenDirty = item->d_ptr->allChildrenDirty;
         const bool parentIgnoresVisible = item->d_ptr->ignoreVisible;
@@ -5141,6 +5146,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 child->d_ptr->allChildrenDirty = 1;
             }
             processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
+        }
+
+        if (itemClipsChildrenToShape) {
+            // Reset updateClip.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(0);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();
@@ -5197,8 +5208,14 @@ void QGraphicsScene::drawItems(QPainter *painter,
     // Determine view, expose and flags.
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     QRegion *expose = 0;
-    if (view)
+    const quint32 oldRectAdjust = d->rectAdjust;
+    if (view) {
         expose = &view->d_func()->exposedRegion;
+        if (view->d_func()->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            d->rectAdjust = 1;
+        else
+            d->rectAdjust = 2;
+    }
 
     // Find all toplevels, they are already sorted.
     QList<QGraphicsItem *> topLevelItems;
@@ -5211,6 +5228,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         }
     }
 
+    d->rectAdjust = oldRectAdjust;
     // Reset discovery bits.
     for (int i = 0; i < topLevelItems.size(); ++i)
         topLevelItems.at(i)->d_ptr->itemDiscovered = 0;

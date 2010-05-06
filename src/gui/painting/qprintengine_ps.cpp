@@ -485,7 +485,6 @@ void QPSPrintEnginePrivate::emitHeader(bool finished)
 
     QByteArray header;
     QPdf::ByteStream s(&header);
-    s << "%!PS-Adobe-1.0";
 
     qreal scale = 72. / ((qreal) q->metric(QPaintDevice::PdmDpiY));
     QRect pageRect = this->pageRect();
@@ -497,28 +496,32 @@ void QPSPrintEnginePrivate::emitHeader(bool finished)
     int width = pageRect.width();
     int height = pageRect.height();
     if (finished && pageCount == 1 && copies == 1 &&
-        ((fullPage && qt_gen_epsf) || (outputFileName.endsWith(QLatin1String(".eps"))))
-       ) {
+        ((fullPage && qt_gen_epsf) || (outputFileName.endsWith(QLatin1String(".eps")))))
+    {
+        // According to the EPSF 3.0 spec it is required that the PS
+        // version is PS-Adobe-3.0
+        s << "%!PS-Adobe-3.0";
         if (!boundingBox.isValid())
             boundingBox.setRect(0, 0, width, height);
         if (orientation == QPrinter::Landscape) {
             if (!fullPage)
                 boundingBox.translate(-mleft, -mtop);
             s << " EPSF-3.0\n%%BoundingBox: "
-              << (int)(printer->height() - boundingBox.bottom())*scale // llx
-              << (int)(printer->width() - boundingBox.right())*scale - 1 // lly
-              << (int)(printer->height() - boundingBox.top())*scale + 1 // urx
-              << (int)(printer->width() - boundingBox.left())*scale; // ury
+              << int((printer->height() - boundingBox.bottom())*scale) // llx
+              << int((printer->width() - boundingBox.right())*scale - 1) // lly
+              << int((printer->height() - boundingBox.top())*scale + 1) // urx
+              << int((printer->width() - boundingBox.left())*scale); // ury
         } else {
             if (!fullPage)
                 boundingBox.translate(mleft, -mtop);
             s << " EPSF-3.0\n%%BoundingBox: "
-              << (int)(boundingBox.left())*scale
-              << (int)(printer->height() - boundingBox.bottom())*scale - 1
-              << (int)(boundingBox.right())*scale + 1
-              << (int)(printer->height() - boundingBox.top())*scale;
+              << int((boundingBox.left())*scale)
+              << int((printer->height() - boundingBox.bottom())*scale - 1)
+              << int((boundingBox.right())*scale + 1)
+              << int((printer->height() - boundingBox.top())*scale);
         }
     } else {
+        s << "%!PS-Adobe-1.0";
         int w = width + (fullPage ? 0 : mleft + mright);
         int h = height + (fullPage ? 0 : mtop + mbottom);
         w = (int)(w*scale);

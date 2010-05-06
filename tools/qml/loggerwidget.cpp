@@ -50,7 +50,7 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
     m_keepClosed(false)
 {
     setAttribute(Qt::WA_QuitOnClose, false);
-    setWindowTitle(tr("Qt Declarative UI Viewer - Logger"));
+    setWindowTitle(tr("Logger"));
 }
 
 void LoggerWidget::append(const QString &msg)

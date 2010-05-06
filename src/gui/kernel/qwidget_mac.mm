@@ -2300,6 +2300,12 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
         if (q->testAttribute(Qt::WA_DropSiteRegistered))
             registerDropSite(true);
         transferChildren();
+
+        // Tell Cocoa explicit that we wan't the view to receive key events
+        // (regardless of focus policy) because this is how it works on other
+        // platforms (and in the carbon port):
+        if (!qApp->focusWidget())
+            [windowRef makeFirstResponder:nsview];
     }
 
     if (topExtra->posFromMove) {

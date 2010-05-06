@@ -148,7 +148,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isActiveConfig("staticlib")) {
         t << "LINK          = " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS          = " << "$(SUBLIBS) " << var("QMAKE_FRAMEWORKDIR_FLAGS") << " "
+        t << "LIBS          = " << "$(SUBLIBS) " << var("QMAKE_FRAMEWORKPATH_FLAGS") << " "
           << var("QMAKE_LIBDIR_FLAGS") << " " << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
     }
 
