@@ -3835,13 +3835,20 @@ void QWidgetPrivate::raise_sys()
         // required we will introduce special handling for some of them.
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
             OSWindowRef window = qt_mac_window_for(q);
-            if(![window isOnActiveSpace]) {
-                QWidget *parentWidget = q->parentWidget();
-                if(parentWidget) {
-                    OSWindowRef parentWindow = qt_mac_window_for(parentWidget);
-                    if(parentWindow && [parentWindow isOnActiveSpace]) {
-                        recreateMacWindow();
-                        window = qt_mac_window_for(q);
+            // isOnActiveSpace is available only from 10.6 onwards, so we need to check if it is
+            // available before calling it.
+            if([window respondsToSelector:@selector(isOnActiveSpace)]) {
+                if(![window performSelector:@selector(isOnActiveSpace)]) {
+                    QWidget *parentWidget = q->parentWidget();
+                    if(parentWidget) {
+                        OSWindowRef parentWindow = qt_mac_window_for(parentWidget);
+                        if(parentWindow && [parentWindow isOnActiveSpace]) {
+                            // The window was created in a different space. Therefore if we want
+                            // to show it in the current space we need to recreate it in the new
+                            // space.
+                            recreateMacWindow();
+                            window = qt_mac_window_for(q);
+                        }
                     }
                 }
             }
