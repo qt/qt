@@ -76,6 +76,7 @@ private slots:
     void focusOutClearSelection();
 
     void echoMode();
+    void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -803,6 +804,16 @@ void tst_qdeclarativetextinput::focusOutClearSelection()
     QApplication::processEvents();
     //The input lost the focus selection should be cleared
     QTRY_COMPARE(input.selectedText(), QLatin1String(""));
+}
+
+void tst_qdeclarativetextinput::geometrySignals()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("bindingWidth").toInt(), 400);
+    QCOMPARE(o->property("bindingHeight").toInt(), 500);
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)
