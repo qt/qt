@@ -37,7 +37,9 @@ HEADERS  += engine.h \
             waveform.h \
             wavfile.h
 
-INCLUDEPATH += ../fftreal
+fftreal_dir = ../3rdparty/fftreal
+
+INCLUDEPATH += $${fftreal_dir}
 
 RESOURCES = spectrum.qrc
 
@@ -58,7 +60,7 @@ symbian {
     } else {
         macx {
             # Link to fftreal framework
-            LIBS += -F../fftreal
+            LIBS += -F$${fftreal_dir}
             LIBS += -framework fftreal
         } else {
             # Link to dynamic library which is written to ../bin
@@ -92,7 +94,7 @@ symbian {
             QMAKE_POST_LINK = \
                 mkdir -p $${framework_dir} &&\
                 rm -rf $${framework_dir}/fftreal.framework &&\
-                cp -R ../fftreal/fftreal.framework $${framework_dir} &&\
+                cp -R $${fftreal_dir}/fftreal.framework $${framework_dir} &&\
                 install_name_tool -id @executable_path/../Frameworks/$${framework_name} \
                                   $${framework_dir}/$${framework_name} &&\
                 install_name_tool -change $${framework_name} \

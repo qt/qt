@@ -34,7 +34,7 @@ symbian {
     macx {
         CONFIG += lib_bundle
     } else {
-        DESTDIR = ../bin
+        DESTDIR = ../../bin
     }
 } 
 
