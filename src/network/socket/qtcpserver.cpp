@@ -562,7 +562,7 @@ QTcpSocket *QTcpServer::nextPendingConnection()
     to the other thread and create the QTcpSocket object there and
     use its setSocketDescriptor() method.
 
-    \sa newConnection(), nextPendingConnection()
+    \sa newConnection(), nextPendingConnection(), addPendingConnection()
 */
 void QTcpServer::incomingConnection(int socketDescriptor)
 {
@@ -584,6 +584,7 @@ void QTcpServer::incomingConnection(int socketDescriptor)
     Pending Connections mechanism.
 
     \sa incomingConnection()
+    \since 4.7
 */
 void QTcpServer::addPendingConnection(QTcpSocket* socket)
 {
