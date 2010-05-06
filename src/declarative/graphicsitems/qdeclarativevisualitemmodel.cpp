@@ -760,7 +760,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component VisualDataModel::delegate
+    \qmlproperty Component VisualDataModel::delegate
 
     The delegate provides a template defining each item instantiated by a view.
     The index is exposed as an accessible \c index property.  Properties of the

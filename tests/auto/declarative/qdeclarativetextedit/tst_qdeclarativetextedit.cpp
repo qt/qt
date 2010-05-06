@@ -84,7 +84,7 @@ private slots:
     void navigation();
     void readOnly();
     void sendRequestSoftwareInputPanelEvent();
-
+    void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -808,6 +808,17 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     QApplication::processEvents();
     QCOMPARE(ic.softwareInputPanelEventReceived, true);
 }
+
+void tst_qdeclarativetextedit::geometrySignals()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("bindingWidth").toInt(), 400);
+    QCOMPARE(o->property("bindingHeight").toInt(), 500);
+    delete o;
+}
+
 QTEST_MAIN(tst_qdeclarativetextedit)
 
 #include "tst_qdeclarativetextedit.moc"

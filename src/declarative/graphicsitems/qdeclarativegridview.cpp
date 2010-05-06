@@ -1056,7 +1056,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component GridView::delegate
+    \qmlproperty Component GridView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
@@ -1174,7 +1174,7 @@ int QDeclarativeGridView::count() const
 }
 
 /*!
-  \qmlproperty component GridView::highlight
+  \qmlproperty Component GridView::highlight
   This property holds the component to use as the highlight.
 
   An instance of the highlight component will be created for each view.

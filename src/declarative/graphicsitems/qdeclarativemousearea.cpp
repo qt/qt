@@ -746,7 +746,7 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
 /*!
     \qmlproperty Item MouseArea::drag.target
     \qmlproperty bool MouseArea::drag.active
-    \qmlproperty Axis MouseArea::drag.axis
+    \qmlproperty enumeration MouseArea::drag.axis
     \qmlproperty real MouseArea::drag.minimumX
     \qmlproperty real MouseArea::drag.maximumX
     \qmlproperty real MouseArea::drag.minimumY
@@ -757,7 +757,7 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \list
     \i \c target specifies the item to drag.
     \i \c active specifies if the target item is being currently dragged.
-    \i \c axis specifies whether dragging can be done horizontally (XAxis), vertically (YAxis), or both (XandYAxis)
+    \i \c axis specifies whether dragging can be done horizontally (Drag.XAxis), vertically (Drag.YAxis), or both (Drag.XandYAxis)
     \i the minimum and maximum properties limit how far the target can be dragged along the corresponding axes.
     \endlist
 

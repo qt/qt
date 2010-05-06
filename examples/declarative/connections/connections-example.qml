@@ -13,7 +13,6 @@ Rectangle {
         id: image
         source: "content/bg1.jpg"
         anchors.centerIn: parent
-        transformOrigin: Item.Center
         rotation: window.angle
 
         Behavior on rotation {

@@ -38,7 +38,7 @@
 
              states: [
                  State {
-                     name: "Show"; when: thumb.status == 1
+                     name: "Show"; when: thumb.status == Image.Ready
                      PropertyChanges { target: scaleMe; scale: 1 }
                  },
                  State {

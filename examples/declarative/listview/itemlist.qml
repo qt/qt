@@ -33,7 +33,7 @@ Rectangle {
         anchors { fill: parent; bottomMargin: 30 }
         model: itemModel
         preferredHighlightBegin: 0; preferredHighlightEnd: 0
-        highlightRangeMode: "StrictlyEnforceRange"
+        highlightRangeMode: ListView.StrictlyEnforceRange
         orientation: ListView.Horizontal
         snapMode: ListView.SnapOneItem; flickDeceleration: 2000
     }
@@ -55,7 +55,7 @@ Rectangle {
                     radius: 3
                     color: view.currentIndex == index ? "blue" : "white"
 
-                    MouseArea { 
+                    MouseArea {
                         width: 20; height: 20
                         anchors.centerIn: parent
                         onClicked: view.currentIndex = index

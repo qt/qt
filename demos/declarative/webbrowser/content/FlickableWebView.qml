@@ -105,14 +105,14 @@ Flickable {
                     property: "scale"
                     from: 1
                     to: 0 // set before calling
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                 }
                 NumberAnimation {
                     id: flickVX
                     target: flickable
                     property: "contentX"
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
@@ -121,7 +121,7 @@ Flickable {
                     id: flickVY
                     target: flickable
                     property: "contentY"
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
