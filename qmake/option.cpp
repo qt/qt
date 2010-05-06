@@ -558,7 +558,6 @@ void Option::applyHostMode()
        Option::dir_sep = "/";
        Option::obj_ext = ".o";
    }
-   Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);
 }
 
 bool Option::postProcessProject(QMakeProject *project)

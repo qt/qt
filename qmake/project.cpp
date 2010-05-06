@@ -3099,13 +3099,12 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
             place[var] = QStringList(Option::obj_ext);
         }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
-        if (place[var].isEmpty()) {
-            if (!Option::qmake_abslocation.isNull())
-                place[var] = QStringList(Option::qmake_abslocation);
-            else
-                place[var] = QStringList(Option::fixPathToTargetOS(
-                        QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake", false));
-        }
+        if (place[var].isEmpty())
+            place[var] = QStringList(Option::fixPathToTargetOS(
+                !Option::qmake_abslocation.isEmpty()
+                    ? Option::qmake_abslocation
+                    : QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake",
+                false));
     } else if (var == QLatin1String("EPOCROOT")) {
         if (place[var].isEmpty())
             place[var] = QStringList(epocRoot());
