@@ -63,9 +63,18 @@
 
 /*!
     \group qt-gui-concepts
-    \title Qt GUI Components
+    \title Qt GUI Construction
 
-    \brief The Qt components for constructing graphical user intefaces.
+    \brief The Qt components for constructing Graphical User Intefaces.
+
+    \generatelist {related}
+ */
+
+/*!
+    \group qt-graphics
+    \title Qt Graphics
+
+    \brief The Qt components for doing graphics.
 
     \generatelist {related}
  */
