@@ -48,7 +48,7 @@
 typedef CMdaAudioPlayerUtility CAudioPlayer;
 typedef MMdaAudioPlayerCallback MAudioPlayerObserver;
 
-#include <AudioOutput.h>
+#include <phonon/audiooutput.h>
 #include <MAudioOutputObserver.h>
 
 QT_BEGIN_NAMESPACE

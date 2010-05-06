@@ -607,7 +607,7 @@ mkdir -p "$outpath/config.tests"
 rm -f "$outpath/config.tests/.qmake.cache"
 cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
 
-QMakeVar add styles "cde mac motif plastique cleanlooks windows"
+QMakeVar add styles "cde mac motif plastique cleanlooks windows s60"
 QMakeVar add decorations "default windows styled"
 QMakeVar add mouse-drivers "pc"
 if [ "$UNAME_SYSTEM" = "Linux" ] ; then
@@ -7494,7 +7494,7 @@ then
     # We cannot use Linux's default export rules since they export everything.
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
     # Disable non-working features.
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT QT_NO_QFUTURE QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_CURSOR QT_NO_SYSTEMTRAYICON"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT QT_NO_QFUTURE QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_SYSTEMTRAYICON"
 fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
