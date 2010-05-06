@@ -322,7 +322,7 @@ void tst_QDeclarativeMouseArea::noOnClickedWithPressAndHold()
 
     QTest::qWait(1000);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMousePress);
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
     releaseEvent.setScenePos(QPointF(100, 100));
     releaseEvent.setButton(Qt::LeftButton);
     releaseEvent.setButtons(Qt::LeftButton);
