@@ -130,6 +130,8 @@ public:
     void windowFrameHoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     bool hasDecoration() const;
 
+    void setGeometryFromSetPos();
+
     // State
     inline int attributeToBitIndex(Qt::WidgetAttribute att) const
     {

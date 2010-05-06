@@ -5773,12 +5773,17 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         gf.glyphs = engine.shapedGlyphs(&si);
         gf.chars = engine.layoutData->string.unicode() + si.position;
         gf.num_chars = engine.length(item);
-        gf.width = si.width;
+        if (engine.forceJustification) {
+            for (int j=0; j<gf.glyphs.numGlyphs; ++j)
+                gf.width += gf.glyphs.effectiveAdvance(j);
+        } else {
+            gf.width = si.width;
+        }
         gf.logClusters = engine.logClusters(&si);
 
         drawTextItem(QPointF(x.toReal(), p.y()), gf);
 
-        x += si.width;
+        x += gf.width;
     }
 }
 
