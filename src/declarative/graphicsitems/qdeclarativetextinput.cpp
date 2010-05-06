@@ -706,14 +706,15 @@ bool QDeclarativeTextInput::hasAcceptableInput() const
 }
 
 /*!
-    \qmlproperty TextInput.EchoMode TextInput::echoMode
+    \qmlproperty enumeration TextInput::echoMode
 
     Specifies how the text should be displayed in the TextInput.
-    The default is Normal, which displays the text as it is. Other values
-    are Password, which displays asterixes instead of characters, NoEcho,
-    which displays nothing, and PasswordEchoOnEdit, which displays all but the
-    current character as asterixes.
-
+    \list
+    \o TextInput.Normal - Displays the text as it is. (Default)
+    \o TextInput.Password - Displays asterixes instead of characters.
+    \o TextInput.NoEcho - Displays nothing.
+    \o TextInput.PasswordEchoOnEdit - Displays all but the current character as asterixes.
+    \endlist
 */
 QDeclarativeTextInput::EchoMode QDeclarativeTextInput::echoMode() const
 {
@@ -1084,7 +1085,7 @@ void QDeclarativeTextInput::setPasswordCharacter(const QString &str)
    \qmlproperty string TextInput::displayText
 
    This is the text displayed in the TextInput.
-   
+
    If \l echoMode is set to TextInput::Normal, this holds the
    same value as the TextInput::text property. Otherwise,
    this property holds the text visible to the user, while

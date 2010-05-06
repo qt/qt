@@ -1488,7 +1488,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component ListView::delegate
+    \qmlproperty Component ListView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
@@ -1608,7 +1608,7 @@ int QDeclarativeListView::count() const
 }
 
 /*!
-    \qmlproperty component ListView::highlight
+    \qmlproperty Component ListView::highlight
     This property holds the component to use as the highlight.
 
     An instance of the highlight component will be created for each list.

@@ -61,7 +61,7 @@ Component {
                             id: mouse
                             anchors.fill: parent
                             drag.target: stickyPage
-                            drag.axis: "XandYAxis"
+                            drag.axis: Drag.XandYAxis
                             drag.minimumY: 0
                             drag.maximumY: page.height - 80
                             drag.minimumX: 100

@@ -26,7 +26,6 @@ Item {
     Image {
         anchors.horizontalCenter: parent.horizontalCenter
         source: "images/shadow.png"; y: smiley.minHeight + 58
-        transformOrigin: Item.Center
 
         // The scale property depends on the y position of the smiley face.
         scale: smiley.y * 0.5 / (smiley.minHeight - smiley.maxHeight)

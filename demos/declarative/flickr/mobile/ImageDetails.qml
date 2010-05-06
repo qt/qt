@@ -54,7 +54,11 @@ Flipable {
 
         Rectangle { anchors.fill: parent; color: "black"; opacity: 0.4 }
 
-        Common.Progress { anchors.centerIn: parent; width: 200; height: 18; progress: bigImage.progress; visible: bigImage.status!=1 }
+        Common.Progress {
+            anchors.centerIn: parent; width: 200; height: 18
+            progress: bigImage.progress; visible: bigImage.status != Image.Ready
+        }
+
         Flickable {
             id: flickable; anchors.fill: parent; clip: true
             contentWidth: imageContainer.width; contentHeight: imageContainer.height
@@ -69,7 +73,7 @@ Flipable {
                     anchors.centerIn: parent; smooth: !flickable.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
-                        if (status == 1 && width != 0) {
+                        if (status == Image.Ready && width != 0) {
                             slider.minimum = Math.min(flickable.width / width, flickable.height / height);
                             prevScale = Math.min(slider.minimum, 1);
                             slider.value = prevScale;
@@ -81,12 +85,12 @@ Flipable {
 
         Text {
             text: "Image Unavailable"
-            visible: bigImage.status == 'Error'
+            visible: bigImage.status == Image.Error
             anchors.centerIn: parent; color: "white"; font.bold: true
         }
 
         Common.Slider {
-            id: slider; visible: { bigImage.status == 1 && maximum > minimum }
+            id: slider; visible: { bigImage.status == Image.Ready && maximum > minimum }
             anchors {
                 bottom: parent.bottom; bottomMargin: 65
                 left: parent.left; leftMargin: 25
