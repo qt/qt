@@ -2508,7 +2508,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                     sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
                 const int iconHeight = (!buttonWidget->icon().isNull()) ? buttonWidget->iconSize().height() : 0;
                 const int textHeight = (buttonWidget->text().length() > 0) ?
-                    buttonWidget->fontMetrics().size(Qt::TextSingleLine, buttonWidget->text()).height() : 0;
+                    buttonWidget->fontMetrics().size(Qt::TextSingleLine, buttonWidget->text()).height() : opt->fontMetrics.height();
                 const int decoratorHeight = (buttonWidget->isCheckable()) ? pixelMetric(PM_IndicatorHeight) : 0;
 
                 const int contentHeight =
