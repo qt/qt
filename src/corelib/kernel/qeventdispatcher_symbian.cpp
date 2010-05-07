@@ -579,7 +579,9 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
             // on some devices we do get exception
             // close all exiting sockets
             // and reset default IAP
-            ::setdefaultif(0);
+            if(::setdefaultif(0) != KErrNone) // well we can't do much about it
+                qWarning("setdefaultif(0) failed");
+
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
