@@ -44,6 +44,7 @@
 #include "qdeclarativeitem.h"
 
 #include <qdeclarativecontext.h>
+#include <qdeclarativecontext_p.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeexpression.h>
 #include <qdeclarativepackage_p.h>
@@ -759,7 +760,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component VisualDataModel::delegate
+    \qmlproperty Component VisualDataModel::delegate
 
     The delegate provides a template defining each item instantiated by a view.
     The index is exposed as an accessible \c index property.  Properties of the
@@ -963,6 +964,13 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
     }
 
     if (d->m_cache.releaseItem(obj)) {
+        // Remove any bindings to avoid warnings due to parent change.
+        QObjectPrivate *p = QObjectPrivate::get(obj);
+        Q_ASSERT(p->declarativeData);
+        QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
+        if (d->ownContext && d->context)
+            d->context->clearExpressions();
+
         if (inPackage) {
             emit destroyingPackage(qobject_cast<QDeclarativePackage*>(obj));
         } else {

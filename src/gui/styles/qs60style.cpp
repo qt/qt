@@ -1546,18 +1546,35 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
+                const bool usesScrollButtons = 
+                    (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
+                const int roomForScrollButton = 
+                    usesScrollButtons ? QS60StylePrivate::pixelMetric(PM_TabBarScrollButtonWidth) : 0;
 
-                if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
-                        skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
-                        skinElement==QS60StylePrivate::SE_TabBarTabWestInactive||
-                        skinElement==QS60StylePrivate::SE_TabBarTabWestActive){
-                    optionTabAdj.rect.adjust(0, 0, 0, tabOverlap);
-                } else {
-                    if (directionMirrored)
-                        optionTabAdj.rect.adjust(-tabOverlap, 0, 0, 0);
+                // adjust for overlapping tabs and scrollbuttons, if necessary
+                if (skinElement == QS60StylePrivate::SE_TabBarTabEastInactive ||
+                        skinElement == QS60StylePrivate::SE_TabBarTabEastActive ||
+                        skinElement == QS60StylePrivate::SE_TabBarTabWestInactive ||
+                        skinElement == QS60StylePrivate::SE_TabBarTabWestActive){
+                    if (optionTabAdj.position == QStyleOptionTabV3::Beginning)
+                        optionTabAdj.rect.adjust(0, roomForScrollButton, 0, tabOverlap);
+                    else if (optionTabAdj.position == QStyleOptionTabV3::End)
+                        optionTabAdj.rect.adjust(0, 0, 0, tabOverlap);
                     else
-                        optionTabAdj.rect.adjust(0, 0, tabOverlap, 0);
+                        optionTabAdj.rect.adjust(0, 0, 0, tabOverlap);
+                } else {
+                    if (directionMirrored) {
+                        if (optionTabAdj.position == QStyleOptionTabV3::Beginning)
+                            optionTabAdj.rect.adjust(-tabOverlap, 0, -roomForScrollButton, 0);
+                        else
+                            optionTabAdj.rect.adjust(-tabOverlap, 0, 0, 0);
+                    } else {
+                        if (optionTabAdj.position == QStyleOptionTabV3::Beginning)
+                            optionTabAdj.rect.adjust(roomForScrollButton, 0, tabOverlap, 0);
+                        else
+                            optionTabAdj.rect.adjust(0, 0, tabOverlap, 0);
                     }
+                }
             }
             QS60StylePrivate::drawSkinElement(skinElement, painter, optionTabAdj.rect, flags);
         }
@@ -1570,7 +1587,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const int borderThickness = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             const int tabOverlap =
                 QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
-            const QRect windowRect = painter->window();
+            const bool usesScrollButtons = 
+                (widget) ? (qobject_cast<const QTabBar*>(widget))->usesScrollButtons() : false;
+            const int roomForScrollButton = 
+                usesScrollButtons ? QS60StylePrivate::pixelMetric(PM_TabBarScrollButtonWidth) : 0;
 
             switch (tab->shape) {
                 case QTabBar::TriangularWest:
@@ -1605,6 +1625,17 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                                 || optionTab.shape == QTabBar::TriangularEast
                                 || optionTab.shape == QTabBar::TriangularWest;
 
+            //make room for scrollbuttons
+            if (!verticalTabs) {
+                if ((tab->position == QStyleOptionTabV3::Beginning && !directionMirrored))
+                    tr.adjust(roomForScrollButton, 0, 0, 0);
+                else if ((tab->position == QStyleOptionTabV3::Beginning && directionMirrored))
+                    tr.adjust(0, 0, -roomForScrollButton, 0);
+            } else {
+                if (tab->position == QStyleOptionTabV3::Beginning)
+                    tr.adjust(0, roomForScrollButton, 0, 0);
+            }
+
             if (verticalTabs) {
                 painter->save();
                 int newX, newY, newRotation;
@@ -1636,9 +1667,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 alignment |= Qt::TextHideMnemonic;
             if (!optionTab.icon.isNull()) {
                 QSize iconSize = optionTab.iconSize;
-                int iconExtent = pixelMetric(PM_TabBarIconSize);
-                if (iconSize.height() > iconExtent || iconSize.width() > iconExtent)
+                if (!iconSize.isValid()) {
+                    const int iconExtent = pixelMetric(PM_TabBarIconSize);
                     iconSize = QSize(iconExtent, iconExtent);
+                }
                 QPixmap tabIcon = optionTab.icon.pixmap(iconSize,
                     (optionTab.state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
                 if (tab->text.isEmpty())
@@ -2490,6 +2522,19 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
                 if (naviPaneSize.height() > sz.height())
                     sz.setHeight(naviPaneSize.height());
+                // Adjust beginning tabbar item size, if scrollbuttons are used. This is to ensure that the
+                // tabbar item content fits, since scrollbuttons are making beginning tabbar item smaller.
+                int scrollButtonSize = 0;
+                if (const QTabBar *tabBar = qobject_cast<const QTabBar *>(widget))
+                    scrollButtonSize = tabBar->usesScrollButtons() ? pixelMetric(PM_TabBarScrollButtonWidth) : 0;
+                if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+                    const bool verticalTabs = tab->shape == QTabBar::RoundedEast
+                            || tab->shape == QTabBar::RoundedWest
+                            || tab->shape == QTabBar::TriangularEast
+                            || tab->shape == QTabBar::TriangularWest;
+                    if (tab->position == QStyleOptionTab::Beginning)
+                        sz += QSize(verticalTabs ? 0 : scrollButtonSize, !verticalTabs ? 0 : scrollButtonSize);
+                }
             }
             break;
         case CT_MenuItem:

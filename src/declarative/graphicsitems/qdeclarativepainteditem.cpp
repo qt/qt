@@ -210,6 +210,8 @@ void QDeclarativePaintedItem::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.width() != oldGeometry.width() ||
         newGeometry.height() != oldGeometry.height())
         clearCache();
+
+    QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 QVariant QDeclarativePaintedItem::itemChange(GraphicsItemChange change,

@@ -535,6 +535,8 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
     connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
     connect(&recordTimer, SIGNAL(triggered()), this, SLOT(recordFrame()));
+    connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
+            this, SLOT(orientationChanged()), Qt::QueuedConnection);
     autoStartTimer.setRunning(false);
     autoStopTimer.setRunning(false);
     recordTimer.setRunning(false);
@@ -543,6 +545,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 
 QDeclarativeViewer::~QDeclarativeViewer()
 {
+    delete loggerWindow;
     canvas->engine()->setNetworkAccessManagerFactory(0);
     delete namFactory;
 }
@@ -967,10 +970,8 @@ void QDeclarativeViewer::statusChanged()
     if (canvas->status() == QDeclarativeView::Ready) {
         initialSize = canvas->sizeHint();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-            QSize newWindowSize = initialSize;
-            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
             updateSizeHints();
-            resize(newWindowSize);
+            resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
         }
     }
 }
@@ -1421,6 +1422,19 @@ void QDeclarativeViewer::recordFrame()
         }
     } else {
         frames.append(new QImage(frame));
+    }
+}
+
+void QDeclarativeViewer::orientationChanged()
+{
+    if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
+        if (canvas->rootObject()) {
+            QSizeF rootObjectSize = canvas->rootObject()->boundingRect().size();
+            QSize newSize(rootObjectSize.width(), rootObjectSize.height()+menuBarHeight());
+            if (size() != newSize) {
+                resize(newSize);
+            }
+        }
     }
 }
 
