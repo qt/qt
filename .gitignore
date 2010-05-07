@@ -6,6 +6,8 @@ examples/*/*/*
 !examples/*/*/README
 examples/*/*/*[.]app
 demos/*/*
+!demos/spectrum/*
+demos/spectrum/bin
 !demos/*/*[.]*
 demos/*/*[.]app
 config.tests/*/*/*
