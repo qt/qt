@@ -5628,7 +5628,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);
-    m_widget->render(&pixmap, pixmapOffset);
+    m_widget->render(&pixmap, pixmapOffset, QRegion(), QWidget::DrawChildren);
     return pixmap;
 }
 #endif //QT_NO_GRAPHICSEFFECT
