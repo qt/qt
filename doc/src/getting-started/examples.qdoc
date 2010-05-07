@@ -50,6 +50,39 @@
 */
 
 /*!
+   \group all-examples
+   \title Qt Examples
+
+   Qt includes a set of examples that cover nearly every aspect of Qt
+   development. They aren't meant to be impressive when you run them,
+   but in each case the source code has been carefully written to
+   illustrate one or more best Qt programming practices. 
+
+   You can run the examples from the \l{Examples and Demos Launcher}
+   application (except see \l{QML Examples and Demos} {QML Examples}
+   for special instructions for running thos examples).
+
+   The examples are listed below by functional area. Each example
+   listed in a particular functional area is meant to illustrate how
+   best to use Qt to do some particular task in that functional area,
+   but the examples will often use features from other functional
+   areas as well for completeness.
+
+   If you are new to Qt, you should probably start by going through
+   the \l{Tutorials}, and then begin with the
+   \l{mainwindows/application} {Application} example.
+
+   In addition to these examples and the \l{Tutorials}{tutorials}, Qt
+   includes a \l{Qt Demonstrations}{selection of demos} that
+   deliberately show off Qt's features. You might want to look at
+   these as well.
+
+   \section1 Examples by functional area
+
+   \generatelist{related}
+*/
+
+/*!
     \page examples.html
     \title Qt Examples
     \brief The example programs provided with Qt.
@@ -459,8 +492,18 @@
 */
 
 /*!
+   \group gui-examples
+   \title GUI Examples
+   \brief These pages list examples of constructing GUI components.
+
+   \generatelist{related}
+*/
+
+/*!
     \page examples-widgets.html
     \title Widgets Examples
+    \ingroup all-examples
+    \ingroup gui-examples
 
     \contentspage Qt Examples
     \nextpage Dialog Examples
@@ -509,7 +552,9 @@
 
 /*!
     \page examples-dialogs.html
+    \ingroup all-examples
     \title Dialog Examples
+    \ingroup gui-examples
 
     \previouspage Widgets Examples
     \contentspage Qt Examples
@@ -539,7 +584,9 @@
 
 /*!
     \page examples-mainwindow.html
+    \ingroup all-examples
     \title Main Window Examples
+    \ingroup gui-examples
 
     \previouspage Dialog Examples
     \contentspage Qt Examples
@@ -567,7 +614,9 @@
 
 /*!
     \page examples-layouts.html
+    \ingroup all-examples
     \title Layout Examples
+    \ingroup gui-examples
 
     \previouspage Main Window Examples
     \contentspage Qt Examples
@@ -594,6 +643,7 @@
 
 /*!
     \page examples-itemviews.html
+    \ingroup all-examples
     \title Item Views Examples
 
     \previouspage Layout Examples
@@ -631,8 +681,18 @@
 */
 
 /*!
+   \group graphics-examples
+   \title Graphics Examples
+   \brief These pages list examples of doing graphics.
+
+   \generatelist{related}
+*/
+
+/*!
     \page examples-graphicsview.html
+    \ingroup all-examples
     \title Graphics View Examples
+    \ingroup graphics-examples
 
     \previouspage Item Views Examples
     \contentspage Qt Examples
@@ -677,7 +737,9 @@
 
 /*!
     \page examples-painting.html
+    \ingroup all-examples
     \title Painting Examples
+    \ingroup graphics-examples
 
     \previouspage QML Examples and Demos
     \contentspage Qt Examples
@@ -709,6 +771,7 @@
 
 /*!
     \page examples-richtext.html
+    \ingroup all-examples
     \title Rich Text Examples
 
     \previouspage Painting Examples
@@ -732,6 +795,7 @@
 
 /*!
     \page examples-desktop.html
+    \ingroup all-examples
     \title Desktop Examples
 
     \previouspage Rich Text Examples
@@ -755,7 +819,9 @@
 
 /*!
     \page examples-draganddrop.html
+    \ingroup all-examples
     \title Drag and Drop Examples
+    \ingroup gui-examples
 
     \previouspage Desktop Examples
     \contentspage Qt Examples
@@ -783,6 +849,7 @@
 
 /*!
     \page examples-threadandconcurrent.html
+    \ingroup all-examples
     \title Threading and Concurrent Programming Examples
 
     \previouspage Drag and Drop Examples
@@ -823,6 +890,7 @@
 
 /*!
     \page examples.tools.html
+    \ingroup all-examples
     \title Tools Examples
 
     \previouspage Threading and Concurrent Programming Examples
@@ -861,6 +929,7 @@
 
 /*!
     \page examples-network.html
+    \ingroup all-examples
     \title Network Examples
 
     \previouspage Tools Examples
@@ -899,6 +968,7 @@
 
 /*!
     \page examples-ipc.html
+    \ingroup all-examples
     \title Inter-Process Communication Examples
 
     \previouspage Network Examples
@@ -916,7 +986,9 @@
 
 /*!
     \page examples-opengl.html
+    \ingroup all-examples
     \title OpenGL Examples
+    \ingroup graphics-examples
 
     \previouspage Inter-Process Communication Examples
     \contentspage Qt Examples
@@ -950,7 +1022,9 @@
 
 /*!
     \page examples-openvg.html
+    \ingroup all-examples
     \title OpenVG Examples
+    \ingroup graphics-examples
 
     \previouspage OpenGL Examples
     \contentspage Qt Examples
@@ -971,6 +1045,7 @@
 
 /*!
     \page examples-multimedia.html
+    \ingroup all-examples
     \title Multimedia Examples
 
     \previouspage OpenGL Examples
@@ -1020,6 +1095,7 @@
 
 /*!
     \page examples-sql.html
+    \ingroup all-examples
     \title SQL Examples
 
     \previouspage Multimedia Examples
@@ -1049,6 +1125,7 @@
 
 /*!
     \page examples-xml.html
+    \ingroup all-examples
     \title XML Examples
 
     \previouspage SQL Examples
@@ -1085,6 +1162,7 @@
 
 /*!
     \page examples-designer.html
+    \ingroup all-examples
     \title Qt Designer Examples
 
     \previouspage XML Examples
@@ -1110,6 +1188,7 @@
 
 /*!
     \page examples-uitools.html
+    \ingroup all-examples
     \title UiTools Examples
 
     \previouspage Qt Designer Examples
@@ -1126,6 +1205,7 @@
 
 /*!
     \page examples-linguist.html
+    \ingroup all-examples
     \title Qt Linguist Examples
 
     \previouspage UiTools Examples
@@ -1146,6 +1226,7 @@
 
 /*!
     \page examples-script.html
+    \ingroup all-examples
     \title Qt Script Examples
 
     \previouspage Qt Linguist Examples
@@ -1175,6 +1256,7 @@
 
 /*!
     \page examples-webkit.html
+    \ingroup all-examples
     \title WebKit Examples
 
     \previouspage Qt Script Examples
@@ -1215,7 +1297,8 @@
 */
 
 /*!
-    \page examples-helpsystem.html
+    \page examples-helpsystem.html 
+    \ingroup all-examples
     \title Help System Examples
 
     \previouspage WebKit Examples
@@ -1239,6 +1322,7 @@
 
 /*!
     \page examples-statemachine.html
+    \ingroup all-examples
     \title State Machine Examples
 
     \previouspage Help System Examples
@@ -1265,6 +1349,7 @@
 
 /*!
     \page examples-animation.html
+    \ingroup all-examples
     \title Animation Framework Examples
 
     \previouspage State Machine Examples
@@ -1287,6 +1372,7 @@
 
 /*!
     \page examples-multitouch.html
+    \ingroup all-examples
     \title Multi-Touch Examples
 
     \previouspage Animation Framework Examples
@@ -1306,6 +1392,7 @@
 
 /*!
     \page examples-gestures.html
+    \ingroup all-examples
     \title Gestures Examples
 
     \previouspage Multi-Touch Examples
@@ -1322,6 +1409,7 @@
 
 /*!
     \page examples-dbus.html
+    \ingroup all-examples
     \title D-Bus Examples
 
     \previouspage Gestures Examples
@@ -1341,6 +1429,7 @@
 
 /*!
     \page examples-embeddedlinux.html
+    \ingroup all-examples
     \title Qt for Embedded Linux Examples
 
     \previouspage D-Bus Examples
@@ -1363,6 +1452,7 @@
 
 /*!
     \page examples-activeqt.html
+    \ingroup all-examples
     \title ActiveQt Examples
 
     \previouspage Qt for Embedded Linux Examples

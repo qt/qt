@@ -40,8 +40,9 @@
 ****************************************************************************/
 
 /*!
-\page qdeclarativeexamples.html
-\title QML Examples and Demos
+  \page qdeclarativeexamples.html
+  \title QML Examples and Demos
+  \ingroup all-examples
 
 \previouspage Graphics View Examples
 \contentspage Qt Examples
