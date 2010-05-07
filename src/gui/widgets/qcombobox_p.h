@@ -200,7 +200,9 @@ protected:
         menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
         if (sliderAction == QAbstractSlider::SliderSingleStepAdd)
             menuOpt.state |= QStyle::State_DownArrow;
+#ifndef Q_WS_S60
         p.eraseRect(rect());
+#endif
         style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p);
     }
 

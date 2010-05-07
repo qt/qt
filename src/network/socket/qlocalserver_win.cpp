@@ -167,8 +167,8 @@ void QLocalServerPrivate::_q_onNewConnection()
             q->incomingConnection((quintptr)handle);
         } else {
             if (GetLastError() != ERROR_IO_INCOMPLETE) {
+                q->close();
                 setError(QLatin1String("QLocalServerPrivate::_q_onNewConnection"));
-                closeServer();
                 return;
             }
 
