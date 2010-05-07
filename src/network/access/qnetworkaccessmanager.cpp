@@ -907,21 +907,20 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 {
     Q_D(QNetworkAccessManager);
 
+    bool isLocalFile = req.url().isLocalFile();
+
     // fast path for GET on file:// URLs
-    // Also if the scheme is empty we consider it a file.
     // The QNetworkAccessFileBackend will right now only be used
     // for PUT or qrc://
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-         && (req.url().scheme() == QLatin1String("file")
-             || req.url().scheme().isEmpty())) {
+         && isLocalFile) {
         return new QFileNetworkReply(this, req, op);
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
-    if (!d->networkAccessible && !(req.url().scheme() == QLatin1String("file") ||
-                                      req.url().scheme().isEmpty())) {
+    if (!d->networkAccessible && !isLocalFile) {
         return new QDisabledNetworkReply(this, req, op);
     }
 
@@ -948,17 +947,22 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         // but the data that is outgoing is random-access
         request.setHeader(QNetworkRequest::ContentLengthHeader, outgoingData->size());
     }
-    if (d->cookieJar) {
-        QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
-        if (!cookies.isEmpty())
-            request.setHeader(QNetworkRequest::CookieHeader, qVariantFromValue(cookies));
+
+    if (static_cast<QNetworkRequest::LoadControl>
+        (request.attribute(QNetworkRequest::CookieLoadControlAttribute,
+                           QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
+        if (d->cookieJar) {
+            QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
+            if (!cookies.isEmpty())
+                request.setHeader(QNetworkRequest::CookieHeader, qVariantFromValue(cookies));
+        }
     }
 
     // first step: create the reply
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
+    if (!isLocalFile) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }
@@ -967,11 +971,15 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     priv->manager = this;
 
     // second step: fetch cached credentials
-    QNetworkAuthenticationCredential *cred = d->fetchCachedCredentials(url);
-    if (cred) {
-        url.setUserName(cred->user);
-        url.setPassword(cred->password);
-        priv->urlForLastAuthentication = url;
+    if (static_cast<QNetworkRequest::LoadControl>
+        (request.attribute(QNetworkRequest::AuthenticationReuseAttribute,
+                           QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
+        QNetworkAuthenticationCredential *cred = d->fetchCachedCredentials(url);
+        if (cred) {
+            url.setUserName(cred->user);
+            url.setPassword(cred->password);
+            priv->urlForLastAuthentication = url;
+        }
     }
 
     // third step: find a backend

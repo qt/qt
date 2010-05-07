@@ -47,6 +47,7 @@
 /*!
     \page threads.html
     \title Thread Support in Qt
+    \ingroup qt-basic-concepts
     \brief A detailed discussion of thread handling in Qt.
 
     \ingroup frameworks-technologies

@@ -221,6 +221,7 @@ public: // from CActiveScheduler
 
 class Q_CORE_EXPORT QEventDispatcherSymbian : public QAbstractEventDispatcher
 {
+    Q_OBJECT
     Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
 
 public:

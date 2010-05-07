@@ -88,14 +88,14 @@ QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-@interface QMacSoundDelegate : NSObject<NSSoundDelegate> {
+@interface QT_MANGLE_NAMESPACE(QMacSoundDelegate) : NSObject<NSSoundDelegate> {
     QSound *qSound; // may be null.
     QAuServerMac* server;
 }
 -(id)initWithQSound:(QSound*)sound:(QAuServerMac*)server;
 @end
 
-@implementation QMacSoundDelegate
+@implementation QT_MANGLE_NAMESPACE(QMacSoundDelegate)
 -(id)initWithQSound:(QSound*)s:(QAuServerMac*)serv {
     self = [super init];
     if(self) {
@@ -172,7 +172,7 @@ NSSound *QAuServerMac::createNSSound(const QString &fileName, QSound *qSound)
 {
     NSString *nsFileName = const_cast<NSString *>(reinterpret_cast<const NSString *>(QCFString::toCFStringRef(fileName)));
     NSSound * const nsSound = [[NSSound alloc] initWithContentsOfFile: nsFileName byReference:YES];
-    QMacSoundDelegate * const delegate = [[QMacSoundDelegate alloc] initWithQSound:qSound:this];
+    QT_MANGLE_NAMESPACE(QMacSoundDelegate) * const delegate = [[QT_MANGLE_NAMESPACE(QMacSoundDelegate) alloc] initWithQSound:qSound:this];
     [nsSound setDelegate:delegate];
     [nsFileName release];
     return nsSound;

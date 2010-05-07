@@ -5970,19 +5970,22 @@ bool QUrl::isDetached() const
 
 
 /*!
-    Returns a QUrl representation of \a localFile, interpreted as a
-    local file.
+    Returns a QUrl representation of \a localFile, interpreted as a local
+    file. This function accepts paths separated by slashes as well as the
+    native separator for this platform.
 
-    \sa toLocalFile()
+    This function also accepts paths with a doubled leading slash (or
+    backslash) to indicate a remote file, as in
+    "//servername/path/to/file.txt". Note that only certain platforms can
+    actually open this file using QFile::open().
+
+    \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators
 */
 QUrl QUrl::fromLocalFile(const QString &localFile)
 {
     QUrl url;
     url.setScheme(QLatin1String("file"));
-    QString deslashified = localFile;
-    deslashified.replace(QLatin1Char('\\'), QLatin1Char('/'));
-
-
+    QString deslashified = QDir::toNativeSeparators(localFile);
 
     // magic for drives on windows
     if (deslashified.length() > 1 && deslashified.at(1) == QLatin1Char(':') && deslashified.at(0) != QLatin1Char('/')) {
@@ -6001,32 +6004,58 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
 }
 
 /*!
-    Returns the path of this URL formatted as a local file path.
+    Returns the path of this URL formatted as a local file path. The path
+    returned will use forward slashes, even if it was originally created
+    from one with backslashes.
 
-    \sa fromLocalFile()
+    If this URL contains a non-empty hostname, it will be encoded in the
+    returned value in the form found on SMB networks (for example,
+    "//servername/path/to/file.txt").
+
+    \sa fromLocalFile(), isLocalFile()
 */
 QString QUrl::toLocalFile() const
 {
-    if (!d) return QString();
-    if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
+    // the call to isLocalFile() also ensures that we're parsed
+    if (!isLocalFile())
+        return QString();
 
     QString tmp;
     QString ourPath = path();
-    if (d->scheme.isEmpty() || QString::compare(d->scheme, QLatin1String("file"), Qt::CaseInsensitive) == 0) {
 
-        // magic for shared drive on windows
-        if (!d->host.isEmpty()) {
-            tmp = QLatin1String("//") + d->host + (ourPath.length() > 0 && ourPath.at(0) != QLatin1Char('/')
-                                                  ? QLatin1Char('/') + ourPath :  ourPath);
-        } else {
-            tmp = ourPath;
-            // magic for drives on windows
-            if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
-                tmp.remove(0, 1);
-        }
+    // magic for shared drive on windows
+    if (!d->host.isEmpty()) {
+        tmp = QLatin1String("//") + d->host + (ourPath.length() > 0 && ourPath.at(0) != QLatin1Char('/')
+                                               ? QLatin1Char('/') + ourPath :  ourPath);
+    } else {
+        tmp = ourPath;
+        // magic for drives on windows
+        if (ourPath.length() > 2 && ourPath.at(0) == QLatin1Char('/') && ourPath.at(2) == QLatin1Char(':'))
+            tmp.remove(0, 1);
     }
 
     return tmp;
+}
+
+/*!
+    \since 4.7
+    Returns true if this URL is pointing to a local file path. A URL is a
+    local file path if the scheme is "file".
+
+    Note that this function considers URLs with hostnames to be local file
+    paths, even if the eventual file path cannot be opened with
+    QFile::open().
+
+    \sa fromLocalFile(), toLocalFile()
+*/
+bool QUrl::isLocalFile() const
+{
+    if (!d) return false;
+    if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
+
+    if (d->scheme.compare(QLatin1String("file"), Qt::CaseInsensitive) != 0)
+        return false;   // not file
+    return true;
 }
 
 /*!
