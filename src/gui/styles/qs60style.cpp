@@ -1121,11 +1121,9 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     tool.rect = button.unite(menuRect);
                     tool.state = bflags;
                     const QToolButton *toolButtonWidget = qobject_cast<const QToolButton *>(widget);
-                    QS60StylePrivate::SkinElements element;
-                    if (toolButtonWidget)
-                        element = (toolButtonWidget->isDown()) ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
-                    else
-                        element = (option->state & State_Sunken) ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
+                    const QS60StylePrivate::SkinElements element =
+                        ((toolButtonWidget && toolButtonWidget->isDown()) || (option->state & State_Sunken)) ?
+                            QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
                     QS60StylePrivate::drawSkinElement(element, painter, tool.rect, flags);
                     drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
                 }
