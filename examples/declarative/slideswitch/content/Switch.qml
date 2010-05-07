@@ -45,7 +45,7 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            drag.target: knob; drag.axis: "XAxis"; drag.minimumX: 1; drag.maximumX: 78
+            drag.target: knob; drag.axis: Drag.XAxis; drag.minimumX: 1; drag.maximumX: 78
             onClicked: toggle()
             onReleased: dorelease()
         }

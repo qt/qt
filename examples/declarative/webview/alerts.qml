@@ -52,7 +52,7 @@ WebView {
             font.pixelSize: 20
             width: webView.width*0.75
             wrapMode: Text.WordWrap
-            horizontalAlignment: "AlignHCenter"
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 }

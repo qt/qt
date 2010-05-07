@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
 template <typename InType, typename OutType, typename CastType> class QPolygonClipper
 {
 public:
-    QPolygonClipper()
+    QPolygonClipper() :
+        buffer1(0), buffer2(0)
     {
         x1 = y1 = x2 = y2 = 0;
     }

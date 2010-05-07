@@ -51,9 +51,9 @@ Rectangle {
         }
         Text {
             text: {
-                if (webFont.status == 1) myText
-                else if (webFont.status == 2) "Loading..."
-                else if (webFont.status == 3) "Error loading font"
+                if (webFont.status == FontLoader.Ready) myText
+                else if (webFont.status == FontLoader.Loading) "Loading..."
+                else if (webFont.status == FontLoader.Error) "Error loading font"
             }
             color: "lightsteelblue"
             width: parent.width

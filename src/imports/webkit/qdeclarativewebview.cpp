@@ -437,24 +437,39 @@ void QDeclarativeWebView::paintPage(const QRect& r)
 /*!
     \qmlproperty list<object> WebView::javaScriptWindowObjects
 
-    This property is a list of object that are available from within
-    the webview's JavaScript context.
+    A list of QML objects to expose to the web page.
 
-    The \a object will be inserted as a child of the frame's window
-    object, under the name given by the attached property \c WebView.windowObjectName.
+    Each object will be added as a property of the web frame's window object.  The
+    property name is controlled by the value of \c WebView.windowObjectName 
+    attached property.
+
+    Exposing QML objects to a web page allows JavaScript executing in the web 
+    page itself to communicate with QML, by reading and writing properties and
+    by calling methods of the exposed QML objects.
+
+    This example shows how to call into a QML method using a window object.
 
     \qml
     WebView {
-        javaScriptWindowObjects: Object {
-            WebView.windowObjectName: "coordinates"
+        javaScriptWindowObjects: QtObject {
+            WebView.windowObjectName: "qml"
+
+            function qmlCall() { 
+                console.log("This call is in QML!");
+            }
         }
+
+        html: "<script>console.log(\"This is in WebKit!\"); window.qml.qmlCall();</script>"
     }
     \endqml
 
-    Properties of the object will be exposed as JavaScript properties and slots as
-    JavaScript methods.
+    The output of the example will be:
+    \code
+    This is in WebKit!
+    This call is in QML!
+    \endcode
 
-    If Javascript is not enabled for this page, then this property does nothing.
+    If Javascript is not enabled for the page, then this property does nothing.
 */
 QDeclarativeListProperty<QObject> QDeclarativeWebView::javaScriptWindowObjects()
 {

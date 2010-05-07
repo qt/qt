@@ -728,7 +728,7 @@ void QDeclarativeTextEdit::setPersistentSelection(bool on)
 }
 
 /*
-   \qmlproperty number TextEdit::textMargin
+   \qmlproperty real TextEdit::textMargin
 
    The margin, in pixels, around the text in the TextEdit.
 */

@@ -573,9 +573,11 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
         if (model->completePending()) {
             // complete
             listItem->item->setZValue(1);
+            listItem->item->setParentItem(q->viewport());
             model->completeItem();
+        } else {
+            listItem->item->setParentItem(q->viewport());
         }
-        listItem->item->setParentItem(q->viewport());
         QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
         if (sectionCriteria && sectionCriteria->delegate()) {
@@ -648,7 +650,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     FxListItem *item = 0;
     int pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= fillTo) {
-        //qDebug() << "refill: append item" << modelIndex << "pos" << pos;
+//        qDebug() << "refill: append item" << modelIndex << "pos" << pos;
         if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(pos);
@@ -659,8 +661,8 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (doBuffer) // never buffer more than one item per frame
             break;
     }
-    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > fillFrom) {
-        //qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
+    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos-1 >= fillFrom) {
+//        qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
         if (!(item = createItem(visibleIndex-1)))
             break;
         --visibleIndex;
@@ -676,7 +678,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < bufferFrom) {
             if (item->attached->delayRemove())
                 break;
-            //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
+//            qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
             if (item->index != -1)
                 visibleIndex++;
             visibleItems.removeFirst();
@@ -686,7 +688,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->position() > bufferTo) {
             if (item->attached->delayRemove())
                 break;
-            //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
+//            qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1 << item->position();
             visibleItems.removeLast();
             releaseItem(item);
             changed = true;
@@ -1488,7 +1490,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component ListView::delegate
+    \qmlproperty Component ListView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
@@ -1608,7 +1610,7 @@ int QDeclarativeListView::count() const
 }
 
 /*!
-    \qmlproperty component ListView::highlight
+    \qmlproperty Component ListView::highlight
     This property holds the component to use as the highlight.
 
     An instance of the highlight component will be created for each list.
@@ -1847,6 +1849,9 @@ void QDeclarativeListView::setWrapEnabled(bool wrap)
     if in a vertical view the delegate is 20 pixels high and \c cacheBuffer is
     set to 40, then up to 2 delegates above and 2 delegates below the visible
     area may be retained.
+
+    Note that cacheBuffer is not a pixel buffer - it only maintains additional
+    instantiated delegates.
 
     Setting this value can make scrolling the list smoother at the expense
     of additional memory usage.  It is not a substitute for creating efficient

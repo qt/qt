@@ -378,9 +378,11 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
         if (model->completePending()) {
             // complete
             listItem->item->setZValue(1);
+            listItem->item->setParentItem(q->viewport());
             model->completeItem();
+        } else {
+            listItem->item->setParentItem(q->viewport());
         }
-        listItem->item->setParentItem(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
     requestedIndex = -1;
@@ -1054,7 +1056,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component GridView::delegate
+    \qmlproperty Component GridView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
@@ -1172,7 +1174,7 @@ int QDeclarativeGridView::count() const
 }
 
 /*!
-  \qmlproperty component GridView::highlight
+  \qmlproperty Component GridView::highlight
   This property holds the component to use as the highlight.
 
   An instance of the highlight component will be created for each view.
@@ -1414,6 +1416,9 @@ void QDeclarativeGridView::setWrapEnabled(bool wrap)
     if in a vertical view the delegate is 20 pixels high and \c cacheBuffer is
     set to 40, then up to 2 delegates above and 2 delegates below the visible
     area may be retained.
+
+    Note that cacheBuffer is not a pixel buffer - it only maintains additional
+    instantiated delegates.
 
     Setting this value can make scrolling the list smoother at the expense
     of additional memory usage.  It is not a substitute for creating efficient
