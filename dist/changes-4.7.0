@@ -72,8 +72,37 @@ QtGui
     * Fixed a bug that led to missing text pixels in QTabBar when using
       small font sizes. (QTBUG-7137)
 
+ - QGraphicsEffect
+    * Fixed rendering bugs when scrolling graphics items with drop
+      shadows.
+
  - QImage
+    * [QTBUG-9640] Prevented unneccessary copy in
+      QImage::setAlphaChannel().
     * Added QImage::bitPlaneCount(). (QTBUG-7982)
+
+ - QPainter
+    * [QTBUG-10018] Fixed image drawing inconsistencies when drawing
+      1x1 source rects with rotating / shear / perspective transforms.
+    * Optimized various blending and rendering operations for ARM
+      processors with a NEON vector unit.
+    * Fixed some performance issues when drawing sub-pixmaps of large
+      pixmaps and falling back to raster in the X11 paint engine.
+
+ - QPainterPath
+    * [QTBUG-3778] Fixed bug in painter path polygon intersection code.
+    * [QTBUG-7396] Optimized painter path intersections for when at
+      least one of the paths is a rectangle by special casing.
+    * [QTBUG-8035] Got rid of bezier intersection code in the boolean
+      operators (intersect, subtract, unite) to prevent numerical
+      stability issues.
+
+ - QRegion
+    * [QTBUG-7699] Fixed crash caused by large x-coordinates.
+
+ - QTransform
+    * [QTBUG-8557] Fixed bug in QTransform::type() potentially occuring
+      after using operator/ or operator* or their overloads.
 
 QtNetwork
 ---------
