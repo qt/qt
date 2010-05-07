@@ -2275,9 +2275,9 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
             out() << "<tr class=\"odd topAlign\">";
         else
             out() << "<tr class=\"even topAlign\">";
-        out() << "<th>";
+        out() << "<td>";
         generateFullName(node, relative, marker);
-        out() << "</th>";
+        out() << "</td>";
 
         if (!(node->type() == Node::Fake)) {
             Text brief = node->doc().trimmedBriefText(name);
