@@ -969,7 +969,7 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
-            if (QSysInfo::s60Version()!=QSysInfo::SV_S60_3_1) {
+            if (QSysInfo::s60Version() != QSysInfo::SV_S60_3_1) {
                 centerId.Set(EAknsMajorGeneric, 0x19c2);
                 frameId.Set(EAknsMajorSkin, 0x5300);
             } else {
@@ -978,7 +978,8 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             }
             break;
         case QS60StylePrivate::SF_ToolBar:
-            if (QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
+            if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || 
+                QSysInfo::s60Version() == QSysInfo::SV_S60_3_2) {
                 centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
                 frameId.Set(KAknsIIDQsnFrPopupSub);
             }

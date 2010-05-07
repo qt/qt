@@ -815,12 +815,6 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
-    widgetPalette = *palette;
-
-    widgetPalette.setColor(QPalette::Text,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 27, 0));
-    widgetPalette.setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
     widgetPalette = *palette;
 
@@ -1533,13 +1527,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                         QS60StylePrivate::SE_TabBarTabNorthInactive;
                     break;
             }
-            if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabNorthInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabSouthInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabWestInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabNorthActive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabSouthActive||
+            if (skinElement == QS60StylePrivate::SE_TabBarTabEastInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabNorthInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabSouthInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabWestInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabEastActive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabNorthActive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabSouthActive ||
                     skinElement==QS60StylePrivate::SE_TabBarTabWestActive) {
                 const int borderThickness =
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
