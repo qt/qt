@@ -1052,8 +1052,9 @@ void QWebSettings::enablePersistentStorage(const QString& path)
     QString storagePath;
 
     if (path.isEmpty()) {
+#ifndef QT_NO_DESKTOPSERVICES
         storagePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-
+#endif
         if (storagePath.isEmpty())
             storagePath = WebCore::pathByAppendingComponent(QDir::homePath(), QCoreApplication::applicationName());
     } else

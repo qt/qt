@@ -96,10 +96,9 @@ greaterThan(QT_MINOR_VERSION, 5) {
 # Web Socket support.
 !contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
 
-# XSLT support with QtXmlPatterns
+# Disable XSLT support with QtXmlPatterns in the 2.0 release
 !contains(DEFINES, ENABLE_XSLT=.) {
-    contains(QT_CONFIG, xmlpatterns):DEFINES += ENABLE_XSLT=1
-    else:DEFINES += ENABLE_XSLT=0
+    DEFINES += ENABLE_XSLT=0
 }
 
 !CONFIG(QTDIR_build):!contains(DEFINES, ENABLE_QT_BEARER=.) {
