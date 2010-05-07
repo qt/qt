@@ -2447,7 +2447,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 QApplication::postEvent(widget, new QEvent(QEvent::Close));
             else
 #ifndef QT_NO_MENUBAR
-                QMenuBar::wceCommands(LOWORD(wParam), (HWND) lParam);
+                QMenuBar::wceCommands(LOWORD(wParam));
 #endif
             result = true;
         }

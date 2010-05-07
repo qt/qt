@@ -61,17 +61,9 @@
 #include <QDesktopWidget>
 #include <QSettings>
 
-#if defined(Q_WS_WINCE) && !defined(STANDARDSHELL_UI_MODEL)
-#   include <streams.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_WINCE)
-static const UINT q_uNOTIFYICONID = 13;     // IDs from 0 to 12 are reserved on WinCE.
-#else
 static const UINT q_uNOTIFYICONID = 0;
-#endif
 
 static uint MYWM_TASKBARCREATED = 0;
 #define MYWM_NOTIFYICON (WM_APP+101)
@@ -125,23 +117,15 @@ bool QSystemTrayIconSys::allowsMessages()
 
 bool QSystemTrayIconSys::supportsMessages()
 {
-#ifndef Q_OS_WINCE
     return allowsMessages();
-#endif
-    return false;
 }
 
 QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
     : hIcon(0), q(object), ignoreNextMouseRelease(false)
 
 {
-#ifndef Q_OS_WINCE
     notifyIconSize = FIELD_OFFSET(NOTIFYICONDATA, guidItem); // NOTIFYICONDATAW_V2_SIZE;
     maxTipLength = 128;
-#else
-    notifyIconSize = FIELD_OFFSET(NOTIFYICONDATA, szTip[64]); // NOTIFYICONDATAW_V1_SIZE;
-    maxTipLength = 64;
-#endif
 
     // For restoring the tray icon after explorer crashes
     if (!MYWM_TASKBARCREATED) {
@@ -317,26 +301,15 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
             case WM_RBUTTONUP:
                 if (q->contextMenu()) {
                     q->contextMenu()->popup(gpos);
-#if defined(Q_WS_WINCE)
-                    // We must ensure that the popup menu doesn't show up behind the task bar.
-                    QRect desktopRect = qApp->desktop()->availableGeometry();
-                    int maxY = desktopRect.y() + desktopRect.height() - q->contextMenu()->height();
-                    if (gpos.y() > maxY) {
-                        gpos.ry() = maxY;
-                        q->contextMenu()->move(gpos);
-                    }
-#endif
                     q->contextMenu()->activateWindow();
                     //Must be activated for proper keyboardfocus and menu closing on windows:
                 }
                 emit q->activated(QSystemTrayIcon::Context);
                 break;
 
-#if !defined(Q_WS_WINCE)
             case NIN_BALLOONUSERCLICK:
                 emit q->messageClicked();
                 break;
-#endif
 
             case WM_MBUTTONUP:
                 emit q->activated(QSystemTrayIcon::MiddleClick);
@@ -403,23 +376,11 @@ QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
 
     //find the toolbar used in the notification area
     if (trayHandle) {
-#if defined(Q_OS_WINCE)
-        trayHandle = FindWindow(L"TrayNotifyWnd", NULL);
-#else
         trayHandle = FindWindowEx(trayHandle, NULL, L"TrayNotifyWnd", NULL);
-#endif
         if (trayHandle) {
-#if defined(Q_OS_WINCE)
-            HWND hwnd = FindWindow(L"SysPager", NULL);
-#else
             HWND hwnd = FindWindowEx(trayHandle, NULL, L"SysPager", NULL);
-#endif
             if (hwnd) {
-#if defined(Q_OS_WINCE)
-                hwnd = FindWindow(L"ToolbarWindow32", NULL);
-#else
                 hwnd = FindWindowEx(hwnd, NULL, L"ToolbarWindow32", NULL);
-#endif
                 if (hwnd)
                     trayHandle = hwnd;
             }
@@ -438,11 +399,7 @@ QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
         return ret;
 
     int buttonCount = SendMessage(trayHandle, TB_BUTTONCOUNT, 0, 0);
-#if defined(Q_OS_WINCE)
-    LPVOID data = VirtualAlloc(NULL, sizeof(TBBUTTON), MEM_COMMIT, PAGE_READWRITE);
-#else
     LPVOID data = VirtualAllocEx(trayProcess, NULL, sizeof(TBBUTTON), MEM_COMMIT, PAGE_READWRITE);
-#endif
 
     if ( buttonCount < 1 || !data ) {
         CloseHandle(trayProcess);
@@ -480,11 +437,7 @@ QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
             }
         }
     }
-#if defined(Q_OS_WINCE)
-    VirtualFree(data, 0, MEM_RELEASE);
-#else
     VirtualFreeEx(trayProcess, data, 0, MEM_RELEASE);
-#endif
     CloseHandle(trayProcess);
     return ret;
 }
@@ -558,16 +511,10 @@ void QSystemTrayIconPrivate::updateMenu_sys()
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
-#ifdef Q_WS_WINCE
-    // Calling sys->trayMessage(NIM_MODIFY) on an existing icon is broken on Windows CE.
-    // So we need to call updateIcon_sys() which creates a new icon handle.
-    updateIcon_sys();
-#else
     if (!sys)
         return;
 
     sys->trayMessage(NIM_MODIFY);
-#endif
 }
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
