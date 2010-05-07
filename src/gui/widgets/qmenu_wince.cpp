@@ -126,6 +126,7 @@ static void qt_wce_enable_soft_key(HWND handle, uint command)
     if (ptrEnableSoftKey)
         ptrEnableSoftKey(handle, command, false, true);
 }
+
 static void qt_wce_disable_soft_key(HWND handle, uint command) 
 {
     resolveAygLibs();
@@ -232,7 +233,7 @@ static HWND qt_wce_create_menubar(HWND parentHandle, HINSTANCE resourceHandle, i
     return 0;
 }
 
-static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action, bool created)
+static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action)
 {
     Q_ASSERT_X(menu, "AppendMenu", "menu is 0");
     if (action->action->isVisible()) {
@@ -247,7 +248,7 @@ static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action, bool create
         else if (action->action->menu()) {
             text.remove(QChar::fromLatin1('&'));
             AppendMenu (menu, MF_STRING | flags | MF_POPUP,
-            (UINT) action->action->menu()->wceMenu(created), reinterpret_cast<const wchar_t *> (text.utf16()));
+            (UINT) action->action->menu()->wceMenu(), reinterpret_cast<const wchar_t *> (text.utf16()));
         }
         else {
             AppendMenu (menu, MF_STRING | flags, action->command, reinterpret_cast<const wchar_t *> (text.utf16()));
@@ -302,10 +303,14 @@ QAction* QMenu::wceCommands(uint command)
     and all their child menus.
 */
 
-void QMenuBar::wceCommands(uint command, HWND)
+void QMenuBar::wceCommands(uint command)
 {
-    for (int i = 0; i < nativeMenuBars.size(); ++i)
-            nativeMenuBars.at(i)->d_func()->wceCommands(command);
+    const HWND hwndActiveWindow = GetActiveWindow();
+    for (int i = 0; i < nativeMenuBars.size(); ++i) {
+        QMenuBarPrivate* nativeMenuBar = nativeMenuBars.at(i)->d_func();
+        if (hwndActiveWindow == nativeMenuBar->wce_menubar->parentWindowHandle)
+            nativeMenuBar->wceCommands(command);
+    }
 }
 
 bool QMenuBarPrivate::wceEmitSignals(QList<QWceMenuAction*> actions, uint command)
@@ -460,16 +465,16 @@ void QMenuPrivate::QWceMenuPrivate::addAction(QWceMenuAction *action, QWceMenuAc
     Windows CE menu bar bindings.
 */
 
-HMENU QMenu::wceMenu(bool create)
+HMENU QMenu::wceMenu()
 {
-    return d_func()->wceMenu(create);
+    return d_func()->wceMenu();
 }
 
-HMENU QMenuPrivate::wceMenu(bool create)
+HMENU QMenuPrivate::wceMenu()
 {
     if (!wce_menu)
         wce_menu = new QWceMenuPrivate;
-    if (!wce_menu->menuHandle || create) 
+    if (!wce_menu->menuHandle)
         wce_menu->rebuild();
     return wce_menu->menuHandle;
 }
@@ -484,7 +489,7 @@ void QMenuPrivate::QWceMenuPrivate::rebuild()
     for (int i = 0; i < actionItems.size(); ++i) {
         QWceMenuAction *action = actionItems.at(i);
         action->menuHandle = menuHandle;
-        qt_wce_insert_action(menuHandle, action, true);
+        qt_wce_insert_action(menuHandle, action);
     }
     QMenuBar::wceRefresh();
 }
@@ -589,7 +594,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
                 action->command = qt_wce_menu_static_cmd_id++;
                 action->menuHandle = subMenuHandle;
                 actionItemsClassic.last().append(action);
-                qt_wce_insert_action(subMenuHandle, action, true);
+                qt_wce_insert_action(subMenuHandle, action);
             }
         }
         for (int i = actions.size();i<maxEntries;++i) {
@@ -632,7 +637,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
         for (int i = 0; i < actionItems.size(); ++i) {
             QWceMenuAction *action = actionItems.at(i);
             action->menuHandle = menuHandle;
-            qt_wce_insert_action(menuHandle, action, true);
+            qt_wce_insert_action(menuHandle, action);
         }
         if (!leftButtonIsMenu) {
             if (leftButtonAction) {
@@ -652,7 +657,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
                 action->command = qt_wce_menu_static_cmd_id++;
                 action->menuHandle = leftButtonMenuHandle;
                 actionItemsLeftButton.append(action);
-                qt_wce_insert_action(leftButtonMenuHandle, action, true);
+                qt_wce_insert_action(leftButtonMenuHandle, action);
             }
         }
     }
