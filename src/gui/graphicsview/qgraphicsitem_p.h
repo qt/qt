@@ -377,6 +377,7 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
+    void updatePaintedViewBoundingRects(bool updateChildren);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
     inline void ensureSceneTransform()
     {
