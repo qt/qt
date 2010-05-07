@@ -2354,41 +2354,43 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif
             QCommonStyle::drawPrimitive(element, option, painter, widget);
         } else {
-            const bool rightLine = option->state & State_Item;
-            const bool downLine = option->state & State_Sibling;
-            const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
+            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(option)) {
+                const bool rightLine = option->state & State_Item;
+                const bool downLine = option->state & State_Sibling;
+                const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
+                QS60StylePrivate::SkinElementFlags adjustedFlags = flags;
 
-            QS60StyleEnums::SkinParts skinPart;
-            bool drawSkinPart = false;
-            if (rightLine && downLine && upLine) {
-                skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
-                drawSkinPart = true;
-            } else if (rightLine && upLine) {
-                skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
-                drawSkinPart = true;
-            } else if (upLine && downLine) {
-                skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
-                drawSkinPart = true;
-            }
-
-            if (drawSkinPart)
-                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
-
-            if (option->state & State_Children) {
-                QS60StyleEnums::SkinParts skinPart =
-                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
-                int minDimension = qMin(option->rect.width(), option->rect.height());
-                QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-                const int magicTweak = 3;
-                int resizeValue = minDimension >> 1;
-                if (!QS60StylePrivate::isTouchSupported()) {
-                    minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
-                    iconRect.setSize(QSize(minDimension, minDimension));
-                    const int verticalMagic = (option->rect.width() <= option->rect.height()) ? magicTweak : 0;
-                    resizeValue = verticalMagic - resizeValue;
+                QS60StyleEnums::SkinParts skinPart;
+                bool drawSkinPart = false;
+                if (rightLine && downLine && upLine) {
+                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
+                    drawSkinPart = true;
+                } else if (rightLine && upLine) {
+                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
+                    drawSkinPart = true;
+                } else if (upLine && downLine) {
+                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
+                    drawSkinPart = true;
                 }
-                iconRect.translate(magicTweak, resizeValue);
-                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);
+
+                if (option->direction == Qt::RightToLeft)
+                    adjustedFlags |= QS60StylePrivate::SF_Mirrored_X_Axis;
+
+                if (drawSkinPart)
+                    QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, adjustedFlags);
+
+                if (option->state & State_Children) {
+                    QS60StyleEnums::SkinParts skinPart =
+                            (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
+                    const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+                    const int minDimension = qMin(option->rect.width(), option->rect.height());
+                    const int magicTweak = (option->direction == Qt::RightToLeft) ? -3 : 3; //@todo: magic
+                    //The branch indicator icon in S60 is supposed to be superimposed on top of branch lines.
+                    QRect iconRect(QPoint(option->rect.left() + magicTweak, selectionRect.top() + 1), QSize(minDimension, minDimension));
+                    if (!QS60StylePrivate::isTouchSupported())
+                        iconRect.translate(0, -4); //@todo: magic
+                    QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, adjustedFlags);
+                }
             }
         }
         break;
@@ -3001,7 +3003,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             }
             break;
         case SE_ItemViewItemCheckIndicator:
-            if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
                 const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
 
                 const bool singleSelection = listItem &&

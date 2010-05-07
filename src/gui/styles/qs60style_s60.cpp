@@ -654,6 +654,14 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
 
         pixmap = QPixmap::fromImage(iconImage);
     }
+    if ((flags & QS60StylePrivate::SF_Mirrored_X_Axis) ||
+        (flags & QS60StylePrivate::SF_Mirrored_Y_Axis)) {
+        QImage iconImage = pixmap.toImage().mirrored(
+            flags & QS60StylePrivate::SF_Mirrored_X_Axis,
+            flags & QS60StylePrivate::SF_Mirrored_Y_Axis);
+        pixmap = QPixmap::fromImage(iconImage);
+    }
+
     return pixmap;
 }
 
