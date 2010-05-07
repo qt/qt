@@ -5583,46 +5583,17 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
         pixmapOffset = painterTransform.map(pixmapOffset);
     }
 
-
     QRect effectRect;
 
-    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect)
         effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
-
-    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
+    else if (mode == QGraphicsEffect::PadToTransparentBorder)
         effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
-
-    } else {
+    else
         effectRect = sourceRect.toAlignedRect();
-
-    }
 
     if (offset)
         *offset = effectRect.topLeft();
-
-    if (deviceCoordinates) {
-        // Clip to device rect.
-        int left, top, right, bottom;
-        effectRect.getCoords(&left, &top, &right, &bottom);
-        if (left < 0) {
-            if (offset)
-                offset->rx() += -left;
-            effectRect.setX(0);
-        }
-        if (top < 0) {
-            if (offset)
-                offset->ry() += -top;
-            effectRect.setY(0);
-        }
-        // NB! We use +-1 for historical reasons (see QRect documentation).
-        QPaintDevice *device = context->painter->device();
-        const int deviceWidth = device->width();
-        const int deviceHeight = device->height();
-        if (right + 1 > deviceWidth)
-            effectRect.setRight(deviceWidth - 1);
-        if (bottom + 1 > deviceHeight)
-            effectRect.setBottom(deviceHeight -1);
-    }
 
     pixmapOffset -= effectRect.topLeft();
 
