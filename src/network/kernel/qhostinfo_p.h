@@ -84,7 +84,7 @@ public Q_SLOTS:
     }
 
 Q_SIGNALS:
-    void resultsReady(const QHostInfo info);
+    void resultsReady(const QHostInfo &info);
 };
 
 // needs to be QObject because fromName calls tr()
@@ -173,6 +173,8 @@ public:
     bool wasAborted(int id);
 
     QHostInfoCache cache;
+
+    friend class QHostInfoRunnable;
 protected:
     QList<QHostInfoRunnable*> currentLookups; // in progress
     QList<QHostInfoRunnable*> postponedLookups; // postponed because in progress for same host

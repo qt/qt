@@ -104,8 +104,8 @@ protected:
     int qt_metacall(QMetaObject::Call, int, void **);
 
 private:
-    Q_DISABLE_COPY(QDeclarativeCompiledBindings);
-    Q_DECLARE_PRIVATE(QDeclarativeCompiledBindings);
+    Q_DISABLE_COPY(QDeclarativeCompiledBindings)
+    Q_DECLARE_PRIVATE(QDeclarativeCompiledBindings)
 };
 
 QT_END_NAMESPACE

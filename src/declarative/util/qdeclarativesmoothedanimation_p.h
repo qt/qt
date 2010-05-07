@@ -96,7 +96,7 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeSmoothedAnimation);
+QML_DECLARE_TYPE(QDeclarativeSmoothedAnimation)
 
 QT_END_HEADER
 

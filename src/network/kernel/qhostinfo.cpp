@@ -471,6 +471,18 @@ void QHostInfoRunnable::run()
     hostInfo.setLookupId(id);
     resultEmitter.emitResultsReady(hostInfo);
 
+    // now also iterate through the postponed ones
+    QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
+    while (iterator.hasNext()) {
+        QHostInfoRunnable* postponed = iterator.next();
+        if (toBeLookedUp == postponed->toBeLookedUp) {
+            // we can now emit
+            iterator.remove();
+            hostInfo.setLookupId(postponed->id);
+            postponed->resultEmitter.emitResultsReady(hostInfo);
+        }
+    }
+
     manager->lookupFinished(this);
 
     // thread goes back to QThreadPool
@@ -596,6 +608,23 @@ void QHostInfoLookupManager::abortLookup(int id)
         return;
 
     QMutexLocker locker(&this->mutex);
+
+    // is postponed? delete and return
+    for (int i = 0; i < postponedLookups.length(); i++) {
+        if (postponedLookups.at(i)->id == id) {
+            delete postponedLookups.takeAt(i);
+            return;
+        }
+    }
+
+    // is scheduled? delete and return
+    for (int i = 0; i < scheduledLookups.length(); i++) {
+        if (scheduledLookups.at(i)->id == id) {
+            delete scheduledLookups.takeAt(i);
+            return;
+        }
+    }
+
     if (!abortedLookups.contains(id))
         abortedLookups.append(id);
 }

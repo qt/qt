@@ -119,7 +119,7 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeWorkerScript);
+QML_DECLARE_TYPE(QDeclarativeWorkerScript)
 
 QT_END_HEADER
 

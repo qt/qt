@@ -93,6 +93,7 @@ public:
 
 protected:
     virtual void incomingConnection(int handle);
+    void addPendingConnection(QTcpSocket* socket);
 
 Q_SIGNALS:
     void newConnection();
