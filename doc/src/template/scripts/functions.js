@@ -48,37 +48,37 @@ function processNokiaData(response){
 		var linkEnd  = "</a></li>";
 		
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
-			lookupCount=0;
+			lookupCount++;
 			//$('.live001').css('display','block');
 			
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 				full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
 				full_li_element = full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd;
 					
-				$('#ul001').prepend(full_li_element);
+				$('#ul001').append(full_li_element);
 		   		}
 			}
 	 
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
-			articleCount = 0;
+			articleCount++;
 	 		//$('.live002').css('display','block');
 				 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
 				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
 					
-				$('#ul002').prepend(full_li_element);
+				$('#ul002').append(full_li_element);
 	   		}
 		}
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
-			exampleCount = 0;
+			exampleCount++;
 	 		//$('.live003').css('display','block');
 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
 				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
 					
-				$('#ul003').prepend(full_li_element);
+				$('#ul003').append(full_li_element);
 	   		}
 		} 
 	}	
