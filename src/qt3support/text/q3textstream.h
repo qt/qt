@@ -272,13 +272,13 @@ private:
     int	   arg;					// member function argument
 };
 
-Q_COMPAT_EXPORT inline Q3TextStream &operator>>( Q3TextStream &s, Q3TSFUNC f )
+Q_COMPAT_EXPORT_INLINE Q3TextStream &operator>>( Q3TextStream &s, Q3TSFUNC f )
 { return (*f)( s ); }
 
-Q_COMPAT_EXPORT inline Q3TextStream &operator<<( Q3TextStream &s, Q3TSFUNC f )
+Q_COMPAT_EXPORT_INLINE Q3TextStream &operator<<( Q3TextStream &s, Q3TSFUNC f )
 { return (*f)( s ); }
 
-Q_COMPAT_EXPORT inline Q3TextStream &operator<<( Q3TextStream &s, Q3TSManip m )
+Q_COMPAT_EXPORT_INLINE Q3TextStream &operator<<( Q3TextStream &s, Q3TSManip m )
 { m.exec(s); return s; }
 
 Q_COMPAT_EXPORT Q3TextStream &bin( Q3TextStream &s );	// set bin notation

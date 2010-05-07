@@ -1361,15 +1361,22 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT_INLINE inline
 #    endif
+#    if defined(QT_BUILD_COMPAT_LIB)
+#      define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
+#    else
+#      define Q_COMPAT_EXPORT_INLINE inline
+#    endif
 #elif defined(Q_CC_RVCT)
 // we force RVCT not to export inlines by passing --visibility_inlines_hidden
 // so we need to just inline it, rather than exporting and inlining
 // note: this affects the contents of the DEF files (ie. these functions do not appear)
 #    define Q_CORE_EXPORT_INLINE inline
 #    define Q_GUI_EXPORT_INLINE inline
+#    define Q_COMPAT_EXPORT_INLINE inline
 #else
 #    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
 #    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
+#    define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
 #endif
 
 /*
