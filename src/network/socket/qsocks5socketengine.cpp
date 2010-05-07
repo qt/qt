@@ -1545,8 +1545,7 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
 
 #ifndef QT_NO_UDPSOCKET
 bool QSocks5SocketEngine::joinMulticastGroup(const QHostAddress &,
-                                           const QHostAddress &,
-                                           const QNetworkInterface &)
+                                             const QNetworkInterface &)
 {
     setError(QAbstractSocket::UnsupportedSocketOperationError,
              QLatin1String("Operation on socket is not supported"));
@@ -1554,8 +1553,7 @@ bool QSocks5SocketEngine::joinMulticastGroup(const QHostAddress &,
 }
 
 bool QSocks5SocketEngine::leaveMulticastGroup(const QHostAddress &,
-                                            const QHostAddress &,
-                                            const QNetworkInterface &)
+                                              const QNetworkInterface &)
 {
     setError(QAbstractSocket::UnsupportedSocketOperationError,
              QLatin1String("Operation on socket is not supported"));

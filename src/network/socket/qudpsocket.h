@@ -86,12 +86,10 @@ public:
     bool joinMulticastGroup(const QHostAddress &groupAddress,
                             MulticastMode mode = DefaultMulticastFlagForPlatform);
     bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            const QHostAddress &sourceAddress,
                             const QNetworkInterface &interface,
                             MulticastMode mode = DefaultMulticastFlagForPlatform);
     bool leaveMulticastGroup(const QHostAddress &groupAddress);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
-                             const QHostAddress &sourceAddress,
                              const QNetworkInterface &interface);
 
     bool hasPendingDatagrams() const;

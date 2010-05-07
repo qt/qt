@@ -103,10 +103,8 @@ public:
 
 #ifndef QT_NO_UDPSOCKET
     bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            const QHostAddress &sourceAddress,
                             const QNetworkInterface &interface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
-                             const QHostAddress &sourceAddress,
                              const QNetworkInterface &interface);
 
     qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,

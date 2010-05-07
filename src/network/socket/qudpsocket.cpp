@@ -334,7 +334,7 @@ bool QUdpSocket::bind(quint16 port, BindMode mode)
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress, MulticastMode mode)
 {
-    return joinMulticastGroup(groupAddress, QHostAddress::Any, QNetworkInterface(), mode);
+    return joinMulticastGroup(groupAddress, QNetworkInterface(), mode);
 }
 
 /*!
@@ -342,7 +342,6 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress, MulticastM
     \overload
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
-                                    const QHostAddress &sourceAddress,
                                     const QNetworkInterface &interface,
                                     MulticastMode mode)
 {
@@ -350,7 +349,7 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
     QT_CHECK_BOUND("QUdpSocket::joinMulticastGroup()", false);
     d->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopback,
                                (mode & MulticastLoopback) ? 1 : 0);
-    return d->socketEngine->joinMulticastGroup(groupAddress, sourceAddress, interface);
+    return d->socketEngine->joinMulticastGroup(groupAddress, interface);
 }
 
 /*!
@@ -358,7 +357,7 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
 */
 bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
 {
-    return leaveMulticastGroup(groupAddress, QHostAddress::Any, QNetworkInterface());
+    return leaveMulticastGroup(groupAddress, QNetworkInterface());
 }
 
 /*!
@@ -366,11 +365,10 @@ bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
     \overload
 */
 bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
-                                     const QHostAddress &sourceAddress,
                                      const QNetworkInterface &interface)
 {
     QT_CHECK_BOUND("QUdpSocket::leaveMulticastGroup()", false);
-    return d_func()->socketEngine->leaveMulticastGroup(groupAddress, sourceAddress, interface);
+    return d_func()->socketEngine->leaveMulticastGroup(groupAddress, interface);
 }
 
 /*!

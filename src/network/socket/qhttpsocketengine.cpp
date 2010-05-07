@@ -240,7 +240,6 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 
 #ifndef QT_NO_UDPSOCKET
 bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
-                                           const QHostAddress &,
                                            const QNetworkInterface &)
 {
     setError(QAbstractSocket::UnsupportedSocketOperationError,
@@ -249,7 +248,6 @@ bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
 }
 
 bool QHttpSocketEngine::leaveMulticastGroup(const QHostAddress &,
-                                            const QHostAddress &,
                                             const QNetworkInterface &)
 {
     setError(QAbstractSocket::UnsupportedSocketOperationError,
