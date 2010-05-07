@@ -336,25 +336,12 @@ void QRasterPaintEngine::init()
     d->hdc = 0;
 #endif
 
-    d->rasterPoolSize = 8192;
-    d->rasterPoolBase =
-#if defined(Q_WS_WIN64)
-        // We make use of setjmp and longjmp in qgrayraster.c which requires
-        // 16-byte alignment, hence we hardcode this requirement here..
-        (unsigned char *) _aligned_malloc(d->rasterPoolSize, sizeof(void*) * 2);
-#else
-        (unsigned char *) malloc(d->rasterPoolSize);
-#endif
-    Q_CHECK_PTR(d->rasterPoolBase);
-
     // The antialiasing raster.
     d->grayRaster.reset(new QT_FT_Raster);
     Q_CHECK_PTR(d->grayRaster.data());
     if (qt_ft_grays_raster.raster_new(0, d->grayRaster.data()))
         QT_THROW(std::bad_alloc()); // an error creating the raster is caused by a bad malloc
 
-
-    qt_ft_grays_raster.raster_reset(*d->grayRaster.data(), d->rasterPoolBase, d->rasterPoolSize);
 
     d->rasterizer.reset(new QRasterizer);
     d->rasterBuffer.reset(new QRasterBuffer());
@@ -436,12 +423,6 @@ void QRasterPaintEngine::init()
 QRasterPaintEngine::~QRasterPaintEngine()
 {
     Q_D(QRasterPaintEngine);
-
-#if defined(Q_WS_WIN64)
-    _aligned_free(d->rasterPoolBase);
-#else
-    free(d->rasterPoolBase);
-#endif
 
     qt_ft_grays_raster.raster_done(*d->grayRaster.data());
 }
@@ -4090,6 +4071,22 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         return;
     }
 
+    const int rasterPoolInitialSize = 8192;
+    int rasterPoolSize = rasterPoolInitialSize;
+    unsigned char *rasterPoolBase;
+#if defined(Q_WS_WIN64)
+    rasterPoolBase =
+        // We make use of setjmp and longjmp in qgrayraster.c which requires
+        // 16-byte alignment, hence we hardcode this requirement here..
+        (unsigned char *) _aligned_malloc(rasterPoolSize, sizeof(void*) * 2);
+#else
+    unsigned char rasterPoolOnStack[rasterPoolInitialSize];
+    rasterPoolBase = rasterPoolOnStack;
+#endif
+    Q_CHECK_PTR(rasterPoolBase);
+
+    qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
+
     void *data = userData;
 
     QT_FT_BBox clip_box = { deviceRect.x(),
@@ -4122,13 +4119,14 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
             int new_size = rasterPoolSize * 2;
             if (new_size > 1024 * 1024) {
                 qWarning("QPainter: Rasterization of primitive failed");
-                return;
+                break;
             }
 
 #if defined(Q_WS_WIN64)
             _aligned_free(rasterPoolBase);
 #else
-            free(rasterPoolBase);
+            if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
+                free(rasterPoolBase);
 #endif
 
             rasterPoolSize = new_size;
@@ -4149,6 +4147,13 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
             done = true;
         }
     }
+
+#if defined(Q_WS_WIN64)
+    _aligned_free(rasterPoolBase);
+#else
+    if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
+        free(rasterPoolBase);
+#endif
 }
 
 void QRasterPaintEnginePrivate::recalculateFastImages()

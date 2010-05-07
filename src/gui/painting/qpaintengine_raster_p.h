@@ -300,6 +300,10 @@ QRasterPaintEnginePrivate : public QPaintEngineExPrivate
 {
     Q_DECLARE_PUBLIC(QRasterPaintEngine)
 public:
+    QRasterPaintEnginePrivate() : QPaintEngineExPrivate(),
+        cachedLines(0)
+    {
+    }
 
     void rasterizeLine_dashed(QLineF line, qreal width,
                               int *dashIndex, qreal *dashOffset, bool *inDash);
@@ -354,8 +358,6 @@ public:
     QScopedPointer<QDashStroker> dashStroker;
 
     QScopedPointer<QT_FT_Raster> grayRaster;
-    unsigned long rasterPoolSize;
-    unsigned char *rasterPoolBase;
 
     QDataBuffer<QLineF> cachedLines;
     QSpanData image_filler;
