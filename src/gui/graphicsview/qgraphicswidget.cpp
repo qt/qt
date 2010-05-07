@@ -747,6 +747,17 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
 }
 
 /*!
+    \property QGraphicsWidget::layout
+    \brief The layout of the widget
+*/
+
+/*!
+    \fn void QGraphicsWidget::layoutChanged()
+    This signal gets emitted whenever the layout of the item changes
+    \internal
+*/
+
+/*!
     Returns this widget's layout, or 0 if no layout is currently managing this
     widget.
 

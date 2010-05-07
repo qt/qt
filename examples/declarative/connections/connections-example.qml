@@ -13,11 +13,10 @@ Rectangle {
         id: image
         source: "content/bg1.jpg"
         anchors.centerIn: parent
-        transformOrigin: Item.Center
         rotation: window.angle
 
         Behavior on rotation {
-            NumberAnimation { easing.type: "OutCubic"; duration: 300 }
+            NumberAnimation { easing.type: Easing.OutCubic; duration: 300 }
         }
     }
 

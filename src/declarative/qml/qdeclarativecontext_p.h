@@ -113,6 +113,7 @@ class QDeclarativeContextData
 public:
     QDeclarativeContextData();
     QDeclarativeContextData(QDeclarativeContext *);
+    void clearExpressions();
     void destroy();
     void invalidate();
 

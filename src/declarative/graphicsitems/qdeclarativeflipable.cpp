@@ -94,8 +94,6 @@ public:
     \class QDeclarativeFlipable
     \brief The Flipable item provides a surface that can be flipped.
 
-    \ingroup group_widgets
-
     Flipable is an item that can be visibly "flipped" between its front and
     back sides.
 */
@@ -169,7 +167,7 @@ void QDeclarativeFlipable::retransformBack()
   \qmlproperty enumeration Flipable::side
 
   The side of the Flippable currently visible. Possible values are \c
-  Front and \c Back.
+  Flippable.Front and \c Flippable.Back.
 */
 QDeclarativeFlipable::Side QDeclarativeFlipable::side() const
 {

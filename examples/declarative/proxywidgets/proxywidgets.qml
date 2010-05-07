@@ -63,7 +63,7 @@ Rectangle {
 
     transitions: Transition {
         ParallelAnimation {
-            NumberAnimation { properties: "x,y,rotation"; duration: 600; easing.type: "OutQuad" }
+            NumberAnimation { properties: "x,y,rotation"; duration: 600; easing.type: Easing.OutQuad }
             ColorAnimation { target: window; duration: 600 }
         }
     }

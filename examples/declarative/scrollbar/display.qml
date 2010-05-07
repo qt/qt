@@ -37,7 +37,7 @@ Rectangle {
         width: 12; height: view.height-12
         anchors.right: view.right
         opacity: 0
-        orientation: "Vertical"
+        orientation: Qt.Vertical
         position: view.visibleArea.yPosition
         pageSize: view.visibleArea.heightRatio
     }
@@ -47,7 +47,7 @@ Rectangle {
         width: view.width-12; height: 12
         anchors.bottom: view.bottom
         opacity: 0
-        orientation: "Horizontal"
+        orientation: Qt.Horizontal
         position: view.visibleArea.xPosition
         pageSize: view.visibleArea.widthRatio
     }

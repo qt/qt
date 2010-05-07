@@ -108,13 +108,16 @@ signals:
     void message(const QScriptValue &messageObject);
 
 protected:
+    virtual void classBegin();
     virtual void componentComplete();
     virtual bool event(QEvent *);
 
 private:
+    QDeclarativeWorkerScriptEngine *engine();
     QDeclarativeWorkerScriptEngine *m_engine;
     int m_scriptId;
     QUrl m_source;
+    bool m_componentComplete;
 };
 
 QT_END_NAMESPACE

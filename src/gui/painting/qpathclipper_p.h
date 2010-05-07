@@ -199,7 +199,7 @@ public:
     };
 
 
-    QPathSegments();
+    QPathSegments(int reserve);
 
     void setPath(const QPainterPath &path);
     void addPath(const QPainterPath &path);
@@ -345,7 +345,10 @@ inline QPathVertex::operator QPointF() const
     return QPointF(x, y);
 }
 
-inline QPathSegments::QPathSegments()
+inline QPathSegments::QPathSegments(int reserve) :
+    m_points(reserve),
+    m_segments(reserve),
+    m_intersections(reserve)
 {
 }
 

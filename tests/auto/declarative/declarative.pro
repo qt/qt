@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
            examples \
-           graphicswidgets \        # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
            qdeclarativeanimations \          # Cover
@@ -29,7 +28,6 @@ SUBDIRS += \
            qdeclarativeitem \        # Cover
            qdeclarativelistview \    # Cover
            qdeclarativeloader \      # Cover
-           qdeclarativelayouts \     # Cover
            qdeclarativemousearea \   # Cover
            qdeclarativeparticles \   # Cover
            qdeclarativepathview \    # Cover
@@ -65,6 +63,7 @@ SUBDIRS += \
            qdeclarativestyledtext \          # Cover
            qdeclarativesqldatabase \         # Cover
            qdeclarativevisualdatamodel \     # Cover
+           qdeclarativeviewer \                      # Cover
            qmlvisual                    # Cover
 
 contains(QT_CONFIG, webkit) {

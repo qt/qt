@@ -31,15 +31,14 @@ Item {
     // the sun, moon, and stars
     Item {
         width: parent.width; height: 2 * parent.height
-        transformOrigin: Item.Center
         NumberAnimation on rotation { from: 0; to: 360; duration: 10000; loops: Animation.Infinite }
         Image {
             source: "images/sun.png"; y: 10; anchors.horizontalCenter: parent.horizontalCenter
-            transformOrigin: Item.Center; rotation: -3 * parent.rotation
+            rotation: -3 * parent.rotation
         }
         Image {
             source: "images/moon.png"; y: parent.height - 74; anchors.horizontalCenter: parent.horizontalCenter
-            transformOrigin: Item.Center; rotation: -parent.rotation
+            rotation: -parent.rotation
         }
         Particles {
             x: 0; y: parent.height/2; width: parent.width; height: parent.height/2

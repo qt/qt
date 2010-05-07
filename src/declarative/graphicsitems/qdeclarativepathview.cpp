@@ -308,11 +308,15 @@ void QDeclarativePathViewPrivate::regenerate()
 
     The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
 
-    The items are laid out along a path defined by a \l Path and may be flicked to scroll.
+    The \l delegate is instantiated for each item on the \l path.
+    The items may be flicked to move them along the path.
 
     \snippet doc/src/snippets/declarative/pathview/pathview.qml 0
 
     \image pathview.gif
+
+    Delegates are instantiated as needed and may be destroyed at any time.
+    State should \e never be stored in a delegate.
 
     \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
@@ -557,7 +561,7 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
 }
 
 /*!
-    \qmlproperty component PathView::highlight
+    \qmlproperty Component PathView::highlight
     This property holds the component to use as the highlight.
 
     An instance of the highlight component will be created for each view.
@@ -618,12 +622,12 @@ QDeclarativeItem *QDeclarativePathView::highlightItem()
     These properties set the preferred range of the highlight (current item)
     within the view.  The preferred values must be in the range 0.0-1.0.
 
-    If highlightRangeMode is set to \e ApplyRange the view will
+    If highlightRangeMode is set to \e PathView.ApplyRange the view will
     attempt to maintain the highlight within the range, however
     the highlight can move outside of the range at the ends of the path
     or due to a mouse interaction.
 
-    If highlightRangeMode is set to \e StrictlyEnforceRange the highlight will never
+    If highlightRangeMode is set to \e PathView.StrictlyEnforceRange the highlight will never
     move outside of the range.  This means that the current item will change
     if a keyboard or mouse action would cause the highlight to move
     outside of the range.
@@ -631,14 +635,14 @@ QDeclarativeItem *QDeclarativePathView::highlightItem()
     Note that this is the correct way to influence where the
     current item ends up when the view moves. For example, if you want the
     currently selected item to be in the middle of the path, then set the
-    highlight range to be 0.5,0.5 and highlightRangeMode to StrictlyEnforceRange.
+    highlight range to be 0.5,0.5 and highlightRangeMode to PathView.StrictlyEnforceRange.
     Then, when the path scrolls,
     the currently selected item will be the item at that position. This also applies to
     when the currently selected item changes - it will scroll to within the preferred
     highlight range. Furthermore, the behaviour of the current item index will occur
     whether or not a highlight exists.
 
-    The default value is \e StrictlyEnforceRange.
+    The default value is \e PathView.StrictlyEnforceRange.
 
     Note that a valid range requires preferredHighlightEnd to be greater
     than or equal to preferredHighlightBegin.
@@ -786,11 +790,16 @@ void QDeclarativePathView::setInteractive(bool interactive)
 }
 
 /*!
-    \qmlproperty component PathView::delegate
+    \qmlproperty Component PathView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
+
+    The number of elements in the delegate has a direct effect on the
+    flicking performance of the view when pathItemCount is specified.  If at all possible, place functionality
+    that is not needed for the normal display of the delegate in a \l Loader which
+    can load additional elements when needed.
 
     Note that the PathView will layout the items based on the size of the root
     item in the delegate.
@@ -961,7 +970,12 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
             else
                 dist = qRound(dist - d->offset) + d->offset;
             // Calculate accel required to stop on item boundary
-            accel = v2 / (2.0f * qAbs(dist));
+            if (dist <= 0.) {
+                dist = 0.;
+                accel = 0.;
+            } else {
+                accel = v2 / (2.0f * qAbs(dist));
+            }
         }
         d->moveOffset.setValue(d->offset);
         d->tl.accel(d->moveOffset, velocity, accel, dist);
@@ -1046,7 +1060,11 @@ void QDeclarativePathView::componentComplete()
     Q_D(QDeclarativePathView);
     QDeclarativeItem::componentComplete();
     d->createHighlight();
-    d->regenerate();
+    // It is possible that a refill has already happended to to Path
+    // bindings being handled in the componentComplete().  If so
+    // don't do it again.
+    if (d->items.count() == 0)
+        d->regenerate();
     d->updateHighlight();
 }
 

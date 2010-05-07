@@ -51,6 +51,7 @@
 #include <qdeclarativecontext.h>
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeproperty_p.h>
+#include <qdeclarativecontext_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -302,12 +303,18 @@ void QDeclarativePropertyChangesPrivate::decode()
         QDeclarativeProperty prop = property(name);      //### better way to check for signal property?
         if (prop.type() & QDeclarativeProperty::SignalProperty) {
             QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
+            QDeclarativeData *ddata = QDeclarativeData::get(q);
+            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+                expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
             QDeclarativeReplaceSignalHandler *handler = new QDeclarativeReplaceSignalHandler;
             handler->property = prop;
             handler->expression = expression;
             signalReplacements << handler;
         } else if (isScript) {
             QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
+            QDeclarativeData *ddata = QDeclarativeData::get(q);
+            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+                expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
             expressions << qMakePair(name, expression);
         } else {
             properties << qMakePair(name, data);
@@ -437,9 +444,11 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->evaluate();
             } else {
+                QDeclarativeExpression *e = d->expressions.at(ii).second;
                 QDeclarativeBinding *newBinding = 
-                    new QDeclarativeBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                    new QDeclarativeBinding(e->expression(), object(), qmlContext(this));
                 newBinding->setTarget(prop);
+                newBinding->setSourceLocation(e->sourceFile(), e->lineNumber());
                 a.toBinding = newBinding;
                 a.deletableToBinding = true;
             }

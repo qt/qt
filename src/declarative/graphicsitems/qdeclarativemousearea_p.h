@@ -121,7 +121,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeMouseArea : public QDeclarativeItem
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(Qt::MouseButtons pressedButtons READ pressedButtons NOTIFY pressedChanged)
     Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
-    Q_PROPERTY(bool hoverEnabled READ acceptHoverEvents WRITE setAcceptHoverEvents)
+    Q_PROPERTY(bool hoverEnabled READ hoverEnabled WRITE setHoverEnabled NOTIFY hoverEnabledChanged)
     Q_PROPERTY(QDeclarativeDrag *drag READ drag CONSTANT) //### add flicking to QDeclarativeDrag or add a QDeclarativeFlick ???
 
 public:
@@ -142,6 +142,9 @@ public:
     Qt::MouseButtons acceptedButtons() const;
     void setAcceptedButtons(Qt::MouseButtons buttons);
 
+    bool hoverEnabled() const;
+    void setHoverEnabled(bool h);
+
     QDeclarativeDrag *drag();
 
 Q_SIGNALS:
@@ -149,6 +152,7 @@ Q_SIGNALS:
     void pressedChanged();
     void enabledChanged();
     void acceptedButtonsChanged();
+    void hoverEnabledChanged();
     void positionChanged(QDeclarativeMouseEvent *mouse);
     void mousePositionChanged(QDeclarativeMouseEvent *mouse);
 
@@ -159,6 +163,7 @@ Q_SIGNALS:
     void doubleClicked(QDeclarativeMouseEvent *mouse);
     void entered();
     void exited();
+    void canceled();
 
 protected:
     void setHovered(bool);
@@ -176,6 +181,7 @@ protected:
 
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
 private:
     void handlePress();
