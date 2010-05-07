@@ -161,8 +161,10 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
                  it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
                 it.value() -= gestures;
             }
-            foreach (QGesture *g, gestures)
+            foreach (QGesture *g, gestures) {
                 m_deletedRecognizers.remove(g);
+                m_gestureToRecognizer.remove(g);
+            }
             qDeleteAll(gestures);
             iter = m_objectGestures.erase(iter);
         } else {
