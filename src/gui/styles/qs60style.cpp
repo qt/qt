@@ -815,12 +815,6 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
-    widgetPalette = *palette;
-
-    widgetPalette.setColor(QPalette::Text,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 27, 0));
-    widgetPalette.setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
     widgetPalette = *palette;
 
@@ -1121,11 +1115,9 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     tool.rect = button.unite(menuRect);
                     tool.state = bflags;
                     const QToolButton *toolButtonWidget = qobject_cast<const QToolButton *>(widget);
-                    QS60StylePrivate::SkinElements element;
-                    if (toolButtonWidget)
-                        element = (toolButtonWidget->isDown()) ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
-                    else
-                        element = (option->state & State_Sunken) ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
+                    const QS60StylePrivate::SkinElements element =
+                        ((toolButtonWidget && toolButtonWidget->isDown()) || (option->state & State_Sunken)) ?
+                            QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
                     QS60StylePrivate::drawSkinElement(element, painter, tool.rect, flags);
                     drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
                 }
@@ -1535,13 +1527,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                         QS60StylePrivate::SE_TabBarTabNorthInactive;
                     break;
             }
-            if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabNorthInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabSouthInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabWestInactive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabNorthActive||
-                    skinElement==QS60StylePrivate::SE_TabBarTabSouthActive||
+            if (skinElement == QS60StylePrivate::SE_TabBarTabEastInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabNorthInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabSouthInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabWestInactive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabEastActive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabNorthActive ||
+                    skinElement == QS60StylePrivate::SE_TabBarTabSouthActive ||
                     skinElement==QS60StylePrivate::SE_TabBarTabWestActive) {
                 const int borderThickness =
                     QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
@@ -2362,41 +2354,43 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif
             QCommonStyle::drawPrimitive(element, option, painter, widget);
         } else {
-            const bool rightLine = option->state & State_Item;
-            const bool downLine = option->state & State_Sibling;
-            const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
+            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(option)) {
+                const bool rightLine = option->state & State_Item;
+                const bool downLine = option->state & State_Sibling;
+                const bool upLine = option->state & (State_Open | State_Children | State_Item | State_Sibling);
+                QS60StylePrivate::SkinElementFlags adjustedFlags = flags;
 
-            QS60StyleEnums::SkinParts skinPart;
-            bool drawSkinPart = false;
-            if (rightLine && downLine && upLine) {
-                skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
-                drawSkinPart = true;
-            } else if (rightLine && upLine) {
-                skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
-                drawSkinPart = true;
-            } else if (upLine && downLine) {
-                skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
-                drawSkinPart = true;
-            }
-
-            if (drawSkinPart)
-                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
-
-            if (option->state & State_Children) {
-                QS60StyleEnums::SkinParts skinPart =
-                        (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
-                int minDimension = qMin(option->rect.width(), option->rect.height());
-                QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-                const int magicTweak = 3;
-                int resizeValue = minDimension >> 1;
-                if (!QS60StylePrivate::isTouchSupported()) {
-                    minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
-                    iconRect.setSize(QSize(minDimension, minDimension));
-                    const int verticalMagic = (option->rect.width() <= option->rect.height()) ? magicTweak : 0;
-                    resizeValue = verticalMagic - resizeValue;
+                QS60StyleEnums::SkinParts skinPart;
+                bool drawSkinPart = false;
+                if (rightLine && downLine && upLine) {
+                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineBranch;
+                    drawSkinPart = true;
+                } else if (rightLine && upLine) {
+                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineEnd;
+                    drawSkinPart = true;
+                } else if (upLine && downLine) {
+                    skinPart = QS60StyleEnums::SP_QgnIndiHlLineStraight;
+                    drawSkinPart = true;
                 }
-                iconRect.translate(magicTweak, resizeValue);
-                QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);
+
+                if (option->direction == Qt::RightToLeft)
+                    adjustedFlags |= QS60StylePrivate::SF_Mirrored_X_Axis;
+
+                if (drawSkinPart)
+                    QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, adjustedFlags);
+
+                if (option->state & State_Children) {
+                    QS60StyleEnums::SkinParts skinPart =
+                            (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
+                    const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+                    const int minDimension = qMin(option->rect.width(), option->rect.height());
+                    const int magicTweak = (option->direction == Qt::RightToLeft) ? -3 : 3; //@todo: magic
+                    //The branch indicator icon in S60 is supposed to be superimposed on top of branch lines.
+                    QRect iconRect(QPoint(option->rect.left() + magicTweak, selectionRect.top() + 1), QSize(minDimension, minDimension));
+                    if (!QS60StylePrivate::isTouchSupported())
+                        iconRect.translate(0, -4); //@todo: magic
+                    QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, adjustedFlags);
+                }
             }
         }
         break;
@@ -2510,7 +2504,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                     sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
                 const int iconHeight = (!buttonWidget->icon().isNull()) ? buttonWidget->iconSize().height() : 0;
                 const int textHeight = (buttonWidget->text().length() > 0) ?
-                    buttonWidget->fontMetrics().size(Qt::TextSingleLine, buttonWidget->text()).height() : 0;
+                    buttonWidget->fontMetrics().size(Qt::TextSingleLine, buttonWidget->text()).height() : opt->fontMetrics.height();
                 const int decoratorHeight = (buttonWidget->isCheckable()) ? pixelMetric(PM_IndicatorHeight) : 0;
 
                 const int contentHeight =
@@ -3009,7 +3003,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             }
             break;
         case SE_ItemViewItemCheckIndicator:
-            if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+            if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
                 const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
 
                 const bool singleSelection = listItem &&
