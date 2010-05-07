@@ -5557,6 +5557,12 @@ QUrl QUrl::resolved(const QUrl &relative) const
     removeDotsFromPath(&t.d->encodedPath);
     t.d->path.clear();
 
+#if defined(QURL_DEBUG)
+    qDebug("QUrl(\"%s\").resolved(\"%s\") = \"%s\"",
+           toEncoded().constData(),
+           relative.toEncoded().constData(),
+           t.toEncoded().constData());
+#endif
     return t;
 }
 
@@ -5985,7 +5991,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
 {
     QUrl url;
     url.setScheme(QLatin1String("file"));
-    QString deslashified = QDir::toNativeSeparators(localFile);
+    QString deslashified = QDir::fromNativeSeparators(localFile);
 
     // magic for drives on windows
     if (deslashified.length() > 1 && deslashified.at(1) == QLatin1Char(':') && deslashified.at(0) != QLatin1Char('/')) {

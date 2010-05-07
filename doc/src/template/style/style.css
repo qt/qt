@@ -460,12 +460,12 @@
         padding-left: 12px;
         background: url(../images/bullet_sq.png) no-repeat 0 5px;
         font: normal 400 10pt/1 Verdana;
-        color: #44a51c;
+       /* color: #44a51c;*/
         margin-bottom: 10px; 
     }
     .content li:hover
     {
-        text-decoration: underline;
+      /*  text-decoration: underline;*/
     }
 
     .offline .wrap .content
@@ -747,11 +747,23 @@
     th
     {
         padding: 5px 15px 5px 15px;
+        background-color: #E1E1E1;
+        border-bottom: 1px solid #E6E6E6;
+        border-left: 1px solid #E6E6E6;
+        border-right: 1px solid #E6E6E6;
     }
     td
     {
         padding: 3px 15px 3px 20px;
+        border-left: 1px solid #E6E6E6;
+        border-right: 1px solid #E6E6E6;
     }
+    tr.odd td:hover,  tr.even td:hover
+    {
+    /*    border-right: 1px solid #C3C3C3;
+        border-left: 1px solid #C3C3C3;*/
+    }
+		
 	td.rightAlign
 	{
         padding: 3px 15px 3px 10px;
@@ -879,13 +891,22 @@
         font: 600 12px/1.2 Arial;
     }
 
-	.generic{}
+	.generic{
+		max-width:100%;
+	}
+	.generic td{
+		padding:0;
+	}
+	
 	.alignedsummary{}
 	.propsummary{}
 	.memItemLeft{}
 	.memItemRight{}
 	.bottomAlign{}
-	.highlightedCode{}
+	.highlightedCode
+	{
+	margin:10px;
+	}
 	.LegaleseLeft{}
 	.valuelist{}
 	.annotated{}

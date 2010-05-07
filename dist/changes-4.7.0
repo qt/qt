@@ -72,6 +72,8 @@ QtGui
     * Fixed a bug that led to missing text pixels in QTabBar when using
       small font sizes. (QTBUG-7137)
 
+ - QImage
+    * Added QImage::bitPlaneCount(). (QTBUG-7982)
 
 QtNetwork
 ---------
@@ -102,6 +104,20 @@ QtXmlPatterns
  - [QTBUG-8394] include/import/redefine schemas only once
  - QXmlSchema: fix crash with referencing elements
 
+Qt Plugins
+----------
+
+ - Jpeg image IO plugin
+    * Fixed failure to store certain QImage formats as jpeg (QTBUG-7780)
+    * Optimized smoothscaling
+    * Optimized to avoid data copy when reading from memory device (QTBUG-9095)
+
+ - SVG image IO plugin
+    * Added support for svgz format (QTBUG-8227)
+    * Fixed canRead() so that it can be used also for non-sequential
+      devices. (QTBUG-9053)
+    * Added support for clipping and scaling and backgroundcolor
+    * Optimized to avoid data copy when reading from memory device (QTBUG-9095)
 
 ****************************************************************************
 *                          Database Drivers                                *

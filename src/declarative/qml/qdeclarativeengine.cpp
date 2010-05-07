@@ -1526,7 +1526,7 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
 // WARNING, there is a copy of this function in qdeclarativecompositetypemanager.cpp
 static QString toLocalFileOrQrc(const QUrl& url)
 {
-    if (url.scheme() == QLatin1String("qrc")) {
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             return QLatin1Char(':') + url.path();
         return QString();

@@ -912,8 +912,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else if (atom->string() == ATOM_LIST_VALUE) {
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
-                out() << "<table class=\"valuelist\">"
-                      << "<tr><th>Constant</th>"
+                out() << "<table class=\"valuelist\">";
+                    //  << "<tr>"
+				if (++numTableRows % 2 == 1)
+					out() << "<tr class=\"odd\">";
+				else
+					out() << "<tr class=\"even\">";
+
+					out() << "<tr><th>Constant</th>"
                       << "<th>Value</th>"
                       << "<th>Description</th></tr>\n";
             }
@@ -1093,7 +1099,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         if (!atom->string().isEmpty()) {
             if (atom->string().contains("%"))
-                out() << "<table class=\"generic\" width=\"" << atom->string() << "\">\n ";
+                out() << "<table class=\"generic\">\n "; // width=\"" << atom->string() << "\">\n ";
             else {
                 out() << "<table class=\"generic\">\n";
             }
@@ -2456,7 +2462,13 @@ void HtmlGenerator::generateCompactList(const Node *relative,
 
     out() << "<table class=\"generic\">\n";
     for (k = 0; k < numRows; k++) {
-        out() << "<tr>\n";
+        if (++numTableRows % 2 == 1)
+            out() << "<tr class=\"odd topAlign\">";
+        else
+            out() << "<tr class=\"even topAlign\">";
+        //break;
+
+//	out() << "<tr>\n";
         for (i = 0; i < NumColumns; i++) {
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
@@ -3159,8 +3171,13 @@ void HtmlGenerator::generateSectionList(const Section& section,
             twoColumn = (section.members.count() >= 5);
         }
         if (twoColumn)
-            out() << "<table class=\"generic\">\n"
-                  << "<tr><td  class=\"topAlign\">";
+            out() << "<table class=\"generic\">\n";
+        if (++numTableRows % 2 == 1)
+            out() << "<tr class=\"odd topAlign\">";
+        else
+            out() << "<tr class=\"even topAlign\">";
+			
+//                  << "<tr><td  class=\"topAlign\">";
         out() << "<ul>\n";
 
         int i = 0;
@@ -4367,8 +4384,12 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
             twoColumn = (count >= 5);
         }
         if (twoColumn)
-            out() << "<table class=\"qmlsummary\">\n"
-                  << "<tr><td class=\"topAlign\">";
+            out() << "<table class=\"qmlsummary\">\n";
+			        if (++numTableRows % 2 == 1)
+				out() << "<tr class=\"odd topAlign\">";
+				else
+				out() << "<tr class=\"even topAlign\">";
+            //      << "<tr><td class=\"topAlign\">";
         out() << "<ul>\n";
 
         int row = 0;
@@ -4410,7 +4431,14 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
-                out() << "<tr><td>";
+                
+				if (++numTableRows % 2 == 1)
+					out() << "<tr class=\"odd\">";
+				else
+					out() << "<tr class=\"even\">";
+				
+				out() << "<td>";
+                //out() << "<tr><td>"; // old
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
@@ -4436,7 +4464,12 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
-        out() << "<tr><td>";
+        //out() << "<tr>";
+		if (++numTableRows % 2 == 1)
+			out() << "<tr class=\"odd\">";
+		else
+			out() << "<tr class=\"even\">";
+        out() << "<td>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
         generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
         //generateQmlItem(qsn,relative,marker,false);
@@ -4448,7 +4481,12 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
-        out() << "<tr><td>";
+        //out() << "<tr>";
+		if (++numTableRows % 2 == 1)
+			out() << "<tr class=\"odd\">";
+		else
+			out() << "<tr class=\"even\">";
+        out() << "<td>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
         generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
         out() << "</td></tr>";
