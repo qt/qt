@@ -233,6 +233,7 @@ public:
 
 #if defined(Q_WS_MAC)
     virtual bool macEventFilter(EventHandlerCallRef, EventRef);
+    virtual bool macEventFilter(void *);
 #endif
 #if defined(Q_WS_X11)
     virtual bool x11EventFilter(XEvent *);

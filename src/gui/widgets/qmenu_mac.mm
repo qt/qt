@@ -2052,8 +2052,7 @@ bool QMenuBar::macUpdateMenuBar()
 {
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
-    if (!qt_cocoaPostMessage(getMenuLoader(), @selector(qtUpdateMenubar)))
-        return QMenuBarPrivate::macUpdateMenuBarImmediatly();
+    qt_cocoaPostMessage(getMenuLoader(), @selector(qtUpdateMenubar));
     return true;
 #else
     return QMenuBarPrivate::macUpdateMenuBarImmediatly();

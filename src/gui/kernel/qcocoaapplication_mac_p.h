@@ -101,11 +101,17 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
 - (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel;
 
 - (void)qt_sendPostedMessage:(NSEvent *)event;
-- (BOOL)qt_sendEvent:(NSEvent *)event;
+- (BOOL)qt_filterEvent:(NSEvent *)event;
 @end
 
 @interface QNSApplication : NSApplication {
 }
 @end
+
+QT_BEGIN_NAMESPACE
+
+void qt_redirectNSApplicationSendEvent();
+
+QT_END_NAMESPACE
 
 #endif

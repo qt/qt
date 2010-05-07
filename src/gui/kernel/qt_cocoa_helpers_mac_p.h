@@ -198,17 +198,25 @@ class QCocoaPostMessageArgs {
 public:
     id target;
     SEL selector;
-    QCocoaPostMessageArgs(id target, SEL selector) : target(target), selector(selector)
+    int argCount;
+    id arg1;
+    id arg2;
+    QCocoaPostMessageArgs(id target, SEL selector, int argCount=0, id arg1=0, id arg2=0)
+        : target(target), selector(selector), argCount(argCount), arg1(arg1), arg2(arg2)
     {
         [target retain];
+        [arg1 retain];
+        [arg2 retain];
     }
 
     ~QCocoaPostMessageArgs()
     {
+        [arg2 release];
+        [arg1 release];
         [target release];
     }
 };
-bool qt_cocoaPostMessage(id target, SEL selector);
+void qt_cocoaPostMessage(id target, SEL selector, int argCount=0, id arg1=0, id arg2=0);
 #endif
 
 #endif

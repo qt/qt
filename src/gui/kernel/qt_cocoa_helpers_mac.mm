@@ -1423,39 +1423,17 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
     [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) set];
 }
 
-//  WARNING: If Qt did not create NSApplication (e.g. in case it is
-//  used as a plugin), and at the same time, there is no window on
-//  screen (or the window that the event is sendt to becomes hidden etc
-//  before the event gets delivered), the message will not be performed.
-bool qt_cocoaPostMessage(id target, SEL selector)
+void qt_cocoaPostMessage(id target, SEL selector, int argCount, id arg1, id arg2)
 {
-    if (!target)
-        return false;
-
-    NSInteger windowNumber = 0;
-    if (![NSApp isMemberOfClass:[QNSApplication class]]) {
-        // INVARIANT: Cocoa is not using our NSApplication subclass. That means
-        // we don't control the main event handler either. So target the event
-        // for one of the windows on screen:
-        NSWindow *nswin = [NSApp mainWindow];
-        if (!nswin) {
-            nswin = [NSApp keyWindow];
-            if (!nswin)
-                return false;
-        }
-        windowNumber = [nswin windowNumber];
-    }
-
-    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5!
     // That is why we need to split the address in two parts:
-    QCocoaPostMessageArgs *args = new QCocoaPostMessageArgs(target, selector);
+    QCocoaPostMessageArgs *args = new QCocoaPostMessageArgs(target, selector, argCount, arg1, arg2);
     quint32 lower = quintptr(args);
     quint32 upper = quintptr(args) >> 32;
     NSEvent *e = [NSEvent otherEventWithType:NSApplicationDefined
-        location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:windowNumber
+        location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:0
         context:nil subtype:QtCocoaEventSubTypePostMessage data1:lower data2:upper];
     [NSApp postEvent:e atStart:NO];
-    return true;
 }
 #endif
 
