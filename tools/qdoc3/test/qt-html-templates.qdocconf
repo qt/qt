@@ -44,10 +44,10 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "          <ul id=\"ul001\" >\n" \
 			  "              <li class=\"defaultLink\"><a href=\"classes.html\">Class index</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"functions.html\">Function index</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Module list</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Modules</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"namespaces.html\">Namespaces</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global stuff</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML table of elements</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML Elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "          <div  id=\"live001\" class=\"live\">\n" \
@@ -62,7 +62,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qt-graphics.html\">Painting & Graphics</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">GUI Components</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"declarativeui.html\">Qt Quick</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform specifics</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform specific</a></li>\n" \
 			  "            </ul>  \n" \
 			  "          </div>\n" \
 			  "          <div  id=\"live002\" class=\"live\">\n" \
@@ -70,14 +70,14 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        </div>\n" \
 			  "        <div class=\"box\" id=\"examples\">\n" \
 			  "          <h2><span></span>\n" \
-			  "            API Examples</h2>\n" \
+			  "            Qt Examples</h2>\n" \
 			  "          <div id=\"list003\" class=\"list\">\n" \
 			  "        <ul id=\"ul003\">\n" \
-			  "              <li class=\"defaultLink\"><a href=\"examples.html\">All examples</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"tutorials.html\">All tutorials</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"examples.html\">Qt Quick examples</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"examples.html\">Desktop examples</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"examples.html\">Device examples</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"all-examples.html\">Examples</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"tutorials.html\">Tutorials</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"demos.html\">Demos</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeexamples.html\">QML Examples</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeexamples.html#Demos\">QML Demos</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "          <div id=\"live003\" class=\"live\">\n" \
