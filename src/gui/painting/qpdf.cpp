@@ -971,12 +971,17 @@ void QPdfBaseEngine::drawPoints (const QPointF *points, int pointCount)
     if (!points)
         return;
 
+    Q_D(QPdfBaseEngine);
     QPainterPath p;
     for (int i=0; i!=pointCount;++i) {
         p.moveTo(points[i]);
         p.lineTo(points[i] + QPointF(0, 0.001));
     }
+
+    bool hadBrush = d->hasBrush;
+    d->hasBrush = false;
     drawPath(p);
+    d->hasBrush = hadBrush;
 }
 
 void QPdfBaseEngine::drawLines (const QLineF *lines, int lineCount)
@@ -984,12 +989,16 @@ void QPdfBaseEngine::drawLines (const QLineF *lines, int lineCount)
     if (!lines)
         return;
 
+    Q_D(QPdfBaseEngine);
     QPainterPath p;
     for (int i=0; i!=lineCount;++i) {
         p.moveTo(lines[i].p1());
         p.lineTo(lines[i].p2());
     }
+    bool hadBrush = d->hasBrush;
+    d->hasBrush = false;
     drawPath(p);
+    d->hasBrush = hadBrush;
 }
 
 void QPdfBaseEngine::drawRects (const QRectF *rects, int rectCount)
