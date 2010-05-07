@@ -83,9 +83,9 @@ function processNokiaData(response){
 		} 
 	}	
 	 
-	if(lookupCount == 0){$('#ul001').prepend('<li>no result</li>');$('#ul001 li').css('display','block');}
-    if(articleCount == 0){$('#ul002').prepend('<li>no result</li>');$('#ul002 li').css('display','block');}
-	if(exampleCount == 0){$('#ul003').prepend('<li>no result</li>');$('#ul003 li').css('display','block');}
+	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');}
+    if(articleCount == 0){$('#ul002').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
+	if(exampleCount == 0){$('#ul003').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
 	// reset count variables;
 	 lookupCount=0;
 	 articleCount = 0;
@@ -97,6 +97,7 @@ function processNokiaData(response){
 var blankRE=/^\s*$/;
 function CheckEmptyAndLoadList()
 {
+	$('.liveResult').remove();
 	var value = document.getElementById('pageType').value; 
 	if((blankRE.test(value)) || (value.length < 3))
 	{
