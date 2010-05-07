@@ -30,7 +30,6 @@ Rectangle {
             width: parent.width - (parent.width % blockSize)
             height: parent.height - (parent.height % blockSize)
             anchors.centerIn: parent
-            z: 20
 
             MouseArea {
                 anchors.fill: parent
@@ -41,26 +40,29 @@ Rectangle {
     }
 
 //![2]
-    Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+    Dialog {
+        id: dialog
+        anchors.centerIn: parent
+        z: 100
+    }
 //![2]
 
     Rectangle {
         id: toolBar
-        width: parent.width; height: 32
+        width: parent.width; height: 30
         color: activePalette.window
         anchors.bottom: screen.bottom
 
         Button {
-            anchors { left: parent.left; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            anchors { left: parent.left; verticalCenter: parent.verticalCenter }
             text: "New Game"
             onClicked: SameGame.startNewGame()
         }
 
         Text {
             id: score
-            anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
+            anchors { right: parent.right; verticalCenter: parent.verticalCenter }
             text: "Score: Who knows?"
-            font.bold: true
         }
     }
 }

@@ -48,8 +48,8 @@ class DataObject : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString color READ color WRITE setColor)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString color READ color WRITE setColor NOTIFY colorChanged)
 
 public:
     DataObject(QObject *parent=0);
@@ -60,6 +60,10 @@ public:
 
     QString color() const;
     void setColor(const QString &color);
+
+signals:
+    void nameChanged();
+    void colorChanged();
 
 private:
     QString m_name;

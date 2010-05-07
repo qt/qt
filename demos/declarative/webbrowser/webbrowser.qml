@@ -99,7 +99,7 @@ Item {
                     Transition {
                         NumberAnimation {
                             properties: "opacity"
-                            easing.type: "InOutQuad"
+                            easing.type: Easing.InOutQuad
                             duration: 300
                         }
                     }
@@ -155,7 +155,7 @@ Item {
                     Transition {
                         NumberAnimation {
                             properties: "opacity"
-                            easing.type: "InOutQuad"
+                            easing.type: Easing.InOutQuad
                             duration: 320
                         }
                     }

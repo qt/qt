@@ -87,7 +87,10 @@ tst_examples::tst_examples()
     excludedDirs << "examples/declarative/gestures";
 
     excludedDirs << "examples/declarative/imageprovider";
+    excludedDirs << "examples/declarative/layouts/graphicsLayouts";
     excludedDirs << "demos/declarative/minehunt";
+
+    excludedDirs << "doc/src/snippets/declarative/graphicswidgets";
 
 #ifdef QT_NO_WEBKIT
     excludedDirs << "examples/declarative/webview";

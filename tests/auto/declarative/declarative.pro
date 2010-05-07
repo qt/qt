@@ -29,7 +29,6 @@ SUBDIRS += \
            qdeclarativeitem \        # Cover
            qdeclarativelistview \    # Cover
            qdeclarativeloader \      # Cover
-           qdeclarativelayouts \     # Cover
            qdeclarativemousearea \   # Cover
            qdeclarativeparticles \   # Cover
            qdeclarativepathview \    # Cover

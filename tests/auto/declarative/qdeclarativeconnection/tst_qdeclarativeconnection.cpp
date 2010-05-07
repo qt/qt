@@ -59,6 +59,8 @@ private slots:
     void connection();
     void trimming();
     void targetChanged();
+    void unknownSignals_data();
+    void unknownSignals();
 
 private:
     QDeclarativeEngine engine;
@@ -152,6 +154,41 @@ void tst_qdeclarativeconnection::targetChanged()
     QVERIFY(connections->target() == item2);
 
     // If we don't crash then we're OK
+
+    delete item;
+}
+
+void tst_qdeclarativeconnection::unknownSignals_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("basic") << "connection-unknownsignals.qml" << ":6:5: QML Connections: Cannot assign to non-existent property \"onFooBar\"";
+    QTest::newRow("parent") << "connection-unknownsignals-parent.qml" << ":6:5: QML Connections: Cannot assign to non-existent property \"onFooBar\"";
+    QTest::newRow("ignored") << "connection-unknownsignals-ignored.qml" << ""; // should be NO error
+    QTest::newRow("notarget") << "connection-unknownsignals-notarget.qml" << ""; // should be NO error
+}
+
+void tst_qdeclarativeconnection::unknownSignals()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, error);
+
+    QUrl url = QUrl::fromLocalFile(SRCDIR "/data/" + file);
+    if (!error.isEmpty()) {
+        QTest::ignoreMessage(QtWarningMsg, (url.toString() + error).toLatin1());
+    } else {
+        // QTest has no way to insist no message (i.e. fail)
+    }
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, url);
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(c.create());
+    QVERIFY(item != 0);
+
+    // check that connection is created (they are all runtime errors)
+    QDeclarativeConnections *connections = item->findChild<QDeclarativeConnections*>("connections");
+    QVERIFY(connections);
 
     delete item;
 }

@@ -152,11 +152,11 @@ public:
 template<class T>
 void QDeclarativeGuard<T>::addGuard()
 {
-    if (QObjectPrivate::get(o)->wasDeleted) {
-        if (prev) remGuard();
+    Q_ASSERT(!prev);
+
+    if (QObjectPrivate::get(o)->wasDeleted) 
         return;
-    }
-   
+
     QDeclarativeData *data = QDeclarativeData::get(o, true);
     next = data->guards;
     if (next) reinterpret_cast<QDeclarativeGuard<T> *>(next)->prev = &next;
@@ -167,6 +167,8 @@ void QDeclarativeGuard<T>::addGuard()
 template<class T>
 void QDeclarativeGuard<T>::remGuard()
 {
+    Q_ASSERT(prev);
+
     if (next) reinterpret_cast<QDeclarativeGuard<T> *>(next)->prev = prev;
     *prev = next;
     next = 0;
