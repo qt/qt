@@ -155,6 +155,7 @@ private slots:
     void connectSlotsByName();
     void invokeMetaMember();
     void invokeQueuedMetaMember();
+    void invokeBlockingQueuedMetaMember();
     void invokeCustomTypes();
     void invokeMetaConstructor();
     void invokeTypedefTypes();
@@ -333,6 +334,9 @@ public slots:
     void testReference(QString &str);
 
     void testLongLong(qint64 ll1, quint64 ll2);
+
+    void moveToThread(QThread *t)
+    { QObject::moveToThread(t); }
 
 signals:
     void sig0();
@@ -580,6 +584,138 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     qApp->processEvents(QEventLoop::AllEvents);
     QCOMPARE(obj.slotResult, QString("testLongLong:-1,0"));
 }
+
+void tst_QMetaObject::invokeBlockingQueuedMetaMember()
+{
+    QThread t;
+    t.start();
+    QtTestObject obj;
+    obj.moveToThread(&t);
+
+    QString t1("1"); QString t2("2"); QString t3("3"); QString t4("4"); QString t5("5");
+    QString t6("6"); QString t7("7"); QString t8("8"); QString t9("9"); QString t10("X");
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl1", Qt::BlockingQueuedConnection, Q_ARG(QString, t1)));
+    QCOMPARE(obj.slotResult, QString("sl1:1"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl2", Qt::BlockingQueuedConnection, Q_ARG(const QString, t1), Q_ARG(QString, t2)));
+    QCOMPARE(obj.slotResult, QString("sl2:12"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl3", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2), Q_ARG(QString, t3)));
+    QCOMPARE(obj.slotResult, QString("sl3:123"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl4", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2),
+                                      Q_ARG(QString, t3), Q_ARG(QString, t4)));
+    QCOMPARE(obj.slotResult, QString("sl4:1234"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl5", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2),
+                                      Q_ARG(QString, t3), Q_ARG(QString, t4), Q_ARG(QString, "5")));
+    QCOMPARE(obj.slotResult, QString("sl5:12345"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl6", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2),
+                                      Q_ARG(QString, t3), Q_ARG(QString, t4), Q_ARG(QString, t5), Q_ARG(QString, t6)));
+    QCOMPARE(obj.slotResult, QString("sl6:123456"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl7", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2),
+                                      Q_ARG(QString, t3), Q_ARG(QString, t4), Q_ARG(QString, t5), Q_ARG(QString, t6),
+                                      Q_ARG(QString, t7)));
+    QCOMPARE(obj.slotResult, QString("sl7:1234567"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl8", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2),
+                                      Q_ARG(QString, t3), Q_ARG(QString, t4), Q_ARG(QString, t5), Q_ARG(QString, t6),
+                                      Q_ARG(QString, t7), Q_ARG(QString, t8)));
+    QCOMPARE(obj.slotResult, QString("sl8:12345678"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl9", Qt::BlockingQueuedConnection, Q_ARG(QString, t1), Q_ARG(QString, t2),
+                                      Q_ARG(QString, t3), Q_ARG(QString, t4), Q_ARG(QString, t5), Q_ARG(QString, t6),
+                                      Q_ARG(QString, t7), Q_ARG(QString, t8), Q_ARG(QString, t9)));
+    QCOMPARE(obj.slotResult, QString("sl9:123456789"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("sl11"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "testSender", Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("0x0"));
+
+    QString refStr("whatever");
+    QVERIFY(QMetaObject::invokeMethod(&obj, "testReference", Qt::BlockingQueuedConnection, QGenericArgument("QString&", &refStr)));
+    QCOMPARE(obj.slotResult, QString("testReference:whatever"));
+    QCOMPARE(refStr, QString("gotcha"));
+
+    qint64 ll1 = -1;
+    quint64 ll2 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj,
+                                      "testLongLong",
+                                      Qt::BlockingQueuedConnection,
+                                      Q_ARG(qint64, ll1),
+                                      Q_ARG(quint64, ll2)));
+    QCOMPARE(obj.slotResult, QString("testLongLong:-1,0"));
+
+    QString exp;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl1", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QString, exp), Q_ARG(QString, "bubu")));
+    QCOMPARE(exp, QString("yessir"));
+    QCOMPARE(obj.slotResult, QString("sl1:bubu"));
+
+    QObject *ptr = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QObject*,ptr)));
+    QCOMPARE(ptr, (QObject *)&obj);
+    QCOMPARE(obj.slotResult, QString("sl11"));
+    // try again with a space:
+    ptr = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QObject * , ptr)));
+    QCOMPARE(ptr, (QObject *)&obj);
+    QCOMPARE(obj.slotResult, QString("sl11"));
+
+    const char *ptr2 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl12", Qt::BlockingQueuedConnection, Q_RETURN_ARG(const char*, ptr2)));
+    QVERIFY(ptr2 != 0);
+    QCOMPARE(obj.slotResult, QString("sl12"));
+    // try again with a space:
+    ptr2 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl12", Qt::BlockingQueuedConnection, Q_RETURN_ARG(char const * , ptr2)));
+    QVERIFY(ptr2 != 0);
+    QCOMPARE(obj.slotResult, QString("sl12"));
+
+    // test w/ template args
+    QList<QString> returnValue, argument;
+    argument << QString("one") << QString("two") << QString("three");
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl13", Qt::BlockingQueuedConnection,
+                                      Q_RETURN_ARG(QList<QString>, returnValue),
+                                      Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, QString("sl13"));
+
+    //test signals
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sig0", Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sig1", Qt::BlockingQueuedConnection, Q_ARG(QString, "baba")));
+    QCOMPARE(obj.slotResult, QString("sl1:baba"));
+
+    exp.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sig1", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QString, exp), Q_ARG(QString, "hehe")));
+    QCOMPARE(exp, QString("yessir"));
+    QCOMPARE(obj.slotResult, QString("sl1:hehe"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::doesNotExist()");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "doesNotExist", Qt::BlockingQueuedConnection));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl1(QString)(QString)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl1(QString)", Qt::BlockingQueuedConnection, Q_ARG(QString, "arg")));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl3(QString)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl3", Qt::BlockingQueuedConnection, Q_ARG(QString, "arg")));
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: No such method QtTestObject::sl1(QString,QString,QString)");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, "sl1", Qt::BlockingQueuedConnection, Q_ARG(QString, "arg"), Q_ARG(QString, "arg"), Q_ARG(QString, "arg")));
+
+    //should not have changed since last test.
+    QCOMPARE(exp, QString("yessir"));
+    QCOMPARE(obj.slotResult, QString("sl1:hehe"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, "moveToThread", Qt::BlockingQueuedConnection, Q_ARG(QThread*, QThread::currentThread())));
+    t.quit();
+    QVERIFY(t.wait());
+
+}
+
 
 
 void tst_QMetaObject::qtMetaObjectInheritance()
