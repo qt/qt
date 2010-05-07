@@ -1548,6 +1548,12 @@ bool QMetaMethod::invoke(QObject *object,
                          : Qt::QueuedConnection;
     }
 
+#ifdef QT_NO_THREAD
+    if (connectionType == Qt::BlockingQueuedConnection) {
+        connectionType = Qt::DirectConnection;
+    }
+#endif
+
     // invoke!
     void *param[] = {
         returnValue.data(),
@@ -1566,7 +1572,7 @@ bool QMetaMethod::invoke(QObject *object,
     int methodIndex = ((handle - priv(mobj->d.data)->methodData) / 5) + mobj->methodOffset();
     if (connectionType == Qt::DirectConnection) {
         return QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, methodIndex, param) < 0;
-    } else {
+    } else if (connectionType == Qt::QueuedConnection) {
         if (returnValue.data()) {
             qWarning("QMetaMethod::invoke: Unable to invoke methods with return values in "
                      "queued connections");
@@ -1599,40 +1605,21 @@ bool QMetaMethod::invoke(QObject *object,
             }
         }
 
-        if (connectionType == Qt::QueuedConnection) {
-            QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
-                                                                   0,
-                                                                   -1,
-                                                                   nargs,
-                                                                   types,
-                                                                   args));
-        } else {
-            if (currentThread == objectThread) {
-                qWarning("QMetaMethod::invoke: Dead lock detected in "
-                         "BlockingQueuedConnection: Receiver is %s(%p)",
-                         mobj->className(), object);
-            }
-
-            // blocking queued connection
-#ifdef QT_NO_THREAD
-            QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
-                                                                   0,
-                                                                   -1,
-                                                                   nargs,
-                                                                   types,
-                                                                   args));
-#else
-            QSemaphore semaphore;
-            QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
-                                                                   0,
-                                                                   -1,
-                                                                   nargs,
-                                                                   types,
-                                                                   args,
-                                                                   &semaphore));
-            semaphore.acquire();
-#endif // QT_NO_THREAD
+        QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
+                                                        0, -1, nargs, types, args));
+    } else { // blocking queued connection
+#ifndef QT_NO_THREAD
+        if (currentThread == objectThread) {
+            qWarning("QMetaMethod::invoke: Dead lock detected in "
+                        "BlockingQueuedConnection: Receiver is %s(%p)",
+                        mobj->className(), object);
         }
+
+        QSemaphore semaphore;
+        QCoreApplication::postEvent(object, new QMetaCallEvent(methodIndex,
+                                                        0, -1, 0, 0, param, &semaphore));
+        semaphore.acquire();
+#endif // QT_NO_THREAD
     }
     return true;
 }

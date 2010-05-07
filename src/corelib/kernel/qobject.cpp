@@ -515,12 +515,14 @@ QMetaCallEvent::QMetaCallEvent(int id, const QObject *sender, int signalId,
  */
 QMetaCallEvent::~QMetaCallEvent()
 {
-    for (int i = 0; i < nargs_; ++i) {
-        if (types_[i] && args_[i])
-            QMetaType::destroy(types_[i], args_[i]);
+    if (types_) {
+        for (int i = 0; i < nargs_; ++i) {
+            if (types_[i] && args_[i])
+                QMetaType::destroy(types_[i], args_[i]);
+        }
+        qFree(types_);
+        qFree(args_);
     }
-    if (types_) qFree(types_);
-    if (args_) qFree(args_);
 #ifndef QT_NO_THREAD
     if (semaphore_)
         semaphore_->release();
@@ -2560,7 +2562,7 @@ bool QObject::connect(const QObject *sender, const char *signal,
     }
 
     int *types = 0;
-    if ((type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
+    if ((type == Qt::QueuedConnection)
             && !(types = queuedConnectionTypes(smeta->method(signal_absolute_index).parameterTypes())))
         return false;
 
@@ -3115,8 +3117,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
     }
 }
 
-static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c,
-                            void **argv, QSemaphore *semaphore = 0)
+static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv)
 {
     if (!c->argumentTypes && c->argumentTypes != &DIRECT_CONNECTION_ONLY) {
         QMetaMethod m = sender->metaObject()->method(signal);
@@ -3146,30 +3147,9 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
                                                                signal,
                                                                nargs,
                                                                types,
-                                                               args,
-                                                               semaphore));
+                                                               args));
 }
 
-static void blocking_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv)
-{
-    if (QThread::currentThread() == c->receiver->thread()) {
-        qWarning("Qt: Dead lock detected while activating a BlockingQueuedConnection: "
-                 "Sender is %s(%p), receiver is %s(%p)",
-                 sender->metaObject()->className(), sender,
-                 c->receiver->metaObject()->className(), c->receiver);
-    }
-
-#ifdef QT_NO_THREAD
-    queued_activate(sender, signal, c, argv);
-#else
-    QSemaphore semaphore;
-    queued_activate(sender, signal, c, argv, &semaphore);
-    QMutex *mutex = signalSlotLock(sender);
-    mutex->unlock();
-    semaphore.acquire();
-    mutex->lock();
-#endif
-}
 
 /*!\internal
    \obsolete.
@@ -3233,23 +3213,38 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 continue;
 
             QObject * const receiver = c->receiver;
+            const int method = c->method;
+            const bool receiverInSameThread = currentThreadData == receiver->d_func()->threadData;
 
             // determine if this connection should be sent immediately or
             // put into the event queue
             if ((c->connectionType == Qt::AutoConnection
-                 && (currentThreadData != sender->d_func()->threadData
+                 && (!receiverInSameThread
                      || receiver->d_func()->threadData != sender->d_func()->threadData))
                 || (c->connectionType == Qt::QueuedConnection)) {
                 queued_activate(sender, signal_absolute_index, c, argv ? argv : empty_argv);
                 continue;
+#ifndef QT_NO_THREAD
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {
-                blocking_activate(sender, signal_absolute_index, c, argv ? argv : empty_argv);
+                locker.unlock();
+                if (receiverInSameThread) {
+                    qWarning("Qt: Dead lock detected while activating a BlockingQueuedConnection: "
+                    "Sender is %s(%p), receiver is %s(%p)",
+                    sender->metaObject()->className(), sender,
+                    receiver->metaObject()->className(), receiver);
+                }
+                QSemaphore semaphore;
+                QCoreApplication::postEvent(receiver, new QMetaCallEvent(method,
+                                                                         sender, signal_absolute_index,
+                                                                         0, 0,
+                                                                         argv ? argv : empty_argv,
+                                                                         &semaphore));
+                semaphore.acquire();
+                locker.relock();
                 continue;
+#endif
             }
-
-            const int method = c->method;
             QObjectPrivate::Sender currentSender;
-            const bool receiverInSameThread = currentThreadData == receiver->d_func()->threadData;
             QObjectPrivate::Sender *previousSender = 0;
             if (receiverInSameThread) {
                 currentSender.sender = sender;
