@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
            examples \
-           graphicswidgets \        # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
            qdeclarativeanimations \          # Cover
