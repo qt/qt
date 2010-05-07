@@ -650,7 +650,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     FxListItem *item = 0;
     int pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= fillTo) {
-        //qDebug() << "refill: append item" << modelIndex << "pos" << pos;
+//        qDebug() << "refill: append item" << modelIndex << "pos" << pos;
         if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(pos);
@@ -661,8 +661,8 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (doBuffer) // never buffer more than one item per frame
             break;
     }
-    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > fillFrom) {
-        //qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
+    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos-1 >= fillFrom) {
+//        qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
         if (!(item = createItem(visibleIndex-1)))
             break;
         --visibleIndex;
@@ -678,7 +678,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < bufferFrom) {
             if (item->attached->delayRemove())
                 break;
-            //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
+//            qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
             if (item->index != -1)
                 visibleIndex++;
             visibleItems.removeFirst();
@@ -688,7 +688,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->position() > bufferTo) {
             if (item->attached->delayRemove())
                 break;
-            //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
+//            qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1 << item->position();
             visibleItems.removeLast();
             releaseItem(item);
             changed = true;

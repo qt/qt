@@ -163,6 +163,7 @@ Q_SIGNALS:
     void doubleClicked(QDeclarativeMouseEvent *mouse);
     void entered();
     void exited();
+    void canceled();
 
 protected:
     void setHovered(bool);

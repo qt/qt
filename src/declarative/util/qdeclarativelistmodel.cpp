@@ -591,7 +591,7 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
     Changes the \a property of the item at \a index in the list model to \a value.
 
     \code
-        fruitModel.set(3, "cost", 5.95)
+        fruitModel.setProperty(3, "cost", 5.95)
     \endcode
 
     The \a index must be an element in the list.
