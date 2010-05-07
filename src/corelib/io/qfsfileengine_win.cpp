@@ -1664,10 +1664,12 @@ QString QFSFileEngine::fileName(FileName file) const
 
         if (!isRelativePath()) {
 #if !defined(Q_OS_WINCE)
-            if ((d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
-                && d->filePath.at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
-                d->filePath.startsWith(QLatin1Char('/'))    // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
-                ) {
+            if (d->filePath.startsWith(QLatin1Char('/')) || // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
+                d->filePath.size() == 2 ||                  // It's a drive letter that needs to get a working dir appended
+                (d->filePath.size() > 2 && d->filePath.at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
+                d->filePath.contains(QLatin1String("/../")) || d->filePath.contains(QLatin1String("/./")) ||
+                d->filePath.endsWith(QLatin1String("/..")) || d->filePath.endsWith(QLatin1String("/.")))
+            {
                 ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(d->filePath));
             } else {
                 ret = d->filePath;
