@@ -4410,14 +4410,6 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                     out() << "<span class=\"qmldefault\">default&nbsp;</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
-                if (qpgn->isDefault()) {
-                    out() << "</table>"
-                          << "</div></div>"
-                          << "<div class=\"qmlitem\">"
-                          << "<div class=\"qmlproto\">"
-                          << "<table class=\"qmlname\">"
-                          << "<tr><td>default</td></tr>";
-                }
             }
             ++p;
         }

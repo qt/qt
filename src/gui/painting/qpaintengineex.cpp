@@ -149,6 +149,7 @@ QDebug Q_GUI_EXPORT &operator<<(QDebug &s, const QVectorPath &path)
 
 
 struct StrokeHandler {
+    StrokeHandler(int reserve) : pts(reserve), types(reserve) {}
     QDataBuffer<qreal> pts;
     QDataBuffer<QPainterPath::ElementType> types;
 };
@@ -394,7 +395,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     if (!d->strokeHandler) {
-        d->strokeHandler = new StrokeHandler;
+        d->strokeHandler = new StrokeHandler(path.elementCount()+4);
         d->stroker.setMoveToHook(qpaintengineex_moveTo);
         d->stroker.setLineToHook(qpaintengineex_lineTo);
         d->stroker.setCubicToHook(qpaintengineex_cubicTo);

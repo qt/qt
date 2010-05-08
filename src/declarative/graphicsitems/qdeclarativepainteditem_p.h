@@ -87,6 +87,10 @@ protected:
     QDeclarativePaintedItem(QDeclarativePaintedItemPrivate &dd, QDeclarativeItem *parent);
 
     virtual void drawContents(QPainter *p, const QRect &) = 0;
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
+    virtual QVariant itemChange(GraphicsItemChange change,
+                                const QVariant &value);
 
     void setCacheFrozen(bool);
 
@@ -100,7 +104,6 @@ protected Q_SLOTS:
     void clearCache();
 
 private:
-    void init();
     Q_DISABLE_COPY(QDeclarativePaintedItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativePaintedItem)
 };

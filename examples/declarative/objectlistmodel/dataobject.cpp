@@ -59,7 +59,10 @@ QString DataObject::name() const
 
 void DataObject::setName(const QString &name)
 {
-    m_name = name;
+    if (name != m_name) {
+        m_name = name;
+        emit nameChanged();
+    }
 }
 
 QString DataObject::color() const
@@ -69,5 +72,8 @@ QString DataObject::color() const
 
 void DataObject::setColor(const QString &color)
 {
-    m_color = color;
+    if (color != m_color) {
+        m_color = color;
+        emit colorChanged();
+    }
 }

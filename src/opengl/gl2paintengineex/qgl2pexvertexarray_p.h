@@ -100,8 +100,10 @@ class QGL2PEXVertexArray
 {
 public:
     QGL2PEXVertexArray() :
+        vertexArray(0), vertexArrayStops(0),
         maxX(-2e10), maxY(-2e10), minX(2e10), minY(2e10),
-        boundingRectDirty(true) {}
+        boundingRectDirty(true)
+    { }
     
     inline void addRect(const QRectF &rect)
     {

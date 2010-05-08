@@ -484,10 +484,7 @@ QSize QDeclarativeViewPrivate::rootObjectSize()
     QSize rootObjectSize(0,0);
     int widthCandidate = -1;
     int heightCandidate = -1;
-    if (declarativeItemRoot) {
-        widthCandidate = declarativeItemRoot->width();
-        heightCandidate = declarativeItemRoot->height();
-    } else if (root) {
+    if (root) {
         QSizeF size = root->boundingRect().size();
         widthCandidate = size.width();
         heightCandidate = size.height();
@@ -614,16 +611,15 @@ bool QDeclarativeView::eventFilter(QObject *watched, QEvent *e)
 
 /*!
     \internal
-    Preferred size follows the root object in
-    resize mode SizeViewToRootObject and
-    the view in resize mode SizeRootObjectToView.
+    Preferred size follows the root object geometry.
 */
 QSize QDeclarativeView::sizeHint() const
 {
-    if (d->resizeMode == SizeRootObjectToView) {
+    QSize rootObjectSize = d->rootObjectSize();
+    if (rootObjectSize.isEmpty()) {
         return size();
-    } else { // d->resizeMode == SizeViewToRootObject
-        return d->rootObjectSize();
+    } else {
+        return rootObjectSize;
     }
 }
 
