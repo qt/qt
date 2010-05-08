@@ -77,7 +77,7 @@ QNetworkAccessFtpBackendFactory::create(QNetworkAccessManager::Operation op,
     }
 
     QUrl url = request.url();
-    if (url.scheme() == QLatin1String("ftp"))
+    if (url.scheme().compare(QLatin1String("ftp"), Qt::CaseInsensitive) == 0)
         return new QNetworkAccessFtpBackend;
     return 0;
 }

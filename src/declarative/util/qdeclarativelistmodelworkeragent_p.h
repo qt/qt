@@ -146,7 +146,7 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QDeclarativeListModelWorkerAgent::VariantRef);
+Q_DECLARE_METATYPE(QDeclarativeListModelWorkerAgent::VariantRef)
 
 QT_END_HEADER
 

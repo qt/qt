@@ -1388,6 +1388,9 @@ QWidget::~QWidget()
         qWarning("QWidget: %s (%s) deleted while being painted", className(), name());
 #endif
 
+    foreach (Qt::GestureType type, d->gestureContext.keys())
+        ungrabGesture(type);
+
     // force acceptDrops false before winId is destroyed.
     d->registerDropSite(false);
 

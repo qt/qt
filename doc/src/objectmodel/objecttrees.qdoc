@@ -41,7 +41,8 @@
 
 /*!
     \page objecttrees.html
-    \title Object Trees and Object Ownership
+    \title Object Trees & Ownership
+    \ingroup qt-basic-concepts
     \brief Information about the parent-child pattern used to describe
     object ownership in Qt.
 

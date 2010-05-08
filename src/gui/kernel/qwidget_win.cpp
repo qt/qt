@@ -512,8 +512,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         DestroyWindow(destroyw);
     }
 
+#ifndef QT_NO_TABLETEVENT
     if (q != qt_tablet_widget && QWidgetPrivate::mapper)
         qt_tablet_init();
+#endif // QT_NO_TABLETEVENT
 
     if (q->testAttribute(Qt::WA_DropSiteRegistered))
         registerDropSite(true);

@@ -50,6 +50,7 @@
     \startpage index.html Qt Reference Documentation
 
     \title Model/View Programming
+    \ingroup qt-gui-concepts
     \brief A guide to the extensible model/view architecture used by Qt's
     item view classes.
 

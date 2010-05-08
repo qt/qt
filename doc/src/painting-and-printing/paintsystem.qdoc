@@ -61,6 +61,7 @@
 /*!
     \page paintsystem.html
     \title The Paint System
+    \ingroup qt-graphics
     \ingroup frameworks-technologies
 
     Qt's paint system enables painting on screen and print devices

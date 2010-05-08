@@ -113,6 +113,9 @@ public:
     bool isPipeliningAllowed() const;
     void setPipeliningAllowed(bool b);
 
+    bool withCredentials() const;
+    void setWithCredentials(bool b);
+
     void setUploadByteDevice(QNonContiguousByteDevice *bd);
     QNonContiguousByteDevice* uploadByteDevice() const;
 
@@ -142,6 +145,7 @@ public:
     mutable QNonContiguousByteDevice* uploadByteDevice;
     bool autoDecompress;
     bool pipeliningAllowed;
+    bool withCredentials;
 };
 
 
