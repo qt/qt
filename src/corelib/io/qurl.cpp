@@ -3129,10 +3129,11 @@ static void toPunycodeHelper(const QChar *s, int ucLength, QString *output)
 
 
 static const char * const idn_whitelist[] = {
-    "ac", "at",
-    "br",
+    "ac", "ar", "at",
+    "biz", "br",
     "cat", "ch", "cl", "cn",
     "de", "dk",
+    "es",
     "fi",
     "gr",
     "hu",
@@ -3146,6 +3147,9 @@ static const char * const idn_whitelist[] = {
     "se", "sh",
     "th", "tm", "tw",
     "vn",
+    "xn--mgbaam7a8h",           // UAE
+    "xn--mgberp4a5d4ar",        // Saudi Arabia
+    "xn--wgbh1c"                // Egypt
 };
 
 static QStringList *user_idn_whitelist = 0;
@@ -3304,6 +3308,7 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
             qt_nameprep(&result, prevLen);
             labelLength = result.length() - prevLen;
             register int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
+            aceForm.resize(0);
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);
             toPunycodeHelper(result.constData() + prevLen, result.size() - prevLen, &aceForm);
