@@ -225,7 +225,7 @@ static const int zero = 0;
 QDockAreaLayoutInfo::QDockAreaLayoutInfo()
     : sep(&zero), dockPos(QInternal::LeftDock), o(Qt::Horizontal), mainWindow(0)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth), tabBarVisible(false)
+    , tabbed(false), tabBar(0), tabBarShape(QTabBar::RoundedSouth)
 #endif
 {
 }
@@ -235,7 +235,7 @@ QDockAreaLayoutInfo::QDockAreaLayoutInfo(const int *_sep, QInternal::DockPositio
                                             QMainWindow *window)
     : sep(_sep), dockPos(_dockPos), o(_o), mainWindow(window)
 #ifndef QT_NO_TABBAR
-    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape)), tabBarVisible(false)
+    , tabbed(false), tabBar(0), tabBarShape(static_cast<QTabBar::Shape>(tbshape))
 #endif
 {
 #ifdef QT_NO_TABBAR
@@ -296,8 +296,8 @@ QSize QDockAreaLayoutInfo::minimumSize() const
     rperp(o, result) = b;
 
 #ifndef QT_NO_TABBAR
-    if (tabbed) {
-        QSize tbm = tabBarMinimumSize();
+    QSize tbm = tabBarMinimumSize();
+    if (!tbm.isNull()) {
         switch (tabBarShape) {
             case QTabBar::RoundedNorth:
             case QTabBar::RoundedSouth:
@@ -369,8 +369,8 @@ QSize QDockAreaLayoutInfo::maximumSize() const
     rperp(o, result) = b;
 
 #ifndef QT_NO_TABBAR
-    if (tabbed) {
-        QSize tbh = tabBarSizeHint();
+    QSize tbh = tabBarSizeHint();
+    if (!tbh.isNull()) {
         switch (tabBarShape) {
             case QTabBar::RoundedNorth:
             case QTabBar::RoundedSouth:
@@ -1500,7 +1500,7 @@ void QDockAreaLayoutInfo::apply(bool animate)
         QRect tab_rect;
         QSize tbh = tabBarSizeHint();
 
-        if (tabBarVisible) {
+        if (!tbh.isNull()) {
             switch (tabBarShape) {
                 case QTabBar::RoundedNorth:
                 case QTabBar::TriangularNorth:
@@ -2079,10 +2079,11 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
 #endif //QT_NO_TABBAR
 
 #ifndef QT_NO_TABBAR
-void QDockAreaLayoutInfo::updateTabBar() const
+//returns whether the tabbar is visible or not
+bool QDockAreaLayoutInfo::updateTabBar() const
 {
     if (!tabbed)
-        return;
+        return false;
 
     QDockAreaLayoutInfo *that = const_cast<QDockAreaLayoutInfo*>(this);
 
@@ -2150,12 +2151,8 @@ void QDockAreaLayoutInfo::updateTabBar() const
 
     tabBar->blockSignals(blocked);
 
-    that->tabBarVisible = ( (gap ? 1 : 0) + tabBar->count()) > 1;
-
-    if (changed || !tabBarMin.isValid() | !tabBarHint.isValid()) {
-        that->tabBarMin = tabBar->minimumSizeHint();
-        that->tabBarHint = tabBar->sizeHint();
-    }
+    //returns if the tabbar is visible or not
+    return ( (gap ? 1 : 0) + tabBar->count()) > 1;
 }
 
 void QDockAreaLayoutInfo::setTabBarShape(int shape)
@@ -2163,11 +2160,8 @@ void QDockAreaLayoutInfo::setTabBarShape(int shape)
     if (shape == tabBarShape)
         return;
     tabBarShape = shape;
-    if (tabBar != 0) {
+    if (tabBar != 0)
         tabBar->setShape(static_cast<QTabBar::Shape>(shape));
-        tabBarMin = QSize();
-        tabBarHint = QSize();
-    }
 
     for (int i = 0; i < item_list.count(); ++i) {
         QDockAreaLayoutItem &item = item_list[i];
@@ -2178,22 +2172,18 @@ void QDockAreaLayoutInfo::setTabBarShape(int shape)
 
 QSize QDockAreaLayoutInfo::tabBarMinimumSize() const
 {
-    if (!tabbed)
+    if (!updateTabBar())
         return QSize(0, 0);
 
-    updateTabBar();
-
-    return tabBarMin;
+    return tabBar->minimumSizeHint();
 }
 
 QSize QDockAreaLayoutInfo::tabBarSizeHint() const
 {
-    if (!tabbed)
+    if (!updateTabBar())
         return QSize(0, 0);
 
-    updateTabBar();
-
-    return tabBarHint;
+    return tabBar->sizeHint();
 }
 
 QSet<QTabBar*> QDockAreaLayoutInfo::usedTabBars() const
@@ -2240,7 +2230,7 @@ QRect QDockAreaLayoutInfo::tabContentRect() const
     QRect result = rect;
     QSize tbh = tabBarSizeHint();
 
-    if (tabBarVisible) {
+    if (!tbh.isNull()) {
         switch (tabBarShape) {
             case QTabBar::RoundedNorth:
             case QTabBar::TriangularNorth:
