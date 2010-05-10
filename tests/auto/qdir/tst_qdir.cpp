@@ -818,7 +818,7 @@ void tst_QDir::canonicalPath_data()
     QTest::newRow("drive:/../.. ") << QDir::rootPath().append("../..") << QDir::rootPath();
     QTest::newRow("drive:\\.\\") << QDir::toNativeSeparators(QDir::rootPath().append("./")) << QDir::rootPath();
     QTest::newRow("drive:\\..\\..") << QDir::toNativeSeparators(QDir::rootPath().append("../..")) << QDir::rootPath();
-    QTest::newRow("drive:") << QDir::rootPath().left(2) << QDir::currentPath();
+    QTest::newRow("drive:") << QDir().canonicalPath().left(2) << QDir().canonicalPath();
 #endif
 }
 
