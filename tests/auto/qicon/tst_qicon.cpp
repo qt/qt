@@ -76,6 +76,7 @@ private slots:
     void svg();
     void addFile();
     void availableSizes();
+    void name();
     void streamAvailableSizes_data();
     void streamAvailableSizes();
     void fromTheme();
@@ -547,6 +548,28 @@ void tst_QIcon::availableSizes()
         // there shouldn't be available sizes for invalid images!
         QVERIFY(QIcon(QLatin1String("")).availableSizes().isEmpty());
         QVERIFY(QIcon(QLatin1String("non-existing.png")).availableSizes().isEmpty());
+    }
+}
+
+void tst_QIcon::name()
+{
+    {
+        // No name if icon does not come from a theme
+        QIcon icon(":/image.png");
+        QString name = icon.name();
+        QVERIFY(name.isEmpty());
+    }
+
+    {
+        // Getting the name of an icon coming from a theme should work
+        QString searchPath = QLatin1String(":/icons");
+        QIcon::setThemeSearchPaths(QStringList() << searchPath);
+        QString themeName("testtheme");
+        QIcon::setThemeName(themeName);
+
+        QIcon icon = QIcon::fromTheme("appointment-new");
+        QString name = icon.name();
+        QCOMPARE(name, QLatin1String("appointment-new"));
     }
 }
 

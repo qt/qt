@@ -389,7 +389,7 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 
-#if !defined(QT_NO_LIBRARY) && (!defined(QT_NO_SETTINGS) || !defined(Q_OS_WIN))
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QAccessibleFactoryInterface_iid, QLatin1String("/accessible")))
 #endif
@@ -532,7 +532,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
             if (iface)
                 return iface;
         }
-#if !defined(QT_NO_LIBRARY) && (!defined(QT_NO_SETTINGS) || !defined(Q_OS_WIN))
+#ifndef QT_NO_LIBRARY
         QAccessibleFactoryInterface *factory = qobject_cast<QAccessibleFactoryInterface*>(loader()->instance(cn));
         if (factory) {
             iface = factory->create(cn, object);

@@ -101,7 +101,7 @@ static QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 /** \internal
  * mutex to be locked when accessing the connectionlists or the senders list
  */
-static QMutex *signalSlotLock(const QObject *o)
+static inline QMutex *signalSlotLock(const QObject *o)
 {
     if (!signalSlotMutexes) {
         QMutexPool *mp = new QMutexPool;
@@ -392,27 +392,6 @@ void QObjectPrivate::cleanConnectionLists()
         connectionLists->dirty = false;
     }
 }
-
-QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
-                                                         Sender *sender)
-{
-    Sender *previousSender = receiver->d_func()->currentSender;
-    receiver->d_func()->currentSender = sender;
-    return previousSender;
-}
-
-void QObjectPrivate::resetCurrentSender(QObject *receiver,
-                                        Sender *currentSender,
-                                        Sender *previousSender)
-{
-    // ref is set to zero when this object is deleted during the metacall
-    if (currentSender->ref == 1)
-        receiver->d_func()->currentSender = previousSender;
-    // if we've recursed, we need to tell the caller about the objects deletion
-    if (previousSender)
-        previousSender->ref = currentSender->ref;
-}
-
 
 typedef QMultiHash<QObject *, QObject **> GuardHash;
 Q_GLOBAL_STATIC(GuardHash, guardHash)
@@ -880,19 +859,14 @@ QObject::~QObject()
     if (d->declarativeData)
         QAbstractDeclarativeData::destroyed(d->declarativeData, this);
 
-    {
-        QMutex *signalSlotMutex = 0;
-        QT_TRY {
-            signalSlotMutex = signalSlotLock(this);
-        } QT_CATCH(const std::bad_alloc &) {
-            // out of memory - swallow to prevent a crash
-        }
-        QMutexLocker locker(signalSlotMutex);
+    // set ref to zero to indicate that this object has been deleted
+    if (d->currentSender != 0)
+        d->currentSender->ref = 0;
+    d->currentSender = 0;
 
-        // set ref to zero to indicate that this object has been deleted
-        if (d->currentSender != 0)
-            d->currentSender->ref = 0;
-        d->currentSender = 0;
+    if (d->connectionLists || d->senders) {
+        QMutex *signalSlotMutex = signalSlotLock(this);
+        QMutexLocker locker(signalSlotMutex);
 
         // disconnect all receivers
         if (d->connectionLists) {
@@ -910,7 +884,7 @@ QObject::~QObject()
                     }
 
                     QMutex *m = signalSlotLock(c->receiver);
-                    bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
+                    bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
 
                     if (c->receiver) {
                         *c->prev = c->next;
@@ -938,7 +912,7 @@ QObject::~QObject()
             QObject *sender = node->sender;
             QMutex *m = signalSlotLock(sender);
             node->prev = &node;
-            bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
+            bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
             if (!node || node->sender != sender) {
                 m->unlock();
@@ -972,7 +946,8 @@ QObject::~QObject()
 
     qt_removeObject(this);
 
-    QCoreApplication::removePostedEvents(this);
+    if (d->postedEvents)
+        QCoreApplication::removePostedEvents(this, 0);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
@@ -3231,9 +3206,9 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                                                          argv ? argv : empty_argv);
     }
 
-    QMutexLocker locker(signalSlotLock(sender));
     QThreadData *currentThreadData = QThreadData::current();
 
+    QMutexLocker locker(signalSlotLock(sender));
     QObjectConnectionListVector *connectionLists = sender->d_func()->connectionLists;
     if (!connectionLists) {
         locker.unlock();
@@ -3329,7 +3304,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     if (connectionLists->orphaned) {
         if (!connectionLists->inUse)
             delete connectionLists;
-    } else {
+    } else if (connectionLists->dirty) {
         sender->d_func()->cleanConnectionLists();
     }
 

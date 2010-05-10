@@ -50,6 +50,7 @@
 #include <QtCore/qdebug.h>
 
 #include <private/qobject_p.h>
+#include <qdeclarativeinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -109,7 +110,7 @@ public:
    }
    \endqml
 
-   \sa {qmlstate}{States} {state-transitions}{Transitions}
+   \sa {qmlstate}{States} {state-transitions}{Transitions}, {QtDeclarative}
 */
 
 QDeclarativeStateGroup::QDeclarativeStateGroup(QObject *parent)
@@ -287,7 +288,7 @@ bool QDeclarativeStateGroupPrivate::updateAutoState()
         QDeclarativeState *state = states.at(ii);
         if (state->isWhenKnown()) {
             if (!state->name().isEmpty()) {
-                if (state->when() && state->when()->value().toBool()) {
+                if (state->when() && state->when()->evaluate().toBool()) {
                     if (stateChangeDebug()) 
                         qWarning() << "Setting auto state due to:" 
                                    << state->when()->expression();
@@ -381,7 +382,7 @@ void QDeclarativeStateGroupPrivate::setCurrentStateInternal(const QString &state
     }
 
     if (applyingState) {
-        qWarning() << "Can't apply a state change as part of a state definition.";
+        qmlInfo(q) << "Can't apply a state change as part of a state definition.";
         return;
     }
 

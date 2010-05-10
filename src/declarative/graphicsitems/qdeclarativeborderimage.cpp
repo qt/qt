@@ -82,7 +82,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
         QDeclarativePixmapCache::cancel(d->sciurl, this);
 }
 /*!
-    \qmlproperty enum BorderImage::status
+    \qmlproperty enumeration BorderImage::status
 
     This property holds the status of image loading.  It can be one of:
     \list
@@ -264,9 +264,9 @@ void QDeclarativeBorderImage::load()
     When the image is scaled:
     \list
     \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i the middle (section 5) is scaled according to BorderImage::horizontalTileMode and BorderImage::verticalTileMode
-    \i sections 2 and 8 are scaled according to BorderImage::horizontalTileMode
-    \i sections 4 and 6 are scaled according to BorderImage::verticalTileMode
+    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
+    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
     \endlist
 
     Each border line (left, right, top, and bottom) specifies an offset from the respective side. For example, \c{border.bottom: 10} sets the bottom line 10 pixels up from the bottom of the image.
@@ -282,8 +282,8 @@ QDeclarativeScaleGrid *QDeclarativeBorderImage::border()
 }
 
 /*!
-    \qmlproperty TileMode BorderImage::horizontalTileMode
-    \qmlproperty TileMode BorderImage::verticalTileMode
+    \qmlproperty enumeration BorderImage::horizontalTileMode
+    \qmlproperty enumeration BorderImage::verticalTileMode
 
     This property describes how to repeat or stretch the middle parts of the border image.
 

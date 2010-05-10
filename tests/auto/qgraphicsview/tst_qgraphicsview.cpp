@@ -216,6 +216,8 @@ private slots:
     void exposeRegion();
     void update_data();
     void update();
+    void update2_data();
+    void update2();
     void inputMethodSensitivity();
     void inputContextReset();
     void indirectPainting();
@@ -239,6 +241,7 @@ private slots:
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
+    void QTBUG_7438_cursor();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -1382,28 +1385,48 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust_data()
 {
     QTest::addColumn<QRect>("updateRect");
     QTest::addColumn<int>("numPaints");
+    QTest::addColumn<bool>("adjustForAntialiasing");
 
-    QTest::newRow("nil") << QRect() << 1;
-    QTest::newRow("0, 0, 300, 100") << QRect(0, 0, 300, 100) << 1;
-    QTest::newRow("0, 0, 100, 300") << QRect(0, 0, 100, 300) << 1;
-    QTest::newRow("200, 0, 100, 300") << QRect(200, 0, 100, 300) << 1;
-    QTest::newRow("0, 200, 300, 100") << QRect(0, 200, 300, 100) << 1;
-    QTest::newRow("0, 0, 300, 99") << QRect(0, 0, 300, 99) << 0;
-    QTest::newRow("0, 0, 99, 300") << QRect(0, 0, 99, 300) << 0;
-    QTest::newRow("201, 0, 99, 300") << QRect(201, 0, 99, 300) << 0;
-    QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 0;
+    // Aliased.
+    QTest::newRow("nil") << QRect() << 1 << false;
+    QTest::newRow("0, 0, 300, 100") << QRect(0, 0, 300, 100) << 1 << false;
+    QTest::newRow("0, 0, 100, 300") << QRect(0, 0, 100, 300) << 1 << false;
+    QTest::newRow("200, 0, 100, 300") << QRect(200, 0, 100, 300) << 1 << false;
+    QTest::newRow("0, 200, 300, 100") << QRect(0, 200, 300, 100) << 1 << false;
+    QTest::newRow("0, 0, 300, 99") << QRect(0, 0, 300, 99) << 0 << false;
+    QTest::newRow("0, 0, 99, 300") << QRect(0, 0, 99, 300) << 0 << false;
+    QTest::newRow("201, 0, 99, 300") << QRect(201, 0, 99, 300) << 0 << false;
+    QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 0 << false;
+
+    // Anti-aliased.
+    QTest::newRow("nil") << QRect() << 1 << true;
+    QTest::newRow("0, 0, 300, 100") << QRect(0, 0, 300, 100) << 1 << true;
+    QTest::newRow("0, 0, 100, 300") << QRect(0, 0, 100, 300) << 1 << true;
+    QTest::newRow("200, 0, 100, 300") << QRect(200, 0, 100, 300) << 1 << true;
+    QTest::newRow("0, 200, 300, 100") << QRect(0, 200, 300, 100) << 1 << true;
+    QTest::newRow("0, 0, 300, 99") << QRect(0, 0, 300, 99) << 1 << true;
+    QTest::newRow("0, 0, 99, 300") << QRect(0, 0, 99, 300) << 1 << true;
+    QTest::newRow("201, 0, 99, 300") << QRect(201, 0, 99, 300) << 1 << true;
+    QTest::newRow("0, 201, 300, 99") << QRect(0, 201, 300, 99) << 1 << true;
+    QTest::newRow("0, 0, 300, 98") << QRect(0, 0, 300, 98) << 0 << false;
+    QTest::newRow("0, 0, 98, 300") << QRect(0, 0, 98, 300) << 0 << false;
+    QTest::newRow("202, 0, 98, 300") << QRect(202, 0, 98, 300) << 0 << false;
+    QTest::newRow("0, 202, 300, 98") << QRect(0, 202, 300, 98) << 0 << false;
 }
 
 void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
 {
     QFETCH(QRect, updateRect);
     QFETCH(int, numPaints);
+    QFETCH(bool, adjustForAntialiasing);
 
     QGraphicsScene scene(-100, -100, 200, 200);
     CountPaintItem *rect = new CountPaintItem(QRectF(-50, -50, 100, 100));
     scene.addItem(rect);
 
     QGraphicsView view(&scene);
+    view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, !adjustForAntialiasing);
+    view.setRenderHint(QPainter::Antialiasing, adjustForAntialiasing);
     view.setFrameStyle(0);
     view.resize(300, 300);
     view.show();
@@ -2218,8 +2241,8 @@ void tst_QGraphicsView::viewportUpdateMode()
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
 #ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(15, 15));
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(15, 15));
+    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(14, 14));
+    QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(14, 14));
 #endif
 
     // Set full update mode.
@@ -2253,7 +2276,7 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view gets one bounding rect update.
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 1);
-    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(33, 33));
+    QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(32, 32));
 
     // Set no update mode
     view.setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
@@ -3646,7 +3669,6 @@ void tst_QGraphicsView::update()
     const bool intersects = updateRect.intersects(viewportRect);
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
     QTRY_COMPARE(viewPrivate->updateRect(updateRect), intersects);
-    QCOMPARE(viewPrivate->updateRegion(updateRect), intersects);
 
     view.lastUpdateRegions.clear();
     viewPrivate->processPendingUpdates();
@@ -3657,12 +3679,100 @@ void tst_QGraphicsView::update()
         QTRY_VERIFY(view.lastUpdateRegions.isEmpty());
     } else {
         QTRY_COMPARE(view.lastUpdateRegions.size(), 1);
-        // Note that we adjust by 2 for antialiasing.
-        QTRY_COMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect.adjusted(-2, -2, 2, 2) & viewportRect));
+        QTRY_COMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect) & viewportRect);
     }
     QTRY_VERIFY(!viewPrivate->fullUpdatePending);
 #endif
 }
+
+void tst_QGraphicsView::update2_data()
+{
+    QTest::addColumn<qreal>("penWidth");
+    QTest::addColumn<bool>("antialiasing");
+
+    // Anti-aliased.
+    QTest::newRow("pen width: 0.0, antialiasing: true") << 0.0 << true;
+    QTest::newRow("pen width: 1.5, antialiasing: true") << 1.5 << true;
+    QTest::newRow("pen width: 2.0, antialiasing: true") << 2.0 << true;
+    QTest::newRow("pen width: 3.0, antialiasing: true") << 3.0 << true;
+
+    // Aliased.
+    QTest::newRow("pen width: 0.0, antialiasing: false") << 0.0 << false;
+    QTest::newRow("pen width: 1.5, antialiasing: false") << 1.5 << false;
+    QTest::newRow("pen width: 2.0, antialiasing: false") << 2.0 << false;
+    QTest::newRow("pen width: 3.0, antialiasing: false") << 3.0 << false;
+}
+
+void tst_QGraphicsView::update2()
+{
+    QFETCH(qreal, penWidth);
+    QFETCH(bool, antialiasing);
+
+    // Create a rect item.
+    const QRectF rawItemRect(-50.4, -50.3, 100.2, 100.1);
+    CountPaintItem *rect = new CountPaintItem(rawItemRect);
+    QPen pen;
+    pen.setWidthF(penWidth);
+    rect->setPen(pen);
+
+    // Add item to a scene.
+    QGraphicsScene scene(-100, -100, 200, 200);
+    scene.addItem(rect);
+
+    // Create a view on the scene.
+    CustomView view(&scene);
+    view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, !antialiasing);
+    view.setRenderHint(QPainter::Antialiasing, antialiasing);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+    QTest::qWaitForWindowShown(&view) ;
+    QTRY_VERIFY(rect->numPaints > 0);
+
+    // Calculate expected update region for the rect.
+    QRectF expectedItemBoundingRect = rawItemRect;
+    const qreal halfPenWidth = penWidth / qreal(2.0);
+    expectedItemBoundingRect.adjust(-halfPenWidth, -halfPenWidth, halfPenWidth, halfPenWidth);
+    QCOMPARE(rect->boundingRect(), expectedItemBoundingRect);
+
+    QRect expectedItemDeviceBoundingRect = rect->deviceTransform(view.viewportTransform())
+                                           .mapRect(expectedItemBoundingRect).toAlignedRect();
+    if (antialiasing)
+        expectedItemDeviceBoundingRect.adjust(-2, -2, 2, 2);
+    else
+        expectedItemDeviceBoundingRect.adjust(-1, -1, 1, 1);
+    const QRegion expectedUpdateRegion(expectedItemDeviceBoundingRect);
+
+    // Reset.
+    rect->numPaints = 0;
+    view.lastUpdateRegions.clear();
+    view.painted = false;
+
+    rect->update();
+    QTRY_VERIFY(view.painted);
+
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+    QTRY_VERIFY(view.painted);
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), expectedUpdateRegion);
+#endif
+}
+
+class FocusItem : public QGraphicsRectItem
+{
+public:
+    FocusItem() : QGraphicsRectItem(0, 0, 20, 20) {
+        m_viewHasIMEnabledInFocusInEvent = false;
+    }
+
+    void focusInEvent(QFocusEvent *event)
+    {
+        QGraphicsView *view = scene()->views().first();
+        m_viewHasIMEnabledInFocusInEvent = view->testAttribute(Qt::WA_InputMethodEnabled);
+    }
+
+    bool m_viewHasIMEnabledInFocusInEvent;
+};
 
 void tst_QGraphicsView::inputMethodSensitivity()
 {
@@ -3673,7 +3783,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     QApplication::setActiveWindow(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
-    QGraphicsRectItem *item = new QGraphicsRectItem;
+    FocusItem *item = new FocusItem;
 
     view.setAttribute(Qt::WA_InputMethodEnabled, true);
 
@@ -3702,6 +3812,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     scene.setFocusItem(item);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(item->m_viewHasIMEnabledInFocusInEvent, true);
 
     item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
@@ -3710,15 +3821,17 @@ void tst_QGraphicsView::inputMethodSensitivity()
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
 
     // introduce another item that is focusable but does not accept input methods
-    QGraphicsRectItem *item2 = new QGraphicsRectItem;
+    FocusItem *item2 = new FocusItem;
     item2->setFlag(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item2);
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(item2->m_viewHasIMEnabledInFocusInEvent, false);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(item->m_viewHasIMEnabledInFocusInEvent, true);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(0);
@@ -3727,10 +3840,12 @@ void tst_QGraphicsView::inputMethodSensitivity()
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(item->m_viewHasIMEnabledInFocusInEvent, true);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(item2->m_viewHasIMEnabledInFocusInEvent, false);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     view.setScene(0);
@@ -3743,6 +3858,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(item->m_viewHasIMEnabledInFocusInEvent, true);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 }
 
@@ -4061,6 +4177,33 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     QApplication::processEvents();
 
     QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
+}
+
+void tst_QGraphicsView::QTBUG_7438_cursor()
+{
+#ifndef QT_NO_CURSOR
+#if defined(Q_OS_WINCE)
+    QSKIP("Qt/CE does not have regular cursor support", SkipAll);
+#endif
+    QGraphicsScene scene;
+    QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
+    item->setFlag(QGraphicsItem::ItemIsMovable);
+
+    QGraphicsView view(&scene);
+    view.setFixedSize(400, 400);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QCOMPARE(view.viewport()->cursor().shape(), QCursor().shape());
+    view.viewport()->setCursor(Qt::PointingHandCursor);
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    sendMouseMove(view.viewport(), view.mapFromScene(0, 0));
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    sendMousePress(view.viewport(), view.mapFromScene(0, 0));
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    sendMouseRelease(view.viewport(), view.mapFromScene(0, 0));
+    QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
+#endif
 }
 
 QTEST_MAIN(tst_QGraphicsView)

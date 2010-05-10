@@ -41,9 +41,9 @@
 
 #include <QtTest/QtTest>
 
-#include <QtMultimedia/qvideodevicecontrol.h>
-#include <QtMultimedia/qmediacontrol.h>
-#include <QtMultimedia/qmediaservice.h>
+#include <QtMediaServices/qvideodevicecontrol.h>
+#include <QtMediaServices/qmediacontrol.h>
+#include <QtMediaServices/qmediaservice.h>
 
 #include <QtGui/qapplication.h>
 #include <QtGui/qstyle.h>

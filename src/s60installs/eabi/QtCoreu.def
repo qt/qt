@@ -622,9 +622,9 @@ EXPORTS
 	_ZN14QObjectPrivate14deleteChildrenEv @ 621 NONAME
 	_ZN14QObjectPrivate14setDeleteWatchEPS_Pi @ 622 NONAME
 	_ZN14QObjectPrivate16resetDeleteWatchEPS_Pii @ 623 NONAME
-	_ZN14QObjectPrivate16setCurrentSenderEP7QObjectPNS_6SenderE @ 624 NONAME
+	_ZN14QObjectPrivate16setCurrentSenderEP7QObjectPNS_6SenderE @ 624 NONAME ABSENT
 	_ZN14QObjectPrivate16setParent_helperEP7QObject @ 625 NONAME
-	_ZN14QObjectPrivate18resetCurrentSenderEP7QObjectPNS_6SenderES3_ @ 626 NONAME
+	_ZN14QObjectPrivate18resetCurrentSenderEP7QObjectPNS_6SenderES3_ @ 626 NONAME ABSENT
 	_ZN14QObjectPrivate19_q_reregisterTimersEPv @ 627 NONAME
 	_ZN14QObjectPrivate19moveToThread_helperEv @ 628 NONAME
 	_ZN14QObjectPrivate20cleanConnectionListsEv @ 629 NONAME
@@ -3697,4 +3697,5 @@ EXPORTS
 	_ZN16QDeclarativeData9destroyedE @ 3696 NONAME DATA 4 ABSENT
 	_ZN24QAbstractDeclarativeData13parentChangedE @ 3697 NONAME DATA 4
 	_ZN24QAbstractDeclarativeData9destroyedE @ 3698 NONAME DATA 4
+	_ZN23QEventDispatcherSymbian12selectThreadEv @ 3699 NONAME
 

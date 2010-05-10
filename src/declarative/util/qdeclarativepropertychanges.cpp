@@ -125,10 +125,11 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
 
-    Changes to an Item's parent or anchors should be done using the associated change elements
-    (ParentChange and AnchorChanges, respectively) rather than PropertyChanges.
+    Anchor margins should be changed with PropertyChanges, but other anchor changes or changes to
+    an Item's parent should be done using the associated change elements
+    (ParentChange and AnchorChanges, respectively).
 
-    \sa {qmlstate}{States}
+    \sa {qmlstate}{States}, QtDeclarative
 */
 
 /*!
@@ -159,12 +160,12 @@ public:
     QDeclarativeExpression *rewindExpression;
     QDeclarativeGuard<QDeclarativeExpression> ownedExpression;
 
-    virtual void execute() {
+    virtual void execute(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, expression);
     }
 
     virtual bool isReversable() { return true; }
-    virtual void reverse() {
+    virtual void reverse(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
     }
 
@@ -434,7 +435,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             a.specifiedProperty = QString::fromUtf8(property);
 
             if (d->isExplicit) {
-                a.toValue = d->expressions.at(ii).second->value();
+                a.toValue = d->expressions.at(ii).second->evaluate();
             } else {
                 QDeclarativeBinding *newBinding = 
                     new QDeclarativeBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));

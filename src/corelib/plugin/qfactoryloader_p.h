@@ -57,7 +57,7 @@
 #include "QtCore/qstringlist.h"
 #include "private/qlibrary_p.h"
 
-#if !defined (QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+#ifndef QT_NO_LIBRARY
 
 QT_BEGIN_NAMESPACE
 

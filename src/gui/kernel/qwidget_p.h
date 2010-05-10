@@ -778,6 +778,13 @@ public:
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
     void syncCocoaMask();
     void finishCocoaMaskSetup();
+    void syncUnifiedMode();
+    // Did we add the drawRectOriginal method?
+    bool drawRectOriginalAdded;
+    // Is the original drawRect method available?
+    bool originalDrawMethod;
+    // Do we need to change the methods?
+    bool changeMethods;
 #endif
     void determineWindowClass();
     void transferChildren();

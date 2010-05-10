@@ -63,6 +63,8 @@ private slots:
     void contextForObject();
     void offlineStoragePath();
     void clearComponentCache();
+    void outputWarningsToStandardError();
+    void objectOwnership();
 };
 
 void tst_qdeclarativeengine::rootContext()
@@ -101,6 +103,7 @@ void tst_qdeclarativeengine::networkAccessManager()
     engine = new QDeclarativeEngine;
     NetworkAccessManagerFactory factory;
     engine->setNetworkAccessManagerFactory(&factory);
+    QVERIFY(engine->networkAccessManagerFactory() == &factory);
     QVERIFY(engine->networkAccessManager() == factory.manager);
     delete engine;
 }
@@ -233,6 +236,91 @@ void tst_qdeclarativeengine::clearComponentCache()
         QCOMPARE(obj->property("test").toInt(), 11);
         delete obj;
     }
+}
+
+static QStringList warnings;
+static void msgHandler(QtMsgType, const char *warning)
+{
+    warnings << QString::fromUtf8(warning);
+}
+
+void tst_qdeclarativeengine::outputWarningsToStandardError()
+{
+    QDeclarativeEngine engine;
+
+    QCOMPARE(engine.outputWarningsToStandardError(), true);
+
+    QDeclarativeComponent c(&engine);
+    c.setData("import Qt 4.7; QtObject { property int a: undefined }", QUrl());
+
+    QVERIFY(c.isReady() == true);
+
+    warnings.clear();
+    QtMsgHandler old = qInstallMsgHandler(msgHandler);
+
+    QObject *o = c.create();
+
+    qInstallMsgHandler(old);
+
+    QVERIFY(o != 0);
+    delete o;
+
+    QCOMPARE(warnings.count(), 1);
+    QCOMPARE(warnings.at(0), QLatin1String("<Unknown File>:1: Unable to assign [undefined] to int"));
+    warnings.clear();
+
+
+    engine.setOutputWarningsToStandardError(false);
+    QCOMPARE(engine.outputWarningsToStandardError(), false);
+
+
+    old = qInstallMsgHandler(msgHandler);
+
+    o = c.create();
+
+    qInstallMsgHandler(old);
+
+    QVERIFY(o != 0);
+    delete o;
+
+    QCOMPARE(warnings.count(), 0);
+}
+
+void tst_qdeclarativeengine::objectOwnership()
+{
+    {
+    QCOMPARE(QDeclarativeEngine::objectOwnership(0), QDeclarativeEngine::CppOwnership);
+    QDeclarativeEngine::setObjectOwnership(0, QDeclarativeEngine::JavaScriptOwnership);
+    QCOMPARE(QDeclarativeEngine::objectOwnership(0), QDeclarativeEngine::CppOwnership);
+    }
+
+    {
+    QObject o;
+    QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::CppOwnership);
+    QDeclarativeEngine::setObjectOwnership(&o, QDeclarativeEngine::CppOwnership);
+    QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::CppOwnership);
+    QDeclarativeEngine::setObjectOwnership(&o, QDeclarativeEngine::JavaScriptOwnership);
+    QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::JavaScriptOwnership);
+    QDeclarativeEngine::setObjectOwnership(&o, QDeclarativeEngine::CppOwnership);
+    QCOMPARE(QDeclarativeEngine::objectOwnership(&o), QDeclarativeEngine::CppOwnership);
+    }
+
+    {
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine);
+    c.setData("import Qt 4.7; QtObject { property QtObject object: QtObject {} }", QUrl());
+
+    QObject *o = c.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(QDeclarativeEngine::objectOwnership(o), QDeclarativeEngine::CppOwnership);
+
+    QObject *o2 = qvariant_cast<QObject *>(o->property("object"));
+    QCOMPARE(QDeclarativeEngine::objectOwnership(o2), QDeclarativeEngine::JavaScriptOwnership);
+
+    delete o;
+    }
+
 }
 
 QTEST_MAIN(tst_qdeclarativeengine)

@@ -332,16 +332,6 @@ void tst_qdeclarativeinstruction::dump()
 
     {
         QDeclarativeInstruction i;
-        i.line = 28;
-        i.type = QDeclarativeInstruction::StoreScript;
-        i.storeScript.value = 2;
-        //i.storeScript.fileName = 18;
-        //i.storeScript.lineNumber = 28;
-        data->bytecode << i;
-    }
-
-    {
-        QDeclarativeInstruction i;
         i.line = 29;
         i.type = QDeclarativeInstruction::StoreScriptString;
         i.storeScriptString.propertyIndex = 24;
@@ -571,30 +561,29 @@ void tst_qdeclarativeinstruction::dump()
         << "25\t\t25\tSTORE_VARIANT_OBJECT\t22"
         << "26\t\t26\tSTORE_INTERFACE\t\t23"
         << "27\t\t27\tSTORE_SIGNAL\t\t2\t3\t\t\"console.log(1921)\""
-        << "28\t\t28\tSTORE_SCRIPT\t\t2"
-        << "29\t\t29\tSTORE_SCRIPT_STRING\t24\t3\t1"
-        << "30\t\t30\tASSIGN_SIGNAL_OBJECT\t0\t\t\t\"mySignal\""
-        << "31\t\t31\tASSIGN_CUSTOMTYPE\t25\t4"
-        << "32\t\t32\tSTORE_BINDING\t26\t3\t2"
-        << "33\t\t33\tSTORE_COMPILED_BINDING\t27\t2\t4"
-        << "34\t\t34\tSTORE_VALUE_SOURCE\t29\t4"
-        << "35\t\t35\tSTORE_VALUE_INTERCEPTOR\t30\t-4"
-        << "36\t\t36\tBEGIN\t\t\t4"
-        << "37\t\t38\tSTORE_OBJECT_QLIST"
-        << "38\t\t39\tASSIGN_OBJECT_LIST"
-        << "39\t\t40\tFETCH_ATTACHED\t\t23"
-        << "40\t\t42\tFETCH_QLIST\t\t32"
-        << "41\t\t43\tFETCH\t\t\t33"
-        << "42\t\t44\tFETCH_VALUE\t\t34\t6"
-        << "43\t\t45\tPOP"
-        << "44\t\t46\tPOP_QLIST"
-        << "45\t\t47\tPOP_VALUE\t\t35\t8"
-        << "46\t\t48\tDEFER\t\t\t7"
-        << "47\t\tNA\tDEFER\t\t\t7"
-        << "48\t\t48\tSTORE_IMPORTED_SCRIPT\t2"
-        << "49\t\t50\tXXX UNKOWN INSTRUCTION\t1234"
-        << "50\t\t51\tSTORE_VARIANT_INTEGER\t\t32\t11"
-        << "51\t\t52\tSTORE_VARIANT_DOUBLE\t\t19\t33.7"
+        << "28\t\t29\tSTORE_SCRIPT_STRING\t24\t3\t1"
+        << "29\t\t30\tASSIGN_SIGNAL_OBJECT\t0\t\t\t\"mySignal\""
+        << "30\t\t31\tASSIGN_CUSTOMTYPE\t25\t4"
+        << "31\t\t32\tSTORE_BINDING\t26\t3\t2"
+        << "32\t\t33\tSTORE_COMPILED_BINDING\t27\t2\t4"
+        << "33\t\t34\tSTORE_VALUE_SOURCE\t29\t4"
+        << "34\t\t35\tSTORE_VALUE_INTERCEPTOR\t30\t-4"
+        << "35\t\t36\tBEGIN\t\t\t4"
+        << "36\t\t38\tSTORE_OBJECT_QLIST"
+        << "37\t\t39\tASSIGN_OBJECT_LIST"
+        << "38\t\t40\tFETCH_ATTACHED\t\t23"
+        << "39\t\t42\tFETCH_QLIST\t\t32"
+        << "40\t\t43\tFETCH\t\t\t33"
+        << "41\t\t44\tFETCH_VALUE\t\t34\t6"
+        << "42\t\t45\tPOP"
+        << "43\t\t46\tPOP_QLIST"
+        << "44\t\t47\tPOP_VALUE\t\t35\t8"
+        << "45\t\t48\tDEFER\t\t\t7"
+        << "46\t\tNA\tDEFER\t\t\t7"
+        << "47\t\t48\tSTORE_IMPORTED_SCRIPT\t2"
+        << "48\t\t50\tXXX UNKOWN INSTRUCTION\t1234"
+        << "49\t\t51\tSTORE_VARIANT_INTEGER\t\t32\t11"
+        << "50\t\t52\tSTORE_VARIANT_DOUBLE\t\t19\t33.7"
         << "-------------------------------------------------------------------------------";
 
     messages = QStringList();

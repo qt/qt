@@ -58,6 +58,7 @@ private slots:
     void properties();
     void connection();
     void trimming();
+    void targetChanged();
 
 private:
     QDeclarativeEngine engine;
@@ -126,6 +127,31 @@ void tst_qdeclarativeconnection::trimming()
                   Q_ARG(int, 5),
                   Q_ARG(QString, "worked"));
     QCOMPARE(item->property("tested").toString(), QString("worked5"));
+
+    delete item;
+}
+
+// Confirm that target can be changed by one of our signal handlers
+void tst_qdeclarativeconnection::targetChanged()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/connection-targetchange.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(c.create());
+    QVERIFY(item != 0);
+
+    QDeclarativeConnections *connections = item->findChild<QDeclarativeConnections*>("connections");
+    QVERIFY(connections);
+
+    QDeclarativeItem *item1 = item->findChild<QDeclarativeItem*>("item1");
+    QVERIFY(item1);
+
+    item1->setWidth(200);
+
+    QDeclarativeItem *item2 = item->findChild<QDeclarativeItem*>("item2");
+    QVERIFY(item2);
+    QVERIFY(connections->target() == item2);
+
+    // If we don't crash then we're OK
 
     delete item;
 }

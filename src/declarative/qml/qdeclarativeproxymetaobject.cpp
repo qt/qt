@@ -41,17 +41,11 @@
 
 #include "private/qdeclarativeproxymetaobject_p.h"
 
-#include <QDebug>
-
 QT_BEGIN_NAMESPACE
 
 QDeclarativeProxyMetaObject::QDeclarativeProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
 : metaObjects(mList), proxies(0), parent(0), object(obj)
 {
-#ifdef QDECLARATIVEPROXYMETAOBJECT_DEBUG
-    qWarning() << "QDeclarativeProxyMetaObject" << obj->metaObject()->className();
-#endif
-
     *static_cast<QMetaObject *>(this) = *metaObjects->first().metaObject;
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
@@ -59,14 +53,6 @@ QDeclarativeProxyMetaObject::QDeclarativeProxyMetaObject(QObject *obj, QList<Pro
         parent = static_cast<QAbstractDynamicMetaObject*>(op->metaObject);
 
     op->metaObject = this;
-
-#ifdef QDECLARATIVEPROXYMETAOBJECT_DEBUG
-    const QMetaObject *mo = obj->metaObject();
-    while(mo) {
-        qWarning() << "    " << mo->className();
-        mo = mo->superClass();
-    }
-#endif
 }
 
 QDeclarativeProxyMetaObject::~QDeclarativeProxyMetaObject()

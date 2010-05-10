@@ -1163,15 +1163,81 @@ void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::H
 #endif
 }
 
+#if QT_MAC_USE_COCOA
+void qt_mac_replaceDrawRect(void * /*OSWindowRef */window, QWidgetPrivate *widget)
+{
+    QMacCocoaAutoReleasePool pool;
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    if(!theWindow)
+        return;
+    id theClass = [[[theWindow contentView] superview] class];
+    // What we do here is basically to add a new selector to NSThemeFrame called
+    // "drawRectOriginal:" which will contain the original implementation of
+    // "drawRect:". After that we get the new implementation from QCocoaWindow
+    // and exchange them. The new implementation is called drawRectSpecial.
+    // We cannot just add the method because it might have been added before and since
+    // we cannot remove a method once it has been added we need to ask QCocoaWindow if
+    // we did the swap or not.
+    if(!widget->drawRectOriginalAdded) {
+        Method m2 = class_getInstanceMethod(theClass, @selector(drawRect:));
+        if(!m2) {
+            // This case is pretty extreme, no drawRect means no drawing!
+            return;
+        }
+        class_addMethod(theClass, @selector(drawRectOriginal:), method_getImplementation(m2), method_getTypeEncoding(m2));
+        widget->drawRectOriginalAdded = true;
+    }
+    if(widget->originalDrawMethod) {
+        Method m0 = class_getInstanceMethod([theWindow class], @selector(drawRectSpecial:));
+        if(!m0) {
+            // Ok, this means the methods were never swapped. Just ignore
+            return;
+        }
+        Method m1 = class_getInstanceMethod(theClass, @selector(drawRect:));
+        if(!m1) {
+            // Ok, this means the methods were never swapped. Just ignore
+            return;
+        }
+        // We have the original method here. Proceed and swap the methods.
+        method_exchangeImplementations(m1, m0);
+        widget->originalDrawMethod = false;
+        [window display];
+    }
+}
+
+void qt_mac_replaceDrawRectOriginal(void * /*OSWindowRef */window, QWidgetPrivate *widget)
+{
+    QMacCocoaAutoReleasePool pool;
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    id theClass = [[[theWindow contentView] superview] class];
+    // Now we need to revert the methods to their original state.
+    // We cannot remove the method, so we just keep track of it in QCocoaWindow.
+    Method m0 = class_getInstanceMethod([theWindow class], @selector(drawRectSpecial:));
+    if(!m0) {
+        // Ok, this means the methods were never swapped. Just ignore
+        return;
+    }
+    Method m1 = class_getInstanceMethod(theClass, @selector(drawRect:));
+    if(!m1) {
+        // Ok, this means the methods were never swapped. Just ignore
+        return;
+    }
+    method_exchangeImplementations(m1, m0);
+    widget->originalDrawMethod = true;
+    [window display];
+}
+#endif // QT_MAC_USE_COCOA
+
 void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show)
 {
+    if(!window)
+        return;
 #if QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     OSWindowRef theWindow = static_cast<OSWindowRef>(window);
     NSToolbar *macToolbar = [theWindow toolbar];
-    if (macToolbar)
-        [macToolbar setShowsBaselineSeparator: show];
-#endif
+    [macToolbar setShowsBaselineSeparator:show];
+#endif // QT_MAC_USE_COCOA
 }
 
 QStringList qt_mac_NSArrayToQStringList(void *nsarray)
@@ -1231,6 +1297,17 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     CGContextRef context = reinterpret_cast<CGContextRef>([[qt_mac_window_for(widget) graphicsContext] graphicsPort]);
 #endif
     return context;
+}
+
+void qt_mac_dispatchPendingUpdateRequests(QWidget *widget)
+{
+    if (!widget)
+        return;
+#ifndef QT_MAC_USE_COCOA
+    HIViewRender(qt_mac_nativeview_for(widget));
+#else
+    [qt_mac_nativeview_for(widget) displayIfNeeded];
+#endif
 }
 
 CGFloat qt_mac_get_scalefactor()
@@ -1402,5 +1479,53 @@ void qt_mac_post_retranslateAppMenu()
     qt_cocoaPostMessage([NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)], @selector(qtTranslateApplicationMenu));
 #endif
 }
+
+#ifdef QT_MAC_USE_COCOA
+// This method implements the magic for the drawRectSpecial method.
+// We draw a line at the upper edge of the content view in order to
+// override the title baseline.
+void macDrawRectOnTop(void * /*OSWindowRef */window)
+{
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    NSView *contentView = [theWindow contentView];
+    if(!contentView)
+        return;
+    // Get coordinates of the content view
+    NSRect contentRect = [contentView frame];
+    // Draw a line on top of the already drawn line.
+    // We need to check if we are active or not to use the proper color.
+    if([window isKeyWindow] || [window isMainWindow]) {
+        [[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
+    } else {
+        [[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
+    }
+    NSPoint origin = NSMakePoint(0, contentRect.size.height);
+    NSPoint end = NSMakePoint(contentRect.size.width, contentRect.size.height);
+    [NSBezierPath strokeLineFromPoint:origin toPoint:end];
+}
+
+// This method will (or at least should) get called only once.
+// Its mission is to find out if we are active or not. If we are active
+// we assume that we were launched via finder, otherwise we assume
+// we were called from the command line. The distinction is important,
+// since in the first case we don't need to trigger a paintEvent, while
+// in the second case we do.
+void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window)
+{
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    NSApplication *application = [NSApplication sharedApplication];
+    NSToolbar *toolbar = [window toolbar];
+    if([application isActive]) {
+        // Launched from finder
+        [toolbar setShowsBaselineSeparator:NO];
+    } else {
+        // Launched from commandline
+        [toolbar setVisible:false];
+        [toolbar setShowsBaselineSeparator:NO];
+        [toolbar setVisible:true];
+        [theWindow display];
+    }
+}
+#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE

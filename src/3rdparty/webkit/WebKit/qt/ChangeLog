@@ -1,3 +1,325 @@
+2010-04-09  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt]Fix compile error with QT_NO_IM
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * WebCoreSupport/QtFallbackWebPopup.cpp:
+        (WebCore::QtFallbackWebPopupCombo::hidePopup):
+
+2010-04-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_SETTINGS
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        If QT_NO_SETTINGS is defined, QSettings is not available.
+
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::populateSetting):
+        (WebCore::InspectorClientQt::storeSetting):
+
+2010-03-25  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_DESKTOPSERVICES
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * Api/qwebsettings.cpp:
+        (QWebSettings::enablePersistentStorage):
+
+2010-03-25  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_DEBUG_STREAM
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::graphicsItemVisibleRect):
+
+2010-04-29  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QtWebKit versioning added
+        https://bugs.webkit.org/show_bug.cgi?id=37207
+
+        QtWebkit releases separated from Qt release cycle.
+
+        * qtwebkit_version.pri: Added.
+
+2010-05-02  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] QWebPage::userAgentForUrl is terrible API
+        https://bugs.webkit.org/show_bug.cgi?id=33875
+
+        Simplify the creation of the user agent string to avoid some
+        overhead for each loaded url.
+
+        The static part of the user agent is cached so it only have
+        to be made once.
+        This creation has been made in order to simplify the code.
+
+        The two variable: application name and current language are
+        set dynamically when needed.
+        The default locale is non longer created if the widget locale
+        is used.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::userAgentApplicationName):
+        (tst_QWebPage::userAgentLocaleChange):
+
+2010-05-02  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer: animation incorrect when scrolling
+        https://bugs.webkit.org/show_bug.cgi?id=38371
+
+        This is a regression introduced with the invalidate-on-scroll code path, that uses QGraphicsWebViewPrivate::update()
+        instead of QGraphicsWebViewPrivate::scroll(). The patch makes sure that the scrolling position is correct on
+        each content update - this shouldn't have a performance impact - the only overhead is an additional value-test on each update.
+
+        Tested by http://www.the-art-of-web.com/css/css-animation/
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::update):
+
+2010-04-29  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Remove unnecessary call to FrameView::forceLayout() in setViewportSize()
+        This prevents a double relayout on resize.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38179
+
+        Thanks to Nate Whetsell <nathan.whetsell@gmail.com> for spotting this.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::setViewportSize):
+
+2010-04-29  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] REGRESSION(r57982): tst_qwebpage::showModalDialog() crashes
+        https://bugs.webkit.org/show_bug.cgi?id=38314
+
+        Make sure that there's always a main frame when returning from createWindow()
+        to the caller in WebCore.
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::createWindow):
+
+2010-04-28  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann <simon.hausmann@nokia.com>
+
+        [Qt] WINS DEF file freeze
+
+        Updated WINSCW def file with added and removed symbols.
+
+        * symbian/bwins/QtWebKitu.def:
+
+2010-04-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Remove translatable strings from the hybridPixmap test.
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+
+        * tests/hybridPixmap/widget.ui:
+
+2010-04-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix autotests .qrc file paths when built in Qt.
+
+        Compiling auto-tests from qt/tests/auto/qweb* produced
+        failing tests since these .pro files include the
+        ones in WebKit/qt/tests and the .qrc file was
+        not added to RESOURCES
+
+        * tests/benchmarks/loading/loading.pro:
+        * tests/benchmarks/painting/painting.pro:
+        * tests/qgraphicswebview/qgraphicswebview.pro:
+        * tests/qwebelement/qwebelement.pro:
+        * tests/qwebframe/qwebframe.pro:
+        * tests/qwebhistory/qwebhistory.pro:
+        * tests/qwebhistoryinterface/qwebhistoryinterface.pro:
+        * tests/qwebinspector/qwebinspector.pro:
+        * tests/qwebpage/qwebpage.pro:
+        * tests/qwebplugindatabase/qwebplugindatabase.pro:
+        * tests/qwebview/qwebview.pro:
+        * tests/tests.pri:
+
+2010-04-26  Bruno Schmidt  <bruno.schmidt@gmail.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Exposing an QVariantMap containing QObjectStar to Javascript
+        causes Segmentation Fault
+        https://bugs.webkit.org/show_bug.cgi?id=34729
+
+        If an QVariantMap containing QObjectStar is added to the to QtWebkit
+        Javascript, it's use causes Segmentation Fault.
+        It happens because, in the case QMetaType::QVariantMap, the "root"
+        object that is inside of a PassRefPtr is passed recursively inside a
+        loop to recover the content of the map, but the PassRefPtr semantics
+        prohibit its use inside a loop, so the "root" object mus be passed
+        using the method "PassRefPtr::get" in order to keep the current
+        reference.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (MyQObject::MyQObject): new property variantMapProperty
+        (MyQObject::variantMapProperty): read variantMapProperty
+        (MyQObject::setVariantMapProperty): write variantMapProperty
+
+2010-04-26  Thiago Macieira  <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix the include header <qstring.h> -> <QtCore/qstring.h>
+
+        The module/header.h style inclusion removes the need to have -I$QTDIR/include/depending-module
+        in the include search path for the application.
+
+        * Api/qwebkitversion.h:
+
+2010-04-21  Yi Shen  <yi.4.shen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Check the request empty or not in ChromeClientQt::createWindow()
+        https://bugs.webkit.org/show_bug.cgi?id=37821
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::createWindow):
+
+2010-04-22  John Pavan  <john.pavan@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] inputMethodQuery returns coordinates in web page coordinates rather than in item coordinates.
+        https://bugs.webkit.org/show_bug.cgi?id=37163
+
+
+        QWebPage::inputMethodQuery is modified so that it
+        returns coordinates in the widget's coordinate system.
+        Tests are added for QGraphicsWebView and QWebView
+        to verify that this behavior is correct after the webpage
+        has been scrolled.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::inputMethodQuery):
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (tst_QGraphicsWebView::microFocusCoordinates):
+        * tests/qwebview/tst_qwebview.cpp:
+        (tst_QWebView::microFocusCoordinates):
+
+2010-04-21  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Simon Fraser.
+
+        [Qt] Fix or remove the runtime flag for accelerated compositing.
+        https://bugs.webkit.org/show_bug.cgi?id=37313
+
+        This lets the QWebPageClient "veto" the settings value for accelerated compositing.
+        In this case we allow accelerated compositing only on QGraphicsWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::allowsAcceleratedCompositing):
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::allowsAcceleratedCompositing):
+        * WebCoreSupport/ChromeClientQt.h:
+
+2010-04-22  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix createPlugin() tests in tst_qwebpage to match behaviour of Qt plugins
+             when PluginsEnabled is false.
+
+        tst_qwebpage should have been updated as part of r56662.
+        (See https://bugs.webkit.org/show_bug.cgi?id=32196)
+
+        Updated documentation of QWebPage::createPlugin and QWebSetting::pluginsEnabled
+            to match the new behaviour.
+
+        * Api/qwebpage.cpp: Update docs.
+        * Api/qwebsettings.cpp: Update docs.
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (createPlugin):
+        (tst_QWebPage::createPluginWithPluginsEnabled):
+        (tst_QWebPage::createPluginWithPluginsDisabled):
+
+2010-04-09  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Kenneth Christiansen and Tor Arne Vestbø.
+
+        REGRESSION(r56552): Broken scrollbars size
+        https://bugs.webkit.org/show_bug.cgi?id=36853
+
+        The regression was caused by r56552, which introduced a fix to bug
+        webkit.org/b/21300. The bug solved an issue with the resize handle on mac,
+        but did it in a way that affected all Qt platforms and thus broke the behavior
+        on non-mac platforms.
+
+        This patch makes the mac specific change ifdef'ed and only applied for the mac
+        platform.
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::windowResizerRect):
+
+2010-04-19  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation against namespaced Qt.
+
+        * WebCoreSupport/ChromeClientQt.h:
+        * WebCoreSupport/QtFallbackWebPopup.h:
+
+2010-04-14  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Changing view mode names due to specification changes
+        https://bugs.webkit.org/show_bug.cgi?id=37615
+
+        test: fast/media/media-feature-wgt-view-mode.html
+
+        specification: http://dev.w3.org/2006/waf/widgets-vmmf/
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::isWindowed):
+        (WebCore::ChromeClientQt::isFullscreen):
+        (WebCore::ChromeClientQt::isMaximized):
+        (WebCore::ChromeClientQt::isMinimized):
+        * WebCoreSupport/ChromeClientQt.h:
+
+2010-04-14  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Rendering artifacts on Qt plugins when scrolling the page
+        https://bugs.webkit.org/show_bug.cgi?id=37152
+
+        Because we no longer repaint the entire viewport on scroll,
+        we must trigger a repaint of QtPluginWidgets when their geometry changes.
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+
 2010-04-09  Yi Shen  <yi.4.shen@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.
@@ -7,6 +329,38 @@
 
         The QWebPopup class has been moved & renamed, so tst_QWebFrame::popupFocus() should use
         the class name "QComboBox", rather than "WebCore::QWebPopup" to find the popup menu.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2010-04-15  Bruno Schmidt  <bruno.schmidt@gmail.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Null QObjects properties cause Segmentation Fault
+        https://bugs.webkit.org/show_bug.cgi?id=34730
+
+        QObjects exported to the QWebkit javascript with properties that are
+        a null "QObject*" cause Segmentation Fault.
+
+        If an QObject is added to the javascript context and it contains
+        properties of the type QObject* with NULL value, calling the property
+        causes Segmentation Fault.
+
+        Follow the tests for the corrections done over WebCore.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        (MyQObject::MyQObject): init the field m_objectStar
+        (MyQObject::objectStarProperty): read the Object* prop
+        (MyQObject::setObjectStarProperty): write the Object* prop
+        (tst_QWebFrame::getSetStaticProperty): new tests for the new prop
+
+2010-04-15  Kent Hansen  <kent.hansen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Mark QWebFrame::overloadedSlots autotest as expected failure
+
+        https://bugs.webkit.org/show_bug.cgi?id=37319
 
         * tests/qwebframe/tst_qwebframe.cpp:
 

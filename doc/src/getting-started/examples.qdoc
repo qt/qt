@@ -151,6 +151,16 @@
     classes.
 
     \clearfloat
+    \section1 \l{QML Examples and Demos}{Declarative}
+    \beginfloatleft
+    \l{QML Examples and Demos}{\inlineimage declarative-examples.png
+    }
+
+    \endfloat
+    The Qt Declarative module provides a declarative framework for building
+    highly dynamic, custom user interfaces.
+
+    \clearfloat
     \section1 \l{Painting Examples}{Painting}
     \beginfloatleft
     \l{Painting Examples}{\inlineimage painting-examples.png
@@ -626,7 +636,7 @@
 
     \previouspage Item Views Examples
     \contentspage Qt Examples
-    \nextpage Painting Examples
+    \nextpage QML Examples and Demos
 
     \image graphicsview-examples.png
 
@@ -639,8 +649,8 @@
     \list
     \o \l{graphicsview/collidingmice}{Colliding Mice}\raisedaster
     \o \l{graphicsview/diagramscene}{Diagram Scene}\raisedaster
-    \o \l{graphicsview/dragdroprobot}{Drag and Drop Robot}
-    \o \l{graphicsview/elasticnodes}{Elastic Nodes}
+    \o \l{graphicsview/dragdroprobot}{Drag and Drop Robot}\raisedaster
+    \o \l{graphicsview/elasticnodes}{Elastic Nodes}\raisedaster
     \o \l{graphicsview/portedasteroids}{Ported Asteroids}
     \o \l{graphicsview/portedcanvas}{Ported Canvas}
     \endlist
@@ -669,7 +679,7 @@
     \page examples-painting.html
     \title Painting Examples
 
-    \previouspage Graphics View Examples
+    \previouspage QML Examples and Demos
     \contentspage Qt Examples
     \nextpage Rich Text Examples
 
@@ -1323,7 +1333,7 @@
     \o \l{dbus/complexpingpong}{Complex Ping Pong}
     \o \l{dbus/listnames}{List Names}
     \o \l{dbus/pingpong}{Ping Pong}
-    \o \l{dbus/remotecontrolledcar}{Remote Controlled Car} 
+    \o \l{dbus/remotecontrolledcar}{Remote Controlled Car}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.

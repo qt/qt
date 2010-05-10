@@ -1,5 +1,5 @@
 // imports...
 import "will-not-be-found"
-import Qt 4.6
+import Qt 4.7
 
 Rectangle { }

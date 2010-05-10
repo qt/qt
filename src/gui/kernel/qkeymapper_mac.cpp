@@ -756,14 +756,23 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         return true;
     }
 
-    if (qApp->inputContext() && qApp->inputContext()->isComposing()) {
+    QInputContext *currentContext = qApp->inputContext();
+    if (currentContext && currentContext->isComposing()) {
         if (ekind == kEventRawKeyDown) {
-            QMacInputContext *context = qobject_cast<QMacInputContext*>(qApp->inputContext());
+            QMacInputContext *context = qobject_cast<QMacInputContext*>(currentContext);
             if (context)
                 context->setLastKeydownEvent(event);
         }
         return false;
     }
+    // Once we process the key down , we dont need to send the saved event again from
+    // kEventTextInputUnicodeForKeyEvent, so clear it.
+    if (currentContext && ekind == kEventRawKeyDown) {
+        QMacInputContext *context = qobject_cast<QMacInputContext*>(currentContext);
+        if (context)
+            context->setLastKeydownEvent(0);
+    }
+
     //get modifiers
     Qt::KeyboardModifiers modifiers;
     int qtKey;

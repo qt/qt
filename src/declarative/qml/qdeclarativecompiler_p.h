@@ -186,7 +186,6 @@ private:
 
 
     bool buildObject(QDeclarativeParser::Object *obj, const BindingContext &);
-    bool buildScript(QDeclarativeParser::Object *obj, QDeclarativeParser::Object *script);
     bool buildComponent(QDeclarativeParser::Object *obj, const BindingContext &);
     bool buildSubObject(QDeclarativeParser::Object *obj, const BindingContext &);
     bool buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj, 
@@ -275,7 +274,6 @@ private:
 
     static QDeclarativeType *toQmlType(QDeclarativeParser::Object *from);
     bool canCoerce(int to, QDeclarativeParser::Object *from);
-    bool canCoerce(int to, int from);
 
     QStringList deferredProperties(QDeclarativeParser::Object *);
 

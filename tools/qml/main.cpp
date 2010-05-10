@@ -42,15 +42,19 @@
 #include "qdeclarative.h"
 #include "qmlruntime.h"
 #include "qdeclarativeengine.h"
+#include "loggerwidget.h"
 #include <QWidget>
 #include <QDir>
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
+#include <QMessageBox>
 #include "qdeclarativetester.h"
 #include "qdeclarativefolderlistmodel.h"
 
 QT_USE_NAMESPACE
+
+QtMsgHandler systemMsgOutput;
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -73,6 +77,36 @@ void myMessageOutput(QtMsgType type, const char *msg)
         abort();
     }
 }
+
+#else // !defined (Q_OS_SYMBIAN)
+
+QWeakPointer<LoggerWidget> logger;
+
+QString warnings;
+void showWarnings()
+{
+    if (!warnings.isEmpty()) {
+        QMessageBox::warning(0, QApplication::tr("Qt Declarative UI Runtime"), warnings);
+    }
+}
+
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    if (!logger.isNull()) {
+        QString strMsg = QString::fromAscii(msg);
+        QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
+    } else {
+        warnings += msg;
+        warnings += QLatin1Char('\n');
+    }
+    if (systemMsgOutput) { // Windows
+        systemMsgOutput(type, msg);
+    } else { // Unix
+        fprintf(stderr, "%s\n",msg);
+        fflush(stderr);
+    }
+}
+
 #endif
 
 void usage()
@@ -88,7 +122,10 @@ void usage()
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
     qWarning("  -resizeview .............................. resize the view, not the skin");
+    qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
+    qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
+    qWarning("  -nolog ................................... do not show log window");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -135,6 +172,14 @@ int main(int argc, char ** argv)
 {
 #if defined (Q_OS_SYMBIAN)
     qInstallMsgHandler(myMessageOutput);
+#else
+    systemMsgOutput = qInstallMsgHandler(myMessageOutput);
+#endif
+
+#if defined (Q_OS_WIN)
+    // Debugging output is not visible by default on Windows -
+    // therefore show modal dialog with errors instad.
+    atexit(showWarnings);
 #endif
 
 #if defined (Q_WS_X11)
@@ -153,7 +198,7 @@ int main(int argc, char ** argv)
 #endif
 
     QApplication app(argc, argv);
-    app.setApplicationName("viewer");
+    app.setApplicationName("QtQmlRuntime");
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
@@ -184,6 +229,8 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
+    bool showLogWidget = true;
+    bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
     maximized = true;
@@ -234,8 +281,8 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             app.setStartDragDistance(QString(argv[++i]).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
-            fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
-            return 0;
+            qWarning("Qt Qml Runtime version %s", QT_VERSION_STR);
+            exit(0);
         } else if (arg == "-translation") {
             if (lastArg) usage();
             translationFile = argv[++i];
@@ -243,14 +290,16 @@ int main(int argc, char ** argv)
             useGL = true;
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
+        } else if (arg == "-nolog") {
+            showLogWidget = false;
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
-                fprintf(stderr, "-L option provided for compatibility only, use -I instead\n");
+                qWarning("-L option provided for compatibility only, use -I instead");
             if (lastArg) {
                 QDeclarativeEngine tmpEngine;
                 QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
-                fprintf(stderr, "Current search path: %s\n", paths.toLocal8Bit().constData());
-                return 0;
+                qWarning("Current search path: %s", paths.toLocal8Bit().constData());
+                exit(0);
             }
             imports << QString(argv[++i]);
         } else if (arg == "-P") {
@@ -270,6 +319,10 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             script = QString(argv[++i]);
             runScript = true;
+        } else if (arg == "-sizeviewtorootobject") {
+            sizeToView = false;
+        } else if (arg == "-sizerootobjecttoview") {
+            sizeToView = true;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -287,7 +340,14 @@ int main(int argc, char ** argv)
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
 
-    QDeclarativeViewer viewer(0, wflags);
+#if !defined(Q_OS_SYMBIAN)
+    LoggerWidget loggerWidget(0);
+    if (showLogWidget) {
+        logger = &loggerWidget;
+    }
+#endif
+
+    QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     if (!scriptopts.isEmpty()) {
         QStringList options = 
             scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
@@ -323,44 +383,43 @@ int main(int argc, char ** argv)
 
         if (!(scriptOptions & QDeclarativeViewer::Record) && !(scriptOptions & QDeclarativeViewer::Play))
             scriptOptsUsage();
-        viewer.setScriptOptions(scriptOptions);
-        viewer.setScript(script);
+        viewer->setScriptOptions(scriptOptions);
+        viewer->setScript(script);
     }  else if (!script.isEmpty()) {
         usage();
     }
 
-    viewer.addLibraryPath(QCoreApplication::applicationDirPath());
-
     foreach (QString lib, imports)
-        viewer.addLibraryPath(lib);
+        viewer->addLibraryPath(lib);
 
     foreach (QString plugin, plugins)
-        viewer.addPluginPath(plugin);
+        viewer->addPluginPath(plugin);
 
-    viewer.setNetworkCacheSize(cache);
-    viewer.setRecordFile(recordfile);
+    viewer->setNetworkCacheSize(cache);
+    viewer->setRecordFile(recordfile);
+    viewer->setSizeToView(sizeToView);
     if (resizeview)
-        viewer.setScaleView();
+        viewer->setScaleView();
     if (fps>0)
-        viewer.setRecordRate(fps);
+        viewer->setRecordRate(fps);
     if (autorecord_to)
-        viewer.setAutoRecord(autorecord_from,autorecord_to);
+        viewer->setAutoRecord(autorecord_from,autorecord_to);
     if (!skin.isEmpty()) {
         if (skin == "list") {
-            foreach (QString s, viewer.builtinSkins())
+            foreach (QString s, viewer->builtinSkins())
                 qWarning() << qPrintable(s);
             exit(0);
         } else {
-            viewer.setSkin(skin);
+            viewer->setSkin(skin);
         }
     }
     if (devkeys)
-        viewer.setDeviceKeys(true);
-    viewer.setRecordDither(dither);
+        viewer->setDeviceKeys(true);
+    viewer->setRecordDither(dither);
     if (recordargs.count())
-        viewer.setRecordArgs(recordargs);
+        viewer->setRecordArgs(recordargs);
 
-    viewer.setUseNativeFileBrowser(useNativeFileBrowser);
+    viewer->setUseNativeFileBrowser(useNativeFileBrowser);
     if (fullScreen && maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
 
@@ -379,17 +438,19 @@ int main(int argc, char ** argv)
     }
 
     if (!fileName.isEmpty()) {
-        viewer.open(fileName);
-        fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
+        viewer->open(fileName);
+        fullScreen ? viewer->showFullScreen() : maximized ? viewer->showMaximized() : viewer->show();
     } else {
         if (!useNativeFileBrowser)
-            viewer.openFile();
-        fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
+            viewer->openFile();
+        fullScreen ? viewer->showFullScreen() : maximized ? viewer->showMaximized() : viewer->show();
         if (useNativeFileBrowser)
-            viewer.openFile();
+            viewer->openFile();
     }
-    viewer.setUseGL(useGL);
-    viewer.raise();
+    viewer->setUseGL(useGL);
+    viewer->raise();
 
-    return app.exec();
+    int rv = app.exec();
+    delete viewer;
+    exit(rv);
 }

@@ -162,6 +162,8 @@ public:
     QDeclarativeExpression *currentExpression;
     bool isDebugging;
 
+    bool outputWarningsToStdErr;
+
     struct ImportedNamespace;
     QDeclarativeContextScriptClass *contextClass;
     QDeclarativeContextData *sharedContext;
@@ -288,7 +290,8 @@ public:
     bool resolveType(const Imports&, const QByteArray& type,
                      QDeclarativeType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
-                     ImportedNamespace** ns_return) const;
+                     ImportedNamespace** ns_return,
+                     QString *errorString = 0) const;
     void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type,
                                 QDeclarativeType** type_return, QUrl* url_return,
                                 int *version_major, int *version_minor ) const;
@@ -311,7 +314,13 @@ public:
     QScriptValue scriptValueFromVariant(const QVariant &);
     QVariant scriptValueToVariant(const QScriptValue &, int hint = QVariant::Invalid);
 
-    void sendQuit ();
+    void sendQuit();
+    void warning(const QDeclarativeError &);
+    void warning(const QList<QDeclarativeError> &);
+    static void warning(QDeclarativeEngine *, const QDeclarativeError &);
+    static void warning(QDeclarativeEngine *, const QList<QDeclarativeError> &);
+    static void warning(QDeclarativeEnginePrivate *, const QDeclarativeError &);
+    static void warning(QDeclarativeEnginePrivate *, const QList<QDeclarativeError> &);
 
     static QScriptValue qmlScriptObject(QObject*, QDeclarativeEngine*);
 

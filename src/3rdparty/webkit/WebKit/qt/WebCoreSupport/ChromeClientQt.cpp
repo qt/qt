@@ -165,7 +165,13 @@ Page* ChromeClientQt::createWindow(Frame*, const FrameLoadRequest& request, cons
     QWebPage *newPage = m_webPage->createWindow(features.dialog ? QWebPage::WebModalDialog : QWebPage::WebBrowserWindow);
     if (!newPage)
         return 0;
-    newPage->mainFrame()->load(request.resourceRequest().url());
+
+    // A call to QWebPage::mainFrame() implicitly creates the main frame.
+    // Make sure it exists, as WebCore expects it when returning from this call.
+    QWebFrame* mainFrame = newPage->mainFrame();
+
+    if (!request.isEmpty())
+        mainFrame->load(request.resourceRequest().url());
     return newPage->d->page;
 }
 
@@ -330,6 +336,7 @@ bool ChromeClientQt::tabsToLinks() const
 
 IntRect ChromeClientQt::windowResizerRect() const
 {
+#if defined(Q_WS_MAC)
     if (!m_webPage)
         return IntRect();
 
@@ -359,6 +366,9 @@ IntRect ChromeClientQt::windowResizerRect() const
 
     QRect resizeCornerRect = QRect(resizeCornerTopLeft, QSize(scollbarThickness, scollbarThickness));
     return resizeCornerRect.intersected(pageClient->geometryRelativeToOwnerWidget());
+#else
+    return IntRect();
+#endif
 }
 
 void ChromeClientQt::invalidateWindow(const IntRect&, bool)
@@ -542,6 +552,12 @@ void ChromeClientQt::scheduleCompositingLayerSync()
     if (platformPageClient())
         platformPageClient()->markForSync(true);
 }
+
+bool ChromeClientQt::allowsAcceleratedCompositing() const
+{
+    return (platformPageClient() && platformPageClient()->allowsAcceleratedCompositing());
+}
+
 #endif
 
 QtAbstractWebPopup* ChromeClientQt::createSelectPopup()
@@ -554,9 +570,9 @@ QtAbstractWebPopup* ChromeClientQt::createSelectPopup()
 }
 
 #if ENABLE(WIDGETS_10_SUPPORT)
-bool ChromeClientQt::isDocked()
+bool ChromeClientQt::isWindowed()
 {
-    return m_webPage->d->viewMode == "mini";
+    return m_webPage->d->viewMode == "windowed";
 }
 
 bool ChromeClientQt::isFloating()
@@ -564,14 +580,19 @@ bool ChromeClientQt::isFloating()
     return m_webPage->d->viewMode == "floating";
 }
 
-bool ChromeClientQt::isApplication()
-{
-    return m_webPage->d->viewMode == "application";
-}
-
 bool ChromeClientQt::isFullscreen()
 {
     return m_webPage->d->viewMode == "fullscreen";
+}
+
+bool ChromeClientQt::isMaximized()
+{
+    return m_webPage->d->viewMode == "maximized";
+}
+
+bool ChromeClientQt::isMinimized()
+{
+    return m_webPage->d->viewMode == "minimized";
 }
 #endif
 

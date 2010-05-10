@@ -123,7 +123,6 @@ public:
     virtual void renderHintsChanged();
     virtual void transformChanged();
 
-    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
     virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
                                      QPainter::PixmapFragmentHints hints);
@@ -135,6 +134,8 @@ public:
     virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
 
     virtual void drawStaticTextItem(QStaticTextItem *textItem);
+
+    bool drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
 
     Type type() const { return OpenGL2; }
 
@@ -290,7 +291,6 @@ public:
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;
-    bool deviceHasAlpha;
 
     GLfloat depthRange[2];
 

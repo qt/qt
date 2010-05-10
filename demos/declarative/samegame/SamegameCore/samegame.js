@@ -5,10 +5,9 @@ var maxRow = 15;
 var maxIndex = maxColumn*maxRow;
 var board = new Array(maxIndex);
 var blockSrc = "SamegameCore/BoomBlock.qml";
-var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
 var scoresURL = "";
 var gameDuration;
-var component = createComponent(blockSrc);
+var component = Qt.createComponent(blockSrc);
 
 //Index function used instead of a 2D array
 function index(column,row) {
@@ -179,8 +178,8 @@ function createBlock(column,row){
     if(component.isReady){
         var dynamicObject = component.createObject();
         if(dynamicObject == null){
-            print("error creating block");
-            print(component.errorsString());
+            console.log("error creating block");
+            console.log(component.errorsString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
@@ -193,8 +192,8 @@ function createBlock(column,row){
         dynamicObject.spawned = true;
         board[index(column,row)] = dynamicObject;
     }else{
-        print("error loading block component");
-        print(component.errorsString());
+        console.log("error loading block component");
+        console.log(component.errorsString());
         return false;
     }
     return true;

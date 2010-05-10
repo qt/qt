@@ -41,7 +41,7 @@
 
 #include "qdeclarativeaudio_p.h"
 
-#include <QtMultimedia/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,7 +57,21 @@ QT_BEGIN_NAMESPACE
     import Qt 4.7
     import Qt.multimedia 4.7
 
-    Audio { source: "audio/song.mp3" }
+    Text {
+        text: "Click Me!";
+        font.pointSize: 24;
+        width: 150; height: 50;
+
+        Audio {
+            id: playMusic
+            source: "music.wav"
+        }
+        MouseArea {
+            id: playArea
+            anchors.fill: parent
+            onPressed:  { playMusic.play() }
+        }
+    }
     \endqml
 
     \sa Video
@@ -195,7 +209,7 @@ void QDeclarativeAudio::stop()
 */
 
 /*!
-    \qmlproperty enum Audio::status
+    \qmlproperty enumeration Audio::status
 
     This property holds the status of media loading. It can be one of:
 
@@ -263,7 +277,7 @@ QDeclarativeAudio::Status QDeclarativeAudio::status() const
 */
 
 /*!
-    \qmlproperty qreal Audio::volume
+    \qmlproperty real Audio::volume
 
     This property holds the volume of the audio output, from 0.0 (silent) to 1.0 (maximum volume).
 */
@@ -275,7 +289,7 @@ QDeclarativeAudio::Status QDeclarativeAudio::status() const
 */
 
 /*!
-    \qmlproperty qreal Audio::bufferProgress
+    \qmlproperty real Audio::bufferProgress
 
     This property holds how much of the data buffer is currently filled, from 0.0 (empty) to 1.0
     (full).
@@ -290,13 +304,13 @@ QDeclarativeAudio::Status QDeclarativeAudio::status() const
 */
 
 /*!
-    \qmlproperty qreal Audio::playbackRate
+    \qmlproperty real Audio::playbackRate
 
     This property holds the rate at which audio is played at as a multiple of the normal rate.
 */
 
 /*!
-    \qmlproperty enum Audio::error
+    \qmlproperty enumeration Audio::error
 
     This property holds the error state of the audio.  It can be one of:
 

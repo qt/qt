@@ -77,6 +77,8 @@ struct {
     const char *regKey;
 } dotNetCombo[] = {
 #ifdef Q_OS_WIN64
+    {NET2010, "MSVC.NET 2010 (10.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\Setup\\VC\\ProductDir"},
+    {NET2010, "MSVC.NET 2010 Express Edition (10.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\10.0\\Setup\\VC\\ProductDir"},
     {NET2008, "MSVC.NET 2008 (9.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\9.0\\Setup\\VC\\ProductDir"},
     {NET2008, "MSVC.NET 2008 Express Edition (9.0)", "Software\\Wow6432Node\\Microsoft\\VCExpress\\9.0\\Setup\\VC\\ProductDir"},
     {NET2005, "MSVC.NET 2005 (8.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"},
@@ -84,6 +86,8 @@ struct {
     {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
     {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Wow6432Node\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
 #else
+    {NET2010, "MSVC.NET 2010 (10.0)", "Software\\Microsoft\\VisualStudio\\10.0\\Setup\\VC\\ProductDir"},
+    {NET2010, "MSVC.NET 2010 Express Edition (10.0)", "Software\\Microsoft\\VCExpress\\10.0\\Setup\\VC\\ProductDir"},
     {NET2008, "MSVC.NET 2008 (9.0)", "Software\\Microsoft\\VisualStudio\\9.0\\Setup\\VC\\ProductDir"},
     {NET2008, "MSVC.NET 2008 Express Edition (9.0)", "Software\\Microsoft\\VCExpress\\9.0\\Setup\\VC\\ProductDir"},
     {NET2005, "MSVC.NET 2005 (8.0)", "Software\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"},
@@ -165,8 +169,12 @@ DotNET which_dotnet_version()
 // Flatfile Tags ----------------------------------------------------
 const char _slnHeader70[]       = "Microsoft Visual Studio Solution File, Format Version 7.00";
 const char _slnHeader71[]       = "Microsoft Visual Studio Solution File, Format Version 8.00";
-const char _slnHeader80[]       = "Microsoft Visual Studio Solution File, Format Version 9.00";
-const char _slnHeader90[]       = "Microsoft Visual Studio Solution File, Format Version 10.00";
+const char _slnHeader80[]       = "Microsoft Visual Studio Solution File, Format Version 9.00"
+                                  "\n# Visual Studio 2005";
+const char _slnHeader90[]       = "Microsoft Visual Studio Solution File, Format Version 10.00"
+                                  "\n# Visual Studio 2008";
+const char _slnHeader100[]      = "Microsoft Visual Studio Solution File, Format Version 11.00"
+                                  "\n# Visual Studio 2010";
                                   // The following UUID _may_ change for later servicepacks...
                                   // If so we need to search through the registry at
                                   // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\7.0\Projects
@@ -354,6 +362,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
 
     switch(which_dotnet_version()) {
+    case NET2010:
+        t << _slnHeader100;
+        break;
     case NET2008:
         t << _slnHeader90;
         break;
@@ -906,14 +917,12 @@ void VcprojGenerator::initCompilerTool()
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
     if(project->isActiveConfig("debug")){
         // Debug version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_DEBUG"));
         if((projectTarget == Application) || (projectTarget == StaticLib))
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DBG"));
         else
             conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DLLDBG"));
     } else {
         // Release version
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_RELEASE"));
         conf.compiler.PreprocessorDefinitions += "QT_NO_DEBUG";
         conf.compiler.PreprocessorDefinitions += "NDEBUG";
         if((projectTarget == Application) || (projectTarget == StaticLib))
@@ -923,10 +932,6 @@ void VcprojGenerator::initCompilerTool()
     }
 
     // Common for both release and debug
-    if(project->isActiveConfig("warn_off"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_OFF"));
-    else if(project->isActiveConfig("warn_on"))
-        conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_WARN_ON"));
     if(project->isActiveConfig("windows"))
         conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
 
@@ -989,22 +994,9 @@ void VcprojGenerator::initLinkerTool()
 
     conf.linker.OutputFile += project->first("MSVCPROJ_TARGET");
 
-    if(project->isActiveConfig("debug")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_DEBUG"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_RELEASE"));
-    }
-
     if(project->isActiveConfig("dll")){
         conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
     }
-
-    if(project->isActiveConfig("console")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_CONSOLE"));
-    } else {
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_WINDOWS"));
-    }
-
 }
 
 void VcprojGenerator::initResourceTool()

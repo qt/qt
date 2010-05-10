@@ -199,7 +199,7 @@ public:
 #elif defined(Q_WS_X11)
     QGLOverlayWidget *olw;
 #ifndef QT_NO_EGL
-    void recreateEglSurface(bool force);
+    void recreateEglSurface();
     WId eglSurfaceWindowId;
 #endif
 #elif defined(Q_WS_MAC)

@@ -223,6 +223,11 @@ QWidgetPrivate::QWidgetPrivate(int version)
 
     isWidget = true;
     memset(high_attributes, 0, sizeof(high_attributes));
+#if QT_MAC_USE_COCOA
+    drawRectOriginalAdded = false;
+    originalDrawMethod = true;
+    changeMethods = false;
+#endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
     static int count = 0;
     qDebug() << "widgets" << ++count;
@@ -7334,7 +7339,7 @@ void QWidgetPrivate::hide_helper()
 
     bool isEmbedded = false;
 #if !defined QT_NO_GRAPHICSVIEW
-    isEmbedded = q->isWindow() && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
+    isEmbedded = q->isWindow() && !bypassGraphicsProxyWidget(q) && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
 #else
     Q_UNUSED(isEmbedded);
 #endif
@@ -12348,6 +12353,28 @@ void QWidgetPrivate::_q_delayedDestroy(WId winId)
     delete winId;
 }
 #endif
+
+#if QT_MAC_USE_COCOA
+void QWidgetPrivate::syncUnifiedMode() {
+    // The whole purpose of this method is to keep the unifiedToolbar in sync.
+    // That means making sure we either exchange the drawing methods or we let
+    // the toolbar know that it does not require to draw the baseline.
+    Q_Q(QWidget);
+    // This function makes sense only if this is a top level
+    if(!q->isWindow())
+        return;
+    OSWindowRef window = qt_mac_window_for(q);
+    if(changeMethods) {
+        // Ok, we are in documentMode.
+        if(originalDrawMethod)
+            qt_mac_replaceDrawRect(window, this);
+    } else {
+        if(!originalDrawMethod)
+            qt_mac_replaceDrawRectOriginal(window, this);
+    }
+}
+
+#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
 

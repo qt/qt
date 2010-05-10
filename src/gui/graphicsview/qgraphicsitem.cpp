@@ -1237,6 +1237,8 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     }
 
     dirtySceneTransform = 1;
+    if (!inDestructor && (transformData || (newParent && newParent->d_ptr->transformData)))
+        transformChanged();
 
     // Restore the sub focus chain.
     if (subFocusItem) {
@@ -3622,6 +3624,7 @@ void QGraphicsItemPrivate::setTransformHelper(const QTransform &transform)
     q_ptr->prepareGeometryChange();
     transformData->transform = transform;
     dirtySceneTransform = 1;
+    transformChanged();
 }
 
 /*!
@@ -3812,6 +3815,8 @@ void QGraphicsItem::setRotation(qreal angle)
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->rotationChanged();
+
+    d_ptr->transformChanged();
 }
 
 /*!
@@ -3876,6 +3881,8 @@ void QGraphicsItem::setScale(qreal factor)
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->scaleChanged();
+
+    d_ptr->transformChanged();
 }
 
 
@@ -3931,6 +3938,7 @@ void QGraphicsItem::setTransformations(const QList<QGraphicsTransform *> &transf
         transformations.at(i)->d_func()->setItem(this);
     d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
+    d_ptr->transformChanged();
 }
 
 /*!
@@ -3947,6 +3955,7 @@ void QGraphicsItemPrivate::prependGraphicsTransform(QGraphicsTransform *t)
     t->d_func()->setItem(q);
     transformData->onlyTransform = false;
     dirtySceneTransform = 1;
+    transformChanged();
 }
 
 /*!
@@ -3963,6 +3972,7 @@ void QGraphicsItemPrivate::appendGraphicsTransform(QGraphicsTransform *t)
     t->d_func()->setItem(q);
     transformData->onlyTransform = false;
     dirtySceneTransform = 1;
+    transformChanged();
 }
 
 /*!
@@ -7315,6 +7325,18 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 {
     Q_D(QGraphicsItem);
     d->imHints = hints;
+    if (!hasFocus())
+        return;
+    d->scene->d_func()->updateInputMethodSensitivityInViews();
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+    QWidget *fw = QApplication::focusWidget();
+    if (!fw)
+        return;
+    for (int i = 0 ; i < scene()->views().count() ; ++i)
+        if (scene()->views().at(i) == fw)
+            if (QInputContext *inputContext = fw->inputContext())
+                inputContext->update();
+#endif
 }
 
 /*!
@@ -7327,13 +7349,11 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 void QGraphicsItem::updateMicroFocus()
 {
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
-    if (QWidget *fw = qApp->focusWidget()) {
-        if (qt_widget_private(fw)->ic || qApp->d_func()->inputContext) {
-            if (QInputContext *ic = fw->inputContext()) {
-                if (ic)
-                    ic->update();
-            }
-        }
+    if (QWidget *fw = QApplication::focusWidget()) {
+        for (int i = 0 ; i < scene()->views().count() ; ++i)
+            if (scene()->views().at(i) == fw)
+                if (QInputContext *inputContext = fw->inputContext())
+                    inputContext->update();
 #ifndef QT_NO_ACCESSIBILITY
         // ##### is this correct
         QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
@@ -10086,6 +10106,9 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
 #endif //QT_NO_IM
         }
         break;
+    case QEvent::ShortcutOverride:
+        dd->sendControlEvent(event);
+        return true;
     default:
         break;
     }

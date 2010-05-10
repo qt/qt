@@ -151,8 +151,18 @@ symbian: {
         graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
     }
 
-    contains(QT_CONFIG, multimedia) {
+    contains(QT_CONFIG, multimedia):contains(QT_CONFIG, mediaservices):contains(QT_CONFIG, media-backend) {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
+    }
+
+    contains(QT_CONFIG, media-backend) {
+        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMediaServices$${QT_LIBINFIX}.dll
+
+        mediaservices_plugins.path = c:$$QT_PLUGINS_BASE_DIR/mediaservices
+        mediaservices_plugins.sources += $$QT_BUILD_TREE/plugins/mediaservices/qmmfengine$${QT_LIBINFIX}.dll
+
+        DEPLOYMENT += mediaservices_plugins
+
     }
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"

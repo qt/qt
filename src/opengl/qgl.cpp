@@ -1259,11 +1259,24 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                 versionFlags |= QGLFormat::OpenGL_Version_3_2;
             case '1':
                 versionFlags |= QGLFormat::OpenGL_Version_3_1;
+            case '0':
+                break;
             default:
+                versionFlags |= QGLFormat::OpenGL_Version_3_1 |
+                                QGLFormat::OpenGL_Version_3_2;
                 break;
             }
         } else {
-            qWarning("Unrecognised OpenGL version");
+            versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                            QGLFormat::OpenGL_Version_1_2 |
+                            QGLFormat::OpenGL_Version_1_3 |
+                            QGLFormat::OpenGL_Version_1_4 |
+                            QGLFormat::OpenGL_Version_1_5 |
+                            QGLFormat::OpenGL_Version_2_0 |
+                            QGLFormat::OpenGL_Version_2_1 |
+                            QGLFormat::OpenGL_Version_3_0 |
+                            QGLFormat::OpenGL_Version_3_1 |
+                            QGLFormat::OpenGL_Version_3_2;
         }
     }
     return versionFlags;
@@ -1644,7 +1657,14 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
             uint *q = (uint*)img.scanLine(y);
             for (int x=0; x < w; ++x) {
                 const uint pixel = *q;
-                *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff) | (pixel & 0xff00ff00);
+                if (alpha_format && include_alpha) {
+                    *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff)
+                         | (pixel & 0xff00ff00);
+                } else {
+                    *q = 0xff000000 | ((pixel << 16) & 0xff0000)
+                         | ((pixel >> 16) & 0xff) | (pixel & 0x00ff00);
+                }
+
                 q++;
             }
         }
@@ -1655,7 +1675,8 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
 
 QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, alpha_format ? QImage::Format_ARGB32 : QImage::Format_RGB32);
+    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32
+                                                     : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
     glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
@@ -2781,8 +2802,8 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
          if (!eng->isNativePaintingActive()) {
             QRectF src(0, 0, target.width(), target.height());
             QSize size(target.width(), target.height());
-            eng->drawTexture(target, textureId, size, src);
-            return;
+            if (eng->drawTexture(target, textureId, size, src))
+                return;
         }
      }
 
@@ -2857,8 +2878,8 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
             QRectF dest(point, QSizeF(textureWidth, textureHeight));
             QRectF src(0, 0, textureWidth, textureHeight);
             QSize size(textureWidth, textureHeight);
-            eng->drawTexture(dest, textureId, size, src);
-            return;
+            if (eng->drawTexture(dest, textureId, size, src))
+                return;
         }
     }
 
@@ -3991,7 +4012,7 @@ bool QGLWidget::event(QEvent *e)
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.
-        d->recreateEglSurface(false);
+        d->recreateEglSurface();
     }
 #endif
 #elif defined(Q_WS_WIN)
@@ -5168,11 +5189,17 @@ Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)
 Q_OPENGL_EXPORT const QString qt_gl_library_name()
 {
     if (qt_gl_lib_name()->isNull()) {
-#if defined(Q_WS_X11) || defined(Q_WS_QWS)
-        return QLatin1String("GL");
-#else // Q_WS_MAC
+#ifdef Q_WS_MAC
         return QLatin1String("/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib");
-#endif
+#else
+# if defined(QT_OPENGL_ES_1)
+        return QLatin1String("GLES_CM");
+# elif defined(QT_OPENGL_ES_2)
+        return QLatin1String("GLESv2");
+# else
+        return QLatin1String("GL");
+# endif
+#endif // defined Q_WS_MAC
     }
     return *qt_gl_lib_name();
 }

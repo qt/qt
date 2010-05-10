@@ -1,3 +1,987 @@
+2010-05-04  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QT_MOBILE_THEME compile time flag
+        https://bugs.webkit.org/show_bug.cgi?id=38439
+
+        Replacing preprocessor conditional used in RenderThemeQt from Q_WS_MAEMO_5 to
+        USE(QT_MOBILE_THEME).
+
+        * WebCore.pro:
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::RenderThemeQt):
+        (WebCore::RenderThemeQt::qStyle):
+        (WebCore::RenderThemeQt::extraDefaultStyleSheet):
+        (WebCore::RenderThemeQt::adjustMenuListButtonStyle):
+        (WebCore::RenderThemeQt::setPaletteFromPageClientIfExists):
+        * platform/qt/RenderThemeQt.h:
+
+2010-03-25  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_LIBRARY
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * platform/FileSystem.h:
+        * platform/qt/FileSystemQt.cpp:
+        (WebCore::unloadModule):
+
+2010-05-06  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed WinCE buildfix after r58842.
+        Preprocessor doesn't understand "true", changed to "1"
+
+        * platform/graphics/MediaPlayer.cpp:
+
+2010-05-06  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        Spatial Navigation: adapt the logic of {deep}findFocusableNodeInDirection to do traversal starting from Node* not Document*
+        https://bugs.webkit.org/show_bug.cgi?id=37803
+
+        Instead of receiving a Document pointer as incoming parameter, patch modifies
+        findFocusableNodeInDirection and deepFindFocusableNodeInDirection methods to
+        receive a Node pointer as start for content traversal.
+        This way we can make good use of deepFindFocusableNodeInDirection to traverse
+        other scrollable container like scrollable div's, and not only frames or iframes.
+
+        Patch also makes use of 'while' instead of 'for' to loop control, that gives move
+        flexibility to the incremental step: e.g. if a scrollable div was processed, the incremental
+        step in the loop does not have to do node->traverseNextNode() but node->traverseNextSibling().
+
+        No behavior change. It is a preparation for supporting scrollable containers in Spatial
+        Navigation.
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::advanceFocusDirectionally):
+        (WebCore::FocusController::findFocusableNodeInDirection):
+        (WebCore::FocusController::deepFindFocusableNodeInDirection):
+        * page/FocusController.h:
+
+2010-05-06  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] REGRESSION: Loading of external CSS and JS files over network fails in some cases
+        https://bugs.webkit.org/show_bug.cgi?id=36755
+
+        Enable the direct connection between QtNetwork and QtWebKit only for Qt versions
+        greater than 4.6.2, due to a bug in Qt that's been fixed after 4.6.2.
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+
+2010-05-05  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt]Disable Qt Multimedia backend for HTML 5 Audio and Video elements
+        Fall back to the Phonon backend until the release situation has been cleared up.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38612
+
+        Buildfix for QT_VERSION >= 0x040700 after r58810.
+
+        * platform/graphics/MediaPlayer.cpp:
+
+2010-05-03  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix rendering of <button> elements on Mac OS X
+
+        The <button> element has ButtonPart appearance, not PushButton part,
+        so we have to include ButtonPart when we decide if we should draw the
+        button as raised on Mac OS X.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38458
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::initializeCommonQStyleOptions):
+
+2010-04-26  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        View modes names in CSSValueKeywords.in
+        https://bugs.webkit.org/show_bug.cgi?id=38125
+
+        View mode names has changed in previous patch but CSSValueKeywords.in file was
+        not updated.
+
+        * css/CSSValueKeywords.in:
+
+2010-04-28  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Simon Fraser.
+
+        Media queries empty values
+        https://bugs.webkit.org/show_bug.cgi?id=38116
+
+        Adding isValid() method to MediaQueryExp to make it possible to differentiate
+        between queries with empty values and queries with invalid values.
+
+        Test: fast/media/media-query-invalid-value.html
+
+        * css/MediaQueryEvaluator.cpp:
+        (WebCore::MediaQueryEvaluator::eval):
+        * css/MediaQueryExp.cpp:
+        (WebCore::MediaQueryExp::MediaQueryExp):
+        * css/MediaQueryExp.h:
+        (WebCore::MediaQueryExp::isValid):
+
+2010-05-05  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Disable Qt Multimedia backend for HTML 5 Audio and Video elements
+
+        Fall back to the Phonon backend until the release situation has been cleared up.
+
+        * WebCore.pro:
+
+2010-05-03  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix qtlibraryinfix not to contain space
+
+        List catenation with += adds whitespace cutting the infix
+        from the final target.
+
+        * WebCore.pro:
+
+2010-05-03  Thomas Zander <t.zander@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix library infix usage when compiling inside of Qt
+
+        Don't apply the infix when building inside Qt, as that's done through the
+        inclusion of qbase.pri.
+
+        * WebCore.pro:
+
+2010-04-29  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QtWebKit versioning added
+        https://bugs.webkit.org/show_bug.cgi?id=37207
+
+        QtWebkit releases separated from Qt release cycle.
+
+        * WebCore.pro:
+
+2010-03-27  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by nobody, fix typo in previous commit.
+
+        Allow plugins implemented by the application, such as mimetype 'x-qt-plugin',
+         when pluginsEnabled is false
+
+        Fix parentheses typo in r56661. This happened while rebasing and was not present
+        in the reviewed patch, so committing unreviewed.
+
+        https://bugs.webkit.org/attachment.cgi?id=49515
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::requestObject):
+
+2010-03-26  Robert Hogan  <robert@roberthogan.net>
+
+        Reviewed by Simon Hausmann.
+
+        Allow plugins implemented by the application, such as mimetype 'x-qt-plugin',
+         when pluginsEnabled is false.
+
+        The purpose of disabling plugins is to prevent the execution of third-party code
+        that may be untrustworthy. Qt plugins are implemented by the client rather than
+        loaded from an external source, so the client should have the opportunity to
+        consider them separately from other plugins.
+
+        Add a function MimeTypeRegistry::isApplicationPluginMIMEType() that WebKit
+        uses in conjunction with arePluginsEnabled() to determine if it should attempt
+        to load a plugin. If isApplicationPluginMIMEType() returns true, WebKit will load
+        the plugin even if arePluginsEnabled() is false.
+
+        Currently, only Qt has application-implemented plugins: these use the mimetype
+        'x-qt-plugin' and 'x-qt-styled-widget'. This patch permits Qt clients'
+        reimplementation of QWebPage::createPlugin() to decide whether or not
+        to create a Qt plugin, even when arePluginsEnabled is false.
+
+        For all platforms apart from Qt, isApplicationPluginMIMEType() returns false.
+
+        https://bugs.webkit.org/show_bug.cgi?id=32196
+
+        Test: plugins/application-plugin-plugins-disabled.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::requestObject):
+        * platform/MIMETypeRegistry.h:
+        * platform/brew/MIMETypeRegistryBrew.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/chromium/MIMETypeRegistryChromium.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/gtk/MIMETypeRegistryGtk.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/haiku/MIMETypeRegistryHaiku.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/mac/MIMETypeRegistryMac.mm:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/qt/MIMETypeRegistryQt.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/win/MIMETypeRegistryWin.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/wince/MIMETypeRegistryWince.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+        * platform/wx/MimeTypeRegistryWx.cpp:
+        (WebCore::MIMETypeRegistry::isApplicationPluginMIMEType):
+
+2010-04-29  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] GraphicsLayer: flicker when starting an animation before the previous one ended.
+        https://bugs.webkit.org/show_bug.cgi?id=38076
+
+        This was due to the cude in the removeAnimations functions, which called deleteLater() without stopping the
+        animation synchronously. The delay between the call to that function and the actual call to the animation's destructor
+        is when the flicker occured. We fix this by calling stop() synchronously, and making sure that the value is reverted
+        upon stop (updateState) and not upon the object's destruction.
+
+        http://staff.washington.edu/fmf/2009/03/25/iphone-3d-css-transformations/ now doesn't flicker when
+        the animation is toggled frequently.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::TransformAnimationQt::~TransformAnimationQt):
+        (WebCore::TransformAnimationQt::applyFrame):
+        (WebCore::TransformAnimationQt::updateState):
+        (WebCore::OpacityAnimationQt::~OpacityAnimationQt):
+        (WebCore::OpacityAnimationQt::updateState):
+        (WebCore::GraphicsLayerQt::removeAnimationsForProperty):
+        (WebCore::GraphicsLayerQt::removeAnimationsForKeyframes):
+
+2010-04-29  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Reverse animations don't work in some use cases        
+        https://bugs.webkit.org/show_bug.cgi?id=38075
+
+        This was due to a code path special-casing reverse animations, that became obselete when we aligned our animation code
+        with the CA implementation. That special case code path is now a bug - and this patch removes it.
+
+        http://staff.washington.edu/fmf/2009/03/25/iphone-3d-css-transformations/ now runs the reverse
+        animation correctly.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::TransformAnimationQt::applyFrame):
+
+2010-04-29  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Speed up text layouting
+        https://bugs.webkit.org/show_bug.cgi?id=31719
+
+        Use QFontMetrics::width() for the text width calculation instead
+        of QTextLayout. This avoids expensive bearing calculations and the
+        line breaking code.
+
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::Font::floatWidthForComplexText):
+
+2010-04-29  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] REGRESSION(r57638): tst_qwebframe::objectDeleted() fails
+        https://bugs.webkit.org/show_bug.cgi?id=38316
+
+        Accessing properties of a deleted objects doesn't throw an exception
+        anymore.
+
+        Continue to expose the QObject class wrapper for objects that
+        previously existed but don't exist anymore. QtClass is safe to
+        use with a deleted QObject.
+
+        * bridge/qt/qt_instance.cpp:
+        (JSC::Bindings::QtInstance::getClass): Return null only if m_class
+        doesn't exist yet and there's no m_object.
+
+2010-04-28  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer: preserves-3d and backface visibility
+        https://bugs.webkit.org/show_bug.cgi?id=35312
+
+        Implement preserves-3d by maintaining the 3D transformation heirarchy inside GraphicsLayerQt, and extrapolating
+        the relative QTransform. When the extrapolation fails (un-invertible matrix) we ignore the transformation change.
+
+        WebKitSite/blog-files/3d-transforms test now work with Qt.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::updateTransform):
+        (WebCore::GraphicsLayerQtImpl::opaqueArea):
+        (WebCore::GraphicsLayerQtImpl::boundingRect):
+        (WebCore::GraphicsLayerQtImpl::paint):
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-04-28  Justin McPherson <justin.mcpherson@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix detection of Qt 4.7's multimedia libraries
+
+        QtMultimedia has been split into an additional media services library, which
+        we're using. mediaservices depends on multimedia.
+
+        * WebCore.pro:
+
+2010-04-26  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Fix compilation against Qt 4.7
+
+        Some QtMultimedia things have been moved into QtMediaServices
+        https://bugs.webkit.org/show_bug.cgi?id=38111
+
+        * WebCore.pro:
+        * platform/graphics/qt/MediaPlayerPrivateQt.cpp:
+        (WebCore::MediaPlayerPrivate::supportsType):
+        (WebCore::MediaPlayerPrivate::totalBytes):
+
+2010-04-21  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Make sure WebKit is not compiled using C++0x.
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+
+        As the rest of Qt compiles in the C++0x mode, people might start
+        compiling it in this mode. WebKit don't support this yet.
+
+        Patch by Thiago Macieira <thiago.macieira@nokia.com>
+
+        * WebCore.pro:
+
+2010-04-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Hide the OpenGL and QtMultimedia dependencies from syncqt.
+
+        This prevents the dependent headers from being included by
+        qt/include/QtWebKit/QtWebKit
+
+        * WebCore.pro:
+
+2010-04-27  Thomas Zander <t.zander@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix linking on Symbian on Linux using the Makefile based mkspec.
+
+        Disable thumb mode due to library size limitations, just like it's done
+        for the sbs/sbsv2 based build system.
+
+        * WebCore.pro:
+
+2010-04-26  Ruben Van Boxem  <vanboxem.ruben@gmail.com>
+
+        Reviewed by Adam Roben.
+
+        Fixes for Win64 compilation under gcc (mingw-w64)
+
+        *  WebCore/bridge/npapi.h: for win64 compatibility, mirroring mozilla-central, see Mozilla bug 560298
+        *  WebCore/platform/Arena.h: uword is used to cast from pointers here. unsigned long is 32-bit on Windows (but 64-bit on mac), and too small to hold a pointer. uintptr_t is 32-bit on 32-bit systems (mac, linux and windows) and 64-bit on all 64-bit systems
+        *  WebCore/platform/graphics/transforms/TransformationMatrix.h: let mingw-w64/w32 use MSVC codepath
+        *  WebCore/platform/text/TextStream.cpp: let mingw-w64 use MSVC codepath
+        *  WebCore/platform/text/TextStream.h: let mingw-w64 use MSVC codepath
+        *  WebCore/plugins/PluginView.cpp: fix pointer casts on WIN64 and let mingw-w64 use MSVC codepath
+        *  WebCore/plugins/win/PluginViewWin.cpp: fix pointer casts on WIN64
+
+2010-01-07  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [RVCT] ACID3 test crash
+        https://bugs.webkit.org/show_bug.cgi?id=33280
+
+        Workaround developed by Yongjun Zhang.
+
+        * dom/Element.cpp:
+        (WebCore::Element::setAttribute):
+
+2010-04-26  Markus Goetz  <Markus.Goetz@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] HTTP pipelining efficiency increase
+        https://bugs.webkit.org/show_bug.cgi?id=38062
+
+        Increase number of network requests that are fed into
+        QNetworkAccessManager.
+
+        * platform/network/qt/ResourceRequestQt.cpp:
+        (WebCore::initializeMaximumHTTPConnectionCountPerHost):
+
+2010-04-26  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix compilation with RVCT 4
+        https://bugs.webkit.org/show_bug.cgi?id=37727
+
+        Swap extern and declspec to fix visibility of symbol imported from QtGui.
+
+        * page/qt/EventHandlerQt.cpp:
+
+2010-04-26  Bruno Schmidt  <bruno.schmidt@gmail.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Exposing an QVariantMap containing QObjectStar to Javascript
+        causes Segmentation Fault
+        https://bugs.webkit.org/show_bug.cgi?id=34729
+
+        If an QVariantMap containing QObjectStar is added to the to QtWebkit
+        Javascript, it's use causes Segmentation Fault.
+        It happens because, in the case QMetaType::QVariantMap, the "root"
+        object that is inside of a PassRefPtr is passed recursively inside a
+        loop to recover the content of the map, but the PassRefPtr semantics
+        prohibit its use inside a loop, so the "root" object mus be passed
+        using the method "PassRefPtr::get" in order to keep the current
+        reference.
+
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertValueToQVariant):
+        (JSC::Bindings::convertQVariantToValue): change to root.get()
+
+2010-04-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Fix the MSVC 64bit build.
+        https://bugs.webkit.org/show_bug.cgi?id=37980
+
+        * platform/text/TextStream.cpp:
+        * platform/text/TextStream.h:
+        * plugins/win/PluginViewWin.cpp:
+        (WebCore::PluginView::platformStart):
+
+2010-04-22  Ray Rischpater  <Raymond.Rischpater@Nokia.com>
+
+        Reviewed by Darin Adler.
+
+        In HTMLInputElement.cpp, shouldUseInputMethod does not return true for
+        some text input types (TELEPHONE, NUMBER, URL, and EMAIL). Addressed
+        this by changing shouldUseInputMethod to use internal methods to 
+        check that the field is a text field that isn't a password field. 
+
+        No new tests.
+
+        Fixes <https://bugs.webkit.org/show_bug.cgi?id=37719>
+
+        * html/HTMLInputElement.cpp:
+        (WebCore::HTMLInputElement::shouldUseInputMethod):
+
+2010-04-22  Gustavo Sverzut Barbieri  <barbieri@profusion.mobi>
+
+        Reviewed by Eric Seidel.
+
+        Fix build if NPAPI support is disabled
+        https://bugs.webkit.org/show_bug.cgi?id=36621
+
+        No new tests, this is a build fix.
+        Re-submit r58043 with fix for EFL.
+
+        * plugins/PluginViewNone.cpp:
+
+2010-03-25  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Fix build if NPAPI support is disabled
+        https://bugs.webkit.org/show_bug.cgi?id=36621
+
+        No new tests, this is a build fix.
+
+        * plugins/PluginView.cpp: Guard getValueStatic() with
+        NETSCAPE_PLUGIN_API
+        (WebCore::PluginView::getValue):
+        * plugins/PluginView.h: Guard getValue() with NETSCAPE_PLUGIN_API
+        * plugins/PluginViewNone.cpp: Guard platformGetValue() and
+        platformGetValueStatic with NETSCAPE_PLUGIN_API;
+        Guard privateBrowsingStateChanged() and setJavaScriptPaused() with
+        PLATFORM(MAC)
+
+2010-04-14  Simon Fraser  <simon.fraser@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Repaint of fixed, transformed element is broken
+        https://bugs.webkit.org/show_bug.cgi?id=37637
+
+        RenderBox::computeRectForRepaint() failed to set the 'fixed' flag correctly
+        for elements that had both fixed position and a transform. If the element has
+        a transform, 'fixed' should only remain true if the element itself is fixed
+        position.
+        
+        Also cache style()->position() in a local variable for performance.
+        
+        Test: fast/repaint/fixed-tranformed.html
+
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::computeRectForRepaint):
+
+2010-04-19  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Fraser.
+
+        Spatial Navigation: at @updateFocusCandidateIfCloser make an assignment shortcut when FocusCandidate is null
+        https://bugs.webkit.org/show_bug.cgi?id=37802
+
+        In updateFocusCandidateIfCloser method, we do all bail out checks in the begining of
+        the method body. If after those bail out checks, no "best FocusCandidate" has been taken
+        yet (i.e. focusCandidate.isNull() == true), we can safely take the current candidate,
+        and exit earlier.
+
+        No behavior change, it is just a safe assignment shortcut.
+
+        * page/FocusController.cpp:
+        (WebCore::updateFocusCandidateIfCloser):
+
+2010-04-21  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Simon Fraser.
+
+        [Qt] Fix or remove the runtime flag for accelerated compositing.
+
+        This adds a way for a chrome client to disallow layers from becoming composited,
+        even if the settings enable accelerated compositing. This is necessary for platforms
+        where different views can be applied with the same settings to the same page.
+
+        We enable an API through ChromeClient to ask the chrome-client whether or not
+        it can render composited layers, which is taken into account when the compositor
+        decides whether or not to start compositing.
+
+        https://bugs.webkit.org/show_bug.cgi?id=37313
+
+        Pages under LayoutTests/compositing now work under QWebView, even when
+        QWebSettings::AcceleratedCompositingEnabled is on.
+
+        * page/ChromeClient.h:
+        (WebCore::ChromeClient::allowsAcceleratedCompositing):
+        * platform/qt/QWebPageClient.h:
+        (QWebPageClient::allowsAcceleratedCompositing):
+        * rendering/RenderLayerCompositor.cpp:
+        (WebCore::RenderLayerCompositor::canBeComposited):
+
+2010-04-23  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] [Performance] GraphicsLayer: constructing the layers takes too long
+        https://bugs.webkit.org/show_bug.cgi?id=36365
+
+        The issue came from using QGraphicsView's cache as is. The problem is that
+        several code-paths require re-rendering of the item, but not re-rendering
+        of the web content into the cache.
+
+        The way to solve it is by having GraphicsLayerQt manage the cache directly
+        via QPixmapCache, instead of using QGraphicsItem cache modes.
+
+        FPS measurement shows significant improvement (20FPS before, 40FPS after)
+        on several use-cases, including blog-files/leaves on a desktop environment.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::GraphicsLayerQtImpl):
+        (WebCore::GraphicsLayerQtImpl::recache):
+        (WebCore::GraphicsLayerQtImpl::paint):
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-04-21  Benjamin Poulain  <ikipou@gmail.com>
+
+        Reviewed by Simon Fraser.
+
+        Update of fixed elements is not made correctly when the page has been scrolled
+        https://bugs.webkit.org/show_bug.cgi?id=36783
+
+        When a fixed element was updated, the old geometry was not repainted correctly
+        because the repaint rect was cached during the layout and not updated when 
+        scrolling.
+
+        The rect is now updated while scrolling so the region updated correspond to the
+        region of the element on the screen.
+
+        The method RenderLayer::updateRepaintRectsAfterScroll() updates
+        the repaint rect of all fixed tree after scroll.
+
+        Tests: fast/repaint/fixed-child-move-after-scroll.html
+               fast/repaint/fixed-child-of-fixed-move-after-scroll.html
+               fast/repaint/fixed-child-of-transformed-move-after-scroll.html
+               fast/repaint/fixed-move-after-scroll.html
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::scrollPositionChanged):
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::updateRepaintRectsAfterScroll):
+        * rendering/RenderLayer.h:
+
+2010-04-21  David Leong  <david.leong@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Symbian apps crash on exit due to a bad qObject_cast.
+
+        https://bugs.webkit.org/show_bug.cgi?id=37303
+
+        Added check for NULL to avoid the crash. Reworked to fix memory leak
+           
+        * plugins/symbian/PluginViewSymbian.cpp:
+        (WebCore::PluginView::platformDestroy):
+
+2010-04-14  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Fraser.
+
+        Spatial Navigation: make hasOffscreenRect() to earlier return 'true' if absoluteClippedOverflowRect() gives an empty rect
+        https://bugs.webkit.org/show_bug.cgi?id=37635
+
+        absoluteClippedOverflowRect method of RenderObject does return an empty IntRect for offscreen nodes.
+        So hasOffscreenRect method (SpatialNavigation.cpp) can safily bail out earlier in such cases.
+
+        * page/SpatialNavigation.cpp:
+        (WebCore::hasOffscreenRect):
+
+2010-04-12  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Fraser.
+
+        Spatial Navigation: make renderRectRelativeToRootDocument method to fallback to getRect() of Element when needed
+        https://bugs.webkit.org/show_bug.cgi?id=37461
+
+        getRect() of Element can be used instead of absoluteClippedOverflowRect of RenderObject when
+        the node is currently offscreen in an scroll overflowed content.
+
+        Test: fast/events/spatial-navigation/snav-simple-content-overflow.html
+
+        * page/SpatialNavigation.cpp:
+        (WebCore::renderRectRelativeToRootDocument):
+
+2010-03-29  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Fraser.
+
+        Spatial Navigation: proper handle negative x or y coordinates
+        https://bugs.webkit.org/show_bug.cgi?id=36773
+
+        In Spatial Navigation logic, during rect acquisition in renderRectRelativeToRootDocument,
+        sometimes negative x() or y() values are got, and the current algorithm bails out in
+        any of such cases.
+
+        However, when a node is in a scrollable content (content overflow <div>) and
+        this scrollable container scrolled up, element gets offscreen, and gets negative values
+        for y(), for example. In such cases, they are still valid to be used in Spatial Navigation
+        logic.
+
+        Test: fast/events/spatial-navigation/snav-offscreen-content.html
+
+        * page/SpatialNavigation.cpp:
+        (WebCore::distanceDataForNode):
+        (WebCore::checkNegativeCoordsForNode):
+
+2010-04-05  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        Spatial Navigation: bail out as soon as algorithm finds a focus candidate is not applicable
+        https://bugs.webkit.org/show_bug.cgi?id=37135
+
+        It happens, for example, when distanceDataForNode assigns numeric_limits<long long> to
+        current focus candidate's. It means that current candidate is not in direction, or not
+        a valid target node.
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::findFocusableNodeInDirection):
+
+2010-03-29  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Fraser.
+        Patch by Antonio Gomes <tonikitoo@webkit.org>
+
+        Spatial Navigation: Initial code simplification in FocusController.cpp and SpatialNavigation.cpp
+
+        WebCore::distanceInDirection method was handling much of the logic not
+        strictly only related to the distance between nodes acquisition. This
+        method was simplified and renamed to 'WebCore::distanceDataForNode'.
+        The latter is now responsible for only getting the distance and alignment
+        data, while all assignement logic previously in distanceInDirection method
+        was moved place to updateFocusCandidateIfCloser.
+
+        Parent document distance and alignment acquisitions, in turn, have also
+        changed location: they are both got from deepFindFocusableNodeInDirection,
+        and passed in a recursive call to findFocusableNodeInDirection via the
+        candidateParent variable (optional parameter). In addition, the need for
+        the 'focusCandidateCopy' variable in deepFindFocusableNodeInDirection method
+        was removed, making the code much cleaner.
+
+        No behaviour change at this point. Mostly moving code around to the place
+        where it should live in.
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::advanceFocusDirectionally):
+        (WebCore::updateFocusCandidateIfCloser):
+        (WebCore::FocusController::findFocusableNodeInDirection):
+        (WebCore::FocusController::deepFindFocusableNodeInDirection):
+        * page/FocusController.h:
+        * page/SpatialNavigation.cpp:
+        (WebCore::distanceDataForNode):
+        (WebCore::renderRectRelativeToRootDocument):
+        * page/SpatialNavigation.h:
+
+2010-04-20  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Antti Koivisto.
+
+        [Qt] GraphicsLayer: support fill-modes
+        https://bugs.webkit.org/show_bug.cgi?id=36216
+        Implement the CSS-animation "fill mode" concept in GraphicsLayerQt. The concept
+        enables a key-frame animation to go to the animation's starting point before the delay,
+        and/or to stay at the animation's ending point after its ended, without reverting to the default
+        value.
+        We do that by manually setting the value to keyframe-0 before the delay if fill-mode is backwards/both,
+        and manually modifying the default value to the animated value as we animate, with fill-mode forwards/both.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::AnimationQtBase::AnimationQtBase):
+        (WebCore::TransformAnimationQt::~TransformAnimationQt):
+        (WebCore::TransformAnimationQt::applyFrame):
+        (WebCore::GraphicsLayerQt::addAnimation):
+
+2010-04-13  Eskil Blomfeldt <eblomfel@trolltech.com>, Jesus Sanchez-Palencia  <jesus.palencia@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Use integer pixel metric QFont API to fix rounding errors in text rendering on the Mac
+        https://bugs.webkit.org/show_bug.cgi?id=36532
+
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::Font::floatWidthForComplexText):
+        (WebCore::Font::font):
+
+2010-04-16  Daniel Bates  <dbates@rim.com>
+
+        Reviewed by Adam Treat.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36312
+
+        Adds support for the viewport meta tag. The code is largely derived in whole
+        or in part from the WebCore-528.15 source published as part of the iPhone 3.1.3
+        source code <http://www.opensource.apple.com/source/WebCore/WebCore-528.15/>.
+
+        * Android.mk: Added file ViewportArguments.cpp.
+        * GNUmakefile.am: Added files ViewportArguments.cpp and ViewportArguments.h.
+        * WebCore.gypi: Ditto.
+        * WebCore.pro: Ditto.
+        * WebCore.vcproj/WebCore.vcproj: Ditto.
+        * WebCore.xcodeproj/project.pbxproj: Ditto.
+        * dom/Document.cpp:
+        (WebCore::isSeparator): Added.
+        (WebCore::Document::processArguments): Added.
+        (WebCore::Document::processViewport): Added.
+        * dom/Document.h:
+        * dom/ViewportArguments.cpp: Added.
+        (WebCore::setViewportFeature):
+        (WebCore::viewportErrorMessageTemplate):
+        (WebCore::viewportErrorMessageLevel):
+        (WebCore::reportViewportWarning):
+        * dom/ViewportArguments.h: Added.
+        (WebCore::):
+        (WebCore::ViewportArguments::):
+        (WebCore::ViewportArguments::ViewportArguments):
+        (WebCore::ViewportArguments::hasCustomArgument):
+        * html/HTMLMetaElement.cpp:
+        (WebCore::HTMLMetaElement::process): Modified to call Document::processViewport.
+        * page/ChromeClient.h:
+        (WebCore::ChromeClient::didReceiveViewportArguments): Added.
+
+2010-04-15  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Antti Koivisto.
+
+        No default selection for <select multiple> menu lists.
+        https://bugs.webkit.org/show_bug.cgi?id=37530
+
+        Manual test: manual-tests/no-listbox-rendering.html
+
+        For menu lists, if the selection is not indicated by the html file, the first <option> will be
+        selected after loading the page or reseting the form. On the other hand listboxes may have no
+        element selected after loading the page or reseting the form.
+
+        When NO_LISTBOX_RENDERING is enabled listboxes becomes menu lists. Those <select multiple>
+        that did not have selected elements, now being menu lists, will have the first <option>
+        selected. That is the behavior difference that this patch corrects.
+
+        When NO_LISTBOX_RENDERING is enabled usesMenuList() always returns true then usesMenuList() cannot
+        be used to decide about initial selection of the elements. This patch replaces (usesMenuLists())
+        by (!multiple && size <= 1) where initial selection is considered.
+
+        * dom/SelectElement.cpp:
+        (WebCore::SelectElement::recalcListItems):
+        (WebCore::SelectElement::reset):
+        * manual-tests/no-listbox-rendering.html: Added.
+
+2010-04-19  Balazs Kelemen  <kb@inf.u-szeged.hu>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Destroy SharedTimerQt before destruction of QCoreApplication.
+
+        To avoid unsafe situations caused by running WebCore code (through firing timers) when destruction of QCoreApplication
+        has been started, we should explicitly destroy the SharedTimerQt instance on application exit.
+        We can achieve that through installing a self-destroying slot for the QCoreApplication::aboutToQuit() signal
+        into the SharedTimerQt instance.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36832
+
+        No functional change so no new tests.
+
+        * platform/qt/SharedTimerQt.cpp:
+        (WebCore::SharedTimerQt::SharedTimerQt):
+        (WebCore::SharedTimerQt::destroy):
+        (WebCore::SharedTimerQt::inst):
+
+2010-04-16  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Make GraphicsLayerQt always use ItemCoordinateCache, and remove ItemUsesExtendedStyleOption.
+        This aligns our implementation with the Safari implementation - layers are always uploaded
+        to textures in item units, and WebCore is responsible for the heuristics.
+
+        [Qt] GraphicsLayer: performance optimizations
+        https://bugs.webkit.org/show_bug.cgi?id=35393
+
+        No new tests. Still no FPS benchmarks available (on any platform)
+        but animations are noticably better.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::GraphicsLayerQtImpl):
+        (WebCore::GraphicsLayerQtImpl::paint):
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+        (WebCore::TransformAnimationQt::updateState):
+
+2010-04-16  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Unreviewed QtWebKit (with Qt 4.7) build fix.
+
+        Bug 37683 moved code from FontQt.cpp to FontPlatformDataQt.cpp but did not
+        renamed the variable used.
+
+        * platform/graphics/qt/FontPlatformDataQt.cpp:
+        (WebCore::FontPlatformData::FontPlatformData):
+
+2010-04-16  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] WebCore::Font::font() causes a QFont detach
+        https://bugs.webkit.org/show_bug.cgi?id=37683
+
+        Moved the setStyleStrategy call to FontPlatformData
+        to avoid the detach.
+
+        Thanks to Holger for spotting this.
+
+        * platform/graphics/qt/FontPlatformDataQt.cpp:
+        (WebCore::FontPlatformData::FontPlatformData):
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::Font::font):
+
+2010-04-16  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Antti Koivisto.
+
+        [Qt]QtLauncher crash on page with CSS 3D transform
+        https://bugs.webkit.org/show_bug.cgi?id=36859
+
+        Added a neccessary null-pointer check, lack of which created the crash circumstances.
+
+        Tested by http://css-vfx.googlecode.com/svn/trunk/snowstack/snowstack.html
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-04-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix JavaScriptCore's include path for WinCE builds
+
+        https://bugs.webkit.org/show_bug.cgi?id=36751
+
+        * WebCore.pro:
+
+2010-04-19  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation against namespaced Qt.
+
+        * platform/graphics/GraphicsLayer.h:
+        * platform/graphics/Tile.h:
+        * platform/graphics/qt/MediaPlayerPrivateQt.h:
+        * platform/network/qt/NetworkStateNotifierPrivate.h:
+
+2010-04-14  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Changing view mode names due to specification changes
+        https://bugs.webkit.org/show_bug.cgi?id=37615
+
+        test: fast/media/media-feature-wgt-view-mode.html
+
+        specification: http://dev.w3.org/2006/waf/widgets-vmmf/
+
+        * css/MediaQueryEvaluator.cpp:
+        (WebCore::view_modeMediaFeatureEval):
+        * page/ChromeClient.h:
+        (WebCore::ChromeClient::isWindowed):
+        (WebCore::ChromeClient::isMaximized):
+        (WebCore::ChromeClient::isMinimized):
+
+2010-04-15  Bruno Schmidt  <bruno.schmidt@gmail.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Null QObjects properties cause Segmentation Fault
+        https://bugs.webkit.org/show_bug.cgi?id=34730
+
+        QObjects exported to the QWebkit javascript with properties that are
+        a null "QObject*" cause Segmentation Fault.
+
+        If an QObject is added to the javascript context and it contains
+        properties of the type QObject* with NULL value, calling the property
+        causes Segmentation Fault.
+        So now the code below properly checks for null pointers:
+
+        * bridge/qt/qt_instance.cpp:
+        (JSC::Bindings::QtInstance::getClass): may return NULL
+        (JSC::Bindings::QtInstance::getMethod): may return jsNull()
+        (JSC::Bindings::QtInstance::stringValue): may return jsNull()
+        (JSC::Bindings::QtInstance::booleanValue): may return false
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertValueToQVariant): 
+        (JSC::Bindings::convertQVariantToValue): May return jsNull on QObjectStar
+
 2010-04-09  Kenneth Rohde Christiansen  <kenneth@webkit.org>
 
         Reviewed by Simon Fraser.

@@ -67,7 +67,12 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
+#ifndef QT_NO_STYLE_S60
+#include "qs60style.h"
+#endif
+
 QT_BEGIN_NAMESPACE
+
 
 inline static bool verticalTabs(QTabBar::Shape shape)
 {
@@ -95,9 +100,20 @@ void QTabBarPrivate::updateMacBorderMetrics()
         metrics.left = 0;
         metrics.right = 0;
         qt_mac_updateContentBorderMetricts(window, metrics);
-        
-        // hide the base line separator if the tabs have docuemnt mode enabled (Cocoa)
-        qt_mac_showBaseLineSeparator(window, !documentMode);
+#if QT_MAC_USE_COCOA
+        // In Cocoa we need to keep track of the drawRect method.
+        // If documentMode is enabled we need to change it, unless
+        // a toolbar is present.
+        // Notice that all the information is kept in the window,
+        // that's why we get the private widget for it instead of
+        // the private widget for this widget.
+        QWidgetPrivate *privateWidget = qt_widget_private(q->window());
+        if(privateWidget)
+            privateWidget->changeMethods = documentMode;
+        // Since in Cocoa there is no simple way to remove the baseline, so we just ask the
+        // top level to do the magic for us.
+        privateWidget->syncUnifiedMode();
+#endif // QT_MAC_USE_COCOA
     }
 #endif
 }
@@ -478,6 +494,9 @@ void QTabBarPrivate::layoutTabs()
 
     if (useScrollButtons && tabList.count() && last > available) {
         int extra = extraWidth();
+#ifndef QT_NO_STYLE_S60
+        QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style());
+#endif
         if (!vertTabs) {
             Qt::LayoutDirection ld = q->layoutDirection();
             QRect arrows = QStyle::visualRect(ld, q->rect(),
@@ -485,25 +504,57 @@ void QTabBarPrivate::layoutTabs()
             int buttonOverlap = q->style()->pixelMetric(QStyle::PM_TabBar_ScrollButtonOverlap, 0, q);
 
             if (ld == Qt::LeftToRight) {
+// In S60style, tab scroll buttons are layoutted separately, on the sides of the tabbar.
+#ifndef QT_NO_STYLE_S60
+                if (s60Style) {
+                    rightB->setGeometry(arrows.left() + extra / 2, arrows.top(), extra / 2, arrows.height());
+                    leftB->setGeometry(0, arrows.top(), extra / 2, arrows.height());
+                } else {
+#endif
                 leftB->setGeometry(arrows.left(), arrows.top(), extra/2, arrows.height());
                 rightB->setGeometry(arrows.right() - extra/2 + buttonOverlap, arrows.top(),
                                     extra/2, arrows.height());
+#ifndef QT_NO_STYLE_S60
+                }
+#endif
                 leftB->setArrowType(Qt::LeftArrow);
                 rightB->setArrowType(Qt::RightArrow);
             } else {
+#ifndef QT_NO_STYLE_S60
+                if (s60Style) {
+                    rightB->setGeometry(arrows.left() + extra / 2, arrows.top(), extra / 2, arrows.height());
+                    leftB->setGeometry(0, arrows.top(), extra / 2, arrows.height());
+                } else {
+#endif
                 rightB->setGeometry(arrows.left(), arrows.top(), extra/2, arrows.height());
                 leftB->setGeometry(arrows.right() - extra/2 + buttonOverlap, arrows.top(),
                                     extra/2, arrows.height());
+#ifndef QT_NO_STYLE_S60
+                }
+#endif
                 rightB->setArrowType(Qt::LeftArrow);
                 leftB->setArrowType(Qt::RightArrow);
             }
         } else {
+#ifndef QT_NO_STYLE_S60
+            if (s60Style) {
+                QRect arrows = QRect(0, 0, size.width(), available );
+                leftB->setGeometry(arrows.left(), arrows.top(), arrows.width(), extra / 2);
+                leftB->setArrowType(Qt::UpArrow);
+                rightB->setGeometry(arrows.left(), arrows.bottom() - extra / 2 + 1,
+                                    arrows.width(), extra / 2);
+                rightB->setArrowType(Qt::DownArrow);
+            } else {
+#endif
             QRect arrows = QRect(0, available - extra, size.width(), extra );
             leftB->setGeometry(arrows.left(), arrows.top(), arrows.width(), extra/2);
             leftB->setArrowType(Qt::UpArrow);
             rightB->setGeometry(arrows.left(), arrows.bottom() - extra/2 + 1,
                                 arrows.width(), extra/2);
             rightB->setArrowType(Qt::DownArrow);
+#ifndef QT_NO_STYLE_S60
+            }
+#endif
         }
         leftB->setEnabled(scrollOffset > 0);
         rightB->setEnabled(last - scrollOffset >= available - extra);
@@ -580,16 +631,10 @@ void QTabBarPrivate::layoutTab(int index)
     }
 }
 
-void QTabBarPrivate::layoutWidgets(int index)
+void QTabBarPrivate::layoutWidgets(int start)
 {
     Q_Q(QTabBar);
-    int start = 0;
-    int end = q->count();
-    if (index != -1) {
-        start = qMax(index, 0);
-        end = qMin(end, start + 1);
-    }
-    for (int i = start; i < end; ++i) {
+    for (int i = start; i < q->count(); ++i) {
         layoutTab(i);
     }
 }
@@ -1171,8 +1216,9 @@ void QTabBar::setCurrentIndex(int index)
         update();
         d->makeVisible(index);
         d->tabList[index].lastTab = oldIndex;
-        d->layoutWidgets(oldIndex);
-        d->layoutWidgets(index);
+        if (oldIndex >= 0 && oldIndex < count())
+            d->layoutTab(oldIndex);
+        d->layoutTab(index);
 #ifdef QT3_SUPPORT
         emit selected(index);
 #endif
@@ -2198,6 +2244,7 @@ bool QTabBar::documentMode() const
 void QTabBar::setDocumentMode(bool enabled)
 {
     Q_D(QTabBar);
+
     d->documentMode = enabled;
     d->updateMacBorderMetrics();
 }

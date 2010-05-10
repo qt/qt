@@ -20,7 +20,7 @@ Rectangle {
     border.width: 1
     opacity: 0
 
-    Behavior on opacity { 
+    Behavior on opacity {
         NumberAnimation { duration: 1000 }
     }
 

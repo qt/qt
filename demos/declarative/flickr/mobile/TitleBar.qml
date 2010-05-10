@@ -12,6 +12,7 @@ Item {
         width: (parent.width * 2) - 55 ; height: parent.height
 
         function accept() {
+            imageDetails.closed()
             titleBar.state = ""
             background.state = ""
             rssModel.tags = editor.text

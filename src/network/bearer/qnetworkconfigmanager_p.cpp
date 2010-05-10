@@ -54,8 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
+#endif
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
 :   pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
@@ -354,6 +356,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
         updating = false;
 
+#ifndef QT_NO_LIBRARY
         QFactoryLoader *l = loader();
 
         QBearerEngine *generic = 0;
@@ -381,12 +384,13 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
                         this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
 
-                QMetaObject::invokeMethod(engine, "requestUpdate");
+                QMetaObject::invokeMethod(engine, "initialize");
             }
         }
 
         if (generic)
             sessionEngines.append(generic);
+#endif // QT_NO_LIBRARY
     }
 
     QBearerEngine *engine = qobject_cast<QBearerEngine *>(sender());

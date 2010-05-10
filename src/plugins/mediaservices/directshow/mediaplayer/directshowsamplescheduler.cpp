@@ -118,7 +118,7 @@ bool DirectShowTimedSample::isReady(IReferenceClock *clock) const
 }
 
 DirectShowSampleScheduler::DirectShowSampleScheduler(IUnknown *pin, QObject *parent)
-    : QWinEventNotifier(parent)
+    : QObject(parent)
     , m_pin(pin)
     , m_clock(0)
     , m_allocator(0)
@@ -131,13 +131,15 @@ DirectShowSampleScheduler::DirectShowSampleScheduler(IUnknown *pin, QObject *par
 {
     m_semaphore.release(m_maximumSamples);
 
-    setHandle(m_timeoutEvent);
-    setEnabled(true);
+    m_eventNotifier.setHandle(m_timeoutEvent);
+    m_eventNotifier.setEnabled(true);
+
+    connect(&m_eventNotifier, SIGNAL(activated(HANDLE)), this, SIGNAL(sampleReady()));
 }
 
 DirectShowSampleScheduler::~DirectShowSampleScheduler()
 {
-    setEnabled(false);
+    m_eventNotifier.setEnabled(false);
 
     ::CloseHandle(m_timeoutEvent);
 
@@ -255,11 +257,11 @@ HRESULT DirectShowSampleScheduler::Receive(IMediaSample *pSample)
         if (m_state == Running) {
             if (!timedSample->schedule(m_clock, m_startTime, m_timeoutEvent)) {
                 // Timing information is unavailable, so schedule frames immediately.
-                QMetaObject::invokeMethod(this, "timerActivated", Qt::QueuedConnection);
+               QMetaObject::invokeMethod(this, "sampleReady", Qt::QueuedConnection);
             }
         } else if (m_tail == m_head) {
             // If this is the first frame make is available.
-            QMetaObject::invokeMethod(this, "timerActivated", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, "sampleReady", Qt::QueuedConnection);
         }
 
         return S_OK;
@@ -395,19 +397,6 @@ bool DirectShowSampleScheduler::scheduleEndOfStream()
         return true;
     } else {
         return false;
-    }
-}
-
-bool DirectShowSampleScheduler::event(QEvent *event)
-{
-    if (event->type() == QEvent::WinEventAct) {
-        QObject::event(event);
-
-        emit sampleReady();
-
-        return true;
-    } else {
-        return QWinEventNotifier::event(event);
     }
 }
 

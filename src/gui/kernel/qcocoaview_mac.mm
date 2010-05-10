@@ -1554,7 +1554,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     qt_button_down = 0;
     [dndParams.view release];
     [image release];
-    dragPrivate()->executed_action = Qt::IgnoreAction;
+    if (dragPrivate())
+        dragPrivate()->executed_action = Qt::IgnoreAction;
     object = 0;
     Qt::DropAction performedAction(qt_mac_mapNSDragOperation(qMacDnDParams()->performedAction));
     // do post drag processing, if required.

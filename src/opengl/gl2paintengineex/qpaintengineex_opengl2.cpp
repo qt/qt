@@ -573,9 +573,9 @@ void QGL2PaintEngineExPrivate::resetGLState()
     glStencilMask(0xff);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glStencilFunc(GL_ALWAYS, 0, 0xff);
-    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_OPACITY_ATTR);
+    ctx->d_func()->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
+    ctx->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
+    ctx->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
 #ifndef QT_OPENGL_ES_2
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // color may have been changed by glVertexAttrib()
 #endif
@@ -1337,9 +1337,12 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     d->drawCachedGlyphs(glyphType, textItem, true);
 }
 
-void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
+bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
 {
     Q_D(QGL2PaintEngineEx);
+    if (!d->shaderManager)
+        return false;
+
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
@@ -1354,6 +1357,7 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
     d->drawTexture(dest, srcRect, size, false);
+    return true;
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -1806,27 +1810,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
     d->stencilClean = true;
-
-    switch (pdev->devType()) {
-    case QInternal::Pixmap:
-        d->deviceHasAlpha = static_cast<QPixmap *>(pdev)->hasAlphaChannel();
-        break;
-    case QInternal::FramebufferObject:
-        {
-            GLenum f = static_cast<QGLFramebufferObject *>(pdev)->format().internalTextureFormat();
-#ifndef QT_OPENGL_ES
-            d->deviceHasAlpha = (f != GL_RGB && f != GL_RGB5 && f != GL_RGB8);
-#else
-            d->deviceHasAlpha = (f == GL_RGBA);
-#endif
-        }
-        break;
-    default:
-        // widget, pbuffer
-        d->deviceHasAlpha = d->ctx->d_func()->reqFormat.alpha();
-        break;
-    }
-
 
     // Calling begin paint should make the correct context current. So, any
     // code which calls into GL or otherwise needs a current context *must*

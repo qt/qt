@@ -442,9 +442,9 @@ void tst_QThread::exit()
     thread2.object = 0;
     thread2.code = 53;
     thread2.result = 0;
+    QMutexLocker locker2(&thread2.mutex);
     thread2.start();
     thread2.exit(thread2.code);
-    QMutexLocker locker2(&thread2.mutex);
     thread2.cond.wait(locker2.mutex());
     QVERIFY(thread2.wait(five_minutes));
     QCOMPARE(thread2.result, thread2.code);
@@ -514,9 +514,9 @@ void tst_QThread::quit()
     Quit_Thread thread2;
     thread2.object = 0;
     thread2.result = -1;
+    QMutexLocker locker2(&thread2.mutex);
     thread2.start();
     thread2.quit();
-    QMutexLocker locker2(&thread2.mutex);
     thread2.cond.wait(locker2.mutex());
     QVERIFY(thread2.wait(five_minutes));
     QCOMPARE(thread2.result, 0);

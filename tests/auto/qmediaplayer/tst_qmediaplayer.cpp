@@ -43,10 +43,10 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qbuffer.h>
 
-#include <QtMultimedia/qmediaplayer.h>
-#include <QtMultimedia/qmediaplayercontrol.h>
-#include <QtMultimedia/qmediaplaylist.h>
-#include <QtMultimedia/qmediaservice.h>
+#include <QtMediaServices/qmediaplayer.h>
+#include <QtMediaServices/qmediaplayercontrol.h>
+#include <QtMediaServices/qmediaplaylist.h>
+#include <QtMediaServices/qmediaservice.h>
 
 
 

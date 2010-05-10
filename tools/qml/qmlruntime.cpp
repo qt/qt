@@ -341,14 +341,14 @@ private:
                 data.append("\n");
             }
         }
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         settings.setValue("Cookies",data);
     }
 
     void load()
     {
         QMutexLocker lock(&mutex);
-        QSettings settings("Nokia", "QtQmlViewer");
+        QSettings settings;
         QByteArray data = settings.value("Cookies").toByteArray();
         setAllCookies(QNetworkCookie::parseCookies(data));
     }
@@ -466,6 +466,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
     QDeclarativeViewer::registerTypes();
+    setWindowTitle(tr("Qt Qml Runtime"));
 
     devicemode = false;
     skin = 0;
@@ -496,7 +497,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas = new QDeclarativeView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
-    canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
+
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
@@ -519,7 +520,6 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 #else
     setCentralWidget(canvas);
 #endif
-
     namFactory = new NetworkAccessManagerFactory;
     canvas->engine()->setNetworkAccessManagerFactory(namFactory);
 
@@ -536,6 +536,14 @@ QDeclarativeViewer::~QDeclarativeViewer()
 {
     canvas->engine()->setNetworkAccessManagerFactory(0);
     delete namFactory;
+}
+
+int QDeclarativeViewer::menuBarHeight() const
+{
+    if (!(windowFlags() & Qt::FramelessWindowHint))
+        return menuBar()->height();
+    else
+        return 0; // don't create menu
 }
 
 QMenuBar *QDeclarativeViewer::menuBar() const
@@ -753,10 +761,11 @@ void QDeclarativeViewer::setScaleSkin()
     if (scaleSkin)
         return;
     scaleSkin = true;
-    canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
     if (skin) {
-        canvas->setFixedSize(canvas->sizeHint());
-        skin->setScreenSize(canvas->sizeHint());
+        canvas->resize(initialSize);
+        canvas->setFixedSize(initialSize);
+        canvas->setResizeMode(QDeclarativeView::SizeViewToRootObject);
+        updateSizeHints();
     }
 }
 
@@ -766,11 +775,8 @@ void QDeclarativeViewer::setScaleView()
         return;
     scaleSkin = false;
     if (skin) {
-        canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
-        canvas->setMinimumSize(QSize(0,0));
-        canvas->setMaximumSize(QSize(16777215,16777215));
-        canvas->resize(skin->standardScreenSize());
-        skin->setScreenSize(skin->standardScreenSize());
+        canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+        updateSizeHints();
     }
 }
 
@@ -916,19 +922,12 @@ void QDeclarativeViewer::statusChanged()
         tester->executefailure();
 
     if (canvas->status() == QDeclarativeView::Ready) {
-        if (!skin) {
-            canvas->updateGeometry();
-            if (mb)
-                mb->updateGeometry();
-            if (!isFullScreen() && !isMaximized())
-                resize(sizeHint());
-        } else {
-            if (scaleSkin)
-                canvas->resize(canvas->sizeHint());
-            else {
-                canvas->setFixedSize(skin->standardScreenSize());
-                canvas->resize(skin->standardScreenSize());
-            }
+        initialSize = canvas->sizeHint();
+        if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
+            QSize newWindowSize = initialSize;
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+            updateSizeHints();
+            resize(newWindowSize);
         }
     }
 }
@@ -948,7 +947,7 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
     else
         url = QUrl(file_or_url);
-    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
+    setWindowTitle(tr("%1 - Qt Qml Runtime").arg(file_or_url));
 
     if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
@@ -1011,8 +1010,6 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
 
     canvas->setSource(url);
 
-    qWarning() << "Wall startup time:" << t.elapsed();
-
     return true;
 }
 
@@ -1056,41 +1053,45 @@ void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
         skin->deleteLater();
     }
 
-    canvas->setResizeMode((!skin || !scaleSkin) ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject);
-
     DeviceSkinParameters parameters;
     if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
         layout()->setEnabled(false);
-        //setMenuBar(0);
         if (mb)
             mb->hide();
         if (!err.isEmpty())
             qWarning() << err;
         skin = new PreviewDeviceSkin(parameters,this);
-        canvas->resize(canvas->sizeHint());
         if (scaleSkin)
             skin->setPreviewAndScale(canvas);
         else
             skin->setPreview(canvas);
         createMenu(0,skin->menu);
+        if (scaleSkin) {
+            canvas->setResizeMode(QDeclarativeView::SizeViewToRootObject);
+        }
+        updateSizeHints();
         skin->show();
-    } else {
+    } else if (skin) {
         skin = 0;
         clearMask();
-        menuBar()->clear();
+        if ((windowFlags() & Qt::FramelessWindowHint)) {
+            menuBar()->clear();
+            createMenu(menuBar(),0);
+        }
         canvas->setParent(this, Qt::SubWindow);
-        createMenu(menuBar(),0);
-        mb->show();
-        setMinimumSize(QSize(0,0));
-        setMaximumSize(QSize(16777215,16777215));
-        canvas->setMinimumSize(QSize(0,0));
-        canvas->setMaximumSize(QSize(16777215,16777215));
-        QRect g = geometry();
-        g.setSize(sizeHint());
         setParent(0,windowFlags()); // recreate
-        canvas->move(0,menuBar()->sizeHint().height());
-        setGeometry(g);
+        mb->show();
+        canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+        updateSizeHints();
+
         layout()->setEnabled(true);
+        if (!scaleSkin) {
+            canvas->resize(initialSize);
+            canvas->setFixedSize(initialSize);
+        }
+        QSize newWindowSize = canvas->size();
+        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+        resize(newWindowSize);
         show();
     }
     canvas->show();
@@ -1122,9 +1123,10 @@ void QDeclarativeViewer::setRecordRate(int fps)
 void QDeclarativeViewer::sceneResized(QSize size)
 {
     if (size.width() > 0 && size.height() > 0) {
-        if (skin && scaleSkin)
-            skin->setScreenSize(size);
-    }
+        if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
+            updateSizeHints();
+        }
+     }
 }
 
 void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
@@ -1397,13 +1399,48 @@ void QDeclarativeViewer::setUseNativeFileBrowser(bool use)
     useQmlFileBrowser = !use;
 }
 
+void QDeclarativeViewer::setSizeToView(bool sizeToView)
+{
+    QDeclarativeView::ResizeMode resizeMode = sizeToView ? QDeclarativeView::SizeRootObjectToView : QDeclarativeView::SizeViewToRootObject;
+    if (resizeMode != canvas->resizeMode()) {
+        canvas->setResizeMode(resizeMode);
+        updateSizeHints();
+    }
+}
+
+void QDeclarativeViewer::updateSizeHints()
+{
+    if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
+        QSize newWindowSize = canvas->sizeHint();
+        if (!skin)
+            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+        if (!isFullScreen() && !isMaximized()) {
+            resize(newWindowSize);
+            setFixedSize(newWindowSize);
+            if (skin && scaleSkin) {
+                skin->setScreenSize(newWindowSize);
+            }
+        }
+    } else { // QDeclarativeView::SizeRootObjectToView
+        canvas->setMinimumSize(QSize(0,0));
+        canvas->setMaximumSize(QSize(16777215,16777215));
+        setMinimumSize(QSize(0,0));
+        setMaximumSize(QSize(16777215,16777215));
+        if (skin && !scaleSkin) {
+            canvas->setFixedSize(skin->standardScreenSize());
+            skin->setScreenSize(skin->standardScreenSize());
+        }
+    }
+    updateGeometry();
+}
+
 void QDeclarativeViewer::registerTypes()
 {
     static bool registered = false;
 
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
-        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,6,"Orientation");
+        qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
         registered = true;
     }
 }

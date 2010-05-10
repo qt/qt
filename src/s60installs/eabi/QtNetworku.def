@@ -1151,7 +1151,7 @@ EXPORTS
 	_ZThn8_N19QBearerEnginePluginD0Ev @ 1150 NONAME
 	_ZThn8_N19QBearerEnginePluginD1Ev @ 1151 NONAME
 	_Z19qt_qhostinfo_lookupRK7QStringP7QObjectPKcPbPi @ 1152 NONAME
-	_Z24qt_qhostinfo_clear_cachev @ 1153 NONAME
+	_Z24qt_qhostinfo_clear_cachev @ 1153 NONAME ABSENT
 	_ZN21QNetworkAccessManager20setNetworkAccessibleENS_20NetworkAccessibilityE @ 1154 NONAME
 	_ZN21QNetworkAccessManager23networkSessionConnectedEv @ 1155 NONAME
 	_ZN21QNetworkAccessManager24networkAccessibleChangedENS_20NetworkAccessibilityE @ 1156 NONAME
@@ -1166,4 +1166,5 @@ EXPORTS
 	_ZNK13QBearerEngine15requiresPollingEv @ 1165 NONAME
 	_ZNK13QBearerEngine19configurationsInUseEv @ 1166 NONAME
 	_ZNK21QNetworkAccessManager17networkAccessibleEv @ 1167 NONAME
+	_ZN35QNetworkConfigurationManagerPrivate12capabilitiesEv @ 1168 NONAME
 

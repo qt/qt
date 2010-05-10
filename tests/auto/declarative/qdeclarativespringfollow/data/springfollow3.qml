@@ -1,4 +1,4 @@
-import Qt 4.6
+import Qt 4.7
 
 SpringFollow {
     to: 1.44; velocity: 0.9

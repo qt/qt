@@ -3122,7 +3122,7 @@ EXPORTS
 	?reset@QIODevice@@UAE_NXZ @ 3121 NONAME ; bool QIODevice::reset(void)
 	?reset@QMetaProperty@@QBE_NPAVQObject@@@Z @ 3122 NONAME ; bool QMetaProperty::reset(class QObject *) const
 	?reset@QTextStream@@QAEXXZ @ 3123 NONAME ; void QTextStream::reset(void)
-	?resetCurrentSender@QObjectPrivate@@SAXPAVQObject@@PAUSender@1@1@Z @ 3124 NONAME ; void QObjectPrivate::resetCurrentSender(class QObject *, struct QObjectPrivate::Sender *, struct QObjectPrivate::Sender *)
+	?resetCurrentSender@QObjectPrivate@@SAXPAVQObject@@PAUSender@1@1@Z @ 3124 NONAME ABSENT ; void QObjectPrivate::resetCurrentSender(class QObject *, struct QObjectPrivate::Sender *, struct QObjectPrivate::Sender *)
 	?resetDeleteWatch@QObjectPrivate@@SAXPAV1@PAHH@Z @ 3125 NONAME ; void QObjectPrivate::resetDeleteWatch(class QObjectPrivate *, int *, int)
 	?resetStatus@QDataStream@@QAEXXZ @ 3126 NONAME ; void QDataStream::resetStatus(void)
 	?resetStatus@QTextStream@@QAEXXZ @ 3127 NONAME ; void QTextStream::resetStatus(void)
@@ -3281,7 +3281,7 @@ EXPORTS
 	?setCoords@QRectF@@QAEXMMMM@Z @ 3280 NONAME ; void QRectF::setCoords(float, float, float, float)
 	?setCurrent@QDir@@SA_NABVQString@@@Z @ 3281 NONAME ; bool QDir::setCurrent(class QString const &)
 	?setCurrentPath@QFSFileEngine@@SA_NABVQString@@@Z @ 3282 NONAME ; bool QFSFileEngine::setCurrentPath(class QString const &)
-	?setCurrentSender@QObjectPrivate@@SAPAUSender@1@PAVQObject@@PAU21@@Z @ 3283 NONAME ; struct QObjectPrivate::Sender * QObjectPrivate::setCurrentSender(class QObject *, struct QObjectPrivate::Sender *)
+	?setCurrentSender@QObjectPrivate@@SAPAUSender@1@PAVQObject@@PAU21@@Z @ 3283 NONAME ABSENT ; struct QObjectPrivate::Sender * QObjectPrivate::setCurrentSender(class QObject *, struct QObjectPrivate::Sender *)
 	?setCurrentTime@QAbstractAnimation@@QAEXH@Z @ 3284 NONAME ; void QAbstractAnimation::setCurrentTime(int)
 	?setCurrentTime@QTimeLine@@QAEXH@Z @ 3285 NONAME ; void QTimeLine::setCurrentTime(int)
 	?setCurveShape@QTimeLine@@QAEXW4CurveShape@1@@Z @ 3286 NONAME ; void QTimeLine::setCurveShape(enum QTimeLine::CurveShape)
@@ -4462,4 +4462,5 @@ EXPORTS
 	?parentChanged@QDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4461 NONAME ABSENT ; void (*QDeclarativeData::parentChanged)(class QDeclarativeData *, class QObject *, class QObject *)
 	?parentChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4462 NONAME ; void (*QAbstractDeclarativeData::parentChanged)(class QAbstractDeclarativeData *, class QObject *, class QObject *)
 	?destroyed@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4463 NONAME ; void (*QAbstractDeclarativeData::destroyed)(class QAbstractDeclarativeData *, class QObject *)
+	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4464 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
 
