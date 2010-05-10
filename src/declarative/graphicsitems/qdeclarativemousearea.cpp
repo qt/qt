@@ -197,8 +197,8 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     This handler is called when the mouse enters the mouse area.
 
     By default the onEntered handler is only called while a button is
-    pressed.  Setting hoverEnabled to true enables handling of
-    onExited when no mouse button is pressed.
+    pressed. Setting hoverEnabled to true enables handling of
+    onEntered when no mouse button is pressed.
 
     \sa hoverEnabled
 */
@@ -209,7 +209,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     This handler is called when the mouse exists the mouse area.
 
     By default the onExited handler is only called while a button is
-    pressed.  Setting hoverEnabled to true enables handling of
+    pressed. Setting hoverEnabled to true enables handling of
     onExited when no mouse button is pressed.
 
     \sa hoverEnabled
