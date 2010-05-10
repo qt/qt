@@ -1908,6 +1908,19 @@ QByteArray createScriptTableDeclaration()
     }
     declaration += "\n};\n\n} // namespace QUnicodeTables\n\n";
 
+    declaration += 
+            "Q_CORE_EXPORT int QT_FASTCALL QUnicodeTables::script(uint ucs4)\n"
+            "{\n"
+            "    if (ucs4 > 0xffff)\n"
+            "        return Common;\n"
+            "    int script = uc_scripts[ucs4 >> 7];\n"
+            "    if (script < ScriptSentinel)\n"
+            "        return script;\n"
+            "    script = (((script - ScriptSentinel) * UnicodeBlockSize) + UnicodeBlockCount);\n"
+            "    script = uc_scripts[script + (ucs4 & 0x7f)];\n"
+            "    return script;\n"
+            "}\n\n";
+
     qDebug("createScriptTableDeclaration: table size is %d bytes",
            unicodeBlockCount + (extraBlockList.size() * unicodeBlockSize));
 
@@ -2166,6 +2179,11 @@ static QByteArray createPropertyInfo()
            "{\n"
            "    int index = GET_PROP_INDEX_UCS2(ucs2);\n"
            "    return uc_properties + index;\n"
+           "}\n\n";
+
+    out += "Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL QUnicodeTables::lineBreakClass(uint ucs4)\n"
+           "{\n"
+           "    return (QUnicodeTables::LineBreakClass)qGetProp(ucs4)->line_break_class;\n"
            "}\n\n";
 
     out += "static const ushort specialCaseMap[] = {\n   ";
