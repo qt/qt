@@ -49,9 +49,9 @@
 
 /*!
     \group qt-basic-concepts
-    \title Qt Basic Concepts
+    \title Basic Qt Architecture
 
-    \brief The basic concepts of the Qt cross-platform application and UI framework.
+    \brief The basic architecture of the Qt cross-platform application and UI framework.
 
     Qt is a cross-platform application and UI framework for writing
     web-enabled applications for desktop, mobile, and embedded
@@ -63,9 +63,14 @@
 
 /*!
     \group qt-gui-concepts
-    \title Qt GUI Construction
+    \title Qt Desktop UI Components
 
-    \brief The Qt components for constructing Graphical User Intefaces.
+    \brief The Qt components for constructing native look & feel desktop UI's.
+
+    These pages are about Qt's traditional set of GUI components for
+    building both native look ^ feel and custom UI's for the desktop
+    environment. Use \l {declarativeui.html} {Qt Quick} for building 
+    UI's for mobile devices.
 
     \generatelist {related}
  */

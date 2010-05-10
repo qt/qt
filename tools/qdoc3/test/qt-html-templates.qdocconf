@@ -47,7 +47,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Modules</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"namespaces.html\">Namespaces</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global stuff</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML Elements</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "          <div  id=\"live001\" class=\"live\">\n" \
@@ -58,11 +58,10 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "            Qt Topics</h2>\n" \
 			  "          <div id=\"list002\" class=\"list\">\n" \
 			  "            <ul id=\"ul002\" >\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qt-basic-concepts.html\">Basic Concepts</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qt-graphics.html\">Painting & Graphics</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">GUI Components</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"declarativeui.html\">Qt Quick</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform specific</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qt-basic-concepts.html\">Basic Qt architecture</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"declarativeui.html\">Device UI's &amp; Qt Quick</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform-specific info</a></li>\n" \
 			  "            </ul>  \n" \
 			  "          </div>\n" \
 			  "          <div  id=\"live002\" class=\"live\">\n" \
@@ -70,7 +69,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        </div>\n" \
 			  "        <div class=\"box\" id=\"examples\">\n" \
 			  "          <h2><span></span>\n" \
-			  "            Qt Examples</h2>\n" \
+			  "            Examples</h2>\n" \
 			  "          <div id=\"list003\" class=\"list\">\n" \
 			  "        <ul id=\"ul003\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"all-examples.html\">Examples</a></li>\n" \
