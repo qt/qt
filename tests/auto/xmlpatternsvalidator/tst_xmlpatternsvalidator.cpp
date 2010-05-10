@@ -111,8 +111,8 @@ void tst_XmlPatternsValidator::xsdSupport()
 
     process.start(m_command, arguments);
 
-    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 
     if(process.exitCode() != expectedExitCode)
         QTextStream(stderr) << "foo:" << process.readAllStandardError();
@@ -197,19 +197,24 @@ void tst_XmlPatternsValidator::xsdSupport_data() const
         << (QStringList() << QLatin1String("files/instance.xml"))
         << QString();
 
-    QTest::newRow("A schema with an indirectly included type")
+    QTest::newRow("QTBUG-8394 A schema with an indirectly included type")
         << 0
         << (QStringList() << QLatin1String("files/indirect-include-a.xsd"))
         << QString();
 
-    QTest::newRow("A schema with an indirectly imported type")
+    QTest::newRow("QTBUG-8394 A schema with an indirectly imported type")
         << 0
         << (QStringList() << QLatin1String("files/indirect-import-a.xsd"))
         << QString();
 
-    QTest::newRow("A schema with an indirectly redefined type")
+    QTest::newRow("QTBUG-8394 A schema with an indirectly redefined type")
         << 0
         << (QStringList() << QLatin1String("files/indirect-redefine-a.xsd"))
+        << QString();
+
+    QTest::newRow("QTBUG-8920 A schema with a complex type that indirectly includes an anonymous type")
+        << 0
+        << (QStringList() << QLatin1String("files/complex-type-including-anonymous-type.xsd"))
         << QString();
 }
 

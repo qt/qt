@@ -118,9 +118,10 @@ QMacCGContext::QMacCGContext(QPainter *p)
             QRegion clip = p->paintEngine()->systemClip();
             QTransform native = p->deviceTransform();
             QTransform logical = p->combinedTransform();
+
             if (p->hasClipping()) {
                 QRegion r = p->clipRegion();
-                r.translate(native.dx() - logical.dx(), native.dy() - logical.dy());
+                r.translate(native.dx(), native.dy());
                 if (clip.isEmpty())
                     clip = r;
                 else
@@ -128,10 +129,7 @@ QMacCGContext::QMacCGContext(QPainter *p)
             }
             qt_mac_clip_cg(context, clip, 0);
 
-            QPainterState *state = static_cast<QPainterState *>(pe->state);
-            Q_ASSERT(state);
-            if (!state->redirectionMatrix.isIdentity())
-                CGContextTranslateCTM(context, state->redirectionMatrix.dx(), state->redirectionMatrix.dy());
+            CGContextTranslateCTM(context, native.dx(), native.dy());
         }
     }
     CGContextRetain(context);

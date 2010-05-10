@@ -1,3 +1,202 @@
+2010-05-02  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Enable JIT for QtWebKit on Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=38339
+
+        JIT on Symbian has been stable for quite some time, it
+        is time to turn it on by default.
+
+        * wtf/Platform.h:
+
+2010-04-28  Simon Hausmann  <simon.hausmann@nokia.com>, Kent Hansen <kent.hansen@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        JSC's currentThreadStackBase is not reentrant on some platforms
+        https://bugs.webkit.org/show_bug.cgi?id=37195
+
+        This function needs to be reentrant to avoid memory corruption on platforms where
+        the implementation uses global variables.
+
+        This patch adds a mutex lock where necessary and makes the Symbian implementation
+        reentrant.
+
+        * runtime/Collector.cpp:
+        (JSC::currentThreadStackBaseMutex):
+        (JSC::currentThreadStackBase):
+
+2010-04-21  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Compile fix for Visual Studio 2010
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+
+        Patch by Prasanth Ullattil <prasanth.ullattil@nokia.com>
+
+        * runtime/Structure.cpp:
+        (JSC::Structure::transitionTableAdd):
+        * wtf/MathExtras.h:
+        * wtf/Platform.h:
+
+2010-04-27  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Rename COMPILER(MSVC7) to COMPILER(MSVC7_OR_LOWER)
+
+        * config.h:
+        (JSC::Structure::transitionTableAdd):
+        * wtf/Assertions.h:
+        * wtf/Atomics.h:
+        * wtf/CurrentTime.h:
+        (WTF::getLocalTime):
+        * wtf/Platform.h:
+        * wtf/StaticConstructors.h:
+        * wtf/StringExtras.h:
+        * wtf/Vector.h:
+        (WTF::::append):
+
+2010-04-15  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Fix Mac build break.
+
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+        - Make sure JavaScriptCore's debug_and_release config follows that
+          of WebCore.
+        - Use different name for JavaScriptCore target in debug and release
+          since they might be written in the same path at the same time on
+          parallel builds
+        - Consolidate the DESTDIR determination logic in JavaScriptCore.pri
+
+        * JavaScriptCore.pri:
+        * JavaScriptCore.pro:
+
+2010-04-21  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Make sure WebKit is not compiled using C++0x.
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+
+        As the rest of Qt compiles in the C++0x mode, people might start
+        compiling it in this mode. WebKit don't support this yet.
+
+        Patch by Thiago Macieira <thiago.macieira@nokia.com>
+
+        * JavaScriptCore.pro:
+
+2010-04-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Remove dependency of JSC to QtGui
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+
+        The patch also make sure that hal.h is in the include path on Symbian.
+        The dependency to QtGui took care of that before.
+
+        Patch by Thiago Macieira <thiago.macieira@nokia.com>
+             and Rohan McGovern <rohan.mcgovern@nokia.com>
+
+        * JavaScriptCore.pri:
+        * JavaScriptCore.pro:
+
+2010-04-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Corrects symbols visibility for JavaScriptCore.
+
+        https://bugs.webkit.org/show_bug.cgi?id=37867
+
+        * JavaScriptCore.pro:
+
+2010-04-27  Thomas Zander <t.zander@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix the build on Symbian on Linux using the Makefile based mkspec
+
+        * JavaScriptCore.pri: It is necessary to specify the library search path
+        when linking against JavaScriptCore.
+
+2010-04-02  Ruben Van Boxem  <vanboxem.ruben@gmail.com>
+
+        Reviewed by Eric Seidel.
+
+        Mingw-w64 fixes for JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=35607
+
+        * runtime/Collector.cpp: use the msvc code for mingw-w64 (but not mingw-w32)
+        (JSC::Heap::allocateBlock):
+        (JSC::Heap::freeBlockPtr):
+        (JSC::currentThreadStackBase):
+        (JSC::currentThreadStackBase):
+        * wtf/Platform.h: added COMPILER(MINGW64) check to differentiate between mingw.org and mingw-w64 functions
+
+2010-04-14  Kent Hansen  <kent.hansen@nokia.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        Mac OS X: Use deployment target to determine whether memory tagging should be enabled
+        https://bugs.webkit.org/show_bug.cgi?id=34888
+
+        When building on (Snow) Leopard but targeting Tiger
+        (TARGETING_TIGER defined, BUILDING_ON_TIGER not defined),
+        WebKit would crash on Tiger because the tags passed to mmap
+        caused those function calls to fail.
+
+        Conversely, when building on Tiger but targeting Leopard
+        (BUILDING_ON_TIGER defined, TARGETING_LEOPARD defined), WebKit
+        would crash on Leopard because the tags passed to vm_map and
+        vm_allocate caused those function calls to fail.
+
+        Solution: Use TARGETING_TIGER rather than BUILDING_ON_TIGER to
+        govern the tag definitions. Use the same tags for vm_map and
+        vm_allocate regardless of target, since they work on
+        both. Fall back to the mmap tags that work on Tiger (that is,
+        "no tags") if targeting Tiger, since those tags also work on
+        Leopard.
+
+        * wtf/VMTags.h:
+
+2010-04-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix JavaScriptCore's include path for WinCE builds
+
+        https://bugs.webkit.org/show_bug.cgi?id=36751
+
+        * JavaScriptCore.pri:
+
+2010-04-19  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Build fix for WinCE.
+
+        Moved the include of the non-existing errno.h header file inside
+        platform guard macros.
+
+        * jit/ExecutableAllocatorFixedVMPool.cpp:
+
+2010-04-12  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by nobody, build fix.
+
+        [Qt] Build fix for Mac when building with build-webkit --qt
+
+        Specifying no configuration on Mac builds WebCore both in debug
+        and release. JavaScriptCore has to follow this rule as well.
+
+        * JavaScriptCore.pro:
+
 2010-04-09  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
 
         Reviewed by Simon Hausmann.

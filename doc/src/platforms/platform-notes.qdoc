@@ -411,7 +411,7 @@
     \section1 Source Compatibility
 
     Qt for Symbian provides the same level of source compatibility guarantee as
-    given for other platforms.  That is, a program which compiles against a given
+    given for other platforms. That is, a program which compiles against a given
     version of Qt for Symbian will also compile against all future versions of the
     same major release.
 
@@ -496,28 +496,31 @@
 
     \section1 Required Capabilities
 
-    Distributions of Qt are typically signed with \c{All -TCB}. What your
-    application needs to be signed with in order to function with Qt depends
-    on what functionality it uses:
+    The Qt libraries are typically signed with \c{All -TCB} capabilites, but
+    that does not mean your Qt application needs to be signed with the same
+    capabilities to function properly. The capabilities your application needs
+    to function properly depends on which parts of Qt you use, here is an
+    overview:
 
     \table
-    \header \o Technology
+    \header \o Module
             \o Required Symbian Capability
     \row    \o QtCore
-            \o \c PowerMgmt if applications are terminated using QProcess.
+            \o \c PowerMgmt if QProcess::kill(...) or QProcess::terminate(...) is called.
+    \row    \o QtCore
+            \o \c AllFiles when \l{http://developer.symbian.org/wiki/index.php/Capabilities_%28Symbian_Signed%29/AllFiles_Capability}{accessing specific areas.}
     \row    \o QtNetwork
-            \o NetworkServices
+            \o \c NetworkServices is basically always required for this module.
     \row    \o QtMultiMedia
             \o \c UserEnvironment if QAudioInput is used.
     \endtable
 
-    Depending on what file paths that are accessed and how AllFiles may be
-    required. Similarly, if the network is accessed indirectly through
-    components such as QtXmlPatterns, QtWebkit or QtScript, the capabilities
-    needs to match accordingly.
+    Note that some modules rely on other modules. If your application uses
+    QtXmlPatterns, QtWebkit or QtScript it may still require \c NetworkServices
+    \o as these modules rely on QtNetwork to go online.
 
-    See individual classes' documentation for specifics. If a class does not
-    mention Symbian capabilities, it requires none.
+    For more information see the documentation of the individual Qt classes. If
+    a class does not mention Symbian capabilities, it requires none.
 
     \section1 Multimedia and Phonon Support
 

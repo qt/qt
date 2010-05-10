@@ -77,11 +77,25 @@ public:
     QPainter::RenderHints renderHints;
 
     QGraphicsView::DragMode dragMode;
-    bool sceneInteractionAllowed;
+
+    quint32 sceneInteractionAllowed : 1;
+    quint32 hasSceneRect : 1;
+    quint32 connectedToScene : 1;
+    quint32 useLastMouseEvent : 1;
+    quint32 identityMatrix : 1;
+    quint32 dirtyScroll : 1;
+    quint32 accelerateScrolling : 1;
+    quint32 keepLastCenterPoint : 1;
+    quint32 transforming : 1;
+    quint32 handScrolling : 1;
+    quint32 mustAllocateStyleOptions : 1;
+    quint32 mustResizeBackgroundPixmap : 1;
+    quint32 fullUpdatePending : 1;
+    quint32 hasUpdateClip : 1;
+    quint32 padding : 18;
+
     QRectF sceneRect;
-    bool hasSceneRect;
     void updateLastCenterPoint();
-    bool connectedToScene;
 
     qint64 horizontalScroll() const;
     qint64 verticalScroll() const;
@@ -89,6 +103,7 @@ public:
     QRectF mapRectToScene(const QRect &rect) const;
     QRectF mapRectFromScene(const QRectF &rect) const;
 
+    QRect updateClip;
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
     QPoint mousePressViewPoint;
@@ -98,26 +113,20 @@ public:
     QPoint dirtyScrollOffset;
     Qt::MouseButton mousePressButton;
     QTransform matrix;
-    bool identityMatrix;
     qint64 scrollX, scrollY;
-    bool dirtyScroll;
     void updateScroll();
 
-    bool accelerateScrolling;
     qreal leftIndent;
     qreal topIndent;
 
     // Replaying mouse events
     QMouseEvent lastMouseEvent;
-    bool useLastMouseEvent;
     void replayLastMouseEvent();
     void storeMouseEvent(QMouseEvent *event);
     void mouseMoveEventHandler(QMouseEvent *event);
 
     QPointF lastCenterPoint;
-    bool keepLastCenterPoint;
     Qt::Alignment alignment;
-    bool transforming;
 
     QGraphicsView::ViewportAnchor transformationAnchor;
     QGraphicsView::ViewportAnchor resizeAnchor;
@@ -131,20 +140,17 @@ public:
     bool rubberBanding;
     Qt::ItemSelectionMode rubberBandSelectionMode;
 #endif
-    bool handScrolling;
     int handScrollMotions;
 
     QGraphicsView::CacheMode cacheMode;
 
     QVector<QStyleOptionGraphicsItem> styleOptions;
-    bool mustAllocateStyleOptions;
     QStyleOptionGraphicsItem *allocStyleOptionsArray(int numItems);
     void freeStyleOptionsArray(QStyleOptionGraphicsItem *array);
 
     QBrush backgroundBrush;
     QBrush foregroundBrush;
     QPixmap backgroundPixmap;
-    bool mustResizeBackgroundPixmap;
     QRegion backgroundPixmapExposed;
 
 #ifndef QT_NO_CURSOR
@@ -161,7 +167,6 @@ public:
 
     QRect mapToViewRect(const QGraphicsItem *item, const QRectF &rect) const;
     QRegion mapToViewRegion(const QGraphicsItem *item, const QRectF &rect) const;
-    bool fullUpdatePending;
     QRegion dirtyRegion;
     QRect dirtyBoundingRect;
     void processPendingUpdates();
@@ -183,13 +188,28 @@ public:
         else
             QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
 #else
-        QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::ExcludeSocketNotifiers
-                                        | QEventLoop::ExcludeUserInputEvents);
+        // At this point either HIViewSetNeedsDisplay (Carbon) or setNeedsDisplay: YES (Cocoa)
+        // is called, which means there's a pending update request. We want to dispatch it
+        // now because otherwise graphics view updates would require two
+        // round-trips in the event loop before the item is painted.
+        extern void qt_mac_dispatchPendingUpdateRequests(QWidget *);
+        qt_mac_dispatchPendingUpdateRequests(viewport->window());
 #endif
     }
 
+    void setUpdateClip(QGraphicsItem *);
+
+    inline bool updateRectF(const QRectF &rect)
+    {
+        if (rect.isEmpty())
+            return false;
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            return updateRect(rect.toAlignedRect().adjusted(-1, -1, 1, 1));
+        return updateRect(rect.toAlignedRect().adjusted(-2, -2, 2, 2));
+    }
+
     bool updateRect(const QRect &rect);
-    bool updateRegion(const QRegion &region);
+    bool updateRegion(const QRectF &rect, const QTransform &xform);
     bool updateSceneSlotReimplementedChecked;
     QRegion exposedRegion;
 

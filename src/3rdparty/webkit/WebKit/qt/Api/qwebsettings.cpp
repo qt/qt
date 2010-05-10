@@ -298,7 +298,9 @@ QWebSettings* QWebSettings::globalSettings()
     Support for browser plugins can enabled by setting the
     \l{QWebSettings::PluginsEnabled}{PluginsEnabled} attribute. For many applications,
     this attribute is enabled for all pages by setting it on the
-    \l{globalSettings()}{global settings object}.
+    \l{globalSettings()}{global settings object}. QtWebKit will always ignore this setting
+    \when processing Qt plugins. The decision to allow a Qt plugin is made by the client
+    \in its reimplementation of QWebPage::createPlugin.
 
     \section1 Web Application Support
 
@@ -366,7 +368,8 @@ QWebSettings* QWebSettings::globalSettings()
         programs.
     \value JavaEnabled Enables or disables Java applets.
         Currently Java applets are not supported.
-    \value PluginsEnabled Enables or disables plugins in Web pages.
+    \value PluginsEnabled Enables or disables plugins in Web pages. Qt plugins
+        with a mimetype such as "application/x-qt-plugin" are not affected by this setting.
     \value PrivateBrowsingEnabled Private browsing prevents WebKit from
         recording visited pages in the history and storing web page icons.
     \value JavascriptCanOpenWindows Specifies whether JavaScript programs
@@ -451,7 +454,6 @@ QWebSettings::QWebSettings()
     d->attributes.insert(QWebSettings::LocalContentCanAccessRemoteUrls, false);
     d->attributes.insert(QWebSettings::LocalContentCanAccessFileUrls, true);
     d->attributes.insert(QWebSettings::AcceleratedCompositingEnabled, true);
-    d->attributes.insert(QWebSettings::WebGLEnabled, false);
     d->attributes.insert(QWebSettings::TiledBackingStoreEnabled, false);
     d->attributes.insert(QWebSettings::FrameFlatteningEnabled, false);
     d->offlineStorageDefaultQuota = 5 * 1024 * 1024;
@@ -1050,8 +1052,9 @@ void QWebSettings::enablePersistentStorage(const QString& path)
     QString storagePath;
 
     if (path.isEmpty()) {
+#ifndef QT_NO_DESKTOPSERVICES
         storagePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-
+#endif
         if (storagePath.isEmpty())
             storagePath = WebCore::pathByAppendingComponent(QDir::homePath(), QCoreApplication::applicationName());
     } else

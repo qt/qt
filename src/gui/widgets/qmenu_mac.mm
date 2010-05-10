@@ -2066,6 +2066,7 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
     cancelAllMenuTracking();
     QWidget *w = findWindowThatShouldDisplayMenubar();
     QMenuBar *mb = findMenubarForWindow(w);
+    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
 
     // We need to see if we are in full screen mode, if so we need to
     // switch the full screen mode to be able to show or hide the menubar.
@@ -2074,12 +2075,14 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
         if(w->isFullScreen()) {
             // Ok, switch to showing the menubar when hovering over it.
             SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
+            qt_mac_app_fullscreen = true;
         }
     } else if(w) {
         // Removing a menubar
         if(w->isFullScreen()) {
             // Ok, switch to not showing the menubar when hovering on it
             SetSystemUIMode(kUIModeAllHidden, 0);
+            qt_mac_app_fullscreen = true;
         }
     }
 

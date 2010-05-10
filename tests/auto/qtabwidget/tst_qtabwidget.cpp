@@ -259,11 +259,14 @@ void tst_QTabWidget::tabEnabled()
     int index = addPage();
 
     tw->setTabEnabled(index, true);
-    QVERIFY(tw->isTabEnabled(index) == true);
+    QVERIFY(tw->isTabEnabled(index));
+    QVERIFY(tw->widget(index)->isEnabled());
     tw->setTabEnabled(index, false);
-    QVERIFY(tw->isTabEnabled(index) == false);
+    QVERIFY(!tw->isTabEnabled(index));
+    QVERIFY(!tw->widget(index)->isEnabled());
     tw->setTabEnabled(index, true);
-    QVERIFY(tw->isTabEnabled(index) == true);
+    QVERIFY(tw->isTabEnabled(index));
+    QVERIFY(tw->widget(index)->isEnabled());
 
     removePage(index);
 }

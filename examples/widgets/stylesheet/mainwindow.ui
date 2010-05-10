@@ -196,7 +196,7 @@
        </item>
        <item row="1" column="2" colspan="2" >
         <widget class="QRadioButton" name="femaleRadioButton" >
-         <property name="styleSheet" >
+         <property name="toolTip">
           <string>Check this if you are female</string>
          </property>
          <property name="text" >

@@ -35,12 +35,12 @@ symbian: {
         # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
         QMAKE_LFLAGS.ARMCC += --rw-base 0xE00000
         MMP_RULES += ALWAYS_BUILD_AS_ARM
-    } else {
+    }  else {
         QMAKE_CFLAGS -= --thumb
         QMAKE_CXXFLAGS -= --thumb
     }
+    CONFIG(release, debug|release): QMAKE_CXXFLAGS.ARMCC += -OTime -O3
 }
-
 
 isEmpty(OUTPUT_DIR): OUTPUT_DIR = ..
 include($$PWD/../WebKit.pri)
@@ -55,8 +55,6 @@ CONFIG(standalone_package) {
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = $$PWD/../JavaScriptCore/generated
 
     PRECOMPILED_HEADER = $$PWD/../WebKit/qt/WebKit_pch.h
-
-    symbian: TARGET += $${QT_LIBINFIX}
 } else {
     isEmpty(WC_GENERATED_SOURCES_DIR):WC_GENERATED_SOURCES_DIR = generated
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = ../JavaScriptCore/generated
@@ -71,12 +69,13 @@ CONFIG(standalone_package) {
 
 CONFIG(QTDIR_build) {
     include($$QT_SOURCE_TREE/src/qbase.pri)
-    # Qt will set the version for us when building in Qt's tree
 } else {
-    VERSION = $${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
     DESTDIR = $$OUTPUT_DIR/lib
     !static: DEFINES += QT_MAKEDLL
+    symbian: TARGET =$$TARGET$${QT_LIBINFIX}
 }
+include($$PWD/../WebKit/qt/qtwebkit_version.pri)
+VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
 unix {
     QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtNetwork
@@ -127,6 +126,10 @@ maemo5|symbian|embedded {
 }
 
 maemo5 {
+    DEFINES += WTF_USE_QT_MOBILE_THEME=1
+}
+
+contains(DEFINES, WTF_USE_QT_MOBILE_THEME=1) {
     DEFINES += ENABLE_NO_LISTBOX_RENDERING=1
 }
 
@@ -135,17 +138,12 @@ addJavaScriptCoreLib(../JavaScriptCore)
 
 
 # HTML5 Media Support
-# We require phonon for versions of Qt < 4.7
-# We require QtMultimedia for versions of Qt >= 4.7
+# We require phonon. QtMultimedia support is disabled currently.
 !contains(DEFINES, ENABLE_VIDEO=.) {
     DEFINES -= ENABLE_VIDEO=1
     DEFINES += ENABLE_VIDEO=0
 
-    lessThan(QT_MINOR_VERSION, 7):contains(QT_CONFIG, phonon) {
-        DEFINES -= ENABLE_VIDEO=0
-        DEFINES += ENABLE_VIDEO=1
-    }
-    !lessThan(QT_MINOR_VERSION, 7):contains(QT_CONFIG, mediaservices) {
+    contains(QT_CONFIG, phonon) {
         DEFINES -= ENABLE_VIDEO=0
         DEFINES += ENABLE_VIDEO=1
     }
@@ -531,6 +529,7 @@ SOURCES += \
     dom/TreeWalker.cpp \
     dom/UIEvent.cpp \
     dom/UIEventWithKeyState.cpp \
+    dom/ViewportArguments.cpp \
     dom/WebKitAnimationEvent.cpp \
     dom/WebKitTransitionEvent.cpp \
     dom/WheelEvent.cpp \
@@ -1242,6 +1241,7 @@ HEADERS += \
     dom/TreeWalker.h \
     dom/UIEvent.h \
     dom/UIEventWithKeyState.h \
+    dom/ViewportArguments.h \
     dom/WebKitAnimationEvent.h \
     dom/WebKitTransitionEvent.h \
     dom/WheelEvent.h \
@@ -2111,13 +2111,15 @@ SOURCES += \
     ../WebKit/qt/Api/qwebinspector.cpp \
     ../WebKit/qt/Api/qwebkitversion.cpp
 
+
+contains(DEFINES, WTF_USE_QT_MOBILE_THEME=1) {
+    HEADERS += platform/qt/Maemo5Webstyle.h
+    SOURCES += platform/qt/Maemo5Webstyle.cpp
+}
+
 maemo5 {
-    HEADERS += \
-        ../WebKit/qt/WebCoreSupport/QtMaemoWebPopup.h \
-        platform/qt/Maemo5Webstyle.h
-    SOURCES += \
-        ../WebKit/qt/WebCoreSupport/QtMaemoWebPopup.cpp \
-        platform/qt/Maemo5Webstyle.cpp
+    HEADERS += ../WebKit/qt/WebCoreSupport/QtMaemoWebPopup.h
+    SOURCES += ../WebKit/qt/WebCoreSupport/QtMaemoWebPopup.cpp
 }
 
 
@@ -2368,8 +2370,8 @@ contains(DEFINES, ENABLE_VIDEO=1) {
         rendering/RenderMedia.cpp \
         bindings/js/JSAudioConstructor.cpp
 
-        # QtMultimedia since 4.7
-        greaterThan(QT_MINOR_VERSION, 6) {
+        # QtMultimedia disabled currently
+        false:greaterThan(QT_MINOR_VERSION, 6) {
             HEADERS += platform/graphics/qt/MediaPlayerPrivateQt.h
             SOURCES += platform/graphics/qt/MediaPlayerPrivateQt.cpp
 
@@ -2950,5 +2952,5 @@ symbian {
     }
 }
 
-# WebKit doesn't compile in C++0x mode
+# Disable C++0x mode in WebCore for those who enabled it in their Qt's mkspec
 *-g++*:QMAKE_CXXFLAGS -= -std=c++0x -std=gnu++0x

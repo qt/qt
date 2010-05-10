@@ -2145,8 +2145,8 @@ int QTableView::sizeHintForRow(int row) const
 
     ensurePolished();
 
-    int left = qMax(0, columnAt(0));
-    int right = columnAt(d->viewport->width());
+    int left = qMax(0, d->horizontalHeader->visualIndexAt(0));
+    int right = d->horizontalHeader->visualIndexAt(d->viewport->width());
     if (right == -1) // the table don't have enough columns to fill the viewport
         right = d->model->columnCount(d->root) - 1;
 
@@ -2204,8 +2204,8 @@ int QTableView::sizeHintForColumn(int column) const
 
     ensurePolished();
 
-    int top = qMax(0, rowAt(0));
-    int bottom = rowAt(d->viewport->height());
+    int top = qMax(0, d->verticalHeader->visualIndexAt(0));
+    int bottom = d->verticalHeader->visualIndexAt(d->viewport->height());
     if (!isVisible() || bottom == -1) // the table don't have enough rows to fill the viewport
         bottom = d->model->rowCount(d->root) - 1;
 

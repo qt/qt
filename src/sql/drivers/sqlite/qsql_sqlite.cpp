@@ -259,6 +259,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
         q->setAt(QSql::AfterLastRow);
         sqlite3_reset(stmt);
         return false;
+    case SQLITE_CONSTRAINT:
     case SQLITE_ERROR:
         // SQLITE_ERROR is a generic error code and we must call sqlite3_reset()
         // to get the specific error message.

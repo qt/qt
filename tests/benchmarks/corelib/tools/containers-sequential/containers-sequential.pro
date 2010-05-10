@@ -6,3 +6,4 @@ INCLUDEPATH += .
 
 # Input
 SOURCES += main.cpp
+QT -= gui
