@@ -385,6 +385,7 @@ private slots:
     void setGraphicsEffect();
 
     void destroyBackingStore();
+    void destroyBackingStoreWhenHidden();
 
     void activateWindow();
 
@@ -9516,6 +9517,252 @@ void tst_QWidget::destroyBackingStore()
     QCOMPARE(w.numPaintEvents, 2);
 #endif
 }
+
+// Helper function
+QWidgetBackingStore* backingStore(QWidget &widget)
+{
+    QWidgetBackingStore *backingStore = 0;
+#ifdef QT_BUILD_INTERNAL
+    if (QTLWExtra *topExtra = qt_widget_private(&widget)->maybeTopData())
+        backingStore = topExtra->backingStore;
+#endif
+    return backingStore;
+}
+
+// Wait for a condition to be true, timing out after 1 second
+// This is used following calls to QWidget::show() and QWidget::hide(), which are
+// expected to asynchronously trigger native window visibility events.
+#define WAIT_AND_VERIFY(condition)                                              \
+    do {                                                                        \
+        QTime start = QTime::currentTime();                                     \
+        while (!(condition) && (start.elapsed() < 1000)) {                      \
+            qApp->processEvents();                                              \
+            QTest::qWait(50);                                                   \
+        }                                                                       \
+        if (!QTest::qVerify((condition), #condition, "", __FILE__, __LINE__))   \
+            return;                                                             \
+    } while (0)
+
+void tst_QWidget::destroyBackingStoreWhenHidden()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Test step requires access to Q_AUTOTEST_EXPORT", SkipAll);
+#endif
+
+#ifndef Q_OS_SYMBIAN
+    QSKIP("Only Symbian destroys backing store when native window becomes invisible", SkipAll);
+#endif
+
+    testWidget->hide();
+    QTest::qWait(1000);
+
+    // 1. Single top-level QWidget
+    {
+    QWidget w;
+    w.setAutoFillBackground(true);
+    w.setPalette(Qt::yellow);
+    w.setGeometry(0, 0, 100, 100);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QVERIFY(0 != backingStore(w));
+
+    w.hide();
+    WAIT_AND_VERIFY(0 == backingStore(w));
+
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QVERIFY(0 != backingStore(w));
+    }
+
+    // 2. Two top-level widgets
+    {
+    QWidget w1;
+    w1.setGeometry(0, 0, 100, 100);
+    w1.setAutoFillBackground(true);
+    w1.setPalette(Qt::red);
+    w1.show();
+    QTest::qWaitForWindowShown(&w1);
+    QVERIFY(0 != backingStore(w1));
+
+    QWidget w2;
+    w2.setGeometry(w1.geometry());
+    w1.setAutoFillBackground(true);
+    w1.setPalette(Qt::blue);
+    w2.show();
+    QTest::qWaitForWindowShown(&w2);
+    QVERIFY(0 != backingStore(w2));
+
+    // Check that w1 deleted its backing store when obscured by w2
+    QVERIFY(0 == backingStore(w1));
+
+    w2.move(w2.pos() + QPoint(10, 10));
+
+    // Check that w1 recreates its backing store when partially revealed
+    WAIT_AND_VERIFY(0 != backingStore(w1));
+    }
+
+    // 3. Native child widget
+    {
+    QWidget parent;
+    parent.setGeometry(0, 0, 100, 100);
+    parent.setAutoFillBackground(true);
+    parent.setPalette(Qt::yellow);
+
+    QWidget child(&parent);
+    child.setAutoFillBackground(true);
+    child.setPalette(Qt::green);
+
+    QVBoxLayout layout(&parent);
+    layout.setContentsMargins(10, 10, 10, 10);
+    layout.addWidget(&child);
+    parent.setLayout(&layout);
+
+    child.winId();
+
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
+
+    // Check that child window does not obscure parent window
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should share parent's backing store
+    QWidgetBackingStore *const parentBs = backingStore(parent);
+    QVERIFY(0 != parentBs);
+    QVERIFY(0 == backingStore(child));
+
+    // Set margins to zero so that child widget totally obscures parent
+    layout.setContentsMargins(0, 0, 0, 0);
+
+    WAIT_AND_VERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Backing store should remain unchanged despite child window obscuring
+    // parent window
+    QEXPECT_FAIL("", "QTBUG-8697", Continue);
+    QVERIFY(parentBs == backingStore(parent));
+    QVERIFY(0 == backingStore(child));
+    }
+
+    // 4. Alien child widget which is made full-screen
+    {
+    QWidget parent;
+    parent.setGeometry(0, 0, 100, 100);
+    parent.setAutoFillBackground(true);
+    parent.setPalette(Qt::red);
+
+    QWidget child(&parent);
+    child.setAutoFillBackground(true);
+    child.setPalette(Qt::blue);
+
+    QVBoxLayout layout(&parent);
+    layout.setContentsMargins(10, 10, 10, 10);
+    layout.addWidget(&child);
+    parent.setLayout(&layout);
+
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
+
+    // Check that child window does not obscure parent window
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QVERIFY(0 == backingStore(child));
+
+    // Make child widget full screen
+    child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
+    child.setWindowState(child.windowState() | Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Check that child window obscures parent window
+    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Now that extent of child widget goes beyond parent's extent,
+    // a new backing store should be created for the child widget.
+    QVERIFY(0 != backingStore(child));
+
+    // Parent is obscured, therefore its backing store should be destroyed
+    QVERIFY(0 == backingStore(parent));
+
+    // Disable full screen
+    child.setWindowFlags(child.windowFlags() ^ (Qt::Window | Qt::SubWindow));
+    child.setWindowState(child.windowState() ^ Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Check that parent is now visible again
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should once again share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QVERIFY(0 == backingStore(child));
+    }
+
+    // 5. Native child widget which is made full-screen
+    {
+    QWidget parent;
+    parent.setGeometry(0, 0, 100, 100);
+    parent.setAutoFillBackground(true);
+    parent.setPalette(Qt::red);
+
+    QWidget child(&parent);
+    child.setAutoFillBackground(true);
+    child.setPalette(Qt::blue);
+
+    QVBoxLayout layout(&parent);
+    layout.setContentsMargins(10, 10, 10, 10);
+    layout.addWidget(&child);
+    parent.setLayout(&layout);
+
+    child.winId();
+
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
+
+    // Check that child window does not obscure parent window
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QVERIFY(0 == backingStore(child));
+
+    // Make child widget full screen
+    child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
+    child.setWindowState(child.windowState() | Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Ensure that 'window hidden' event is received by parent
+    qApp->processEvents();
+
+    // Check that child window obscures parent window
+    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Now that extent of child widget goes beyond parent's extent,
+    // a new backing store should be created for the child widget.
+    QVERIFY(0 != backingStore(child));
+
+    // Parent is obscured, therefore its backing store should be destroyed
+    QVERIFY(0 == backingStore(parent));
+
+    // Disable full screen
+    child.setWindowFlags(child.windowFlags() ^ (Qt::Window | Qt::SubWindow));
+    child.setWindowState(child.windowState() ^ Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Check that parent is now visible again
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should once again share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QVERIFY(0 == backingStore(child));
+    }
+}
+
+#undef WAIT_AND_VERIFY
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
