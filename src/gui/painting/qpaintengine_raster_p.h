@@ -300,10 +300,7 @@ QRasterPaintEnginePrivate : public QPaintEngineExPrivate
 {
     Q_DECLARE_PUBLIC(QRasterPaintEngine)
 public:
-    QRasterPaintEnginePrivate() : QPaintEngineExPrivate(),
-        cachedLines(0)
-    {
-    }
+    QRasterPaintEnginePrivate();
 
     void rasterizeLine_dashed(QLineF line, qreal width,
                               int *dashIndex, qreal *dashOffset, bool *inDash);

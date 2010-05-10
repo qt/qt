@@ -251,6 +251,11 @@ static void qt_debug_path(const QPainterPath &path)
 }
 #endif
 
+QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
+    QPaintEngineExPrivate(),
+    cachedLines(0)
+{
+}
 
 
 /*!
