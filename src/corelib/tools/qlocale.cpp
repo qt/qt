@@ -1582,7 +1582,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     This constructor converts the locale name to a language/country
     pair; it does not use the system locale database.
 
-    QLocale's data is based on Common Locale Data Repository v1.8.0.
+    QLocale's data is based on Common Locale Data Repository v1.8.1.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:

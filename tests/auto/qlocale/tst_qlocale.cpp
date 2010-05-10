@@ -1896,8 +1896,8 @@ void tst_QLocale::ampm()
     QCOMPARE(c.pmText(), QLatin1String("PM"));
 
     QLocale de("de_DE");
-    QCOMPARE(de.amText(), QLatin1String("AM"));
-    QCOMPARE(de.pmText(), QLatin1String("PM"));
+    QCOMPARE(de.amText(), QLatin1String("vorm."));
+    QCOMPARE(de.pmText(), QLatin1String("nachm."));
 
     QLocale sv("sv_SE");
     QCOMPARE(sv.amText(), QLatin1String("fm"));
