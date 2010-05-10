@@ -1026,8 +1026,8 @@
     {
         display: inline-block;
         width: 49%; 
-       /* *width:42%;
-        _width:42%;*/
+        *width:42%;
+        _width:42%;
         padding:0 2% 0 1%;
         vertical-align:top;
 
@@ -1036,8 +1036,8 @@
     .indexboxcont .indexIcon
     {
         width: 11%; 
-       /* *width:18%;
-        _width:18%;*/
+        *width:18%;
+        _width:18%;
         overflow:hidden;
 
 }
