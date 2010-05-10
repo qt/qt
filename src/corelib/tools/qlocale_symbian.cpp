@@ -134,7 +134,7 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangBrazilianPortuguese, "pt_BR" },
     { ELangRomanian,            "ro_RO" },
     { ELangSerbian,             "sr_YU" },
-    { ELangLatinAmericanSpanish, "es" },
+    { ELangLatinAmericanSpanish,"es_MX" }, // TODO: should be es_419
     { ELangUkrainian,           "uk_UA" },
     { ELangUrdu,                "ur_PK" }, // India/Pakistan
     { ELangVietnamese,          "vi_VN" },
