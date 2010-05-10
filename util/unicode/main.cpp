@@ -1905,6 +1905,8 @@ QByteArray createScriptTableDeclaration()
             else
                 declaration += ' ';
         }
+        if (declaration.endsWith(' '))
+            declaration.chop(1);
     }
     declaration += "\n};\n\n} // namespace QUnicodeTables\n\n";
 
@@ -2668,13 +2670,13 @@ int main(int, char **)
     f.write("\n");
     f.write(scriptEnumDeclaration);
     f.write("\n");
-    f.write(lineBreakClass);
-    f.write("\n");
     f.write(grapheme_break_string);
     f.write("\n");
     f.write(word_break_string);
     f.write("\n");
     f.write(sentence_break_string);
+    f.write("\n");
+    f.write(lineBreakClass);
     f.write("\n");
     f.write(methods);
     f.write("} // namespace QUnicodeTables\n\n"
