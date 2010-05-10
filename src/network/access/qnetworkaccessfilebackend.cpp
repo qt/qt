@@ -65,15 +65,10 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
     }
 
     QUrl url = request.url();
-    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0 || url.isLocalFile()) {
+    if (url.scheme() == QLatin1String("qrc") || !url.toLocalFile().isEmpty())
         return new QNetworkAccessFileBackend;
-    } else if (!url.scheme().isEmpty() && url.authority().isEmpty()) {
-        // check if QFile could, in theory, open this URL via the file engines
-        // it has to be in the format:
-        //    prefix:path/to/file
-        // or prefix:/path/to/file
-        //
-        // this construct here must match the one below in open()
+    else if (!url.isEmpty() && url.authority().isEmpty()) {
+        // check if QFile could, in theory, open this URL
         QFileInfo fi(url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery));
         if (fi.exists() || (op == QNetworkAccessManager::PutOperation && fi.dir().exists()))
             return new QNetworkAccessFileBackend;
