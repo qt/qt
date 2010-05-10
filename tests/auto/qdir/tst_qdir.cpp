@@ -1568,13 +1568,13 @@ void tst_QDir::isRoot_data()
     QTest::addColumn<bool>("isRoot");
 
     QString test = QDir::rootPath();
-    QTest::newRow("rootPath " + test) << test << true;
+    QTest::newRow(QString("rootPath " + test).toLatin1()) << test << true;
     test = QDir::rootPath().append("./");
-    QTest::newRow("./ appended " + test) << test << false;
+    QTest::newRow(QString("./ appended " + test).toLatin1()) << test << false;
     test = QDir(QDir::rootPath().append("./")).canonicalPath();
-    QTest::newRow("canonicalPath " + test) << test << true;
+    QTest::newRow(QString("canonicalPath " + test).toLatin1()) << test << true;
     test = QDir::rootPath().left(2);
-    QTest::newRow("drive relative " + test) << test << false;
+    QTest::newRow(QString("drive relative " + test).toLatin1()) << test << false;
 }
 
 void tst_QDir::isRoot()
