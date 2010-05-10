@@ -3189,6 +3189,32 @@ void tst_QUrl::ace_testsuite_data()
 
     QTest::newRow("separator-3002") << QString::fromUtf8("example\343\200\202com")
                                     << "example.com" << "." << "example.com";
+
+    QString egyptianIDN =
+        QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
+                          "\243\330\252\330\265\330\247\331\204\330\247\330\252.\331\205"
+                          "\330\265\330\261");
+    QTest::newRow("egyptian-tld-ace")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-unicode")
+        << egyptianIDN
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-mix1")
+        << QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
+                             "\243\330\252\330\265\330\247\331\204\330\247\330\252.xn--wgbh1c")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-mix2")
+        << QString::fromUtf8("xn----rmckbbajlc6dj7bxne2c.\331\205\330\265\330\261")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
 }
 
 void tst_QUrl::ace_testsuite()
