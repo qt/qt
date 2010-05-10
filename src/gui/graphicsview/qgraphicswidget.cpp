@@ -1105,9 +1105,6 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         }
         break;
     case ItemParentChange: {
-        QGraphicsItem *parent = qVariantValue<QGraphicsItem *>(value);
-        d->fixFocusChainBeforeReparenting((parent && parent->isWidget()) ? static_cast<QGraphicsWidget *>(parent) : 0, scene());
-
         // Deliver ParentAboutToChange.
         QEvent event(QEvent::ParentAboutToChange);
         QApplication::sendEvent(this, &event);

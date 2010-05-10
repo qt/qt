@@ -62,6 +62,9 @@ QT_BEGIN_NAMESPACE
 
     Input constraints include setting a QValidator, an input mask, or a
     maximum input length.
+
+    On Mac OS X, the Up/Down key bindings for Home/End are explicitly disabled.
+    If you want such bindings (on any platform), you will need to construct them in QML.
 */
 QDeclarativeTextInput::QDeclarativeTextInput(QDeclarativeItem* parent)
     : QDeclarativePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
@@ -860,10 +863,12 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QDeclarativeTextInput);
-    if(((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
+    if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
+        || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
                 && ev->key() == Qt::Key_Right))
-            && (d->lastSelectionStart == d->lastSelectionEnd)){
+            && (d->lastSelectionStart == d->lastSelectionEnd)))
+    {
         //ignore when moving off the end
         //unless there is a selection, because then moving will do something (deselect)
         ev->ignore();
