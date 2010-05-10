@@ -1269,8 +1269,11 @@ void QDockWidget::setFloating(bool floating)
     QRect r = d->undockedGeometry;
 
     d->setWindowState(floating, false, floating ? r : QRect());
+
     if (floating && r.isNull()) {
-	    setAttribute(Qt::WA_Moved, false); //we want it at the default position
+        if (x() < 0 || y() < 0) //may happen if we have been hidden
+            move(QPoint());
+        setAttribute(Qt::WA_Moved, false); //we want it at the default position
     }
 }
 
