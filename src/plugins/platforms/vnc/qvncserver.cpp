@@ -836,7 +836,8 @@ void QVNCServer::pointerEvent()
 //        const QPoint offset = qvnc_screen->offset();
 //        QWSServer::sendMouseEvent(offset + QPoint(ev.x, ev.y), ev.buttons);
 
-
+        QPoint eventPoint(ev.x, ev.y);
+        eventPoint += screen()->geometry().topLeft();
         //qDebug() << "pointerEvent" << ev.x << ev.y << hex << ev.buttons;
         if (ev.wheelDirection == ev.WheelNone) {
             QEvent::Type type = QEvent::MouseMove;
@@ -844,7 +845,7 @@ void QVNCServer::pointerEvent()
             bool isPress;
             if (buttonChange(buttons, ev.buttons, &button, &isPress))
                 type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
-            QWindowSystemInterface::handleMouseEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), ev.buttons);
+            QWindowSystemInterface::handleMouseEvent(0, eventPoint, eventPoint, ev.buttons);
         } else {
             // No buttons or motion reported at the same time as wheel events
             Qt::Orientation orientation;
@@ -853,7 +854,7 @@ void QVNCServer::pointerEvent()
             else
                 orientation = Qt::Vertical;
             int delta = 120 * ((ev.wheelDirection == ev.WheelLeft || ev.wheelDirection == ev.WheelUp) ? 1 : -1);
-            QWindowSystemInterface::handleWheelEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), delta, orientation);
+            QWindowSystemInterface::handleWheelEvent(0, eventPoint, eventPoint, delta, orientation);
         }
         handleMsg = false;
     }
