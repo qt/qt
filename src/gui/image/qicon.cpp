@@ -261,21 +261,28 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
         actualSize.scale(size, Qt::KeepAspectRatio);
 
-    QString key = QLatin1String("$qt_icon_")
-                  + QString::number(pm.cacheKey())
-                  + QString::number(pe->mode)
-                  + QString::number(QApplication::palette().cacheKey())
-                  + QLatin1Char('_')
-                  + QString::number(actualSize.width())
-                  + QLatin1Char('_')
-                  + QString::number(actualSize.height())
-                  + QLatin1Char('_');
+    struct {
+        quint64 pmc;
+        qint32  w;
+        qint32  h;
+        quint64 pac;
+        qint32  m;     // Make struct size a multiple of 4, for safety's sake
+    } dill;
 
+    dill.pmc = pm.cacheKey();
+    dill.w = actualSize.width();
+    dill.h = actualSize.height();
+    dill.pac = QApplication::palette().cacheKey();
+    dill.m = pe->mode;
+
+    QString keyBase = QLatin1String("$qt_icon_")
+                      + QString::fromRawData((QChar *)&dill, sizeof(dill)/sizeof(QChar));
+    QString key = keyBase + QString::number(mode, 16);
 
     if (mode == QIcon::Active) {
-        if (QPixmapCache::find(key + QString::number(mode), pm))
+        if (QPixmapCache::find(key, pm))
             return pm; // horray
-        if (QPixmapCache::find(key + QString::number(QIcon::Normal), pm)) {
+        if (QPixmapCache::find(keyBase + QString::number(QIcon::Normal, 16), pm)) {
             QStyleOption opt(0);
             opt.palette = QApplication::palette();
             QPixmap active = QApplication::style()->generatedIconPixmap(QIcon::Active, pm, &opt);
@@ -284,7 +291,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         }
     }
 
-    if (!QPixmapCache::find(key + QString::number(mode), pm)) {
+    if (!QPixmapCache::find(key, pm)) {
         if (pm.size() != actualSize)
             pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (pe->mode != mode && mode != QIcon::Normal) {
@@ -294,7 +301,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
             if (!generated.isNull())
                 pm = generated;
         }
-        QPixmapCache::insert(key + QString::number(mode), pm);
+        QPixmapCache::insert(key, pm);
     }
     return pm;
 }
