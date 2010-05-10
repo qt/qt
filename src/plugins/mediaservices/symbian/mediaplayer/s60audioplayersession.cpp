@@ -51,9 +51,11 @@ QT_BEGIN_NAMESPACE
 S60AudioPlayerSession::S60AudioPlayerSession(QObject *parent)
     : S60MediaPlayerSession(parent)
     , m_player(0)
-    , m_audioOutput(0)
     , m_audioEndpoint("Default")
 {
+#ifndef HAS_NO_AUDIOROUTING
+   m_audioOutput = 0;
+#endif
     QT_TRAP_THROWING(m_player = CAudioPlayer::NewL(*this, 0, EMdaPriorityPreferenceNone));
     m_player->RegisterForAudioLoadingNotification(*this);
 }
@@ -71,11 +73,13 @@ S60AudioPlayerSession::~S60AudioPlayerSession()
 
 void S60AudioPlayerSession::doLoadL(const TDesC &path)
 {
+#ifndef HAS_NO_AUDIOROUTING
     // m_audioOutput needs to be reinitialized after MapcInitComplete
     if (m_audioOutput)
         m_audioOutput->UnregisterObserver(*this);
     delete m_audioOutput;
     m_audioOutput = NULL;
+#endif
 
     m_player->OpenFileL(path);
 }
@@ -171,12 +175,14 @@ void S60AudioPlayerSession::MapcInitComplete(TInt aError, const TTimeIntervalMic
 {
     Q_UNUSED(aDuration);
     setError(aError);
+#ifndef HAS_NO_AUDIOROUTING
     TRAPD(err,
         m_audioOutput = CAudioOutput::NewL(*m_player);
         m_audioOutput->RegisterObserverL(*this);
     );
     setActiveEndpoint(m_audioEndpoint);
     setError(err);
+#endif
     loaded();
 }
 
@@ -217,6 +223,7 @@ QString S60AudioPlayerSession::defaultEndpoint() const
 
 void S60AudioPlayerSession::setActiveEndpoint(const QString& name)
 {
+#if !defined(HAS_NO_AUDIOROUTING)
     CAudioOutput::TAudioOutputPreference output = CAudioOutput::ENoPreference;
 
     if (name == QString("Default"))
@@ -229,7 +236,6 @@ void S60AudioPlayerSession::setActiveEndpoint(const QString& name)
         output = CAudioOutput::EPrivate;
     else if (name == QString("Speaker"))
         output = CAudioOutput::EPublic;
-#if !defined(HAS_NO_AUDIOROUTING)
     if (m_audioOutput) {
         TRAPD(err, m_audioOutput->SetAudioOutputL(output));
         setError(err);
@@ -242,6 +248,7 @@ void S60AudioPlayerSession::setActiveEndpoint(const QString& name)
 #endif
 }
 
+#if !defined(HAS_NO_AUDIOROUTING)
 void S60AudioPlayerSession::DefaultAudioOutputChanged(CAudioOutput& aAudioOutput,
                                         CAudioOutput::TAudioOutputPreference aNewDefault)
 {
@@ -264,5 +271,5 @@ QString S60AudioPlayerSession::qStringFromTAudioOutputPreference(CAudioOutput::T
         return QString("Speaker");
     return QString("Default");
 }
-
+#endif
 QT_END_NAMESPACE
