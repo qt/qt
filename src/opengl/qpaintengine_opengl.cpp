@@ -1453,6 +1453,11 @@ bool QOpenGLPaintEngine::end()
     d->device->endPaint();
     qt_mask_texture_cache()->maintainCache();
 
+#if defined(Q_WS_X11)
+    // clear out the references we hold for textures bound with the
+    // texture_from_pixmap extension
+    ctx->d_func()->boundPixmaps.clear();
+#endif
     return true;
 }
 
