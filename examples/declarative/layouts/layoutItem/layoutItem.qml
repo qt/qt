@@ -1,5 +1,4 @@
 import Qt 4.7
-import Qt.widgets 4.7
 
 LayoutItem {//Sized by the layout
     id: resizable
