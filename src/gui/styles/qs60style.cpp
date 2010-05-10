@@ -2045,16 +2045,17 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         case PE_FrameFocusRect: {
             //Draw themed highlight to radiobuttons and checkboxes.
             //For other widgets skip, unless palette has been modified. In that case, draw with commonstyle.
-            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color())
+            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()) {
                 if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
                     (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
                         QS60StylePrivate::drawSkinElement(
                             QS60StylePrivate::isWidgetPressed(widget) ? 
                                 QS60StylePrivate::SE_ListItemPressed : 
                                 QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
-            else
+            } else {
                 commonStyleDraws = true;
             }
+        }
         break;
 #ifndef QT_NO_LINEEDIT
     case PE_PanelLineEdit:
