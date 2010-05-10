@@ -890,6 +890,7 @@ void tst_QDockWidget::taskQTBUG_9758_undockedGeometry()
     dock1.hide();
     dock2.hide();
     window.show();
+    QTest::qWaitForWindowShown(&window);
     dock1.setFloating(true);
     dock1.show();
     QTest::qWaitForWindowShown(&dock1);
