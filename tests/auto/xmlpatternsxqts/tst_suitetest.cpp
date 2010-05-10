@@ -89,10 +89,17 @@ void tst_SuiteTest::runTestSuite() const
 
     TestSuite::SuiteType suiteType;
     switch (m_suiteType) {
-        case XQuerySuite: suiteType = TestSuite::XQuerySuite;
-        case XsltSuite: suiteType = TestSuite::XsltSuite;
-        case XsdSuite: suiteType = TestSuite::XsdSuite;
-        default: break;
+    case XQuerySuite:
+        suiteType = TestSuite::XQuerySuite;
+        break;
+    case XsltSuite:
+        suiteType = TestSuite::XsltSuite;
+        break;
+    case XsdSuite:
+        suiteType = TestSuite::XsdSuite;
+        break;
+    default:
+        break;
     }
 
     TestSuite *const ts = TestSuite::openCatalog(catalogPath, errMsg, true, suiteType);
