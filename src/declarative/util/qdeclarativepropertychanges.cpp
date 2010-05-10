@@ -163,11 +163,13 @@ public:
 
     virtual void execute(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, expression);
+        Q_ASSERT(expression != ownedExpression);
     }
 
     virtual bool isReversable() { return true; }
     virtual void reverse(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
+        Q_ASSERT(reverseExpression != ownedExpression);
     }
 
     virtual void saveOriginals() {
@@ -177,6 +179,7 @@ public:
 
     virtual void rewind() {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, rewindExpression);
+        Q_ASSERT(rewindExpression != ownedExpression);
     }
     virtual void saveCurrentValues() { 
         rewindExpression = QDeclarativePropertyPrivate::signalExpression(property); 
