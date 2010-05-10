@@ -481,7 +481,8 @@ static void qdashprocessor_cubicTo(qreal, qreal, qreal, qreal, qreal, qreal, voi
 }
 
 QDashedStrokeProcessor::QDashedStrokeProcessor()
-    : m_dash_stroker(0), m_inv_scale(1)
+    : m_points(0), m_types(0),
+      m_dash_stroker(0), m_inv_scale(1)
 {
     m_dash_stroker.setMoveToHook(qdashprocessor_moveTo);
     m_dash_stroker.setLineToHook(qdashprocessor_lineTo);
@@ -499,6 +500,8 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
 
     m_points.reset();
     m_types.reset();
+    m_points.reserve(path.elementCount());
+    m_types.reserve(path.elementCount());
 
     qreal width = qpen_widthf(pen);
     if (width == 0)

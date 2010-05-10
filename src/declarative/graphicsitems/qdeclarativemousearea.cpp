@@ -197,8 +197,8 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     This handler is called when the mouse enters the mouse area.
 
     By default the onEntered handler is only called while a button is
-    pressed.  Setting hoverEnabled to true enables handling of
-    onExited when no mouse button is pressed.
+    pressed. Setting hoverEnabled to true enables handling of
+    onEntered when no mouse button is pressed.
 
     \sa hoverEnabled
 */
@@ -209,7 +209,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     This handler is called when the mouse exists the mouse area.
 
     By default the onExited handler is only called while a button is
-    pressed.  Setting hoverEnabled to true enables handling of
+    pressed. Setting hoverEnabled to true enables handling of
     onExited when no mouse button is pressed.
 
     \sa hoverEnabled
@@ -285,6 +285,17 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     position of the release of the click, and whether the click wasHeld.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
+*/
+
+/*!
+    \qmlsignal MouseArea::onCanceled()
+
+    This handler is called when the mouse events are canceled, either because the event was not accepted or
+    another element stole the mouse event handling. This signal is for advanced users, it's useful in case there
+    is more than one mouse areas handling input, or when there is a mouse area inside a flickable. In the latter
+    case, if you do some logic on pressed and then start dragging, the flickable will steal the mouse handling
+    from the mouse area. In these cases, to reset the logic when there is no mouse handling anymore, you should
+    use onCanceled, in addition to onReleased.
 */
 
 /*!
@@ -562,10 +573,12 @@ bool QDeclarativeMouseArea::sceneEvent(QEvent *event)
             // state
             d->pressed = false;
             setKeepMouseGrab(false);
-            QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, false);
-            emit released(&me);
+            emit canceled();
             emit pressedChanged();
-            setHovered(false);
+            if (d->hovered) {
+                d->hovered = false;
+                emit hoveredChanged();
+            }
         }
     }
     return rv;

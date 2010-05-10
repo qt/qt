@@ -340,11 +340,13 @@ void Q3SpinWidget::paintEvent(QPaintEvent *)
     QPainter p(this);
     QStyleOptionSpinBox opt = getStyleOption(this);
 
-    if (d->theButton & 1)
+    if (d->theButton & 1) {
         opt.activeSubControls = QStyle::SC_SpinBoxDown;
-    else if (d->theButton & 2)
+        opt.state |= QStyle::State_Sunken;
+    } else if (d->theButton & 2) {
         opt.activeSubControls = QStyle::SC_SpinBoxUp;
-    else
+        opt.state |= QStyle::State_Sunken;
+    } else
         opt.activeSubControls = QStyle::SC_None;
     opt.rect = style()->subControlRect(QStyle::CC_SpinBox, &opt, QStyle::SC_SpinBoxFrame, this);
     opt.subControls = QStyle::SC_All;

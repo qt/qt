@@ -278,7 +278,8 @@ private:
 };
 
 SegmentTree::SegmentTree(QPathSegments &segments)
-    : m_segments(segments)
+    : m_segments(segments),
+      m_intersections(0)
 {
     m_bounds.x1 = qt_inf();
     m_bounds.y1 = qt_inf();
@@ -806,7 +807,7 @@ void QWingedEdge::intersectAndAdd()
     for (int i = 0; i < m_segments.points(); ++i)
         addVertex(m_segments.pointAt(i));
 
-    QDataBuffer<QPathSegments::Intersection> intersections;
+    QDataBuffer<QPathSegments::Intersection> intersections(m_segments.segments());
     for (int i = 0; i < m_segments.segments(); ++i) {
         intersections.reset();
 
@@ -857,11 +858,17 @@ void QWingedEdge::intersectAndAdd()
     }
 }
 
-QWingedEdge::QWingedEdge()
+QWingedEdge::QWingedEdge() :
+    m_edges(0),
+    m_vertices(0),
+    m_segments(0)
 {
 }
 
-QWingedEdge::QWingedEdge(const QPainterPath &subject, const QPainterPath &clip)
+QWingedEdge::QWingedEdge(const QPainterPath &subject, const QPainterPath &clip) :
+    m_edges(subject.length()),
+    m_vertices(subject.length()),
+    m_segments(subject.length())
 {
     m_segments.setPath(subject);
     m_segments.addPath(clip);
@@ -1414,9 +1421,9 @@ bool QPathClipper::intersect()
     else if (clipIsRect)
         return subjectPath.intersects(r2);
 
-    QPathSegments a;
+    QPathSegments a(subjectPath.length());
     a.setPath(subjectPath);
-    QPathSegments b;
+    QPathSegments b(clipPath.length());
     b.setPath(clipPath);
 
     QIntersectionFinder finder;
@@ -1459,9 +1466,9 @@ bool QPathClipper::contains()
     if (clipIsRect)
         return subjectPath.contains(r2);
 
-    QPathSegments a;
+    QPathSegments a(subjectPath.length());
     a.setPath(subjectPath);
-    QPathSegments b;
+    QPathSegments b(clipPath.length());
     b.setPath(clipPath);
 
     QIntersectionFinder finder;

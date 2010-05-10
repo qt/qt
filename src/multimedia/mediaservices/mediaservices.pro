@@ -2,6 +2,8 @@ TARGET = QtMediaServices
 QPRO_PWD = $$PWD
 QT = core gui multimedia
 
+contains(QT_CONFIG, opengl): QT += opengl
+
 DEFINES += QT_BUILD_MEDIASERVICES_LIB QT_NO_USING_NAMESPACE
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtMultimedia

@@ -454,7 +454,6 @@ QWebSettings::QWebSettings()
     d->attributes.insert(QWebSettings::LocalContentCanAccessRemoteUrls, false);
     d->attributes.insert(QWebSettings::LocalContentCanAccessFileUrls, true);
     d->attributes.insert(QWebSettings::AcceleratedCompositingEnabled, true);
-    d->attributes.insert(QWebSettings::WebGLEnabled, false);
     d->attributes.insert(QWebSettings::TiledBackingStoreEnabled, false);
     d->attributes.insert(QWebSettings::FrameFlatteningEnabled, false);
     d->offlineStorageDefaultQuota = 5 * 1024 * 1024;
@@ -1053,8 +1052,9 @@ void QWebSettings::enablePersistentStorage(const QString& path)
     QString storagePath;
 
     if (path.isEmpty()) {
+#ifndef QT_NO_DESKTOPSERVICES
         storagePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-
+#endif
         if (storagePath.isEmpty())
             storagePath = WebCore::pathByAppendingComponent(QDir::homePath(), QCoreApplication::applicationName());
     } else

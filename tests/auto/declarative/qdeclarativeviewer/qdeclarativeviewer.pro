@@ -2,9 +2,10 @@ load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative gui
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_graphicswidgets.cpp
+include(../../../../tools/qml/qml.pri)
 
-# Define SRCDIR equal to test's source directory
+SOURCES += tst_qdeclarativeviewer.cpp
+
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 CONFIG += parallel_test

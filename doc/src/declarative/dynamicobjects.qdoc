@@ -69,7 +69,9 @@ This function takes the URL of the QML file as its only argument and returns
 a component object which can be used to create and load that QML file.
 
 Once you have a component you can use its \l {Component::createObject()}{createObject()} method to create an instance of
-the component. 
+the component. This function takes exactly one argument, which is the parent for the new item. Since graphical items will
+not appear on the scene without a parent, it is recommended that you set the parent this way. However, if you wish to set
+the parent later you can safely pass null to this function.
 
 Here is an example. Here is a \c Sprite.qml, which defines a simple QML component:
 

@@ -109,7 +109,7 @@ Q_SIGNALS:
 
 protected:
     QDeclarativeComponent(QDeclarativeComponentPrivate &dd, QObject* parent);
-    Q_INVOKABLE QScriptValue createObject();
+    Q_INVOKABLE QScriptValue createObject(QObject* parent);
 
 private:
     QDeclarativeComponent(QDeclarativeEngine *, QDeclarativeCompiledData *, int, int, QObject *parent);

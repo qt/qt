@@ -59,8 +59,7 @@ function startNewGame()
                     console.log("Still loading linkComponent");
                 continue;//TODO: Better error handling?
             }
-            var link = linkComponent.createObject();
-            link.parent = playfield;
+            var link = linkComponent.createObject(playfield);
             link.z = numRows * numColumns + 1 - i;
             link.type = i == 0 ? 2 : 0;
             link.spawned = false;
@@ -300,8 +299,7 @@ function createCookie(value) {
             console.log("Still loading cookieComponent");
         return;//TODO: Better error handling?
     }
-    cookie = cookieComponent.createObject();
-    cookie.parent = head.parent;
+    cookie = cookieComponent.createObject(head.parent);
     cookie.value = value;
     cookie.row = row;
     cookie.column = column;

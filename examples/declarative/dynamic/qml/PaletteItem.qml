@@ -1,13 +1,19 @@
 import Qt 4.7
 import "itemCreation.js" as Code
 
-GenericItem {
-    id: itemButton
-    property string file
+Image {
+    id: paletteItem
+
+    property string componentFile
+    property string image
+
+    source: image
+
     MouseArea { 
-        anchors.fill: parent; 
+        anchors.fill: parent
+
         onPressed: Code.startDrag(mouse);
-        onPositionChanged: Code.moveDrag(mouse);
+        onPositionChanged: Code.continueDrag(mouse);
         onReleased: Code.endDrag(mouse);
     }
 }
