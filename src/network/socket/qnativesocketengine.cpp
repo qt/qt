@@ -650,26 +650,26 @@ int QNativeSocketEngine::accept()
     \since 4.8
 */
 bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress,
-                                             const QNetworkInterface &interface)
+                                             const QNetworkInterface &iface)
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::joinMulticastGroup(), false);
     Q_CHECK_STATE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::BoundState, false);
     Q_CHECK_TYPE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::UdpSocket, false);
-    return d->nativeJoinMulticastGroup(groupAddress, interface);
+    return d->nativeJoinMulticastGroup(groupAddress, iface);
 }
 
 /*!
     \since 4.8
 */
 bool QNativeSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress,
-                                              const QNetworkInterface &interface)
+                                              const QNetworkInterface &iface)
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::leaveMulticastGroup(), false);
     Q_CHECK_STATE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::BoundState, false);
     Q_CHECK_TYPE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::UdpSocket, false);
-    return d->nativeLeaveMulticastGroup(groupAddress, interface);
+    return d->nativeLeaveMulticastGroup(groupAddress, iface);
 }
 
 /*!

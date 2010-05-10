@@ -101,6 +101,7 @@ union qt_sockaddr {
 };
 
 class QNativeSocketEnginePrivate;
+class QNetworkInterface;
 
 class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
 {
@@ -124,9 +125,9 @@ public:
     void close();
 
     bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            const QNetworkInterface &interface);
+                            const QNetworkInterface &iface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
-                             const QNetworkInterface &interface);
+                             const QNetworkInterface &iface);
 
     qint64 bytesAvailable() const;
 
@@ -243,9 +244,9 @@ public:
     bool nativeListen(int backlog);
     int nativeAccept();
     bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
-                                  const QNetworkInterface &interface);
+                                  const QNetworkInterface &iface);
     bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
-                                   const QNetworkInterface &interface);
+                                   const QNetworkInterface &iface);
     qint64 nativeBytesAvailable() const;
 
     bool nativeHasPendingDatagrams() const;

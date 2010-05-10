@@ -342,14 +342,14 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress, MulticastM
     \overload
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
-                                    const QNetworkInterface &interface,
+                                    const QNetworkInterface &iface,
                                     MulticastMode mode)
 {
     Q_D(QUdpSocket);
     QT_CHECK_BOUND("QUdpSocket::joinMulticastGroup()", false);
     d->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopback,
                                (mode & MulticastLoopback) ? 1 : 0);
-    return d->socketEngine->joinMulticastGroup(groupAddress, interface);
+    return d->socketEngine->joinMulticastGroup(groupAddress, iface);
 }
 
 /*!
@@ -365,10 +365,10 @@ bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
     \overload
 */
 bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
-                                     const QNetworkInterface &interface)
+                                     const QNetworkInterface &iface)
 {
     QT_CHECK_BOUND("QUdpSocket::leaveMulticastGroup()", false);
-    return d_func()->socketEngine->leaveMulticastGroup(groupAddress, interface);
+    return d_func()->socketEngine->leaveMulticastGroup(groupAddress, iface);
 }
 
 /*!

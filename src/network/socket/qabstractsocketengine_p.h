@@ -121,9 +121,9 @@ public:
 
 #ifndef QT_NO_UDPSOCKET
     virtual bool joinMulticastGroup(const QHostAddress &groupAddress,
-                                    const QNetworkInterface &interface) = 0;
+                                    const QNetworkInterface &iface) = 0;
     virtual bool leaveMulticastGroup(const QHostAddress &groupAddress,
-                                     const QNetworkInterface &interface) = 0;
+                                     const QNetworkInterface &iface) = 0;
 
     virtual qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
                                 quint16 *port = 0) = 0;

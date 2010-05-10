@@ -876,8 +876,10 @@ void tst_QUdpSocket::multicast()
                                       << QByteArray("cdef");
 
         QUdpSocket sender;
-        foreach (const QByteArray &datagram, datagrams)
-            sender.writeDatagram(datagram, receiver.localAddress(), receiver.localPort());
+        foreach (const QByteArray &datagram, datagrams) {
+            QCOMPARE(int(sender.writeDatagram(datagram, groupAddress, receiver.localPort())),
+                     int(datagram.size()));
+        }
 
         QVERIFY2(receiver.waitForReadyRead(),
                  qPrintable(receiver.errorString()));
