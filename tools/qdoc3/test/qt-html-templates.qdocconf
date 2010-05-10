@@ -127,8 +127,9 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "      <div id=\"feedcloseX\">\n" \
 			  "        <a href=\"#\" onclick=\"\$(\'#feedbackBox\').hide();\$(\'#blurpage\').hide()\">X</a>\n" \
 			  "      </div>\n" \
-			  "    <form action=\"#\">\n" \
-			  "      <p><textarea id=\"feedbox\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
+			  "    <form id=\"feedform\" action=\"feedback.php\" method=\"get\">\n" \
+			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
+			  "      <input id=\"page\" name=\"pageVal\" value=\"\$(\'title\').html();\" style=\"display:none;\">\n" \
 			  "      <p><input id=\"feedsubmit\" type=\"submit\" onclick=\"\$(\'#feedbackBox\').hide();\$(\'#blurpage\').hide()\"\n" \
 			  "        name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \

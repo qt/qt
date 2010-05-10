@@ -1849,6 +1849,7 @@ void HtmlGenerator::generateFooter(const Node *node)
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
+	      out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
           out() << "</body>\n";
           out() <<   "</html>\n";
 }

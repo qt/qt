@@ -50,6 +50,8 @@ function processNokiaData(response){
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
 			lookupCount++;
 			//$('.live001').css('display','block');
+			$('#ul001 .defaultLink').css('display','none');
+
 			
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 				full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
@@ -62,6 +64,8 @@ function processNokiaData(response){
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
 			articleCount++;
 	 		//$('.live002').css('display','block');
+			$('#ul002 .defaultLink').css('display','none');
+
 				 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
@@ -73,6 +77,8 @@ function processNokiaData(response){
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
 			exampleCount++;
 	 		//$('.live003').css('display','block');
+			$('#ul003 .defaultLink').css('display','none');
+
 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
@@ -114,6 +120,9 @@ function CheckEmptyAndLoadList()
 
 // Loads on doc ready
 	$(document).ready(function () {
+	var pageTitle = $('title').html();
+		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
+
         $('#pageType').keyup(function () {
           var searchString = $('#pageType').val() ;
           if ((searchString == null) || (searchString.length < 3)) {
