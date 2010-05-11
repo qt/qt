@@ -1,3 +1,4 @@
+load(data_caging_paths)
 include(spectrum.pri)
 
 TEMPLATE = subdirs
@@ -21,19 +22,16 @@ symbian {
     # UID for the SIS file
     TARGET.UID3 = 0xA000E3FA
 
-    epoc32_dir = $${EPOCROOT}epoc32
-    release_dir = $${epoc32_dir}/release/$(PLATFORM)/$(TARGET)
-
-    bin.sources     = $${release_dir}/spectrum.exe
+    bin.sources     = spectrum.exe
     !contains(DEFINES, DISABLE_FFT) {
-        bin.sources += $${release_dir}/fftreal.dll
+        bin.sources += fftreal.dll
     }
-    bin.path        = !:/sys/bin
-    rsc.sources     = $${epoc32_dir}/data/z/resource/apps/spectrum.rsc
-    rsc.path        = !:/resource/apps
-    mif.sources     = $${epoc32_dir}/data/z/resource/apps/spectrum.mif
-    mif.path        = !:/resource/apps
-    reg_rsc.sources = $${epoc32_dir}/data/z/private/10003a3f/import/apps/spectrum_reg.rsc
-    reg_rsc.path    = !:/private/10003a3f/import/apps
+    bin.path        = /sys/bin
+    rsc.sources     = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.rsc
+    rsc.path        = $$APP_RESOURCE_DIR
+    mif.sources     = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.mif
+    mif.path        = $$APP_RESOURCE_DIR
+    reg_rsc.sources = $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/spectrum_reg.rsc
+    reg_rsc.path    = $$REG_RESOURCE_IMPORT_DIR
     DEPLOYMENT += bin rsc mif reg_rsc
 }
