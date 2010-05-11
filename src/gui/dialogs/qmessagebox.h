@@ -354,7 +354,7 @@ if (!qApp){ \
 QString s = QApplication::tr("Executable '%1' requires Qt "\
  "%2, found Qt %3.").arg(qAppName()).arg(QString::fromLatin1(\
 str)).arg(QString::fromLatin1(qVersion())); QMessageBox::critical(0, QApplication::tr(\
-"Incompatible Qt Library Error"), s, QMessageBox::Abort, 0); qFatal(s.toLatin1().data()); }}
+"Incompatible Qt Library Error"), s, QMessageBox::Abort, 0); qFatal("%s", s.toLatin1().data()); }}
 
 #endif // QT_NO_MESSAGEBOX
 
