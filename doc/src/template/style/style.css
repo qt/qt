@@ -302,6 +302,9 @@
     .sidebar .box .list
     {
         display: block;
+		max-height:200px;
+		overflow-y:auto;
+		overflow-x:none;
     }
     .sidebar .box .live
     {
@@ -315,7 +318,7 @@
     }
     .sidebar .box ul
     {
-	padding:10px 0 0 10px;
+	padding:10px;
     }
     .sidebar .box ul li
     {
@@ -488,8 +491,13 @@
     .wrap .content p
     {
         line-height: 20px;
-        padding: 5px 5px 5px 5px;
+        padding: 5px;
     }
+    .wrap .content table p
+    {
+        line-height: 20px;
+        padding: 0px;
+    }	
     .wrap .content ul
     {
         padding-left: 25px;
@@ -743,20 +751,21 @@
     thead
     {
         margin-top: 5px;
+		font:600 12px/1.2 Arial;
     }
     th
     {
         padding: 5px 15px 5px 15px;
         background-color: #E1E1E1;
-        border-bottom: 1px solid #E6E6E6;
+      /*  border-bottom: 1px solid #E6E6E6;*/
         border-left: 1px solid #E6E6E6;
-        border-right: 1px solid #E6E6E6;
+      /*  border-right: 1px solid #E6E6E6;*/
     }
     td
     {
         padding: 3px 15px 3px 20px;
-        border-left: 1px solid #E6E6E6;
-        border-right: 1px solid #E6E6E6;
+  /*      border-left: 1px solid #E6E6E6;
+        border-right: 1px solid #E6E6E6;*/
     }
     tr.odd td:hover,  tr.even td:hover
     {
@@ -780,15 +789,11 @@
         background-color: #ffffff;
         color: #66666E;
     }
-    table tr.odd:hover
+    table tr.odd td:hover, table tr.even td:hover
     {
         background-color: #E6E6E6;
     }
-    table tr.even:hover
-    {
-        background-color: #E6E6E6;
-    }
-		
+    		
     span.comment
     {
         color: #8B0000;
@@ -892,12 +897,20 @@
     }
 
 	.generic{
-		max-width:100%;
+		max-width:75%;
 	}
 	.generic td{
 		padding:0;
 	}
 	
+	.generic .odd .alphaChar{
+        background-color: #F6F6F6;
+	}
+	
+	.generic .even .alphaChar{
+        background-color: #FFFFFF;
+	}
+
 	.alignedsummary{}
 	.propsummary{}
 	.memItemLeft{}

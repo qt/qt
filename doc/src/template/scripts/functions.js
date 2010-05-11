@@ -50,7 +50,6 @@ function processNokiaData(response){
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
 			lookupCount++;
 			//$('.live001').css('display','block');
-			$('#ul001 .defaultLink').css('display','none');
 
 			
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
@@ -58,13 +57,14 @@ function processNokiaData(response){
 				full_li_element = full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd;
 					
 				$('#ul001').append(full_li_element);
+			$('#ul001 .defaultLink').css('display','none');
+
 		   		}
 			}
 	 
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
 			articleCount++;
 	 		//$('.live002').css('display','block');
-			$('#ul002 .defaultLink').css('display','none');
 
 				 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
@@ -72,12 +72,13 @@ function processNokiaData(response){
 				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
 					
 				$('#ul002').append(full_li_element);
+			$('#ul002 .defaultLink').css('display','none');
+
 	   		}
 		}
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
 			exampleCount++;
 	 		//$('.live003').css('display','block');
-			$('#ul003 .defaultLink').css('display','none');
 
 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
@@ -85,6 +86,8 @@ function processNokiaData(response){
 				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
 					
 				$('#ul003').append(full_li_element);
+			$('#ul003 .defaultLink').css('display','none');
+
 	   		}
 		} 
 	}	
@@ -122,6 +125,11 @@ function CheckEmptyAndLoadList()
 	$(document).ready(function () {
 	var pageTitle = $('title').html();
 		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
+          var currentString = $('#pageType').val() ;
+		  if(currentString.length < 1){
+			$('.defaultLink').css('display','block');
+      	   		CheckEmptyAndLoadList();			
+		  }
 
         $('#pageType').keyup(function () {
           var searchString = $('#pageType').val() ;
