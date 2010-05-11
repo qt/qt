@@ -310,7 +310,7 @@ void QAudioInput::resume()
 }
 
 /*!
-    Sets the audio buffer size to \a value milliseconds.
+    Sets the audio buffer size to \a value bytes.
 
     Note: This function can be called anytime before start(), calls to this
     are ignored after start(). It should not be assumed that the buffer size
@@ -325,7 +325,7 @@ void QAudioInput::setBufferSize(int value)
 }
 
 /*!
-    Returns the audio buffer size in milliseconds.
+    Returns the audio buffer size in bytes.
 
     If called before start(), returns platform default value.
     If called before start() but setBufferSize() was called prior, returns value set by setBufferSize().
