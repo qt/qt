@@ -46,6 +46,8 @@
 #include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativeinfo.h>
 
+#include <QtCore/qmath.h>
+
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -1107,7 +1109,7 @@ void QDeclarativeTextEdit::updateSize()
         setBaselineOffset(fm.ascent() + yoff + d->textMargin);
 
         //### need to comfirm cost of always setting these
-        int newWidth = (int)d->document->idealWidth();
+        int newWidth = qCeil(d->document->idealWidth());
         d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
         int cursorWidth = 1;
         if(d->cursor)
