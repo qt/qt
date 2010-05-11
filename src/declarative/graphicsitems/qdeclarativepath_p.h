@@ -224,6 +224,7 @@ Q_SIGNALS:
 
 protected:
     virtual void componentComplete();
+    virtual void classBegin();
 
 private Q_SLOTS:
     void processPath();

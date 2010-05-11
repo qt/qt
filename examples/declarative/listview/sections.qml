@@ -61,7 +61,7 @@ Rectangle {
             height: 20
             Text {
                 x: 2; height: parent.height
-                verticalAlignment: 'AlignVCenter'
+                verticalAlignment: Text.AlignVCenter
                 text: section
                 font.bold: true
             }

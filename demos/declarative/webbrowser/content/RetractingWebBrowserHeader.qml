@@ -105,7 +105,7 @@ Image {
             NumberAnimation {
                 targets: header
                 properties: "progressOff"
-                easing.type: "InOutQuad"
+                easing.type: Easing.InOutQuad
                 duration: 300
             }
         }

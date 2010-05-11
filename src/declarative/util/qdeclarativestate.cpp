@@ -149,7 +149,6 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \class QDeclarativeState
     \brief The QDeclarativeState class allows you to define configurations of objects and properties.
 
-    \ingroup group_states
 
     QDeclarativeState allows you to specify a state as a set of batched changes from the default
     configuration.

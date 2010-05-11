@@ -143,7 +143,9 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QAction>();
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
+#ifndef QT_NO_GRAPHICSEFFECT
     qmlRegisterType<QGraphicsEffect>();
+#endif
 
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,7,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,7,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));

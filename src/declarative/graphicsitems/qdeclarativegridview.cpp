@@ -108,7 +108,7 @@ public:
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , highlightMoveDuration(150)
-    , bufferMode(NoBuffer), snapMode(QDeclarativeGridView::NoSnap)
+    , bufferMode(BufferBefore | BufferAfter), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
     , deferredRelease(false), haveHighlightRange(false) {}
@@ -331,7 +331,7 @@ public:
     QSmoothedAnimation *highlightYAnimator;
     int highlightMoveDuration;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
-    BufferMode bufferMode;
+    int bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
 
     bool ownModel : 1;
@@ -378,9 +378,11 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
         if (model->completePending()) {
             // complete
             listItem->item->setZValue(1);
+            listItem->item->setParentItem(q->viewport());
             model->completeItem();
+        } else {
+            listItem->item->setParentItem(q->viewport());
         }
-        listItem->item->setParentItem(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
     requestedIndex = -1;
@@ -855,10 +857,13 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             qreal adjDist = -data.flickTarget + data.move.value();
             if (qAbs(adjDist) > qAbs(dist)) {
                 // Prevent painfully slow flicking - adjust velocity to suit flickDeceleration
-                v2 = accel * 2.0f * qAbs(dist);
-                v = qSqrt(v2);
-                if (dist > 0)
-                    v = -v;
+                qreal adjv2 = accel * 2.0f * qAbs(adjDist);
+                if (adjv2 > v2) {
+                    v2 = adjv2;
+                    v = qSqrt(v2);
+                    if (dist > 0)
+                        v = -v;
+                }
             }
             dist = adjDist;
             accel = v2 / (2.0f * qAbs(dist));
@@ -904,6 +909,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
+
+    Delegates are instantiated as needed and may be destroyed at any time.
+    State should \e never be stored in a delegate.
 
     \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
@@ -958,7 +966,7 @@ QDeclarativeGridView::~QDeclarativeGridView()
             id: wrapper
             GridView.onRemove: SequentialAnimation {
                 PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: true }
-                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: "InOutQuad" }
+                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
                 PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: false }
             }
         }
@@ -1026,6 +1034,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
+        d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore | QDeclarativeGridViewPrivate::BufferAfter;
         if (isComponentComplete()) {
             refill();
             if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
@@ -1047,11 +1056,16 @@ void QDeclarativeGridView::setModel(const QVariant &model)
 }
 
 /*!
-    \qmlproperty component GridView::delegate
+    \qmlproperty Component GridView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
+
+    The number of elements in the delegate has a direct effect on the
+    flicking performance of the view.  If at all possible, place functionality
+    that is not needed for the normal display of the delegate in a \l Loader which
+    can load additional elements when needed.
 
     Note that the GridView will layout the items based on the size of the root item
     in the delegate.
@@ -1160,7 +1174,7 @@ int QDeclarativeGridView::count() const
 }
 
 /*!
-  \qmlproperty component GridView::highlight
+  \qmlproperty Component GridView::highlight
   This property holds the component to use as the highlight.
 
   An instance of the highlight component will be created for each view.
@@ -1271,17 +1285,17 @@ void QDeclarativeGridView::setHighlightMoveDuration(int duration)
     highlight range. Furthermore, the behaviour of the current item index will occur
     whether or not a highlight exists.
 
-    If highlightRangeMode is set to \e ApplyRange the view will
+    If highlightRangeMode is set to \e GridView.ApplyRange the view will
     attempt to maintain the highlight within the range, however
     the highlight can move outside of the range at the ends of the list
     or due to a mouse interaction.
 
-    If highlightRangeMode is set to \e StrictlyEnforceRange the highlight will never
+    If highlightRangeMode is set to \e GridView.StrictlyEnforceRange the highlight will never
     move outside of the range.  This means that the current item will change
     if a keyboard or mouse action would cause the highlight to move
     outside of the range.
 
-    The default value is \e NoHighlightRange.
+    The default value is \e GridView.NoHighlightRange.
 
     Note that a valid range requires preferredHighlightEnd to be greater
     than or equal to preferredHighlightBegin.
@@ -1339,10 +1353,10 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \qmlproperty enumeration GridView::flow
   This property holds the flow of the grid.
 
-  Possible values are \c LeftToRight (default) and \c TopToBottom.
+  Possible values are \c GridView.LeftToRight (default) and \c GridView.TopToBottom.
 
-  If \a flow is \c LeftToRight, the view will scroll vertically.
-  If \a flow is \c TopToBottom, the view will scroll horizontally.
+  If \a flow is \c GridView.LeftToRight, the view will scroll vertically.
+  If \a flow is \c GridView.TopToBottom, the view will scroll horizontally.
 */
 QDeclarativeGridView::Flow QDeclarativeGridView::flow() const
 {
@@ -1393,12 +1407,23 @@ void QDeclarativeGridView::setWrapEnabled(bool wrap)
 }
 
 /*!
-  \qmlproperty int GridView::cacheBuffer
-  This property holds the number of off-screen pixels to cache.
+    \qmlproperty int GridView::cacheBuffer
+    This property determines whether delegates are retained outside the
+    visible area of the view.
 
-  This property determines the number of pixels above the top of the view
-  and below the bottom of the view to cache.  Setting this value can make
-  scrolling the view smoother at the expense of additional memory usage.
+    If non-zero the view will keep as many delegates
+    instantiated as will fit within the buffer specified.  For example,
+    if in a vertical view the delegate is 20 pixels high and \c cacheBuffer is
+    set to 40, then up to 2 delegates above and 2 delegates below the visible
+    area may be retained.
+
+    Note that cacheBuffer is not a pixel buffer - it only maintains additional
+    instantiated delegates.
+
+    Setting this value can make scrolling the list smoother at the expense
+    of additional memory usage.  It is not a substitute for creating efficient
+    delegates; the fewer elements in a delegate, the faster a view may be
+    scrolled.
 */
 int QDeclarativeGridView::cacheBuffer() const
 {
@@ -1465,10 +1490,10 @@ void QDeclarativeGridView::setCellHeight(int cellHeight)
     The allowed values are:
 
     \list
-    \o NoSnap (default) - the view will stop anywhere within the visible area.
-    \o SnapToRow - the view will settle with a row (or column for TopToBottom flow)
+    \o GridView.NoSnap (default) - the view will stop anywhere within the visible area.
+    \o GridView.SnapToRow - the view will settle with a row (or column for TopToBottom flow)
     aligned with the start of the view.
-    \o SnapOneRow - the view will settle no more than one row (or column for TopToBottom flow)
+    \o GridView.SnapOneRow - the view will settle no more than one row (or column for TopToBottom flow)
     away from the first visible row at the time the mouse button is released.
     This mode is particularly useful for moving one page at a time.
     \endlist

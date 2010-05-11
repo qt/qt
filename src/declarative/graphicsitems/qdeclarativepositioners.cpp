@@ -46,6 +46,7 @@
 #include <qdeclarativestate_p.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativestateoperations_p.h>
+#include <qdeclarativeinfo.h>
 #include <QtCore/qmath.h>
 
 #include <QDebug>
@@ -75,7 +76,6 @@ void QDeclarativeBasePositionerPrivate::unwatchChanges(QDeclarativeItem* other)
 /*!
     \internal
     \class QDeclarativeBasePositioner
-    \ingroup group_layouts
     \brief The QDeclarativeBasePositioner class provides a base for QDeclarativeGraphics layouts.
 
     To create a QDeclarativeGraphics Positioner, simply subclass QDeclarativeBasePositioner and implement
@@ -165,6 +165,7 @@ void QDeclarativeBasePositioner::componentComplete()
     QDeclarativeItem::componentComplete();
     positionedItems.reserve(d->QGraphicsItemPrivate::children.count());
     prePositioning();
+    reportConflictingAnchors();
 }
 
 QVariant QDeclarativeBasePositioner::itemChange(GraphicsItemChange change,
@@ -329,7 +330,6 @@ Column {
   \qml
 Column {
     spacing: 2
-    remove: ...
     add: ...
     move: ...
     ...
@@ -377,7 +377,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            easing.type: "OutBounce"
+            easing.type: Easing.OutBounce
         }
     }
 }
@@ -403,7 +403,6 @@ Column {
     \internal
     \class QDeclarativeColumn
     \brief The QDeclarativeColumn class lines up items vertically.
-    \ingroup group_positioners
 */
 QDeclarativeColumn::QDeclarativeColumn(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Vertical, parent)
@@ -434,6 +433,29 @@ void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
     }
 
     contentSize->setHeight(voffset - spacing());
+}
+
+void QDeclarativeColumn::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors) {
+                QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
+                if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
+                    usedAnchors & QDeclarativeAnchors::BottomAnchor ||
+                    usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
+                    childsWithConflictingAnchors = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify top, bottom or verticalCenter anchors for items inside Column";
+    }
 }
 
 /*!
@@ -523,7 +545,6 @@ Row {
     \internal
     \class QDeclarativeRow
     \brief The QDeclarativeRow class lines up items horizontally.
-    \ingroup group_positioners
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Horizontal, parent)
@@ -551,6 +572,28 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
     contentSize->setWidth(hoffset - spacing());
 }
 
+void QDeclarativeRow::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors) {
+                QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
+                if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
+                    usedAnchors & QDeclarativeAnchors::RightAnchor ||
+                    usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
+                    childsWithConflictingAnchors = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify left, right or horizontalCenter anchors for items inside Row";
+    }
+}
 
 /*!
   \qmlclass Grid QDeclarativeGrid
@@ -652,8 +695,6 @@ Grid {
     \internal
     \class QDeclarativeGrid
     \brief The QDeclarativeGrid class lays out items in a grid.
-    \ingroup group_layouts
-
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
     QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
@@ -697,14 +738,14 @@ void QDeclarativeGrid::setRows(const int rows)
 }
 
 /*!
-    \qmlproperty enumeration Flow::flow
+    \qmlproperty enumeration Grid::flow
     This property holds the flow of the layout.
 
-    Possible values are \c LeftToRight (default) and \c TopToBottom.
+    Possible values are \c Grid.LeftToRight (default) and \c Grid.TopToBottom.
 
-    If \a flow is \c LeftToRight, the items are positioned next to
+    If \a flow is \c Grid.LeftToRight, the items are positioned next to
     to each other from left to right, then wrapped to the next line.
-    If \a flow is \c TopToBottom, the items are positioned next to each
+    If \a flow is \c Grid.TopToBottom, the items are positioned next to each
     other from top to bottom, then wrapped to the next column.
 */
 QDeclarativeGrid::Flow QDeclarativeGrid::flow() const
@@ -823,6 +864,23 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     }
 }
 
+void QDeclarativeGrid::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors && anchors->usedAnchors()) {
+                childsWithConflictingAnchors = true;
+                break;
+            }
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify anchors for items inside Grid";
+    }
+}
 
 /*!
   \qmlclass Flow QDeclarativeFlow
@@ -894,12 +952,12 @@ QDeclarativeFlow::QDeclarativeFlow(QDeclarativeItem *parent)
     \qmlproperty enumeration Flow::flow
     This property holds the flow of the layout.
 
-    Possible values are \c LeftToRight (default) and \c TopToBottom.
+    Possible values are \c Flow.LeftToRight (default) and \c Flow.TopToBottom.
 
-    If \a flow is \c LeftToRight, the items are positioned next to
+    If \a flow is \c Flow.LeftToRight, the items are positioned next to
     to each other from left to right until the width of the Flow
     is exceeded, then wrapped to the next line.
-    If \a flow is \c TopToBottom, the items are positioned next to each
+    If \a flow is \c Flow.TopToBottom, the items are positioned next to each
     other from top to bottom until the height of the Flow is exceeded,
     then wrapped to the next column.
 */
@@ -966,5 +1024,22 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
     }
 }
 
+void QDeclarativeFlow::reportConflictingAnchors()
+{
+    bool childsWithConflictingAnchors(false);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        const PositionedItem &child = positionedItems.at(ii);
+        if (child.item) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+            if (anchors && anchors->usedAnchors()) {
+                childsWithConflictingAnchors = true;
+                break;
+            }
+        }
+    }
+    if (childsWithConflictingAnchors) {
+        qmlInfo(this) << "Cannot specify anchors for items inside Flow";
+    }
+}
 
 QT_END_NAMESPACE

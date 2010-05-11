@@ -47,6 +47,7 @@
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
 
+#include <QtCore/qstringbuilder.h>
 #include <QtCore/qdebug.h>
 
 #include <private/qobject_p.h>
@@ -62,7 +63,7 @@ class QDeclarativeStateGroupPrivate : public QObjectPrivate
 public:
     QDeclarativeStateGroupPrivate()
     : nullState(0), componentComplete(true),
-      ignoreTrans(false), applyingState(false) {}
+      ignoreTrans(false), applyingState(false), unnamedCount(0) {}
 
     QString currentState;
     QDeclarativeState *nullState;
@@ -78,6 +79,7 @@ public:
     bool componentComplete;
     bool ignoreTrans;
     bool applyingState;
+    int unnamedCount;
 
     QDeclarativeTransition *findTransition(const QString &from, const QString &to);
     void setCurrentStateInternal(const QString &state, bool = false);
@@ -258,6 +260,12 @@ void QDeclarativeStateGroup::componentComplete()
 {
     Q_D(QDeclarativeStateGroup);
     d->componentComplete = true;
+
+    for (int ii = 0; ii < d->states.count(); ++ii) {
+        QDeclarativeState *state = d->states.at(ii);
+        if (state->name().isEmpty())
+            state->setName(QLatin1String("anonymousState") % QString::number(++d->unnamedCount));
+    }
 
     if (d->updateAutoState()) {
         return;

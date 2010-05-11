@@ -54,6 +54,7 @@ SOURCES += \
     $$PWD/qdeclarativenetworkaccessmanagerfactory.cpp \
     $$PWD/qdeclarativedirparser.cpp \
     $$PWD/qdeclarativeextensionplugin.cpp \
+    $$PWD/qdeclarativeimport.cpp \
     $$PWD/qdeclarativelist.cpp 
 
 HEADERS += \
@@ -128,6 +129,7 @@ HEADERS += \
     $$PWD/qdeclarativenetworkaccessmanagerfactory.h \
     $$PWD/qdeclarativedirparser_p.h \
     $$PWD/qdeclarativeextensioninterface.h \
+    $$PWD/qdeclarativeimport_p.h \
     $$PWD/qdeclarativeextensionplugin.h
 
 QT += sql

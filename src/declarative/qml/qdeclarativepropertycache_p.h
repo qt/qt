@@ -69,6 +69,7 @@ class QDeclarativePropertyCache : public QDeclarativeRefCount, public QDeclarati
 {
 public:
     QDeclarativePropertyCache(QDeclarativeEngine *);
+    QDeclarativePropertyCache(QDeclarativeEngine *, const QMetaObject *);
     virtual ~QDeclarativePropertyCache();
 
     struct Data {

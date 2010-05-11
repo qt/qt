@@ -227,7 +227,7 @@ void QDeclarativeSpringFollowPrivate::stop()
             loops: Animation.Infinite
             NumberAnimation {
                 to: 200
-                easing.type: "OutBounce"
+                easing.type: Easing.OutBounce
                 easing.amplitude: 100
                 duration: 2000
             }

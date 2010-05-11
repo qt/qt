@@ -133,6 +133,7 @@ public:
 
 private Q_SLOTS:
     void timelineComplete();
+    void componentFinalized();
 
 private:
     virtual void setTarget(const QDeclarativeProperty &);
