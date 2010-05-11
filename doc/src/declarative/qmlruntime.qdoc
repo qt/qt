@@ -123,7 +123,7 @@
 
     Such files can be created using \l{Qt Linguist}.
 
-    See \l{scripting.html#internationalization} for information about how to make
+    See the \l{scripting.html#internationalization}{Qt Internationalization} documentation for information about how to make
     the JavaScript in QML files use translatable strings.
 
     Additionally, the QML runtime will load translation files specified on the
