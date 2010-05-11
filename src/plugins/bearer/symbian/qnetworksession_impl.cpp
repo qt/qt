@@ -947,7 +947,7 @@ void QNetworkSessionPrivateImpl::RunL()
 #endif
             if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
                 serviceConfig = QNetworkConfigurationManager()
-                    .configurationFromIdentifier(symbianConfig->serviceNetworkPtr->id);
+                    .configurationFromIdentifier(symbianConfig->id);
             }
             symbianConfig->mutex.unlock();
 
