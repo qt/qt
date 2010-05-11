@@ -693,6 +693,14 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
+
+    QHash<QGesture *, QGraphicsObject *>::iterator it;
+    for (it = gestureTargets.begin(); it != gestureTargets.end();) {
+      if (it.value() == item)
+       it = gestureTargets.erase(it);
+      else
+       ++it;
+    }
 }
 
 /*!
@@ -5960,7 +5968,8 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             if (gesture->state() == Qt::GestureStarted)
                 startedGestures.insert(gesture);
         } else {
-            gesturesPerItem[target].append(gesture);
+            if (index->items().contains(target))
+                gesturesPerItem[target].append(gesture);
         }
     }
 

@@ -211,6 +211,10 @@ QAudioInput::~QAudioInput()
      If a problem occurs during this process the error() is set to QAudio::OpenError,
      state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
 
+    In either case, the stateChanged() signal may be emitted either synchronously
+    during execution of the start() function or asynchronously after start() has
+    returned to the caller.
+
      \sa {Symbian Platform Security Requirements}
 
      \sa QIODevice
@@ -232,6 +236,10 @@ void QAudioInput::start(QIODevice* device)
 
     If a problem occurs during this process the error() is set to QAudio::OpenError,
     state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
+
+    In either case, the stateChanged() signal may be emitted either synchronously
+    during execution of the start() function or asynchronously after start() has
+    returned to the caller.
 
     \sa {Symbian Platform Security Requirements}
 
@@ -278,6 +286,8 @@ void QAudioInput::reset()
 
     Sets error() to QAudio::NoError, state() to QAudio::SuspendedState and
     emit stateChanged() signal.
+
+    Note: signal will always be emitted during execution of the resume() function.
 */
 
 void QAudioInput::suspend()
