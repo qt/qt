@@ -161,15 +161,22 @@ public:
     QDeclarativeExpression *rewindExpression;
     QDeclarativeGuard<QDeclarativeExpression> ownedExpression;
 
+    virtual bool changesBindings() { return true; }
+    virtual void clearBindings() {
+        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, 0);
+    }
+
     virtual void execute(Reason) {
-        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, expression);
-        Q_ASSERT(expression != ownedExpression);
+        QDeclarativePropertyPrivate::setSignalExpression(property, expression);
+        if (ownedExpression == expression)
+            ownedExpression = 0;
     }
 
     virtual bool isReversable() { return true; }
     virtual void reverse(Reason) {
-        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
-        Q_ASSERT(reverseExpression != ownedExpression);
+        QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
+        if (ownedExpression == reverseExpression)
+            ownedExpression = 0;
     }
 
     virtual void saveOriginals() {
@@ -177,12 +184,26 @@ public:
         reverseExpression = rewindExpression;
     }
 
+    virtual void copyOriginals(QDeclarativeActionEvent *other)
+    {
+        QDeclarativeReplaceSignalHandler *rsh = static_cast<QDeclarativeReplaceSignalHandler*>(other);
+        saveCurrentValues();
+        if (rsh == this)
+            return;
+        reverseExpression = rsh->reverseExpression;
+        if (rsh->ownedExpression == reverseExpression) {
+            ownedExpression = rsh->ownedExpression;
+            rsh->ownedExpression = 0;
+        }
+    }
+
     virtual void rewind() {
-        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, rewindExpression);
-        Q_ASSERT(rewindExpression != ownedExpression);
+        QDeclarativePropertyPrivate::setSignalExpression(property, rewindExpression);
+        if (ownedExpression == rewindExpression)
+            ownedExpression = 0;
     }
     virtual void saveCurrentValues() { 
-        rewindExpression = QDeclarativePropertyPrivate::signalExpression(property); 
+        rewindExpression = QDeclarativePropertyPrivate::signalExpression(property);
     }
 
     virtual bool override(QDeclarativeActionEvent*other) {
