@@ -202,7 +202,7 @@ void tst_qdeclarativetextedit::width()
         QFont f;
         QFontMetricsF fm(f);
         qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
-        metricWidth = floor(metricWidth);
+        metricWidth = ceil(metricWidth);
 
         QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
@@ -219,7 +219,7 @@ void tst_qdeclarativetextedit::width()
         document.setHtml(richText.at(i));
         document.setDocumentMargin(0);
 
-        int documentWidth = document.idealWidth();
+        int documentWidth = ceil(document.idealWidth());
 
         QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
