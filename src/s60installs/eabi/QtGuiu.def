@@ -9901,9 +9901,9 @@ EXPORTS
 	_ZNK7QBezier10addIfCloseEPff @ 9900 NONAME
 	_ZNK7QBezier12addToPolygonEP9QPolygonF @ 9901 NONAME
 	_ZNK7QBezier16bezierOnIntervalEff @ 9902 NONAME
-	_ZNK7QBezier17addToPolygonMixedEP9QPolygonF @ 9903 NONAME
+	_ZNK7QBezier17addToPolygonMixedEP9QPolygonF @ 9903 NONAME ABSENT
 	_ZNK7QBezier17stationaryYPointsERfS0_ @ 9904 NONAME
-	_ZNK7QBezier21addToPolygonIterativeEP9QPolygonF @ 9905 NONAME
+	_ZNK7QBezier21addToPolygonIterativeEP9QPolygonF @ 9905 NONAME ABSENT
 	_ZNK7QBezier5tForYEfff @ 9906 NONAME
 	_ZNK7QBezier6boundsEv @ 9907 NONAME
 	_ZNK7QBezier6lengthEf @ 9908 NONAME
