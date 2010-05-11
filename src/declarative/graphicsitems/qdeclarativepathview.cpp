@@ -98,9 +98,8 @@ QDeclarativeItem *QDeclarativePathViewPrivate::getItem(int modelIndex)
         if (!attType) {
             // pre-create one metatype to share with all attached objects
             attType = new QDeclarativeOpenMetaObjectType(&QDeclarativePathViewAttached::staticMetaObject, qmlEngine(q));
-            foreach(const QString &attr, path->attributes()) {
+            foreach(const QString &attr, path->attributes())
                 attType->createProperty(attr.toUtf8());
-            }
         }
         qPathViewAttachedType = attType;
         QDeclarativePathViewAttached *att = static_cast<QDeclarativePathViewAttached *>(qmlAttachedPropertiesObject<QDeclarativePathView>(item));
@@ -418,7 +417,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
@@ -471,12 +470,14 @@ void QDeclarativePathView::setPath(QDeclarativePath *path)
         disconnect(d->path, SIGNAL(changed()), this, SLOT(refill()));
     d->path = path;
     connect(d->path, SIGNAL(changed()), this, SLOT(refill()));
-    d->clear();
-    if (d->attType) {
-        d->attType->release();
-        d->attType = 0;
+    if (d->isValid() && isComponentComplete()) {
+        d->clear();
+        if (d->attType) {
+            d->attType->release();
+            d->attType = 0;
+        }
+        d->regenerate();
     }
-    d->regenerate();
     emit pathChanged();
 }
 
@@ -1119,7 +1120,8 @@ void QDeclarativePathView::refill()
         while ((pos > startPos || !d->items.count()) && d->items.count() < count) {
 //            qDebug() << "append" << idx;
             QDeclarativeItem *item = d->getItem(idx);
-            item->setZValue(idx+1);
+            if (d->model->completePending())
+                item->setZValue(idx+1);
             if (d->currentIndex == idx) {
                 item->setFocus(true);
                 if (QDeclarativePathViewAttached *att = d->attached(item))
@@ -1132,7 +1134,8 @@ void QDeclarativePathView::refill()
                 d->firstIndex = idx;
             d->items.append(item);
             d->updateItem(item, pos);
-            d->model->completeItem();
+            if (d->model->completePending())
+                d->model->completeItem();
             ++idx;
             if (idx >= d->model->count())
                 idx = 0;
@@ -1146,7 +1149,8 @@ void QDeclarativePathView::refill()
         while (pos >= 0.0 && pos < startPos) {
 //            qDebug() << "prepend" << idx;
             QDeclarativeItem *item = d->getItem(idx);
-            item->setZValue(idx+1);
+            if (d->model->completePending())
+                item->setZValue(idx+1);
             if (d->currentIndex == idx) {
                 item->setFocus(true);
                 if (QDeclarativePathViewAttached *att = d->attached(item))
@@ -1157,7 +1161,8 @@ void QDeclarativePathView::refill()
             }
             d->items.prepend(item);
             d->updateItem(item, pos);
-            d->model->completeItem();
+            if (d->model->completePending())
+                d->model->completeItem();
             d->firstIndex = idx;
             idx = d->firstIndex - 1;
             if (idx < 0)
@@ -1269,6 +1274,19 @@ void QDeclarativePathView::createdItem(int index, QDeclarativeItem *item)
 {
     Q_D(QDeclarativePathView);
     if (d->requestedIndex != index) {
+        if (!d->attType) {
+            // pre-create one metatype to share with all attached objects
+            d->attType = new QDeclarativeOpenMetaObjectType(&QDeclarativePathViewAttached::staticMetaObject, qmlEngine(this));
+            foreach(const QString &attr, d->path->attributes())
+                d->attType->createProperty(attr.toUtf8());
+        }
+        qPathViewAttachedType = d->attType;
+        QDeclarativePathViewAttached *att = static_cast<QDeclarativePathViewAttached *>(qmlAttachedPropertiesObject<QDeclarativePathView>(item));
+        qPathViewAttachedType = 0;
+        if (att) {
+            att->m_view = this;
+            att->setOnPath(false);
+        }
         item->setParentItem(this);
         d->updateItem(item, index < d->firstIndex ? 0.0 : 1.0);
     }
