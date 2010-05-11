@@ -77,12 +77,23 @@
 
 /*!
     \group qt-graphics
-    \title Qt Graphics
+    \title Qt Graphics and Painting
 
     \brief The Qt components for doing graphics.
 
     \generatelist {related}
  */
+
+/*!
+    \group qt-network
+    \title Network programming with Qt
+
+    \brief The these pages are about Qt's support for network programming.
+
+    \generatelist {related}
+ */
+
+
 
 /*!
     \group frameworks-technologies
