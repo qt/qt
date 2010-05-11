@@ -44,6 +44,10 @@
 
 #include <QtGui/qpixmap.h>
 
+#ifdef Q_TEST_QPIXMAPCACHE
+#include <QtCore/qpair.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -83,6 +87,12 @@ public:
     static void remove(const QString &key);
     static void remove(const Key &key);
     static void clear();
+
+#ifdef Q_TEST_QPIXMAPCACHE
+    static void flushDetachedPixmaps();
+    static int totalUsed();
+    static QList< QPair<QString,QPixmap> > allPixmaps();
+#endif
 };
 
 QT_END_NAMESPACE

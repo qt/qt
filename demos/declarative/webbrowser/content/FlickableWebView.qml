@@ -20,6 +20,12 @@ Flickable {
     anchors.right: parent.right
     pressDelay: 200
 
+    onWidthChanged : {
+        // Expand (but not above 1:1) if otherwise would be smaller that available width.
+        if (width > webView.width*webView.contentsScale && webView.contentsScale < 1.0)
+            webView.contentsScale = width / webView.width * webView.contentsScale;
+    }
+
     WebView {
         id: webView
         pixelCacheSize: 4000000
