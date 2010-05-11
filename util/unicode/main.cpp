@@ -738,27 +738,29 @@ static void readUnicodeData()
         if (!properties[UD_UpperCase].isEmpty()) {
             int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
             Q_ASSERT(ok);
-            if (qAbs(upperCase - codepoint) >= (1<<14))
+            int diff = upperCase - codepoint;
+            if (qAbs(diff) >= (1<<14))
                 qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << ")";
-            data.p.upperCaseDiff = upperCase - codepoint;
-            maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(data.p.upperCaseDiff));
-            if (codepoint > 0xffff) {
-                // if the condition below doesn't hold anymore we need to modify our case folding code
-                //qDebug() << codepoint << QChar::highSurrogate(codepoint) << QChar::highSurrogate(foldMap.at(0));
+            data.p.upperCaseDiff = diff;
+            maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(diff));
+            if (codepoint >= 0x10000 || upperCase >= 0x10000) {
+                // if the conditions below doesn't hold anymore we need to modify our upper casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(upperCase));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(upperCase));
             }
         }
         if (!properties[UD_LowerCase].isEmpty()) {
             int lowerCase = properties[UD_LowerCase].toInt(&ok, 16);
             Q_ASSERT(ok);
-            if (qAbs(lowerCase - codepoint) >= (1<<14))
+            int diff = lowerCase - codepoint;
+            if (qAbs(diff) >= (1<<14))
                 qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << ")";
-            data.p.lowerCaseDiff = lowerCase - codepoint;
-            maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(data.p.lowerCaseDiff));
-            if (codepoint > 0xffff) {
-                // if the condition below doesn't hold anymore we need to modify our case folding code
-                //qDebug() << codepoint << QChar::highSurrogate(codepoint) << QChar::highSurrogate(foldMap.at(0));
+            data.p.lowerCaseDiff = diff;
+            maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(diff));
+            if (codepoint >= 0x10000 || lowerCase >= 0x10000) {
+                // if the conditions below doesn't hold anymore we need to modify our lower casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(lowerCase));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(lowerCase));
             }
         }
         // we want toTitleCase to map to ToUpper in case we don't have any titlecase.
@@ -767,14 +769,15 @@ static void readUnicodeData()
         if (!properties[UD_TitleCase].isEmpty()) {
             int titleCase = properties[UD_TitleCase].toInt(&ok, 16);
             Q_ASSERT(ok);
-            if (qAbs(titleCase - codepoint) >= (1<<14))
+            int diff = titleCase - codepoint;
+            if (qAbs(diff) >= (1<<14))
                 qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << ")";
-            data.p.titleCaseDiff = titleCase - codepoint;
-            maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(data.p.titleCaseDiff));
-            if (codepoint > 0xffff) {
-                // if the condition below doesn't hold anymore we need to modify our case folding code
-                //qDebug() << codepoint << QChar::highSurrogate(codepoint) << QChar::highSurrogate(foldMap.at(0));
+            data.p.titleCaseDiff = diff;
+            maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(diff));
+            if (codepoint >= 0x10000 || titleCase >= 0x10000) {
+                // if the conditions below doesn't hold anymore we need to modify our title casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(titleCase));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(titleCase));
             }
         }
 
@@ -1109,6 +1112,7 @@ static void computeUniqueProperties()
 
 static void readLineBreak()
 {
+    qDebug() << "Reading LineBreak.txt";
     QFile f("data/LineBreak.txt");
     if (!f.exists())
         qFatal("Couldn't find LineBreak.txt");
@@ -1145,7 +1149,7 @@ static void readLineBreak()
             Q_ASSERT(ok);
         }
 
-        LineBreakClass lb = line_break_map.value(l[1].trimmed(), LineBreak_Unassigned);
+        LineBreakClass lb = line_break_map.value(l[1], LineBreak_Unassigned);
         if (lb == LineBreak_Unassigned)
             qFatal("unassigned line break class: %s", l[1].constData());
 
@@ -1190,7 +1194,10 @@ static void readSpecialCasing()
         bool ok;
         int codepoint = l[0].trimmed().toInt(&ok, 16);
         Q_ASSERT(ok);
-        Q_ASSERT(codepoint <= 0xffff);
+
+        // if the condition below doesn't hold anymore we need to modify our
+        // lower/upper/title casing code and case folding code
+        Q_ASSERT(codepoint < 0x10000);
 
 //         qDebug() << "codepoint" << hex << codepoint;
 //         qDebug() << line;
@@ -1290,16 +1297,18 @@ static void readCaseFolding()
 
         UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
         if (foldMap.size() == 1) {
-            if (qAbs(foldMap.at(0) - codepoint) >= (1<<14))
-                qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << foldMap.at(0) << ")";
-            ud.p.caseFoldDiff = foldMap.at(0) - codepoint;
-            maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(ud.p.caseFoldDiff));
-            if (codepoint > 0xffff) {
-                // if the condition below doesn't hold anymore we need to modify our case folding code
-                //qDebug() << codepoint << QChar::highSurrogate(codepoint) << QChar::highSurrogate(foldMap.at(0));
-                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(foldMap.at(0)));
+            int caseFolded = foldMap.at(0);
+            int diff = caseFolded - codepoint;
+            if (qAbs(diff) >= (1<<14))
+                qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << caseFolded << ")";
+            ud.p.caseFoldDiff = diff;
+            maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(diff));
+            if (codepoint >= 0x10000 || caseFolded >= 0x10000) {
+                // if the conditions below doesn't hold anymore we need to modify our case folding code
+                Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(caseFolded));
+                Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(caseFolded));
             }
-            if (foldMap.at(0) != codepoint + ud.p.lowerCaseDiff)
+            if (caseFolded != codepoint + ud.p.lowerCaseDiff)
                 qDebug() << hex << codepoint;
         } else {
             qFatal("we currently don't support full case foldings");
@@ -1329,13 +1338,15 @@ static void readGraphemeBreak()
         int comment = line.indexOf('#');
         if (comment >= 0)
             line = line.left(comment);
+        line.replace(" ", "");
 
         if (line.isEmpty())
             continue;
 
         QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0].trimmed();
+        QByteArray codes = l[0];
         codes.replace("..", ".");
         QList<QByteArray> cl = codes.split('.');
 
@@ -1348,7 +1359,7 @@ static void readGraphemeBreak()
             Q_ASSERT(ok);
         }
 
-        GraphemeBreak brk = grapheme_break_map.value(l[1].trimmed(), GraphemeBreak_Unassigned);
+        GraphemeBreak brk = grapheme_break_map.value(l[1], GraphemeBreak_Unassigned);
         if (brk == GraphemeBreak_Unassigned)
             qFatal("unassigned grapheme break class: %s", l[1].constData());
 
@@ -1378,13 +1389,15 @@ static void readWordBreak()
         int comment = line.indexOf('#');
         if (comment >= 0)
             line = line.left(comment);
+        line.replace(" ", "");
 
         if (line.isEmpty())
             continue;
 
         QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0].trimmed();
+        QByteArray codes = l[0];
         codes.replace("..", ".");
         QList<QByteArray> cl = codes.split('.');
 
@@ -1397,7 +1410,7 @@ static void readWordBreak()
             Q_ASSERT(ok);
         }
 
-        WordBreak brk = word_break_map.value(l[1].trimmed(), WordBreak_Unassigned);
+        WordBreak brk = word_break_map.value(l[1], WordBreak_Unassigned);
         if (brk == WordBreak_Unassigned)
             qFatal("unassigned word break class: %s", l[1].constData());
 
@@ -1427,13 +1440,15 @@ static void readSentenceBreak()
         int comment = line.indexOf('#');
         if (comment >= 0)
             line = line.left(comment);
+        line.replace(" ", "");
 
         if (line.isEmpty())
             continue;
 
         QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 2);
 
-        QByteArray codes = l[0].trimmed();
+        QByteArray codes = l[0];
         codes.replace("..", ".");
         QList<QByteArray> cl = codes.split('.');
 
@@ -1446,7 +1461,7 @@ static void readSentenceBreak()
             Q_ASSERT(ok);
         }
 
-        SentenceBreak brk = sentence_break_map.value(l[1].trimmed(), SentenceBreak_Unassigned);
+        SentenceBreak brk = sentence_break_map.value(l[1], SentenceBreak_Unassigned);
         if (brk == SentenceBreak_Unassigned)
             qFatal("unassigned sentence break class: %s", l[1].constData());
 
@@ -1624,17 +1639,22 @@ static void readBlocks()
         QByteArray blockName = line.mid(semicolon + 1);
 
         int blockIndex = blockNames.indexOf(blockName);
-        if (blockIndex < 0) {
+        if (blockIndex == -1) {
+            blockIndex = blockNames.size();
             blockNames.append(blockName);
-            blockIndex = blockNames.indexOf(blockName);
-            Q_ASSERT(blockIndex >= 0);
         }
 
-        int dotdot = codePoints.indexOf("..");
-        Q_ASSERT(dotdot >= 0);
-        bool unused;
-        int first = codePoints.left(dotdot).toInt(&unused, 16);
-        int last = codePoints.mid(dotdot + 2).toInt(&unused, 16);
+        codePoints.replace("..", ".");
+        QList<QByteArray> cl = codePoints.split('.');
+
+        bool ok;
+        int first = cl[0].toInt(&ok, 16);
+        Q_ASSERT(ok);
+        int last = first;
+        if (cl.size() == 2) {
+            last = cl[1].toInt(&ok, 16);
+            Q_ASSERT(ok);
+        }
 
         BlockInfo blockInfo = { blockIndex, first, last };
         blockInfoList.append(blockInfo);
@@ -1670,7 +1690,6 @@ static void readScripts()
         if (!f.exists())
             qFatal("Couldn't find %s", files[i]);
 
-
         f.open(QFile::ReadOnly);
 
         while (!f.atEnd()) {
@@ -1693,28 +1712,25 @@ static void readScripts()
             QByteArray scriptName = line.mid(semicolon + 1);
 
             int scriptIndex = scriptNames.indexOf(scriptName);
-            if (scriptIndex < 0) {
+            if (scriptIndex == -1) {
+                scriptIndex = scriptNames.size();
                 scriptNames.append(scriptName);
-                scriptIndex = scriptNames.indexOf(scriptName);
-                Q_ASSERT(scriptIndex >= 0);
             }
 
-            int dotdot = codePoints.indexOf("..");
-            bool unused;
-            int first = -1, last = -1;
-            if (dotdot >= 0) {
-                first = codePoints.left(dotdot).toInt(&unused, 16);
-                last = codePoints.mid(dotdot + 2).toInt(&unused, 16);
-            } else {
-                first = codePoints.toInt(&unused, 16);
+            codePoints.replace("..", ".");
+            QList<QByteArray> cl = codePoints.split('.');
+
+            bool ok;
+            int first = cl[0].toInt(&ok, 16);
+            Q_ASSERT(ok);
+            int last = first;
+            if (cl.size() == 2) {
+                last = cl[1].toInt(&ok, 16);
+                Q_ASSERT(ok);
             }
 
-            if (last != -1) {
-                for (int i = first; i <= last; ++i)
-                    scriptAssignment[i] = scriptIndex;
-            } else {
-                scriptAssignment[first] = scriptIndex;
-            }
+            for (int i = first; i <= last; ++i)
+                scriptAssignment[i] = scriptIndex;
         }
     }
 }
