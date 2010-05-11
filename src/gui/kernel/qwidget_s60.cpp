@@ -908,14 +908,12 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 
 void QWidgetPrivate::createTLSysExtra()
 {
-    extra->topextra->backingStore = 0;
     extra->topextra->inExpose = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
 {
-    delete extra->topextra->backingStore;
-    extra->topextra->backingStore = 0;
+    extra->topextra->backingStore.destroy();
 }
 
 void QWidgetPrivate::createSysExtra()

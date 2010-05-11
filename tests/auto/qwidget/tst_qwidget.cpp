@@ -9500,9 +9500,7 @@ void tst_QWidget::destroyBackingStore()
     QTRY_VERIFY(w.numPaintEvents > 0);
     w.reset();
     w.update();
-    delete qt_widget_private(&w)->topData()->backingStore;
-    qt_widget_private(&w)->topData()->backingStore = 0;
-    qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);
+    qt_widget_private(&w)->topData()->backingStore.create(&w);
 
     w.update();
     QApplication::processEvents();
@@ -9524,7 +9522,7 @@ QWidgetBackingStore* backingStore(QWidget &widget)
     QWidgetBackingStore *backingStore = 0;
 #ifdef QT_BUILD_INTERNAL
     if (QTLWExtra *topExtra = qt_widget_private(&widget)->maybeTopData())
-        backingStore = topExtra->backingStore;
+        backingStore = topExtra->backingStore.data();
 #endif
     return backingStore;
 }
@@ -10244,15 +10242,12 @@ class scrollWidgetWBS : public QWidget
 public:
     void deleteBackingStore()
     {
-        if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
-        }
+        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore.destroy();
     }
     void enableBackingStore()
     {
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = new QWidgetBackingStore(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore.create(this);
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
             repaint();
         }

@@ -1706,14 +1706,13 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             if (!w->d_func()->maybeTopData())
                 break;
             if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
-                delete w->d_func()->topData()->backingStore;
-                w->d_func()->topData()->backingStore = 0;
+                w->d_func()->topData()->backingStore.destroy();
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.
                 S60->wsSession().Flush();
             } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
                        && !w->d_func()->maybeBackingStore()) {
-                w->d_func()->topData()->backingStore = new QWidgetBackingStore(w);
+                w->d_func()->topData()->backingStore.create(w);
                 w->d_func()->invalidateBuffer(w->rect());
                 w->repaint();
             }
