@@ -7,4 +7,5 @@ QT = core network
 
 SOURCES += tst_qnetworkproxy.cpp
 
+symbian: TARGET.CAPABILITY = NetworkServices
 
