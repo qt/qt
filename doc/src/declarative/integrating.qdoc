@@ -118,34 +118,34 @@ Here is an example. Suppose you have two classes, \c RedSquare and \c BlueCircle
 that both inherit from QGraphicsWidget:
 
 \c [graphicswidgets/redsquare.h]
-\snippet doc/src/declarative/snippets/integrating/graphicswidgets/redsquare.h 0
+\snippet doc/src/snippets/declarative/graphicswidgets/redsquare.h 0
 
 \c [graphicswidgets/bluecircle.h]
-\snippet doc/src/declarative/snippets/integrating/graphicswidgets/bluecircle.h 0
+\snippet doc/src/snippets/declarative/graphicswidgets/bluecircle.h 0
 
 Then, create a plugin by subclassing QDeclarativeExtensionPlugin, and register the
 types by calling qmlRegisterType(). Also export the plugin with Q_EXPORT_PLUGIN2.
 
 \c [graphicswidgets/shapesplugin.cpp]
-\snippet doc/src/declarative/snippets/integrating/graphicswidgets/shapesplugin.cpp 0
+\snippet doc/src/snippets/declarative/graphicswidgets/shapesplugin.cpp 0
 
 Now write a project file that creates the plugin:
 
 \c [graphicswidgets/graphicswidgets.pro]
-\quotefile doc/src/declarative/snippets/integrating/graphicswidgets/graphicswidgets.pro
+\quotefile doc/src/snippets/declarative/graphicswidgets/graphicswidgets.pro
 
 And add a \c qmldir file that includes the \c graphicswidgets plugin from the \c lib
 subdirectory (as defined in the project file):
 
 \c [graphicswidgets/qmldir]
-\quotefile doc/src/declarative/snippets/integrating/graphicswidgets/qmldir
+\quotefile doc/src/snippets/declarative/graphicswidgets/qmldir
 
 Now, we can write a QML file that uses the \c RedSquare and \c BlueCircle widgets.
 (As an example, we can also create \c QGraphicsWidget items if we import the \c Qt.widgets
 module.)
 
 \c [main.qml]
-\quotefile doc/src/declarative/snippets/integrating/graphicswidgets/main.qml
+\quotefile doc/src/snippets/declarative/graphicswidgets/main.qml
 
 Here is a screenshot of the result:
 

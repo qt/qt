@@ -45,7 +45,7 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            drag.target: knob; drag.axis: "XAxis"; drag.minimumX: 1; drag.maximumX: 78
+            drag.target: knob; drag.axis: Drag.XAxis; drag.minimumX: 1; drag.maximumX: 78
             onClicked: toggle()
             onReleased: dorelease()
         }
@@ -69,7 +69,7 @@ Item {
 
 //![7]
     transitions: Transition {
-        NumberAnimation { properties: "x"; easing.type: "InOutQuad"; duration: 200 }
+        NumberAnimation { properties: "x"; easing.type: Easing.InOutQuad; duration: 200 }
     }
 //![7]
 }

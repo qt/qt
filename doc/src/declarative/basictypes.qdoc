@@ -43,9 +43,12 @@
   \page qdeclarativebasictypes.html
   \title QML Basic Types
 
-  QML uses a set of property types, which are primitive within QML.
-  These basic types are referenced throughout the documentation of the
-  QML elements. Almost all of them are exactly what you would expect.
+  QML has a set of primitive types, as listed below, that are used throughout
+  the \l {QML Elements}.
+
+  The simpler types in this list can also be used for defining a new
+  \c property in a component. See \l{Extending types from QML} for the
+  list of types that can be used for custom properties.
 
   \annotatedlist qmlbasictypes
 */

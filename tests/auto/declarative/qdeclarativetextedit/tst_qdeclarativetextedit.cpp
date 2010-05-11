@@ -84,7 +84,7 @@ private slots:
     void navigation();
     void readOnly();
     void sendRequestSoftwareInputPanelEvent();
-
+    void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -202,7 +202,7 @@ void tst_qdeclarativetextedit::width()
         QFont f;
         QFontMetricsF fm(f);
         qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
-        metricWidth = floor(metricWidth);
+        metricWidth = ceil(metricWidth);
 
         QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
@@ -219,7 +219,7 @@ void tst_qdeclarativetextedit::width()
         document.setHtml(richText.at(i));
         document.setDocumentMargin(0);
 
-        int documentWidth = document.idealWidth();
+        int documentWidth = ceil(document.idealWidth());
 
         QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
@@ -808,6 +808,17 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     QApplication::processEvents();
     QCOMPARE(ic.softwareInputPanelEventReceived, true);
 }
+
+void tst_qdeclarativetextedit::geometrySignals()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("bindingWidth").toInt(), 400);
+    QCOMPARE(o->property("bindingHeight").toInt(), 500);
+    delete o;
+}
+
 QTEST_MAIN(tst_qdeclarativetextedit)
 
 #include "tst_qdeclarativetextedit.moc"

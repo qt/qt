@@ -256,6 +256,10 @@ void QDeclarativeFolderListModel::setNameFilters(const QStringList &filters)
     d->model.setNameFilters(d->nameFilters);
 }
 
+void QDeclarativeFolderListModel::classBegin()
+{
+}
+
 void QDeclarativeFolderListModel::componentComplete()
 {
     if (!d->folder.isValid() || !QDir().exists(d->folder.toLocalFile()))
@@ -340,7 +344,6 @@ void QDeclarativeFolderListModel::removed(const QModelIndex &index, int start, i
 
 void QDeclarativeFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
 {
-    qDebug() << "data changed";
     if (start.parent() == d->folderIndex)
         emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
 }

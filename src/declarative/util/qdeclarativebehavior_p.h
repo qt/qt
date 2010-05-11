@@ -82,6 +82,9 @@ public:
 
 Q_SIGNALS:
     void enabledChanged();
+
+private Q_SLOTS:
+    void componentFinalized();
 };
 
 QT_END_NAMESPACE
