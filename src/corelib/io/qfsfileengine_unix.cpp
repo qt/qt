@@ -890,6 +890,9 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
             if ((baseName.size() > 0 && baseName.at(0) == QLatin1Char('.'))
 #  if !defined(QWS) && defined(Q_OS_MAC)
                 || _q_isMacHidden(d->filePath)
+#   if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+		|| d->st.st_flags & UF_HIDDEN
+#   endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 #  endif
             ) {
                 ret |= HiddenFlag;

@@ -190,6 +190,8 @@ tst_QFileInfo::~tst_QFileInfo()
     QFile::remove("link.lnk");
     QFile::remove("file1");
     QFile::remove("dummyfile");
+    QFile::remove("simplefile.txt");
+    QFile::remove("longFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileName.txt");
 #ifdef Q_OS_SYMBIAN
     QFile::remove("hidden.txt");
     QFile::remove("nothidden.txt");
@@ -199,6 +201,7 @@ tst_QFileInfo::~tst_QFileInfo()
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QDir().rmdir("./.hidden-directory");
+    QFile::remove("link_to_tst_qfileinfo");
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QDir().rmdir("./hidden-directory");
@@ -1128,6 +1131,8 @@ void tst_QFileInfo::isHidden_data()
 #if defined(Q_OS_MAC)
     // /bin has the hidden attribute on Mac OS X
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
+    QTest::newRow("/dev/") << QString::fromLatin1("/dev/") << true;
+    QTest::newRow("/net/") << QString::fromLatin1("/net/") << true;
 #elif !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
 #endif
