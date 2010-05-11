@@ -15,7 +15,7 @@ Flickable {
     contentWidth: Math.max(parent.width,webView.width*webView.scale)
     contentHeight: Math.max(parent.height,webView.height*webView.scale)
     anchors.top: headerSpace.bottom
-    anchors.bottom: footer.top
+    anchors.bottom: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
     pressDelay: 200
