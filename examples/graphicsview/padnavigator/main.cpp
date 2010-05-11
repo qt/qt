@@ -39,21 +39,17 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#ifndef QT_NO_OPENGL
-#  include <QtOpenGL>
-#endif
+#include "padnavigator.h"
 
-#include "panel.h"
+#include <QtGui/QtGui>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(padnavigator);
 
-    Panel panel(3, 3);
-    panel.setFocus();
-    panel.show();
+    PadNavigator navigator(QSize(3, 3));
+    navigator.show();
 
     return app.exec();
 }

@@ -39,25 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#include <QtCore/qtimeline.h>
-#include <QtGui/qgraphicswidget.h>
+#ifndef SPLASHITEM_H
+#define SPLASHITEM_H
 
-class SplashItem : public QGraphicsWidget
+#include <QGraphicsObject>
+
+class SplashItem : public QGraphicsObject
 {
     Q_OBJECT
 public:
-    SplashItem(QGraphicsItem *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    explicit SplashItem(QGraphicsItem *parent = 0);
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
-
-private Q_SLOTS:
-    void setValue(qreal value);
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
-    QTimeLine *timeLine;
     QString text;
-    qreal opacity;
 };
+
+#endif // SPLASHITEM_H

@@ -39,45 +39,35 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qobject.h>
-#include <QtCore/qtimeline.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qbrush.h>
+#ifndef ROUNDRECTITEM_H
+#define ROUNDRECTITEM_H
 
-QT_BEGIN_NAMESPACE
-class QGraphicsProxyWidget;
-QT_END_NAMESPACE
+#include <QGraphicsObject>
+#include <QLinearGradient>
 
-class RoundRectItem : public QObject, public QGraphicsRectItem
+class RoundRectItem : public QGraphicsObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool fill READ fill WRITE setFill)
 public:
-    RoundRectItem(const QRectF &rect, const QBrush &brush, QWidget *embeddedWidget = 0);
+    RoundRectItem(const QRectF &bounds, const QColor &color,
+                  QGraphicsItem *parent = 0);
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
-    QRectF boundingRect() const;
-
+    QPixmap pixmap() const;
     void setPixmap(const QPixmap &pixmap);
 
-    qreal opacity() const;
-    void setOpacity(qreal opacity);
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
-Q_SIGNALS:
-    void activated();
-
-protected:
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
-
-private slots:
-    void updateValue(qreal value);
+    bool fill() const;
+    void setFill(bool fill);
 
 private:
-    QBrush brush;
     QPixmap pix;
-    QTimeLine timeLine;
-    qreal lastVal;
-    qreal opa;
-
-    QGraphicsProxyWidget *proxyWidget;
+    bool fillRect;
+    QColor color;
+    QRectF bounds;
+    QLinearGradient gradient;
 };
+
+#endif // ROUNDRECTITEM_H

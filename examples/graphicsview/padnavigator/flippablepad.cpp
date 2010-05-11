@@ -39,54 +39,52 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qgraphicsview.h>
+#include "flippablepad.h"
 
-QT_BEGIN_NAMESPACE
-class QTimeLine;
-class Ui_BackSide;
-QT_END_NAMESPACE
+#include <QtGui/QtGui>
 
-class RoundRectItem;
-
-class Panel : public QGraphicsView
+static QRectF boundsFromSize(const QSize &size)
 {
-    Q_OBJECT
-public:
-    Panel(int width, int height);
-    ~Panel();
+    return QRectF((-size.width() / 2.0) * 150, (-size.height() / 2.0) * 150,
+                  size.width() * 150, size.height() * 150);
+}
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
-    void resizeEvent(QResizeEvent *event);
+static QPointF posForLocation(int x, int y, const QSize &size)
+{
+    return QPointF(x * 150, y * 150)
+        - QPointF((size.width() - 1) * 75, (size.height() - 1) * 75);
+}
 
-private Q_SLOTS:
-    void updateSelectionStep(qreal val);
-    void updateFlipStep(qreal val);
-    void flip();
+FlippablePad::FlippablePad(const QSize &size, QGraphicsItem *parent)
+    : RoundRectItem(boundsFromSize(size), QColor(226, 255, 92, 64), parent)
+{
+    columns = size.width();
 
-private:
-    QPointF posForLocation(int x, int y) const;
+    int numIcons = size.width() * size.height();
+    QList<QPixmap> pixmaps;
+    QDirIterator it(":/images", QStringList() << "*.png");
+    while (it.hasNext() && pixmaps.size() < numIcons)
+        pixmaps << it.next();
 
-    QGraphicsScene *scene;
-    RoundRectItem *selectionItem;
-    RoundRectItem *baseItem;
-    RoundRectItem *backItem;
-    QGraphicsWidget *splash;
-    QTimeLine *selectionTimeLine;
-    QTimeLine *flipTimeLine;
-    int selectedX, selectedY;
+    const QRectF iconRect(-54, -54, 108, 108);
+    const QColor iconColor(214, 240, 110, 128);
 
-    QGraphicsItem ***grid;
-    
-    QPointF startPos;
-    QPointF endPos;
-    qreal xrot, yrot;
-    qreal xrot2, yrot2;
+    iconGrid.resize(size.height());
 
-    int width;
-    int height;
-    bool flipped;
-    bool flipLeft;
+    int n = 0;
+    for (int y = 0; y < size.height(); ++y) {
+        iconGrid[y].resize(columns);
+        for (int x = 0; x < size.width(); ++x) {
+            RoundRectItem *rect = new RoundRectItem(iconRect, iconColor, this);
+            rect->setZValue(1);
+            rect->setPos(posForLocation(x, y, size));
+            rect->setPixmap(pixmaps.at(n++ % pixmaps.size()));
+            iconGrid[y][x] = rect;
+        }
+    }
+}
 
-    Ui_BackSide *ui;
-};
+RoundRectItem *FlippablePad::iconAt(int x, int y) const
+{
+    return iconGrid[y][x];
+}

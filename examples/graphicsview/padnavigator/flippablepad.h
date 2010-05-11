@@ -39,65 +39,25 @@
 **
 ****************************************************************************/
 
+#ifndef FLIPPABLEPAD_H
+#define FLIPPABLEPAD_H
+
 #include "roundrectitem.h"
 
-#include <QtGui/QtGui>
+#include <QGraphicsObject>
+#include <QLinearGradient>
+#include <QVector>
 
-RoundRectItem::RoundRectItem(const QRectF &bounds, const QColor &color,
-                             QGraphicsItem *parent)
-    : QGraphicsObject(parent), fillRect(false), color(color), bounds(bounds)
+class FlippablePad : public RoundRectItem
 {
-    gradient.setStart(bounds.topLeft());
-    gradient.setFinalStop(bounds.bottomRight());
-    gradient.setColorAt(0, color);
-    gradient.setColorAt(1, color.dark(200));
+public:
+    FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
 
-    setCacheMode(ItemCoordinateCache);
-}
+    RoundRectItem *iconAt(int x, int y) const;
 
-QPixmap RoundRectItem::pixmap() const
-{
-    return pix;
-}
+private:
+    int columns;
+    QVector<QVector<RoundRectItem *> > iconGrid;
+};
 
-void RoundRectItem::setPixmap(const QPixmap &pixmap)
-{
-    pix = pixmap;
-    update();
-}
-
-QRectF RoundRectItem::boundingRect() const
-{
-    return bounds.adjusted(0, 0, 2, 2);
-}
-
-void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                          QWidget *widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(0, 0, 0, 64));
-    painter->drawRoundRect(bounds.translated(2, 2));
-    if (fillRect)
-        painter->setBrush(QApplication::palette().brush(QPalette::Window));
-    else
-        painter->setBrush(gradient);
-    painter->setPen(QPen(Qt::black, 1));
-    painter->drawRoundRect(bounds);
-    if (!pix.isNull()) {
-        painter->scale(1.95, 1.95);
-        painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);
-    }
-}
-
-bool RoundRectItem::fill() const
-{
-    return fillRect;
-}
-
-void RoundRectItem::setFill(bool fill)
-{
-    fillRect = fill;
-    update();
-}
+#endif // FLIPPABLEPAD_H
