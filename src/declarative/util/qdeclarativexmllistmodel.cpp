@@ -479,7 +479,6 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     Here is an example of a model containing news from a Yahoo RSS feed:
     \qml
     XmlListModel {
-        id: feedModel
         source: "http://rss.news.yahoo.com/rss/oceania"
         query: "/rss/channel/item"
         XmlRole { name: "title"; query: "title/string()" }
@@ -652,7 +651,20 @@ void QDeclarativeXmlListModel::setQuery(const QString &query)
 
 /*!
     \qmlproperty string XmlListModel::namespaceDeclarations
-    A set of declarations for the namespaces used in the query.
+    The namespace declarations to be used in the XPath queries.
+
+    The namespaces should be declared as in XQuery. For example, if a requested document
+    at http://mysite.com/feed.xml uses the namespace "http://www.w3.org/2005/Atom",
+    this can be declared as the default namespace:
+
+    \qml
+    XmlListModel {
+        source: "http://mysite.com/feed.xml"
+        query: "/feed/entry"
+        namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';"
+        XmlRole { name: "title"; query: "title/string()" }
+    }
+    \endqml
 */
 QString QDeclarativeXmlListModel::namespaceDeclarations() const
 {
