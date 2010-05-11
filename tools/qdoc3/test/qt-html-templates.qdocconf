@@ -31,7 +31,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        <div class=\"searchlabel\">\n" \
 			  "          Search index:</div>\n" \
 			  "        <div class=\"search\">\n" \
-			  "          <form id=\"qtdocsearch\" action=\"#\">\n" \
+			  "          <form id=\"qtdocsearch\" action=\"\">\n" \
 			  "            <fieldset>\n" \
 			  "              <input type=\"text\" name=\"searchstring\" id=\"pageType\" value=\"\" />\n" \
 			  "            </fieldset>\n" \
