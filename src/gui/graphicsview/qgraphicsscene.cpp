@@ -690,6 +690,10 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == lastMouseGrabberItem)
         lastMouseGrabberItem = 0;
 
+    // Reset the current drop item
+    if (item == dragDropItem)
+        dragDropItem = 0;
+
     // Reenable selectionChanged() for individual items
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
