@@ -106,9 +106,8 @@ protected:
     virtual bool eventFilter(QObject *watched, QEvent *e);
 
 private:
-    friend class QDeclarativeViewPrivate;
-    QDeclarativeViewPrivate *d;
     Q_DISABLE_COPY(QDeclarativeView)
+    Q_DECLARE_PRIVATE(QDeclarativeView)
 };
 
 QT_END_NAMESPACE

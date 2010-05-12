@@ -1819,8 +1819,6 @@ void QGraphicsView::centerOn(const QGraphicsItem *item)
 void QGraphicsView::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
 {
     Q_D(QGraphicsView);
-    Q_UNUSED(xmargin);
-    Q_UNUSED(ymargin);
     qreal width = viewport()->width();
     qreal height = viewport()->height();
     QRectF viewRect = d->matrix.mapRect(rect);
