@@ -20,37 +20,20 @@ codeindent              = 1
 # See also qhp.Qt.extraFiles
 extraimages.HTML        = qt-logo \
                           trolltech-logo \
-			  api_examples.png \
-			  bg_ll.png \
-			  bg_ul_blank.png \
-			  bullet_gt.png \
-			  horBar.png \
-			  qt_ref_doc.png \
-			  api_lookup.png \
-			  bg_ll_blank.png \
-			  bg_ur.png \
-			  bullet_sq.png \
-			  bullet_dn.png \
-			  bullet_up.png \
-			  page_bg.png \
-			  qt_tools.png \
-			  api_topics.png \
-			  bg_lr.png \
-			  bg_ur_blank.png \
-			  content_bg.png \
-			  print.png \
-			  sep.png \
 			  bg_l.png \
-			  bg_r.png \
+                          bg_l_blank.png \
+                          bg_r.png \
 			  box_bg.png \
-			  feedbackground.png \
-			  qt_guide.png \
-			  sprites-combined.png \
-			  bg_l_blank.png \
-			  bg_ul.png \
 			  breadcrumb.png \
-			  form_bg.png \
-			  qt_icon.png \
+			  bullet_gt.png \
+                          bullet_dn.png \
+			  bullet_sq.png \
+                          bullet_up.png \
+                          feedbackground.png \
+                          horBar.png \
+			  page.png \
+			  page_bg.png \
+			  sprites-combined.png \
                           taskmenuextension-example.png \
                           coloreditorfactoryimage.png \
                           dynamiclayouts-example.png \

@@ -47,6 +47,7 @@
 /*!
     \page application-windows.html
     \title Application Windows and Dialogs
+    \ingroup qt-gui-concepts
     \ingroup frameworks-technologies
 
     \nextpage The Application Main Window

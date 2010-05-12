@@ -1299,6 +1299,12 @@ bool QDragManager::eventFilter(QObject * o, QEvent * e)
         return true;
     }
 
+    if (e->type() == QEvent::ShortcutOverride) {
+        // prevent accelerators from firing while dragging
+        e->accept();
+        return true;
+    }
+
     if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
         QKeyEvent *ke = ((QKeyEvent*)e);
         if (ke->key() == Qt::Key_Escape && e->type() == QEvent::KeyPress) {

@@ -948,10 +948,15 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         // but the data that is outgoing is random-access
         request.setHeader(QNetworkRequest::ContentLengthHeader, outgoingData->size());
     }
-    if (d->cookieJar) {
-        QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
-        if (!cookies.isEmpty())
-            request.setHeader(QNetworkRequest::CookieHeader, qVariantFromValue(cookies));
+
+    if (static_cast<QNetworkRequest::LoadControl>
+        (request.attribute(QNetworkRequest::CookieLoadControlAttribute,
+                           QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
+        if (d->cookieJar) {
+            QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
+            if (!cookies.isEmpty())
+                request.setHeader(QNetworkRequest::CookieHeader, qVariantFromValue(cookies));
+        }
     }
 
     // first step: create the reply
@@ -967,11 +972,15 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     priv->manager = this;
 
     // second step: fetch cached credentials
-    QNetworkAuthenticationCredential *cred = d->fetchCachedCredentials(url);
-    if (cred) {
-        url.setUserName(cred->user);
-        url.setPassword(cred->password);
-        priv->urlForLastAuthentication = url;
+    if (static_cast<QNetworkRequest::LoadControl>
+        (request.attribute(QNetworkRequest::AuthenticationReuseAttribute,
+                           QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
+        QNetworkAuthenticationCredential *cred = d->fetchCachedCredentials(url);
+        if (cred) {
+            url.setUserName(cred->user);
+            url.setPassword(cred->password);
+            priv->urlForLastAuthentication = url;
+        }
     }
 
     // third step: find a backend
