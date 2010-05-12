@@ -45,6 +45,7 @@
 #include <QGraphicsObject>
 #include <QLinearGradient>
 
+//! [0]
 class RoundRectItem : public QGraphicsObject
 {
     Q_OBJECT
@@ -61,13 +62,15 @@ public:
 
     bool fill() const;
     void setFill(bool fill);
+//! [0]
 
+//! [1]
 private:
     QPixmap pix;
     bool fillRect;
-    QColor color;
     QRectF bounds;
     QLinearGradient gradient;
 };
+//! [1]
 
 #endif // ROUNDRECTITEM_H

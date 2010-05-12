@@ -48,16 +48,17 @@
 #include <QLinearGradient>
 #include <QVector>
 
+//! [0]
 class FlippablePad : public RoundRectItem
 {
 public:
     FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
 
-    RoundRectItem *iconAt(int x, int y) const;
+    RoundRectItem *iconAt(int column, int row) const;
 
 private:
-    int columns;
     QVector<QVector<RoundRectItem *> > iconGrid;
 };
+//! [0]
 
 #endif // FLIPPABLEPAD_H

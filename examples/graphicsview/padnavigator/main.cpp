@@ -43,6 +43,7 @@
 
 #include <QtGui/QtGui>
 
+//! [0]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -53,3 +54,4 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
+//! [0]

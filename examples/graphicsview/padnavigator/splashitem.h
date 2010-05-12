@@ -44,6 +44,7 @@
 
 #include <QGraphicsObject>
 
+//! [0]
 class SplashItem : public QGraphicsObject
 {
     Q_OBJECT
@@ -56,5 +57,6 @@ public:
 private:
     QString text;
 };
+//! [0]
 
 #endif // SPLASHITEM_H

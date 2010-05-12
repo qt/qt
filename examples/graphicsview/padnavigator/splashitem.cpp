@@ -43,20 +43,25 @@
 
 #include <QtGui/QtGui>
 
-SplashItem::SplashItem(QGraphicsItem *parent) :
-    QGraphicsObject(parent)
+//! [0]
+SplashItem::SplashItem(QGraphicsItem *parent)
+    : QGraphicsObject(parent)
 {
     text = tr("Welcome to the Pad Navigator Example. You can use the"
               " keyboard arrows to navigate the icons, and press enter"
               " to activate an item. Press any key to begin.");
     setCacheMode(DeviceCoordinateCache);
 }
+//! [0]
 
+//! [1]
 QRectF SplashItem::boundingRect() const
 {
     return QRectF(0, 0, 400, 175);
 }
+//! [1]
 
+//! [2]
 void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                        QWidget *widget)
 {
@@ -76,3 +81,4 @@ void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     painter->setFont(font);
     painter->drawText(textRect, flags, text);
 }
+//! [2]
