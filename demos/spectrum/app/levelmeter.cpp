@@ -87,7 +87,7 @@ void LevelMeter::reset()
 void LevelMeter::levelChanged(qreal rmsLevel, qreal peakLevel, int numSamples)
 {
     // Smooth the RMS signal
-    const qreal smooth = pow(0.9, static_cast<qreal>(numSamples) / 256); // TODO: remove this magic number
+    const qreal smooth = pow(qreal(0.9), static_cast<qreal>(numSamples) / 256); // TODO: remove this magic number
     m_rmsLevel = (m_rmsLevel * smooth) + (rmsLevel * (1.0 - smooth));
 
     if (peakLevel > m_decayedPeakLevel) {
