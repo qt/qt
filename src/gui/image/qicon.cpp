@@ -261,16 +261,19 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
         actualSize.scale(size, Qt::KeepAspectRatio);
 
-    QString key = QLatin1String("$qt_icon_")
-                  + QString::number(pm.cacheKey())
-                  + QString::number(pe->mode)
-                  + QString::number(QApplication::palette().cacheKey())
-                  + QLatin1Char('_')
-                  + QString::number(actualSize.width())
-                  + QLatin1Char('_')
-                  + QString::number(actualSize.height())
-                  + QLatin1Char('_');
+    int digits = sizeof(qint64)/sizeof(QChar);
+    quint64 tkey = pm.cacheKey(),
+            tmode = pe->mode,
+            tpalkey = QApplication::palette().cacheKey(),
+            twidth = actualSize.width(),
+            theight = actualSize.height();
 
+    QString key = QLatin1Literal("qt_")
+                  % QString::fromRawData((QChar*)&tkey, digits)
+                  % QString::fromRawData((QChar*)&tmode, digits)
+                  % QString::fromRawData((QChar*)&tpalkey, digits)
+                  % QString::fromRawData((QChar*)&twidth, digits)
+                  % QString::fromRawData((QChar*)&theight, digits);
 
     if (mode == QIcon::Active) {
         if (QPixmapCache::find(key + QString::number(mode), pm))
