@@ -433,6 +433,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         // Request mouse move events.
         drawableWindow->PointerFilter(EPointerFilterEnterExit
             | EPointerFilterMove | EPointerFilterDrag, 0);
+        drawableWindow->EnableVisibilityChangeEvents();
 
         if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
             activateSymbianWindow(control.data());
