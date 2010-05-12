@@ -2126,8 +2126,8 @@ EXPORTS
 	?addToGroup@QGraphicsItemGroup@@QAEXPAVQGraphicsItem@@@Z @ 2125 NONAME ; void QGraphicsItemGroup::addToGroup(class QGraphicsItem *)
 	?addToIndex@QGraphicsItem@@IAEXXZ @ 2126 NONAME ; void QGraphicsItem::addToIndex(void)
 	?addToPolygon@QBezier@@QBEXPAVQPolygonF@@@Z @ 2127 NONAME ; void QBezier::addToPolygon(class QPolygonF *) const
-	?addToPolygonIterative@QBezier@@QBEXPAVQPolygonF@@@Z @ 2128 NONAME ; void QBezier::addToPolygonIterative(class QPolygonF *) const
-	?addToPolygonMixed@QBezier@@QBEXPAVQPolygonF@@@Z @ 2129 NONAME ; void QBezier::addToPolygonMixed(class QPolygonF *) const
+	?addToPolygonIterative@QBezier@@QBEXPAVQPolygonF@@@Z @ 2128 NONAME ABSENT ; void QBezier::addToPolygonIterative(class QPolygonF *) const
+	?addToPolygonMixed@QBezier@@QBEXPAVQPolygonF@@@Z @ 2129 NONAME ABSENT ; void QBezier::addToPolygonMixed(class QPolygonF *) const
 	?addToolBar@QMainWindow@@QAEPAVQToolBar@@ABVQString@@@Z @ 2130 NONAME ; class QToolBar * QMainWindow::addToolBar(class QString const &)
 	?addToolBar@QMainWindow@@QAEXPAVQToolBar@@@Z @ 2131 NONAME ; void QMainWindow::addToolBar(class QToolBar *)
 	?addToolBar@QMainWindow@@QAEXW4ToolBarArea@Qt@@PAVQToolBar@@@Z @ 2132 NONAME ; void QMainWindow::addToolBar(enum Qt::ToolBarArea, class QToolBar *)

@@ -39,19 +39,26 @@
 **
 ****************************************************************************/
 
-#include "padnavigator.h"
+#ifndef FLIPPABLEPAD_H
+#define FLIPPABLEPAD_H
 
-#include <QtGui/QtGui>
+#include "roundrectitem.h"
+
+#include <QGraphicsObject>
+#include <QLinearGradient>
+#include <QVector>
 
 //! [0]
-int main(int argc, char *argv[])
+class FlippablePad : public RoundRectItem
 {
-    QApplication app(argc, argv);
-    Q_INIT_RESOURCE(padnavigator);
+public:
+    FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
 
-    PadNavigator navigator(QSize(3, 3));
-    navigator.show();
+    RoundRectItem *iconAt(int column, int row) const;
 
-    return app.exec();
-}
+private:
+    QVector<QVector<RoundRectItem *> > iconGrid;
+};
 //! [0]
+
+#endif // FLIPPABLEPAD_H
