@@ -352,6 +352,10 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
                     instr.storeDouble.propertyIndex = prop.propertyIndex();
                     instr.storeDouble.value = n;
                 }
+            } else if(v->value.isBoolean()) {
+                instr.type = QDeclarativeInstruction::StoreVariantBool;
+                instr.storeBool.propertyIndex = prop.propertyIndex();
+                instr.storeBool.value = v->value.asBoolean();
             } else {
                 instr.type = QDeclarativeInstruction::StoreVariant;
                 instr.storeString.propertyIndex = prop.propertyIndex();

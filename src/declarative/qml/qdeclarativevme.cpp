@@ -360,6 +360,16 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             }
             break;
 
+        case QDeclarativeInstruction::StoreVariantBool:
+            {
+                QObject *target = stack.top();
+                QVariant v(instr.storeBool.value);
+                void *a[] = { &v, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
         case QDeclarativeInstruction::StoreString:
             {
                 QObject *target = stack.top();

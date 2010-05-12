@@ -193,7 +193,7 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
