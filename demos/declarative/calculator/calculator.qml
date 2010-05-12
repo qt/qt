@@ -98,8 +98,8 @@ Rectangle {
         transitions: Transition {
             SequentialAnimation {
                 PropertyAction { target: rotateButton; property: "operation" }
-                NumberAnimation { properties: "rotation"; duration: 300; easing.type: "InOutQuint" }
-                NumberAnimation { properties: "x,y,width,height"; duration: 300; easing.type: "InOutQuint" }
+                NumberAnimation { properties: "rotation"; duration: 300; easing.type: Easing.InOutQuint }
+                NumberAnimation { properties: "x,y,width,height"; duration: 300; easing.type: Easing.InOutQuint }
             }
         }
     }

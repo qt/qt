@@ -31,7 +31,7 @@ Rectangle {
             Loader {
                 anchors { top: parent.top; topMargin: 10; horizontalCenter: parent.horizontalCenter }
                 width: 300; height: 400
-                clip: true; resizeMode: Loader.SizeItemToLoader
+                clip: true; 
                 source: "../../../demos/declarative/samegame/samegame.qml"
             }
         }

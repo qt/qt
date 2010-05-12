@@ -18,10 +18,21 @@ Item {
             rssModel.tags = editor.text
         }
 
+        Image {
+            id: quitButton
+            anchors.left: parent.left//; anchors.leftMargin: 0
+            anchors.verticalCenter: parent.verticalCenter
+            source: "images/quit.png"
+            MouseArea {
+                anchors.fill: parent
+                onClicked: Qt.quit()
+            }
+        }
+
         Text {
             id: categoryText
             anchors {
-                left: parent.left; right: tagButton.left; leftMargin: 10; rightMargin: 10
+                left: quitButton.right; right: tagButton.left; leftMargin: 10; rightMargin: 10
                 verticalCenter: parent.verticalCenter
             }
             elide: Text.ElideLeft
@@ -70,6 +81,6 @@ Item {
     }
 
     transitions: Transition {
-        NumberAnimation { properties: "x"; easing.type: "InOutQuad" }
+        NumberAnimation { properties: "x"; easing.type: Easing.InOutQuad }
     }
 }

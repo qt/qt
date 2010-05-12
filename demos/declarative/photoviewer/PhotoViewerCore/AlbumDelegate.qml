@@ -56,7 +56,7 @@ Component {
 
             Tag {
                 anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 10 }
-                frontLabel: tag; backLabel: "Delete"; flipped: mainWindow.editMode
+                frontLabel: tag; backLabel: qsTr("Remove"); flipped: mainWindow.editMode
                 onTagChanged: rssModel.tags = tag
                 onBackClicked: if (mainWindow.editMode) photosModel.remove(index);
             }
@@ -78,11 +78,11 @@ Component {
             ]
 
             GridView.onAdd: NumberAnimation {
-                target: albumWrapper; properties: "scale"; from: 0.0; to: 1.0; easing.type: "OutQuad"
+                target: albumWrapper; properties: "scale"; from: 0.0; to: 1.0; easing.type: Easing.OutQuad
             }
             GridView.onRemove: SequentialAnimation {
                 PropertyAction { target: albumWrapper; property: "GridView.delayRemove"; value: true }
-                NumberAnimation { target: albumWrapper; property: "scale"; from: 1.0; to: 0.0; easing.type: "OutQuad" }
+                NumberAnimation { target: albumWrapper; property: "scale"; from: 1.0; to: 0.0; easing.type: Easing.OutQuad }
                 PropertyAction { target: albumWrapper; property: "GridView.delayRemove"; value: false }
             }
 
@@ -92,12 +92,12 @@ Component {
                 SequentialAnimation {
                     NumberAnimation { properties: 'opacity'; duration: 250 }
                     PauseAnimation { duration: 350 }
-                    NumberAnimation { target: backButton; properties: "y"; duration: 200; easing.type: "OutQuad" }
+                    NumberAnimation { target: backButton; properties: "y"; duration: 200; easing.type: Easing.OutQuad }
                 }
             },
             Transition {
                 from: 'inGrid'; to: '*'
-                NumberAnimation { properties: "y,opacity"; easing.type: "OutQuad"; duration: 300 }
+                NumberAnimation { properties: "y,opacity"; easing.type: Easing.OutQuad; duration: 300 }
             }
             ]
         }

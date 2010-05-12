@@ -94,8 +94,6 @@ public:
     \class QDeclarativeFlipable
     \brief The Flipable item provides a surface that can be flipped.
 
-    \ingroup group_widgets
-
     Flipable is an item that can be visibly "flipped" between its front and
     back sides.
 */
@@ -169,7 +167,7 @@ void QDeclarativeFlipable::retransformBack()
   \qmlproperty enumeration Flipable::side
 
   The side of the Flippable currently visible. Possible values are \c
-  Front and \c Back.
+  Flippable.Front and \c Flippable.Back.
 */
 QDeclarativeFlipable::Side QDeclarativeFlipable::side() const
 {
@@ -192,12 +190,15 @@ void QDeclarativeFlipablePrivate::updateSceneTransformFromParent()
     QPointF p2(1, 0);
     QPointF p3(1, 1);
 
-    p1 = sceneTransform.map(p1);
-    p2 = sceneTransform.map(p2);
-    p3 = sceneTransform.map(p3);
+    QPointF scenep1 = sceneTransform.map(p1);
+    QPointF scenep2 = sceneTransform.map(p2);
+    QPointF scenep3 = sceneTransform.map(p3);
+    p1 = q->mapToParent(p1);
+    p2 = q->mapToParent(p2);
+    p3 = q->mapToParent(p3);
 
-    qreal cross = (p1.x() - p2.x()) * (p3.y() - p2.y()) -
-                  (p1.y() - p2.y()) * (p3.x() - p2.x());
+    qreal cross = (scenep1.x() - scenep2.x()) * (scenep3.y() - scenep2.y()) -
+                  (scenep1.y() - scenep2.y()) * (scenep3.x() - scenep2.x());
 
     wantBackYFlipped = p1.x() >= p2.x();
     wantBackXFlipped = p2.y() >= p3.y();

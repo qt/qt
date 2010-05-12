@@ -60,6 +60,9 @@ QDeclarativePropertyValueSource::QDeclarativePropertyValueSource()
 {
 }
 
+/*!
+    Destroys the value source.
+*/
 QDeclarativePropertyValueSource::~QDeclarativePropertyValueSource()
 {
 }

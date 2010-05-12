@@ -60,16 +60,20 @@ QT_BEGIN_NAMESPACE
 template <typename Type> class QDataBuffer
 {
 public:
-    QDataBuffer(int res = 64)
+    QDataBuffer(int res)
     {
         capacity = res;
-        buffer = (Type*) qMalloc(capacity * sizeof(Type));
+        if (res)
+            buffer = (Type*) qMalloc(capacity * sizeof(Type));
+        else
+            buffer = 0;
         siz = 0;
     }
 
     ~QDataBuffer()
     {
-        qFree(buffer);
+        if (buffer)
+            qFree(buffer);
     }
 
     inline void reset() { siz = 0; }
@@ -104,6 +108,8 @@ public:
 
     inline void reserve(int size) {
         if (size > capacity) {
+            if (capacity == 0)
+                capacity = 1;
             while (capacity < size)
                 capacity *= 2;
             buffer = (Type*) qRealloc(buffer, capacity * sizeof(Type));
@@ -112,7 +118,12 @@ public:
 
     inline void shrink(int size) {
         capacity = size;
-        buffer = (Type*) qRealloc(buffer, capacity * sizeof(Type));
+        if (size)
+            buffer = (Type*) qRealloc(buffer, capacity * sizeof(Type));
+        else {
+            qFree(buffer);
+            buffer = 0;
+        }
     }
 
     inline void swap(QDataBuffer<Type> &other) {

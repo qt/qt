@@ -48,6 +48,7 @@
 #include <qdeclarativeinfo.h>
 #include <qdeclarativeproperty_p.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativeengine_p.h>
 
 #include <private/qobject_p.h>
 
@@ -57,12 +58,13 @@ class QDeclarativeBehaviorPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeBehavior)
 public:
-    QDeclarativeBehaviorPrivate() : animation(0), enabled(true) {}
+    QDeclarativeBehaviorPrivate() : animation(0), enabled(true), finalized(false) {}
 
     QDeclarativeProperty property;
     QVariant currentValue;
     QDeclarativeGuard<QDeclarativeAbstractAnimation> animation;
     bool enabled;
+    bool finalized;
 };
 
 /*!
@@ -80,7 +82,7 @@ public:
         y: 200  // initial value
         Behavior on y {
             NumberAnimation {
-                easing.type: "OutBounce"
+                easing.type: Easing.OutBounce
                 easing.amplitude: 100
                 duration: 200
             }
@@ -158,7 +160,7 @@ void QDeclarativeBehavior::write(const QVariant &value)
 {
     Q_D(QDeclarativeBehavior);
     qmlExecuteDeferred(this);
-    if (!d->animation || !d->enabled) {
+    if (!d->animation || !d->enabled || !d->finalized) {
         QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         return;
     }
@@ -189,6 +191,15 @@ void QDeclarativeBehavior::setTarget(const QDeclarativeProperty &property)
     d->currentValue = property.read();
     if (d->animation)
         d->animation->setDefaultTarget(property);
+
+    QDeclarativeEnginePrivate *engPriv = QDeclarativeEnginePrivate::get(qmlEngine(this));
+    engPriv->registerFinalizedParserStatusObject(this, this->metaObject()->indexOfSlot("componentFinalized()"));
+}
+
+void QDeclarativeBehavior::componentFinalized()
+{
+    Q_D(QDeclarativeBehavior);
+    d->finalized = true;
 }
 
 QT_END_NAMESPACE

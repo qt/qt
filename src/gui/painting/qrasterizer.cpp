@@ -198,9 +198,11 @@ public:
 };
 
 QScanConverter::QScanConverter()
-   : m_alloc(0)
+   : m_lines(0)
+   , m_alloc(0)
    , m_size(0)
    , m_intersections(0)
+   , m_active(0)
 {
 }
 
@@ -310,6 +312,10 @@ struct QBoolToType
 template <typename T>
 void qScanConvert(QScanConverter &d, T allVertical)
 {
+    if (!d.m_lines.size()) {
+        d.m_active.reset();
+        return;
+    }
     qSort(d.m_lines.data(), d.m_lines.data() + d.m_lines.size(), QT_PREPEND_NAMESPACE(topOrder));
     int line = 0;
     for (int y = d.m_lines.first().top; y <= d.m_bottom; ++y) {
