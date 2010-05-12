@@ -364,6 +364,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
+        m_doubleClickTimer.invalidate();
 
         DrawableWindow()->SetPointerGrab(ETrue);
     }
@@ -642,6 +643,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
 
                 QPoint pos = QCursor::pos();
                 TPointerEvent fakeEvent;
+                fakeEvent.iModifiers = keyEvent.iModifiers;
                 TInt x = pos.x();
                 TInt y = pos.y();
                 if (type == EEventKeyUp) {
@@ -668,6 +670,8 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                     }
                 }
                 else if (type == EEventKey) {
+                    if (keyCode != Qt::Key_Select)
+                        m_doubleClickTimer.invalidate();
                     switch (keyCode) {
                     case Qt::Key_Left:
                         S60->virtualMousePressedKeys |= QS60Data::Left;
@@ -700,6 +704,13 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                         } else {
                             S60->virtualMousePressedKeys |= QS60Data::Select;
                             fakeEvent.iType = TPointerEvent::EButton1Down;
+                            if (m_doubleClickTimer.isValid()
+                                && !m_doubleClickTimer.hasExpired(QApplication::doubleClickInterval())) {
+                                fakeEvent.iModifiers |= EModifierDoubleClick;
+                                m_doubleClickTimer.invalidate();
+                            } else {
+                                m_doubleClickTimer.start();
+                            }
                         }
                         break;
                     }
@@ -715,7 +726,6 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                     y = S60->screenHeightInPixels - 1;
                 TPoint epos(x, y);
                 TPoint cpos = epos - PositionRelativeToScreen();
-                fakeEvent.iModifiers = keyEvent.iModifiers;
                 fakeEvent.iPosition = cpos;
                 fakeEvent.iParentPosition = epos;
                 HandlePointerEvent(fakeEvent);
