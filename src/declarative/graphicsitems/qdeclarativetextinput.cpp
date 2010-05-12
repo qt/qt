@@ -1018,6 +1018,8 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 {
     Q_D(const QDeclarativeTextInput);
     switch(property) {
+    case Qt::ImMicroFocus:
+        return d->control->cursorRect();
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
