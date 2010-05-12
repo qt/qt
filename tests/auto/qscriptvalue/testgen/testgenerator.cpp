@@ -238,17 +238,19 @@ static QString generateToXXXDef(const QString& name, const QList<QPair<QString, 
     QStringList tagSet, valueSet;
     tagSet.reserve(list.count());
     valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, T> t = *i;
         t.first = escape(t.first);
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
         tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%2))
+        if (!valueSet.isEmpty())
+            valueSet.append(QString(","));
+        if (!((lineBreaker++)%2))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<T>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
     return result.arg(name,
                       typeName<T>(),
@@ -301,18 +303,21 @@ QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString,
     QStringList tagSet, valueSet;
     tagSet.reserve(list.count());
     valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, qsreal> t = *i;
         t.first = escape(t.first);
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
         tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%10))
+        if (!valueSet.isEmpty())
+            valueSet.append(QString(","));
+        if (!((lineBreaker++)%10))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<qsreal>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
+
     // toInteger shouldn't return NaN, so it would be nice to catch the case.
     QString hook;
     if (name == "toNumber") {
@@ -367,17 +372,19 @@ static QString generateCastDef(const QList<QPair<QString, T> >& list)
     QStringList tagSet, valueSet;
     tagSet.reserve(list.count());
     valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, T> t = *i;
         t.first = escape(t.first);
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
         tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%2))
+        if (!valueSet.isEmpty())
+            valueSet.append(QString(","));
+        if (!((lineBreaker++)%2))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<T>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
     return result.arg(typeName<T>(), tagSet.join(QString()), valueSet.join(QString()), QString::number(list.count()));
 }
@@ -429,17 +436,19 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
     QStringList tagSet, valueSet;
     tagSet.reserve(list.count());
     valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, qsreal> t = *i;
         t.first = escape(t.first);
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
         tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%10))
+        if (!valueSet.isEmpty())
+            valueSet.append(QString(","));
+        if (!((lineBreaker++)%10))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<qsreal>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
     return result.arg(typeName<qsreal>(),
                       tagSet.join(QString()),
