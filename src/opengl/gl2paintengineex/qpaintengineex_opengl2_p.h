@@ -177,6 +177,7 @@ public:
             ctx(0),
             useSystemClip(true),
             elementIndicesVBOId(0),
+            opacityArray(0),
             snapToPixelGrid(false),
             addOffset(false),
             nativePaintingActive(false),

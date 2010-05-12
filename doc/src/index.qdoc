@@ -90,8 +90,9 @@
               </div>
               <div class="sectionlist">
                 <ul>
-                  <li><a href="webintegration.html">Integrating web content</a></li>
                   <li><a href="model-view-programming.html">Model/View programming</a></li>
+                  <li><a href="technology-apis.html">Qt API's for other technologies</a></li>
+                  <li><a href="best-practices.html">Qt How-to's &amp best practices</a></li>
                   <li><a href="developing-with-qt.html">Cross-platform development</a></li>
                 </ul>
               </div>

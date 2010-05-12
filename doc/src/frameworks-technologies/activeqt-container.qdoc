@@ -41,10 +41,11 @@
 
 /*!
     \page activeqt-container.html
-    \title Using ActiveX controls and COM objects in Qt
+    \title Using ActiveX controls and COM in Qt
+    \ingroup qt-activex
 
-    \brief The QAxContainer module is a Windows-only extension for
-    accessing ActiveX controls and COM objects.
+    \brief A Windows-only extension for accessing ActiveX controls and
+    COM objects.
 
     The QAxContainer module is part of the \l ActiveQt framework. It
     provides a library implementing a QWidget subclass, QAxWidget,

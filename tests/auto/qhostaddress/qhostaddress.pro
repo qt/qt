@@ -12,3 +12,4 @@ wince*: {
 }
 }
 
+symbian: TARGET.CAPABILITY = NetworkServices

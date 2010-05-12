@@ -65,7 +65,7 @@ Rectangle {
                 transitions: Transition {
                     from: "*"; to: "Details"; reversible: true
                     SequentialAnimation {
-                        NumberAnimation { duration: 200; properties: "height"; easing.type: "OutQuad" }
+                        NumberAnimation { duration: 200; properties: "height"; easing.type: Easing.OutQuad }
                         NumberAnimation { duration: 200; properties: "opacity" }
                     }
                 }

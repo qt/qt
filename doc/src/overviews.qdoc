@@ -93,19 +93,27 @@
     \generatelist {related}
  */
 
-
-
 /*!
-    \group frameworks-technologies
-    \title Frameworks and Technologies
+    \group technology-apis
+    \title Qt API's for other technologies
 
-    \brief Documentation about the frameworks and technologies in Qt
-
-    These documents dive into the frameworks of classes that Qt provides,
-    and provide background information about the technical solutions used
-    in Qt's architecture.
+    These pages document Qt's API's for some widely-used standards and
+    technologies.
 
     \generatelist{related}
+*/
+
+/*!
+  \group qt-activex
+  \title Qt For ActiveX
+  \brief Qt API's for using ActiveX controls, servers, and COM.
+  \ingroup technology-apis
+  \ingroup platform-specific
+
+  These pages document Qt's API's for developing with ActiveX
+  controls, servers, and COM.
+
+  \generatelist{related}
 */
 
 /*!

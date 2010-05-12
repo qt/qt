@@ -2,31 +2,30 @@
 import Qt 4.7
 
 Rectangle {
-    id: page
+    id: container
 
-    signal closed
-
-    function forceClose() {
-        page.closed();
-        page.opacity = 0;
+    function show(text) {
+        dialogText.text = text;
+        container.opacity = 1;
     }
 
-    function show(txt) {
-        dialogText.text = txt;
-        page.opacity = 1;
+    function hide() {
+        container.opacity = 0;
     }
 
-    width: dialogText.width + 20; height: dialogText.height + 20
-    color: "white"
-    border.width: 1
+    width: dialogText.width + 20
+    height: dialogText.height + 20
     opacity: 0
 
-    Behavior on opacity {
-        NumberAnimation { duration: 1000 }
+    Text {
+        id: dialogText
+        anchors.centerIn: parent
+        text: ""
     }
 
-    Text { id: dialogText; anchors.centerIn: parent; text: "Hello World!" }
-
-    MouseArea { anchors.fill: parent; onClicked: forceClose(); }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: hide();
+    }
 }
 //![0]

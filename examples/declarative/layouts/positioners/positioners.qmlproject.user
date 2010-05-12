@@ -1,0 +1,41 @@
+<!DOCTYPE QtCreatorProject>
+<qtcreator>
+ <data>
+  <variable>ProjectExplorer.Project.ActiveTarget</variable>
+  <value type="int">0</value>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.EditorSettings</variable>
+  <valuemap type="QVariantMap">
+   <value key="EditorConfiguration.Codec" type="QByteArray">UTF-8</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.Target.0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">QML Runtime</value>
+   <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">QmlProjectManager.QmlTarget</value>
+   <value key="ProjectExplorer.Target.ActiveBuildConfiguration" type="int">-1</value>
+   <value key="ProjectExplorer.Target.ActiveRunConfiguration" type="int">0</value>
+   <value key="ProjectExplorer.Target.BuildConfigurationCount" type="int">0</value>
+   <valuemap key="ProjectExplorer.Target.RunConfiguration.0" type="QVariantMap">
+    <value key="ProjectExplorer.ProjectConfiguration.DisplayName" type="QString">QML Runtime</value>
+    <value key="ProjectExplorer.ProjectConfiguration.Id" type="QString">QmlProjectManager.QmlRunConfiguration</value>
+    <value key="QmlProjectManager.QmlRunConfiguration.DebugServerAddress" type="QString">127.0.0.1</value>
+    <value key="QmlProjectManager.QmlRunConfiguration.DebugServerPort" type="int">3768</value>
+    <value key="QmlProjectManager.QmlRunConfiguration.MainScript" type="QString">positioners.qml</value>
+    <value key="QmlProjectManager.QmlRunConfiguration.QDeclarativeViewer" type="QString"></value>
+    <value key="QmlProjectManager.QmlRunConfiguration.QDeclarativeViewerArguments" type="QString"></value>
+   </valuemap>
+   <value key="ProjectExplorer.Target.RunConfigurationCount" type="int">1</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.TargetCount</variable>
+  <value type="int">1</value>
+ </data>
+ <data>
+  <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
+  <value type="int">4</value>
+ </data>
+</qtcreator>

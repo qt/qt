@@ -48,8 +48,7 @@
 #include <QtGui/qwidget.h>
 #include <qvideowidget.h>
 
-#include <AudioOutput.h>
-#include <MAudioOutputObserver.h>
+#include <phonon/audiooutput.h>
 
 QT_BEGIN_NAMESPACE
 

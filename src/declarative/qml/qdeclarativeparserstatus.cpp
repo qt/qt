@@ -91,19 +91,17 @@ QDeclarativeParserStatus::~QDeclarativeParserStatus()
 }
 
 /*!
+    \fn void QDeclarativeParserStatus::classBegin()
+
     Invoked after class creation, but before any properties have been set.
 */
-void QDeclarativeParserStatus::classBegin()
-{
-}
 
 /*!
+    \fn void QDeclarativeParserStatus::componentComplete()
+
     Invoked after the root component that caused this instantiation has 
     completed construction.  At this point all static values and binding values
     have been assigned to the class.
 */
-void QDeclarativeParserStatus::componentComplete()
-{
-}
 
 QT_END_NAMESPACE
