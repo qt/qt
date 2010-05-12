@@ -4372,11 +4372,6 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     bool pixmapFound;
     QGraphicsItemCache *itemCache = itemd->extraItemCache();
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
-        if (itemCache->boundingRect != brect.toRect()) {
-            itemCache->boundingRect = brect.toRect();
-            itemCache->allExposed = true;
-            itemCache->exposed.clear();
-        }
         pixmapKey = itemCache->key;
     } else {
         pixmapKey = itemCache->deviceData.value(widget).key;
@@ -4389,19 +4384,24 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         QSize pixmapSize;
         bool fixedCacheSize = false;
-        QRectF brectAligned = brect.toAlignedRect();
+        QRect br = brect.toAlignedRect();
         if ((fixedCacheSize = itemCache->fixedSize.isValid())) {
             pixmapSize = itemCache->fixedSize;
         } else {
-            pixmapSize = brectAligned.size().toSize();
+            pixmapSize = br.size();
         }
 
         // Create or recreate the pixmap.
         int adjust = itemCache->fixedSize.isValid() ? 0 : 2;
         QSize adjustSize(adjust*2, adjust*2);
-        QRectF br = brectAligned.adjusted(-adjust, -adjust, adjust, adjust);
+        br.adjust(-adjust, -adjust, adjust, adjust);
         if (pix.isNull() || (!fixedCacheSize && (pixmapSize + adjustSize) != pix.size())) {
             pix = QPixmap(pixmapSize + adjustSize);
+            itemCache->boundingRect = br;
+            itemCache->exposed.clear();
+            itemCache->allExposed = true;
+        } else if (itemCache->boundingRect != br) {
+            itemCache->boundingRect = br;
             itemCache->exposed.clear();
             itemCache->allExposed = true;
         }
@@ -4455,10 +4455,10 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         // qpixmap-image-transform-pixmap roundtrip.
         if (newPainterOpacity != oldPainterOpacity) {
             painter->setOpacity(newPainterOpacity);
-            painter->drawPixmap(br, pix, QRectF(QPointF(), pix.size()));
+            painter->drawPixmap(br.topLeft(), pix);
             painter->setOpacity(oldPainterOpacity);
         } else {
-            painter->drawPixmap(br, pix, QRectF(QPointF(), pix.size()));
+            painter->drawPixmap(br.topLeft(), pix);
         }
         return;
     }
