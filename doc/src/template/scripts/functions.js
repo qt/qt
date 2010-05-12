@@ -40,6 +40,7 @@ var exampleCount = 0;
 var qturl = ""; // change from "http://doc.qt.nokia.com/4.6/" to 0 so we can have relative links
 
 function processNokiaData(response){
+$('.sidebar .search form input').addClass('loading');
 	// debug $('.content').prepend('<li>handling search results</li>'); // debuging
 	var propertyTags = response.getElementsByTagName('page');
 	
@@ -92,7 +93,8 @@ function processNokiaData(response){
 		} 
 	}	
 	 
-	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');}
+	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');
+}
     if(articleCount == 0){$('#ul002').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
 	if(exampleCount == 0){$('#ul003').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
 	// reset count variables;
@@ -119,8 +121,14 @@ function CheckEmptyAndLoadList()
 	 $('.defaultLink').css('display','none');
 	}
 }
-
-
+/*
+$(window).resize(function(){
+if($(window).width()<400)
+	$('body').addClass('offline');
+else
+	$('body').removeClass('offline');
+	});
+	*/
 // Loads on doc ready
 	$(document).ready(function () {
 	var pageTitle = $('title').html();

@@ -1131,6 +1131,10 @@
         visibility: hidden;
     }
 	
+.sidebar .search form input.loading
+{
+        background:url("../images/spinner.gif") no-repeat scroll right center transparent;
+}
 
     /* end of screen media */
 
