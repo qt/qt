@@ -75,7 +75,7 @@ void tst_qdeclarativelayoutitem::test_resizing()
     view.setScene(&scene);
     //Add the QML snippet into the layout
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl(SRCDIR "/data/layoutItem.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/layoutItem.qml"));
     QDeclarativeLayoutItem* obj = static_cast<QDeclarativeLayoutItem*>(c.create());
     layout->addItem(obj);
     layout->setContentsMargins(0,0,0,0);
