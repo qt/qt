@@ -796,8 +796,11 @@ void QDeclarativeXmlListModel::reload()
 
     if (d->reply) {
         d->reply->abort();
-        d->reply->deleteLater();
-        d->reply = 0;
+        if (d->reply) {
+            // abort will generally have already done this (and more)
+            d->reply->deleteLater();
+            d->reply = 0;
+        }
     }
 
     if (!d->xml.isEmpty()) {
