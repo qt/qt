@@ -1631,6 +1631,14 @@ bool QFileSystemModel::event(QEvent *event)
     return QAbstractItemModel::event(event);
 }
 
+bool QFileSystemModel::rmdir(const QModelIndex &aindex) const
+{
+    QString path = filePath(aindex);
+    QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
+    d->fileInfoGatherer.removePath(path);
+    return QDir().rmdir(path);
+}
+
 /*!
      \internal
 
