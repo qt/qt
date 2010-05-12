@@ -154,6 +154,10 @@ unix {
    DEFAULT_QMAKESPEC ~= s,^.*mkspecs/,,g
    mkspecs.commands += $(DEL_FILE) $(INSTALL_ROOT)$$mkspecs.path/default; $(SYMLINK) $$DEFAULT_QMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default
 }
+win32:!equals(QT_BUILD_TREE, $$QT_SOURCE_TREE) {
+    # When shadow building on Windows, the default mkspec only exists in the build tree.
+    mkspecs.files += $$QT_BUILD_TREE/mkspecs/default
+}
 INSTALLS += mkspecs
 
 false:macx { #mac install location
