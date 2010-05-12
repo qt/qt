@@ -120,6 +120,35 @@ private:
 class QVGPaintEnginePrivate : public QPaintEngineExPrivate
 {
 public:
+    // Extra blending modes from VG_KHR_advanced_blending extension.
+    // Use the QT_VG prefix to avoid conflicts with any definitions
+    // that may come in via <VG/vgext.h>.
+    enum AdvancedBlending {
+        QT_VG_BLEND_OVERLAY_KHR       = 0x2010,
+        QT_VG_BLEND_HARDLIGHT_KHR     = 0x2011,
+        QT_VG_BLEND_SOFTLIGHT_SVG_KHR = 0x2012,
+        QT_VG_BLEND_SOFTLIGHT_KHR     = 0x2013,
+        QT_VG_BLEND_COLORDODGE_KHR    = 0x2014,
+        QT_VG_BLEND_COLORBURN_KHR     = 0x2015,
+        QT_VG_BLEND_DIFFERENCE_KHR    = 0x2016,
+        QT_VG_BLEND_SUBTRACT_KHR      = 0x2017,
+        QT_VG_BLEND_INVERT_KHR        = 0x2018,
+        QT_VG_BLEND_EXCLUSION_KHR     = 0x2019,
+        QT_VG_BLEND_LINEARDODGE_KHR   = 0x201a,
+        QT_VG_BLEND_LINEARBURN_KHR    = 0x201b,
+        QT_VG_BLEND_VIVIDLIGHT_KHR    = 0x201c,
+        QT_VG_BLEND_LINEARLIGHT_KHR   = 0x201d,
+        QT_VG_BLEND_PINLIGHT_KHR      = 0x201e,
+        QT_VG_BLEND_HARDMIX_KHR       = 0x201f,
+        QT_VG_BLEND_CLEAR_KHR         = 0x2020,
+        QT_VG_BLEND_DST_KHR           = 0x2021,
+        QT_VG_BLEND_SRC_OUT_KHR       = 0x2022,
+        QT_VG_BLEND_DST_OUT_KHR       = 0x2023,
+        QT_VG_BLEND_SRC_ATOP_KHR      = 0x2024,
+        QT_VG_BLEND_DST_ATOP_KHR      = 0x2025,
+        QT_VG_BLEND_XOR_KHR           = 0x2026
+    };
+
     QVGPaintEnginePrivate();
     ~QVGPaintEnginePrivate();
 
@@ -216,6 +245,8 @@ public:
     QVGFontCache fontCache;
     QVGFontEngineCleaner *fontEngineCleaner;
 #endif
+
+    bool hasAdvancedBlending;
 
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
@@ -370,6 +401,8 @@ void QVGPaintEnginePrivate::init()
     fontEngineCleaner = 0;
 #endif
 
+    hasAdvancedBlending = false;
+
     clearModes();
 }
 
@@ -446,6 +479,10 @@ void QVGPaintEnginePrivate::initObjects()
                             VG_PATH_CAPABILITY_ALL);
     vgAppendPathData(linePath, 2, segments, coords);
 #endif
+
+    const char *extensions = reinterpret_cast<const char *>(vgGetString(VG_EXTENSIONS));
+    if (extensions)
+        hasAdvancedBlending = strstr(extensions, "VG_KHR_advanced_blending") != 0;
 }
 
 void QVGPaintEnginePrivate::destroy()
@@ -2292,7 +2329,7 @@ void QVGPaintEngine::compositionModeChanged()
     Q_D(QVGPaintEngine);
     d->dirty |= QPaintEngine::DirtyCompositionMode;
 
-    VGBlendMode vgMode = VG_BLEND_SRC_OVER;
+    VGint vgMode = VG_BLEND_SRC_OVER;
 
     switch (state()->composition_mode) {
     case QPainter::CompositionMode_SourceOver:
@@ -2326,11 +2363,53 @@ void QVGPaintEngine::compositionModeChanged()
         vgMode = VG_BLEND_LIGHTEN;
         break;
     default:
-        qWarning() << "QVGPaintEngine::compositionModeChanged unsupported mode" << state()->composition_mode;
-        break;  // Fall back to VG_BLEND_SRC_OVER.
+        if (d->hasAdvancedBlending) {
+            switch (state()->composition_mode) {
+            case QPainter::CompositionMode_Overlay:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_OVERLAY_KHR;
+                break;
+            case QPainter::CompositionMode_ColorDodge:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_COLORDODGE_KHR;
+                break;
+            case QPainter::CompositionMode_ColorBurn:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_COLORBURN_KHR;
+                break;
+            case QPainter::CompositionMode_HardLight:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_HARDLIGHT_KHR;
+                break;
+            case QPainter::CompositionMode_SoftLight:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_SOFTLIGHT_KHR;
+                break;
+            case QPainter::CompositionMode_Difference:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_DIFFERENCE_KHR;
+                break;
+            case QPainter::CompositionMode_Exclusion:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_EXCLUSION_KHR;
+                break;
+            case QPainter::CompositionMode_SourceOut:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_SRC_OUT_KHR;
+                break;
+            case QPainter::CompositionMode_DestinationOut:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_DST_OUT_KHR;
+                break;
+            case QPainter::CompositionMode_SourceAtop:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_SRC_ATOP_KHR;
+                break;
+            case QPainter::CompositionMode_DestinationAtop:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_DST_ATOP_KHR;
+                break;
+            case QPainter::CompositionMode_Xor:
+                vgMode = QVGPaintEnginePrivate::QT_VG_BLEND_XOR_KHR;
+                break;
+            default: break; // Fall back to VG_BLEND_SRC_OVER.
+            }
+        }
+        if (vgMode == VG_BLEND_SRC_OVER)
+            qWarning() << "QVGPaintEngine::compositionModeChanged unsupported mode" << state()->composition_mode;
+        break;
     }
 
-    d->setBlendMode(vgMode);
+    d->setBlendMode(VGBlendMode(vgMode));
 }
 
 void QVGPaintEngine::renderHintsChanged()
