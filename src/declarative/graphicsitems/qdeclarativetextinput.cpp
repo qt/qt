@@ -1233,9 +1233,7 @@ void QDeclarativeTextInput::updateSize(bool needsRedraw)
     int cursorWidth = d->control->cursorWidth();
     if(d->cursorItem)
         cursorWidth = d->cursorItem->width();
-    //### Is QFontMetrics too slow?
-    QFontMetricsF fm(d->font);
-    setImplicitWidth(fm.width(d->control->displayText())+cursorWidth);
+    setImplicitWidth(d->control->naturalTextWidth() + cursorWidth);
     setContentsSize(QSize(width(), height()));//Repaints if changed
     if(w==width() && h==height() && needsRedraw){
         clearCache();
