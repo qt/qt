@@ -805,6 +805,9 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
         resolve_mask |= QFont::WeightResolved | QFont::StyleResolved;
     }
 
+    if (italic)
+        resolve_mask |= QFont::StyleResolved;
+
     d->request.family = family;
     d->request.pointSize = qreal(pointSize);
     d->request.pixelSize = -1;
