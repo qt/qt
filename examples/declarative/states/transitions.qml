@@ -72,14 +72,14 @@ Rectangle {
         // with OutBounce easing function.
         Transition {
             from: "*"; to: "middleRight"
-            NumberAnimation { properties: "x,y"; easing.type: "OutBounce"; duration: 1000 }
+            NumberAnimation { properties: "x,y"; easing.type: Easing.OutBounce; duration: 1000 }
         },
 
         // When transitioning to 'bottomLeft' move x,y over a duration of 2 seconds,
         // with InOutQuad easing function.
         Transition {
             from: "*"; to: "bottomLeft"
-            NumberAnimation { properties: "x,y"; easing.type: "InOutQuad"; duration: 2000 }
+            NumberAnimation { properties: "x,y"; easing.type: Easing.InOutQuad; duration: 2000 }
         },
 
         // For any other state changes move x,y linearly over duration of 200ms.

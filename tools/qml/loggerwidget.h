@@ -50,14 +50,44 @@ class LoggerWidget : public QPlainTextEdit {
 Q_OBJECT
 public:
     LoggerWidget(QWidget *parent=0);
+
+    enum Visibility { ShowWarnings, HideWarnings, AutoShowWarnings };
+
+    Visibility defaultVisibility() const;
+    void setDefaultVisibility(Visibility visibility);
+
+    QMenu *preferencesMenu();
+    QAction *showAction();
+
 public slots:
     void append(const QString &msg);
+
+private slots:
+    void warningsPreferenceChanged(QAction *action);
+    void readSettings();
+    void saveSettings();
+
 protected:
+    void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
+
+signals:
+    void opened();
+    void closed();
+
 private:
-    bool m_keepClosed;
+    void setupPreferencesMenu();
+
+    QMenu *m_preferencesMenu;
+    QAction *m_showWidgetAction;
+
+    enum ConfigOrigin { CommandLineOrigin, SettingsOrigin };
+    ConfigOrigin m_visibilityOrigin;
+    Visibility m_visibility;
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(LoggerWidget::Visibility)
 
 #endif // LOGGERWIDGET_H

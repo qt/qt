@@ -75,7 +75,7 @@ Rectangle {
         highlight: petHighlight
         currentIndex: list1.currentIndex
         preferredHighlightBegin: 80; preferredHighlightEnd: 220
-        highlightRangeMode: "ApplyRange"
+        highlightRangeMode: ListView.ApplyRange
     }
 
     ListView {
@@ -87,7 +87,7 @@ Rectangle {
         highlight: Rectangle { color: "lightsteelblue" }
         currentIndex: list1.currentIndex
         preferredHighlightBegin: 125; preferredHighlightEnd: 125
-        highlightRangeMode: "StrictlyEnforceRange"
+        highlightRangeMode: ListView.StrictlyEnforceRange
         flickDeceleration: 1000
     }
 }

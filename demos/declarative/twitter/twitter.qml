@@ -88,7 +88,7 @@ Item {
             }
         ]
         transitions: [
-            Transition { NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" } }
+            Transition { NumberAnimation { properties: "x,y"; duration: 500; easing.type: Easing.InOutQuad } }
         ]
     }
 }

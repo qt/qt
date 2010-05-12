@@ -675,10 +675,10 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     Specifies the model loading status, which can be one of the following:
 
     \list
-    \o Null - No XML data has been set for this model.
-    \o Ready - The XML data has been loaded into the model.
-    \o Loading - The model is in the process of reading and loading XML data.
-    \o Error - An error occurred while the model was loading.
+    \o XmlListModel.Null - No XML data has been set for this model.
+    \o XmlListModel.Ready - The XML data has been loaded into the model.
+    \o XmlListModel.Loading - The model is in the process of reading and loading XML data.
+    \o XmlListModel.Error - An error occurred while the model was loading.
     \endlist
 
     \sa progress
