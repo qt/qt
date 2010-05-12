@@ -29,6 +29,7 @@ SUBDIRS += \
            qdeclarativeinstruction \
            qdeclarativeitem \
            qdeclarativelanguage \
+           qdeclarativelayoutitem \
            qdeclarativelistmodel \
            qdeclarativelistreference \
            qdeclarativelistview \
