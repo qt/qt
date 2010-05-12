@@ -12597,7 +12597,7 @@ EXPORTS
 	?setConfig@QEglContext@@QAEXH@Z @ 12596 NONAME ; void QEglContext::setConfig(int)
 	?hasExtension@QEglContext@@SA_NPBD@Z @ 12597 NONAME ABSENT ; bool QEglContext::hasExtension(char const *)
 	?doneCurrent@QEglContext@@QAE_NXZ @ 12598 NONAME ; bool QEglContext::doneCurrent(void)
-	?display@QEglContext@@QBEHXZ @ 12599 NONAME ; int QEglContext::display(void) const
+	?display@QEglContext@@QBEHXZ @ 12599 NONAME ABSENT ; int QEglContext::display(void) const
 	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ; void QEglProperties::setPixelFormat(enum QImage::Format)
 	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
 	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ; class QString QEglContext::errorString(int)
