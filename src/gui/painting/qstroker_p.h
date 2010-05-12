@@ -125,7 +125,7 @@ typedef void (*qStrokerCubicToHook)(qfixed c1x, qfixed c1y,
                                     void *data);
 
 // qtransform.cpp
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 class Q_GUI_EXPORT QStrokerOps
 {
