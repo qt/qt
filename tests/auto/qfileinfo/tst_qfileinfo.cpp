@@ -155,6 +155,9 @@ private slots:
 
     void isHidden_data();
     void isHidden();
+#if defined(Q_OS_MAC)
+    void isHiddenFromFinder();
+#endif
 
     void isBundle_data();
     void isBundle();
@@ -1131,8 +1134,6 @@ void tst_QFileInfo::isHidden_data()
 #if defined(Q_OS_MAC)
     // /bin has the hidden attribute on Mac OS X
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
-    QTest::newRow("/dev/") << QString::fromLatin1("/dev/") << true;
-    QTest::newRow("/net/") << QString::fromLatin1("/net/") << true;
 #elif !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
 #endif
@@ -1181,6 +1182,27 @@ void tst_QFileInfo::isHidden()
 
     QCOMPARE(fi.isHidden(), isHidden);
 }
+
+#if defined(Q_OS_MAC)
+void tst_QFileInfo::isHiddenFromFinder()
+{
+    const char *filename = "test_foobar.txt";
+
+    QFile testFile(filename);
+    testFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    testFile.write(QByteArray("world"));
+    testFile.close();
+
+    struct stat buf;
+    stat(filename, &buf);
+    chflags(filename, buf.st_flags | UF_HIDDEN);
+
+    QFileInfo fi(filename);
+    QCOMPARE(fi.isHidden(), true);
+
+    testFile.remove();
+}
+#endif
 
 void tst_QFileInfo::isBundle_data()
 {
