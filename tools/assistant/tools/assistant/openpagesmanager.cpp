@@ -280,7 +280,7 @@ void OpenPagesManager::closePagesExcept(const QModelIndex &index)
     }
 }
 
-QWidget *OpenPagesManager::openPagesWidget() const
+QAbstractItemView *OpenPagesManager::openPagesWidget() const
 {
     return m_openPagesWidget;
 }

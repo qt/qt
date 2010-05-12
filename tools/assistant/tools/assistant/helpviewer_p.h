@@ -47,7 +47,11 @@
 #include "openpagesmanager.h"
 
 #include <QtCore/QObject>
+#include <QtGui/QComboBox>
+#ifdef QT_NO_WEBKIT
 #include <QtGui/QTextBrowser>
+#endif
+#include <QtGui/QTreeView>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,13 +60,19 @@ class HelpViewer::HelpViewerPrivate : public QObject
     Q_OBJECT
 
 public:
+#ifdef QT_NO_WEBKIT
     HelpViewerPrivate(int zoom)
         : zoomCount(zoom)
         , forceFont(false)
         , lastAnchor(QString())
-        
-    {}
+#else
+    HelpViewerPrivate()
+#endif
+    {
+        m_openPagesBox = 0;
+    }
 
+#ifdef QT_NO_WEBKIT
     bool hasAnchorAt(QTextBrowser *browser, const QPoint& pos)
     {
         lastAnchor = browser->anchorAt(pos);
@@ -88,8 +98,25 @@ public:
             CentralWidget::instance()->setSource(lastAnchor);
         lastAnchor.clear();
     }
+#endif // QT_NO_WEBKIT
+
+    QComboBox *openPagesBox(QWidget *parent = 0)
+    {
+        if (!m_openPagesBox) {
+            m_openPagesBox = new QComboBox(parent);
+            m_openPagesBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+            m_openPagesBox->setModel(OpenPagesManager::instance()
+                ->openPagesWidget()->model());
+            connect(m_openPagesBox, SIGNAL(activated(int)), this,
+                    SLOT(switchToPage(int)));
+        }
+
+        return m_openPagesBox;
+    }
 
 public slots:
+
+#ifdef QT_NO_WEBKIT
     void openLink()
     {
         openLink(false);
@@ -104,6 +131,17 @@ public:
     int zoomCount;
     bool forceFont;
     QString lastAnchor;
+#endif // QT_NO_WEBKIT
+
+private slots:
+
+    void switchToPage(int row)
+    {
+        OpenPagesManager::instance()->setCurrentPage(row);
+    }
+
+private:
+    QComboBox *m_openPagesBox;
 };
 
 QT_END_NAMESPACE

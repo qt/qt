@@ -79,12 +79,6 @@ HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
 }
 
-HelpViewer::~HelpViewer()
-{
-    TRACE_OBJ
-    delete d;
-}
-
 QFont HelpViewer::viewerFont() const
 {
     TRACE_OBJ
@@ -304,6 +298,11 @@ void HelpViewer::mousePressEvent(QMouseEvent *e)
     if (handleForwardBackwardMouseButtons(e))
         return;
 #endif
+    if (openPagesListRequested(e)) {
+        showOpenPagesList(e->pos());
+        return;
+    }
+
     QTextBrowser::mousePressEvent(e);
 }
 
@@ -346,8 +345,11 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 void HelpViewer::contextMenuEvent(QContextMenuEvent *event)
 {
     TRACE_OBJ
-    QMenu menu(QLatin1String(""), 0);
 
+    if (openPagesListRequested(event))
+        return;
+
+    QMenu menu(QString(), 0);
     QUrl link;
     QAction *copyAnchorAction = 0;
     if (d->hasAnchorAt(this, event->pos())) {
