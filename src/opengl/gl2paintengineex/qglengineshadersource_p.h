@@ -343,7 +343,6 @@ static const char* const qglslImageSrcFragmentShader = "\n\
 static const char* const qglslCustomSrcFragmentShader = "\n\
     varying   highp   vec2      textureCoords; \n\
     uniform   lowp    sampler2D imageTexture; \n\
-    lowp vec4 customShader(lowp sampler2D texture, highp vec2 coords); \n\
     lowp vec4 srcPixel() \n\
     { \n\
         return customShader(imageTexture, textureCoords); \n\
