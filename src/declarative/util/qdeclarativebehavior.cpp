@@ -62,6 +62,7 @@ public:
 
     QDeclarativeProperty property;
     QVariant currentValue;
+    QVariant targetValue;
     QDeclarativeGuard<QDeclarativeAbstractAnimation> animation;
     bool enabled;
     bool finalized;
@@ -162,10 +163,15 @@ void QDeclarativeBehavior::write(const QVariant &value)
     qmlExecuteDeferred(this);
     if (!d->animation || !d->enabled || !d->finalized) {
         QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        d->targetValue = value;
         return;
     }
 
+    if (value == d->targetValue)
+        return;
+
     d->currentValue = d->property.read();
+    d->targetValue = value;
 
     if (d->animation->qtAnimation()->duration() != -1)
         d->animation->qtAnimation()->stop();
