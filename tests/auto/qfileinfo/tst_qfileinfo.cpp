@@ -155,6 +155,9 @@ private slots:
 
     void isHidden_data();
     void isHidden();
+#if defined(Q_OS_MAC)
+    void isHiddenFromFinder();
+#endif
 
     void isBundle_data();
     void isBundle();
@@ -190,6 +193,8 @@ tst_QFileInfo::~tst_QFileInfo()
     QFile::remove("link.lnk");
     QFile::remove("file1");
     QFile::remove("dummyfile");
+    QFile::remove("simplefile.txt");
+    QFile::remove("longFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileName.txt");
 #ifdef Q_OS_SYMBIAN
     QFile::remove("hidden.txt");
     QFile::remove("nothidden.txt");
@@ -199,6 +204,7 @@ tst_QFileInfo::~tst_QFileInfo()
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QDir().rmdir("./.hidden-directory");
+    QFile::remove("link_to_tst_qfileinfo");
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QDir().rmdir("./hidden-directory");
@@ -1176,6 +1182,27 @@ void tst_QFileInfo::isHidden()
 
     QCOMPARE(fi.isHidden(), isHidden);
 }
+
+#if defined(Q_OS_MAC)
+void tst_QFileInfo::isHiddenFromFinder()
+{
+    const char *filename = "test_foobar.txt";
+
+    QFile testFile(filename);
+    testFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    testFile.write(QByteArray("world"));
+    testFile.close();
+
+    struct stat buf;
+    stat(filename, &buf);
+    chflags(filename, buf.st_flags | UF_HIDDEN);
+
+    QFileInfo fi(filename);
+    QCOMPARE(fi.isHidden(), true);
+
+    testFile.remove();
+}
+#endif
 
 void tst_QFileInfo::isBundle_data()
 {

@@ -162,7 +162,7 @@ static QString generateIsXXXDef(const QString& name, const QList<QString>& list)
                                "    initScriptValues();\n"\
                                "}\n"\
                                "\n"\
-                               "static QString %1_array [] = {%2};\n\n"\
+                               "static QString %1_array[] = {%2};\n\n"\
                                "void tst_QScriptValue::%1_makeData(const char* expr)\n"\
                                "{\n"\
                                "    static QSet<QString> %1;\n"\
@@ -193,9 +193,11 @@ static QString generateIsXXXDef(const QString& name, const QList<QString>& list)
     QStringList set;
     set.reserve(3 * list.count());
     foreach(const QString& t, list) {
+        if (!set.isEmpty())
+            set.append("\",");
         set.append("\n    \"");
         set.append(escape(t));
-        set.append("\",");
+        set.append("\"");
     }
 
     return result.arg(name, set.join(QString()), QString::number(list.count()));
@@ -211,8 +213,8 @@ static QString generateToXXXDef(const QString& name, const QList<QPair<QString, 
                                  "    initScriptValues();\n"\
                                  "}\n"\
                                  "\n"\
-                                 "static QString %1_tagArray [] = {%4};\n\n"\
-                                 "static %2 %1_valueArray [] = {%5};\n\n"\
+                                 "static QString %1_tagArray[] = {%4};\n\n"\
+                                 "static %2 %1_valueArray[] = {%5};\n\n"\
                                  "void tst_QScriptValue::%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %2> %1;\n"\
@@ -236,19 +238,23 @@ static QString generateToXXXDef(const QString& name, const QList<QPair<QString, 
 
     typename QList<QPair<QString, T> >::const_iterator i = list.constBegin();
     QStringList tagSet, valueSet;
-    tagSet.reserve(list.count());
-    valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    tagSet.reserve(4 * list.count());
+    valueSet.reserve(3 * list.count());
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, T> t = *i;
         t.first = escape(t.first);
+        if (!valueSet.isEmpty()) {
+            valueSet.append(QString(","));
+            tagSet.append(QString::fromAscii(","));
+        }
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
-        tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%2))
+        tagSet.append(QString::fromAscii("\""));
+        if (!((lineBreaker++)%2))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<T>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
     return result.arg(name,
                       typeName<T>(),
@@ -268,8 +274,8 @@ QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString,
                                  "    initScriptValues();\n"\
                                  "}\n"\
                                  "\n"\
-                                 "static QString %1_tagArray [] = {%3};\n"\
-                                 "static %2 %1_valueArray [] = {%4};\n"\
+                                 "static QString %1_tagArray[] = {%3};\n"\
+                                 "static %2 %1_valueArray[] = {%4};\n"\
                                  "void tst_QScriptValue::%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %2> %1;\n"\
@@ -299,20 +305,25 @@ QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString,
 
     QList<QPair<QString, qsreal> >::const_iterator i = list.constBegin();
     QStringList tagSet, valueSet;
-    tagSet.reserve(list.count());
-    valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    tagSet.reserve(4 * list.count());
+    valueSet.reserve(3 * list.count());
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, qsreal> t = *i;
         t.first = escape(t.first);
+        if (!valueSet.isEmpty()) {
+            valueSet.append(QString(","));
+            tagSet.append(QString::fromAscii(","));
+        }
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
-        tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%10))
+        tagSet.append(QString::fromAscii("\""));
+        if (!((lineBreaker++)%10))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<qsreal>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
+
     // toInteger shouldn't return NaN, so it would be nice to catch the case.
     QString hook;
     if (name == "toNumber") {
@@ -340,8 +351,8 @@ static QString generateCastDef(const QList<QPair<QString, T> >& list)
                                  "    initScriptValues();\n"\
                                  "}\n"\
                                  "\n"\
-                                 "static QString qscriptvalue_cast%1_tagArray [] = {%2};\n"\
-                                 "static %1 qscriptvalue_cast%1_valueArray [] = {%3};\n"\
+                                 "static QString qscriptvalue_cast%1_tagArray[] = {%2};\n"\
+                                 "static %1 qscriptvalue_cast%1_valueArray[] = {%3};\n"\
                                  "void tst_QScriptValue::qscriptvalue_cast%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %1> value;\n"\
@@ -365,19 +376,23 @@ static QString generateCastDef(const QList<QPair<QString, T> >& list)
 
     typename QList<QPair<QString, T> >::const_iterator i = list.constBegin();
     QStringList tagSet, valueSet;
-    tagSet.reserve(list.count());
-    valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    tagSet.reserve(4 * list.count());
+    valueSet.reserve(3 * list.count());
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, T> t = *i;
         t.first = escape(t.first);
+        if (!valueSet.isEmpty()) {
+            valueSet.append(QString(","));
+            tagSet.append(QString::fromAscii(","));
+        }
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
-        tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%2))
+        tagSet.append(QString::fromAscii("\""));
+        if (!((lineBreaker++)%2))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<T>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
     return result.arg(typeName<T>(), tagSet.join(QString()), valueSet.join(QString()), QString::number(list.count()));
 }
@@ -392,8 +407,8 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
                                  "    initScriptValues();\n"\
                                  "}\n"\
                                  "\n"\
-                                 "static QString qscriptvalue_cast%1_tagArray [] = {%2};\n"\
-                                 "static %1 qscriptvalue_cast%1_valueArray [] = {%3};\n"\
+                                 "static QString qscriptvalue_cast%1_tagArray[] = {%2};\n"\
+                                 "static %1 qscriptvalue_cast%1_valueArray[] = {%3};\n"\
                                  "void tst_QScriptValue::qscriptvalue_cast%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %1> value;\n"\
@@ -427,19 +442,23 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
 
     QList<QPair<QString, qsreal> >::const_iterator i = list.constBegin();
     QStringList tagSet, valueSet;
-    tagSet.reserve(list.count());
-    valueSet.reserve(list.count());
-    int tmp = -1;
-    for(; i != list.constEnd(); ++i) {
+    tagSet.reserve(4 * list.count());
+    valueSet.reserve(3 * list.count());
+    for(int lineBreaker = 0; i != list.constEnd(); ++i) {
         QPair<QString, qsreal> t = *i;
         t.first = escape(t.first);
+        if (!valueSet.isEmpty()) {
+            valueSet.append(QString(","));
+            tagSet.append(QString::fromAscii(","));
+        }
         tagSet.append(QString("\n    \""));
         tagSet.append(t.first);
-        tagSet.append(QString::fromAscii("\","));
-        if (!((++tmp)%10))
+        tagSet.append(QString::fromAscii("\""));
+        if (!((lineBreaker++)%10))
             valueSet.append(QString("\n    "));
+        else
+            valueSet.append(QString::fromAscii(" "));
         valueSet.append(prepareToInsert<qsreal>(t.second));
-        valueSet.append(QString::fromAscii(", "));
     }
     return result.arg(typeName<qsreal>(),
                       tagSet.join(QString()),
@@ -457,7 +476,7 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
                                  "    initScriptValues();\n"\
                                  "}\n"\
                                  "\n"\
-                                 "static QString %1_array [] = {%2};\n\n"\
+                                 "static QString %1_array[] = {%2};\n\n"\
                                  "void tst_QScriptValue::%1_makeData(const char *expr)\n"\
                                  "{\n"\
                                  "    static QSet<QString> equals;\n"\
@@ -488,9 +507,13 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
     QString result = templ;
 
     QStringList set;
-    set.reserve(tags.count());
+    set.reserve(4 * tags.count());
     foreach(const QString& tmp, tags) {
-        set.append("\n    \"" + escape(tmp) + "\",");
+        if (!set.isEmpty())
+            set.append(",");
+        set.append("\n    \"");
+        set.append(escape(tmp));
+        set.append("\"");
     }
     return result.arg(comparisionType, set.join(""), QString::number(tags.count()));
 }
@@ -500,7 +523,7 @@ static QString generateInitDef(const QVector<QString>& allDataTags)
     static const QString templ = "void tst_QScriptValue::initScriptValues()\n"\
                                  "{\n"\
                                  "    m_values.clear();\n"\
-                                 "    if (engine) \n"\
+                                 "    if (engine)\n"\
                                  "        delete engine;\n"\
                                  "    engine = new QScriptEngine;\n"\
                                  "%1\n}\n\n";

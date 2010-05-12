@@ -172,6 +172,11 @@ private slots:
     void longFileName();
 
     void updateFileLists();
+
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    void isRoot_data();
+    void isRoot();
+#endif
 };
 
 // Testing get/set functions
@@ -805,6 +810,16 @@ void tst_QDir::canonicalPath_data()
     QTest::newRow("absPath") << appPath + "\\testData\\..\\testData" << appPath + "/testData";
 #endif
     QTest::newRow("nonexistant") << "testd" << QString();
+
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QTest::newRow("drive:/") << QDir::rootPath() << QDir::rootPath();
+    QTest::newRow("drive:\\") << QDir::toNativeSeparators(QDir::rootPath()) << QDir::rootPath();
+    QTest::newRow("drive:/./") << QDir::rootPath().append("./") << QDir::rootPath();
+    QTest::newRow("drive:/../.. ") << QDir::rootPath().append("../..") << QDir::rootPath();
+    QTest::newRow("drive:\\.\\") << QDir::toNativeSeparators(QDir::rootPath().append("./")) << QDir::rootPath();
+    QTest::newRow("drive:\\..\\..") << QDir::toNativeSeparators(QDir::rootPath().append("../..")) << QDir::rootPath();
+    QTest::newRow("drive:") << QDir().canonicalPath().left(2) << QDir().canonicalPath();
+#endif
 }
 
 void tst_QDir::canonicalPath()
@@ -1545,6 +1560,32 @@ void tst_QDir::updateFileLists()
     QCOMPARE(dir.entryInfoList().size(), 3);
     QCOMPARE(dir.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "file1.txt");
 }
+
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+void tst_QDir::isRoot_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isRoot");
+
+    QString test = QDir::rootPath();
+    QTest::newRow(QString("rootPath " + test).toLatin1()) << test << true;
+    test = QDir::rootPath().append("./");
+    QTest::newRow(QString("./ appended " + test).toLatin1()) << test << false;
+    test = QDir(QDir::rootPath().append("./")).canonicalPath();
+    QTest::newRow(QString("canonicalPath " + test).toLatin1()) << test << true;
+    test = QDir::rootPath().left(2);
+    QTest::newRow(QString("drive relative " + test).toLatin1()) << test << false;
+}
+
+void tst_QDir::isRoot()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isRoot);
+
+    QDir dir(path);
+    QCOMPARE(dir.isRoot(),isRoot);
+}
+#endif
 
 QTEST_MAIN(tst_QDir)
 #include "tst_qdir.moc"
