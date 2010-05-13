@@ -126,6 +126,9 @@ public:
     dynamically adjust to a size appropriate for the content.
     This width may be large for typical online web pages.
 
+    If the width or height is explictly set, the rendered website
+    will be clipped, not scaled, to fit into the set dimensions.
+
     If the preferredWidth is set, the width will be this amount or larger,
     usually laying out the web content to fit the preferredWidth.
 
@@ -134,8 +137,8 @@ public:
 
     WebView {
         url: "http://www.nokia.com"
-        width: 490
-        height: 400
+        preferredWidth: 490
+        preferredHeight: 400
         scale: 0.5
         smooth: false
         smoothCache: true
