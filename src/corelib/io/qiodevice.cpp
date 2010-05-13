@@ -810,6 +810,9 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
                 }
             }
 
+            if (!maxSize)
+                return readSoFar;
+
             if ((d->openMode & Unbuffered) == 0 && maxSize < QIODEVICE_BUFFERSIZE) {
                 // In buffered mode, we try to fill up the QIODevice buffer before
                 // we do anything else.

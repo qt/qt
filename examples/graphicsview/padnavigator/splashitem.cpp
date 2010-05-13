@@ -43,31 +43,36 @@
 
 #include <QtGui/QtGui>
 
+//! [0]
 SplashItem::SplashItem(QGraphicsItem *parent)
-    : QGraphicsWidget(parent)
+    : QGraphicsObject(parent)
 {
-    opacity = 1.0;
-
-    
-    timeLine = new QTimeLine(350);
-    timeLine->setCurveShape(QTimeLine::EaseInCurve);
-    connect(timeLine, SIGNAL(valueChanged(qreal)), this, SLOT(setValue(qreal)));
-
     text = tr("Welcome to the Pad Navigator Example. You can use the"
               " keyboard arrows to navigate the icons, and press enter"
-              " to activate an item. Please press any key to continue.");
-    resize(400, 175);
+              " to activate an item. Press any key to begin.");
+    setCacheMode(DeviceCoordinateCache);
 }
+//! [0]
 
-void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+//! [1]
+QRectF SplashItem::boundingRect() const
 {
-    painter->setOpacity(opacity);
+    return QRectF(0, 0, 400, 175);
+}
+//! [1]
+
+//! [2]
+void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                       QWidget *widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
     painter->setPen(QPen(Qt::black, 2));
     painter->setBrush(QColor(245, 245, 255, 220));
-    painter->setClipRect(rect());
+    painter->setClipRect(boundingRect());
     painter->drawRoundRect(3, -100 + 3, 400 - 6, 250 - 6);
 
-    QRectF textRect = rect().adjusted(10, 10, -10, -10);
+    QRectF textRect = boundingRect().adjusted(10, 10, -10, -10);
     int flags = Qt::AlignTop | Qt::AlignLeft | Qt::TextWordWrap;
 
     QFont font;
@@ -76,17 +81,4 @@ void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
     painter->setFont(font);
     painter->drawText(textRect, flags, text);
 }
-
-void SplashItem::keyPressEvent(QKeyEvent * /* event */)
-{
-    if (timeLine->state() == QTimeLine::NotRunning)
-        timeLine->start();
-}
-
-void SplashItem::setValue(qreal value)
-{
-    opacity = 1 - value;
-    setPos(x(), scene()->sceneRect().top() - rect().height() * value);
-    if (value == 1)
-        hide();
-}
+//! [2]

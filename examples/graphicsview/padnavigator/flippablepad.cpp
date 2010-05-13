@@ -39,76 +39,61 @@
 **
 ****************************************************************************/
 
-#include "roundrectitem.h"
+#include "flippablepad.h"
 
 #include <QtGui/QtGui>
 
 //! [0]
-RoundRectItem::RoundRectItem(const QRectF &bounds, const QColor &color,
-                             QGraphicsItem *parent)
-    : QGraphicsObject(parent), fillRect(false), bounds(bounds)
+static QRectF boundsFromSize(const QSize &size)
 {
-    gradient.setStart(bounds.topLeft());
-    gradient.setFinalStop(bounds.bottomRight());
-    gradient.setColorAt(0, color);
-    gradient.setColorAt(1, color.dark(200));
-    setCacheMode(ItemCoordinateCache);
+    return QRectF((-size.width() / 2.0) * 150, (-size.height() / 2.0) * 150,
+                  size.width() * 150, size.height() * 150);
 }
 //! [0]
 
 //! [1]
-QPixmap RoundRectItem::pixmap() const
+static QPointF posForLocation(int column, int row, const QSize &size)
 {
-    return pix;
-}
-void RoundRectItem::setPixmap(const QPixmap &pixmap)
-{
-    pix = pixmap;
-    update();
+    return QPointF(column * 150, row * 150)
+        - QPointF((size.width() - 1) * 75, (size.height() - 1) * 75);
 }
 //! [1]
 
 //! [2]
-QRectF RoundRectItem::boundingRect() const
+FlippablePad::FlippablePad(const QSize &size, QGraphicsItem *parent)
+    : RoundRectItem(boundsFromSize(size), QColor(226, 255, 92, 64), parent)
 {
-    return bounds.adjusted(0, 0, 2, 2);
-}
 //! [2]
+//! [3]
+    int numIcons = size.width() * size.height();
+    QList<QPixmap> pixmaps;
+    QDirIterator it(":/images", QStringList() << "*.png");
+    while (it.hasNext() && pixmaps.size() < numIcons)
+        pixmaps << it.next();
+//! [3]
 
-//! [3]
-void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                          QWidget *widget)
-{
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(0, 0, 0, 64));
-    painter->drawRoundRect(bounds.translated(2, 2));
-//! [3]
 //! [4]
-    if (fillRect)
-        painter->setBrush(QApplication::palette().brush(QPalette::Window));
-    else
-        painter->setBrush(gradient);
-    painter->setPen(QPen(Qt::black, 1));
-    painter->drawRoundRect(bounds);
-//! [4]
-//! [5]
-    if (!pix.isNull()) {
-        painter->scale(1.95, 1.95);
-        painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);
+    const QRectF iconRect(-54, -54, 108, 108);
+    const QColor iconColor(214, 240, 110, 128);
+    iconGrid.resize(size.height());
+    int n = 0;
+
+    for (int y = 0; y < size.height(); ++y) {
+        iconGrid[y].resize(size.width());
+        for (int x = 0; x < size.width(); ++x) {
+            RoundRectItem *rect = new RoundRectItem(iconRect, iconColor, this);
+            rect->setZValue(1);
+            rect->setPos(posForLocation(x, y, size));
+            rect->setPixmap(pixmaps.at(n++ % pixmaps.size()));
+            iconGrid[y][x] = rect;
+        }
     }
 }
-//! [5]
+//! [4]
 
-//! [6]
-bool RoundRectItem::fill() const
+//! [5]
+RoundRectItem *FlippablePad::iconAt(int column, int row) const
 {
-    return fillRect;
+    return iconGrid[row][column];
 }
-void RoundRectItem::setFill(bool fill)
-{
-    fillRect = fill;
-    update();
-}
-//! [6]
+//! [5]

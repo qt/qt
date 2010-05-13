@@ -3950,7 +3950,7 @@ void QOpenGLPaintEnginePrivate::strokeLines(const QPainterPath &path)
     enableClipping();
 }
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 void QOpenGLPaintEnginePrivate::strokePath(const QPainterPath &path, bool use_cache)
 {

@@ -39,54 +39,29 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qgraphicsview.h>
+#ifndef PADNAVIGATOR_H
+#define PADNAVIGATOR_H
 
-QT_BEGIN_NAMESPACE
-class QTimeLine;
-class Ui_BackSide;
-QT_END_NAMESPACE
+#include <QGraphicsView>
+#include "ui_form.h"
 
-class RoundRectItem;
+class QState;
+class QStateMachine;
+class Ui_Form;
 
-class Panel : public QGraphicsView
+//! [0]
+class PadNavigator : public QGraphicsView
 {
     Q_OBJECT
 public:
-    Panel(int width, int height);
-    ~Panel();
+    explicit PadNavigator(const QSize &size, QWidget *parent = 0);
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
     void resizeEvent(QResizeEvent *event);
 
-private Q_SLOTS:
-    void updateSelectionStep(qreal val);
-    void updateFlipStep(qreal val);
-    void flip();
-
 private:
-    QPointF posForLocation(int x, int y) const;
-
-    QGraphicsScene *scene;
-    RoundRectItem *selectionItem;
-    RoundRectItem *baseItem;
-    RoundRectItem *backItem;
-    QGraphicsWidget *splash;
-    QTimeLine *selectionTimeLine;
-    QTimeLine *flipTimeLine;
-    int selectedX, selectedY;
-
-    QGraphicsItem ***grid;
-    
-    QPointF startPos;
-    QPointF endPos;
-    qreal xrot, yrot;
-    qreal xrot2, yrot2;
-
-    int width;
-    int height;
-    bool flipped;
-    bool flipLeft;
-
-    Ui_BackSide *ui;
+    Ui_Form form;
 };
+//! [0]
+
+#endif // PADNAVIGATOR_H

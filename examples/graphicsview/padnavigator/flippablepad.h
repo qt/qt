@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,12 +39,26 @@
 **
 ****************************************************************************/
 
-/*!
-    \example multitouch/fingerpaint
-    \title Finger Paint Example
+#ifndef FLIPPABLEPAD_H
+#define FLIPPABLEPAD_H
 
-    The Finger Paint example shows the use of multi-touch with a custom widget
-    to create a simple painting application.
+#include "roundrectitem.h"
 
-    \image multitouch-fingerpaint-example.png
-*/
+#include <QGraphicsObject>
+#include <QLinearGradient>
+#include <QVector>
+
+//! [0]
+class FlippablePad : public RoundRectItem
+{
+public:
+    FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
+
+    RoundRectItem *iconAt(int column, int row) const;
+
+private:
+    QVector<QVector<RoundRectItem *> > iconGrid;
+};
+//! [0]
+
+#endif // FLIPPABLEPAD_H
