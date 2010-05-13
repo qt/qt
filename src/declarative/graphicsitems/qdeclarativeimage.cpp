@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     An Image element displays a specified \l source image:
 
     \table
+    \row
     \o
     \image declarative-qtlogo.png
     \o
