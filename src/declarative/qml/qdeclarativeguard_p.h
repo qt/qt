@@ -97,7 +97,7 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QDeclarativeGuard<QObject>);
+Q_DECLARE_METATYPE(QDeclarativeGuard<QObject>)
 
 #include "private/qdeclarativedata_p.h"
 

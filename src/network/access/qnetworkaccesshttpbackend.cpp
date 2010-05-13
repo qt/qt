@@ -346,6 +346,8 @@ void QNetworkAccessHttpBackend::setupConnection()
 #endif
     connect(http, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
             SLOT(httpAuthenticationRequired(QHttpNetworkRequest,QAuthenticator*)));
+    connect(http, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
+            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
     connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
 #ifndef QT_NO_OPENSSL
@@ -577,6 +579,11 @@ void QNetworkAccessHttpBackend::postRequest()
 
     if (request().attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
         httpRequest.setPipeliningAllowed(true);
+
+    if (static_cast<QNetworkRequest::LoadControl>
+        (request().attribute(QNetworkRequest::AuthenticationReuseAttribute,
+                             QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Manual)
+        httpRequest.setWithCredentials(false);
 
     httpReply = http->sendRequest(httpRequest);
     httpReply->setParent(this);
@@ -859,6 +866,12 @@ void QNetworkAccessHttpBackend::httpAuthenticationRequired(const QHttpNetworkReq
                                                            QAuthenticator *auth)
 {
     authenticationRequired(auth);
+}
+
+void QNetworkAccessHttpBackend::httpCacheCredentials(const QHttpNetworkRequest &,
+                                                 QAuthenticator *auth)
+{
+    cacheCredentials(auth);
 }
 
 void QNetworkAccessHttpBackend::httpError(QNetworkReply::NetworkError errorCode,

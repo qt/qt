@@ -132,20 +132,21 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
         QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
         if (list.contains(recognizer)) {
             m_deletedRecognizers.insert(g, recognizer);
-            m_gestureToRecognizer.remove(g);
         }
     }
 
-    foreach (QGestureRecognizer *recognizer, list) {
-        QList<QGesture *> obsoleteGestures;
-        QMap<ObjectGesture, QList<QGesture *> >::Iterator iter = m_objectGestures.begin();
-        while (iter != m_objectGestures.end()) {
-            ObjectGesture objectGesture = iter.key();
-            if (objectGesture.gesture == type)
-                obsoleteGestures << iter.value();
-            ++iter;
+    QMap<ObjectGesture, QList<QGesture *> >::const_iterator iter = m_objectGestures.begin();
+    while (iter != m_objectGestures.end()) {
+        ObjectGesture objectGesture = iter.key();
+        if (objectGesture.gesture == type) {
+            foreach (QGesture *g, iter.value()) {
+                if (QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g)) {
+                    m_gestureToRecognizer.remove(g);
+                    m_obsoleteGestures[recognizer].insert(g);
+                }
+            }
         }
-        m_obsoleteGestures.insert(recognizer, obsoleteGestures);
+        ++iter;
     }
 }
 
@@ -155,7 +156,14 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
         if (objectGesture.gesture == type && target == objectGesture.object.data()) {
-            qDeleteAll(iter.value());
+            QSet<QGesture *> gestures = iter.value().toSet();
+            for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
+                 it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
+                it.value() -= gestures;
+            }
+            foreach (QGesture *g, gestures)
+                m_deletedRecognizers.remove(g);
+            qDeleteAll(gestures);
             iter = m_objectGestures.erase(iter);
         } else {
             ++iter;
@@ -177,6 +185,9 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
 #ifndef QT_NO_GRAPHICSVIEW
     } else {
         Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(object);
+        if (graphicsObject->QGraphicsItem::d_func()->inDestructor)
+            return 0;
 #endif
     }
 

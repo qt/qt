@@ -129,6 +129,11 @@ inline bool isascii(int c)
 }
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+void qt_symbianUpdateSystemPrivate();
+void qt_symbianInitSystemLocale();
+#endif
+
 /******************************************************************************
 ** Helpers for accessing Qt locale database
 */
@@ -1407,6 +1412,9 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
+#if defined(Q_OS_SYMBIAN)
+    qt_symbianInitSystemLocale();
+#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -1416,6 +1424,10 @@ void QLocalePrivate::updateSystemPrivate()
     if (!system_lp)
         system_lp = globalLocalePrivate();
     *system_lp = *sys_locale->fallbackLocale().d();
+
+#if defined(Q_OS_SYMBIAN)
+    qt_symbianUpdateSystemPrivate();
+#endif
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull())

@@ -67,3 +67,23 @@ beginInsertColumns(parent, 6, 8);
 //! [5]
 beginRemoveColumns(parent, 4, 6);
 //! [5]
+
+
+//! [6]
+beginMoveRows(sourceParent, 2, 4, destinationParent, 2);
+//! [6]
+
+
+//! [7]
+beginMoveRows(sourceParent, 2, 4, destinationParent, 6);
+//! [7]
+
+
+//! [8]
+beginMoveRows(parent, 2, 2, parent, 0);
+//! [8]
+
+
+//! [9]
+beginMoveRows(parent, 2, 2, parent, 4);
+//! [9]

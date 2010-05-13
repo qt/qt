@@ -40,18 +40,12 @@
 ****************************************************************************/
 
 /*!
-    \group draganddrop
-    \title Drag And Drop Classes
-
-    \brief Classes dealing with drag and drop and mime type encoding and decoding.
-*/
-
-/*!
     \page dnd.html
     \title Drag and Drop
     \brief An overview of the drag and drop system provided by Qt.
 
-    \ingroup frameworks-technologies
+    \ingroup technology-apis
+    \ingroup qt-gui-concepts
 
     Drag and drop provides a simple visual mechanism which users can use
     to transfer information between and within applications. (In the
