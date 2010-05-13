@@ -743,8 +743,6 @@ void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
     view.viewport()->setInputContext(&ic);
     QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
             view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
-    if ((behavior != QStyle::RSIP_OnMouseClick))
-        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
     QDeclarativeTextInput input;
     input.setText("Hello world");
     input.setPos(0, 0);
@@ -756,7 +754,14 @@ void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
     QApplication::processEvents();
-    QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, false);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+        QApplication::processEvents();
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    } else if (behavior == QStyle::RSIP_OnMouseClick) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    }
 }
 
 class MyTextInput : public QDeclarativeTextInput
