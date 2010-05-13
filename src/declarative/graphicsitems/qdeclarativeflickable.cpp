@@ -230,13 +230,17 @@ void QDeclarativeFlickablePrivate::flick(AxisData &data, qreal minExtent, qreal 
         timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
         if (!flickingHorizontally && q->xflick()) {
             flickingHorizontally = true;
-            emit q->flickingChanged(); // deprecated
+            emit q->flickingChanged();
             emit q->flickingHorizontallyChanged();
+            if (!flickingVertically)
+                emit q->flickStarted();
         }
         if (!flickingVertically && q->yflick()) {
             flickingVertically = true;
-            emit q->flickingChanged(); // deprecated
+            emit q->flickingChanged();
             emit q->flickingVerticallyChanged();
+            if (!flickingHorizontally)
+                emit q->flickStarted();
         }
     } else {
         timeline.reset(data.move);
@@ -365,6 +369,37 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 */
 
 /*!
+    \qmlsignal Flickable::onMovementStarted()
+
+    This handler is called when the view begins moving due to user
+    interaction.
+*/
+
+/*!
+    \qmlsignal Flickable::onMovementEnded()
+
+    This handler is called when the view stops moving due to user
+    interaction.  If a flick was generated, this handler will
+    be triggered once the flick stops.  If a flick was not
+    generated, the handler will be triggered when the
+    user stops dragging - i.e. a mouse or touch release.
+*/
+
+/*!
+    \qmlsignal Flickable::onFlickStarted()
+
+    This handler is called when the view is flicked.  A flick
+    starts from the point that the mouse or touch is released,
+    while still in motion.
+*/
+
+/*!
+    \qmlsignal Flickable::onFlickEnded()
+
+    This handler is called when the view stops moving due to a flick.
+*/
+
+/*!
     \qmlproperty real Flickable::visibleArea.xPosition
     \qmlproperty real Flickable::visibleArea.widthRatio
     \qmlproperty real Flickable::visibleArea.yPosition
@@ -474,9 +509,10 @@ void QDeclarativeFlickable::setInteractive(bool interactive)
             d->vTime = d->timeline.time();
             d->flickingHorizontally = false;
             d->flickingVertically = false;
-            emit flickingChanged(); // deprecated
+            emit flickingChanged();
             emit flickingHorizontallyChanged();
             emit flickingVerticallyChanged();
+            emit flickEnded();
         }
         emit interactiveChanged();
     }
@@ -799,8 +835,10 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->vData.velocity = qMin(event->delta() - d->vData.smoothVelocity.value(), qreal(-250.0));
         d->flickingVertically = false;
         d->flickY(d->vData.velocity);
-        if (d->flickingVertically)
+        if (d->flickingVertically) {
+            d->vMoved = true;
             movementStarting();
+        }
         event->accept();
     } else if (xflick()) {
         if (event->delta() > 0)
@@ -809,8 +847,10 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->hData.velocity = qMin(event->delta() - d->hData.smoothVelocity.value(), qreal(-250.0));
         d->flickingHorizontally = false;
         d->flickX(d->hData.velocity);
-        if (d->flickingHorizontally)
+        if (d->flickingHorizontally) {
+            d->hMoved = true;
             movementStarting();
+        }
         event->accept();
     } else {
         QDeclarativeItem::wheelEvent(event);
@@ -1269,11 +1309,11 @@ void QDeclarativeFlickable::setFlickDeceleration(qreal deceleration)
 bool QDeclarativeFlickable::isFlicking() const
 {
     Q_D(const QDeclarativeFlickable);
-    qmlInfo(this) << "'flicking' is deprecated. Please use 'flickingHorizontally' and 'flickingVertically' instead.";
     return d->flickingHorizontally ||  d->flickingVertically;
 }
 
 /*!
+    \qmlproperty bool Flickable::flicking
     \qmlproperty bool Flickable::flickingHorizontally
     \qmlproperty bool Flickable::flickingVertically
 
@@ -1322,11 +1362,11 @@ void QDeclarativeFlickable::setPressDelay(int delay)
 bool QDeclarativeFlickable::isMoving() const
 {
     Q_D(const QDeclarativeFlickable);
-    qmlInfo(this) << "'moving' is deprecated. Please use 'movingHorizontally' or 'movingVertically' instead.";
     return d->movingHorizontally || d->movingVertically;
 }
 
 /*!
+    \qmlproperty bool Flickable::moving
     \qmlproperty bool Flickable::movingHorizontally
     \qmlproperty bool Flickable::movingVertically
 
@@ -1350,13 +1390,17 @@ void QDeclarativeFlickable::movementStarting()
     Q_D(QDeclarativeFlickable);
     if (d->hMoved && !d->movingHorizontally) {
         d->movingHorizontally = true;
-        emit movingChanged(); // deprecated
+        emit movingChanged();
         emit movingHorizontallyChanged();
+        if (!d->movingVertically)
+            emit movementStarted();
     }
-    if (d->vMoved && !d->movingVertically) {
+    else if (d->vMoved && !d->movingVertically) {
         d->movingVertically = true;
-        emit movingChanged(); // deprecated
+        emit movingChanged();
         emit movingVerticallyChanged();
+        if (!d->movingHorizontally)
+            emit movementStarted();
     }
 }
 
@@ -1365,25 +1409,33 @@ void QDeclarativeFlickable::movementEnding()
     Q_D(QDeclarativeFlickable);
     if (d->flickingHorizontally) {
         d->flickingHorizontally = false;
-        emit flickingChanged(); // deprecated
+        emit flickingChanged();
         emit flickingHorizontallyChanged();
+        if (!d->flickingVertically)
+           emit flickEnded();
     }
     if (d->flickingVertically) {
         d->flickingVertically = false;
-        emit flickingChanged(); // deprecated
+        emit flickingChanged();
         emit flickingVerticallyChanged();
+        if (!d->flickingHorizontally)
+           emit flickEnded();
     }
     if (d->movingHorizontally) {
         d->movingHorizontally = false;
         d->hMoved = false;
-        emit movingChanged(); // deprecated
+        emit movingChanged();
         emit movingHorizontallyChanged();
+        if (!d->movingVertically)
+            emit movementEnded();
     }
     if (d->movingVertically) {
         d->movingVertically = false;
         d->vMoved = false;
-        emit movingChanged(); // deprecated
+        emit movingChanged();
         emit movingVerticallyChanged();
+        if (!d->movingHorizontally)
+            emit movementEnded();
     }
     d->hData.smoothVelocity.setValue(0);
     d->vData.smoothVelocity.setValue(0);

@@ -347,8 +347,7 @@ public:
 void QDeclarativeGridViewPrivate::init()
 {
     Q_Q(QDeclarativeGridView);
-    QObject::connect(q, SIGNAL(movingHorizontallyChanged()), q, SLOT(animStopped()));
-    QObject::connect(q, SIGNAL(movingVerticallyChanged()), q, SLOT(animStopped()));
+    QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     q->setFlickableDirection(QDeclarativeFlickable::VerticalFlick);
     addItemChangeListener(this, Geometry);
@@ -878,13 +877,15 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
         if (!flickingHorizontally && q->xflick()) {
             flickingHorizontally = true;
-            emit q->flickingChanged(); // deprecated
+            emit q->flickingChanged();
             emit q->flickingHorizontallyChanged();
+            emit q->flickStarted();
         }
         if (!flickingVertically && q->yflick()) {
             flickingVertically = true;
-            emit q->flickingChanged(); // deprecated
+            emit q->flickingChanged();
             emit q->flickingVerticallyChanged();
+            emit q->flickStarted();
         }
     } else {
         timeline.reset(data.move);
@@ -2311,13 +2312,9 @@ void QDeclarativeGridView::destroyingItem(QDeclarativeItem *item)
 void QDeclarativeGridView::animStopped()
 {
     Q_D(QDeclarativeGridView);
-    if ((!d->movingVertically && d->flow == QDeclarativeGridView::LeftToRight)
-        || (!d->movingHorizontally && d->flow == QDeclarativeGridView::TopToBottom))
-    {
-        d->bufferMode = QDeclarativeGridViewPrivate::NoBuffer;
-        if (d->haveHighlightRange && d->highlightRange == QDeclarativeGridView::StrictlyEnforceRange)
-            d->updateHighlight();
-    }
+    d->bufferMode = QDeclarativeGridViewPrivate::NoBuffer;
+    if (d->haveHighlightRange && d->highlightRange == QDeclarativeGridView::StrictlyEnforceRange)
+        d->updateHighlight();
 }
 
 void QDeclarativeGridView::refill()
