@@ -12800,4 +12800,7 @@ EXPORTS
 	?iconName@QIconEngineV2@@QAE?AVQString@@XZ @ 12799 NONAME ; class QString QIconEngineV2::iconName(void)
 	?updateRectF@QGraphicsViewPrivate@@QAE_NABVQRectF@@@Z @ 12800 NONAME ; bool QGraphicsViewPrivate::updateRectF(class QRectF const &)
 	?updateRegion@QGraphicsViewPrivate@@QAE_NABVQRectF@@ABVQTransform@@@Z @ 12801 NONAME ; bool QGraphicsViewPrivate::updateRegion(class QRectF const &, class QTransform const &)
+	?totalUsed@QPixmapCache@@SAHXZ @ 12802 NONAME ; int QPixmapCache::totalUsed(void)
+	?allPixmaps@QPixmapCache@@SA?AV?$QList@U?$QPair@VQString@@VQPixmap@@@@@@XZ @ 12803 NONAME ; class QList<struct QPair<class QString, class QPixmap> > QPixmapCache::allPixmaps(void)
+	?flushDetachedPixmaps@QPixmapCache@@SAXXZ @ 12804 NONAME ; void QPixmapCache::flushDetachedPixmaps(void)
 

@@ -11999,4 +11999,7 @@ EXPORTS
 	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 11998 NONAME
 	_ZNK5QIcon4nameEv @ 11999 NONAME
 	_ZN20QGraphicsViewPrivate12updateRegionERK6QRectFRK10QTransform @ 12000 NONAME
+	_ZN12QPixmapCache10allPixmapsEv @ 12001 NONAME
+	_ZN12QPixmapCache20flushDetachedPixmapsEv @ 12002 NONAME
+	_ZN12QPixmapCache9totalUsedEv @ 12003 NONAME
 
