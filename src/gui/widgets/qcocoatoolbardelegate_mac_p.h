@@ -61,7 +61,7 @@ QT_END_NAMESPACE
 
 @class NSToolbarItem;
 
-@interface QCocoaToolBarDelegate : NSObject {
+@interface QT_MANGLE_NAMESPACE(QCocoaToolBarDelegate) : NSObject {
     QT_PREPEND_NAMESPACE(QMainWindowLayout) *mainWindowLayout;
     NSToolbarItem *toolbarItem;
 }

@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
-      autoDecompress(false), pipeliningAllowed(false)
+      autoDecompress(false), pipeliningAllowed(false), withCredentials(true)
 {
 }
 
@@ -62,6 +62,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     autoDecompress = other.autoDecompress;
     pipeliningAllowed = other.pipeliningAllowed;
     customVerb = other.customVerb;
+    withCredentials = other.withCredentials;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -272,6 +273,16 @@ bool QHttpNetworkRequest::isPipeliningAllowed() const
 void QHttpNetworkRequest::setPipeliningAllowed(bool b)
 {
     d->pipeliningAllowed = b;
+}
+
+bool QHttpNetworkRequest::withCredentials() const
+{
+    return d->withCredentials;
+}
+
+void QHttpNetworkRequest::setWithCredentials(bool b)
+{
+    d->withCredentials = b;
 }
 
 void QHttpNetworkRequest::setUploadByteDevice(QNonContiguousByteDevice *bd)

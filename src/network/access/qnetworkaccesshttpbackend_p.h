@@ -107,6 +107,7 @@ private slots:
     void replyFinished();
     void replyHeaderChanged();
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
+    void httpCacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
     void finished(); // override

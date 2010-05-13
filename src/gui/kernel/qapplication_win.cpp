@@ -1936,6 +1936,8 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                     QLocalePrivate::updateSystemPrivate();
                     if (!widget->testAttribute(Qt::WA_SetLocale))
                         widget->dptr()->setLocale_helper(QLocale(), true);
+                    QEvent e(QEvent::LocaleChange);
+                    QApplication::sendEvent(qApp, &e);
                 }
             }
             else if (msg.wParam == SPI_SETICONTITLELOGFONT) {

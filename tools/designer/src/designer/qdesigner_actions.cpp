@@ -347,6 +347,7 @@ QDesignerActions::QDesignerActions(QDesignerWorkbench *workbench)
     connect(m_editWidgetsAction, SIGNAL(triggered()), this, SLOT(editWidgetsSlot()));
     m_editWidgetsAction->setChecked(true);
     m_editWidgetsAction->setEnabled(false);
+    m_editWidgetsAction->setProperty(QDesignerActions::defaultToolbarPropertyName, true);
     m_toolActions->addAction(m_editWidgetsAction);
 
     connect(formWindowManager, SIGNAL(activeFormWindowChanged(QDesignerFormWindowInterface*)),

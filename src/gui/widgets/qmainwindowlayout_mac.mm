@@ -410,7 +410,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
         macToolbar = [[NSToolbar alloc] initWithIdentifier:(NSString *)kQMainWindowMacToolbarID];
         [macToolbar setDisplayMode:NSToolbarDisplayModeIconOnly];
         [macToolbar setSizeMode:NSToolbarSizeModeRegular];
-        [macToolbar setDelegate:[[QCocoaToolBarDelegate alloc] initWithMainWindowLayout:this]];
+        [macToolbar setDelegate:[[QT_MANGLE_NAMESPACE(QCocoaToolBarDelegate) alloc] initWithMainWindowLayout:this]];
         [window setToolbar:macToolbar];
         [macToolbar release];
     }

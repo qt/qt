@@ -41,7 +41,8 @@
 
 /*!
     \page properties.html
-    \title Qt's Property System
+    \title The Property System
+    \ingroup qt-basic-concepts
     \brief An overview of Qt's property system.
 
     Qt provides a sophisticated property system similar to the ones

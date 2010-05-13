@@ -190,6 +190,46 @@ QT_BEGIN_NAMESPACE
         of other verbs than GET, POST, PUT and DELETE). This verb is set
         when calling QNetworkAccessManager::sendCustomRequest().
 
+    \value CookieLoadControlAttribute
+        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Indicates whether to send 'Cookie' headers in the request.
+
+        This attribute is set to false by QtWebKit when creating a cross-origin
+        XMLHttpRequest where withCredentials has not been set explicitly to true by the
+        Javascript that created the request.
+
+        See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+
+        \since 4.7
+
+     \value CookieSaveControlAttribute
+        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Indicates whether to save 'Cookie' headers received from the server in reply
+        to the request.
+
+        This attribute is set to false by QtWebKit when creating a cross-origin
+        XMLHttpRequest where withCredentials has not been set explicitly to true by the
+        Javascript that created the request.
+
+        See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+
+        \since 4.7
+
+     \value AuthenticationReuseControlAttribute
+        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Indicates whether to use cached authorization credentials in the request,
+        if available. If this is set to QNetworkRequest::Manual and the authentication
+        mechanism is 'Basic' or 'Digest', Qt will not send an an 'Authorization' HTTP
+        header with any cached credentials it may have for the request's URL.
+
+        This attribute is set to QNetworkRequest::Manual by QtWebKit when creating a cross-origin
+        XMLHttpRequest where withCredentials has not been set explicitly to true by the
+        Javascript that created the request.
+
+        See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+
+        \since 4.7
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -220,6 +260,18 @@ QT_BEGIN_NAMESPACE
 
     \value AlwaysCache          only load from cache, indicating error
     if the item was not cached (i.e., off-line mode)
+*/
+
+/*!
+    \enum QNetworkRequest::LoadControl
+    \since 4.7
+
+    Indicates if an aspect of the request's loading mechanism has been
+    manually overridden, e.g. by QtWebKit.
+
+    \value Automatic            default value: indicates default behaviour.
+
+    \value Manual               indicates behaviour has been manually overridden.
 */
 
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
