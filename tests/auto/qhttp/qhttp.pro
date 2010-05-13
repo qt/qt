@@ -21,6 +21,7 @@ wince*: {
     addFiles.sources = rfc3252.txt trolltech
     addFiles.path = .
     DEPLOYMENT = addFiles webFiles cgi
+    TARGET.CAPABILITY = NetworkServices
 } else:vxworks*: {
     DEFINES += SRCDIR=\\\"\\\"
 } else {
