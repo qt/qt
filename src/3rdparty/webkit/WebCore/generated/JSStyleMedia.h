@@ -18,8 +18,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef JSMedia_h
-#define JSMedia_h
+#ifndef JSStyleMedia_h
+#define JSStyleMedia_h
 
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
@@ -27,13 +27,13 @@
 
 namespace WebCore {
 
-class Media;
+class StyleMedia;
 
-class JSMedia : public DOMObjectWithGlobalPointer {
+class JSStyleMedia : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMedia(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Media>);
-    virtual ~JSMedia();
+    JSStyleMedia(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<StyleMedia>);
+    virtual ~JSStyleMedia();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -46,18 +46,18 @@ public:
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
-    Media* impl() const { return m_impl.get(); }
+    StyleMedia* impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<Media> m_impl;
+    RefPtr<StyleMedia> m_impl;
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Media*);
-Media* toMedia(JSC::JSValue);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, StyleMedia*);
+StyleMedia* toStyleMedia(JSC::JSValue);
 
-class JSMediaPrototype : public JSC::JSObject {
+class JSStyleMediaPrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;
 public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -69,18 +69,18 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
-    JSMediaPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSStyleMediaPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 // Functions
 
-JSC::JSValue JSC_HOST_CALL jsMediaPrototypeFunctionMatchMedium(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsStyleMediaPrototypeFunctionMatchMedium(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsMediaType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
-JSC::JSValue jsMediaConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsStyleMediaType(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsStyleMediaConstructor(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 
 } // namespace WebCore
 
