@@ -327,11 +327,12 @@ Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
 void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
 {
     QObjectPrivate *p = QObjectPrivate::get(o);
-    Q_ASSERT(p->declarativeData);
-    QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
-    if (d->ownContext && d->context) {
-        d->context->destroy();
-        d->context = 0;
+    if (p->declarativeData) {
+        QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
+        if (d->ownContext && d->context) {
+            d->context->destroy();
+            d->context = 0;
+        }
     }
 }
 

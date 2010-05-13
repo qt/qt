@@ -11,3 +11,4 @@ INCLUDEPATH += .
 SOURCES += paintbenchmark.cpp
 QT += opengl
 CONFIG += console
+macx:CONFIG -= app_bundle
