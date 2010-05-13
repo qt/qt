@@ -62,6 +62,7 @@
 #include "QtGui/qevent.h"
 #include "qpointer.h"
 #include "qapplication.h"
+#include "qelapsedtimer.h"
 #include <w32std.h>
 #include <coecntrl.h>
 #include <eikenv.h>
@@ -222,6 +223,7 @@ private:
 private:
     QWidget *qwidget;
     QLongTapTimer* m_longTapDetector;
+    QElapsedTimer m_doubleClickTimer;
     bool m_ignoreFocusChanged : 1;
     bool m_symbianPopupIsOpen : 1;
 

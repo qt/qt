@@ -364,6 +364,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
+        m_doubleClickTimer.invalidate();
 
         DrawableWindow()->SetPointerGrab(ETrue);
     }
@@ -642,10 +643,13 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
 
                 QPoint pos = QCursor::pos();
                 TPointerEvent fakeEvent;
+                fakeEvent.iType = (TPointerEvent::TType)(-1);
+                fakeEvent.iModifiers = keyEvent.iModifiers;
                 TInt x = pos.x();
                 TInt y = pos.y();
                 if (type == EEventKeyUp) {
-                    if (keyCode == Qt::Key_Select)
+                    if (keyCode == Qt::Key_Select &&
+                        (S60->virtualMousePressedKeys & QS60Data::Select))
                         fakeEvent.iType = TPointerEvent::EButton1Up;
                     S60->virtualMouseAccel = 1;
                     S60->virtualMouseLastKey = 0;
@@ -668,6 +672,8 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                     }
                 }
                 else if (type == EEventKey) {
+                    if (keyCode != Qt::Key_Select)
+                        m_doubleClickTimer.invalidate();
                     switch (keyCode) {
                     case Qt::Key_Left:
                         S60->virtualMousePressedKeys |= QS60Data::Left;
@@ -694,12 +700,18 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                         // example for drag'n'drop), Symbian starts producing spurious up and
                         // down messages for some keys. Therefore, make sure we have a clean slate
                         // of pressed keys before starting a new button press.
-                        if (S60->virtualMousePressedKeys != 0) {
-                            S60->virtualMousePressedKeys |= QS60Data::Select;
+                        if (S60->virtualMousePressedKeys & QS60Data::Select) {
                             return EKeyWasConsumed;
                         } else {
                             S60->virtualMousePressedKeys |= QS60Data::Select;
                             fakeEvent.iType = TPointerEvent::EButton1Down;
+                            if (m_doubleClickTimer.isValid()
+                                && !m_doubleClickTimer.hasExpired(QApplication::doubleClickInterval())) {
+                                fakeEvent.iModifiers |= EModifierDoubleClick;
+                                m_doubleClickTimer.invalidate();
+                            } else {
+                                m_doubleClickTimer.start();
+                            }
                         }
                         break;
                     }
@@ -715,10 +727,10 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                     y = S60->screenHeightInPixels - 1;
                 TPoint epos(x, y);
                 TPoint cpos = epos - PositionRelativeToScreen();
-                fakeEvent.iModifiers = keyEvent.iModifiers;
                 fakeEvent.iPosition = cpos;
                 fakeEvent.iParentPosition = epos;
-                HandlePointerEvent(fakeEvent);
+                if(fakeEvent.iType != -1)
+                    HandlePointerEvent(fakeEvent);
                 return EKeyWasConsumed;
             }
             else {
