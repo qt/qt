@@ -276,6 +276,9 @@ private Q_SLOTS:
     void ignoreSslErrorsListWithSlot();
 #endif
 
+    void getAndThenDeleteObject_data();
+    void getAndThenDeleteObject();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4107,6 +4110,50 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
 }
 
 #endif // QT_NO_OPENSSL
+
+void tst_QNetworkReply::getAndThenDeleteObject_data()
+{
+    QTest::addColumn<bool>("replyFirst");
+
+    QTest::newRow("delete-reply-first") << true;
+    QTest::newRow("delete-qnam-first") << false;
+}
+
+void tst_QNetworkReply::getAndThenDeleteObject()
+{
+    // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
+    QNetworkAccessManager *manager = new QNetworkAccessManager();
+    QNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
+    QNetworkReply *reply = manager->get(request);
+    reply->setReadBufferSize(1);
+    reply->setParent((QObject*)0); // must be 0 because else it is the manager
+
+    QTime stopWatch;
+    stopWatch.start();
+    forever {
+        QCoreApplication::instance()->processEvents();
+        if (reply->bytesAvailable())
+            break;
+        if (stopWatch.elapsed() >= 30000)
+            break;
+    }
+
+    QVERIFY(reply->bytesAvailable());
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(!reply->isFinished()); // must not be finished
+
+    QFETCH(bool, replyFirst);
+
+    if (replyFirst) {
+        delete reply;
+        delete manager;
+    } else {
+        delete manager;
+        delete reply;
+    }
+}
+
+
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
