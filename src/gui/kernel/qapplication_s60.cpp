@@ -1703,18 +1703,27 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
                 return 1;
             const TWsVisibilityChangedEvent *visChangedEvent = event->VisibilityChanged();
             QWidget *w = QWidgetPrivate::mapper->value(control);
-            if (!w->d_func()->maybeTopData())
+            QWidget *const window = w->window();
+            if (!window->d_func()->maybeTopData())
                 break;
+            QRefCountedWidgetBackingStore &backingStore = window->d_func()->maybeTopData()->backingStore;
             if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
-                w->d_func()->topData()->backingStore.destroy();
+                // Decrement backing store reference count
+                backingStore.deref();
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.
                 S60->wsSession().Flush();
-            } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
-                       && !w->d_func()->maybeBackingStore()) {
-                w->d_func()->topData()->backingStore.create(w);
-                w->d_func()->invalidateBuffer(w->rect());
-                w->repaint();
+            } else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
+                if (backingStore.data()) {
+                    // Increment backing store reference count
+                    backingStore.ref();
+                } else {
+                    // Create backing store with an initial reference count of 1
+                    backingStore.create(window);
+                    backingStore.ref();
+                    w->d_func()->invalidateBuffer(w->rect());
+                    w->repaint();
+                }
             }
             return 1;
         }

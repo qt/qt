@@ -9635,7 +9635,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Backing store should remain unchanged despite child window obscuring
     // parent window
-    QEXPECT_FAIL("", "QTBUG-8697", Continue);
     QVERIFY(parentBs == backingStore(parent));
     QVERIFY(0 == backingStore(child));
     }
@@ -9742,6 +9741,7 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QVERIFY(0 != backingStore(child));
 
     // Parent is obscured, therefore its backing store should be destroyed
+    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(parent));
 
     // Disable full screen
