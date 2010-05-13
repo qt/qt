@@ -263,10 +263,6 @@ void tst_QNetworkSession::robustnessBombing()
     testSession.accept();
     testSession.ignore();
     testSession.reject();
-    quint64 temp;
-    temp = testSession.bytesWritten();
-    temp = testSession.bytesReceived();
-    temp = testSession.activeTime();
 }
 
 
@@ -704,7 +700,20 @@ void tst_QNetworkSession::userChoiceSession()
 
         session.open();
 
+#if defined(Q_OS_SYMBIAN)
+        // Opening & closing multiple connections in a row sometimes
+        // results hanging of connection opening on Symbian devices
+        // => If first open fails, wait a moment and try again.
+        if (!session.waitForOpened()) {
+            qDebug("**** Session open Timeout - Wait 5 seconds and try once again ****");        
+            session.close();
+            QTest::qWait(5000); // Wait a while before trying to open session again
+            session.open();
+            session.waitForOpened();
+        }
+#else        
         session.waitForOpened();
+#endif        
 
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
@@ -843,7 +852,20 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         session.open();
 
+#if defined(Q_OS_SYMBIAN)
+        // Opening & closing multiple connections in a row sometimes
+        // results hanging of connection opening on Symbian devices
+        // => If first open fails, wait a moment and try again.
+        if (!session.waitForOpened()) {
+            qDebug("**** Session open Timeout - Wait 5 seconds and try once again ****");        
+            session.close();
+            QTest::qWait(5000); // Wait a while before trying to open session again
+            session.open();
+            session.waitForOpened();
+        }
+#else        
         session.waitForOpened();
+#endif        
 
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
