@@ -112,6 +112,8 @@ public:
     QDeclarativeView *view() const;
     LoggerWidget *warningsWidget() const;
 
+    void enableExperimentalGestures();
+
 public slots:
     void sceneResized(QSize size);
     bool open(const QString&);

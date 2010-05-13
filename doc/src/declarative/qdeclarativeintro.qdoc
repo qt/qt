@@ -60,10 +60,13 @@ technologies like HTML and CSS, but it's not required.
 QML looks like this:
 
 \code
+import Qt 4.7
+
 Rectangle {
     width: 200
     height: 200
-    color: "white"
+    color: "blue"
+
     Image {
         source: "pics/logo.png"
         anchors.centerIn: parent

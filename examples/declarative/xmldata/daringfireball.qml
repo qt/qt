@@ -1,7 +1,6 @@
 import Qt 4.7
 
 Rectangle {
-    color: "white"
     width: 600; height: 600
 
     XmlListModel {

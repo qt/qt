@@ -105,7 +105,7 @@ is the \l SystemPalette item. This provides access to the Qt system palette
 and is used to give the button a more native look-and-feel.
 
 Notice the anchors for the \c Item, \c Button and \c Text elements are set using
-\l {codingconventions.html#Grouped-properties}{group notation} for readability.
+\l {qdeclarativeintroduction.html#dot-properties}{group notation} for readability.
 
 \section2 Adding \c Button and \c Block components
 
