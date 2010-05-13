@@ -106,7 +106,7 @@ void QNotifyChangeEvent::DoCancel()
 }
 
 QSymbianFileSystemWatcherEngine::QSymbianFileSystemWatcherEngine() :
-        errorCode(KErrNone), watcherStarted(false)
+        watcherStarted(false)
 {
     moveToThread(this);
 }
@@ -122,11 +122,7 @@ QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths, 
     QMutexLocker locker(&mutex);
     QStringList p = paths;
 
-    if (!startWatcher()) {
-        qWarning("Could not start QSymbianFileSystemWatcherEngine thread");
-
-        return p;
-    }
+    startWatcher();
 
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -150,18 +146,17 @@ QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths, 
             filePath += QChar(L'/');
         }
 
-        currentEvent = NULL;
+        currentAddEvent = NULL;
         QMetaObject::invokeMethod(this,
                                   "addNativeListener",
                                   Qt::QueuedConnection,
                                   Q_ARG(QString, filePath));
 
         syncCondition.wait(&mutex);
+        if (currentAddEvent) {
+            currentAddEvent->isDir = isDir;
 
-        if (currentEvent) {
-            currentEvent->isDir = isDir;
-
-            activeObjectToPath.insert(currentEvent, path);
+            activeObjectToPath.insert(currentAddEvent, path);
             it.remove();
 
             if (isDir)
@@ -185,10 +180,10 @@ QStringList QSymbianFileSystemWatcherEngine::removePaths(const QStringList &path
     while (it.hasNext()) {
         QString path = it.next();
 
-        currentEvent = activeObjectToPath.key(path);
-        if (!currentEvent)
+        currentRemoveEvent = activeObjectToPath.key(path);
+        if (!currentRemoveEvent)
             continue;
-        activeObjectToPath.remove(currentEvent);
+        activeObjectToPath.remove(currentRemoveEvent);
 
         QMetaObject::invokeMethod(this,
                                   "removeNativeListener",
@@ -201,9 +196,6 @@ QStringList QSymbianFileSystemWatcherEngine::removePaths(const QStringList &path
         files->removeAll(path);
         directories->removeAll(path);
     }
-
-    if (activeObjectToPath.size() == 0)
-        stop();
 
     return p;
 }
@@ -228,44 +220,31 @@ void QSymbianFileSystemWatcherEngine::stop()
 }
 
 // This method must be called inside mutex
-bool QSymbianFileSystemWatcherEngine::startWatcher()
+void QSymbianFileSystemWatcherEngine::startWatcher()
 {
-    bool retval = true;
-
     if (!watcherStarted) {
         setStackSize(0x5000);
         start();
         syncCondition.wait(&mutex);
-
-        if (errorCode != KErrNone) {
-            retval = false;
-        } else {
-            watcherStarted = true;
-        }
+        watcherStarted = true;
     }
-    return retval;
 }
 
 
 void QSymbianFileSystemWatcherEngine::run()
 {
-    // Initialize file session
-
     mutex.lock();
     syncCondition.wakeOne();
     mutex.unlock();
 
-    if (errorCode == KErrNone) {
-        exec();
+    exec();
 
-        foreach(QNotifyChangeEvent *e, activeObjectToPath.keys()) {
-            e->Cancel();
-            delete e;
-        }
-
-        activeObjectToPath.clear();
-        watcherStarted = false;
+    foreach(QNotifyChangeEvent *e, activeObjectToPath.keys()) {
+        e->Cancel();
+        delete e;
     }
+
+    activeObjectToPath.clear();
 }
 
 void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directoryPath)
@@ -273,16 +252,16 @@ void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directory
     QMutexLocker locker(&mutex);
     QString nativeDir(QDir::toNativeSeparators(directoryPath));
     TPtrC ptr(qt_QString2TPtrC(nativeDir));
-    currentEvent = new QNotifyChangeEvent(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
+    currentAddEvent = new QNotifyChangeEvent(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
     syncCondition.wakeOne();
 }
 
 void QSymbianFileSystemWatcherEngine::removeNativeListener()
 {
     QMutexLocker locker(&mutex);
-    currentEvent->Cancel();
-    delete currentEvent;
-    currentEvent = NULL;
+    currentRemoveEvent->Cancel();
+    delete currentRemoveEvent;
+    currentRemoveEvent = NULL;
     syncCondition.wakeOne();
 }
 

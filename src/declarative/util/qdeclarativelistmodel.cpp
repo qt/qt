@@ -999,7 +999,8 @@ bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *ro
     QScriptValueIterator it(value);
     while (it.hasNext()) {
         it.next();
-        if (it.value().isObject()) {
+        QScriptValue value = it.value();
+        if (!value.isVariant() && !value.isRegExp() && !value.isDate() && value.isObject()) {
             qmlInfo(m_listModel) << "Cannot add nested list values when modifying or after modification from a worker script";
             return false;
         }

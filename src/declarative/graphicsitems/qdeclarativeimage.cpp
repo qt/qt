@@ -54,79 +54,36 @@ QT_BEGIN_NAMESPACE
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
-    Displays the image from the specified \l source.  If a size is not specified explicitly,
-    the Image element will be sized to the loaded image.
+    An Image element displays a specified \l source image:
 
-    If the source resolves to a network resource, the image will be loaded asynchronously,
-    updating the \l progress and \l status properties appropriately.
+    \table
+    \o
+    \image declarative-qtlogo.png
+    \o
+    \qml
+        import Qt 4.7
 
-    Images which are available locally
-    will be loaded immediately, blocking the user interface.  This is typically the
-    correct behavior for user interface elements.  For large local images, which do not need
-    to be visible immediately, it may be preferable to enable \l asynchronous loading.
-    This will load the image in the background using a low priority thread.
+        Image { source: "qtlogo.png" }
+    \endqml
+    \endtable
+    
+    If a size is not specified explicitly, the Image element is sized to the loaded image.
+    Image elements can be stretched and tiled using the \l fillMode property.
+
+    If the image \l source is a network resource, the image is loaded asynchronous and the
+    \l progress and \l status properties are updated appropriately.  Otherwise, if the image is
+    available locally, it is loaded immediately and the user interface is blocked until loading is
+    complete.  (This is typically the correct behavior for user interface elements.)
+    For large local images, which do not need to be visible immediately, it may be preferable to
+    enable \l asynchronous loading.  This loads the image in the background using a low priority thread.
 
     Images are cached and shared internally, so if several Image elements have the same source
     only one copy of the image will be loaded.
 
-    \bold Note: Images are often the greatest user of memory in QML UIs.  It is recommended
+    \bold Note: Images are often the greatest user of memory in QML user interfaces.  It is recommended
     that images which do not form part of the user interface have their
     size bounded via the \l sourceSize property. This is especially important for content
     that is loaded from external sources or provided by the user.
-
-    The Image element supports untransformed, stretched and tiled images.
-
-    For an explanation of stretching and tiling, see the fillMode property description.
-
-    Examples:
-    \table
-    \row
-    \o \image declarative-qtlogo1.png
-    \o Untransformed
-    \qml
-    Image { source: "pics/qtlogo.png" }
-    \endqml
-    \row
-    \o \image declarative-qtlogo2.png
-    \o fillMode: Stretch (default)
-    \qml
-    Image {
-        width: 160
-        height: 160
-        source: "pics/qtlogo.png"
-    }
-    \endqml
-    \row
-    \o \image declarative-qtlogo3.png
-    \o fillMode: Tile
-    \qml
-    Image {
-        fillMode: Image.Tile
-        width: 160; height: 160
-        source: "pics/qtlogo.png"
-    }
-    \endqml
-    \row
-    \o \image declarative-qtlogo6.png
-    \o fillMode: TileVertically
-    \qml
-    Image {
-        fillMode: Image.TileVertically
-        width: 160; height: 160
-        source: "pics/qtlogo.png"
-    }
-    \endqml
-    \row
-    \o \image declarative-qtlogo5.png
-    \o fillMode: TileHorizontally
-    \qml
-    Image {
-        fillMode: Image.TileHorizontally
-        width: 160; height: 160
-        source: "pics/qtlogo.png"
-    }
-    \endqml
-    \endtable
 */
 
 /*!
@@ -207,7 +164,77 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     \o Image.TileHorizontally - the image is stretched vertically and tiled horizontally
     \endlist
 
-    \image declarative-image_fillMode.gif
+    \table
+    
+    \row
+    \o \image declarative-qtlogo-stretch.png
+    \o Stretch (default)
+    \qml
+    Image {
+        width: 130; height: 100
+        smooth: true
+        source: "qtlogo.png"
+    }
+    \endqml
+
+    \row
+    \o \image declarative-qtlogo-preserveaspectfit.png
+    \o PreserveAspectFit
+    \qml
+    Image {
+        width: 130; height: 100
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        source: "qtlogo.png"
+    }
+    \endqml
+
+    \row
+    \o \image declarative-qtlogo-preserveaspectcrop.png
+    \o PreserveAspectCrop
+    \qml
+    Image {
+        width: 130; height: 100
+        fillMode: Image.PreserveAspectCrop
+        smooth: true
+        source: "qtlogo.png"
+    }
+    \endqml
+
+    \row
+    \o \image declarative-qtlogo-tile.png
+    \o Tile
+    \qml
+    Image {
+        width: 120; height: 120
+        fillMode: Image.Tile
+        source: "qtlogo.png"
+    }
+    \endqml
+
+    \row
+    \o \image declarative-qtlogo-tilevertically.png
+    \o TileVertically
+    \qml
+    Image {
+        width: 120; height: 120
+        fillMode: Image.TileVertically
+        source: "qtlogo.png"
+    }
+    \endqml
+
+    \row
+    \o \image declarative-qtlogo-tilehorizontally.png
+    \o TileHorizontally
+    \qml
+    Image {
+        width: 120; height: 120
+        fillMode: Image.TileHorizontally
+        source: "qtlogo.png"
+    }
+    \endqml
+
+    \endtable
 */
 QDeclarativeImage::FillMode QDeclarativeImage::fillMode() const
 {
@@ -290,32 +317,30 @@ qreal QDeclarativeImage::paintedHeight() const
 /*!
     \qmlproperty QSize Image::sourceSize
 
-    This properties is the size of the loaded image, in pixels.
+    This property holds the size of the loaded image, in pixels.
 
-    If you set this property explicitly, you can to control the storage
-    used by a loaded image. The image will be scaled down if its intrinsic size
-    is greater than this value.
+    This is used to control the storage used by a loaded image. Unlike
+    the width and height properties, which scale the painting of the image, this property
+    affects the number of pixels stored.
 
-    If only one dimension of the size is set (and the other left at 0), the
-    unset dimension will be set in proportion to the set dimension to preserve
-    the source image aspect ratio. The fillMode is independent of this.
-
-    Unlike setting the width and height properties, which merely scale the painting
-    of the image, this property affects the number of pixels stored.
-
-    \e{Changing this property dynamically will lead to the image source being reloaded,
-    potentially even from the network if it is not in the disk cache.}
-
+    If the image's actual size is larger than the sourceSize, the image is scaled down.
+    If only one dimension of the size is set to greater than 0, the
+    other dimension is set in proportion to preserve the source image's aspect ratio.
+    (The \l fillMode is independent of this.)
+   
     If the source is an instrinsically scalable image (eg. SVG), this property
-    determines the size of the loaded image regardless of intrinsic size. You should
-    avoid changing this property dynamically - rendering an SVG is \e slow compared
+    determines the size of the loaded image regardless of intrinsic size.
+    Avoid changing this property dynamically; rendering an SVG is \e slow compared
     to an image.
 
     If the source is a non-scalable image (eg. JPEG), the loaded image will
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
+ 
+    \note \e{Changing this property dynamically will lead to the image source being reloaded,
+    potentially even from the network if it is not in the disk cache.}
 
-    The example below will ensure that the size of the image in memory is
+    Here is an example that ensures the size of the image in memory is
     no larger than 1024x1024 pixels, regardless of the size of the Image element.
 
     \code
@@ -327,8 +352,8 @@ qreal QDeclarativeImage::paintedHeight() const
     }
     \endcode
 
-    The example below will ensure that the memory used by the image is
-    no more than necessary to display the image at the size of the Image element.
+    The example below ensures the memory used by the image is no more than necessary 
+    to display the image at the size of the Image element.
     Of course if the Image element is resized a costly reload will be required, so
     use this technique \e only when the Image size is fixed.
 

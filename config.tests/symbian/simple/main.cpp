@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,17 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
-#include <QGraphicsWidget>
-#include <QPainter>
+#include <stdio.h>
 
-class RedSquare : public QGraphicsWidget
-{
-    Q_OBJECT
-public:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
-    {
-        painter->fillRect(0, 0, size().width(), size().height(), QColor(Qt::red));
-    }
-};
-//![0]
+int main(int, char **) {
+    printf("test\n");
+    return 0;
+}

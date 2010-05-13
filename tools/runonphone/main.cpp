@@ -102,6 +102,10 @@ int main(int argc, char *argv[])
             else if (arg == "--sis" || arg == "-s") {
                 CHECK_PARAMETER_EXISTS
                 sisFile = it.next();
+                if (!QFileInfo(sisFile).exists()) {
+                    errstream << "Sis file (" << sisFile << ") doesn't exist" << endl;
+                    return 1;
+                }
             }
             else if (arg == "--download" || arg == "-d") {
                 CHECK_PARAMETER_EXISTS

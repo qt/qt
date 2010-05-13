@@ -191,7 +191,10 @@
     \table
     \row \o -i                  \o Install the package right away using PC suite.
     \row \o -p                  \o Only preprocess the template \c .pkg file.
-    \row \o -c=<file>           \o Read certificate information from a file.
+    \row \o -c <file>           \o Read certificate information from a file.
+    \row \o -u                  \o Preserves unsigned package.
+    \row \o -s                  \o Generates stub sis for ROM.
+    \row \o -n <name>           \o Specifies the final sis name.
     \endtable
 
     Execute the \c{createpackage.pl} script without any

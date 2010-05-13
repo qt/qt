@@ -151,7 +151,7 @@ Rectangle {
 
         // Only show the scrollbar when the view is moving.
         states: State {
-            name: "ShowBars"; when: view.moving
+            name: "ShowBars"; when: view.movingVertically
             PropertyChanges { target: verticalScrollBar; opacity: 1 }
         }
         transitions: Transition {

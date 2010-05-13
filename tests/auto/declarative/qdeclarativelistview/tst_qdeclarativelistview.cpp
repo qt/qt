@@ -1432,8 +1432,6 @@ void tst_QDeclarativeListView::QTBUG_9791()
 {
     QDeclarativeView *canvas = createView();
 
-    QDeclarativeContext *ctxt = canvas->rootContext();
-
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/strictlyenforcerange.qml"));
     qApp->processEvents();
 

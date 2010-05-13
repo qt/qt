@@ -9,5 +9,7 @@ contains(QT_CONFIG, media-backend) {
         SUBDIRS += gstreamer
     }
 
-    symbian:SUBDIRS += symbian
+    symbian:contains(QT_CONFIG, audio-routing-available) {
+        SUBDIRS += symbian
+    }
 }
