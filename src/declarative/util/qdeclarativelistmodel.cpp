@@ -537,10 +537,9 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
 */
 QScriptValue QDeclarativeListModel::get(int index) const
 {
-    if (index >= count() || index < 0) {
+    // the internal flat/nested class takes care of return value for bad index
+    if (index >= count() || index < 0) 
         qmlInfo(this) << tr("get: index %1 out of range").arg(index);
-        return 0;
-    }
 
     return m_flat ? m_flat->get(index) : m_nested->get(index);
 }
@@ -930,12 +929,13 @@ bool FlatListModel::insert(int index, const QScriptValue &value)
 
 QScriptValue FlatListModel::get(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_values.count());
-
     QScriptEngine *scriptEngine = m_scriptEngine ? m_scriptEngine : QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(m_listModel));
 
-    if (!scriptEngine)
+    if (!scriptEngine) 
         return 0;
+
+    if (index < 0 || index >= m_values.count())
+        return scriptEngine->undefinedValue();
 
     QScriptValue rv = scriptEngine->newObject();
 
@@ -999,7 +999,8 @@ bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *ro
     QScriptValueIterator it(value);
     while (it.hasNext()) {
         it.next();
-        if (it.value().isObject()) {
+        QScriptValue value = it.value();
+        if (!value.isVariant() && !value.isRegExp() && !value.isDate() && value.isObject()) {
             qmlInfo(m_listModel) << "Cannot add nested list values when modifying or after modification from a worker script";
             return false;
         }
@@ -1182,12 +1183,20 @@ bool NestedListModel::append(const QScriptValue& valuemap)
 }
 
 QScriptValue NestedListModel::get(int index) const
-{
-    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    if (!node)
-        return 0;
+{   
     QDeclarativeEngine *eng = qmlEngine(m_listModel);
     if (!eng) 
+        return 0;
+
+    if (index < 0 || index >= count()) {
+        QScriptEngine *seng = QDeclarativeEnginePrivate::getScriptEngine(eng);
+        if (seng)
+            return seng->undefinedValue();
+        return 0;
+    }
+
+    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+    if (!node)
         return 0;
     
     return QDeclarativeEnginePrivate::qmlScriptObject(node->object(this), eng);

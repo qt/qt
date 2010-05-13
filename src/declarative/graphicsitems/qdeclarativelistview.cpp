@@ -525,8 +525,7 @@ void QDeclarativeListViewPrivate::init()
     Q_Q(QDeclarativeListView);
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     addItemChangeListener(this, Geometry);
-    QObject::connect(q, SIGNAL(movingHorizontallyChanged()), q, SLOT(animStopped()));
-    QObject::connect(q, SIGNAL(movingVerticallyChanged()), q, SLOT(animStopped()));
+    QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickableDirection(QDeclarativeFlickable::VerticalFlick);
     ::memset(sectionCache, 0, sizeof(QDeclarativeItem*) * sectionCacheSize);
 }
@@ -1260,13 +1259,15 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
             if (!flickingHorizontally && q->xflick()) {
                 flickingHorizontally = true;
-                emit q->flickingChanged(); // deprecated
+                emit q->flickingChanged();
                 emit q->flickingHorizontallyChanged();
+                emit q->flickStarted();
             }
             if (!flickingVertically && q->yflick()) {
                 flickingVertically = true;
-                emit q->flickingChanged(); // deprecated
+                emit q->flickingChanged();
                 emit q->flickingVerticallyChanged();
+                emit q->flickStarted();
             }
             correctFlick = true;
         } else {
@@ -2890,12 +2891,9 @@ void QDeclarativeListView::destroyingItem(QDeclarativeItem *item)
 void QDeclarativeListView::animStopped()
 {
     Q_D(QDeclarativeListView);
-    if ((!d->movingVertically && d->orient == QDeclarativeListView::Vertical) || (!d->movingHorizontally && d->orient == QDeclarativeListView::Horizontal))
-    {
-        d->bufferMode = QDeclarativeListViewPrivate::NoBuffer;
-        if (d->haveHighlightRange && d->highlightRange == QDeclarativeListView::StrictlyEnforceRange)
-            d->updateHighlight();
-    }
+    d->bufferMode = QDeclarativeListViewPrivate::NoBuffer;
+    if (d->haveHighlightRange && d->highlightRange == QDeclarativeListView::StrictlyEnforceRange)
+        d->updateHighlight();
 }
 
 QDeclarativeListViewAttached *QDeclarativeListView::qmlAttachedProperties(QObject *obj)

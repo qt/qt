@@ -377,7 +377,9 @@ void QDeclarativePath::createPointCache() const
 {
     Q_D(const QDeclarativePath);
     qreal pathLength = d->_path.length();
-    const int points = int(pathLength*2);
+    // more points means less jitter between items as they move along the
+    // path, but takes longer to generate
+    const int points = int(pathLength*5);
     const int lastElement = d->_path.elementCount() - 1;
     d->_pointCache.resize(points+1);
 
