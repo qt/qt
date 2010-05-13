@@ -1320,10 +1320,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             setFocus = true;
             break;
         }
-        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
+        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable))) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
                 setFocus = true;
-                if (item != q->focusItem())
+                if (item != q->focusItem() && item->d_ptr->mouseSetsFocus)
                     q->setFocusItem(item, Qt::MouseFocusReason);
                 break;
             }

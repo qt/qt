@@ -9514,6 +9514,8 @@ void tst_QWidget::destroyBackingStore()
     w.update();
     QApplication::processEvents();
     QCOMPARE(w.numPaintEvents, 2);
+#else
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
 #endif
 }
 
@@ -9992,6 +9994,7 @@ void tst_QWidget::focusProxyAndInputMethods()
     delete toplevel;
 }
 
+#ifdef QT_BUILD_INTERNAL
 class scrollWidgetWBS : public QWidget
 {
 public:
@@ -10011,9 +10014,11 @@ public:
         }
     }
 };
+#endif
 
 void tst_QWidget::scrollWithoutBackingStore()
 {
+#ifdef QT_BUILD_INTERNAL
     scrollWidgetWBS scrollable;
     scrollable.resize(100,100);
     QLabel child(QString("@"),&scrollable);
@@ -10027,6 +10032,9 @@ void tst_QWidget::scrollWithoutBackingStore()
     QCOMPARE(child.pos(),QPoint(25,25));
     scrollable.enableBackingStore();
     QCOMPARE(child.pos(),QPoint(25,25));
+#else
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
+#endif
 }
 
 void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()

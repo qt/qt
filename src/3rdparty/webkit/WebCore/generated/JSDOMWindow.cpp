@@ -152,7 +152,6 @@
 #include "JSHTMLVideoElement.h"
 #include "JSImageData.h"
 #include "JSKeyboardEvent.h"
-#include "JSMedia.h"
 #include "JSMediaError.h"
 #include "JSMediaList.h"
 #include "JSMessageChannel.h"
@@ -299,6 +298,7 @@
 #include "JSSharedWorker.h"
 #include "JSStorage.h"
 #include "JSStorageEvent.h"
+#include "JSStyleMedia.h"
 #include "JSStyleSheet.h"
 #include "JSStyleSheetList.h"
 #include "JSText.h"
@@ -334,11 +334,11 @@
 #include "JSXPathResult.h"
 #include "JSXSLTProcessor.h"
 #include "KURL.h"
-#include "Media.h"
 #include "Navigator.h"
 #include "RegisteredEventListener.h"
 #include "Screen.h"
 #include "Storage.h"
+#include "StyleMedia.h"
 #include "WebKitPoint.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
@@ -395,7 +395,7 @@ static const HashTableValue JSDOMWindowTableValues[409] =
     { "parent", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowParent), (intptr_t)setJSDOMWindowParent },
     { "top", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowTop), (intptr_t)setJSDOMWindowTop },
     { "document", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowDocument), (intptr_t)0 },
-    { "media", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowMedia), (intptr_t)0 },
+    { "styleMedia", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowStyleMedia), (intptr_t)0 },
     { "devicePixelRatio", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowDevicePixelRatio), (intptr_t)setJSDOMWindowDevicePixelRatio },
     { "applicationCache", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowApplicationCache), (intptr_t)0 },
     { "sessionStorage", DontDelete|ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsDOMWindowSessionStorage), (intptr_t)0 },
@@ -1304,14 +1304,14 @@ JSValue jsDOMWindowDocument(ExecState* exec, JSValue slotBase, const Identifier&
     return result;
 }
 
-JSValue jsDOMWindowMedia(ExecState* exec, JSValue slotBase, const Identifier&)
+JSValue jsDOMWindowStyleMedia(ExecState* exec, JSValue slotBase, const Identifier&)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slotBase));
     if (!castedThis->allowsAccessFrom(exec))
         return jsUndefined();
     UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->styleMedia()));
     return result;
 }
 

@@ -6,7 +6,7 @@ qtAddLibrary(QtTest)
 symbian:{
     TARGET.EPOCHEAPSIZE = 0x100000 0x2000000
 #    DEFINES += QTEST_NO_SPECIALIZATIONS
-    TARGET.CAPABILITY="ALL -TCB"
+    TARGET.CAPABILITY="None"
     RSS_RULES ="group_name=\"QtTests\";" 
 }
 

@@ -14,4 +14,5 @@ win32 {
   }
 }
 
+symbian: TARGET.CAPABILITY = NetworkServices
 

@@ -3698,4 +3698,6 @@ EXPORTS
 	_ZN24QAbstractDeclarativeData13parentChangedE @ 3697 NONAME DATA 4
 	_ZN24QAbstractDeclarativeData9destroyedE @ 3698 NONAME DATA 4
 	_ZN23QEventDispatcherSymbian12selectThreadEv @ 3699 NONAME
+	_ZN10QByteArray10setRawDataEPKcj @ 3700 NONAME
+	_ZN7QString10setRawDataEPK5QChari @ 3701 NONAME
 
