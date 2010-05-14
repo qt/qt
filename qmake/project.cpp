@@ -1073,7 +1073,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
     }
 
     if(vals.contains('=') && numLines > 1)
-        warn_msg(WarnParser, "Detected possible line continuation: {%s} %s:%d",
+        warn_msg(WarnParser, "Possible accidental line continuation: {%s} at %s:%d",
                  var.toLatin1().constData(), parser.file.toLatin1().constData(), parser.line_no);
 
     QStringList &varlist = place[var]; // varlist is the list in the symbol table
