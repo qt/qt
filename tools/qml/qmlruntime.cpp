@@ -53,7 +53,6 @@
 #include "qdeclarative.h"
 #include <private/qabstractanimation_p.h>
 #include <QAbstractAnimation>
-#include "deviceskin.h"
 
 #include <QSettings>
 #include <QXmlStreamReader>
@@ -167,89 +166,6 @@ public:
 private:
     QWidget *refWidget;
 };
-
-
-class PreviewDeviceSkin : public DeviceSkin
-{
-    Q_OBJECT
-public:
-    explicit PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent);
-
-    void setPreview(QWidget *formWidget);
-    void setPreviewAndScale(QWidget *formWidget);
-
-    void setScreenSize(const QSize& size)
-    {
-        QMatrix fit;
-        fit = fit.scale(qreal(size.width())/m_screenSize.width(),
-            qreal(size.height())/m_screenSize.height());
-        setTransform(fit);
-        QApplication::syncX();
-    }
-
-    QSize standardScreenSize() const { return m_screenSize; }
-
-    QMenu* menu;
-
-private slots:
-    void slotSkinKeyPressEvent(int code, const QString& text, bool autorep);
-    void slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep);
-    void slotPopupMenu();
-
-private:
-    const QSize m_screenSize;
-};
-
-
-PreviewDeviceSkin::PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent) :
-    DeviceSkin(parameters, parent),
-    m_screenSize(parameters.screenSize())
-{
-    menu = new QMenu(this);
-    connect(this, SIGNAL(skinKeyPressEvent(int,QString,bool)),
-            this, SLOT(slotSkinKeyPressEvent(int,QString,bool)));
-    connect(this, SIGNAL(skinKeyReleaseEvent(int,QString,bool)),
-            this, SLOT(slotSkinKeyReleaseEvent(int,QString,bool)));
-    connect(this, SIGNAL(popupMenu()), this, SLOT(slotPopupMenu()));
-}
-
-void PreviewDeviceSkin::setPreview(QWidget *formWidget)
-{
-    formWidget->setFixedSize(m_screenSize);
-    formWidget->setParent(this, Qt::SubWindow);
-    formWidget->setAutoFillBackground(true);
-    setView(formWidget);
-}
-
-void PreviewDeviceSkin::setPreviewAndScale(QWidget *formWidget)
-{
-    setScreenSize(formWidget->sizeHint());
-    formWidget->setParent(this, Qt::SubWindow);
-    formWidget->setAutoFillBackground(true);
-    setView(formWidget);
-}
-
-void PreviewDeviceSkin::slotSkinKeyPressEvent(int code, const QString& text, bool autorep)
-{
-    if (QWidget *focusWidget =  QApplication::focusWidget()) {
-        QKeyEvent e(QEvent::KeyPress,code,0,text,autorep);
-        QApplication::sendEvent(focusWidget, &e);
-    }
-
-}
-
-void PreviewDeviceSkin::slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep)
-{
-    if (QWidget *focusWidget =  QApplication::focusWidget()) {
-        QKeyEvent e(QEvent::KeyRelease,code,0,text,autorep);
-        QApplication::sendEvent(focusWidget, &e);
-    }
-}
-
-void PreviewDeviceSkin::slotPopupMenu()
-{
-    menu->exec(QCursor::pos());
-}
 
 static struct { const char *name, *args; } ffmpegprofiles[] = {
     {"Maximum Quality", "-sameq"},
@@ -434,7 +350,7 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     setupProxy(manager);
     if (cacheSize > 0) {
         QNetworkDiskCache *cache = new QNetworkDiskCache;
-        cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-duiviewer-network-cache"));
+        cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-launcher-network-cache"));
         cache->setMaximumCacheSize(cacheSize);
         manager->setCache(cache);
     } else {
@@ -463,7 +379,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
 #endif
       , loggerWindow(new LoggerWidget())
-      , frame_stream(0), scaleSkin(true), mb(0)
+      , frame_stream(0), mb(0)
       , portraitOrientation(0), landscapeOrientation(0)
       , showWarningsWindow(0)
       , m_scriptOptions(0)
@@ -472,10 +388,9 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , translator(0)
 {
     QDeclarativeViewer::registerTypes();
-    setWindowTitle(tr("Qt Qml Runtime"));
+    setWindowTitle(tr("Qt QML Launcher"));
 
     devicemode = false;
-    skin = 0;
     canvas = 0;
     record_autotime = 0;
     record_rate = 50;
@@ -653,51 +568,6 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     if (flatmenu) flatmenu->addSeparator();
 
-    QMenu *skinMenu = flatmenu ? flatmenu->addMenu(tr("&Skin")) : menu->addMenu(tr("&Skin"));
-
-    QActionGroup *skinActions;
-    QAction *skinAction;
-
-    skinActions = new QActionGroup(parent);
-    skinAction = new QAction(tr("Scale skin"), parent);
-    skinAction->setCheckable(true);
-    skinAction->setChecked(scaleSkin);
-    skinActions->addAction(skinAction);
-    skinMenu->addAction(skinAction);
-    connect(skinAction, SIGNAL(triggered()), this, SLOT(setScaleSkin()));
-    skinAction = new QAction(tr("Resize view"), parent);
-    skinAction->setCheckable(true);
-    skinAction->setChecked(!scaleSkin);
-    skinActions->addAction(skinAction);
-    skinMenu->addAction(skinAction);
-    connect(skinAction, SIGNAL(triggered()), this, SLOT(setScaleView()));
-    skinMenu->addSeparator();
-
-    skinActions = new QActionGroup(parent);
-    QSignalMapper *mapper = new QSignalMapper(parent);
-    skinAction = new QAction(tr("None"), parent);
-    skinAction->setCheckable(true);
-    if (currentSkin.isEmpty())
-        skinAction->setChecked(true);
-    skinActions->addAction(skinAction);
-    skinMenu->addAction(skinAction);
-    mapper->setMapping(skinAction, "");
-    connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
-    skinMenu->addSeparator();
-
-    foreach (QString name, builtinSkins()) {
-        skinAction = new QAction(name, parent);
-        skinActions->addAction(skinAction);
-        skinMenu->addAction(skinAction);
-        skinAction->setCheckable(true);
-        if (":skin/"+name+".skin" == currentSkin)
-            skinAction->setChecked(true);
-        mapper->setMapping(skinAction, name);
-        connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
-    }
-    connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setSkin(QString)));
-
-    if (flatmenu) flatmenu->addSeparator();
 #endif // Q_OS_SYMBIAN
 
     QMenu *settingsMenu = flatmenu ? flatmenu : menu->addMenu(tr("S&ettings"));
@@ -812,31 +682,6 @@ void QDeclarativeViewer::warningsWidgetClosed()
 {
     showWarningsWindow->setChecked(false);
 }
-
-void QDeclarativeViewer::setScaleSkin()
-{
-    if (scaleSkin)
-        return;
-    scaleSkin = true;
-    if (skin) {
-        canvas->resize(initialSize);
-        canvas->setFixedSize(initialSize);
-        canvas->setResizeMode(QDeclarativeView::SizeViewToRootObject);
-        updateSizeHints();
-    }
-}
-
-void QDeclarativeViewer::setScaleView()
-{
-    if (!scaleSkin)
-        return;
-    scaleSkin = false;
-    if (skin) {
-        canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
-        updateSizeHints();
-    }
-}
-
 
 void QDeclarativeViewer::takeSnapShot()
 {
@@ -1042,7 +887,7 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
     else
         url = QUrl(file_or_url);
-    setWindowTitle(tr("%1 - Qt Qml Runtime").arg(file_or_url));
+    setWindowTitle(tr("%1 - Qt QML Launcher").arg(file_or_url));
 
     if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
@@ -1050,11 +895,11 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     delete canvas->rootObject();
     canvas->engine()->clearComponentCache();
     QDeclarativeContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("qmlViewer", this);
+    ctxt->setContextProperty("qmlLauncher", this);
 #ifdef Q_OS_SYMBIAN
-    ctxt->setContextProperty("qmlViewerFolder", "E:\\"); // Documents on your S60 phone
+    ctxt->setContextProperty("qmlLauncherFolder", "E:\\"); // Documents on your S60 phone
 #else
-    ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
+    ctxt->setContextProperty("qmlLauncherFolder", QDir::currentPath());
 #endif
 
     ctxt->setContextProperty("runtime", Runtime::instance());
@@ -1089,83 +934,6 @@ void QDeclarativeViewer::startNetwork()
 #if defined(SYMBIAN_NETWORK_INIT)
     qt_SetDefaultIap();
 #endif
-}
-
-QStringList QDeclarativeViewer::builtinSkins() const
-{
-    QDir dir(":/skins/","*.skin");
-    const QFileInfoList l = dir.entryInfoList();
-    QStringList r;
-    for (QFileInfoList::const_iterator it = l.begin(); it != l.end(); ++it) {
-        r += (*it).baseName();
-    }
-    return r;
-}
-
-void QDeclarativeViewer::setSkin(const QString& skinDirOrName)
-{
-    QString skinDirectory = skinDirOrName;
-
-    if (!QDir(skinDirOrName).exists() && QDir(":/skins/"+skinDirOrName+".skin").exists())
-        skinDirectory = ":/skins/"+skinDirOrName+".skin";
-
-    if (currentSkin == skinDirectory)
-        return;
-
-    currentSkin = skinDirectory;
-
-    // XXX QWidget::setMask does not handle changes well, and we may
-    // XXX have been signalled from an item in a menu we're replacing,
-    // XXX hence some rather convoluted resetting here...
-
-    QString err;
-    if (skin) {
-        skin->hide();
-        skin->deleteLater();
-    }
-
-    DeviceSkinParameters parameters;
-    if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
-        layout()->setEnabled(false);
-        if (mb)
-            mb->hide();
-        if (!err.isEmpty())
-            qWarning() << err;
-        skin = new PreviewDeviceSkin(parameters,this);
-        if (scaleSkin)
-            skin->setPreviewAndScale(canvas);
-        else
-            skin->setPreview(canvas);
-        createMenu(0,skin->menu);
-        if (scaleSkin) {
-            canvas->setResizeMode(QDeclarativeView::SizeViewToRootObject);
-        }
-        updateSizeHints();
-        skin->show();
-    } else if (skin) {
-        skin = 0;
-        clearMask();
-        if ((windowFlags() & Qt::FramelessWindowHint)) {
-            menuBar()->clear();
-            createMenu(menuBar(),0);
-        }
-        canvas->setParent(this, Qt::SubWindow);
-        setParent(0,windowFlags()); // recreate
-        mb->show();
-        canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
-        updateSizeHints();
-
-        layout()->setEnabled(true);
-        if (!scaleSkin) {
-            canvas->resize(initialSize);
-            canvas->setFixedSize(initialSize);
-        }
-        QSize newWindowSize = canvas->size();
-        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
-        resize(newWindowSize);
-        show();
-    }
-    canvas->show();
 }
 
 void QDeclarativeViewer::setAutoRecord(int from, int to)
@@ -1496,24 +1264,16 @@ void QDeclarativeViewer::updateSizeHints()
 {
     if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
         QSize newWindowSize = canvas->sizeHint();
-        if (!skin)
-            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
+        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
         if (!isFullScreen() && !isMaximized()) {
             resize(newWindowSize);
             setFixedSize(newWindowSize);
-            if (skin && scaleSkin) {
-                skin->setScreenSize(newWindowSize);
-            }
         }
     } else { // QDeclarativeView::SizeRootObjectToView
         canvas->setMinimumSize(QSize(0,0));
         canvas->setMaximumSize(QSize(16777215,16777215));
         setMinimumSize(QSize(0,0));
         setMaximumSize(QSize(16777215,16777215));
-        if (skin && !scaleSkin) {
-            canvas->setFixedSize(skin->standardScreenSize());
-            skin->setScreenSize(skin->standardScreenSize());
-        }
     }
     updateGeometry();
 }

@@ -49,6 +49,7 @@
 #include <qlistmodelinterface_p.h>
 #include <QGraphicsSceneEvent>
 
+#include <qmath.h>
 #include <math.h>
 
 QT_BEGIN_NAMESPACE
@@ -279,8 +280,8 @@ void QDeclarativePathViewPrivate::updateItem(QDeclarativeItem *item, qreal perce
             att->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
     }
     QPointF pf = path->pointAt(percent);
-    item->setX(pf.x() - item->width()*item->scale()/2);
-    item->setY(pf.y() - item->height()*item->scale()/2);
+    item->setX(qRound(pf.x() - item->width()*item->scale()/2));
+    item->setY(qRound(pf.y() - item->height()*item->scale()/2));
 }
 
 void QDeclarativePathViewPrivate::regenerate()
@@ -523,6 +524,33 @@ void QDeclarativePathView::setCurrentIndex(int idx)
             d->updateHighlight();
         }
         emit currentIndexChanged();
+    }
+}
+
+/*!
+    \qmlmethod PathView::incrementCurrentIndex()
+
+    Increments the current index.
+*/
+void QDeclarativePathView::incrementCurrentIndex()
+{
+    setCurrentIndex(currentIndex()+1);
+}
+
+
+/*!
+    \qmlmethod PathView::decrementCurrentIndex()
+
+    Decrements the current index.
+*/
+void QDeclarativePathView::decrementCurrentIndex()
+{
+    Q_D(QDeclarativePathView);
+    if (d->model && d->model->count()) {
+        int idx = currentIndex()-1;
+        if (idx < 0)
+            idx = d->model->count() - 1;
+        setCurrentIndex(idx);
     }
 }
 
@@ -1312,6 +1340,7 @@ int QDeclarativePathViewPrivate::calcCurrentIndex()
         if (offset < 0)
             offset += model->count();
         current = qRound(qAbs(qmlMod(model->count() - offset, model->count())));
+        current = current % model->count();
     }
 
     return current;

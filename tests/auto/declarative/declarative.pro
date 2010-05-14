@@ -1,6 +1,12 @@
 TEMPLATE = subdirs
+!symbian: {
 SUBDIRS += \
            examples \
+           qdeclarativemetatype \
+           qmetaobjectbuilder
+}
+
+SUBDIRS += \
            parserstress \
            qdeclarativeanchors \
            qdeclarativeanimatedimage \
@@ -34,7 +40,6 @@ SUBDIRS += \
            qdeclarativelistreference \
            qdeclarativelistview \
            qdeclarativeloader \
-           qdeclarativemetatype \
            qdeclarativemoduleplugin \
            qdeclarativemousearea \
            qdeclarativeparticles \
@@ -64,8 +69,7 @@ SUBDIRS += \
            qdeclarativexmlhttprequest \
            qdeclarativexmllistmodel \
            qmlvisual \
-           qpacketprotocol \
-           qmetaobjectbuilder
+           qpacketprotocol
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \
@@ -74,4 +78,3 @@ contains(QT_CONFIG, webkit) {
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS
-

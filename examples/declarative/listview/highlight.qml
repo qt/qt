@@ -4,7 +4,7 @@ Rectangle {
     width: 400; height: 300
 
     // MyPets model is defined in dummydata/MyPetsModel.qml
-    // The viewer automatically loads files in dummydata/* to assist
+    // The launcher automatically loads files in dummydata/* to assist
     // development without a real data source.
     // This one contains my pets.
 

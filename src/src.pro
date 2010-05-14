@@ -94,7 +94,7 @@ src_declarative.target = sub-declarative
    src_xml.depends = src_corelib
    src_xmlpatterns.depends = src_corelib src_network
    src_dbus.depends = src_corelib src_xml
-   src_svg.depends = src_xml src_gui
+   src_svg.depends = src_corelib src_gui
    src_script.depends = src_corelib
    src_scripttools.depends = src_script src_gui src_network
    src_network.depends = src_corelib
@@ -110,15 +110,14 @@ src_declarative.target = sub-declarative
    contains(QT_CONFIG, opengl):src_multimedia.depends += src_opengl
    src_mediaservices.depends = src_multimedia
    src_tools_activeqt.depends = src_tools_idc src_gui
-   src_declarative.depends = src_xml src_gui src_script src_network src_svg
+   src_declarative.depends = src_gui src_script src_network
    src_plugins.depends = src_gui src_sql src_svg src_multimedia
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, webkit)  {
-      src_webkit.depends = src_gui src_sql src_network src_xml 
+      src_webkit.depends = src_gui src_sql src_network
       contains(QT_CONFIG, mediaservices):src_webkit.depends += src_mediaservices
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
-      contains(QT_CONFIG, declarative):src_declarative.depends += src_webkit
       src_imports.depends += src_webkit
       exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
    }
@@ -127,7 +126,18 @@ src_declarative.target = sub-declarative
       src_plugins.depends += src_dbus
       src_phonon.depends +=  src_dbus
    }
-   contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): src_plugins.depends += src_opengl
+   contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
+      src_plugins.depends += src_opengl
+      src_declarative.depends += src_opengl
+      src_webkit.depends += src_opengl
+   }
+   contains(QT_CONFIG, xmlpatterns) {
+      src_declarative.depends += src_xmlpatterns
+      src_webkit.depends += src_xmlpatterns
+   }
+   contains(QT_CONFIG, svg) {
+      src_declarative.depends += src_svg
+   }
 }
 
 

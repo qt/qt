@@ -1194,7 +1194,10 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     width and height, \l {anchor-layout}{anchoring} and key handling.
 
     You can subclass QDeclarativeItem to provide your own custom visual item that inherits
-    these features.
+    these features. Note that, because it does not draw anything, QDeclarativeItem sets the
+    QGraphicsItem::ItemHasNoContents flag. If you subclass QDeclarativeItem to create a visual
+    item, you will need to unset this flag.
+
 */
 
 /*!

@@ -4,7 +4,14 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_parserstress.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    DEFINES += SRCDIR=\".\"
+    importFiles.sources = ..\..\qscriptjstestsuite\tests
+    importFiles.path = 
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 CONFIG += parallel_test
 

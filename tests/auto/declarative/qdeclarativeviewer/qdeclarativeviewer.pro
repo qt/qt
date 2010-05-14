@@ -6,6 +6,13 @@ include(../../../../tools/qml/qml.pri)
 
 SOURCES += tst_qdeclarativeviewer.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    DEFINES += SRCDIR=\".\"
+    importFiles.sources = data
+    importFiles.path = 
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 CONFIG += parallel_test
