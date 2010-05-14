@@ -8,6 +8,7 @@ Item {
 
     Image { source: "background.png" }
 
+//! [needle_shadow]
     Image {
         x: 93
         y: 35
@@ -17,6 +18,8 @@ Item {
             angle: needleRotation.angle
         }
     }
+//! [needle_shadow]
+//! [needle]
     Image {
         id: needle
         x: 95; y: 33
@@ -33,5 +36,8 @@ Item {
             }
         }
     }
+//! [needle]
+//! [overlay]
     Image { x: 21; y: 18; source: "overlay.png" }
+//! [overlay]
 }

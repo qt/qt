@@ -1581,6 +1581,11 @@ void QWidgetPrivate::createTLExtra()
         x->inTopLevelResize = false;
         x->inRepaint = false;
         x->embedded = 0;
+#ifdef Q_WS_MAC
+#ifdef QT_MAC_USE_COCOA
+        x->wasMaximized = false;
+#endif // QT_MAC_USE_COCOA
+#endif // Q_WS_MAC
         createTLSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
         static int count = 0;
@@ -6720,6 +6725,18 @@ void QWidget::setGeometry(const QRect &r)
 */
 QByteArray QWidget::saveGeometry() const
 {
+#ifdef QT_MAC_USE_COCOA
+    // We check if the window was maximized during this invocation. If so, we need to record the
+    // starting position as 0,0.
+    Q_D(const QWidget);
+    QRect newFramePosition = frameGeometry();
+    QRect newNormalPosition = normalGeometry();
+    if(d->topData()->wasMaximized) {
+        // Change the starting position
+        newFramePosition.moveTo(0, 0);
+        newNormalPosition.moveTo(0, 0);
+    }
+#endif // QT_MAC_USE_COCOA
     QByteArray array;
     QDataStream stream(&array, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_4_0);
@@ -6729,8 +6746,13 @@ QByteArray QWidget::saveGeometry() const
     stream << magicNumber
            << majorVersion
            << minorVersion
+#ifdef QT_MAC_USE_COCOA
+           << newFramePosition
+           << newNormalPosition
+#else
            << frameGeometry()
            << normalGeometry()
+#endif // QT_MAC_USE_COCOA
            << qint32(QApplication::desktop()->screenNumber(this))
            << quint8(windowState() & Qt::WindowMaximized)
            << quint8(windowState() & Qt::WindowFullScreen);

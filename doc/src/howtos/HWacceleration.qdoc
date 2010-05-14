@@ -41,17 +41,20 @@
 
 /*!
     \page HWAcc_rendering.html
-    \title Using hardware acceleration on embedded platforms.
+    \title Hardware Acceleration &amp Embedded Platforms.
+    \brief How to use hardware acceleration for fast rendering.
 
     \ingroup best-practices
 
     \section1 Abstract
+
     This document describes how to use hardware acceleration for fast
-    rendering on embedded platforms supported by Qt. In short, it explains
-    how the graphics pipeline works. Since there might be differences to 
-	how the APIs are being used on different embedded platforms, a table
-	links to documentation dedicated to platform specific documentation
-	for each supported hardware acceleration API.
+    rendering on embedded platforms supported by Qt. In short, it
+    explains how the graphics pipeline works. Since there might be
+    differences to how the APIs are being used on different embedded
+    platforms, a table links to documentation dedicated to platform
+    specific documentation for each supported hardware acceleration
+    API.
 
     \input platforms/emb-hardwareacceleration.qdocinc
 
