@@ -38,4 +38,5 @@ symbian {
 mac {
     QMAKE_INFO_PLIST=Info_mac.plist
     TARGET="QML Launcher"
+    ICON=qml.icns
 }
