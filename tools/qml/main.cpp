@@ -86,7 +86,7 @@ QString warnings;
 void showWarnings()
 {
     if (!warnings.isEmpty()) {
-        QMessageBox::warning(0, QApplication::tr("Qt Declarative UI Runtime"), warnings);
+        QMessageBox::warning(0, QApplication::tr("Qt QML Launcher"), warnings);
     }
 }
 
@@ -118,7 +118,7 @@ void usage()
     qWarning("  -frameless ............................... run with no window frame");
     qWarning("  -maximized................................ run maximized");
     qWarning("  -fullscreen............................... run fullscreen");
-    qWarning("  -stayontop................................ keep viewer window on top");
+    qWarning("  -stayontop................................ keep launcher window on top");
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
@@ -157,9 +157,9 @@ void scriptOptsUsage()
     qWarning("  testerror ................................ test 'error' property of root item on playback");
     qWarning("  snapshot ................................. file being recorded is static,");
     qWarning("                                             only one frame will be recorded or tested");
-    qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
-    qWarning("  exitonfailure ............................ immediately exit the viewer on script failure");
-    qWarning("  saveonexit ............................... save recording on viewer exit");
+    qWarning("  exitoncomplete ........................... cleanly exit the launcher on script completion");
+    qWarning("  exitonfailure ............................ immediately exit the launcher on script failure");
+    qWarning("  saveonexit ............................... save recording on launcher exit");
     qWarning(" ");
     qWarning(" One of record, play or both must be specified.");
     exit(1);
@@ -197,7 +197,7 @@ int main(int argc, char ** argv)
 #endif
 
     QApplication app(argc, argv);
-    app.setApplicationName("QtQmlRuntime");
+    app.setApplicationName("QtQmlLauncher");
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
@@ -275,7 +275,7 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             app.setStartDragDistance(QString(argv[++i]).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
-            qWarning("Qt Qml Runtime version %s", QT_VERSION_STR);
+            qWarning("Qt QML Launcher version %s", QT_VERSION_STR);
             exit(0);
         } else if (arg == "-translation") {
             if (lastArg) usage();
