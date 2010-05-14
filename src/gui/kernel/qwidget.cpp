@@ -6731,7 +6731,7 @@ QByteArray QWidget::saveGeometry() const
     Q_D(const QWidget);
     QRect newFramePosition = frameGeometry();
     QRect newNormalPosition = normalGeometry();
-    if(d->topData()->wasMaximized) {
+    if(d->topData()->wasMaximized && !(windowState() & Qt::WindowMaximized)) {
         // Change the starting position
         newFramePosition.moveTo(0, 0);
         newNormalPosition.moveTo(0, 0);
