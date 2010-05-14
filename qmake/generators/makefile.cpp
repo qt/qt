@@ -1237,7 +1237,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 target += "\n";
             do_default = false;
             for(QStringList::Iterator wild_it = tmp.begin(); wild_it != tmp.end(); ++wild_it) {
-                QString wild = Option::fixPathToLocalOS((*wild_it), false, false);
+                QString wild = Option::fixPathToTargetOS((*wild_it), false, false);
                 QString dirstr = qmake_getpwd(), filestr = wild;
                 int slsh = filestr.lastIndexOf(Option::dir_sep);
                 if(slsh != -1) {
