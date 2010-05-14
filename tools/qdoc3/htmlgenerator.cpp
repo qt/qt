@@ -1149,7 +1149,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                     out() << " colspan=\"" << spans.at(0) << "\"";
                 if (spans.at(1) != "1")
                     out() << " rowspan=\"" << spans.at(1) << "\"";
+            if (inTableHeader)
                 out() << ">";
+            else
+                out() << "><p>"; 
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
@@ -1159,7 +1162,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         if (inTableHeader)
             out() << "</th>";
         else
-            out() << "</td>";
+            out() << "</p></td>";
         if (matchAhead(atom, Atom::ParaLeft))
             skipAhead = 1;
         break;
@@ -1849,6 +1852,7 @@ void HtmlGenerator::generateFooter(const Node *node)
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
+	      out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
           out() << "</body>\n";
           out() <<   "</html>\n";
 }
@@ -2275,22 +2279,22 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
             out() << "<tr class=\"odd topAlign\">";
         else
             out() << "<tr class=\"even topAlign\">";
-        out() << "<td>";
+        out() << "<td><p>";
         generateFullName(node, relative, marker);
-        out() << "</td>";
+        out() << "</p></td>";
 
         if (!(node->type() == Node::Fake)) {
             Text brief = node->doc().trimmedBriefText(name);
             if (!brief.isEmpty()) {
-                out() << "<td>";
+                out() << "<td><p>";
                 generateText(brief, node, marker);
-                out() << "</td>";
+                out() << "</p></td>";
             }
         }
         else {
-            out() << "<td>";
+            out() << "<td><p>";
             out() << protectEnc(node->doc().briefText().toString());
-            out() << "</td>";
+            out() << "</p></td>";
         }
         out() << "</tr>\n";
     }
@@ -2472,7 +2476,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         for (i = 0; i < NumColumns; i++) {
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
-                out() << "<td>\n</td>\n";
+                out() << "<td>\n</td>\n"; // check why?
             }
             else {
                 while ((currentParagraphNo[i] < NumParagraphs) &&
@@ -2487,7 +2491,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     currentParagraphNo[i] = NumParagraphs - 1;
                 }
 #endif
-                out() << "<td  class=\"rightAlign\">";
+                out() << "<th  class=\"rightAlign alphaChar\"><p>";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
                     if (includeAlphabet) {
@@ -2498,9 +2502,9 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << paragraphName[currentParagraphNo[i]]
                           << "</b>";
                 }
-                out() << "</td>\n";
+                out() << "</p></th>\n";
 
-                out() << "<td>";
+                out() << "<td><p>";
                 if ((currentParagraphNo[i] < NumParagraphs) &&
                     !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     NodeMap::Iterator it;
@@ -2526,7 +2530,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                         out() << ")";
                     }
                 }
-                out() << "</td>\n";
+                out() << "</p></td>\n";
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
@@ -4437,7 +4441,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
 				else
 					out() << "<tr class=\"even\">";
 				
-				out() << "<td>";
+				out() << "<td><p>";
                 //out() << "<tr><td>"; // old
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
@@ -4446,14 +4450,6 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                     out() << "<span class=\"qmldefault\">default</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
-                if (qpgn->isDefault()) {
-                    out() << "</table>"
-                          << "</div></div>"
-                          << "<div class=\"qmlitem\">"
-                          << "<div class=\"qmlproto\">"
-                          << "<table class=\"qmlname\">"
-                          << "<tr><td>default</td></tr>";
-                }
             }
             ++p;
         }
@@ -4469,11 +4465,11 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
 			out() << "<tr class=\"odd\">";
 		else
 			out() << "<tr class=\"even\">";
-        out() << "<td>";
+        out() << "<td><p>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
         generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
         //generateQmlItem(qsn,relative,marker,false);
-        out() << "</td></tr>";
+        out() << "</p></td></tr>";
         out() << "</table>";
         out() << "</div>";
     }
@@ -4486,10 +4482,10 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
 			out() << "<tr class=\"odd\">";
 		else
 			out() << "<tr class=\"even\">";
-        out() << "<td>";
+        out() << "<td><p>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
         generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
-        out() << "</td></tr>";
+        out() << "</p></td></tr>";
         out() << "</table>";
         out() << "</div>";
     }

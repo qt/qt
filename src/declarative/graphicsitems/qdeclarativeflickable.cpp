@@ -125,12 +125,14 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
   : viewport(new QDeclarativeItem)
     , hData(this, &QDeclarativeFlickablePrivate::setRoundedViewportX)
     , vData(this, &QDeclarativeFlickablePrivate::setRoundedViewportY)
-    , flicked(false), moving(false), stealMouse(false)
-    , pressed(false)
+    , flickingHorizontally(false), flickingVertically(false)
+    , hMoved(false), vMoved(false)
+    , movingHorizontally(false), movingVertically(false)
+    , stealMouse(false), pressed(false)
     , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
     , vTime(0), visibleArea(0)
-    , flickDirection(QDeclarativeFlickable::AutoFlickDirection)
+    , flickableDirection(QDeclarativeFlickable::AutoFlickDirection)
     , boundsBehavior(QDeclarativeFlickable::DragAndOvershootBounds)
 {
 }
@@ -226,10 +228,15 @@ void QDeclarativeFlickablePrivate::flick(AxisData &data, qreal minExtent, qreal 
         timeline.reset(data.move);
         timeline.accel(data.move, v, deceleration, maxDistance);
         timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
-        if (!flicked) {
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
+        if (!flickingHorizontally && q->xflick()) {
+            flickingHorizontally = true;
+            emit q->flickingChanged(); // deprecated
+            emit q->flickingHorizontallyChanged();
+        }
+        if (!flickingVertically && q->yflick()) {
+            flickingVertically = true;
+            emit q->flickingChanged(); // deprecated
+            emit q->flickingVerticallyChanged();
         }
     } else {
         timeline.reset(data.move);
@@ -274,7 +281,6 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
                 q->viewportMoved();
             }
         }
-        //emit flickingChanged();
     } else if (data.move.value() < maxExtent) {
         timeline.reset(data.move);
         if (fixupDuration) {
@@ -285,11 +291,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             data.move.setValue(maxExtent);
             q->viewportMoved();
         }
-        //emit flickingChanged();
-    } else {
-        flicked = false;
     }
-
     vTime = timeline.time();
 }
 
@@ -345,50 +347,21 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \code
     Flickable {
-        width: 200; height: 200; contentWidth: image.width; contentHeight: image.height
-        Image { id: image; source: "bigimage.png" }
+        width: 200; height: 200
+        contentWidth: image.width; contentHeight: image.height
+
+        Image { id: image; source: "bigImage.png" }
     }
     \endcode
 
     \image flickable.gif
 
-    \note Flickable does not automatically clip its contents. If
-    it is not full-screen it is likely that \c clip should be set
-    to true.
+    Flickable does not automatically clip its contents. If
+    it is not full-screen it is likely that \l {Item::clip}{clip} should be set
+    to \c true.
 
-    \note Due to an implementation detail items placed inside a flickable cannot anchor to it by
-    id, use 'parent' instead.
-*/
-
-/*!
-    \qmlsignal Flickable::onMovementStarted()
-
-    This handler is called when the view begins moving due to user
-    interaction.
-*/
-
-/*!
-    \qmlsignal Flickable::onMovementEnded()
-
-    This handler is called when the view stops moving due to user
-    interaction.  If a flick was generated, this handler will
-    be triggered once the flick stops.  If a flick was not
-    generated, the handler will be triggered when the
-    user stops dragging - i.e. a mouse or touch release.
-*/
-
-/*!
-    \qmlsignal Flickable::onFlickStarted()
-
-    This handler is called when the view is flicked.  A flick
-    starts from the point that the mouse or touch is released,
-    while still in motion.
-*/
-
-/*!
-    \qmlsignal Flickable::onFlickEnded()
-
-    This handler is called when the view stops moving due to a flick.
+    \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
+    \c id. Use \c parent instead.
 */
 
 /*!
@@ -400,18 +373,17 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     These properties describe the position and size of the currently viewed area.
     The size is defined as the percentage of the full view currently visible,
     scaled to 0.0 - 1.0.  The page position is usually in the range 0.0 (beginning) to
-    1.0 minus size ratio (end), i.e. yPosition is in the range 0.0 to 1.0-heightRatio.
+    1.0 minus size ratio (end), i.e. \c yPosition is in the range 0.0 to 1.0-\c heightRatio.
     However, it is possible for the contents to be dragged outside of the normal
     range, resulting in the page positions also being outside the normal range.
 
-    These properties are typically used to draw a scrollbar, for example:
-    \code
-    Rectangle {
-        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
-        y: MyListView.visibleArea.yPosition * MyListView.height
-        height: MyListView.visibleArea.heightRatio * MyListView.height
-    }
-    \endcode
+    These properties are typically used to draw a scrollbar. For example:
+
+    \snippet doc/src/snippets/declarative/flickableScrollbar.qml 0
+    \dots 4
+    \snippet doc/src/snippets/declarative/flickableScrollbar.qml 1
+
+    \sa {declarative/scrollbar}{scrollbar example}
 */
 
 QDeclarativeFlickable::QDeclarativeFlickable(QDeclarativeItem *parent)
@@ -479,11 +451,12 @@ void QDeclarativeFlickable::setContentY(qreal pos)
 /*!
     \qmlproperty bool Flickable::interactive
 
-    A user cannot drag or flick a Flickable that is not interactive.
+    This property holds whether the user can interact with the Flickable. A user
+    cannot drag or flick a Flickable that is not interactive.
 
     This property is useful for temporarily disabling flicking. This allows
     special interaction with Flickable's children: for example, you might want to
-    freeze a flickable map while viewing detailed information on a location popup that is a child of the Flickable.
+    freeze a flickable map while scrolling through a pop-up dialog that is a child of the Flickable.
 */
 bool QDeclarativeFlickable::isInteractive() const
 {
@@ -496,12 +469,14 @@ void QDeclarativeFlickable::setInteractive(bool interactive)
     Q_D(QDeclarativeFlickable);
     if (interactive != d->interactive) {
         d->interactive = interactive;
-        if (!interactive && d->flicked) {
+        if (!interactive && (d->flickingHorizontally || d->flickingVertically)) {
             d->timeline.clear();
             d->vTime = d->timeline.time();
-            d->flicked = false;
-            emit flickingChanged();
-            emit flickEnded();
+            d->flickingHorizontally = false;
+            d->flickingVertically = false;
+            emit flickingChanged(); // deprecated
+            emit flickingHorizontallyChanged();
+            emit flickingVerticallyChanged();
         }
         emit interactiveChanged();
     }
@@ -580,33 +555,45 @@ QDeclarativeFlickableVisibleArea *QDeclarativeFlickable::visibleArea()
 }
 
 /*!
-    \qmlproperty enumeration Flickable::flickDirection
+    \qmlproperty enumeration Flickable::flickableDirection
 
     This property determines which directions the view can be flicked.
 
     \list
-    \o AutoFlickDirection (default) - allows flicking vertically if the
+    \o Flickable.AutoFlickDirection (default) - allows flicking vertically if the
     \e contentHeight is not equal to the \e height of the Flickable.
     Allows flicking horizontally if the \e contentWidth is not equal
     to the \e width of the Flickable.
-    \o HorizontalFlick - allows flicking horizontally.
-    \o VerticalFlick - allows flicking vertically.
-    \o HorizontalAndVerticalFlick - allows flicking in both directions.
+    \o Flickable.HorizontalFlick - allows flicking horizontally.
+    \o Flickable.VerticalFlick - allows flicking vertically.
+    \o Flickable.HorizontalAndVerticalFlick - allows flicking in both directions.
     \endlist
 */
-QDeclarativeFlickable::FlickDirection QDeclarativeFlickable::flickDirection() const
+QDeclarativeFlickable::FlickableDirection QDeclarativeFlickable::flickableDirection() const
 {
     Q_D(const QDeclarativeFlickable);
-    return d->flickDirection;
+    return d->flickableDirection;
 }
 
-void QDeclarativeFlickable::setFlickDirection(FlickDirection direction)
+void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 {
     Q_D(QDeclarativeFlickable);
-    if (direction != d->flickDirection) {
-        d->flickDirection = direction;
-        emit flickDirectionChanged();
+    if (direction != d->flickableDirection) {
+        d->flickableDirection = direction;
+        emit flickableDirectionChanged();
     }
+}
+
+QDeclarativeFlickable::FlickableDirection QDeclarativeFlickable::flickDirection() const
+{
+    qmlInfo(this) << "'flickDirection' is deprecated. Please use 'flickableDirection' instead.";
+    return flickableDirection();
+}
+
+void QDeclarativeFlickable::setFlickDirection(FlickableDirection direction)
+{
+    qmlInfo(this) << "'flickDirection' is deprecated. Please use 'flickableDirection' instead.";
+    setFlickableDirection(direction);
 }
 
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -624,7 +611,8 @@ void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEven
     pressPos = event->pos();
     hData.pressPos = hData.move.value();
     vData.pressPos = vData.move.value();
-    flicked = false;
+    flickingHorizontally = false;
+    flickingVertically = false;
     QDeclarativeItemPrivate::start(pressTime);
     QDeclarativeItemPrivate::start(velocityTime);
 }
@@ -636,7 +624,6 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
         return;
     bool rejectY = false;
     bool rejectX = false;
-    bool moved = false;
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
@@ -658,7 +645,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             }
             if (!rejectY && stealMouse) {
                 vData.move.setValue(qRound(newY));
-                moved = true;
+                vMoved = true;
             }
             if (qAbs(dy) > QApplication::startDragDistance())
                 stealMouse = true;
@@ -685,7 +672,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             }
             if (!rejectX && stealMouse) {
                 hData.move.setValue(qRound(newX));
-                moved = true;
+                hMoved = true;
             }
 
             if (qAbs(dx) > QApplication::startDragDistance())
@@ -715,7 +702,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
     if (rejectY) vData.velocity = 0;
     if (rejectX) hData.velocity = 0;
 
-    if (moved) {
+    if (hMoved || vMoved) {
         q->movementStarting();
         q->viewportMoved();
     }
@@ -810,9 +797,9 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->vData.velocity = qMax(event->delta() - d->vData.smoothVelocity.value(), qreal(250.0));
         else
             d->vData.velocity = qMin(event->delta() - d->vData.smoothVelocity.value(), qreal(-250.0));
-        d->flicked = false;
+        d->flickingVertically = false;
         d->flickY(d->vData.velocity);
-        if (d->flicked)
+        if (d->flickingVertically)
             movementStarting();
         event->accept();
     } else if (xflick()) {
@@ -820,9 +807,9 @@ void QDeclarativeFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
             d->hData.velocity = qMax(event->delta() - d->hData.smoothVelocity.value(), qreal(250.0));
         else
             d->hData.velocity = qMin(event->delta() - d->hData.smoothVelocity.value(), qreal(-250.0));
-        d->flicked = false;
+        d->flickingHorizontally = false;
         d->flickX(d->hData.velocity);
-        if (d->flicked)
+        if (d->flickingHorizontally)
             movementStarting();
         event->accept();
     } else {
@@ -1026,14 +1013,14 @@ void QDeclarativeFlickable::setOverShoot(bool o)
     This enables the feeling that the edges of the view are soft,
     rather than a hard physical boundary.
 
-    boundsBehavior can be one of:
+    The \c boundsBehavior can be one of:
 
     \list
-    \o \e StopAtBounds - the contents can not be dragged beyond the boundary
+    \o \e Flickable.StopAtBounds - the contents can not be dragged beyond the boundary
     of the flickable, and flicks will not overshoot.
-    \o \e DragOverBounds - the contents can be dragged beyond the boundary
+    \o \e Flickable.DragOverBounds - the contents can be dragged beyond the boundary
     of the Flickable, but flicks will not overshoot.
-    \o \e DragAndOvershootBounds (default) - the contents can be dragged
+    \o \e Flickable.DragAndOvershootBounds (default) - the contents can be dragged
     beyond the boundary of the Flickable, and can overshoot the
     boundary when flicked.
     \endlist
@@ -1059,12 +1046,16 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
     \qmlproperty int Flickable::contentHeight
 
     The dimensions of the content (the surface controlled by Flickable). Typically this
-    should be set to the combined size of the items placed in the Flickable.
+    should be set to the combined size of the items placed in the Flickable. Note this
+    can be set automatically using \l {Item::childrenRect.width}{childrenRect.width}
+    and \l {Item::childrenRect.height}{childrenRect.height}. For example:
 
     \code
     Flickable {
-        width: 320; height: 480; contentWidth: image.width; contentHeight: image.height
-        Image { id: image; source: "bigimage.png" }
+        width: 320; height: 480
+        contentWidth: childrenRect.width; contentHeight: childrenRect.height
+
+        Image { id: image; source: "bigImage.png" }
     }
     \endcode
 */
@@ -1085,7 +1076,7 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
     else
         d->viewport->setWidth(w);
     // Make sure that we're entirely in view.
-    if (!d->pressed) {
+    if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
         int oldDuration = d->fixupDuration;
         d->fixupDuration = 0;
         d->fixupX();
@@ -1112,7 +1103,7 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     else
         d->viewport->setHeight(h);
     // Make sure that we're entirely in view.
-    if (!d->pressed) {
+    if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
         int oldDuration = d->fixupDuration;
         d->fixupDuration = 0;
         d->fixupY();
@@ -1143,17 +1134,17 @@ qreal QDeclarativeFlickable::vHeight() const
 bool QDeclarativeFlickable::xflick() const
 {
     Q_D(const QDeclarativeFlickable);
-    if (d->flickDirection == QDeclarativeFlickable::AutoFlickDirection)
+    if (d->flickableDirection == QDeclarativeFlickable::AutoFlickDirection)
         return vWidth() != width();
-    return d->flickDirection & QDeclarativeFlickable::HorizontalFlick;
+    return d->flickableDirection & QDeclarativeFlickable::HorizontalFlick;
 }
 
 bool QDeclarativeFlickable::yflick() const
 {
     Q_D(const QDeclarativeFlickable);
-    if (d->flickDirection == QDeclarativeFlickable::AutoFlickDirection)
+    if (d->flickableDirection == QDeclarativeFlickable::AutoFlickDirection)
         return vHeight() !=  height();
-    return d->flickDirection & QDeclarativeFlickable::VerticalFlick;
+    return d->flickableDirection & QDeclarativeFlickable::VerticalFlick;
 }
 
 bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
@@ -1275,16 +1266,30 @@ void QDeclarativeFlickable::setFlickDeceleration(qreal deceleration)
     emit flickDecelerationChanged();
 }
 
-/*!
-    \qmlproperty bool Flickable::flicking
-
-    This property holds whether the view is currently moving due to
-    the user flicking the view.
-*/
 bool QDeclarativeFlickable::isFlicking() const
 {
     Q_D(const QDeclarativeFlickable);
-    return d->flicked;
+    qmlInfo(this) << "'flicking' is deprecated. Please use 'flickingHorizontally' and 'flickingVertically' instead.";
+    return d->flickingHorizontally ||  d->flickingVertically;
+}
+
+/*!
+    \qmlproperty bool Flickable::flickingHorizontally
+    \qmlproperty bool Flickable::flickingVertically
+
+    These properties hold whether the view is currently moving horizontally
+    or vertically due to the user flicking the view.
+*/
+bool QDeclarativeFlickable::isFlickingHorizontally() const
+{
+    Q_D(const QDeclarativeFlickable);
+    return d->flickingHorizontally;
+}
+
+bool QDeclarativeFlickable::isFlickingVertically() const
+{
+    Q_D(const QDeclarativeFlickable);
+    return d->flickingVertically;
 }
 
 /*!
@@ -1313,40 +1318,72 @@ void QDeclarativeFlickable::setPressDelay(int delay)
     emit pressDelayChanged();
 }
 
-/*!
-    \qmlproperty bool Flickable::moving
 
-    This property holds whether the view is currently moving due to
-    the user either dragging or flicking the view.
-*/
 bool QDeclarativeFlickable::isMoving() const
 {
     Q_D(const QDeclarativeFlickable);
-    return d->moving;
+    qmlInfo(this) << "'moving' is deprecated. Please use 'movingHorizontally' or 'movingVertically' instead.";
+    return d->movingHorizontally || d->movingVertically;
+}
+
+/*!
+    \qmlproperty bool Flickable::movingHorizontally
+    \qmlproperty bool Flickable::movingVertically
+
+    These properties hold whether the view is currently moving horizontally
+    or vertically due to the user either dragging or flicking the view.
+*/
+bool QDeclarativeFlickable::isMovingHorizontally() const
+{
+    Q_D(const QDeclarativeFlickable);
+    return d->movingHorizontally;
+}
+
+bool QDeclarativeFlickable::isMovingVertically() const
+{
+    Q_D(const QDeclarativeFlickable);
+    return d->movingVertically;
 }
 
 void QDeclarativeFlickable::movementStarting()
 {
     Q_D(QDeclarativeFlickable);
-    if (!d->moving) {
-        d->moving = true;
-        emit movingChanged();
-        emit movementStarted();
+    if (d->hMoved && !d->movingHorizontally) {
+        d->movingHorizontally = true;
+        emit movingChanged(); // deprecated
+        emit movingHorizontallyChanged();
+    }
+    if (d->vMoved && !d->movingVertically) {
+        d->movingVertically = true;
+        emit movingChanged(); // deprecated
+        emit movingVerticallyChanged();
     }
 }
 
 void QDeclarativeFlickable::movementEnding()
 {
     Q_D(QDeclarativeFlickable);
-    if (d->moving) {
-        d->moving = false;
-        emit movingChanged();
-        emit movementEnded();
+    if (d->flickingHorizontally) {
+        d->flickingHorizontally = false;
+        emit flickingChanged(); // deprecated
+        emit flickingHorizontallyChanged();
     }
-    if (d->flicked) {
-        d->flicked = false;
-        emit flickingChanged();
-        emit flickEnded();
+    if (d->flickingVertically) {
+        d->flickingVertically = false;
+        emit flickingChanged(); // deprecated
+        emit flickingVerticallyChanged();
+    }
+    if (d->movingHorizontally) {
+        d->movingHorizontally = false;
+        d->hMoved = false;
+        emit movingChanged(); // deprecated
+        emit movingHorizontallyChanged();
+    }
+    if (d->movingVertically) {
+        d->movingVertically = false;
+        d->vMoved = false;
+        emit movingChanged(); // deprecated
+        emit movingVerticallyChanged();
     }
     d->hData.smoothVelocity.setValue(0);
     d->vData.smoothVelocity.setValue(0);

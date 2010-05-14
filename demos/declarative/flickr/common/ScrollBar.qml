@@ -19,7 +19,7 @@ Item {
     states: [
         State {
             name: "show"
-            when: flickableArea.moving
+            when: flickableArea.movingVertically
             PropertyChanges {
                 target: container
                 opacity: 1

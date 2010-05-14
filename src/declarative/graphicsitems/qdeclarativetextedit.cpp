@@ -46,6 +46,8 @@
 #include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativeinfo.h>
 
+#include <QtCore/qmath.h>
+
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -85,7 +87,6 @@ TextEdit {
     \internal
     \class QDeclarativeTextEdit
     \qmlclass TextEdit
-    \ingroup group_coreitems
 
     \brief The QDeclarativeTextEdit class provides an editable formatted text item that you can add to a QDeclarativeView.
 
@@ -129,7 +130,7 @@ QString QDeclarativeTextEdit::text() const
 /*!
     \qmlproperty bool TextEdit::font.bold
 
-    Sets the font's weight to bold.
+    Sets whether the font weight is bold.
 */
 
 /*!
@@ -139,11 +140,11 @@ QString QDeclarativeTextEdit::text() const
 
     The weight can be one of:
     \list
-    \o Light
-    \o Normal - the default
-    \o DemiBold
-    \o Bold
-    \o Black
+    \o Font.Light
+    \o Font.Normal - the default
+    \o Font.DemiBold
+    \o Font.Bold
+    \o Font.Black
     \endlist
 
     \qml
@@ -154,25 +155,25 @@ QString QDeclarativeTextEdit::text() const
 /*!
     \qmlproperty bool TextEdit::font.italic
 
-    Sets the style of the text to italic.
+    Sets whether the font has an italic style.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.underline
 
-    Set the style of the text to underline.
+    Sets whether the text is underlined.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.outline
 
-    Set the style of the text to outline.
+    Sets whether the font has an outline style.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.strikeout
 
-    Set the style of the text to strikeout.
+    Sets whether the font has a strikeout style.
 */
 
 /*!
@@ -216,11 +217,11 @@ QString QDeclarativeTextEdit::text() const
     Sets the capitalization for the text.
 
     \list
-    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
-    \o AllUppercase - This alters the text to be rendered in all uppercase type.
-    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
-    \o SmallCaps -	This alters the text to be rendered in small-caps type.
-    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \o Font.MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o Font.AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o Font.AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o Font.SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Font.Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
     \endlist
 
     \qml
@@ -255,9 +256,14 @@ void QDeclarativeTextEdit::setText(const QString &text)
 
     The way the text property should be displayed.
 
-    Supported text formats are \c AutoText, \c PlainText and \c RichText.
+    \list
+    \o TextEdit.AutoText
+    \o TextEdit.PlainText
+    \o TextEdit.RichText
+    \o TextEdit.StyledText
+    \endlist
 
-    The default is AutoText.  If the text format is AutoText the text edit
+    The default is TextEdit.AutoText.  If the text format is TextEdit.AutoText the text edit
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
@@ -424,9 +430,9 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     Sets the horizontal and vertical alignment of the text within the TextEdit items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
-    and \c AlignVCenter.
+    The valid values for \c horizontalAlignment are \c TextEdit.AlignLeft, \c TextEdit.AlignRight and
+    \c TextEdit.AlignHCenter.  The valid values for \c verticalAlignment are \c TextEdit.AlignTop, \c TextEdit.AlignBottom
+    and \c TextEdit.AlignVCenter.
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -469,14 +475,14 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     The text will only wrap if an explicit width has been set.
 
     \list
-    \o NoWrap - no wrapping will be performed.
-    \o WordWrap - wrapping is done on word boundaries.
-    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
+    \o TextEdit.NoWrap - no wrapping will be performed.
+    \o TextEdit.WordWrap - wrapping is done on word boundaries.
+    \o TextEdit.WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
+    \o TextEdit.WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
        will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
-    The default is NoWrap.
+    The default is TextEdit.NoWrap.
 */
 QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
 {
@@ -724,7 +730,7 @@ void QDeclarativeTextEdit::setPersistentSelection(bool on)
 }
 
 /*
-   \qmlproperty number TextEdit::textMargin
+   \qmlproperty real TextEdit::textMargin
 
    The margin, in pixels, around the text in the TextEdit.
 */
@@ -893,6 +899,7 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
+    bool hadFocus = hasFocus();
     if (d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
@@ -904,6 +911,8 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         setFocus(true);
     }
+    if (!hadFocus && hasFocus())
+        d->clickCausedFocus = true;
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mousePressEvent(event);
@@ -918,11 +927,12 @@ void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextEdit);
     QWidget *widget = event->widget();
     if (widget && (d->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos()))
-        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+    d->clickCausedFocus = false;
 
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QDeclarativePaintedItem::mousePressEvent(event);
+        QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
 
 /*!
@@ -946,7 +956,8 @@ void QDeclarativeTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QDeclarativePaintedItem::mousePressEvent(event);
+        QDeclarativePaintedItem::mouseMoveEvent(event);
+    event->setAccepted(true);
 }
 
 /*!
@@ -991,8 +1002,9 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &r)
 /*!
     \qmlproperty bool TextEdit::smooth
 
-    Set this property if you want the text to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
     the item is displayed at its natural size, this property has no visual or
     performance effect.
 
@@ -1102,7 +1114,7 @@ void QDeclarativeTextEdit::updateSize()
         setBaselineOffset(fm.ascent() + yoff + d->textMargin);
 
         //### need to comfirm cost of always setting these
-        int newWidth = (int)d->document->idealWidth();
+        int newWidth = qCeil(d->document->idealWidth());
         d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
         int cursorWidth = 1;
         if(d->cursor)

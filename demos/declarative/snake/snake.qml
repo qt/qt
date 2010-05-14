@@ -60,7 +60,7 @@ Rectangle {
         Image {
             id: title
             source: "content/pics/snake.jpg"
-            fillMode: "PreserveAspectCrop"
+            fillMode: Image.PreserveAspectCrop
             anchors.fill: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
@@ -69,7 +69,7 @@ Rectangle {
             Text {
                 color: "white"
                 font.pointSize: 24
-                horizontalAlignment: "AlignHCenter"
+                horizontalAlignment: Text.AlignHCenter
                 text: "Last Score:\t" + lastScore + "\nHighscore:\t" + highScores.topScore;
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
@@ -78,7 +78,7 @@ Rectangle {
         }
 
         source: "content/pics/background.png"
-        fillMode: "PreserveAspectCrop"
+        fillMode: Image.PreserveAspectCrop
 
         anchors.left: parent.left
         anchors.right: parent.right

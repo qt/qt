@@ -54,7 +54,11 @@ Flipable {
 
         Rectangle { anchors.fill: parent; color: "black"; opacity: 0.4 }
 
-        Common.Progress { anchors.centerIn: parent; width: 200; height: 18; progress: bigImage.progress; visible: bigImage.status!=1 }
+        Common.Progress {
+            anchors.centerIn: parent; width: 200; height: 18
+            progress: bigImage.progress; visible: bigImage.status != Image.Ready
+        }
+
         Flickable {
             id: flickable; anchors.fill: parent; clip: true
             contentWidth: imageContainer.width; contentHeight: imageContainer.height
@@ -66,10 +70,10 @@ Flipable {
 
                 Image {
                     id: bigImage; source: container.photoUrl; scale: slider.value
-                    anchors.centerIn: parent; smooth: !flickable.moving
+                    anchors.centerIn: parent; smooth: !flickable.movingVertically
                     onStatusChanged : {
                         // Default scale shows the entire image.
-                        if (status == 1 && width != 0) {
+                        if (status == Image.Ready && width != 0) {
                             slider.minimum = Math.min(flickable.width / width, flickable.height / height);
                             prevScale = Math.min(slider.minimum, 1);
                             slider.value = prevScale;
@@ -81,12 +85,12 @@ Flipable {
 
         Text {
             text: "Image Unavailable"
-            visible: bigImage.status == 'Error'
+            visible: bigImage.status == Image.Error
             anchors.centerIn: parent; color: "white"; font.bold: true
         }
 
         Common.Slider {
-            id: slider; visible: { bigImage.status == 1 && maximum > minimum }
+            id: slider; visible: { bigImage.status == Image.Ready && maximum > minimum }
             anchors {
                 bottom: parent.bottom; bottomMargin: 65
                 left: parent.left; leftMargin: 25
@@ -114,8 +118,8 @@ Flipable {
     transitions: Transition {
         SequentialAnimation {
             PropertyAction { target: bigImage; property: "smooth"; value: false }
-            NumberAnimation { easing.type: "InOutQuad"; properties: "angle"; duration: 500 }
-            PropertyAction { target: bigImage; property: "smooth"; value: !flickable.moving }
+            NumberAnimation { easing.type: Easing.InOutQuad; properties: "angle"; duration: 500 }
+            PropertyAction { target: bigImage; property: "smooth"; value: !flickable.movingVertically }
         }
     }
 }

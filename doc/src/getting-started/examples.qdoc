@@ -492,18 +492,10 @@
 */
 
 /*!
-   \group gui-examples
-   \title GUI Examples
-   \brief These pages list examples of constructing GUI components.
-
-   \generatelist{related}
-*/
-
-/*!
     \page examples-widgets.html
     \title Widgets Examples
     \ingroup all-examples
-    \ingroup gui-examples
+    \brief Lots of examples of how to use different kinds of widgets.
 
     \contentspage Qt Examples
     \nextpage Dialog Examples
@@ -554,7 +546,7 @@
     \page examples-dialogs.html
     \ingroup all-examples
     \title Dialog Examples
-    \ingroup gui-examples
+    \brief Using Qt's standard dialogs and building and using custom dialogs.
 
     \previouspage Widgets Examples
     \contentspage Qt Examples
@@ -586,7 +578,7 @@
     \page examples-mainwindow.html
     \ingroup all-examples
     \title Main Window Examples
-    \ingroup gui-examples
+    \building applications around a main window.
 
     \previouspage Dialog Examples
     \contentspage Qt Examples
@@ -616,7 +608,7 @@
     \page examples-layouts.html
     \ingroup all-examples
     \title Layout Examples
-    \ingroup gui-examples
+    Using Qt's layout-based approach to widget management.
 
     \previouspage Main Window Examples
     \contentspage Qt Examples
@@ -645,6 +637,7 @@
     \page examples-itemviews.html
     \ingroup all-examples
     \title Item Views Examples
+    \brief Using the model/view design pattern to separate presentation from data.
 
     \previouspage Layout Examples
     \contentspage Qt Examples
@@ -681,18 +674,10 @@
 */
 
 /*!
-   \group graphics-examples
-   \title Graphics Examples
-   \brief These pages list examples of doing graphics.
-
-   \generatelist{related}
-*/
-
-/*!
     \page examples-graphicsview.html
     \ingroup all-examples
     \title Graphics View Examples
-    \ingroup graphics-examples
+    \brief Using Qt to manage and interact with a large (potentially) number of graphics items.
 
     \previouspage Item Views Examples
     \contentspage Qt Examples
@@ -739,7 +724,6 @@
     \page examples-painting.html
     \ingroup all-examples
     \title Painting Examples
-    \ingroup graphics-examples
 
     \previouspage QML Examples and Demos
     \contentspage Qt Examples
@@ -821,7 +805,6 @@
     \page examples-draganddrop.html
     \ingroup all-examples
     \title Drag and Drop Examples
-    \ingroup gui-examples
 
     \previouspage Desktop Examples
     \contentspage Qt Examples
@@ -988,7 +971,6 @@
     \page examples-opengl.html
     \ingroup all-examples
     \title OpenGL Examples
-    \ingroup graphics-examples
 
     \previouspage Inter-Process Communication Examples
     \contentspage Qt Examples
@@ -1024,7 +1006,6 @@
     \page examples-openvg.html
     \ingroup all-examples
     \title OpenVG Examples
-    \ingroup graphics-examples
 
     \previouspage OpenGL Examples
     \contentspage Qt Examples

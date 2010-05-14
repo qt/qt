@@ -48,6 +48,8 @@
 #include <QTime>
 #include <QList>
 
+#include "loggerwidget.h"
+
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeView;
@@ -59,6 +61,7 @@ class QDeclarativeTester;
 class QNetworkReply;
 class QNetworkCookieJar;
 class NetworkAccessManagerFactory;
+class QTranslator;
 
 class QDeclarativeViewer
 #if defined(Q_OS_SYMBIAN)
@@ -107,6 +110,9 @@ public:
     QMenuBar *menuBar() const;
 
     QDeclarativeView *view() const;
+    LoggerWidget *warningsWidget() const;
+
+    void enableExperimentalGestures();
 
 public slots:
     void sceneResized(QSize size);
@@ -121,6 +127,7 @@ public slots:
     void showProxySettings ();
     void proxySettingsChanged ();
     void setScaleView();
+    void toggleOrientation();
     void statusChanged();
     void setSlowMode(bool);
     void launch(const QString &);
@@ -128,7 +135,6 @@ public slots:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual bool event(QEvent *);
-
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
 private slots:
@@ -140,14 +146,19 @@ private slots:
     void setScaleSkin();
     void setPortrait();
     void setLandscape();
-    void toggleOrientation();
     void startNetwork();
     void toggleFullScreen();
+    void orientationChanged();
+
+    void showWarnings(bool show);
+    void warningsWidgetOpened();
+    void warningsWidgetClosed();
 
 private:
     QString getVideoFileName();
     int menuBarHeight() const;
 
+    LoggerWidget *loggerWindow;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QDeclarativeView *canvas;
@@ -182,16 +193,22 @@ private:
     QAction *portraitOrientation;
     QAction *landscapeOrientation;
 
+    QAction *showWarningsWindow;
+
     QString m_script;
     ScriptOptions m_scriptOptions;
     QDeclarativeTester *tester;
 
     QNetworkReply *wgtreply;
     QString wgtdir;
-
     NetworkAccessManagerFactory *namFactory;
 
     bool useQmlFileBrowser;
+
+    QTranslator *translator;
+    void loadTranslationFile(const QString& directory);
+
+    void loadDummyDataFiles(const QString& directory);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeViewer::ScriptOptions)
 

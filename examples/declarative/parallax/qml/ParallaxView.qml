@@ -18,9 +18,9 @@ Item {
         id: list
 
         currentIndex: root.currentIndex
-        onCurrentIndexChanged: root.currentIndex = currentIndex 
+        onCurrentIndexChanged: root.currentIndex = currentIndex
 
-        orientation: "Horizontal"
+        orientation: Qt.Horizontal
         boundsBehavior: Flickable.DragOverBounds
         anchors.fill: parent
         model: VisualItemModel { id: visualModel }
@@ -45,10 +45,10 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: Math.min(count * 50, parent.width - 20)
         interactive: width == parent.width - 20
-        orientation: "Horizontal"
+        orientation: Qt.Horizontal
 
-        delegate: Item { 
-            width: 50; height: 50 
+        delegate: Item {
+            width: 50; height: 50
             id: delegateRoot
 
             Image {
@@ -56,7 +56,6 @@ Item {
                 source: modelData.icon
                 smooth: true
                 scale: 0.8
-                transformOrigin: "Center"
             }
 
             MouseArea {
@@ -64,10 +63,10 @@ Item {
                 onClicked: { root.currentIndex = index }
             }
 
-            states: State { 
+            states: State {
                 name: "Selected"
                 when: delegateRoot.ListView.isCurrentItem == true
-                PropertyChanges { 
+                PropertyChanges {
                     target: image
                     scale: 1
                     y: -5

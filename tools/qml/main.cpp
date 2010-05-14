@@ -54,7 +54,7 @@
 
 QT_USE_NAMESPACE
 
-QtMsgHandler systemMsgOutput;
+QtMsgHandler systemMsgOutput = 0;
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -125,7 +125,7 @@ void usage()
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
-    qWarning("  -nolog ................................... do not show log window");
+    qWarning("  -warnings [show|hide]..................... show warnings in a separate log window");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -168,6 +168,8 @@ void scriptOptsUsage()
     exit(1);
 }
 
+enum WarningsConfig { ShowWarnings, HideWarnings, DefaultWarnings };
+
 int main(int argc, char ** argv)
 {
 #if defined (Q_OS_SYMBIAN)
@@ -182,7 +184,7 @@ int main(int argc, char ** argv)
     atexit(showWarnings);
 #endif
 
-#if defined (Q_WS_X11)
+#if defined (Q_WS_X11) || defined(Q_WS_MAC)
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
@@ -229,7 +231,9 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
-    bool showLogWidget = true;
+    bool experimentalGestures = false;
+
+    WarningsConfig warningsConfig = DefaultWarnings;
     bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
@@ -290,8 +294,16 @@ int main(int argc, char ** argv)
             useGL = true;
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
-        } else if (arg == "-nolog") {
-            showLogWidget = false;
+        } else if (arg == "-warnings") {
+            if (lastArg) usage();
+            QString warningsStr = QString(argv[++i]);
+            if (warningsStr == QLatin1String("show")) {
+                warningsConfig = ShowWarnings;
+            } else if (warningsStr == QLatin1String("hide")) {
+                warningsConfig = HideWarnings;
+            } else {
+                usage();
+            }
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
                 qWarning("-L option provided for compatibility only, use -I instead");
@@ -323,6 +335,8 @@ int main(int argc, char ** argv)
             sizeToView = false;
         } else if (arg == "-sizerootobjecttoview") {
             sizeToView = true;
+        } else if (arg == "-experimentalgestures") {
+            experimentalGestures = true;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -339,13 +353,6 @@ int main(int argc, char ** argv)
     Qt::WFlags wflags = (frameless ? Qt::FramelessWindowHint : Qt::Widget);
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
-
-#if !defined(Q_OS_SYMBIAN)
-    LoggerWidget loggerWidget(0);
-    if (showLogWidget) {
-        logger = &loggerWidget;
-    }
-#endif
 
     QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     if (!scriptopts.isEmpty()) {
@@ -388,6 +395,19 @@ int main(int argc, char ** argv)
     }  else if (!script.isEmpty()) {
         usage();
     }
+
+#if !defined(Q_OS_SYMBIAN)
+    logger = viewer->warningsWidget();
+    if (warningsConfig == ShowWarnings) {
+        logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
+        logger.data()->show();
+    } else if (warningsConfig == HideWarnings){
+        logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
+    }
+#endif
+
+    if (experimentalGestures)
+        viewer->enableExperimentalGestures();
 
     foreach (QString lib, imports)
         viewer->addLibraryPath(lib);

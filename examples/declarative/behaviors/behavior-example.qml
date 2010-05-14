@@ -49,12 +49,12 @@ Rectangle {
 
             // Setting an 'elastic' behavior on the focusRect's x property.
             Behavior on x {
-                NumberAnimation { easing.type: "OutElastic"; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
+                NumberAnimation { easing.type: Easing.OutElastic; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
             }
 
             // Setting an 'elastic' behavior on the focusRect's y property.
             Behavior on y {
-                NumberAnimation { easing.type: "OutElastic"; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
+                NumberAnimation { easing.type: Easing.OutElastic; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
             }
 
             Text {

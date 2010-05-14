@@ -56,7 +56,7 @@ Rectangle {
 
         Item {
             width: container.width; height: 55
-            
+
             Column {
                 id: moveButtons
                 x: 5; width: childrenRect.width; anchors.verticalCenter: parent.verticalCenter
@@ -84,7 +84,7 @@ Rectangle {
                     spacing: 5
                     Repeater {
                         model: attributes
-                        Component { 
+                        Component {
                             Text { text: description; color: "White" }
                         }
                     }
@@ -95,13 +95,12 @@ Rectangle {
                 id: itemButtons
 
                 anchors { right: removeButton.left; rightMargin: 35; verticalCenter: parent.verticalCenter }
-                width: childrenRect.width 
+                width: childrenRect.width
                 spacing: 10
 
                 Image {
                     source: "content/pics/list-add.png"
                     scale: clickUp.isPressed ? 0.9 : 1
-                    transformOrigin: Item.Center
 
                     ClickAutoRepeating {
                         id: clickUp
@@ -115,9 +114,8 @@ Rectangle {
                 Image {
                     source: "content/pics/list-remove.png"
                     scale: clickDown.isPressed ? 0.9 : 1
-                    transformOrigin: Item.Center
 
-                    ClickAutoRepeating { 
+                    ClickAutoRepeating {
                         id: clickDown
                         anchors.fill: parent
                         onClicked: fruitModel.setProperty(index, "cost", Math.max(0,cost-0.25))
@@ -147,18 +145,18 @@ Rectangle {
 
         width: 8; height: view.height; anchors.right: view.right
         opacity: 0
-        orientation: "Vertical"
+        orientation: Qt.Vertical
         position: view.visibleArea.yPosition
         pageSize: view.visibleArea.heightRatio
 
         // Only show the scrollbar when the view is moving.
         states: State {
-            name: "ShowBars"; when: view.moving
+            name: "ShowBars"; when: view.movingVertically
             PropertyChanges { target: verticalScrollBar; opacity: 1 }
         }
         transitions: Transition {
             NumberAnimation { properties: "opacity"; duration: 400 }
-        } 
+        }
     }
 
     Row {
@@ -198,10 +196,10 @@ Rectangle {
             }
         }
 
-        Image { 
+        Image {
             source: "content/pics/archive-remove.png"
 
-            MouseArea { 
+            MouseArea {
                 anchors.fill: parent
                 onClicked: fruitModel.clear()
             }

@@ -41,8 +41,8 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                drag.target: parent; drag.axis: "XAxis"; drag.minimumX: 2
-                drag.maximumX: container.width - 32
+                drag.target: parent; drag.axis: Drag.XAxis
+                drag.minimumX: 2; drag.maximumX: container.width - 32
             }
         }
     }

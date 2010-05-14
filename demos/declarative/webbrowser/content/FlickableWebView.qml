@@ -15,10 +15,16 @@ Flickable {
     contentWidth: Math.max(parent.width,webView.width*webView.scale)
     contentHeight: Math.max(parent.height,webView.height*webView.scale)
     anchors.top: headerSpace.bottom
-    anchors.bottom: footer.top
+    anchors.bottom: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
     pressDelay: 200
+
+    onWidthChanged : {
+        // Expand (but not above 1:1) if otherwise would be smaller that available width.
+        if (width > webView.width*webView.contentsScale && webView.contentsScale < 1.0)
+            webView.contentsScale = width / webView.width * webView.contentsScale;
+    }
 
     WebView {
         id: webView
@@ -105,14 +111,14 @@ Flickable {
                     property: "scale"
                     from: 1
                     to: 0 // set before calling
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                 }
                 NumberAnimation {
                     id: flickVX
                     target: flickable
                     property: "contentX"
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
@@ -121,7 +127,7 @@ Flickable {
                     id: flickVY
                     target: flickable
                     property: "contentY"
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling

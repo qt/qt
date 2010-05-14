@@ -78,8 +78,9 @@ QT_BEGIN_NAMESPACE
     \endcode
 */
 
-struct QDeclarativeInfoPrivate
+class QDeclarativeInfoPrivate
 {
+public:
     QDeclarativeInfoPrivate() : ref (1), object(0) {}
 
     int ref;

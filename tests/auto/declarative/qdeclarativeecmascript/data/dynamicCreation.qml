@@ -11,7 +11,7 @@ MyQmlObject{
     function createTwo()
     {
         var component = Qt.createComponent('dynamicCreation.helper.qml');
-        obj.objectProperty = component.createObject();
+        obj.objectProperty = component.createObject(obj);
     }
 
     function createThree()
@@ -22,6 +22,6 @@ MyQmlObject{
     function dontCrash()
     {
         var component = Qt.createComponent('file-doesnt-exist.qml');
-        obj.objectProperty = component.createObject();
+        obj.objectProperty = component.createObject(obj);
     }
 }

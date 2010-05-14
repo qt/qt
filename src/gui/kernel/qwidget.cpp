@@ -6235,6 +6235,12 @@ void QWidget::setFocus(Qt::FocusReason reason)
                         QApplication::sendEvent(that->style(), &event);
                 }
                 if (!isHidden()) {
+#ifndef QT_NO_GRAPHICSVIEW
+                    // Update proxy state
+                    if (QWExtra *topData = window()->d_func()->extra)
+                        if (topData->proxyWidget && topData->proxyWidget->hasFocus())
+                            topData->proxyWidget->d_func()->updateProxyInputMethodAcceptanceFromWidget();
+#endif
                     // Send event to self
                     QFocusEvent event(QEvent::FocusIn, reason);
                     QPointer<QWidget> that = f;

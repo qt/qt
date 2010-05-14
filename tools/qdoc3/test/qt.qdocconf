@@ -26,27 +26,27 @@ qhp.Qt.indexRoot           =
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = index.html \
-									images/bg_l.png \
-                             	    images/bg_l_blank.png \
-                             	    images/bg_r.png \
-									images/box_bg.png \
-									images/breadcrumb.png \
-									images/bullet_gt.png \
-                             	    images/bullet_dn.png \
-									images/bullet_sq.png \
-                             	    images/bullet_up.png \
-                             	    images/feedbackground.png \
-                             	    images/horBar.png \
-									images/page.png \
-									images/page_bg.png \
-									images/sprites-combined.png \
-                             	    images/stylesheet-coffee-plastique.png \
-                             	    images/taskmenuextension-example.png \
-                             	   images/coloreditorfactoryimage.png \
-                             	   images/dynamiclayouts-example.png \
-									scripts/functions.js \
-									scripts/jquery.js \
-                             	    style/style.css
+			     images/bg_l.png \
+			     images/bg_l_blank.png \
+                             images/bg_r.png \
+			     images/box_bg.png \
+			     images/breadcrumb.png \
+			     images/bullet_gt.png \
+			     images/bullet_dn.png \
+			     images/bullet_sq.png \
+			     images/bullet_up.png \
+			     images/feedbackground.png \
+			     images/horBar.png \
+			     images/page.png \
+			     images/page_bg.png \
+			     images/sprites-combined.png \
+			     images/stylesheet-coffee-plastique.png \
+			     images/taskmenuextension-example.png \
+			     images/coloreditorfactoryimage.png \
+			     images/dynamiclayouts-example.png \
+			     scripts/functions.js \
+			     scripts/jquery.js \
+			     style/style.css
 
 qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc
 qhp.Qt.customFilters.Qt.name = Qt 4.7.0

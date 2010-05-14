@@ -907,20 +907,21 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 {
     Q_D(QNetworkAccessManager);
 
-    bool isLocalFile = req.url().isLocalFile();
-
     // fast path for GET on file:// URLs
+    // Also if the scheme is empty we consider it a file.
     // The QNetworkAccessFileBackend will right now only be used
     // for PUT or qrc://
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-         && isLocalFile) {
+         && (req.url().scheme() == QLatin1String("file")
+             || req.url().scheme().isEmpty())) {
         return new QFileNetworkReply(this, req, op);
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
-    if (!d->networkAccessible && !isLocalFile) {
+    if (!d->networkAccessible && !(req.url().scheme() == QLatin1String("file") ||
+                                      req.url().scheme().isEmpty())) {
         return new QDisabledNetworkReply(this, req, op);
     }
 
@@ -962,7 +963,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!isLocalFile) {
+    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty()) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }

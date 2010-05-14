@@ -40,6 +40,7 @@ var exampleCount = 0;
 var qturl = ""; // change from "http://doc.qt.nokia.com/4.6/" to 0 so we can have relative links
 
 function processNokiaData(response){
+$('.sidebar .search form input').addClass('loading');
 	// debug $('.content').prepend('<li>handling search results</li>'); // debuging
 	var propertyTags = response.getElementsByTagName('page');
 	
@@ -50,40 +51,50 @@ function processNokiaData(response){
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
 			lookupCount++;
 			//$('.live001').css('display','block');
+
 			
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 				full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
 				full_li_element = full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd;
 					
 				$('#ul001').append(full_li_element);
+			$('#ul001 .defaultLink').css('display','none');
+
 		   		}
 			}
 	 
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
 			articleCount++;
 	 		//$('.live002').css('display','block');
+
 				 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
 				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
 					
 				$('#ul002').append(full_li_element);
+			$('#ul002 .defaultLink').css('display','none');
+
 	   		}
 		}
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
 			exampleCount++;
 	 		//$('.live003').css('display','block');
 
+
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
 			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
 				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
 					
 				$('#ul003').append(full_li_element);
+			$('#ul003 .defaultLink').css('display','none');
+
 	   		}
 		} 
 	}	
 	 
-	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');}
+	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');
+}
     if(articleCount == 0){$('#ul002').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
 	if(exampleCount == 0){$('#ul003').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
 	// reset count variables;
@@ -110,10 +121,24 @@ function CheckEmptyAndLoadList()
 	 $('.defaultLink').css('display','none');
 	}
 }
-
-
+/*
+$(window).resize(function(){
+if($(window).width()<400)
+	$('body').addClass('offline');
+else
+	$('body').removeClass('offline');
+	});
+	*/
 // Loads on doc ready
 	$(document).ready(function () {
+	var pageTitle = $('title').html();
+		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
+          var currentString = $('#pageType').val() ;
+		  if(currentString.length < 1){
+			$('.defaultLink').css('display','block');
+      	   		CheckEmptyAndLoadList();			
+		  }
+
         $('#pageType').keyup(function () {
           var searchString = $('#pageType').val() ;
           if ((searchString == null) || (searchString.length < 3)) {

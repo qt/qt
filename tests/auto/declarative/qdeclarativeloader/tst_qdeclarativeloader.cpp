@@ -270,7 +270,6 @@ void tst_QDeclarativeLoader::sizeLoaderToItem()
     QDeclarativeComponent component(&engine, TEST_FILE("/SizeToItem.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
-    QVERIFY(loader->resizeMode() == QDeclarativeLoader::SizeLoaderToItem);
     QCOMPARE(loader->width(), 120.0);
     QCOMPARE(loader->height(), 60.0);
 
@@ -282,19 +281,27 @@ void tst_QDeclarativeLoader::sizeLoaderToItem()
     QCOMPARE(loader->width(), 150.0);
     QCOMPARE(loader->height(), 45.0);
 
+    // Check explicit width
+    loader->setWidth(200.0);
+    QCOMPARE(loader->width(), 200.0);
+    QCOMPARE(rect->width(), 200.0);
+    rect->setWidth(100.0); // when rect changes ...
+    QCOMPARE(rect->width(), 100.0); // ... it changes
+    QCOMPARE(loader->width(), 200.0); // ... but loader stays the same
+
+    // Check explicit height
+    loader->setHeight(200.0);
+    QCOMPARE(loader->height(), 200.0);
+    QCOMPARE(rect->height(), 200.0);
+    rect->setHeight(100.0); // when rect changes ...
+    QCOMPARE(rect->height(), 100.0); // ... it changes
+    QCOMPARE(loader->height(), 200.0); // ... but loader stays the same
+
     // Switch mode
-    loader->setResizeMode(QDeclarativeLoader::SizeItemToLoader);
     loader->setWidth(180);
     loader->setHeight(30);
     QCOMPARE(rect->width(), 180.0);
     QCOMPARE(rect->height(), 30.0);
-
-    // notify
-    QSignalSpy spy(loader, SIGNAL(resizeModeChanged()));
-    loader->setResizeMode(QDeclarativeLoader::NoResize);
-    QCOMPARE(spy.count(),1);
-    loader->setResizeMode(QDeclarativeLoader::NoResize);
-    QCOMPARE(spy.count(),1);
 
     delete loader;
 }
@@ -304,7 +311,6 @@ void tst_QDeclarativeLoader::sizeItemToLoader()
     QDeclarativeComponent component(&engine, TEST_FILE("/SizeToLoader.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
-    QVERIFY(loader->resizeMode() == QDeclarativeLoader::SizeItemToLoader);
     QCOMPARE(loader->width(), 200.0);
     QCOMPARE(loader->height(), 80.0);
 
@@ -320,7 +326,8 @@ void tst_QDeclarativeLoader::sizeItemToLoader()
     QCOMPARE(rect->height(), 30.0);
 
     // Switch mode
-    loader->setResizeMode(QDeclarativeLoader::SizeLoaderToItem);
+    loader->resetWidth(); // reset explicit size
+    loader->resetHeight();
     rect->setWidth(160);
     rect->setHeight(45);
     QCOMPARE(loader->width(), 160.0);
@@ -332,17 +339,12 @@ void tst_QDeclarativeLoader::sizeItemToLoader()
 void tst_QDeclarativeLoader::noResize()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/NoResize.qml"));
-    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
-    QVERIFY(loader != 0);
-    QCOMPARE(loader->width(), 200.0);
-    QCOMPARE(loader->height(), 80.0);
+    QDeclarativeItem* item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item != 0);
+    QCOMPARE(item->width(), 200.0);
+    QCOMPARE(item->height(), 80.0);
 
-    QDeclarativeItem *rect = qobject_cast<QDeclarativeItem*>(loader->item());
-    QVERIFY(rect);
-    QCOMPARE(rect->width(), 120.0);
-    QCOMPARE(rect->height(), 60.0);
-
-    delete loader;
+    delete item;
 }
 
 void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
@@ -353,7 +355,6 @@ void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
     scene.addItem(loader);
 
     QVERIFY(loader != 0);
-    QVERIFY(loader->resizeMode() == QDeclarativeLoader::SizeLoaderToItem);
     QCOMPARE(loader->width(), 250.0);
     QCOMPARE(loader->height(), 250.0);
 
@@ -365,7 +366,6 @@ void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
     QCOMPARE(loader->height(), 45.0);
 
     // Switch mode
-    loader->setResizeMode(QDeclarativeLoader::SizeItemToLoader);
     loader->setWidth(180);
     loader->setHeight(30);
     QCOMPARE(widget->size().width(), 180.0);
@@ -382,7 +382,6 @@ void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
     scene.addItem(loader);
 
     QVERIFY(loader != 0);
-    QVERIFY(loader->resizeMode() == QDeclarativeLoader::SizeItemToLoader);
     QCOMPARE(loader->width(), 200.0);
     QCOMPARE(loader->height(), 80.0);
 
@@ -398,7 +397,8 @@ void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
     QCOMPARE(widget->size().height(), 30.0);
 
     // Switch mode
-    loader->setResizeMode(QDeclarativeLoader::SizeLoaderToItem);
+    loader->resetWidth(); // reset explicit size
+    loader->resetHeight();
     widget->resize(QSizeF(160,45));
     QCOMPARE(loader->width(), 160.0);
     QCOMPARE(loader->height(), 45.0);
@@ -409,20 +409,15 @@ void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
 void tst_QDeclarativeLoader::noResizeGraphicsWidget()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/NoResizeGraphicsWidget.qml"));
-    QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QGraphicsScene scene;
-    scene.addItem(loader);
+    scene.addItem(item);
 
-    QVERIFY(loader != 0);
-    QCOMPARE(loader->width(), 200.0);
-    QCOMPARE(loader->height(), 80.0);
+    QVERIFY(item != 0);
+    QCOMPARE(item->width(), 200.0);
+    QCOMPARE(item->height(), 80.0);
 
-    QGraphicsWidget *widget = qobject_cast<QGraphicsWidget*>(loader->item());
-    QVERIFY(widget);
-    QCOMPARE(widget->size().width(), 250.0);
-    QCOMPARE(widget->size().height(), 250.0);
-
-    delete loader;
+    delete item;
 }
 
 void tst_QDeclarativeLoader::networkRequestUrl()

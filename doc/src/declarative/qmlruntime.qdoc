@@ -112,6 +112,23 @@
 
     When run with the \c -help option, qml shows available options.
 
+    \section2 Translations
+
+    When the runtime loads an initial QML file, it will install a translation file from
+    a "i18n" subdirectory relative to that initial QML file. The actual translation file
+    loaded will be according to the system locale and have the form
+    "qml_<language>.qm", where <language> is a two-letter ISO 639 language,
+    such as "qml_fr.qm", optionally followed by an underscore and an uppercase two-letter ISO 3166 country
+    code, such as "qml_fr_FR.qm" or "qml_fr_CA.qm".
+
+    Such files can be created using \l{Qt Linguist}.
+
+    See the \l{scripting.html#internationalization}{Qt Internationalization} documentation for information about how to make
+    the JavaScript in QML files use translatable strings.
+
+    Additionally, the QML runtime will load translation files specified on the
+    command line via the \c -translation option.
+
     \section2 Dummy Data
 
     The secondary use of the qml runtime is to allow QML files to be viewed with
