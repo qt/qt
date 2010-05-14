@@ -41,7 +41,7 @@
 
 #include "qdeclarativeinclude_p.h"
 
-#include <QtScript/qscriptengine>
+#include <QtScript/qscriptengine.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qfile.h>
