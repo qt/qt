@@ -54,7 +54,8 @@
 
 /*!
     \page eventsandfilters.html
-    \title Events and Event Filters
+    \title The Event System
+    \ingroup qt-basic-concepts
     \brief A guide to event handling in Qt.
 
     \ingroup frameworks-technologies

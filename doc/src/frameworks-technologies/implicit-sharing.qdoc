@@ -50,7 +50,7 @@
 /*!
     \page implicit-sharing.html
     \title Implicit Sharing
-    \ingroup frameworks-technologies
+    \ingroup qt-basic-concepts
 
     \brief Reference counting for fast copying.
 

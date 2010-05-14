@@ -1723,7 +1723,6 @@ QGLTextureCache::QGLTextureCache()
 
 QGLTextureCache::~QGLTextureCache()
 {
-    Q_ASSERT(size() == 0);
     QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
@@ -2888,7 +2887,7 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
 
-    if (d_ptr->active_engine && 
+    if (d_ptr->active_engine &&
         d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
         QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
         if (!eng->isNativePaintingActive()) {

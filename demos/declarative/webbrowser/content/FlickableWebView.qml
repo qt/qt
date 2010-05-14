@@ -15,10 +15,16 @@ Flickable {
     contentWidth: Math.max(parent.width,webView.width*webView.scale)
     contentHeight: Math.max(parent.height,webView.height*webView.scale)
     anchors.top: headerSpace.bottom
-    anchors.bottom: footer.top
+    anchors.bottom: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
     pressDelay: 200
+
+    onWidthChanged : {
+        // Expand (but not above 1:1) if otherwise would be smaller that available width.
+        if (width > webView.width*webView.contentsScale && webView.contentsScale < 1.0)
+            webView.contentsScale = width / webView.width * webView.contentsScale;
+    }
 
     WebView {
         id: webView

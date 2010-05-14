@@ -52,9 +52,9 @@ QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-@class QNSPanelProxy;
+@class QT_MANGLE_NAMESPACE(QNSPanelProxy);
 
-@interface QNSPanelProxy : NSWindow {
+@interface QT_MANGLE_NAMESPACE(QNSPanelProxy) : NSWindow {
 }
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle
     backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
@@ -66,7 +66,7 @@ QT_USE_NAMESPACE
     backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation screen:(NSScreen *)screen;
 @end
 
-@implementation QNSPanelProxy
+@implementation QT_MANGLE_NAMESPACE(QNSPanelProxy)
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle
       backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation
 {
@@ -108,15 +108,15 @@ QT_USE_NAMESPACE
 }
 @end
 
-@class QNSWindowProxy;
+@class QT_MANGLE_NAMESPACE(QNSWindowProxy);
 
-@interface QNSWindowProxy : NSWindow {
+@interface QT_MANGLE_NAMESPACE(QNSWindowProxy) : NSWindow {
 }
 - (void)setTitle:(NSString *)title;
 - (void)qt_fakeSetTitle:(NSString *)title;
 @end
 
-@implementation QNSWindowProxy
+@implementation QT_MANGLE_NAMESPACE(QNSWindowProxy)
 - (void)setTitle:(NSString *)title
 {
     QCFString cftitle(currentWindow->windowTitle());
@@ -190,10 +190,10 @@ void macStartInterceptNSPanelCtor()
 {
     macStartIntercept(@selector(initWithContentRect:styleMask:backing:defer:),
                       @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:),
-                      [NSPanel class], [QNSPanelProxy class]);
+                      [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
     macStartIntercept(@selector(initWithContentRect:styleMask:backing:defer:screen:),
                       @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:),
-                      [NSPanel class], [QNSPanelProxy class]);
+                      [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
 }
 
 /*
@@ -203,10 +203,10 @@ void macStopInterceptNSPanelCtor()
 {
     macStopIntercept(@selector(initWithContentRect:styleMask:backing:defer:screen:),
                      @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:),
-                     [NSPanel class], [QNSPanelProxy class]);
+                     [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
     macStopIntercept(@selector(initWithContentRect:styleMask:backing:defer:),
                      @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:),
-                     [NSPanel class], [QNSPanelProxy class]);
+                     [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
 }
 
 /*
@@ -217,7 +217,7 @@ void macStartInterceptWindowTitle(QWidget *window)
 {
     currentWindow = window;
     macStartIntercept(@selector(setTitle:), @selector(qt_fakeSetTitle:),
-                      [NSWindow class], [QNSWindowProxy class]);
+                      [NSWindow class], [QT_MANGLE_NAMESPACE(QNSWindowProxy) class]);
 }
 
 /*
@@ -227,7 +227,7 @@ void macStopInterceptWindowTitle()
 {
     currentWindow = 0;
     macStopIntercept(@selector(setTitle:), @selector(qt_fakeSetTitle:),
-                     [NSWindow class], [QNSWindowProxy class]);
+                     [NSWindow class], [QT_MANGLE_NAMESPACE(QNSWindowProxy) class]);
 }
 
 /*

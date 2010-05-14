@@ -1545,7 +1545,7 @@ static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transfor
 
     return true;
 }
-bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 static inline bool cubicTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d, bool needsMoveTo)
 {

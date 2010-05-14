@@ -4,11 +4,12 @@ BSYMBOLIC_FUNCTIONS_SUPPORT=no
 COMPILER=$1
 VERBOSE=$2
 
+
 cat >>bsymbolic_functions.c << EOF
 int main() { return 0; }
 EOF
 
-"$COMPILER" -o libtest.so -shared -Wl,-Bsymbolic-functions -fPIC bsymbolic_functions.c >/dev/null 2>&1 && BSYMBOLIC_FUNCTIONS_SUPPORT=yes
+$COMPILER -o libtest.so -shared -Wl,-Bsymbolic-functions -fPIC bsymbolic_functions.c >/dev/null 2>&1 && BSYMBOLIC_FUNCTIONS_SUPPORT=yes
 rm -f bsymbolic_functions.c libtest.so
 
 # done

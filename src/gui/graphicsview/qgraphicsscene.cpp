@@ -690,6 +690,10 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == lastMouseGrabberItem)
         lastMouseGrabberItem = 0;
 
+    // Reset the current drop item
+    if (item == dragDropItem)
+        dragDropItem = 0;
+
     // Reenable selectionChanged() for individual items
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
@@ -1316,10 +1320,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             setFocus = true;
             break;
         }
-        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
+        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable))) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
                 setFocus = true;
-                if (item != q->focusItem())
+                if (item != q->focusItem() && item->d_ptr->mouseSetsFocus)
                     q->setFocusItem(item, Qt::MouseFocusReason);
                 break;
             }

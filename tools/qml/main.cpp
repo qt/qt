@@ -184,7 +184,7 @@ int main(int argc, char ** argv)
     atexit(showWarnings);
 #endif
 
-#if defined (Q_WS_X11)
+#if defined (Q_WS_X11) || defined(Q_WS_MAC)
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
@@ -231,6 +231,7 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
+    bool experimentalGestures = false;
 
     WarningsConfig warningsConfig = DefaultWarnings;
     bool sizeToView = true;
@@ -334,6 +335,8 @@ int main(int argc, char ** argv)
             sizeToView = false;
         } else if (arg == "-sizerootobjecttoview") {
             sizeToView = true;
+        } else if (arg == "-experimentalgestures") {
+            experimentalGestures = true;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -402,6 +405,9 @@ int main(int argc, char ** argv)
         logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
     }
 #endif
+
+    if (experimentalGestures)
+        viewer->enableExperimentalGestures();
 
     foreach (QString lib, imports)
         viewer->addLibraryPath(lib);

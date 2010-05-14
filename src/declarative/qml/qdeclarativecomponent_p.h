@@ -150,7 +150,7 @@ Q_SIGNALS:
     void destruction();
 
 private:
-    friend class QDeclarativeContextData;;
+    friend class QDeclarativeContextData;
     friend class QDeclarativeComponentPrivate;
 };
 

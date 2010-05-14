@@ -642,7 +642,7 @@ EXPORTS
 	?qt_drt_webinspector_executeScript@@YAXPAVQWebPage@@JABVQString@@@Z @ 641 NONAME ; void qt_drt_webinspector_executeScript(class QWebPage *, long, class QString const &)
 	?qt_drt_webinspector_show@@YAXPAVQWebPage@@@Z @ 642 NONAME ; void qt_drt_webinspector_show(class QWebPage *)
 	?qt_drt_workerThreadCount@@YAHXZ @ 643 NONAME ; int qt_drt_workerThreadCount(void)
-	?qt_wrt_setViewMode@@YAXPAVQWebPage@@ABVQString@@@Z @ 644 NONAME ; void qt_wrt_setViewMode(class QWebPage *, class QString const &)
+	?qt_wrt_setViewMode@@YAXPAVQWebPage@@ABVQString@@@Z @ 644 NONAME ABSENT ; void qt_wrt_setViewMode(class QWebPage *, class QString const &)
 	?qtwebkit_webframe_scrollRecursively@@YAXPAVQWebFrame@@HHABVQPoint@@@Z @ 645 NONAME ; void qtwebkit_webframe_scrollRecursively(class QWebFrame *, int, int, class QPoint const &)
 	?resizesToContents@QGraphicsWebView@@QBE_NXZ @ 646 NONAME ; bool QGraphicsWebView::resizesToContents(void) const
 	?scrollToAnchor@QWebFrame@@QAEXABVQString@@@Z @ 647 NONAME ; void QWebFrame::scrollToAnchor(class QString const &)

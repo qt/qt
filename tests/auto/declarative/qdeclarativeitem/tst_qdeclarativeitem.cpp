@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
+#include "../../../shared/util.h"
 
 class tst_QDeclarativeItem : public QObject
 
@@ -67,6 +68,7 @@ private slots:
 
     void childrenProperty();
     void resourcesProperty();
+    void mouseFocus();
 
 private:
     template<typename T>
@@ -464,6 +466,41 @@ void tst_QDeclarativeItem::resourcesProperty()
     QCOMPARE(o->property("test4").toBool(), true);
     QCOMPARE(o->property("test5").toBool(), true);
     delete o;
+}
+
+void tst_QDeclarativeItem::mouseFocus()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/mouseFocus.qml"));
+    canvas->show();
+    QVERIFY(canvas->rootObject());
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "declarativeItem");
+    QVERIFY(item);
+    QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
+
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(focusSpy.count(), 1);
+    QVERIFY(item->hasFocus());
+
+    // make sure focusable graphics widget underneath does not steal focus
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(focusSpy.count(), 1);
+    QVERIFY(item->hasFocus());
+
+    item->setFocus(false);
+    QVERIFY(!item->hasFocus());
+    QCOMPARE(focusSpy.count(), 2);
+    item->setFocus(true);
+    QCOMPARE(focusSpy.count(), 3);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeItem::propertyChanges()

@@ -138,8 +138,8 @@ public:
     }
     \endcode
 */
-QDeclarativeVisualItemModel::QDeclarativeVisualItemModel()
-    : QDeclarativeVisualModel(*(new QDeclarativeVisualItemModelPrivate))
+QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(QObject *parent)
+    : QDeclarativeVisualModel(*(new QDeclarativeVisualItemModelPrivate), parent)
 {
 }
 
@@ -269,7 +269,8 @@ public:
                 }
                 if (m_roles.count() == 1)
                     m_roleNames.insert("modelData", m_roles.at(0));
-                m_roleNames.insert("hasModelChildren", 0);
+                if (m_roles.count())
+                    m_roleNames.insert("hasModelChildren", 0);
             } else if (m_listAccessor) {
                 m_roleNames.insert("modelData", 0);
                 if (m_listAccessor->type() == QDeclarativeListAccessor::Instance) {
@@ -285,15 +286,19 @@ public:
         }
     }
 
+    QHash<int,int> roleToPropId;
     void createMetaData() {
         if (!m_metaDataCreated) {
             ensureRoles();
-            QHash<QByteArray, int>::const_iterator it = m_roleNames.begin();
-            while (it != m_roleNames.end()) {
-                m_delegateDataType->createProperty(it.key());
-                ++it;
+            if (m_roleNames.count()) {
+                QHash<QByteArray, int>::const_iterator it = m_roleNames.begin();
+                while (it != m_roleNames.end()) {
+                    int propId = m_delegateDataType->createProperty(it.key()) - m_delegateDataType->propertyOffset();
+                    roleToPropId.insert(*it, propId);
+                    ++it;
+                }
+                m_metaDataCreated = true;
             }
-            m_metaDataCreated = true;
         }
     }
 
@@ -383,7 +388,6 @@ public:
 
 private:
     friend class QDeclarativeVisualDataModelData;
-    QHash<int,int> roleToProp;
 };
 
 class QDeclarativeVisualDataModelData : public QObject
@@ -400,6 +404,8 @@ public:
     int propForRole(int) const;
     void setValue(int, const QVariant &);
 
+    void ensureProperties();
+
 Q_SIGNALS:
     void indexChanged();
 
@@ -412,9 +418,11 @@ private:
 
 int QDeclarativeVisualDataModelData::propForRole(int id) const
 {
-    QHash<int,int>::const_iterator it = m_meta->roleToProp.find(id);
-    if (it != m_meta->roleToProp.end())
-        return m_meta->roleToProp[id];
+    QDeclarativeVisualDataModelPrivate *model = QDeclarativeVisualDataModelPrivate::get(m_model);
+    QHash<int,int>::const_iterator it = model->roleToPropId.find(id);
+    if (it != model->roleToPropId.end())
+        return *it;
+
     return -1;
 }
 
@@ -470,12 +478,10 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
         model->ensureRoles();
         QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
         if (it != model->m_roleNames.end()) {
-            roleToProp.insert(*it, propId);
             QVariant value = model->m_listModelInterface->data(data->m_index, *it);
             return value;
         } else if (model->m_roles.count() == 1 && propName == "modelData") {
             //for compatability with other lists, assign modelData if there is only a single role
-            roleToProp.insert(model->m_roles.first(), propId);
             QVariant value = model->m_listModelInterface->data(data->m_index, model->m_roles.first());
             return value;
         }
@@ -487,7 +493,6 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
         } else {
             QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
             if (it != model->m_roleNames.end()) {
-                roleToProp.insert(*it, propId);
                 QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
                 return model->m_abstractItemModel->data(index, *it);
             }
@@ -502,16 +507,21 @@ QDeclarativeVisualDataModelData::QDeclarativeVisualDataModelData(int index,
 : m_index(index), m_model(model),
 m_meta(new QDeclarativeVisualDataModelDataMetaObject(this, QDeclarativeVisualDataModelPrivate::get(model)->m_delegateDataType))
 {
-    QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(model);
-    if (modelPriv->m_metaDataCacheable) {
-        if (!modelPriv->m_metaDataCreated)
-            modelPriv->createMetaData();
-        m_meta->setCached(true);
-    }
+    ensureProperties();
 }
 
 QDeclarativeVisualDataModelData::~QDeclarativeVisualDataModelData()
 {
+}
+
+void QDeclarativeVisualDataModelData::ensureProperties()
+{
+    QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(m_model);
+    if (modelPriv->m_metaDataCacheable && !modelPriv->m_metaDataCreated) {
+        modelPriv->createMetaData();
+        if (modelPriv->m_metaDataCreated)
+            m_meta->setCached(true);
+    }
 }
 
 int QDeclarativeVisualDataModelData::index() const
@@ -626,8 +636,8 @@ QDeclarativeVisualDataModel::QDeclarativeVisualDataModel()
 {
 }
 
-QDeclarativeVisualDataModel::QDeclarativeVisualDataModel(QDeclarativeContext *ctxt)
-: QDeclarativeVisualModel(*(new QDeclarativeVisualDataModelPrivate(ctxt)))
+QDeclarativeVisualDataModel::QDeclarativeVisualDataModel(QDeclarativeContext *ctxt, QObject *parent)
+: QDeclarativeVisualModel(*(new QDeclarativeVisualDataModelPrivate(ctxt)), parent)
 {
 }
 
@@ -1212,6 +1222,13 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                         QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
                         data->setValue(propId, d->m_abstractItemModel->data(index, role));
                     }
+                } else {
+                    QString roleName;
+                    if (d->m_listModelInterface)
+                        roleName = d->m_listModelInterface->toString(role);
+                    else if (d->m_abstractItemModel)
+                        roleName = d->m_abstractItemModel->roleNames().value(role);
+                    qmlInfo(this) << "Changing role not present in item: " << roleName;
                 }
             }
         }

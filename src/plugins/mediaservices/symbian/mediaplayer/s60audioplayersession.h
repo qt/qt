@@ -49,7 +49,7 @@ typedef CMdaAudioPlayerUtility CAudioPlayer;
 typedef MMdaAudioPlayerCallback MAudioPlayerObserver;
 
 #ifndef HAS_NO_AUDIOROUTING
-#include <AudioOutput.h>
+#include <phonon/audiooutput.h>
 #include <MAudioOutputObserver.h>
 #endif
 
