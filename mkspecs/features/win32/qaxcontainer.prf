@@ -8,9 +8,7 @@
    LIBS += -lQAxContainer
 }
 
-isEmpty(QMAKE_DUMPCPP) {
-    win32:QMAKE_DUMPCPP = $$[QT_INSTALL_BINS]\dumpcpp.exe
-}
+qtPrepareTool(QMAKE_DUMPCPP, dumpcpp)
 
 dumpcpp_decl.commands = $$QMAKE_DUMPCPP ${QMAKE_FILE_IN} -o ${QMAKE_FILE_BASE}
 qaxcontainer_compat: dumpcpp_decl.commands += -compat

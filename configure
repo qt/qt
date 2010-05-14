@@ -7198,11 +7198,6 @@ QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
 QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 
 #local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
-QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
-QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_UIC3       = \$\$QT_BUILD_TREE/bin/uic3
-QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
-QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
