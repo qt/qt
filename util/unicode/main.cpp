@@ -403,7 +403,7 @@ struct PropertyFlags {
     // from DerivedAge.txt
     QChar::UnicodeVersion age : 4;
     int digitValue;
-    uint line_break_class : 6;
+    LineBreakClass line_break_class;
 
     int mirrorDiff : 16;
 
@@ -429,7 +429,7 @@ static int appendToSpecialCaseMap(const QList<int> &map)
     QList<int> utf16map;
     for (int i = 0; i < map.size(); ++i) {
         int val = map.at(i);
-        if (val > 0xffff) {
+        if (val >= 0x10000) {
             utf16map << QChar::highSurrogate(val);
             utf16map << QChar::lowSurrogate(val);
         } else {
@@ -505,7 +505,7 @@ struct UnicodeData {
     // from BidiMirroring.txt
     int mirroredChar;
 
-    // CompositionExclusions.txt
+    // DerivedNormalizationProps.txt
     bool excludedComposition;
 
     // computed position of unicode property set
@@ -726,8 +726,8 @@ static void readUnicodeData()
         data.p.category = categoryMap.value(properties[UD_Category], QChar::NoCategory);
         if (data.p.category == QChar::NoCategory)
             qFatal("unassigned char category: %s", properties[UD_Category].constData());
-        data.p.combiningClass = properties[UD_CombiningClass].toInt();
 
+        data.p.combiningClass = properties[UD_CombiningClass].toInt();
         if (!combiningClassUsage.contains(data.p.combiningClass))
             combiningClassUsage[data.p.combiningClass] = 1;
         else
@@ -1006,15 +1006,15 @@ static void readDerivedNormalizationProps()
             && d.decomposition.size() > 1) {
             Q_ASSERT(d.decomposition.size() == 2);
 
-            uint part1 = d.decomposition.at(0);
-            uint part2 = d.decomposition.at(1);
+            int part1 = d.decomposition.at(0);
+            int part2 = d.decomposition.at(1);
 
             // all non-starters are listed in DerivedNormalizationProps.txt
             // and already excluded from composition
             Q_ASSERT(unicodeData.value(part1, UnicodeData(part1)).p.combiningClass == 0);
 
             ++numLigatures;
-            highestLigature = qMax(highestLigature, (int)part1);
+            highestLigature = qMax(highestLigature, part1);
             Ligature l = {(ushort)part1, (ushort)part2, codepoint};
             ligatureHashes[part2].append(l);
         }
@@ -1865,21 +1865,18 @@ QByteArray createScriptTableDeclaration()
             declaration += ", /* U+";
             declaration += QByteArray::number(block, 16).rightJustified(4, '0');
             declaration += '-';
-            declaration +=
-                QByteArray::number(block + unicodeBlockSize - 1, 16).rightJustified(4, '0');
+            declaration += QByteArray::number(block + unicodeBlockSize - 1, 16).rightJustified(4, '0');
             declaration += " */\n";
         } else {
             const int value = extraBlockList.size() + scriptSentinel;
-            const int offset =
-                ((value - scriptSentinel) * unicodeBlockSize) + unicodeBlockCount;
+            const int offset = ((value - scriptSentinel) * unicodeBlockSize) + unicodeBlockCount;
 
             declaration += "    ";
             declaration += QByteArray::number(value);
             declaration += ", /* U+";
             declaration += QByteArray::number(block, 16).rightJustified(4, '0');
             declaration += '-';
-            declaration +=
-                QByteArray::number(block + unicodeBlockSize - 1, 16).rightJustified(4, '0');
+            declaration += QByteArray::number(block + unicodeBlockSize - 1, 16).rightJustified(4, '0');
             declaration += " at offset ";
             declaration += QByteArray::number(offset);
             declaration += " */\n";
@@ -1896,16 +1893,14 @@ QByteArray createScriptTableDeclaration()
 
     for (int i = 0; i < extraBlockList.size(); ++i) {
         const int value = i + scriptSentinel;
-        const int offset =
-            ((value - scriptSentinel) * unicodeBlockSize) + unicodeBlockCount;
+        const int offset = ((value - scriptSentinel) * unicodeBlockSize) + unicodeBlockCount;
         const ExtraBlock &extraBlock = extraBlockList.at(i);
         const int block = extraBlock.block;
 
         declaration += "\n\n    /* U+";
         declaration += QByteArray::number(block, 16).rightJustified(4, '0');
         declaration += '-';
-        declaration +=
-            QByteArray::number(block + unicodeBlockSize - 1, 16).rightJustified(4, '0');
+        declaration += QByteArray::number(block + unicodeBlockSize - 1, 16).rightJustified(4, '0');
         declaration += " at offset ";
         declaration += QByteArray::number(offset);
         declaration += " */\n    ";
@@ -2240,7 +2235,7 @@ static QByteArray createCompositionInfo()
     const int SMP_BLOCKSIZE = 256;
     const int SMP_SHIFT = 8;
 
-    if(SMP_END <= highestComposedCharacter)
+    if (SMP_END <= highestComposedCharacter)
         qFatal("end of table smaller than highest composed character at %x", highestComposedCharacter);
 
     QList<DecompositionBlock> blocks;
@@ -2453,15 +2448,15 @@ static QByteArray createLigatureInfo()
             int uc = block*BMP_BLOCKSIZE + i;
             QList<Ligature> l = ligatureHashes.value(uc);
             if (!l.isEmpty()) {
-                b.decompositionPositions.append(tableIndex);
                 qSort(l);
 
                 ligatures.append(l.size());
-                for (int i = 0; i < l.size(); ++i) {
-                    Q_ASSERT(l.at(i).u2 == uc);
-                    ligatures.append(l.at(i).u1);
-                    ligatures.append(l.at(i).ligature);
+                for (int j = 0; j < l.size(); ++j) {
+                    Q_ASSERT(l.at(j).u2 == uc);
+                    ligatures.append(l.at(j).u1);
+                    ligatures.append(l.at(j).ligature);
                 }
+                b.decompositionPositions.append(tableIndex);
                 tableIndex += 2*l.size() + 1;
             } else {
                 b.decompositionPositions.append(0xffff);
@@ -2486,11 +2481,10 @@ static QByteArray createLigatureInfo()
     qDebug("    %d unique blocks in BMP.", blocks.size());
     qDebug("        block data uses: %d bytes", bmp_block_data);
     qDebug("        trie data uses : %d bytes", bmp_trie);
-    qDebug("        ligature data uses : %d bytes", ligatures.size()*2);
-    qDebug("        memory usage: %d bytes", bmp_mem + ligatures.size() * 2);
+    qDebug("\n        ligature data uses : %d bytes", ligatures.size()*2);
+    qDebug("    memory usage: %d bytes", bmp_mem + ligatures.size() * 2);
 
     QByteArray out;
-
 
     out += "static const unsigned short uc_ligature_trie[] = {\n";
 
@@ -2566,6 +2560,7 @@ QByteArray createCasingInfo()
 
     return out;
 }
+
 
 int main(int, char **)
 {
