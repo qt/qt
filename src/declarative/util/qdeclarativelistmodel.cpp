@@ -207,11 +207,11 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     Here is an example that uses WorkerScript to periodically append the
     current time to a list model:
 
-    \snippet examples/declarative/listmodel-threaded/timedisplay.qml 0
+    \snippet examples/declarative/threading/threadedlistmodel/timedisplay.qml 0
 
     The included file, \tt dataloader.js, looks like this:
 
-    \snippet examples/declarative/listmodel-threaded/dataloader.js 0
+    \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
     The application's \tt Timer object periodically sends a message to the
     worker script by calling \tt WorkerScript::sendMessage(). When this message

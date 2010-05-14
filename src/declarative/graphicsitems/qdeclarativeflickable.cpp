@@ -418,7 +418,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \dots 4
     \snippet doc/src/snippets/declarative/flickableScrollbar.qml 1
 
-    \sa {declarative/scrollbar}{scrollbar example}
+    \sa {declarative/ui-components/scrollbar}{scrollbar example}
 */
 
 QDeclarativeFlickable::QDeclarativeFlickable(QDeclarativeItem *parent)

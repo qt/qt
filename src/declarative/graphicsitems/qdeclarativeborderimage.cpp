@@ -70,11 +70,11 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     Examples:
-    \snippet snippets/declarative/border-image.qml 0
+    \snippet snippets/declarative/borderimage.qml 0
 
     \image BorderImage.png
 
-    The \l{declarative/border-image}{BorderImage example} shows how a BorderImage can be used to simulate a shadow effect on a
+    The \l{declarative/imageelements/borderimage}{BorderImage example} shows how a BorderImage can be used to simulate a shadow effect on a
     rectangular item.
  */
 
