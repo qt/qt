@@ -72,7 +72,7 @@ Q_GLOBAL_STATIC(QNetworkAccessBackendFactoryData, factoryData)
 QNetworkAccessBackendFactory::QNetworkAccessBackendFactory()
 {
     QMutexLocker locker(&factoryData()->mutex);
-    factoryData()->prepend(this);
+    factoryData()->append(this);
 }
 
 QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
