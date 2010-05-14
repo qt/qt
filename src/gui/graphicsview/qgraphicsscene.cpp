@@ -290,13 +290,19 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       updateAll(false),
       calledEmitUpdated(false),
       processDirtyItemsEmitted(false),
-      selectionChanging(0),
       needSortTopLevelItems(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
       scenePosDescendantsUpdatePending(false),
       stickyFocus(false),
       hasFocus(false),
+      lastMouseGrabberItemHasImplicitMouseGrab(false),
+      allItemsIgnoreHoverEvents(true),
+      allItemsUseDefaultCursor(true),
+      painterStateProtection(true),
+      sortCacheEnabled(false),
+      allItemsIgnoreTouchEvents(true),
+      selectionChanging(0),
       rectAdjust(2),
       focusItem(0),
       lastFocusItem(0),
@@ -306,16 +312,10 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       activationRefCount(0),
       childExplicitActivation(0),
       lastMouseGrabberItem(0),
-      lastMouseGrabberItemHasImplicitMouseGrab(false),
       dragDropItem(0),
       enterWidget(0),
       lastDropAction(Qt::IgnoreAction),
-      allItemsIgnoreHoverEvents(true),
-      allItemsUseDefaultCursor(true),
-      painterStateProtection(true),
-      sortCacheEnabled(false),
-      style(0),
-      allItemsIgnoreTouchEvents(true)
+      style(0)
 {
 }
 
@@ -5120,9 +5120,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
+        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
+        if (itemClipsChildrenToShape) {
+            // Make sure child updates are clipped to the item's bounding rect.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(item);
+        }
         if (!dirtyAncestorContainsChildren) {
             dirtyAncestorContainsChildren = item->d_ptr->fullUpdatePending
-                                            && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+                                            && itemClipsChildrenToShape;
         }
         const bool allChildrenDirty = item->d_ptr->allChildrenDirty;
         const bool parentIgnoresVisible = item->d_ptr->ignoreVisible;
@@ -5144,6 +5150,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 child->d_ptr->allChildrenDirty = 1;
             }
             processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
+        }
+
+        if (itemClipsChildrenToShape) {
+            // Reset updateClip.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(0);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();

@@ -1581,6 +1581,11 @@ void QWidgetPrivate::createTLExtra()
         x->inTopLevelResize = false;
         x->inRepaint = false;
         x->embedded = 0;
+#ifdef Q_WS_MAC
+#ifdef QT_MAC_USE_COCOA
+        x->wasMaximized = false;
+#endif // QT_MAC_USE_COCOA
+#endif // Q_WS_MAC
         createTLSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
         static int count = 0;
@@ -2538,7 +2543,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
     Q_Q(QWidget);
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QStyle *origStyle = 0;
+    QWeakPointer<QStyle> origStyle;
 #endif
 
 #ifdef Q_WS_MAC
@@ -2552,7 +2557,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         createExtra();
 
 #ifndef QT_NO_STYLE_STYLESHEET
-        origStyle = extra->style;
+        origStyle = extra->style.data();
 #endif
         extra->style = newStyle;
     }
@@ -2581,6 +2586,14 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         }
     }
 
+#ifndef QT_NO_STYLE_STYLESHEET
+    if (!qobject_cast<QStyleSheetStyle*>(newStyle)) {
+        if (const QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(origStyle.data())) {
+            cssStyle->clearWidgetFont(q);
+        }
+    }
+#endif
+
     QEvent e(QEvent::StyleChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -2588,16 +2601,8 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
 #endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (!qobject_cast<QStyleSheetStyle*>(newStyle)) {
-        if (const QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(origStyle)) {
-            cssStyle->clearWidgetFont(q);
-        }
-    }
-#endif
-
-#ifndef QT_NO_STYLE_STYLESHEET
     // dereference the old stylesheet style
-    if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(origStyle))
+    if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(origStyle.data()))
         proxy->deref();
 #endif
 }
@@ -5586,52 +5591,23 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
         pixmapOffset = painterTransform.map(pixmapOffset);
     }
 
-
     QRect effectRect;
 
-    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect)
         effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
-
-    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
+    else if (mode == QGraphicsEffect::PadToTransparentBorder)
         effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
-
-    } else {
+    else
         effectRect = sourceRect.toAlignedRect();
-
-    }
 
     if (offset)
         *offset = effectRect.topLeft();
-
-    if (deviceCoordinates) {
-        // Clip to device rect.
-        int left, top, right, bottom;
-        effectRect.getCoords(&left, &top, &right, &bottom);
-        if (left < 0) {
-            if (offset)
-                offset->rx() += -left;
-            effectRect.setX(0);
-        }
-        if (top < 0) {
-            if (offset)
-                offset->ry() += -top;
-            effectRect.setY(0);
-        }
-        // NB! We use +-1 for historical reasons (see QRect documentation).
-        QPaintDevice *device = context->painter->device();
-        const int deviceWidth = device->width();
-        const int deviceHeight = device->height();
-        if (right + 1 > deviceWidth)
-            effectRect.setRight(deviceWidth - 1);
-        if (bottom + 1 > deviceHeight)
-            effectRect.setBottom(deviceHeight -1);
-    }
 
     pixmapOffset -= effectRect.topLeft();
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);
-    m_widget->render(&pixmap, pixmapOffset);
+    m_widget->render(&pixmap, pixmapOffset, QRegion(), QWidget::DrawChildren);
     return pixmap;
 }
 #endif //QT_NO_GRAPHICSEFFECT
@@ -6749,6 +6725,18 @@ void QWidget::setGeometry(const QRect &r)
 */
 QByteArray QWidget::saveGeometry() const
 {
+#ifdef QT_MAC_USE_COCOA
+    // We check if the window was maximized during this invocation. If so, we need to record the
+    // starting position as 0,0.
+    Q_D(const QWidget);
+    QRect newFramePosition = frameGeometry();
+    QRect newNormalPosition = normalGeometry();
+    if(d->topData()->wasMaximized) {
+        // Change the starting position
+        newFramePosition.moveTo(0, 0);
+        newNormalPosition.moveTo(0, 0);
+    }
+#endif // QT_MAC_USE_COCOA
     QByteArray array;
     QDataStream stream(&array, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_4_0);
@@ -6758,8 +6746,13 @@ QByteArray QWidget::saveGeometry() const
     stream << magicNumber
            << majorVersion
            << minorVersion
+#ifdef QT_MAC_USE_COCOA
+           << newFramePosition
+           << newNormalPosition
+#else
            << frameGeometry()
            << normalGeometry()
+#endif // QT_MAC_USE_COCOA
            << qint32(QApplication::desktop()->screenNumber(this))
            << quint8(windowState() & Qt::WindowMaximized)
            << quint8(windowState() & Qt::WindowFullScreen);

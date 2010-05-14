@@ -79,10 +79,9 @@ public:
     inline QPointF derivedAt(qreal t) const;
     inline QPointF secondDerivedAt(qreal t) const;
 
-    QPolygonF toPolygon() const;
-    void addToPolygon(QPolygonF *p) const;
-    void addToPolygonIterative(QPolygonF *p) const;
-    void addToPolygonMixed(QPolygonF *p) const;
+    QPolygonF toPolygon(qreal bezier_flattening_threshold = 0.5) const;
+    void addToPolygon(QPolygonF *p, qreal bezier_flattening_threshold = 0.5) const;
+
     QRectF bounds() const;
     qreal length(qreal error = 0.01) const;
     void addIfClose(qreal *length, qreal error) const;

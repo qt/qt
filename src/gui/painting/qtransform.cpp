@@ -1545,12 +1545,19 @@ static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transfor
 
     return true;
 }
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 static inline bool cubicTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d, bool needsMoveTo)
 {
     // Convert projective xformed curves to line
     // segments so they can be transformed more accurately
-    QPolygonF segment = QBezier::fromPoints(a, b, c, d).toPolygon();
+
+    qreal scale;
+    qt_scaleForTransform(transform, &scale);
+
+    qreal curveThreshold = scale == 0 ? qreal(0.25) : (qreal(0.25) / scale);
+
+    QPolygonF segment = QBezier::fromPoints(a, b, c, d).toPolygon(curveThreshold);
 
     for (int i = 0; i < segment.size() - 1; ++i)
         if (lineTo_clipped(path, transform, segment.at(i), segment.at(i+1), needsMoveTo))
