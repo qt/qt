@@ -9,7 +9,14 @@ INCLUDEPATH += ../shared/
 HEADERS += ../shared/testhttpserver.h
 SOURCES += ../shared/testhttpserver.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    DEFINES += SRCDIR=\".\"
+    importFiles.sources = data
+    importFiles.path = 
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov

@@ -289,7 +289,11 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
 
         QScriptValue activation = getWorker(id);
 
-        QScriptContext *ctxt = workerEngine->pushContext();
+        QScriptContext *ctxt = QScriptDeclarativeClass::pushCleanContext(workerEngine);
+        QScriptValue urlContext = workerEngine->newObject();
+        urlContext.setData(QScriptValue(workerEngine, fileName));
+        ctxt->pushScope(urlContext);
+        ctxt->pushScope(activation);
         ctxt->setActivationObject(activation);
 
         workerEngine->baseUrl = url;

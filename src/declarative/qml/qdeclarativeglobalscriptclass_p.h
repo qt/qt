@@ -76,6 +76,7 @@ public:
     void explicitSetProperty(const QString &, const QScriptValue &);
 
     const QScriptValue &globalObject() const { return m_globalObject; }
+
     const QSet<QString> &illegalNames() const { return m_illegalNames; }
 
 private:

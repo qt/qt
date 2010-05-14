@@ -514,7 +514,9 @@ void QDeclarativeCompositeTypeManager::checkComplete(QDeclarativeCompositeTypeDa
                     unit->errors = u->errors;
                     doComplete(unit);
                     return;
-                } else if (u->status == QDeclarativeCompositeTypeData::Waiting) {
+                } else if (u->status == QDeclarativeCompositeTypeData::Waiting
+                        || u->status == QDeclarativeCompositeTypeData::WaitingResources)
+                {
                     waiting++;
                 }
             }

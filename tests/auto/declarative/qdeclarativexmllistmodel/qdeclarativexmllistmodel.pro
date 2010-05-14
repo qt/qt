@@ -8,7 +8,14 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativexmllistmodel.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    DEFINES += SRCDIR=\".\"
+    importFiles.sources = data
+    importFiles.path = 
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 CONFIG += parallel_test
 
