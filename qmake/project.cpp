@@ -1046,7 +1046,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
     SKIP_WS(d, d_off, s.length());
     QString vals = s.mid(d_off); // vals now contains the space separated list of values
     int rbraces = vals.count('}'), lbraces = vals.count('{');
-    if(scope_blocks.count() > 1 && rbraces - lbraces == 1) {
+    if(scope_blocks.count() > 1 && rbraces - lbraces == 1 && vals.endsWith('}')) {
         debug_msg(1, "Project Parser: %s:%d : Leaving block %d", parser.file.toLatin1().constData(),
                   parser.line_no, scope_blocks.count());
         ScopeBlock sb = scope_blocks.pop();
