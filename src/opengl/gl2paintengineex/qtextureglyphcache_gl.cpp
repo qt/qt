@@ -91,6 +91,12 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     if (ctx->d_ptr->workaround_brokenFBOReadBack && image().isNull())
         QImageTextureGlyphCache::createTextureData(width, height);
 
+    // Make the lower glyph texture size 16 x 16.
+    if (width < 16)
+        width = 16;
+    if (height < 16)
+        height = 16;
+
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
@@ -114,6 +120,12 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 {
     int oldWidth = m_width;
     int oldHeight = m_height;
+
+    // Make the lower glyph texture size 16 x 16.
+    if (width < 16)
+        width = 16;
+    if (height < 16)
+        height = 16;
 
     GLuint oldTexture = m_texture;
     createTextureData(width, height);
