@@ -173,6 +173,7 @@ class HtmlGenerator : public PageGenerator
     void generateCompactList(const Node *relative, 
                              CodeMarker *marker,
 			     const NodeMap &classMap,
+                             bool includeAlphabet,
                              QString commonPrefix = QString());
     void generateFunctionIndex(const Node *relative, CodeMarker *marker);
     void generateLegaleseList(const Node *relative, CodeMarker *marker);

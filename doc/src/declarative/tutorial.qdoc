@@ -57,10 +57,10 @@ The tutorial's source code is located in the $QTDIR/examples/declarative/tutoria
 
 Tutorial chapters:
 
-\list
-\o \l {QML Tutorial 1 - Basic Types}
-\o \l {QML Tutorial 2 - QML Component}
-\o \l {QML Tutorial 3 - States and Transitions}
+\list 1
+\o \l {QML Tutorial 1 - Basic Types}{Basic Types}
+\o \l {QML Tutorial 2 - QML Components}{QML Components}
+\o \l {QML Tutorial 3 - States and Transitions}{States and Transitions}
 \endlist
 
 */
@@ -86,7 +86,7 @@ Here is the QML code for the application:
 \section2 Import
 
 First, we need to import the types that we need for this example. Most QML files will import the built-in QML
-types (like \l{Rectangle}, \l{Image}, ...) that come with Qt with:
+types (like \l{Rectangle}, \l{Image}, ...) that come with Qt, using:
 
 \snippet examples/declarative/tutorials/helloworld/tutorial1.qml 3
 
@@ -95,7 +95,7 @@ types (like \l{Rectangle}, \l{Image}, ...) that come with Qt with:
 \snippet examples/declarative/tutorials/helloworld/tutorial1.qml 1
 
 We declare a root element of type \l{Rectangle}. It is one of the basic building blocks you can use to create an application in QML.
-We give it an \c{id} to be able to refer to it later. In this case, we call it \e page.
+We give it an \c{id} to be able to refer to it later. In this case, we call it "page".
 We also set the \c width, \c height and \c color properties.
 The \l{Rectangle} element contains many other properties (such as \c x and \c y), but these are left at their default values.
 
@@ -103,14 +103,15 @@ The \l{Rectangle} element contains many other properties (such as \c x and \c y)
 
 \snippet examples/declarative/tutorials/helloworld/tutorial1.qml 2
 
-We add a \l Text element as a child of our root element that will display the text 'Hello world!'.
+We add a \l Text element as a child of the root Rectangle element that displays the text 'Hello world!'.
 
 The \c y property is used to position the text vertically at 30 pixels from the top of its parent.
 
-The \c font.pointSize and \c font.bold properties are related to fonts and use the \l{dot properties}{dot notation}.
-
 The \c anchors.horizontalCenter property refers to the horizontal center of an element.
 In this case, we specify that our text element should be horizontally centered in the \e page element (see \l{anchor-layout}{Anchor-based Layout}).
+
+The \c font.pointSize and \c font.bold properties are related to fonts and use the \l{dot properties}{dot notation}.
+
 
 \section2 Viewing the example
 
@@ -124,7 +125,7 @@ bin/qml $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
 
 /*!
 \page qml-tutorial2.html
-\title QML Tutorial 2 - QML Component
+\title QML Tutorial 2 - QML Components
 \contentspage QML Tutorial
 \previouspage QML Tutorial 1 - Basic Types
 \nextpage QML Tutorial 3 - States and Transitions
@@ -134,10 +135,10 @@ This chapter adds a color picker to change the color of the text.
 \image declarative-tutorial2.png
 
 Our color picker is made of six cells with different colors.
-To avoid writing the same code multiple times, we first create a new \c Cell component.
+To avoid writing the same code multiple times for each cell, we create a new \c Cell component.
 A component provides a way of defining a new type that we can re-use in other QML files.
-A QML component is like a black-box and interacts with the outside world through properties, signals and slots and is generally
-defined in its own QML file (for more details, see \l {Defining new Components}).
+A QML component is like a black-box and interacts with the outside world through properties, signals and functions and is generally
+defined in its own QML file. (For more details, see \l {Defining new Components}).
 The component's filename must always start with a capital letter.
 
 Here is the QML code for \c Cell.qml:
@@ -157,7 +158,7 @@ An \l Item is the most basic visual element in QML and is often used as a contai
 
 We declare a \c cellColor property. This property is accessible from  \e outside our component, this allows us
 to instantiate the cells with different colors.
-This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{intro-properties}{Properties}).
+This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{Adding new properties}).
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 5
 

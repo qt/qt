@@ -59,11 +59,11 @@
 #include <QFileInfo>
 #include <QtCore/qdebug.h>
 #include <QApplication>
+#include <QGraphicsObject>
 
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
-int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeComponent::Status");
 
 /*!
     \class QDeclarativeComponent
@@ -242,10 +242,10 @@ QDeclarativeComponent::~QDeclarativeComponent()
     \qmlproperty enumeration Component::status
     This property holds the status of component loading.  It can be one of:
     \list
-    \o Null - no data is available for the component
-    \o Ready - the component has been loaded, and can be used to create instances.
-    \o Loading - the component is currently being loaded
-    \o Error - an error occurred while loading the component.
+    \o Component.Null - no data is available for the component
+    \o Component.Ready - the component has been loaded, and can be used to create instances.
+    \o Component.Loading - the component is currently being loaded
+    \o Component.Error - an error occurred while loading the component.
                Calling errorsString() will provide a human-readable description of any errors.
     \endlist
  */
@@ -269,19 +269,7 @@ QDeclarativeComponent::Status QDeclarativeComponent::status() const
 }
 
 /*!
-    \qmlproperty bool Component::isNull
-
-    Is true if the component is in the Null state, false otherwise.
-
-    Equivalent to status == Component.Null.
-*/
-
-/*!
-    \property QDeclarativeComponent::isNull
-
-    Is true if the component is in the Null state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Null.
+    Returns true if status() == QDeclarativeComponent::Null.
 */
 bool QDeclarativeComponent::isNull() const
 {
@@ -289,19 +277,7 @@ bool QDeclarativeComponent::isNull() const
 }
 
 /*!
-    \qmlproperty bool Component::isReady
-
-    Is true if the component is in the Ready state, false otherwise.
-
-    Equivalent to status == Component.Ready.
-*/
-
-/*!
-    \property QDeclarativeComponent::isReady
-
-    Is true if the component is in the Ready state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Ready.
+    Returns true if status() == QDeclarativeComponent::Ready.
 */
 bool QDeclarativeComponent::isReady() const
 {
@@ -309,21 +285,7 @@ bool QDeclarativeComponent::isReady() const
 }
 
 /*!
-    \qmlproperty bool Component::isError
-
-    Is true if the component is in the Error state, false otherwise.
-
-    Equivalent to status == Component.Error.
-
-    Calling errorsString() will provide a human-readable description of any errors.
-*/
-
-/*!
-    \property QDeclarativeComponent::isError
-
-    Is true if the component is in the Error state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Error.
+    Returns true if status() == QDeclarativeComponent::Error.
 */
 bool QDeclarativeComponent::isError() const
 {
@@ -331,19 +293,7 @@ bool QDeclarativeComponent::isError() const
 }
 
 /*!
-    \qmlproperty bool Component::isLoading
-
-    Is true if the component is in the Loading state, false otherwise.
-
-    Equivalent to status == Component::Loading.
-*/
-
-/*!
-    \property QDeclarativeComponent::isLoading
-
-    Is true if the component is in the Loading state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Loading.
+    Returns true if status() == QDeclarativeComponent::Loading.
 */
 bool QDeclarativeComponent::isLoading() const
 {
@@ -421,7 +371,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const Q
 {
     Q_D(QDeclarativeComponent);
     d->engine = engine;
-    loadUrl(QUrl::fromLocalFile(fileName));
+    loadUrl(d->engine->baseUrl().resolved(QUrl::fromLocalFile(fileName)));
 }
 
 /*!
@@ -595,17 +545,24 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
-    \qmlmethod object Component::createObject()
+    \qmlmethod object Component::createObject(parent)
     Returns an object instance from this component, or null if object creation fails.
 
-    The object will be created in the same context as the component was created in.
+    The object will be created in the same context as the one in which the component
+    was created.
+
+    Note that if the returned object is to be displayed, its \c parent must be set to
+    an existing item in a scene, or else the object will not be visible.
 */
 
 /*!
     \internal
     A version of create which returns a scriptObject, for use in script
+
+    Sets graphics object parent because forgetting to do this is a frequent
+    and serious problem.
 */
-QScriptValue QDeclarativeComponent::createObject()
+QScriptValue QDeclarativeComponent::createObject(QObject* parent)
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
@@ -614,6 +571,20 @@ QScriptValue QDeclarativeComponent::createObject()
     QObject* ret = create(ctxt);
     if (!ret)
         return QScriptValue(QScriptValue::NullValue);
+
+    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(ret);
+    bool needParent = (gobj != 0);
+    if(parent){
+        ret->setParent(parent);
+        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
+        if(gparent){
+            gobj->setParentItem(gparent);
+            needParent = false;
+        }
+    }
+    if(needParent)
+        qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
+
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
@@ -754,6 +725,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
+        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -761,6 +733,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
+        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -785,6 +758,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
+        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -792,6 +766,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
+        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -826,6 +801,16 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::clear(ps);
         }
 
+        for (int ii = 0; ii < state->finalizedParserStatus.count(); ++ii) {
+            QPair<QDeclarativeGuard<QObject>, int> status = state->finalizedParserStatus.at(ii);
+            QObject *obj = status.first;
+            if (obj) {
+                void *args[] = { 0 };
+                QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
+                                      status.second, args);
+            }
+        }
+
         while (state->componentAttached) {
             QDeclarativeComponentAttached *a = state->componentAttached;
             a->rem();
@@ -838,6 +823,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
 
         state->bindValues.clear();
         state->parserStatus.clear();
+        state->finalizedParserStatus.clear();
         state->completePending = false;
 
         enginePriv->inProgressCreations--;

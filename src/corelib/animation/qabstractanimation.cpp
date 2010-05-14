@@ -369,6 +369,9 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     if (state == newState)
         return;
 
+    if (loopCount == 0)
+        return;
+
     QAbstractAnimation::State oldState = state;
     int oldCurrentTime = currentTime;
     int oldCurrentLoop = currentLoop;

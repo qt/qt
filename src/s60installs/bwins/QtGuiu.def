@@ -2126,8 +2126,8 @@ EXPORTS
 	?addToGroup@QGraphicsItemGroup@@QAEXPAVQGraphicsItem@@@Z @ 2125 NONAME ; void QGraphicsItemGroup::addToGroup(class QGraphicsItem *)
 	?addToIndex@QGraphicsItem@@IAEXXZ @ 2126 NONAME ; void QGraphicsItem::addToIndex(void)
 	?addToPolygon@QBezier@@QBEXPAVQPolygonF@@@Z @ 2127 NONAME ; void QBezier::addToPolygon(class QPolygonF *) const
-	?addToPolygonIterative@QBezier@@QBEXPAVQPolygonF@@@Z @ 2128 NONAME ; void QBezier::addToPolygonIterative(class QPolygonF *) const
-	?addToPolygonMixed@QBezier@@QBEXPAVQPolygonF@@@Z @ 2129 NONAME ; void QBezier::addToPolygonMixed(class QPolygonF *) const
+	?addToPolygonIterative@QBezier@@QBEXPAVQPolygonF@@@Z @ 2128 NONAME ABSENT ; void QBezier::addToPolygonIterative(class QPolygonF *) const
+	?addToPolygonMixed@QBezier@@QBEXPAVQPolygonF@@@Z @ 2129 NONAME ABSENT ; void QBezier::addToPolygonMixed(class QPolygonF *) const
 	?addToolBar@QMainWindow@@QAEPAVQToolBar@@ABVQString@@@Z @ 2130 NONAME ; class QToolBar * QMainWindow::addToolBar(class QString const &)
 	?addToolBar@QMainWindow@@QAEXPAVQToolBar@@@Z @ 2131 NONAME ; void QMainWindow::addToolBar(class QToolBar *)
 	?addToolBar@QMainWindow@@QAEXW4ToolBarArea@Qt@@PAVQToolBar@@@Z @ 2132 NONAME ; void QMainWindow::addToolBar(enum Qt::ToolBarArea, class QToolBar *)
@@ -12717,7 +12717,7 @@ EXPORTS
 	?updateInputMethodSensitivity@QGraphicsViewPrivate@@QAEXXZ @ 12716 NONAME ; void QGraphicsViewPrivate::updateInputMethodSensitivity(void)
 	?updateLastCenterPoint@QGraphicsViewPrivate@@QAEXXZ @ 12717 NONAME ; void QGraphicsViewPrivate::updateLastCenterPoint(void)
 	?updateRect@QGraphicsViewPrivate@@QAE_NABVQRect@@@Z @ 12718 NONAME ; bool QGraphicsViewPrivate::updateRect(class QRect const &)
-	?updateRegion@QGraphicsViewPrivate@@QAE_NABVQRegion@@@Z @ 12719 NONAME ; bool QGraphicsViewPrivate::updateRegion(class QRegion const &)
+	?updateRegion@QGraphicsViewPrivate@@QAE_NABVQRegion@@@Z @ 12719 NONAME ABSENT ; bool QGraphicsViewPrivate::updateRegion(class QRegion const &)
 	?updateScroll@QGraphicsViewPrivate@@QAEXXZ @ 12720 NONAME ; void QGraphicsViewPrivate::updateScroll(void)
 	?verticalScroll@QGraphicsViewPrivate@@QBE_JXZ @ 12721 NONAME ; long long QGraphicsViewPrivate::verticalScroll(void) const
 	?viewportEvent@QAbstractScrollAreaPrivate@@QAE_NPAVQEvent@@@Z @ 12722 NONAME ; bool QAbstractScrollAreaPrivate::viewportEvent(class QEvent *)
@@ -12798,4 +12798,6 @@ EXPORTS
 	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 12797 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	?name@QIcon@@QBE?AVQString@@XZ @ 12798 NONAME ; class QString QIcon::name(void) const
 	?iconName@QIconEngineV2@@QAE?AVQString@@XZ @ 12799 NONAME ; class QString QIconEngineV2::iconName(void)
+	?updateRectF@QGraphicsViewPrivate@@QAE_NABVQRectF@@@Z @ 12800 NONAME ; bool QGraphicsViewPrivate::updateRectF(class QRectF const &)
+	?updateRegion@QGraphicsViewPrivate@@QAE_NABVQRectF@@ABVQTransform@@@Z @ 12801 NONAME ; bool QGraphicsViewPrivate::updateRegion(class QRectF const &, class QTransform const &)
 

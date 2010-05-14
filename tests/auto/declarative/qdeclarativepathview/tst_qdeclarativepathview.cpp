@@ -77,6 +77,8 @@ private slots:
     void pathChanges();
     void componentChanges();
     void modelChanges();
+    void pathUpdateOnStartChanged();
+    void package();
 
 
 private:
@@ -668,6 +670,44 @@ void tst_QDeclarativePathView::modelChanges()
 
     pathView->setModel(QVariant());
     QCOMPARE(modelSpy.count(),2);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::pathUpdateOnStartChanged()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathUpdateOnStartChanged.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativePath *path = canvas->rootObject()->findChild<QDeclarativePath*>("path");
+    QVERIFY(path);
+    QCOMPARE(path->startX(), 400.0);
+    QCOMPARE(path->startY(), 300.0);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->x(), path->startX() - item->width() / 2.0);
+    QCOMPARE(item->y(), path->startY() - item->height() / 2.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::package()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview_package.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("photoPathView");
+    QVERIFY(pathView);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "pathItem");
+    QVERIFY(item);
+    QVERIFY(item->scale() != 1.0);
 
     delete canvas;
 }

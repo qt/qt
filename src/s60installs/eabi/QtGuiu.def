@@ -9901,9 +9901,9 @@ EXPORTS
 	_ZNK7QBezier10addIfCloseEPff @ 9900 NONAME
 	_ZNK7QBezier12addToPolygonEP9QPolygonF @ 9901 NONAME
 	_ZNK7QBezier16bezierOnIntervalEff @ 9902 NONAME
-	_ZNK7QBezier17addToPolygonMixedEP9QPolygonF @ 9903 NONAME
+	_ZNK7QBezier17addToPolygonMixedEP9QPolygonF @ 9903 NONAME ABSENT
 	_ZNK7QBezier17stationaryYPointsERfS0_ @ 9904 NONAME
-	_ZNK7QBezier21addToPolygonIterativeEP9QPolygonF @ 9905 NONAME
+	_ZNK7QBezier21addToPolygonIterativeEP9QPolygonF @ 9905 NONAME ABSENT
 	_ZNK7QBezier5tForYEfff @ 9906 NONAME
 	_ZNK7QBezier6boundsEv @ 9907 NONAME
 	_ZNK7QBezier6lengthEf @ 9908 NONAME
@@ -11849,7 +11849,7 @@ EXPORTS
 	_ZN19QApplicationPrivate15getPixmapCursorEN2Qt11CursorShapeE @ 11848 NONAME
 	_ZN20QGraphicsViewPrivate10centerViewEN13QGraphicsView14ViewportAnchorE @ 11849 NONAME
 	_ZN20QGraphicsViewPrivate10updateRectERK5QRect @ 11850 NONAME
-	_ZN20QGraphicsViewPrivate12updateRegionERK7QRegion @ 11851 NONAME
+	_ZN20QGraphicsViewPrivate12updateRegionERK7QRegion @ 11851 NONAME ABSENT
 	_ZN20QGraphicsViewPrivate12updateScrollEv @ 11852 NONAME
 	_ZN20QGraphicsViewPrivate15storeMouseEventEP11QMouseEvent @ 11853 NONAME
 	_ZN20QGraphicsViewPrivate18storeDragDropEventEPK27QGraphicsSceneDragDropEvent @ 11854 NONAME
@@ -11998,4 +11998,5 @@ EXPORTS
 	_ZN14QWindowSurface23setPartialUpdateSupportEb @ 11997 NONAME
 	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 11998 NONAME
 	_ZNK5QIcon4nameEv @ 11999 NONAME
+	_ZN20QGraphicsViewPrivate12updateRegionERK6QRectFRK10QTransform @ 12000 NONAME
 

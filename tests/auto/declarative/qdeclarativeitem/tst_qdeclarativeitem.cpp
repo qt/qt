@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
+#include "../../../shared/util.h"
 
 class tst_QDeclarativeItem : public QObject
 
@@ -63,9 +64,11 @@ private slots:
     void propertyChanges();
     void transforms();
     void transforms_data();
+    void childrenRect();
 
     void childrenProperty();
     void resourcesProperty();
+    void mouseFocus();
 
 private:
     template<typename T>
@@ -465,6 +468,41 @@ void tst_QDeclarativeItem::resourcesProperty()
     delete o;
 }
 
+void tst_QDeclarativeItem::mouseFocus()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/mouseFocus.qml"));
+    canvas->show();
+    QVERIFY(canvas->rootObject());
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "declarativeItem");
+    QVERIFY(item);
+    QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
+
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(focusSpy.count(), 1);
+    QVERIFY(item->hasFocus());
+
+    // make sure focusable graphics widget underneath does not steal focus
+    QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(focusSpy.count(), 1);
+    QVERIFY(item->hasFocus());
+
+    item->setFocus(false);
+    QVERIFY(!item->hasFocus());
+    QCOMPARE(focusSpy.count(), 2);
+    item->setFocus(true);
+    QCOMPARE(focusSpy.count(), 3);
+
+    delete canvas;
+}
+
 void tst_QDeclarativeItem::propertyChanges()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
@@ -535,6 +573,33 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(wantsFocusArguments.at(0).toBool(), true);
 
     delete canvas;
+}
+
+void tst_QDeclarativeItem::childrenRect()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/childrenRect.qml"));
+    canvas->show();
+
+    QGraphicsObject *o = canvas->rootObject();
+    QDeclarativeItem *item = o->findChild<QDeclarativeItem*>("testItem");
+    QCOMPARE(item->width(), qreal(0));
+    QCOMPARE(item->height(), qreal(0));
+
+    o->setProperty("childCount", 1);
+    QCOMPARE(item->width(), qreal(10));
+    QCOMPARE(item->height(), qreal(20));
+
+    o->setProperty("childCount", 5);
+    QCOMPARE(item->width(), qreal(50));
+    QCOMPARE(item->height(), qreal(100));
+
+    o->setProperty("childCount", 0);
+    QCOMPARE(item->width(), qreal(0));
+    QCOMPARE(item->height(), qreal(0));
+
+    delete o;
 }
 
 template<typename T>

@@ -66,6 +66,7 @@
 #include <QDeclarativeComponent>
 #include <QWidget>
 #include <QApplication>
+#include <QTranslator>
 #include <QDir>
 #include <QTextBrowser>
 #include <QFile>
@@ -461,9 +462,14 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 #else
     : QWidget(parent, flags)
 #endif
+      , loggerWindow(new LoggerWidget())
       , frame_stream(0), scaleSkin(true), mb(0)
       , portraitOrientation(0), landscapeOrientation(0)
-      , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
+      , showWarningsWindow(0)
+      , m_scriptOptions(0)
+      , tester(0)
+      , useQmlFileBrowser(true)
+      , translator(0)
 {
     QDeclarativeViewer::registerTypes();
     setWindowTitle(tr("Qt Qml Runtime"));
@@ -495,6 +501,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     }
 
     canvas = new QDeclarativeView(this);
+
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
 
@@ -503,6 +510,9 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     QObject::connect(canvas, SIGNAL(statusChanged(QDeclarativeView::Status)), this, SLOT(statusChanged()));
     QObject::connect(canvas->engine(), SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
+
+    QObject::connect(warningsWidget(), SIGNAL(opened()), this, SLOT(warningsWidgetOpened()));
+    QObject::connect(warningsWidget(), SIGNAL(closed()), this, SLOT(warningsWidgetClosed()));
 
     if (!(flags & Qt::FramelessWindowHint)) {
         createMenu(menuBar(),0);
@@ -526,6 +536,8 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
     connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
     connect(&recordTimer, SIGNAL(triggered()), this, SLOT(recordFrame()));
+    connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
+            this, SLOT(orientationChanged()), Qt::QueuedConnection);
     autoStartTimer.setRunning(false);
     autoStopTimer.setRunning(false);
     recordTimer.setRunning(false);
@@ -534,8 +546,19 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 
 QDeclarativeViewer::~QDeclarativeViewer()
 {
+    delete loggerWindow;
     canvas->engine()->setNetworkAccessManagerFactory(0);
     delete namFactory;
+}
+
+void QDeclarativeViewer::enableExperimentalGestures()
+{
+    canvas->viewport()->grabGesture(Qt::TapGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
+    canvas->viewport()->grabGesture(Qt::TapAndHoldGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
+    canvas->viewport()->grabGesture(Qt::PanGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
+    canvas->viewport()->grabGesture(Qt::PinchGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
+    canvas->viewport()->grabGesture(Qt::SwipeGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
+    canvas->viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
 }
 
 int QDeclarativeViewer::menuBarHeight() const
@@ -561,6 +584,11 @@ QMenuBar *QDeclarativeViewer::menuBar() const
 QDeclarativeView *QDeclarativeViewer::view() const
 {
     return canvas;
+}
+
+LoggerWidget *QDeclarativeViewer::warningsWidget() const
+{
+    return loggerWindow;
 }
 
 void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
@@ -613,6 +641,15 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     slowAction->setCheckable(true);
     connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
     debugMenu->addAction(slowAction);
+
+    showWarningsWindow = new QAction(tr("Show Warnings"), parent);
+    showWarningsWindow->setCheckable((true));
+    showWarningsWindow->setChecked(loggerWindow->isVisible());
+    connect(showWarningsWindow, SIGNAL(triggered(bool)), this, SLOT(showWarnings(bool)));
+
+#if !defined(Q_OS_SYMBIAN)
+    debugMenu->addAction(showWarningsWindow);
+#endif
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -670,6 +707,8 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 #if !defined(Q_OS_SYMBIAN)
     if (!flatmenu)
         settingsMenu->addAction(recordOptions);
+
+    settingsMenu->addMenu(loggerWindow->preferencesMenu());
 #else
     QAction *fullscreenAction = new QAction(tr("Full Screen"), parent);
     fullscreenAction->setCheckable(true);
@@ -677,7 +716,10 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     settingsMenu->addAction(fullscreenAction);
 #endif
 
+    if (flatmenu) flatmenu->addSeparator();
+
     QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
+
     QActionGroup *orientation = new QActionGroup(parent);
 
     QAction *toggleOrientation = new QAction(tr("&Toggle Orientation"), parent);
@@ -754,6 +796,21 @@ void QDeclarativeViewer::toggleFullScreen()
         showMaximized();
     else
         showFullScreen();
+}
+
+void QDeclarativeViewer::showWarnings(bool show)
+{
+    loggerWindow->setVisible(show);
+}
+
+void QDeclarativeViewer::warningsWidgetOpened()
+{
+    showWarningsWindow->setChecked(true);
+}
+
+void QDeclarativeViewer::warningsWidgetClosed()
+{
+    showWarningsWindow->setChecked(false);
 }
 
 void QDeclarativeViewer::setScaleSkin()
@@ -924,10 +981,8 @@ void QDeclarativeViewer::statusChanged()
     if (canvas->status() == QDeclarativeView::Ready) {
         initialSize = canvas->sizeHint();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-            QSize newWindowSize = initialSize;
-            newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
             updateSizeHints();
-            resize(newWindowSize);
+            resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
         }
     }
 }
@@ -935,6 +990,46 @@ void QDeclarativeViewer::statusChanged()
 void QDeclarativeViewer::launch(const QString& file_or_url)
 {
     QMetaObject::invokeMethod(this, "open", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
+}
+
+void QDeclarativeViewer::loadTranslationFile(const QString& directory)
+{
+    if (!translator) {
+        translator = new QTranslator(this);
+        QApplication::installTranslator(translator);
+    }
+
+    translator->load(QLatin1String("qml_" )+QLocale::system().name(), directory + QLatin1String("/i18n"));
+}
+
+void QDeclarativeViewer::loadDummyDataFiles(const QString& directory)
+{
+    QDir dir(directory+"/dummydata", "*.qml");
+    QStringList list = dir.entryList();
+    for (int i = 0; i < list.size(); ++i) {
+        QString qml = list.at(i);
+        QFile f(dir.filePath(qml));
+        f.open(QIODevice::ReadOnly);
+        QByteArray data = f.readAll();
+        QDeclarativeComponent comp(canvas->engine());
+        comp.setData(data, QUrl());
+        QObject *dummyData = comp.create();
+
+        if(comp.isError()) {
+            QList<QDeclarativeError> errors = comp.errors();
+            foreach (const QDeclarativeError &error, errors) {
+                qWarning() << error;
+            }
+            if (tester) tester->executefailure();
+        }
+
+        if (dummyData) {
+            qWarning() << "Loaded dummy data:" << dir.filePath(qml);
+            qml.truncate(qml.length()-4);
+            canvas->rootContext()->setContextProperty(qml, dummyData);
+            dummyData->setParent(this);
+        }
+    }
 }
 
 bool QDeclarativeViewer::open(const QString& file_or_url)
@@ -966,39 +1061,15 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
-        QFileInfo fi(fileName);
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;
                 return false;
             }
 
-            QDir dir(fi.path()+"/dummydata", "*.qml");
-            QStringList list = dir.entryList();
-            for (int i = 0; i < list.size(); ++i) {
-                QString qml = list.at(i);
-                QFile f(dir.filePath(qml));
-                f.open(QIODevice::ReadOnly);
-                QByteArray data = f.readAll();
-                QDeclarativeComponent comp(canvas->engine());
-                comp.setData(data, QUrl());
-                QObject *dummyData = comp.create();
-
-                if(comp.isError()) {
-                    QList<QDeclarativeError> errors = comp.errors();
-                    foreach (const QDeclarativeError &error, errors) {
-                        qWarning() << error;
-                    }
-                    if (tester) tester->executefailure();
-                }
-
-                if (dummyData) {
-                    qWarning() << "Loaded dummy data:" << dir.filePath(qml);
-                    qml.truncate(qml.length()-4);
-                    ctxt->setContextProperty(qml, dummyData);
-                    dummyData->setParent(this);
-                }
-            }
+            QFileInfo fi(fileName);
+            loadTranslationFile(fi.path());
+            loadDummyDataFiles(fi.path());
         } else {
             qWarning() << "qml cannot find file:" << fileName;
             return false;
@@ -1362,6 +1433,19 @@ void QDeclarativeViewer::recordFrame()
         }
     } else {
         frames.append(new QImage(frame));
+    }
+}
+
+void QDeclarativeViewer::orientationChanged()
+{
+    if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
+        if (canvas->rootObject()) {
+            QSizeF rootObjectSize = canvas->rootObject()->boundingRect().size();
+            QSize newSize(rootObjectSize.width(), rootObjectSize.height()+menuBarHeight());
+            if (size() != newSize) {
+                resize(newSize);
+            }
+        }
     }
 }
 

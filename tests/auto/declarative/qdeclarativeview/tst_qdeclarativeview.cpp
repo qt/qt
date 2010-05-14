@@ -147,7 +147,7 @@ void tst_QDeclarativeView::resizemodedeclarativeitem()
     declarativeItem->setHeight(80);
     QCOMPARE(canvas->width(), 80);
     QCOMPARE(canvas->height(), 100);
-    QCOMPARE(canvas->size(), canvas->sizeHint());
+    QCOMPARE(QSize(declarativeItem->width(), declarativeItem->height()), canvas->sizeHint());
     QCOMPARE(sceneResizedSpy2.count(), 2);
 
     // size update from view
@@ -230,7 +230,7 @@ void tst_QDeclarativeView::resizemodegraphicswidget()
     canvas->setResizeMode(QDeclarativeView::SizeRootObjectToView);
     graphicsWidget->resize(QSizeF(60,80));
     QCOMPARE(canvas->size(), QSize(80,100));
-    QCOMPARE(canvas->size(), canvas->sizeHint());
+    QCOMPARE(QSize(graphicsWidget->size().width(), graphicsWidget->size().height()), canvas->sizeHint());
     QCOMPARE(sceneResizedSpy2.count(), 2);
 
     // size update from view

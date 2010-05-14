@@ -185,15 +185,24 @@ void tst_QDeclarativeRepeater::numberModel()
     delete canvas;
 }
 
+class MyObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int idx READ idx CONSTANT)
+public:
+    MyObject(int i) : QObject(), m_idx(i) {}
+
+    int idx() const { return m_idx; }
+
+    int m_idx;
+};
+
 void tst_QDeclarativeRepeater::objectList()
 {
     QDeclarativeView *canvas = createView();
-
     QObjectList data;
-    for(int i=0; i<100; i++){
-        data << new QObject();
-        data.back()->setProperty("idx", i);
-    }
+    for(int i=0; i<100; i++)
+        data << new MyObject(i);
 
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", QVariant::fromValue(data));

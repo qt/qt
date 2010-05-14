@@ -219,8 +219,12 @@ QAbstractSliderPrivate::QAbstractSliderPrivate()
 #ifdef QT_KEYPAD_NAVIGATION
       , isAutoRepeating(false)
       , repeatMultiplier(1)
-#endif
 {
+    firstRepeat.invalidate();
+#else
+{
+#endif
+
 }
 
 QAbstractSliderPrivate::~QAbstractSliderPrivate()
@@ -787,7 +791,7 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
         }
 
     }
-    else if (!d->firstRepeat.isValid()) {
+    else if (d->firstRepeat.isValid()) {
         d->firstRepeat.invalidate();
         d->repeatMultiplier = 1;
     }

@@ -49,6 +49,7 @@
 /*!
   \page printing.html
   \title Printing with Qt
+  \ingroup qt-graphics
 
   \previouspage Styling
   \contentspage The Paint System

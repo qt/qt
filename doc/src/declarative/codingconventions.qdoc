@@ -57,7 +57,7 @@ Through our documentation and examples, QML objects are always structured in the
 \o id
 \o property declarations
 \o signal declarations
-\o javascript functions
+\o JavaScript functions
 \o object properties
 \o child objects
 \o states
@@ -72,7 +72,6 @@ For example, a hypothetical \e photo QML object would look like this:
 \snippet doc/src/snippets/declarative/codingconventions/photo.qml 0
 
 
-\target Grouped properties
 \section1 Grouped properties
 
 If using multiple properties from a group of properties,
@@ -102,7 +101,7 @@ we will write this:
 \snippet doc/src/snippets/declarative/codingconventions/lists.qml 1
 
 
-\section1 Javascript code
+\section1 JavaScript code
 
 If the script is a single expression, we recommend writing it inline:
 
@@ -116,7 +115,7 @@ If the script is more than a couple of lines long or can be used by different ob
 
 \snippet doc/src/snippets/declarative/codingconventions/javascript.qml 2
 
-For long scripts, we will put the functions in their own javascript file and import it like this:
+For long scripts, we will put the functions in their own JavaScript file and import it like this:
 
 \snippet doc/src/snippets/declarative/codingconventions/javascript-imports.qml 0
 

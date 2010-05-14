@@ -65,6 +65,9 @@ QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+class QEnvironmentChangeNotifier;
+#endif
 class QAbstractEventDispatcher;
 
 class Q_CORE_EXPORT QCoreApplicationPrivate : public QObjectPrivate
@@ -113,6 +116,10 @@ public:
     bool aboutToQuitEmitted;
     QString cachedApplicationDirPath;
     QString cachedApplicationFilePath;
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+    QScopedPointer<QEnvironmentChangeNotifier> environmentChangeNotifier;
+    void symbianInit();
+#endif
 
     static bool isTranslatorInstalled(QTranslator *translator);
 

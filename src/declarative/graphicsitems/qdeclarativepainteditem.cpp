@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
     \brief The QDeclarativePaintedItem class is an abstract base class for QDeclarativeView items that want cached painting.
     \internal
 
-    This is a convenience class for implementing items that paint their contents
-    using a QPainter.  The contents of the item are cached behind the scenes.
+    This is a convenience class for implementing items that cache their painting.
+    The contents of the item are cached behind the scenes.
     The dirtyCache() function should be called if the contents change to
     ensure the cache is refreshed the next time painting occurs.
 
@@ -184,7 +184,6 @@ void QDeclarativePaintedItem::setContentsScale(qreal scale)
 QDeclarativePaintedItem::QDeclarativePaintedItem(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativePaintedItemPrivate), parent)
 {
-    init();
 }
 
 /*!
@@ -195,7 +194,6 @@ QDeclarativePaintedItem::QDeclarativePaintedItem(QDeclarativeItem *parent)
 QDeclarativePaintedItem::QDeclarativePaintedItem(QDeclarativePaintedItemPrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {
-    init();
 }
 
 /*!
@@ -206,14 +204,23 @@ QDeclarativePaintedItem::~QDeclarativePaintedItem()
     clearCache();
 }
 
-/*!
-    \internal
-*/
-void QDeclarativePaintedItem::init()
+void QDeclarativePaintedItem::geometryChanged(const QRectF &newGeometry,
+                                              const QRectF &oldGeometry)
 {
-    connect(this,SIGNAL(widthChanged()),this,SLOT(clearCache()));
-    connect(this,SIGNAL(heightChanged()),this,SLOT(clearCache()));
-    connect(this,SIGNAL(visibleChanged()),this,SLOT(clearCache()));
+    if (newGeometry.width() != oldGeometry.width() ||
+        newGeometry.height() != oldGeometry.height())
+        clearCache();
+
+    QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
+}
+
+QVariant QDeclarativePaintedItem::itemChange(GraphicsItemChange change,
+                                             const QVariant &value)
+{
+    if (change == ItemVisibleHasChanged)
+        clearCache();
+
+    return QDeclarativeItem::itemChange(change, value);
 }
 
 void QDeclarativePaintedItem::setCacheFrozen(bool frozen)
@@ -226,7 +233,7 @@ void QDeclarativePaintedItem::setCacheFrozen(bool frozen)
 }
 
 /*!
-    \reimp
+    \internal
 */
 void QDeclarativePaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {

@@ -14,7 +14,7 @@ FocusScope {
         delegate: ListViewDelegate {}
 
         Behavior on y {
-            NumberAnimation { duration: 600; easing.type: "OutQuint" }
+            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
         }
     }
 
@@ -26,7 +26,7 @@ FocusScope {
         delegate: ListViewDelegate {}
 
         Behavior on y {
-            NumberAnimation { duration: 600; easing.type: "OutQuint" }
+            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
         }
     }
 
@@ -38,7 +38,7 @@ FocusScope {
         delegate: ListViewDelegate {}
 
         Behavior on y {
-            NumberAnimation { duration: 600; easing.type: "OutQuint" }
+            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
         }
     }
 

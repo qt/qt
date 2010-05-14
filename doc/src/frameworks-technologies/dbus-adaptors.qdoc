@@ -42,6 +42,7 @@
 /*!
     \page usingadaptors.html
     \title Using QtDBus Adaptors
+    \ingroup technology-apis
 
     \ingroup best-practices
 

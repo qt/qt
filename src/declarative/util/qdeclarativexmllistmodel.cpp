@@ -472,40 +472,71 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
   \since 4.7
     \brief The XmlListModel element is used to specify a model using XPath expressions.
 
-    XmlListModel is used to create a model from XML data that can be used as a data source
+    XmlListModel is used to create a model from XML data. XmlListModel can be used as a data source
     for the view classes (such as ListView, PathView, GridView) and other classes that interact with model
-    data (such as Repeater).
+    data (such as \l Repeater).
 
-    Here is an example of a model containing news from a Yahoo RSS feed:
+    For example, if there is a XML document at http://www.mysite.com/feed.xml like this:
+
+    \code
+    <?xml version="1.0" encoding="utf-8"?>
+    <rss version="2.0">
+        ...
+        <channel>
+            <item>
+                <title>Item A</title>
+                <pubDate>Sat, 07 Sep 2010 10:00:01 GMT</pubDate>
+            </item>
+            <item>
+                <title>Item B</title>
+                <pubDate>Sat, 07 Sep 2010 15:35:01 GMT</pubDate>
+            </item>
+        </channel>
+    </rss>
+    \endcode
+
+    Then it could be used to create the following model:
+
     \qml
     XmlListModel {
-        id: feedModel
-        source: "http://rss.news.yahoo.com/rss/oceania"
+        source: "http://www.mysite.com/feed.xml"
         query: "/rss/channel/item"
         XmlRole { name: "title"; query: "title/string()" }
         XmlRole { name: "pubDate"; query: "pubDate/string()" }
-        XmlRole { name: "description"; query: "description/string()" }
     }
     \endqml
 
-    You can also define certain roles as "keys" so that the model only adds data
-    that contains new values for these keys when reload() is called.
+    The \l {XmlListModel::query}{query} value of "/rss/channel/item" specifies that the XmlListModel should generate
+    a model item for each \c <item> in the XML document. The XmlRole objects define the
+    model item attributes; here, each model item will have \c title and \c pubDate 
+    attributes that match the \c title and \c pubDate values of its corresponding \c <item>.
 
-    For example, if the roles above were defined like this:
+
+    \section2 Using key XML roles
+
+    You can define certain roles as "keys" so that when reload() is called,
+    the model will only add and refresh data that contains new values for
+    these keys.
+
+    For example, if above role for "pubDate" was defined like this instead:
 
     \qml
-        XmlRole { name: "title"; query: "title/string()"; isKey: true }
         XmlRole { name: "pubDate"; query: "pubDate/string()"; isKey: true }
     \endqml
 
-    Then when reload() is called, the model will only add new items with a
-    "title" and "pubDate" value combination that is not already present in
+    Then when reload() is called, the model will only add and reload
+    items with a "pubDate" value that is not already 
+    present in the model. 
+
+    This is useful when displaying the contents of XML documents that
+    are incrementally updated (such as RSS feeds) to avoid repainting the
+    entire contents of a model in a view.
+
+    If multiple key roles are specified, the model only adds and reload items
+    with a combined value of all key roles that is not already present in
     the model.
 
-    This is useful to provide incremental updates and avoid repainting an
-    entire model in a view.
-
-    \sa {QtDeclarative}
+    \sa {declarative/xmldata}{XML data example}
 */
 
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
@@ -626,8 +657,8 @@ void QDeclarativeXmlListModel::setXml(const QString &xml)
 
 /*!
     \qmlproperty string XmlListModel::query
-    An absolute XPath query representing the base query for the model items. The query should start with
-    '/' or '//'.
+    An absolute XPath query representing the base query for creating model items
+    from this model's XmlRole objects. The query should start with '/' or '//'.
 */
 QString QDeclarativeXmlListModel::query() const
 {
@@ -652,7 +683,20 @@ void QDeclarativeXmlListModel::setQuery(const QString &query)
 
 /*!
     \qmlproperty string XmlListModel::namespaceDeclarations
-    A set of declarations for the namespaces used in the query.
+    The namespace declarations to be used in the XPath queries.
+
+    The namespaces should be declared as in XQuery. For example, if a requested document
+    at http://mysite.com/feed.xml uses the namespace "http://www.w3.org/2005/Atom",
+    this can be declared as the default namespace:
+
+    \qml
+    XmlListModel {
+        source: "http://mysite.com/feed.xml"
+        query: "/feed/entry"
+        namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';"
+        XmlRole { name: "title"; query: "title/string()" }
+    }
+    \endqml
 */
 QString QDeclarativeXmlListModel::namespaceDeclarations() const
 {
@@ -675,10 +719,10 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     Specifies the model loading status, which can be one of the following:
 
     \list
-    \o Null - No XML data has been set for this model.
-    \o Ready - The XML data has been loaded into the model.
-    \o Loading - The model is in the process of reading and loading XML data.
-    \o Error - An error occurred while the model was loading.
+    \o XmlListModel.Null - No XML data has been set for this model.
+    \o XmlListModel.Ready - The XML data has been loaded into the model.
+    \o XmlListModel.Loading - The model is in the process of reading and loading XML data.
+    \o XmlListModel.Error - An error occurred while the model was loading.
     \endlist
 
     \sa progress
@@ -735,7 +779,7 @@ void QDeclarativeXmlListModel::componentComplete()
     Otherwise, items are only added if the model does not already
     contain items with matching key role values.
     
-    \sa XmlRole::isKey
+    \sa {Using key XML roles}, XmlRole::isKey
 */
 void QDeclarativeXmlListModel::reload()
 {
@@ -752,8 +796,11 @@ void QDeclarativeXmlListModel::reload()
 
     if (d->reply) {
         d->reply->abort();
-        d->reply->deleteLater();
-        d->reply = 0;
+        if (d->reply) {
+            // abort will generally have already done this (and more)
+            d->reply->deleteLater();
+            d->reply = 0;
+        }
     }
 
     if (!d->xml.isEmpty()) {
