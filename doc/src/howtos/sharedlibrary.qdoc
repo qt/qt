@@ -42,7 +42,7 @@
 /*!
     \page sharedlibrary.html
     \title Creating Shared Libraries
-
+    \brief How to create shared libraries.
     \ingroup best-practices
 
     The following sections list certain things that should be taken into

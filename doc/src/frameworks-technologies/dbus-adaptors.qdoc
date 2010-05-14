@@ -43,6 +43,7 @@
     \page usingadaptors.html
     \title Using QtDBus Adaptors
     \ingroup technology-apis
+    \brief How to create and use DBus adaptors in Qt.
 
     \ingroup best-practices
 
