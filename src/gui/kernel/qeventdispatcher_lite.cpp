@@ -89,6 +89,8 @@ bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
             && QWindowSystemInterfacePrivate::userEventsQueued() > 0) {
             // process a pending user input event
             event = QWindowSystemInterfacePrivate::getUserEvent();
+            if (!event)
+                break;
         } else {
             break;
         }

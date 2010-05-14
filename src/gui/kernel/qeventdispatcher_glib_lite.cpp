@@ -79,6 +79,8 @@ static gboolean userEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
     QWindowSystemInterface::UserEvent * event;
     while (QWindowSystemInterfacePrivate::userEventsQueued()) {
         event = QWindowSystemInterfacePrivate::getUserEvent();
+        if (!event)
+            break;
 
         // send through event filter
         if (source->q->filterEvent(event)) {

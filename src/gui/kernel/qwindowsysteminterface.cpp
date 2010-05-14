@@ -52,6 +52,7 @@ QTime QWindowSystemInterface::eventTime;
 //
 
 QList<QWindowSystemInterface::UserEvent *> QWindowSystemInterfacePrivate::userEventQueue;
+QMutex QWindowSystemInterfacePrivate::queueMutex;
 
 extern QPointer<QWidget> qt_last_mouse_receiver;
 /*!
@@ -109,4 +110,15 @@ void QWindowSystemInterface::handleWheelEvent(QWidget *tlw, ulong timestamp, con
     QWindowSystemInterfacePrivate::queueUserEvent(e);
 }
 
+QWindowSystemInterface::UserEvent * QWindowSystemInterfacePrivate::getUserEvent()
+{
+    queueMutex.lock();
+    QWindowSystemInterface::UserEvent *ret;
+    if (userEventQueue.isEmpty())
+        ret = 0;
+    else
+        ret = userEventQueue.takeFirst();
+    queueMutex.unlock();
+    return ret;
+}
 QT_END_NAMESPACE

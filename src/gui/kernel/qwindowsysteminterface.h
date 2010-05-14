@@ -46,6 +46,7 @@
 #include <QtCore/QEvent>
 #include <QtGui/QWidget>
 #include <QtCore/QWeakPointer>
+#include <QtCore/QMutex>
 
 QT_BEGIN_HEADER
 
@@ -128,10 +129,11 @@ private:
 class QWindowSystemInterfacePrivate {
 public:
     static QList<QWindowSystemInterface::UserEvent *> userEventQueue;
+    static QMutex queueMutex;
 
-    static int userEventsQueued() { return userEventQueue.count(); }
-    static QWindowSystemInterface::UserEvent * getUserEvent() { return userEventQueue.takeFirst(); }
-    static void queueUserEvent(QWindowSystemInterface::UserEvent *ev) { userEventQueue.append(ev); }
+    static int userEventsQueued() { queueMutex.lock(); int ret = userEventQueue.count(); queueMutex.unlock(); return ret; }
+    static QWindowSystemInterface::UserEvent * getUserEvent();
+    static void queueUserEvent(QWindowSystemInterface::UserEvent *ev) { queueMutex.lock(); userEventQueue.append(ev); queueMutex.unlock(); }
 };
 
 QT_END_NAMESPACE
