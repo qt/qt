@@ -110,6 +110,8 @@ private slots:
     void userAgentApplicationName();
     void userAgentLocaleChange();
 
+    void viewModes();
+
     void crashTests_LazyInitializationOfMainFrame();
 
     void screenshot_data();
@@ -355,6 +357,21 @@ void tst_QWebPage::userStyleSheet()
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
+}
+
+void tst_QWebPage::viewModes()
+{
+    m_view->setHtml("<body></body>");
+    m_page->setProperty("_q_viewMode", "minimized");
+
+    QVariant empty = m_page->mainFrame()->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webkit-view-mode)\")");
+    QVERIFY(empty.type() == QVariant::Bool && empty.toBool());
+
+    QVariant minimized = m_page->mainFrame()->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webkit-view-mode: minimized)\")");
+    QVERIFY(minimized.type() == QVariant::Bool && minimized.toBool());
+
+    QVariant maximized = m_page->mainFrame()->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webkit-view-mode: maximized)\")");
+    QVERIFY(maximized.type() == QVariant::Bool && !maximized.toBool());
 }
 
 void tst_QWebPage::modified()

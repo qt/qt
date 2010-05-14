@@ -8,11 +8,11 @@ SOURCES += tst_binding.cpp testtypes.cpp
 HEADERS += testtypes.h
 
 # Define SRCDIR equal to test's source directory
-DEFINES += SRCDIR=\\\"$$PWD\\\"
-
-symbian* {
-    data.sources = data/*
-    data.path = data
-    DEPLOYMENT = data
+symbian: {
+    DEFINES += SRCDIR=\".\"
+    importFiles.sources = data
+    importFiles.path = 
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
-

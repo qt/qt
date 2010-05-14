@@ -82,7 +82,7 @@ QString tst_qmlvisual::viewer()
 
 #if defined(Q_WS_MAC)
     qmlruntime = QDir(binaries).absoluteFilePath("qml.app/Contents/MacOS/qml");
-#elif defined(Q_WS_WIN)
+#elif defined(Q_WS_WIN) || defined(Q_WS_S60)
     qmlruntime = QDir(binaries).absoluteFilePath("qml.exe");
 #else
     qmlruntime = QDir(binaries).absoluteFilePath("qml");

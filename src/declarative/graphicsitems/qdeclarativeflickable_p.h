@@ -68,10 +68,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(BoundsBehavior boundsBehavior READ boundsBehavior WRITE setBoundsBehavior NOTIFY boundsBehaviorChanged)
     Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity NOTIFY maximumFlickVelocityChanged)
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
-    Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged) // deprecated
+    Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool movingHorizontally READ isMovingHorizontally NOTIFY movingHorizontallyChanged)
     Q_PROPERTY(bool movingVertically READ isMovingVertically NOTIFY movingVerticallyChanged)
-    Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged) // deprecated
+    Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
     Q_PROPERTY(bool flickingHorizontally READ isFlickingHorizontally NOTIFY flickingHorizontallyChanged)
     Q_PROPERTY(bool flickingVertically READ isFlickingVertically NOTIFY flickingVerticallyChanged)
     Q_PROPERTY(FlickableDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickableDirectionChanged) // deprecated
@@ -120,10 +120,10 @@ public:
     qreal contentY() const;
     void setContentY(qreal pos);
 
-    bool isMoving() const; // deprecated
+    bool isMoving() const;
     bool isMovingHorizontally() const;
     bool isMovingVertically() const;
-    bool isFlicking() const; // deprecated
+    bool isFlicking() const;
     bool isFlickingHorizontally() const;
     bool isFlickingVertically() const;
 
@@ -160,10 +160,10 @@ Q_SIGNALS:
     void contentHeightChanged();
     void contentXChanged();
     void contentYChanged();
-    void movingChanged(); // deprecated
+    void movingChanged();
     void movingHorizontallyChanged();
     void movingVerticallyChanged();
-    void flickingChanged(); // deprecated
+    void flickingChanged();
     void flickingHorizontallyChanged();
     void flickingVerticallyChanged();
     void horizontalVelocityChanged();
@@ -177,6 +177,10 @@ Q_SIGNALS:
     void maximumFlickVelocityChanged();
     void flickDecelerationChanged();
     void pressDelayChanged();
+    void movementStarted();
+    void movementEnded();
+    void flickStarted();
+    void flickEnded();
 
 protected:
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);

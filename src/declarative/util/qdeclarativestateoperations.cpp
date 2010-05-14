@@ -408,7 +408,7 @@ void QDeclarativeParentChange::saveOriginals()
     d->origStackBefore = d->rewindStackBefore;
 }
 
-void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
+/*void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
 {
     Q_D(QDeclarativeParentChange);
     QDeclarativeParentChange *pc = static_cast<QDeclarativeParentChange*>(other);
@@ -417,7 +417,7 @@ void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
     d->origStackBefore = pc->d_func()->rewindStackBefore;
 
     saveCurrentValues();
-}
+}*/
 
 void QDeclarativeParentChange::execute(Reason)
 {

@@ -24,6 +24,12 @@ maemo5 {
 } else {
     SOURCES += $$PWD/deviceorientation.cpp
 }
+
+symbian {
+    INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
+    LIBS += -lesock -lcommdb -lconnmon -linsock
+}
+
 FORMS = $$PWD/recopts.ui \
         $$PWD/proxysettings.ui
 
