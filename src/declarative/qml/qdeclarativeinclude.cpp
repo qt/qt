@@ -252,6 +252,65 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
     return result;
 }
 
+QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if (ctxt->argumentCount() == 0)
+        return engine->undefinedValue();
 
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+
+    QString urlString = ctxt->argument(0).toString();
+    QUrl url(ctxt->argument(0).toString());
+    if (url.isRelative()) {
+        QString contextUrl = QScriptDeclarativeClass::scopeChainValue(ctxt, -3).data().toString();
+        Q_ASSERT(!contextUrl.isEmpty());
+
+        url = QUrl(contextUrl).resolved(url);
+        urlString = url.toString();
+    }
+
+    QString localFile = toLocalFileOrQrc(url);
+
+    QScriptValue func = ctxt->argument(1);
+    if (!func.isFunction())
+        func = QScriptValue();
+
+    QScriptValue result;
+    if (!localFile.isEmpty()) {
+
+        QFile f(localFile);
+        if (f.open(QIODevice::ReadOnly)) {
+            QByteArray data = f.readAll();
+            QString code = QString::fromUtf8(data);
+
+            QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(engine);
+            QScriptValue urlContext = engine->newObject();
+            urlContext.setData(QScriptValue(engine, urlString));
+            scriptContext->pushScope(urlContext);
+
+            QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -4);
+            scriptContext->pushScope(scope);
+            scriptContext->setActivationObject(scope);
+
+            engine->evaluate(code, urlString, 1);
+
+            engine->popContext();
+
+            if (engine->hasUncaughtException()) {
+                result = resultValue(engine, Exception);
+                result.setProperty(QLatin1String("exception"), engine->uncaughtException());
+                engine->clearExceptions();
+            } else {
+                result = resultValue(engine, Ok);
+            }
+            callback(engine, func, result);
+        } else {
+            result = resultValue(engine, NetworkError);
+            callback(engine, func, result);
+        }
+    }
+
+    return result;
+}
 
 QT_END_NAMESPACE

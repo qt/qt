@@ -88,7 +88,9 @@ public:
 
     static QScriptValue resultValue(QScriptEngine *, Status status = Loading);
     static void callback(QScriptEngine *, QScriptValue &callback, QScriptValue &status);
+
     static QScriptValue include(QScriptContext *ctxt, QScriptEngine *engine);
+    static QScriptValue worker_include(QScriptContext *ctxt, QScriptEngine *engine);
 
 public slots:
     void finished();
