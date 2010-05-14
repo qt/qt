@@ -67,6 +67,9 @@ QtGui
       functions, and replaced them with setCopyCount(), copyCount() and
       supportsMultipleCopies().
 
+ - QPrintDialog/QPrinter
+    * Added support for printing the current page.
+
  - QCommonStyle
     * Fixed a bug that led to missing text pixels in QTabBar when using
       small font sizes. (QTBUG-7137)
