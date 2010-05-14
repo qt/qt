@@ -2535,14 +2535,15 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 myAction.event = vpc;
                 viaData->pc << vpc;
                 viaData->actions << myAction;
+                int index = i;
+                bool invertedIndex = (direction == QDeclarativeAbstractAnimation::Forward) && action.reverseEvent;
                 QDeclarativeAction dummyAction;
-                QDeclarativeAction &xAction = pc->xIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &yAction = pc->yIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &sAction = pc->scaleIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &rAction = pc->rotationIsSet() ? actions[++i] : dummyAction;
-                bool forward = (direction == QDeclarativeAbstractAnimation::Forward);
+                QDeclarativeAction &xAction = pc->xIsSet() ? actions[invertedIndex ? --index : ++i] : dummyAction;
+                QDeclarativeAction &yAction = pc->yIsSet() ? actions[invertedIndex ? --index : ++i] : dummyAction;
+                QDeclarativeAction &sAction = pc->scaleIsSet() ? actions[invertedIndex ? --index : ++i] : dummyAction;
+                QDeclarativeAction &rAction = pc->rotationIsSet() ? actions[invertedIndex ? --index : ++i] : dummyAction;
                 QDeclarativeItem *target = pc->object();
-                QDeclarativeItem *targetParent = forward ? pc->parent() : pc->originalParent();
+                QDeclarativeItem *targetParent = action.reverseEvent ? pc->originalParent() : pc->parent();
 
                 //### this mirrors the logic in QDeclarativeParentChange.
                 bool ok;
@@ -2584,9 +2585,9 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                     qreal w = target->width();
                     qreal h = target->height();
                     if (pc->widthIsSet())
-                        w = actions[++i].toValue.toReal();
+                        w = actions[invertedIndex ? --index : ++i].toValue.toReal();
                     if (pc->heightIsSet())
-                        h = actions[++i].toValue.toReal();
+                        h = actions[invertedIndex ? --index : ++i].toValue.toReal();
                     const QPointF &transformOrigin
                             = d->computeTransformOrigin(target->transformOrigin(), w,h);
                     qreal tempxt = transformOrigin.x();
