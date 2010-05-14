@@ -63,30 +63,18 @@ namespace QStyleHelper {
 QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
     const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-    int digits = sizeof(qint64)/sizeof(QChar);
-    quint64 state = option->state,
-            direction = option->direction,
-            subcontrols = (complexOption ? uint(complexOption->activeSubControls) : 0u),
-            palettekey = option->palette.cacheKey(),
-            width = size.width(),
-            height = size.height();
-
-    QString tmp = key % QString::fromRawData((QChar*)&state, digits)
-                      % QString::fromRawData((QChar*)&direction, digits)
-                      % QString::fromRawData((QChar*)&subcontrols, digits)
-                      % QString::fromRawData((QChar*)&palettekey, digits)
-                      % QString::fromRawData((QChar*)&width, digits)
-                      % QString::fromRawData((QChar*)&height, digits);
+    QString tmp = key % HexString<uint>(option->state)
+                      % HexString<uint>(option->direction)
+                      % HexString<uint>(complexOption ? uint(complexOption->activeSubControls) : 0u)
+                      % HexString<quint64>(option->palette.cacheKey())
+                      % HexString<uint>(size.width())
+                      % HexString<uint>(size.height());
 
 #ifndef QT_NO_SPINBOX
     if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-        quint64 buttonsymbols = spinBox->buttonSymbols,
-                stepEnabled = spinBox->stepEnabled,
-                frame = spinBox->frame;
-
-        tmp = tmp % QString::fromRawData((QChar*)&buttonsymbols, digits)
-                  % QString::fromRawData((QChar*)&stepEnabled, digits)
-                  % QString::fromRawData((QChar*)&frame, digits);
+        tmp = tmp % HexString<uint>(spinBox->buttonSymbols)
+                  % HexString<uint>(spinBox->stepEnabled)
+                  % QLatin1Char(spinBox->frame ? '1' : '0'); ;
     }
 #endif // QT_NO_SPINBOX
     return tmp;
