@@ -326,7 +326,7 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     }
 
     QPixmap pm;
-    if (d->m_cachedSystem == system && d->m_cachedMode == mode)
+    if (item && d->m_cachedSystem == system && d->m_cachedMode == mode)
         QPixmapCache::find(d->m_cacheKey, &pm);
 
     if (pm.isNull()) {

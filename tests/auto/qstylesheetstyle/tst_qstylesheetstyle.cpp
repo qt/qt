@@ -98,6 +98,7 @@ private slots:
     void complexWidgetFocus();
     void task188195_baseBackground();
     void task232085_spinBoxLineEditBg();
+    void changeStyleInChangeEvent();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -1256,7 +1257,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     QStyleOptionViewItemV4 opt;
     opt.initFrom(w);
     opt.features |= QStyleOptionViewItemV2::HasCheckIndicator;
-    QVERIFY(pb5->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, 
+    QVERIFY(pb5->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator,
             &opt, pb5).width() == 3);
     delete w;
     delete proxy;
@@ -1577,6 +1578,34 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
             + " did not contain text color #ff0084, using style "
             + QString::fromLatin1(qApp->style()->metaObject()->className()))
             .toLocal8Bit().constData());
+}
+
+class ChangeEventWidget : public QWidget
+{ public:
+    void changeEvent(QEvent * event)
+    {
+        if(event->type() == QEvent::StyleChange) {
+            static bool recurse = false;
+            if (!recurse) {
+                recurse = true;
+                QStyle *style = new QMotifStyle;
+                style->setParent(this);
+                setStyle(style);
+                recurse = false;
+            }
+        }
+        QWidget::changeEvent(event);
+    }
+};
+
+void tst_QStyleSheetStyle::changeStyleInChangeEvent()
+{   //must not crash;
+    ChangeEventWidget wid;
+    wid.ensurePolished();
+    wid.setStyleSheet(" /* */ ");
+    wid.ensurePolished();
+    wid.setStyleSheet(" /* ** */ ");
+    wid.ensurePolished();
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)
