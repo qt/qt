@@ -197,108 +197,108 @@ static const quint16 locale_index[] = {
    189, // Somali
    193, // Spanish
      0, // Sundanese
-   214, // Swahili
-   216, // Swedish
+   215, // Swahili
+   217, // Swedish
      0, // Tagalog
-   218, // Tajik
-   219, // Tamil
-   221, // Tatar
-   222, // Telugu
-   223, // Thai
-   224, // Tibetan
-   226, // Tigrinya
-   228, // Tonga
-   229, // Tsonga
-   230, // Turkish
+   219, // Tajik
+   220, // Tamil
+   222, // Tatar
+   223, // Telugu
+   224, // Thai
+   225, // Tibetan
+   227, // Tigrinya
+   229, // Tonga
+   230, // Tsonga
+   231, // Turkish
      0, // Turkmen
      0, // Twi
-   231, // Uigur
-   232, // Ukrainian
-   233, // Urdu
-   235, // Uzbek
-   237, // Vietnamese
+   232, // Uigur
+   233, // Ukrainian
+   234, // Urdu
+   236, // Uzbek
+   238, // Vietnamese
      0, // Volapuk
-   238, // Welsh
-   239, // Wolof
-   240, // Xhosa
+   239, // Welsh
+   240, // Wolof
+   241, // Xhosa
      0, // Yiddish
-   241, // Yoruba
+   242, // Yoruba
      0, // Zhuang
-   242, // Zulu
-   243, // Nynorsk
-   244, // Bosnian
-   245, // Divehi
-   246, // Manx
-   247, // Cornish
-   248, // Akan
-   249, // Konkani
-   250, // Ga
-   251, // Igbo
-   252, // Kamba
-   253, // Syriac
-   254, // Blin
-   255, // Geez
-   257, // Koro
-   258, // Sidamo
-   259, // Atsam
-   260, // Tigre
-   261, // Jju
-   262, // Friulian
-   263, // Venda
-   264, // Ewe
-   266, // Walamo
-   267, // Hawaiian
-   268, // Tyap
-   269, // Chewa
-   270, // Filipino
-   271, // Swiss German
-   272, // Sichuan Yi
-   273, // Kpelle
-   275, // Low German
-   276, // South Ndebele
-   277, // Northern Sotho
-   278, // Northern Sami
-   280, // Taroko
-   281, // Gusii
-   282, // Taita
-   283, // Fulah
-   284, // Kikuyu
-   285, // Samburu
-   286, // Sena
-   287, // North Ndebele
-   288, // Rombo
-   289, // Tachelhit
-   290, // Kabyle
-   291, // Nyankole
-   292, // Bena
-   293, // Vunjo
-   294, // Bambara
-   295, // Embu
-   296, // Cherokee
-   297, // Morisyen
-   298, // Makonde
-   299, // Langi
-   300, // Ganda
-   301, // Bemba
-   302, // Kabuverdianu
-   303, // Meru
-   304, // Kalenjin
-   305, // Nama
-   306, // Machame
-   307, // Colognian
-   308, // Masai
-   310, // Soga
-   311, // Luyia
-   312, // Asu
-   313, // Teso
-   315, // Saho
-   316, // Koyra Chiini
-   317, // Rwa
-   318, // Luo
-   319, // Chiga
-   320, // Central Morocco Tamazight
-   321, // Koyraboro Senni
-   322, // Shambala
+   243, // Zulu
+   244, // Nynorsk
+   245, // Bosnian
+   246, // Divehi
+   247, // Manx
+   248, // Cornish
+   249, // Akan
+   250, // Konkani
+   251, // Ga
+   252, // Igbo
+   253, // Kamba
+   254, // Syriac
+   255, // Blin
+   256, // Geez
+   258, // Koro
+   259, // Sidamo
+   260, // Atsam
+   261, // Tigre
+   262, // Jju
+   263, // Friulian
+   264, // Venda
+   265, // Ewe
+   267, // Walamo
+   268, // Hawaiian
+   269, // Tyap
+   270, // Chewa
+   271, // Filipino
+   272, // Swiss German
+   273, // Sichuan Yi
+   274, // Kpelle
+   276, // Low German
+   277, // South Ndebele
+   278, // Northern Sotho
+   279, // Northern Sami
+   281, // Taroko
+   282, // Gusii
+   283, // Taita
+   284, // Fulah
+   285, // Kikuyu
+   286, // Samburu
+   287, // Sena
+   288, // North Ndebele
+   289, // Rombo
+   290, // Tachelhit
+   291, // Kabyle
+   292, // Nyankole
+   293, // Bena
+   294, // Vunjo
+   295, // Bambara
+   296, // Embu
+   297, // Cherokee
+   298, // Morisyen
+   299, // Makonde
+   300, // Langi
+   301, // Ganda
+   302, // Bemba
+   303, // Kabuverdianu
+   304, // Meru
+   305, // Kalenjin
+   306, // Nama
+   307, // Machame
+   308, // Colognian
+   309, // Masai
+   311, // Soga
+   312, // Luyia
+   313, // Asu
+   314, // Teso
+   316, // Saho
+   317, // Koyra Chiini
+   318, // Rwa
+   319, // Luo
+   320, // Chiga
+   321, // Central Morocco Tamazight
+   322, // Koyraboro Senni
+   323, // Shambala
      0 // trailing 0
 };
 
@@ -518,6 +518,7 @@ static const QLocalePrivate locale_data[] = {
     {    111,   225,    46,    44,    59,    37,    48,    45,    43,   101, 558,6 , 1014,26 , 18,7 , 25,12 , 13105,48 , 13153,89 , 13242,24 , 13256,48 , 13304,89 , 13393,24 , 8524,28 , 8552,53 , 2799,14 , 8524,28 , 8552,53 , 2799,14 , 56,4 , 56,4  }, // Spanish/UnitedStates
     {    111,   227,    44,    46,    59,    37,    48,    45,    43,   101, 27,8 , 1014,26 , 37,5 , 8,10 , 13105,48 , 13153,89 , 13242,24 , 13256,48 , 13304,89 , 13393,24 , 8524,28 , 8552,53 , 2799,14 , 8524,28 , 8552,53 , 2799,14 , 56,4 , 56,4  }, // Spanish/Uruguay
     {    111,   231,    44,    46,    59,    37,    48,    45,    43,   101, 27,8 , 1014,26 , 37,5 , 8,10 , 13105,48 , 13153,89 , 13242,24 , 13256,48 , 13304,89 , 13393,24 , 8524,28 , 8552,53 , 2799,14 , 8524,28 , 8552,53 , 2799,14 , 56,4 , 56,4  }, // Spanish/Venezuela
+    {    111,   246,    46,    44,    59,    37,    48,    45,    43,   101, 27,8 , 1014,26 , 37,5 , 8,10 , 13105,48 , 13153,89 , 13242,24 , 13256,48 , 13304,89 , 13393,24 , 8524,28 , 8552,53 , 2799,14 , 8524,28 , 8552,53 , 2799,14 , 56,4 , 56,4  }, // Spanish/LatinAmericaAndTheCaribbean
     {    113,   111,    46,    44,    59,    37,    48,    45,    43,   101, 141,10 , 10,17 , 18,7 , 25,12 , 13266,48 , 13314,84 , 134,24 , 13417,48 , 13465,84 , 320,24 , 8605,22 , 8627,60 , 8687,14 , 8605,22 , 8627,60 , 8687,14 , 269,7 , 265,7  }, // Swahili/Kenya
     {    113,   210,    46,    44,    59,    37,    48,    45,    43,   101, 141,10 , 10,17 , 18,7 , 25,12 , 13266,48 , 13314,84 , 134,24 , 13417,48 , 13465,84 , 320,24 , 8605,22 , 8627,60 , 8687,14 , 8605,22 , 8627,60 , 8687,14 , 269,7 , 265,7  }, // Swahili/Tanzania
     {    114,   205,    44,   160,    59,    37,    48,  8722,    43,   101, 72,10 , 1067,30 , 37,5 , 431,16 , 3473,48 , 13398,86 , 134,24 , 5180,48 , 13549,86 , 320,24 , 8701,29 , 8730,50 , 2228,14 , 8701,29 , 8730,50 , 2228,14 , 276,2 , 272,2  }, // Swedish/Sweden
@@ -4997,6 +4998,7 @@ static const char country_name_list[] =
 "Serbia\0"
 "Saint Barthelemy\0"
 "Saint Martin\0"
+"LatinAmericaAndTheCaribbean\0"
 ;
 
 static const quint16 country_name_index[] = {
@@ -5246,6 +5248,7 @@ static const quint16 country_name_index[] = {
   2606, // Serbia
   2613, // Saint Barthelemy
   2630, // Saint Martin
+  2643, // LatinAmericaAndTheCaribbean
 };
 
 static const unsigned char language_code_list[] =
@@ -5467,252 +5470,253 @@ static const unsigned char language_code_list[] =
 ;
 
 static const unsigned char country_code_list[] =
-"  " // AnyCountry
-"AF" // Afghanistan
-"AL" // Albania
-"DZ" // Algeria
-"AS" // AmericanSamoa
-"AD" // Andorra
-"AO" // Angola
-"AI" // Anguilla
-"AQ" // Antarctica
-"AG" // AntiguaAndBarbuda
-"AR" // Argentina
-"AM" // Armenia
-"AW" // Aruba
-"AU" // Australia
-"AT" // Austria
-"AZ" // Azerbaijan
-"BS" // Bahamas
-"BH" // Bahrain
-"BD" // Bangladesh
-"BB" // Barbados
-"BY" // Belarus
-"BE" // Belgium
-"BZ" // Belize
-"BJ" // Benin
-"BM" // Bermuda
-"BT" // Bhutan
-"BO" // Bolivia
-"BA" // BosniaAndHerzegowina
-"BW" // Botswana
-"BV" // BouvetIsland
-"BR" // Brazil
-"IO" // BritishIndianOceanTerritory
-"BN" // BruneiDarussalam
-"BG" // Bulgaria
-"BF" // BurkinaFaso
-"BI" // Burundi
-"KH" // Cambodia
-"CM" // Cameroon
-"CA" // Canada
-"CV" // CapeVerde
-"KY" // CaymanIslands
-"CF" // CentralAfricanRepublic
-"TD" // Chad
-"CL" // Chile
-"CN" // China
-"CX" // ChristmasIsland
-"CC" // CocosIslands
-"CO" // Colombia
-"KM" // Comoros
-"CD" // DemocraticRepublicOfCongo
-"CG" // PeoplesRepublicOfCongo
-"CK" // CookIslands
-"CR" // CostaRica
-"CI" // IvoryCoast
-"HR" // Croatia
-"CU" // Cuba
-"CY" // Cyprus
-"CZ" // CzechRepublic
-"DK" // Denmark
-"DJ" // Djibouti
-"DM" // Dominica
-"DO" // DominicanRepublic
-"TL" // EastTimor
-"EC" // Ecuador
-"EG" // Egypt
-"SV" // ElSalvador
-"GQ" // EquatorialGuinea
-"ER" // Eritrea
-"EE" // Estonia
-"ET" // Ethiopia
-"FK" // FalklandIslands
-"FO" // FaroeIslands
-"FJ" // Fiji
-"FI" // Finland
-"FR" // France
-"FX" // MetropolitanFrance
-"GF" // FrenchGuiana
-"PF" // FrenchPolynesia
-"TF" // FrenchSouthernTerritories
-"GA" // Gabon
-"GM" // Gambia
-"GE" // Georgia
-"DE" // Germany
-"GH" // Ghana
-"GI" // Gibraltar
-"GR" // Greece
-"GL" // Greenland
-"GD" // Grenada
-"GP" // Guadeloupe
-"GU" // Guam
-"GT" // Guatemala
-"GN" // Guinea
-"GW" // GuineaBissau
-"GY" // Guyana
-"HT" // Haiti
-"HM" // HeardAndMcDonaldIslands
-"HN" // Honduras
-"HK" // HongKong
-"HU" // Hungary
-"IS" // Iceland
-"IN" // India
-"ID" // Indonesia
-"IR" // Iran
-"IQ" // Iraq
-"IE" // Ireland
-"IL" // Israel
-"IT" // Italy
-"JM" // Jamaica
-"JP" // Japan
-"JO" // Jordan
-"KZ" // Kazakhstan
-"KE" // Kenya
-"KI" // Kiribati
-"KP" // DemocraticRepublicOfKorea
-"KR" // RepublicOfKorea
-"KW" // Kuwait
-"KG" // Kyrgyzstan
-"LA" // Lao
-"LV" // Latvia
-"LB" // Lebanon
-"LS" // Lesotho
-"LR" // Liberia
-"LY" // LibyanArabJamahiriya
-"LI" // Liechtenstein
-"LT" // Lithuania
-"LU" // Luxembourg
-"MO" // Macau
-"MK" // Macedonia
-"MG" // Madagascar
-"MW" // Malawi
-"MY" // Malaysia
-"MV" // Maldives
-"ML" // Mali
-"MT" // Malta
-"MH" // MarshallIslands
-"MQ" // Martinique
-"MR" // Mauritania
-"MU" // Mauritius
-"YT" // Mayotte
-"MX" // Mexico
-"FM" // Micronesia
-"MD" // Moldova
-"MC" // Monaco
-"MN" // Mongolia
-"MS" // Montserrat
-"MA" // Morocco
-"MZ" // Mozambique
-"MM" // Myanmar
-"NA" // Namibia
-"NR" // Nauru
-"NP" // Nepal
-"NL" // Netherlands
-"AN" // NetherlandsAntilles
-"NC" // NewCaledonia
-"NZ" // NewZealand
-"NI" // Nicaragua
-"NE" // Niger
-"NG" // Nigeria
-"NU" // Niue
-"NF" // NorfolkIsland
-"MP" // NorthernMarianaIslands
-"NO" // Norway
-"OM" // Oman
-"PK" // Pakistan
-"PW" // Palau
-"PS" // PalestinianTerritory
-"PA" // Panama
-"PG" // PapuaNewGuinea
-"PY" // Paraguay
-"PE" // Peru
-"PH" // Philippines
-"PN" // Pitcairn
-"PL" // Poland
-"PT" // Portugal
-"PR" // PuertoRico
-"QA" // Qatar
-"RE" // Reunion
-"RO" // Romania
-"RU" // RussianFederation
-"RW" // Rwanda
-"KN" // SaintKittsAndNevis
-"LC" // StLucia
-"VC" // StVincentAndTheGrenadines
-"WS" // Samoa
-"SM" // SanMarino
-"ST" // SaoTomeAndPrincipe
-"SA" // SaudiArabia
-"SN" // Senegal
-"SC" // Seychelles
-"SL" // SierraLeone
-"SG" // Singapore
-"SK" // Slovakia
-"SI" // Slovenia
-"SB" // SolomonIslands
-"SO" // Somalia
-"ZA" // SouthAfrica
-"GS" // SouthGeorgiaAndTheSouthSandwichIslands
-"ES" // Spain
-"LK" // SriLanka
-"SH" // StHelena
-"PM" // StPierreAndMiquelon
-"SD" // Sudan
-"SR" // Suriname
-"SJ" // SvalbardAndJanMayenIslands
-"SZ" // Swaziland
-"SE" // Sweden
-"CH" // Switzerland
-"SY" // SyrianArabRepublic
-"TW" // Taiwan
-"TJ" // Tajikistan
-"TZ" // Tanzania
-"TH" // Thailand
-"TG" // Togo
-"TK" // Tokelau
-"TO" // Tonga
-"TT" // TrinidadAndTobago
-"TN" // Tunisia
-"TR" // Turkey
-"TM" // Turkmenistan
-"TC" // TurksAndCaicosIslands
-"TV" // Tuvalu
-"UG" // Uganda
-"UA" // Ukraine
-"AE" // UnitedArabEmirates
-"GB" // UnitedKingdom
-"US" // UnitedStates
-"UM" // UnitedStatesMinorOutlyingIslands
-"UY" // Uruguay
-"UZ" // Uzbekistan
-"VU" // Vanuatu
-"VA" // VaticanCityState
-"VE" // Venezuela
-"VN" // VietNam
-"VG" // BritishVirginIslands
-"VI" // USVirginIslands
-"WF" // WallisAndFutunaIslands
-"EH" // WesternSahara
-"YE" // Yemen
-"YU" // Yugoslavia
-"ZM" // Zambia
-"ZW" // Zimbabwe
-"CS" // SerbiaAndMontenegro
-"ME" // Montenegro
-"RS" // Serbia
-"BL" // Saint Barthelemy
-"MF" // Saint Martin
+"  \0" // AnyCountry
+"AF\0" // Afghanistan
+"AL\0" // Albania
+"DZ\0" // Algeria
+"AS\0" // AmericanSamoa
+"AD\0" // Andorra
+"AO\0" // Angola
+"AI\0" // Anguilla
+"AQ\0" // Antarctica
+"AG\0" // AntiguaAndBarbuda
+"AR\0" // Argentina
+"AM\0" // Armenia
+"AW\0" // Aruba
+"AU\0" // Australia
+"AT\0" // Austria
+"AZ\0" // Azerbaijan
+"BS\0" // Bahamas
+"BH\0" // Bahrain
+"BD\0" // Bangladesh
+"BB\0" // Barbados
+"BY\0" // Belarus
+"BE\0" // Belgium
+"BZ\0" // Belize
+"BJ\0" // Benin
+"BM\0" // Bermuda
+"BT\0" // Bhutan
+"BO\0" // Bolivia
+"BA\0" // BosniaAndHerzegowina
+"BW\0" // Botswana
+"BV\0" // BouvetIsland
+"BR\0" // Brazil
+"IO\0" // BritishIndianOceanTerritory
+"BN\0" // BruneiDarussalam
+"BG\0" // Bulgaria
+"BF\0" // BurkinaFaso
+"BI\0" // Burundi
+"KH\0" // Cambodia
+"CM\0" // Cameroon
+"CA\0" // Canada
+"CV\0" // CapeVerde
+"KY\0" // CaymanIslands
+"CF\0" // CentralAfricanRepublic
+"TD\0" // Chad
+"CL\0" // Chile
+"CN\0" // China
+"CX\0" // ChristmasIsland
+"CC\0" // CocosIslands
+"CO\0" // Colombia
+"KM\0" // Comoros
+"CD\0" // DemocraticRepublicOfCongo
+"CG\0" // PeoplesRepublicOfCongo
+"CK\0" // CookIslands
+"CR\0" // CostaRica
+"CI\0" // IvoryCoast
+"HR\0" // Croatia
+"CU\0" // Cuba
+"CY\0" // Cyprus
+"CZ\0" // CzechRepublic
+"DK\0" // Denmark
+"DJ\0" // Djibouti
+"DM\0" // Dominica
+"DO\0" // DominicanRepublic
+"TL\0" // EastTimor
+"EC\0" // Ecuador
+"EG\0" // Egypt
+"SV\0" // ElSalvador
+"GQ\0" // EquatorialGuinea
+"ER\0" // Eritrea
+"EE\0" // Estonia
+"ET\0" // Ethiopia
+"FK\0" // FalklandIslands
+"FO\0" // FaroeIslands
+"FJ\0" // Fiji
+"FI\0" // Finland
+"FR\0" // France
+"FX\0" // MetropolitanFrance
+"GF\0" // FrenchGuiana
+"PF\0" // FrenchPolynesia
+"TF\0" // FrenchSouthernTerritories
+"GA\0" // Gabon
+"GM\0" // Gambia
+"GE\0" // Georgia
+"DE\0" // Germany
+"GH\0" // Ghana
+"GI\0" // Gibraltar
+"GR\0" // Greece
+"GL\0" // Greenland
+"GD\0" // Grenada
+"GP\0" // Guadeloupe
+"GU\0" // Guam
+"GT\0" // Guatemala
+"GN\0" // Guinea
+"GW\0" // GuineaBissau
+"GY\0" // Guyana
+"HT\0" // Haiti
+"HM\0" // HeardAndMcDonaldIslands
+"HN\0" // Honduras
+"HK\0" // HongKong
+"HU\0" // Hungary
+"IS\0" // Iceland
+"IN\0" // India
+"ID\0" // Indonesia
+"IR\0" // Iran
+"IQ\0" // Iraq
+"IE\0" // Ireland
+"IL\0" // Israel
+"IT\0" // Italy
+"JM\0" // Jamaica
+"JP\0" // Japan
+"JO\0" // Jordan
+"KZ\0" // Kazakhstan
+"KE\0" // Kenya
+"KI\0" // Kiribati
+"KP\0" // DemocraticRepublicOfKorea
+"KR\0" // RepublicOfKorea
+"KW\0" // Kuwait
+"KG\0" // Kyrgyzstan
+"LA\0" // Lao
+"LV\0" // Latvia
+"LB\0" // Lebanon
+"LS\0" // Lesotho
+"LR\0" // Liberia
+"LY\0" // LibyanArabJamahiriya
+"LI\0" // Liechtenstein
+"LT\0" // Lithuania
+"LU\0" // Luxembourg
+"MO\0" // Macau
+"MK\0" // Macedonia
+"MG\0" // Madagascar
+"MW\0" // Malawi
+"MY\0" // Malaysia
+"MV\0" // Maldives
+"ML\0" // Mali
+"MT\0" // Malta
+"MH\0" // MarshallIslands
+"MQ\0" // Martinique
+"MR\0" // Mauritania
+"MU\0" // Mauritius
+"YT\0" // Mayotte
+"MX\0" // Mexico
+"FM\0" // Micronesia
+"MD\0" // Moldova
+"MC\0" // Monaco
+"MN\0" // Mongolia
+"MS\0" // Montserrat
+"MA\0" // Morocco
+"MZ\0" // Mozambique
+"MM\0" // Myanmar
+"NA\0" // Namibia
+"NR\0" // Nauru
+"NP\0" // Nepal
+"NL\0" // Netherlands
+"AN\0" // NetherlandsAntilles
+"NC\0" // NewCaledonia
+"NZ\0" // NewZealand
+"NI\0" // Nicaragua
+"NE\0" // Niger
+"NG\0" // Nigeria
+"NU\0" // Niue
+"NF\0" // NorfolkIsland
+"MP\0" // NorthernMarianaIslands
+"NO\0" // Norway
+"OM\0" // Oman
+"PK\0" // Pakistan
+"PW\0" // Palau
+"PS\0" // PalestinianTerritory
+"PA\0" // Panama
+"PG\0" // PapuaNewGuinea
+"PY\0" // Paraguay
+"PE\0" // Peru
+"PH\0" // Philippines
+"PN\0" // Pitcairn
+"PL\0" // Poland
+"PT\0" // Portugal
+"PR\0" // PuertoRico
+"QA\0" // Qatar
+"RE\0" // Reunion
+"RO\0" // Romania
+"RU\0" // RussianFederation
+"RW\0" // Rwanda
+"KN\0" // SaintKittsAndNevis
+"LC\0" // StLucia
+"VC\0" // StVincentAndTheGrenadines
+"WS\0" // Samoa
+"SM\0" // SanMarino
+"ST\0" // SaoTomeAndPrincipe
+"SA\0" // SaudiArabia
+"SN\0" // Senegal
+"SC\0" // Seychelles
+"SL\0" // SierraLeone
+"SG\0" // Singapore
+"SK\0" // Slovakia
+"SI\0" // Slovenia
+"SB\0" // SolomonIslands
+"SO\0" // Somalia
+"ZA\0" // SouthAfrica
+"GS\0" // SouthGeorgiaAndTheSouthSandwichIslands
+"ES\0" // Spain
+"LK\0" // SriLanka
+"SH\0" // StHelena
+"PM\0" // StPierreAndMiquelon
+"SD\0" // Sudan
+"SR\0" // Suriname
+"SJ\0" // SvalbardAndJanMayenIslands
+"SZ\0" // Swaziland
+"SE\0" // Sweden
+"CH\0" // Switzerland
+"SY\0" // SyrianArabRepublic
+"TW\0" // Taiwan
+"TJ\0" // Tajikistan
+"TZ\0" // Tanzania
+"TH\0" // Thailand
+"TG\0" // Togo
+"TK\0" // Tokelau
+"TO\0" // Tonga
+"TT\0" // TrinidadAndTobago
+"TN\0" // Tunisia
+"TR\0" // Turkey
+"TM\0" // Turkmenistan
+"TC\0" // TurksAndCaicosIslands
+"TV\0" // Tuvalu
+"UG\0" // Uganda
+"UA\0" // Ukraine
+"AE\0" // UnitedArabEmirates
+"GB\0" // UnitedKingdom
+"US\0" // UnitedStates
+"UM\0" // UnitedStatesMinorOutlyingIslands
+"UY\0" // Uruguay
+"UZ\0" // Uzbekistan
+"VU\0" // Vanuatu
+"VA\0" // VaticanCityState
+"VE\0" // Venezuela
+"VN\0" // VietNam
+"VG\0" // BritishVirginIslands
+"VI\0" // USVirginIslands
+"WF\0" // WallisAndFutunaIslands
+"EH\0" // WesternSahara
+"YE\0" // Yemen
+"YU\0" // Yugoslavia
+"ZM\0" // Zambia
+"ZW\0" // Zimbabwe
+"CS\0" // SerbiaAndMontenegro
+"ME\0" // Montenegro
+"RS\0" // Serbia
+"BL\0" // Saint Barthelemy
+"MF\0" // Saint Martin
+"419" // LatinAmericaAndTheCaribbean
 ;
 
 QT_END_NAMESPACE

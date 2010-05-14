@@ -175,16 +175,17 @@ static QLocale::Language codeToLanguage(const QChar *code)
 }
 
 // Assumes that code is a
-// QChar code[2];
+// QChar code[3];
 static QLocale::Country codeToCountry(const QChar *code)
 {
     ushort uc1 = code[0].unicode();
     ushort uc2 = code[1].unicode();
+    ushort uc3 = code[2].unicode();
 
     const unsigned char *c = country_code_list;
-    for (; *c != 0; c += 2) {
-        if (uc1 == c[0] && uc2 == c[1])
-            return QLocale::Country((c - country_code_list)/2);
+    for (; *c != 0; c += 3) {
+        if (uc1 == c[0] && uc2 == c[1] && uc3 == c[2])
+            return QLocale::Country((c - country_code_list)/3);
     }
 
     return QLocale::AnyCountry;
@@ -212,10 +213,15 @@ static QString countryToCode(QLocale::Country country)
     if (country == QLocale::AnyCountry)
         return QString();
 
-    QString code(2, Qt::Uninitialized);
-    const unsigned char *c = country_code_list + 2*(uint(country));
+    const unsigned char *c = country_code_list + 3*(uint(country));
+
+    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
+
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
+    if (c[2] != 0)
+        code[2] = ushort(c[2]);
+
     return code;
 }
 
@@ -251,7 +257,7 @@ static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry
 {
     for (int i = 0; i < 3; ++i)
         lang_begin[i] = 0;
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
         cntry_begin[i] = 0;
 
     int l = name.length();
@@ -282,7 +288,7 @@ static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry
                 break;
             case 1:
                 // parsing country
-                if (cntry - cntry_begin == 2) {
+                if (cntry - cntry_begin == 3) {
                     cntry_begin[0] = 0;
                     break;
                 }
@@ -306,7 +312,7 @@ void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Co
     cntry = QLocale::AnyCountry;
 
     QChar lang_code[3];
-    QChar cntry_code[2];
+    QChar cntry_code[3];
     if (!splitLocaleName(name, lang_code, cntry_code))
         return;
 
@@ -424,7 +430,7 @@ QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT)
     if (id == LOCALE_USER_DEFAULT) {
         result = envVarLocale();
         QChar lang[3];
-        QChar cntry[2];
+        QChar cntry[3];
         if ( result == "C" || (!result.isEmpty()
                 && splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) ) {
             long id = 0;
@@ -950,7 +956,7 @@ static QByteArray getMacLocaleName()
     QByteArray result = envVarLocale();
 
     QChar lang[3];
-    QChar cntry[2];
+    QChar cntry[3];
     if (result.isEmpty() || result != "C"
             && !splitLocaleName(QString::fromLocal8Bit(result), lang, cntry)) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
@@ -1220,7 +1226,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case LanguageId:
     case CountryId: {
         QString preferredLanguage;
-        QString preferredCountry;
+        QString preferredCountry(3, QChar()); // codeToCountry assumes QChar[3]
         getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
         QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : codeToLanguage(preferredLanguage.data()));
         QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : codeToCountry(preferredCountry.data()));
