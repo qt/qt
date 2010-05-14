@@ -115,8 +115,6 @@ private:
     int m_height;
 
     QGLShaderProgram *m_program;
-
-    bool m_broken_fbo_readback;
 };
 
 QT_END_NAMESPACE
