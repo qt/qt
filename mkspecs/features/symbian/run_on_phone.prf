@@ -1,0 +1,9 @@
+# make sure we have a sis file and then call 'runonphone' to execute it on the phone
+
+contains(TEMPLATE, app) {
+    run_target.target = runonphone
+    run_target.depends = sis
+    run_target.commands = runonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis "$${sis_destdir}$${TARGET}.sis" "$${TARGET}.exe" $(QT_RUN_OPTIONS)
+
+    QMAKE_EXTRA_TARGETS += run_target
+}
