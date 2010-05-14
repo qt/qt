@@ -7,9 +7,9 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_creation.cpp
 
 symbian* {
-    data.sources = data/*
-    data.path = data
-    DEPLOYMENT += addFiles
+    data.sources = data
+    data.path = .
+    DEPLOYMENT += data
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
