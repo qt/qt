@@ -119,9 +119,6 @@ void usage()
     qWarning("  -maximized................................ run maximized");
     qWarning("  -fullscreen............................... run fullscreen");
     qWarning("  -stayontop................................ keep viewer window on top");
-    qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
-    qWarning("                                             \"list\" for a list of built-ins");
-    qWarning("  -resizeview .............................. resize the view, not the skin");
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
@@ -209,7 +206,6 @@ int main(int argc, char ** argv)
     QDeclarativeFolderListModel::registerTypes();
 
     bool frameless = false;
-    bool resizeview = false;
     QString fileName;
     double fps = 0;
     int autorecord_from = 0;
@@ -219,7 +215,6 @@ int main(int argc, char ** argv)
     QStringList recordargs;
     QStringList imports;
     QStringList plugins;
-    QString skin;
     QString script;
     QString scriptopts;
     bool runScript = false;
@@ -252,11 +247,6 @@ int main(int argc, char ** argv)
             fullScreen = true;
         } else if (arg == "-stayontop") {
             stayOnTop = true;
-        } else if (arg == "-skin") {
-            if (lastArg) usage();
-            skin = QString(argv[++i]);
-        } else if (arg == "-resizeview") {
-            resizeview = true;
         } else if (arg == "-netcache") {
             if (lastArg) usage();
             cache = QString(argv[++i]).toInt();
@@ -418,21 +408,10 @@ int main(int argc, char ** argv)
     viewer->setNetworkCacheSize(cache);
     viewer->setRecordFile(recordfile);
     viewer->setSizeToView(sizeToView);
-    if (resizeview)
-        viewer->setScaleView();
     if (fps>0)
         viewer->setRecordRate(fps);
     if (autorecord_to)
         viewer->setAutoRecord(autorecord_from,autorecord_to);
-    if (!skin.isEmpty()) {
-        if (skin == "list") {
-            foreach (QString s, viewer->builtinSkins())
-                qWarning() << qPrintable(s);
-            exit(0);
-        } else {
-            viewer->setSkin(skin);
-        }
-    }
     if (devkeys)
         viewer->setDeviceKeys(true);
     viewer->setRecordDither(dither);
