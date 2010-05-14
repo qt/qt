@@ -44,7 +44,7 @@
   \title Data Types for Qt-supported Database Systems
   \brief Recommended data types for database systems
   
-  \ingroup best-practices
+  \ingroup qt-sql
 
   \section1 Data Types for Qt Supported Database Systems
 

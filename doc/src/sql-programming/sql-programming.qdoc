@@ -49,6 +49,7 @@
 /*!
     \page sql-programming.html
     \title SQL Programming
+    \ingroup qt-sql
     \nextpage Connecting to Databases
 
     \brief Database integration for Qt applications.
@@ -118,6 +119,7 @@
 /*!
     \page sql-connecting.html
     \title Connecting to Databases
+    \ingroup qt-sql
 
     \contentspage SQL Programming
     \previouspage SQL Programming
@@ -187,6 +189,7 @@
 /*!
     \page sql-sqlstatements.html
     \title Executing SQL Statements
+    \ingroup qt-sql
     
     \previouspage Connecting to Databases
     \contentspage SQL Programming
@@ -337,6 +340,7 @@
 /*!
     \page sql-model.html
     \title Using the SQL Model Classes
+    \ingroup qt-sql
     
     \previouspage Executing SQL Statements
     \contentspage SQL Programming
@@ -483,6 +487,7 @@
 /*!
     \page sql-presenting.html
     \title Presenting Data in a Table View
+    \ingroup qt-sql
     
     \previouspage Using the SQL Model Classes
     \contentspage SQL Programming
@@ -587,6 +592,7 @@
 /*!
     \page sql-forms.html
     \title Creating Data-Aware Forms
+    \ingroup qt-sql
     
     \previouspage Presenting Data in a Table View
     \contentspage SQL Programming
