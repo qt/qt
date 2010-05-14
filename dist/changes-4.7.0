@@ -33,7 +33,6 @@ New features
  - QNetworkSession, QNetworkConfiguration, QNetworkConfigurationManager
     * New bearer management classes added.
 
-
 Third party components
 ----------------------
 
@@ -89,11 +88,17 @@ QtGui
       the mouse.
 
  - QImage
-    * [QTBUG-9640] Prevented unneccessary copy in
-      QImage::setAlphaChannel().
-    * Added QImage::bitPlaneCount(). (QTBUG-7982)
+    * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
+    * [QTBUG-7982] Added QImage::bitPlaneCount().
+
+ - QPicture
+    * [QTBUG-4974] Printing QPictures containing text to a high resolution
+      QPrinter would in many cases cause incorrect character spacing.
 
  - QPainter
+    * Added QPainter::drawPixmapFragments(), which makes it possible to draw
+      pixmaps, or sub-rectangles of pixmaps, at various positions with
+      different scale, opacity and rotation.
     * [QTBUG-10018] Fixed image drawing inconsistencies when drawing
       1x1 source rects with rotating / shear / perspective transforms.
     * Optimized various blending and rendering operations for ARM
