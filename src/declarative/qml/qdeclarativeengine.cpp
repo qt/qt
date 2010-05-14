@@ -205,7 +205,8 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     // XXX used to add Qt.Sound class.
 
     //types
-    qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::include, 2));
+    if (mainthread)
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::include, 2));
     qtObject.setProperty(QLatin1String("isQtObject"), newFunction(QDeclarativeEnginePrivate::isQtObject, 1));
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QDeclarativeEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), newFunction(QDeclarativeEnginePrivate::hsla, 4));
