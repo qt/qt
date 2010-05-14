@@ -48,6 +48,7 @@
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativeinfo.h>
 
 #include <qlistmodelinterface_p.h>
 #include <qmath.h>
@@ -524,8 +525,9 @@ void QDeclarativeListViewPrivate::init()
     Q_Q(QDeclarativeListView);
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     addItemChangeListener(this, Geometry);
-    QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
-    q->setFlickDirection(QDeclarativeFlickable::VerticalFlick);
+    QObject::connect(q, SIGNAL(movingHorizontallyChanged()), q, SLOT(animStopped()));
+    QObject::connect(q, SIGNAL(movingVerticallyChanged()), q, SLOT(animStopped()));
+    q->setFlickableDirection(QDeclarativeFlickable::VerticalFlick);
     ::memset(sectionCache, 0, sizeof(QDeclarativeItem*) * sectionCacheSize);
 }
 
@@ -868,7 +870,7 @@ void QDeclarativeListViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    if (currentItem && autoHighlight && highlight && !moving) {
+    if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
         // auto-update highlight
         highlightPosAnimator->to = currentItem->position();
         highlightSizeAnimator->to = currentItem->size();
@@ -1208,7 +1210,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             else
                 v = maxVelocity;
         }
-        if (!flicked) {
+        if (!flickingHorizontally && !flickingVertically) {
             // the initial flick - estimate boundary
             qreal accel = deceleration;
             qreal v2 = v * v;
@@ -1256,9 +1258,16 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
+            if (!flickingHorizontally && q->xflick()) {
+                flickingHorizontally = true;
+                emit q->flickingChanged(); // deprecated
+                emit q->flickingHorizontallyChanged();
+            }
+            if (!flickingVertically && q->yflick()) {
+                flickingVertically = true;
+                emit q->flickingChanged(); // deprecated
+                emit q->flickingVerticallyChanged();
+            }
             correctFlick = true;
         } else {
             // reevaluate the target boundary.
@@ -1461,7 +1470,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
@@ -1804,10 +1813,10 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
         d->orient = orientation;
         if (d->orient == QDeclarativeListView::Vertical) {
             setContentWidth(-1);
-            setFlickDirection(VerticalFlick);
+            setFlickableDirection(VerticalFlick);
         } else {
             setContentHeight(-1);
-            setFlickDirection(HorizontalFlick);
+            setFlickableDirection(HorizontalFlick);
         }
         d->clear();
         d->setPosition(0);
@@ -2106,7 +2115,7 @@ void QDeclarativeListView::viewportMoved()
     QDeclarativeFlickable::viewportMoved();
     d->lazyRelease = true;
     refill();
-    if (isFlicking() || d->moving)
+    if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
         d->moveReason = QDeclarativeListViewPrivate::Mouse;
     if (d->moveReason != QDeclarativeListViewPrivate::SetIndex) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -2126,7 +2135,7 @@ void QDeclarativeListView::viewportMoved()
         }
     }
 
-    if (d->flicked && d->correctFlick && !d->inFlickCorrection) {
+    if ((d->flickingHorizontally || d->flickingVertically) && d->correctFlick && !d->inFlickCorrection) {
         d->inFlickCorrection = true;
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
@@ -2446,7 +2455,8 @@ void QDeclarativeListView::trackedPositionChanged()
     Q_D(QDeclarativeListView);
     if (!d->trackedItem || !d->currentItem)
         return;
-    if (!isFlicking() && !d->moving && d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
+    if (!d->flickingHorizontally && !d->flickingVertically && !d->movingHorizontally && !d->movingVertically
+        && d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
         const qreal trackedPos = qCeil(d->trackedItem->position());
         const qreal viewPos = d->position();
         if (d->haveHighlightRange) {
@@ -2880,9 +2890,12 @@ void QDeclarativeListView::destroyingItem(QDeclarativeItem *item)
 void QDeclarativeListView::animStopped()
 {
     Q_D(QDeclarativeListView);
-    d->bufferMode = QDeclarativeListViewPrivate::NoBuffer;
-    if (d->haveHighlightRange && d->highlightRange == QDeclarativeListView::StrictlyEnforceRange)
-        d->updateHighlight();
+    if ((!d->movingVertically && d->orient == QDeclarativeListView::Vertical) || (!d->movingHorizontally && d->orient == QDeclarativeListView::Horizontal))
+    {
+        d->bufferMode = QDeclarativeListViewPrivate::NoBuffer;
+        if (d->haveHighlightRange && d->highlightRange == QDeclarativeListView::StrictlyEnforceRange)
+            d->updateHighlight();
+    }
 }
 
 QDeclarativeListViewAttached *QDeclarativeListView::qmlAttachedProperties(QObject *obj)

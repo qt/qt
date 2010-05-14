@@ -195,9 +195,6 @@ private:
     uint userId;
     uint groupId;
 #endif
-public :
-    //for testing purpose
-    static bool fetchedRoot;
 };
 #endif // QT_NO_FILESYSTEMMODEL
 

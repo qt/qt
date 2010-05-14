@@ -545,7 +545,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
-    \qmlmethod object Component::createObject()
+    \qmlmethod object Component::createObject(parent)
     Returns an object instance from this component, or null if object creation fails.
 
     The object will be created in the same context as the one in which the component

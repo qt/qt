@@ -68,7 +68,7 @@ private:
 void tst_qmlgraphicsimage::qmlgraphicsimage()
 {
     int x = 0;
-    QUrl url("image.png");
+    QUrl url(SRCDIR "/image.png");
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;
@@ -80,7 +80,7 @@ void tst_qmlgraphicsimage::qmlgraphicsimage()
 void tst_qmlgraphicsimage::qmlgraphicsimage_file()
 {
     int x = 0;
-    QUrl url("image.png");
+    QUrl url(SRCDIR "/image.png");
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;
@@ -93,7 +93,7 @@ void tst_qmlgraphicsimage::qmlgraphicsimage_file()
 void tst_qmlgraphicsimage::qmlgraphicsimage_url()
 {
     int x = 0;
-    QUrl url("image.png");
+    QUrl url(SRCDIR "/image.png");
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;

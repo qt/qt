@@ -1427,6 +1427,13 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
+    if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
+        QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
+        QGestureManager *manager = QGestureManager::instance();
+        foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+            manager->cleanupCachedGestures(o, type);
+    }
+
     clearFocus();
 
     // Update focus scope item ptr.

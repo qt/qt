@@ -69,15 +69,17 @@ Convenience script for creating signed packages you can install on your phone.
 Usage: createpackage.pl [options] templatepkg [target]-[platform] [certificate key [passphrase]]
 
 Where supported options are as follows:
-     [-i|install]            = Install the package right away using PC suite
+     [-i|install]            = Install the package right away using PC suite.
      [-p|preprocess]         = Only preprocess the template .pkg file.
-     [-c|certfile=<file>]    = The file containing certificate information for signing.
+     [-c|certfile <file>]    = The file containing certificate information for signing.
                                The file can have several certificates, each specified in
                                separate line. The certificate, key and passphrase in line
                                must be ';' separated. Lines starting with '#' are treated
                                as a comments. Also empty lines are ignored. The paths in
                                <file> can be absolute or relative to <file>.
-     [-u|unsigned]           = Preserves the unsigned package
+     [-u|unsigned]           = Preserves the unsigned package.
+     [-s|stub]               = Generates stub sis for ROM.
+     [-n|sisname <name>]     = Specifies the final sis name.
 Where parameters are as follows:
      templatepkg             = Name of .pkg file template
      target                  = Either debug or release
@@ -118,12 +120,14 @@ my $preprocessonly = "";
 my $certfile = "";
 my $preserveUnsigned = "";
 my $stub = "";
+my $signed_sis_name = "";
 
 unless (GetOptions('i|install' => \$install,
                    'p|preprocess' => \$preprocessonly,
                    'c|certfile=s' => \$certfile,
                    'u|unsigned' => \$preserveUnsigned,
-                   's|stub' => \$stub,)){
+                   's|stub' => \$stub,
+                   'n|sisname=s' => \$signed_sis_name,)) {
     Usage();
 }
 
@@ -162,10 +166,21 @@ $pkgoutputbasename = $pkgoutputbasename;
 
 # Store output file names to variables
 my $pkgoutput = $pkgoutputbasename.".pkg";
-my $sisoutputbasename = $pkgoutputbasename;
-$sisoutputbasename =~ s/_$targetplatform//g;
+my $sisoutputbasename;
+if ($signed_sis_name eq "") {
+    $sisoutputbasename = $pkgoutputbasename;
+    $sisoutputbasename =~ s/_$targetplatform//g;
+    $signed_sis_name = $sisoutputbasename.".sis";
+} else {
+    $sisoutputbasename = $signed_sis_name;
+    if ($sisoutputbasename =~ m/(\.sis$|\.sisx$)/i) {
+        $sisoutputbasename =~ s/$1//i;
+    } else {
+        $signed_sis_name = $signed_sis_name.".sis";
+    }
+}
+
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
-my $signed_sis_name = $sisoutputbasename.".sis";
 my $stub_sis_name = $sisoutputbasename."_stub.sis";
 
 # Store some utility variables

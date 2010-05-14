@@ -87,7 +87,7 @@ static const char propertiesInterfaceXml[] =
     "    <method name=\"GetAll\">\n"
     "      <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n"
     "      <arg name=\"values\" type=\"a{sv}\" direction=\"out\"/>\n"
-    "      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>"
+    "      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
     "    </method>\n"
     "  </interface>\n";
 

@@ -5557,6 +5557,12 @@ QUrl QUrl::resolved(const QUrl &relative) const
     removeDotsFromPath(&t.d->encodedPath);
     t.d->path.clear();
 
+#if defined(QURL_DEBUG)
+    qDebug("QUrl(\"%s\").resolved(\"%s\") = \"%s\"",
+           toEncoded().constData(),
+           relative.toEncoded().constData(),
+           t.toEncoded().constData());
+#endif
     return t;
 }
 

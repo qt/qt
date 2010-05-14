@@ -78,6 +78,7 @@ private slots:
     void componentChanges();
     void modelChanges();
     void pathUpdateOnStartChanged();
+    void package();
 
 
 private:
@@ -691,6 +692,22 @@ void tst_QDeclarativePathView::pathUpdateOnStartChanged()
     QVERIFY(item);
     QCOMPARE(item->x(), path->startX() - item->width() / 2.0);
     QCOMPARE(item->y(), path->startY() - item->height() / 2.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::package()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview_package.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("photoPathView");
+    QVERIFY(pathView);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "pathItem");
+    QVERIFY(item);
+    QVERIFY(item->scale() != 1.0);
 
     delete canvas;
 }

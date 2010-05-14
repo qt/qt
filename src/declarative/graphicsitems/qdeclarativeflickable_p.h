@@ -68,9 +68,14 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(BoundsBehavior boundsBehavior READ boundsBehavior WRITE setBoundsBehavior NOTIFY boundsBehaviorChanged)
     Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity NOTIFY maximumFlickVelocityChanged)
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
-    Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
-    Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
-    Q_PROPERTY(FlickDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickDirectionChanged)
+    Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged) // deprecated
+    Q_PROPERTY(bool movingHorizontally READ isMovingHorizontally NOTIFY movingHorizontallyChanged)
+    Q_PROPERTY(bool movingVertically READ isMovingVertically NOTIFY movingVerticallyChanged)
+    Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged) // deprecated
+    Q_PROPERTY(bool flickingHorizontally READ isFlickingHorizontally NOTIFY flickingHorizontallyChanged)
+    Q_PROPERTY(bool flickingVertically READ isFlickingVertically NOTIFY flickingVerticallyChanged)
+    Q_PROPERTY(FlickableDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickableDirectionChanged) // deprecated
+    Q_PROPERTY(FlickableDirection flickableDirection READ flickableDirection WRITE setFlickableDirection NOTIFY flickableDirectionChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
     Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay NOTIFY pressDelayChanged)
@@ -86,7 +91,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(QDeclarativeListProperty<QGraphicsObject> flickableChildren READ flickableChildren)
     Q_CLASSINFO("DefaultProperty", "flickableData")
 
-    Q_ENUMS(FlickDirection)
+    Q_ENUMS(FlickableDirection)
     Q_ENUMS(BoundsBehavior)
 
 public:
@@ -115,8 +120,12 @@ public:
     qreal contentY() const;
     void setContentY(qreal pos);
 
-    bool isMoving() const;
-    bool isFlicking() const;
+    bool isMoving() const; // deprecated
+    bool isMovingHorizontally() const;
+    bool isMovingVertically() const;
+    bool isFlicking() const; // deprecated
+    bool isFlickingHorizontally() const;
+    bool isFlickingVertically() const;
 
     int pressDelay() const;
     void setPressDelay(int delay);
@@ -140,26 +149,28 @@ public:
 
     QDeclarativeItem *viewport();
 
-    enum FlickDirection { AutoFlickDirection=0x00, HorizontalFlick=0x01, VerticalFlick=0x02, HorizontalAndVerticalFlick=0x03 };
-    FlickDirection flickDirection() const;
-    void setFlickDirection(FlickDirection);
+    enum FlickableDirection { AutoFlickDirection=0x00, HorizontalFlick=0x01, VerticalFlick=0x02, HorizontalAndVerticalFlick=0x03 };
+    FlickableDirection flickDirection() const; // deprecated
+    void setFlickDirection(FlickableDirection); // deprecated
+    FlickableDirection flickableDirection() const;
+    void setFlickableDirection(FlickableDirection);
 
 Q_SIGNALS:
     void contentWidthChanged();
     void contentHeightChanged();
     void contentXChanged();
     void contentYChanged();
-    void movingChanged();
-    void flickingChanged();
-    void movementStarted();
-    void movementEnded();
-    void flickStarted();
-    void flickEnded();
+    void movingChanged(); // deprecated
+    void movingHorizontallyChanged();
+    void movingVerticallyChanged();
+    void flickingChanged(); // deprecated
+    void flickingHorizontallyChanged();
+    void flickingVerticallyChanged();
     void horizontalVelocityChanged();
     void verticalVelocityChanged();
     void isAtBoundaryChanged();
     void pageChanged();
-    void flickDirectionChanged();
+    void flickableDirectionChanged();
     void interactiveChanged();
     void overShootChanged();
     void boundsBehaviorChanged();

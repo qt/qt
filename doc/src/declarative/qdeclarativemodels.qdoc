@@ -143,6 +143,28 @@ ListView {
 }
 \endcode
 
+It is also possible to manipulate the ListModel directly via JavaScript.
+In this case, the first item inserted will determine the roles available
+to any views using the model.  For example, if an empty ListModel is
+created and populated via JavaScript the roles provided by the first
+insertion are the only roles that will be shown in the view:
+
+\code
+Item {
+    ListModel {
+        id: fruitModel
+    }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: fruitModel.append({"cost": 5.95, "name":"Pizza"})
+    }
+}
+\endcode
+
+When the MouseArea is clicked fruitModel will have two roles, "cost" and "name".
+Even if subsequent roles are added, only the first two will be handled by views
+using the model.
+
 
 \section2 XmlListModel
 

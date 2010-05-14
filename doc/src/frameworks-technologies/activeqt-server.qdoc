@@ -41,10 +41,10 @@
 
 /*!
     \page activeqt-server.html
-    \title Building ActiveX servers and controls with Qt
+    \title Building ActiveX servers in Qt
+    \ingroup qt-activex
 
-    \brief The QAxServer module is a Windows-only static library that
-    you can use to turn a standard Qt binary into a COM server.
+    \brief A Windows-only static library for turning a Qt binary into a COM server.
 
     The QAxServer module is part of the \l ActiveQt framework. It
     consists of three classes:

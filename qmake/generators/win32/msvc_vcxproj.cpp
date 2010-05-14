@@ -89,7 +89,6 @@ bool VcxprojGenerator::writeMakefile(QTextStream &t)
         return true;
     }
     return project->isActiveConfig("build_pass");
-    return true;
 }
 
 

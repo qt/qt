@@ -613,6 +613,11 @@ void tst_QDirModel::task196768_sorting()
     //this task showed that the persistent model indexes got corrupted when sorting
     QString path = SRCDIR;
 
+#ifdef Q_OS_SYMBIAN
+    if(!RProcess().HasCapability(ECapabilityAllFiles))
+        QEXPECT_FAIL("", "QTBUG-9746", Continue);
+#endif
+
     QDirModel model;
 
     /* QDirModel has a bug if we show the content of the subdirectory inside a hidden directory

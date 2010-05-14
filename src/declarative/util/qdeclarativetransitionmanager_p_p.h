@@ -70,7 +70,7 @@ public:
     void cancel();
 
 private:
-    Q_DISABLE_COPY(QDeclarativeTransitionManager);
+    Q_DISABLE_COPY(QDeclarativeTransitionManager)
     QDeclarativeTransitionManagerPrivate *d;
 
     void complete();

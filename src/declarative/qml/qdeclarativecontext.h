@@ -107,7 +107,7 @@ private:
 };
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QList<QObject*>);
+Q_DECLARE_METATYPE(QList<QObject*>)
 
 QT_END_HEADER
 

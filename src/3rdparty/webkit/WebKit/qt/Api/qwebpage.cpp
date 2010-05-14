@@ -119,15 +119,6 @@
 
 using namespace WebCore;
 
-void QWEBKIT_EXPORT qt_wrt_setViewMode(QWebPage* page, const QString& mode)
-{
-    QWebPagePrivate::priv(page)->viewMode = mode;
-    WebCore::Frame* frame = QWebFramePrivate::core(page->mainFrame());
-    WebCore::FrameView* view = frame->view();
-    frame->document()->updateStyleSelector();
-    view->forceLayout();
-}
-
 void QWEBKIT_EXPORT qt_drt_overwritePluginDirectories()
 {
     PluginDatabase* db = PluginDatabase::installedPlugins(/* populate */ false);
@@ -1359,6 +1350,26 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         editor->setComposition(preedit, underlines, preedit.length(), 0);
     }
     ev->accept();
+}
+
+void QWebPagePrivate::dynamicPropertyChangeEvent(QDynamicPropertyChangeEvent* event)
+{
+    if (event->propertyName() == "_q_viewMode") {
+        QString mode = q->property("_q_viewMode").toString();
+        if (mode != viewMode) {
+            viewMode = mode;
+            WebCore::Frame* frame = QWebFramePrivate::core(q->mainFrame());
+            WebCore::FrameView* view = frame->view();
+            frame->document()->updateStyleSelector();
+            view->forceLayout();
+        }
+    } else if (event->propertyName() == "_q_HTMLTokenizerChunkSize") {
+        int chunkSize = q->property("_q_HTMLTokenizerChunkSize").toInt();
+        q->handle()->page->setCustomHTMLTokenizerChunkSize(chunkSize);
+    } else if (event->propertyName() == "_q_HTMLTokenizerTimeDelay") {
+        double timeDelay = q->property("_q_HTMLTokenizerTimeDelay").toDouble();
+        q->handle()->page->setCustomHTMLTokenizerTimeDelay(timeDelay);
+    }
 }
 
 void QWebPagePrivate::shortcutOverrideEvent(QKeyEvent* event)
@@ -2708,6 +2719,9 @@ bool QWebPage::event(QEvent *ev)
         d->touchEvent(static_cast<QTouchEvent*>(ev));
         break;
 #endif
+    case QEvent::DynamicPropertyChange:
+        d->dynamicPropertyChangeEvent(static_cast<QDynamicPropertyChangeEvent*>(ev));
+        break;
     default:
         return QObject::event(ev);
     }

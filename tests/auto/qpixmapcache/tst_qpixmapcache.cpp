@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#define Q_TEST_QPIXMAPCACHE
 
 #include <QtTest/QtTest>
 
@@ -152,6 +153,7 @@ void tst_QPixmapCache::setCacheLimit()
     p1 = new QPixmap(2, 3);
     key = QPixmapCache::insert(*p1);
     QVERIFY(QPixmapCache::find(key, p1) != 0);
+    p1->detach(); // dectach so that the cache thinks no-one is using it.
     QPixmapCache::setCacheLimit(0);
     QVERIFY(QPixmapCache::find(key, p1) == 0);
     QPixmapCache::setCacheLimit(1000);
@@ -169,6 +171,8 @@ void tst_QPixmapCache::setCacheLimit()
     key = QPixmapCache::insert(*p1);
     QVERIFY(QPixmapCache::find(key, &p2) != 0);
     //we flush the cache
+    p1->detach();
+    p2.detach();
     QPixmapCache::setCacheLimit(0);
     QPixmapCache::setCacheLimit(1000);
     QPixmapCache::Key key2 = QPixmapCache::insert(*p1);
@@ -180,21 +184,25 @@ void tst_QPixmapCache::setCacheLimit()
     delete p1;
 
     //Here we simulate the flushing when the app is idle
-    /*QPixmapCache::clear();
+    QPixmapCache::clear();
     QPixmapCache::setCacheLimit(originalCacheLimit);
     p1 = new QPixmap(300, 300);
     key = QPixmapCache::insert(*p1);
+    p1->detach();
     QCOMPARE(getPrivate(key)->key, 1);
     key2 = QPixmapCache::insert(*p1);
+    p1->detach();
     key2 = QPixmapCache::insert(*p1);
+    p1->detach();
     QPixmapCache::Key key3 = QPixmapCache::insert(*p1);
-    QTest::qWait(32000);
+    p1->detach();
+    QPixmapCache::flushDetachedPixmaps();
     key2 = QPixmapCache::insert(*p1);
     QCOMPARE(getPrivate(key2)->key, 1);
     //This old key is not valid anymore after the flush
     QCOMPARE(getPrivate(key)->isValid, false);
     QVERIFY(QPixmapCache::find(key, &p2) == 0);
-    delete p1;*/
+    delete p1;
 }
 
 void tst_QPixmapCache::find()
@@ -225,12 +233,14 @@ void tst_QPixmapCache::find()
     QPixmapCache::clear();
     QPixmapCache::setCacheLimit(128);
 
-    key = QPixmapCache::insert(p1);
+    QPixmap p4(10,10);
+    key = QPixmapCache::insert(p4);
+    p4.detach();
 
-    //The int part of the API
+    QPixmap p5(10,10);
     QList<QPixmapCache::Key> keys;
     for (int i = 0; i < 4000; ++i)
-        QPixmapCache::insert(p1);
+        QPixmapCache::insert(p5);
 
     //at that time the first key has been erase because no more place in the cache
     QVERIFY(QPixmapCache::find(key, &p1) == 0);
@@ -257,8 +267,10 @@ void tst_QPixmapCache::insert()
         QPixmapCache::insert("0", p1);
 
     // ditto
-    for (int j = 0; j < numberOfKeys; ++j)
-        QPixmapCache::insert(QString::number(j), p1);
+    for (int j = 0; j < numberOfKeys; ++j) {
+        QPixmap p3(10, 10);
+        QPixmapCache::insert(QString::number(j), p3);
+    }
 
     int num = 0;
     for (int k = 0; k < numberOfKeys; ++k) {
@@ -286,8 +298,10 @@ void tst_QPixmapCache::insert()
     //The int part of the API
     // make sure it doesn't explode
     QList<QPixmapCache::Key> keys;
-    for (int i = 0; i < numberOfKeys; ++i)
-        keys.append(QPixmapCache::insert(p1));
+    for (int i = 0; i < numberOfKeys; ++i) {
+        QPixmap p3(10,10);
+        keys.append(QPixmapCache::insert(p3));
+    }
 
     num = 0;
     for (int k = 0; k < numberOfKeys; ++k) {

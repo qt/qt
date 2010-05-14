@@ -322,6 +322,17 @@ QPainterPath QDeclarativePath::path() const
 QStringList QDeclarativePath::attributes() const
 {
     Q_D(const QDeclarativePath);
+    if (!d->componentComplete) {
+        QSet<QString> attrs;
+
+        // First gather up all the attributes
+        foreach (QDeclarativePathElement *pathElement, d->_pathElements) {
+            if (QDeclarativePathAttribute *attribute =
+                qobject_cast<QDeclarativePathAttribute *>(pathElement))
+                attrs.insert(attribute->name());
+        }
+        return attrs.toList();
+    }
     return d->_attributes;
 }
 

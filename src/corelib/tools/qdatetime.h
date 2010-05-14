@@ -251,6 +251,7 @@ public:
     inline QDateTime toUTC() const { return toTimeSpec(Qt::UTC); }
     int daysTo(const QDateTime &) const;
     int secsTo(const QDateTime &) const;
+    qint64 msecsTo(const QDateTime &) const;
 
     bool operator==(const QDateTime &other) const;
     inline bool operator!=(const QDateTime &other) const { return !(*this == other); }

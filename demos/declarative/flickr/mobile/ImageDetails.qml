@@ -70,7 +70,7 @@ Flipable {
 
                 Image {
                     id: bigImage; source: container.photoUrl; scale: slider.value
-                    anchors.centerIn: parent; smooth: !flickable.moving
+                    anchors.centerIn: parent; smooth: !flickable.movingVertically
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == Image.Ready && width != 0) {
@@ -119,7 +119,7 @@ Flipable {
         SequentialAnimation {
             PropertyAction { target: bigImage; property: "smooth"; value: false }
             NumberAnimation { easing.type: Easing.InOutQuad; properties: "angle"; duration: 500 }
-            PropertyAction { target: bigImage; property: "smooth"; value: !flickable.moving }
+            PropertyAction { target: bigImage; property: "smooth"; value: !flickable.movingVertically }
         }
     }
 }

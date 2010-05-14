@@ -6,3 +6,4 @@ wince*|symbian*|vxworks* : SUBDIRS = test
 
 
 requires(contains(QT_CONFIG,private_tests))
+symbian: TARGET.CAPABILITY = NetworkServices

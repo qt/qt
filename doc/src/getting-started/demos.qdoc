@@ -53,15 +53,14 @@
     \l{Qt Examples} and are used to highlight certain features of
     Qt.
 
-    \table 50%
+    \table 
     \header
     \o {2,1} Getting an Overview
     \row
     \o \inlineimage qtdemo-small.png
-    \o
-    If you run the \l{Examples and Demos Launcher}, you'll see many of Qt's
+    \o If you run the \l{Examples and Demos Launcher}, you'll see many of Qt's
     widgets in action.
-
+	
     The \l{Qt Widget Gallery} also provides overviews of selected Qt
     widgets in each of the styles used on various supported platforms.
     \endtable

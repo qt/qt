@@ -338,7 +338,7 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
 // WARNING, there is a copy of this function in qdeclarativeengine.cpp
 static QString toLocalFileOrQrc(const QUrl& url)
 {
-    if (url.scheme() == QLatin1String("qrc")) {
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             return QLatin1Char(':') + url.path();
         return QString();
@@ -360,7 +360,10 @@ void QDeclarativeCompositeTypeManager::loadResource(QDeclarativeCompositeTypeRes
         } else {
             resource->status = QDeclarativeCompositeTypeResource::Error;
         }
+    } else if (url.scheme().isEmpty()) {
 
+        // We can't open this, so just declare as an error
+        resource->status = QDeclarativeCompositeTypeResource::Error;
     } else {
 
         QNetworkReply *reply = 
@@ -382,27 +385,29 @@ void QDeclarativeCompositeTypeManager::loadSource(QDeclarativeCompositeTypeData 
         if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();
             setData(unit, data, url);
-        } else {
-            QString errorDescription;
-            // ### - Fill in error
-            errorDescription = QLatin1String("File error for URL ") + url.toString();
-            unit->status = QDeclarativeCompositeTypeData::Error;
-            // ### FIXME
-            QDeclarativeError error;
-            error.setDescription(errorDescription);
-            unit->errorType = QDeclarativeCompositeTypeData::AccessError;
-            unit->errors << error;
-            doComplete(unit);
+            return; // success
         }
-
-    } else {
+    } else if (!url.scheme().isEmpty()) {
         QNetworkReply *reply = 
             engine->networkAccessManager()->get(QNetworkRequest(url));
         QObject::connect(reply, SIGNAL(finished()),
                          this, SLOT(replyFinished()));
         QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                          this, SLOT(requestProgress(qint64,qint64)));
+        return; // waiting
     }
+
+    // error happened
+    QString errorDescription;
+    // ### - Fill in error
+    errorDescription = QLatin1String("File error for URL ") + url.toString();
+    unit->status = QDeclarativeCompositeTypeData::Error;
+    // ### FIXME
+    QDeclarativeError error;
+    error.setDescription(errorDescription);
+    unit->errorType = QDeclarativeCompositeTypeData::AccessError;
+    unit->errors << error;
+    doComplete(unit);
 }
 
 void QDeclarativeCompositeTypeManager::requestProgress(qint64 received, qint64 total)
@@ -716,8 +721,10 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
         }
     }
 
-    QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
-    if (toLocalFileOrQrc(importUrl).isEmpty())
+    QUrl importUrl;
+    if (!unit->imports.baseUrl().scheme().isEmpty())
+        importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
+    if (!importUrl.scheme().isEmpty() && toLocalFileOrQrc(importUrl).isEmpty())
         resourceList.prepend(importUrl);
 
     for (int ii = 0; ii < resourceList.count(); ++ii) {
