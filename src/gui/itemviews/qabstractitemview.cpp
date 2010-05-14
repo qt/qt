@@ -1785,7 +1785,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         emit clicked(index);
         if (edited)
             return;
-        if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, 0, this))
+        QStyleOptionViewItemV4 option = d->viewOptionsV4();
+        if (d->pressedAlreadySelected)
+            option.state |= QStyle::State_Selected;
+        if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, &option, this))
             emit activated(index);
     }
 }
