@@ -58,6 +58,7 @@
 #include <QtScript/qscriptvalue.h>
 
 #include <private/qdeclarativecontext_p.h>
+#include <private/qdeclarativeguard_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,7 +97,7 @@ private:
     QDeclarativeEngine *m_engine;
     QScriptEngine *m_scriptEngine;
     QNetworkAccessManager *m_network;
-    QNetworkReply *m_reply;
+    QDeclarativeGuard<QNetworkReply> m_reply;
 
     QUrl m_url;
     int m_redirectCount;

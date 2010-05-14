@@ -9,6 +9,7 @@ SOURCES += \
     $$PWD/qdeclarativeproperty.cpp \
     $$PWD/qdeclarativecomponent.cpp \
     $$PWD/qdeclarativecontext.cpp \
+    $$PWD/qdeclarativeinclude.cpp \
     $$PWD/qdeclarativecustomparser.cpp \
     $$PWD/qdeclarativepropertyvaluesource.cpp \
     $$PWD/qdeclarativepropertyvalueinterceptor.cpp \
@@ -92,6 +93,7 @@ HEADERS += \
     $$PWD/qdeclarativeinfo.h \
     $$PWD/qdeclarativeproperty_p.h \
     $$PWD/qdeclarativecontext_p.h \
+    $$PWD/qdeclarativeinclude_p.h \
     $$PWD/qdeclarativecompositetypedata_p.h \
     $$PWD/qdeclarativecompositetypemanager_p.h \
     $$PWD/qdeclarativelist.h \

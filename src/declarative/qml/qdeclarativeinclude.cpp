@@ -76,8 +76,7 @@ QDeclarativeInclude::QDeclarativeInclude(const QUrl &url,
 
 QDeclarativeInclude::~QDeclarativeInclude()
 {
-    if (m_reply)
-        delete m_reply;
+    delete m_reply;
 }
 
 QScriptValue QDeclarativeInclude::resultValue(QScriptEngine *engine, Status status)
@@ -116,7 +115,7 @@ void QDeclarativeInclude::finished()
         QVariant redirect = m_reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
         if (redirect.isValid()) {
             m_url = m_url.resolved(redirect.toUrl());
-            delete m_reply;
+            delete m_reply; 
             
             QNetworkRequest request;
             request.setUrl(m_url);
@@ -149,6 +148,7 @@ void QDeclarativeInclude::finished()
         if (m_scriptEngine->hasUncaughtException()) {
             m_result.setProperty(QLatin1String("status"), QScriptValue(m_scriptEngine, Exception));
             m_result.setProperty(QLatin1String("exception"), m_scriptEngine->uncaughtException());
+            m_scriptEngine->clearExceptions();
         } else {
             m_result.setProperty(QLatin1String("status"), QScriptValue(m_scriptEngine, Ok));
         }
@@ -158,7 +158,8 @@ void QDeclarativeInclude::finished()
 
     callback(m_scriptEngine, m_callback, m_result);
 
-    delete this;
+    disconnect();
+    deleteLater();
 }
 
 void QDeclarativeInclude::callback(QScriptEngine *engine, QScriptValue &callback, QScriptValue &status)
@@ -237,6 +238,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
             if (engine->hasUncaughtException()) {
                 result = resultValue(engine, Exception);
                 result.setProperty(QLatin1String("exception"), engine->uncaughtException());
+                engine->clearExceptions();
             } else {
                 result = resultValue(engine, Ok);
             }
