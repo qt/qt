@@ -2575,7 +2575,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *widget,
                             QStyleHintReturn *hret) const
 {
-    int retValue = -1;
+    int retValue = 0;
     switch (sh) {
         case SH_RequestSoftwareInputPanel:
             if (QS60StylePrivate::isSingleClickUi())
@@ -2610,9 +2610,13 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         case SH_Dial_BackgroundRole:
             retValue = QPalette::Base;
             break;
-        case SH_ItemView_ActivateItemOnSingleClick:
-            retValue = QS60StylePrivate::isSingleClickUi();
+        case SH_ItemView_ActivateItemOnSingleClick: {
+            if (QS60StylePrivate::isSingleClickUi())
+                retValue = true;
+            else if (opt && opt->state & QStyle::State_Selected)
+                retValue = true;
             break;
+        }
         case SH_ProgressDialog_TextLabelAlignment:
             retValue = (QApplication::layoutDirection() == Qt::LeftToRight) ?
                 Qt::AlignLeft :
