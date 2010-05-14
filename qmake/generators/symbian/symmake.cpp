@@ -175,6 +175,12 @@ void SymbianMakefileGenerator::writeHeader(QTextStream &t)
 
 bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 {
+    if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
+        fprintf(stderr, "Project files not generated because all requirements are not met:\n\t%s\n",
+                qPrintable(var("QMAKE_FAILED_REQUIREMENTS")));
+        return false;
+    }
+
     writeHeader(t);
 
     QString numberOfIcons;
