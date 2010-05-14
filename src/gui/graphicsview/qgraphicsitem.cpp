@@ -7650,9 +7650,10 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 */
 void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
 {
-    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
-    d->gestureContext.insert(gesture, flags);
-    (void)QGestureManager::instance(); // create a gesture manager
+    bool contains = QGraphicsItem::d_ptr->gestureContext.contains(gesture);
+    QGraphicsItem::d_ptr->gestureContext.insert(gesture, flags);
+    if (!contains && QGraphicsItem::d_ptr->scene)
+        QGraphicsItem::d_ptr->scene->d_func()->grabGesture(this, gesture);
 }
 
 /*!
@@ -7662,11 +7663,8 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flag
 */
 void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
 {
-    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
-    if (d->gestureContext.remove(gesture)) {
-        QGestureManager *manager = QGestureManager::instance();
-        manager->cleanupCachedGestures(this, gesture);
-    }
+    if (QGraphicsItem::d_ptr->gestureContext.remove(gesture) && QGraphicsItem::d_ptr->scene)
+        QGraphicsItem::d_ptr->scene->d_func()->ungrabGesture(this, gesture);
 }
 /*!
     Updates the item's micro focus. This is slot for convenience.
