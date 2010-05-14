@@ -76,6 +76,18 @@ QtGui
     * Fixed rendering bugs when scrolling graphics items with drop
       shadows.
 
+ - QGraphicsItem
+    * [QTBUG-8112] itemChange() is now called when transformation
+      properties change (setRotation, setScale, setTransformOriginPoint).
+
+ - QGraphicsTextItem
+    * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
+      the item has focus and something else has the same shortcut sequence.
+
+ - QGraphicsView
+    * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
+      the mouse.
+
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in
       QImage::setAlphaChannel().
