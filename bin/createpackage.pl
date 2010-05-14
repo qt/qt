@@ -181,7 +181,7 @@ if ($signed_sis_name eq "") {
 }
 
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
-my $stub_sis_name = $sisoutputbasename."_stub.sis";
+my $stub_sis_name = $sisoutputbasename.".sis";
 
 # Store some utility variables
 my $scriptpath = dirname(__FILE__);
