@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,26 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENKODEWINDOW_H
-#define QOPENKODEWINDOW_H
+#ifndef QOPENKODEGLINTEGRATION_H
+#define QOPENKODEGLINTEGRATION_H
 
-#include <QtGui/QPlatformWindow>
+#include <QtOpenGL/qglplatformintegration_lite.h>
+#include <QtGui/private/qeglproperties_p.h>
+#include <EGL/egl.h>
 
-#include <KD/kd.h>
+void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLFormat& glFormat);
+// Updates "format" with the parameters of the selected configuration.
+void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config);
 
-class QOpenKODEWindow : public QPlatformWindow
+class QEGLPlatformWidgetSurface : public QPlatformGLWidgetSurface
 {
 public:
-    QOpenKODEWindow(QWidget *tlw);
-    ~QOpenKODEWindow();
+    QEGLPlatformWidgetSurface();
+    virtual ~QEGLPlatformWidgetSurface();
 
-    void setGeometry(const QRect &rect);
-    void setVisible(bool visible);
-    WId winId() const { return WId(eglWindow); }
-
-private:
-    struct KDWindow *kdWindow;
-    EGLNativeWindowType eglWindow;
+    bool create(QGLWidget*, QGLFormat&);
+    void setGeometry(const QRect&);
+    bool filterEvent(QEvent *);
 };
 
-#endif //QOPENKODEWINDOW_H
+class QEGLPlatformContext : public QPlatformGLContext
+{
+public:
+    QEGLPlatformContext();
+    ~QEGLPlatformContext();
+
+    bool create(QPaintDevice* device, QGLFormat& format, QPlatformGLContext* shareContext);
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString& procName);
+
+private:
+    EGLContext m_context;
+    EGLSurface m_eglSurface;
+};
+
+#endif //QOPENKODEGLINTEGRATION_H

@@ -48,7 +48,7 @@ class QOpenKODEPlugin : public QPlatformIntegrationPlugin
 {
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&);
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
 QStringList QOpenKODEPlugin::keys() const
@@ -58,8 +58,9 @@ QStringList QOpenKODEPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration * QOpenKODEPlugin::create(const QString& system)
+QPlatformIntegration * QOpenKODEPlugin::create(const QString& system, const QStringList& paramList)
 {
+    Q_UNUSED(paramList);
     if (system.toLower() == "openkode")
         return new QOpenKODEIntegration;
 

@@ -42,6 +42,10 @@
 #include "qopenkodeintegration.h"
 #include "qopenkodewindowsurface.h"
 #include "qopenkodewindow.h"
+#include "qopenkodeglintegration.h"
+
+#include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#include <QtOpenGL/private/qwindowsurface_gl_p.h>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 
@@ -198,7 +202,7 @@ QOpenKODEIntegration::QOpenKODEIntegration()
 
 QPixmapData *QOpenKODEIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QGLPixmapData(type);
 }
 
 QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) const
@@ -206,9 +210,22 @@ QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) 
     return new QOpenKODEWindow(tlw);
 }
 
-QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId wid) const
 {
-    return new QOpenKODEWindowSurface(widget,winId);
+    return new QGLWindowSurface(widget);
+}
+
+bool QOpenKODEIntegration::hasOpenGL() const
+{
+    return true;
+}
+QPlatformGLContext *QOpenKODEIntegration::createGLContext()
+{
+    return new QEGLPlatformContext;
+}
+QPlatformGLWidgetSurface *QOpenKODEIntegration::createGLWidgetSurface()
+{
+    return new QEGLPlatformWidgetSurface;
 }
 
 GLuint QOpenKODEIntegration::blitterProgram()

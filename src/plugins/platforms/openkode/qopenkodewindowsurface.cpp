@@ -135,7 +135,7 @@ void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoin
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, blitImage.bits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, mImage.bits());
 
     // Enable vertex attribute associated with vertex position
     glEnableVertexAttribArray(posId);
@@ -157,8 +157,12 @@ void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoin
     if (texId)
         glDeleteTextures(1, &texId);
 
+    eglWaitGL();
+
     mContext.swapBuffers(mSurface);
     mContext.doneCurrent();
+
+    eglWaitNative(EGL_CORE_NATIVE_ENGINE);
 }
 
 void QOpenKODEWindowSurface::resize(const QSize &size)
@@ -171,10 +175,14 @@ void QOpenKODEWindowSurface::resize(const QSize &size)
 }
 void QOpenKODEWindowSurface::beginPaint(const QRegion &region)
 {
+    Q_UNUSED(region);
     if (mSurface == EGL_NO_SURFACE)  {
         EGLConfig config = QEgl::defaultConfig(QInternal::Widget,QEgl::OpenGL,QEgl::Renderable);
         EGLint windowAttrs[] = { EGL_NONE };
         mSurface = eglCreateWindowSurface(QEgl::display(), config, mWin, windowAttrs);
+        if (mSurface == EGL_NO_SURFACE) {
+            qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
+        }
         mImage = QImage(size(),QImage::Format_RGB32);
     }
 }

@@ -81,6 +81,10 @@ public:
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
+    bool hasOpenGL() const;
+    QPlatformGLContext * createGLContext();
+    QPlatformGLWidgetSurface * createGLWidgetSurface();
+
     virtual QList<QPlatformScreen *> screens() const { return mScreens; }
 
     static GLuint blitterProgram();

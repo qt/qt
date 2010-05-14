@@ -76,10 +76,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
     Q_ASSERT(platformWindow);
 
-    if (!surface) {
+    // QGLWidget does not need/work with a windowsurface
+    if (!surface && !q->inherits("QGLWidget")) {
         surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
     }
-    Q_ASSERT(surface);
 
     data.window_flags = q->platformWindow()->setWindowFlags(data.window_flags);
 

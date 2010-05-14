@@ -63,10 +63,15 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         return;
     }
 
-    const KDint windowSize[2]  = { tlw->width(), tlw->height() };
+    const KDint windowSize[2]  = { tlw->width(), tlw->height()-1 };
     if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_SIZE, windowSize)) {
         qErrnoWarning(kdGetError(), "Could not set native window size");
         return;
+    }
+
+    KDboolean visibillity(false);
+    if (kdSetWindowPropertybv(kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
+        qErrnoWarning(kdGetError(), "Could not set visibillity to false");
     }
 
 //    const KDboolean windowExclusive[] = { false };
@@ -75,11 +80,11 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 //        //return;
 //    }
 //
-//    const KDint windowPos[2] = { tlw->x(), tlw->y() };
-//    if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
-//        qErrnoWarning(kdGetError(), "Could not set native window position");
-//        return;
-//    }
+    const KDint windowPos[2] = { tlw->x(), tlw->y() };
+    if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
+        qErrnoWarning(kdGetError(), "Could not set native window position");
+        return;
+    }
 
     if (kdRealizeWindow(kdWindow, &eglWindow)) {
         qErrnoWarning(kdGetError(), "Could not realize native window");
@@ -87,6 +92,11 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
     }
 }
 
+QOpenKODEWindow::~QOpenKODEWindow()
+{
+    qDebug() << "destroying window";
+    kdDestroyWindow(kdWindow);
+}
 void QOpenKODEWindow::setGeometry(const QRect &rect)
 {
     const QRect geo = geometry();
@@ -98,17 +108,20 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
         }
     }
 
-//    if (geo.topLeft() != rect.topLeft()) {
-//        const KDint windowPos[2] = { rect.x(), rect.y() };
-//        if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
-//            qErrnoWarning(kdGetError(), "Could not set native window position");
-//            //return;
-//        }
-//    }
+    if (geo.topLeft() != rect.topLeft()) {
+        const KDint windowPos[2] = { rect.x(), rect.y() };
+        if (kdSetWindowPropertyiv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
+            qErrnoWarning(kdGetError(), "Could not set native window position");
+            //return;
+        }
+    }
 
 }
 
 void QOpenKODEWindow::setVisible(bool visible)
 {
-
+    KDboolean visibillity(visible);
+    if (kdSetWindowPropertybv(kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
+        qErrnoWarning(kdGetError(), "Could not set visibillity to false");
+    }
 }

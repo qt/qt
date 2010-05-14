@@ -6,9 +6,21 @@ contains(QT_CONFIG, egl): {
 	    egl/qeglcontext_p.h \
 	    egl/qeglproperties_p.h
 
-	SOURCES += \
-	    egl/qegl.cpp \
-	    egl/qeglproperties.cpp
+        SOURCES += \
+            egl/qegl.cpp \
+            egl/qeglproperties.cpp
+        unix {
+            !isEmpty(QMAKE_INCDIR_EGL){
+                INCLUDEPATH += $$QMAKE_INCDIR_EGL
+            }
+            !isEmpty(QMAKE_LIBDIR_EGL){
+                for(p, QMAKE_LIBDIR_EGL) {
+                    exists($$p):LIBS += -L$$p
+                }
+            }
+
+            !isEmpty(QMAKE_LIBS_EGL): LIBS += $$QMAKE_LIBS_EGL
+        }
 
 	wince*: SOURCES += egl/qegl_wince.cpp
 
