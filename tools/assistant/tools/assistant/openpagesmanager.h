@@ -46,9 +46,9 @@
  
 QT_BEGIN_NAMESPACE
 
+class QAbstractItemView;
 class QModelIndex;
 class QUrl;
-class QWidget;
  
 class HelpViewer;
 class OpenPagesModel;
@@ -66,10 +66,11 @@ class OpenPagesManager : public QObject
     void closePages(const QString &nameSpace);
     void reloadPages(const QString &nameSpace);
 
-    QWidget* openPagesWidget() const;
+    QAbstractItemView* openPagesWidget() const;
 
     int pageCount() const;
- 
+    void setCurrentPage(int index);
+
  public slots:
     HelpViewer *createPage(const QUrl &url, bool fromSearch = false);
     HelpViewer *createNewPageFromSearch(const QUrl &url);
@@ -88,7 +89,6 @@ private:
                      const QUrl &cmdLineUrl);
     void setupInitialPages(bool defaultCollection, const QUrl &cmdLineUrl);
     void closeOrReloadPages(const QString &nameSpace, bool tryReload);
-    void setCurrentPage(int index);
     void selectCurrentPage();
     void removePage(int index);
     void nextOrPreviousPage(int offset);

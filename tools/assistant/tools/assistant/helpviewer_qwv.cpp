@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "helpviewer.h"
+#include "helpviewer_p.h"
 
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
@@ -242,7 +243,7 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
 // -- HelpViewer
 
 HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
-    : QWebView(parent)
+    : QWebView(parent), d(new HelpViewerPrivate)
 {
     TRACE_OBJ
     setAcceptDrops(false);
@@ -273,11 +274,6 @@ HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
 
     setFont(viewerFont());
     setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);
-}
-
-HelpViewer::~HelpViewer()
-{
-    TRACE_OBJ
 }
 
 QFont HelpViewer::viewerFont() const
@@ -435,6 +431,11 @@ void HelpViewer::mousePressEvent(QMouseEvent *event)
         return;
 #endif
 
+    if (openPagesListRequested(event)) {
+        showOpenPagesList(event->pos());
+        return;
+    }
+
     if (HelpPage *currentPage = static_cast<HelpPage*> (page())) {
         currentPage->m_pressedButtons = event->buttons();
         currentPage->m_keyboardModifiers = event->modifiers();
@@ -479,7 +480,8 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 void HelpViewer::contextMenuEvent(QContextMenuEvent *event)
 {
     TRACE_OBJ
-    QWebView::contextMenuEvent(event);
+    if (!openPagesListRequested(event))
+        QWebView::contextMenuEvent(event);
 }
 
 QT_END_NAMESPACE

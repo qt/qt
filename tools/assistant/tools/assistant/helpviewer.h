@@ -144,6 +144,9 @@ private:
     void contextMenuEvent(QContextMenuEvent *event);
     QVariant loadResource(int type, const QUrl &name);
     bool handleForwardBackwardMouseButtons(QMouseEvent *e);
+    bool openPagesListRequested(const QMouseEvent *event) const;
+    bool openPagesListRequested(const QContextMenuEvent *event) const;
+    void showOpenPagesList(const QPoint &pos);
 
 private:
     HelpViewerPrivate *d;
