@@ -858,8 +858,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
-
+    keyPressPreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyPressEvent(event);
 }
@@ -871,7 +872,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
+    keyReleasePreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
