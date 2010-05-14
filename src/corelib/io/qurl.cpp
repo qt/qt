@@ -338,6 +338,7 @@ public:
     bool hasQuery;
     bool hasFragment;
     bool isValid;
+    bool isHostValid;
 
     char valueDelimiter;
     char pairDelimiter;
@@ -3347,6 +3348,7 @@ QUrlPrivate::QUrlPrivate()
     ref = 1;
     port = -1;
     isValid = false;
+    isHostValid = true;
     parsingMode = QUrl::TolerantMode;
     valueDelimiter = '=';
     pairDelimiter = '&';
@@ -3373,6 +3375,7 @@ QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
       hasQuery(copy.hasQuery),
       hasFragment(copy.hasFragment),
       isValid(copy.isValid),
+      isHostValid(copy.isHostValid),
       valueDelimiter(copy.valueDelimiter),
       pairDelimiter(copy.pairDelimiter),
       stateFlags(copy.stateFlags),
@@ -3403,6 +3406,8 @@ QString QUrlPrivate::canonicalHost() const
             that->host = host.toLower();
     } else {
         that->host = qt_ACE_do(host, NormalizeAce);
+        if (that->host.isNull())
+            that->isHostValid = false;
     }
     return that->host;
 }
@@ -3479,6 +3484,7 @@ QString QUrlPrivate::authority(QUrl::FormattingOptions options) const
 
 void QUrlPrivate::setAuthority(const QString &auth)
 {
+    isHostValid = true;
     if (auth.isEmpty())
         return;
 
@@ -4169,7 +4175,7 @@ bool QUrl::isValid() const
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Validated)) d->validate();
 
-    return d->isValid;
+    return d->isValid && d->isHostValid;
 }
 
 /*!
@@ -4421,7 +4427,6 @@ void QUrl::setAuthority(const QString &authority)
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
     detach();
     QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized);
-
     d->setAuthority(authority);
 }
 
@@ -4642,6 +4647,7 @@ void QUrl::setHost(const QString &host)
     if (!d) d = new QUrlPrivate;
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
     detach();
+    d->isHostValid = true;
     QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized | QUrlPrivate::HostCanonicalized);
 
     d->host = host;
