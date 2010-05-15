@@ -549,7 +549,7 @@ void tst_QTcpSocket::timeoutConnect_data()
 {
     QTest::addColumn<QString>("address");
     QTest::newRow("host") << QtNetworkSettings::serverName();
-    QTest::newRow("ip") << QtNetworkSettings::serverIP();
+    QTest::newRow("ip") << QtNetworkSettings::serverIP().toString();
 }
 
 void tst_QTcpSocket::timeoutConnect()
@@ -571,7 +571,7 @@ void tst_QTcpSocket::timeoutConnect()
     socket->connectToHost(address, 1357);
     QVERIFY(timer.elapsed() < 50);
     QTimer::singleShot(50, &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::enterLoop(5);
+    QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(socket->state() == QTcpSocket::ConnectingState
             || socket->state() == QTcpSocket::HostLookupState);
