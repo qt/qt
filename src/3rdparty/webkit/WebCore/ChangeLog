@@ -1,3 +1,46 @@
+2010-05-12  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Detect debug mode consistently
+        https://bugs.webkit.org/show_bug.cgi?id=38863
+
+        No new tests as there is no new functionality.
+
+        * WebCore.pro:
+
+2010-05-14  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Ignore invalid values for various CanvasRenderingContext2D properties
+        (lineWidth, miterLimit, shadowOffsetX, shadowOffsetY and shadowBlur)
+
+        https://bugs.webkit.org/show_bug.cgi?id=38841
+
+        Test: fast/canvas/canvas-invalid-values.html
+
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::setLineWidth):
+        (WebCore::CanvasRenderingContext2D::setMiterLimit):
+        (WebCore::CanvasRenderingContext2D::setShadowOffsetX):
+        (WebCore::CanvasRenderingContext2D::setShadowOffsetY):
+        (WebCore::CanvasRenderingContext2D::setShadowBlur):
+
+2010-05-12  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer: depth-test causes flicker in certain situations
+
+        This patch removes the simplistic 2D depth test as it leads to flickering side effects.
+        https://bugs.webkit.org/show_bug.cgi?id=38370
+
+        Tested by http://webkit.org/blog-files/3d-transforms/morphing-cubes.html
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::updateTransform):
+
 2010-04-29  James Robinson  <jamesr@chromium.org>
 
         Reviewed by Simon Fraser.
