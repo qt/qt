@@ -42,6 +42,7 @@
 /*!
     \page qtdesigner-components.html
     \title Creating and Using Components for Qt Designer
+    \brief How to create and use custom widget plugins.
     \ingroup best-practices
 
     \tableofcontents

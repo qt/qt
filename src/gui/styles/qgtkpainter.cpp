@@ -154,9 +154,21 @@ QGtkPainter::QGtkPainter(QPainter *_painter)
 static QString uniqueName(const QString &key, GtkStateType state, GtkShadowType shadow,
                           const QSize &size, GtkWidget *widget = 0)
 {
+
+    int digits = sizeof(qint64)/sizeof(QChar);
+    quint64 tstate= state,
+            tshadow = shadow,
+            twidth = size.width(),
+            theight = size.height(),
+            twidget = quint64(widget);
+
     // Note the widget arg should ideally use the widget path, though would compromise performance
-    QString tmp = QString(QLS("%0-%1-%2-%3x%4-%5")).arg(key).arg(uint(state)).arg(shadow)
-                          .arg(size.width()).arg(size.height()).arg(quintptr(widget));
+    QString tmp = key
+                  % QString::fromRawData((QChar*)&tstate, digits)
+                  % QString::fromRawData((QChar*)&tshadow, digits)
+                  % QString::fromRawData((QChar*)&twidth, digits)
+                  % QString::fromRawData((QChar*)&theight, digits)
+                  % QString::fromRawData((QChar*)&twidget, digits);
     return tmp;
 }
 

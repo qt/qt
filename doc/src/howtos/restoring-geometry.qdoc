@@ -42,7 +42,7 @@
 /*!
     \page restoring-geometry.html
     \title Restoring a Window's Geometry
-
+    \brief How to save &amp restore window geometry.
     \ingroup best-practices
 
     This document describes how to save and restore a \l{Window
