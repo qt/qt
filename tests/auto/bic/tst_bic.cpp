@@ -191,7 +191,7 @@ void tst_Bic::sizesAndVTables_data()
 #elif defined Q_OS_MAC && defined(__i386__)
 #  define FILESUFFIX "macx-gcc-ia32"
 #elif defined Q_OS_MAC && defined(__amd64__)
-#  define FILESUFFIX "macx-gcc-amd64";
+#  define FILESUFFIX "macx-gcc-amd64"
 #elif defined Q_OS_WIN && defined Q_CC_GNU
 #  define FILESUFFIX "win32-gcc-ia32"
 #else
