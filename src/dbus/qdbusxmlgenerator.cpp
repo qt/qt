@@ -160,7 +160,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 // do we need to describe this argument?
                 if (QDBusMetaType::signatureToType(typeName) == QVariant::Invalid)
                     xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
-                           .arg(typeNameToXml(mm.typeName()));
+                        .arg(typeNameToXml(QVariant::typeToName(QVariant::Type(typeId))));
             } else
                 continue;
         }

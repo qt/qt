@@ -1163,7 +1163,6 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(option)) {
             QRect tabRect = tbb->rect;
-            QRegion region(tabRect);
             painter->save();
             painter->setPen(QPen(option->palette.dark().color().dark(110), 0));
             switch (tbb->shape) {
@@ -1244,8 +1243,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
         alphaCornerColor = mergedColors(option->palette.color(widget->backgroundRole()), darkOutline);
     else
         alphaCornerColor = mergedColors(option->palette.background().color(), darkOutline);
-
-    QPalette palette = option->palette;
 
     switch (control) {
 
@@ -1333,11 +1330,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             bool isEnabled = (comboBox->state & State_Enabled);
             bool focus = isEnabled && (comboBox->state & State_HasFocus);
-            QColor buttonShadow = option->palette.dark().color();
             GtkStateType state = gtkPainter.gtkState(option);
             int appears_as_list = !proxy()->styleHint(QStyle::SH_ComboBox_Popup, comboBox, widget);
-            QPixmap cache;
-            QString pixmapName;
             QStyleOptionComboBox comboBoxCopy = *comboBox;
             comboBoxCopy.rect = option->rect;
 
@@ -1345,8 +1339,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             QRect rect = option->rect;
             QRect arrowButtonRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
                                                    SC_ComboBoxArrow, widget);
-            QRect editRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
-                                            SC_ComboBoxEditField, widget);
 
             GtkShadowType shadow = (option->state & State_Sunken || option->state & State_On ) ?
                                    GTK_SHADOW_IN : GTK_SHADOW_OUT;
@@ -1414,9 +1406,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 else if (option->state & State_MouseOver && comboBox->activeSubControls & SC_ComboBoxArrow)
                     buttonState = GTK_STATE_PRELIGHT;
 
-                QRect buttonrect = QRect(gtkToggleButton->allocation.x, gtkToggleButton->allocation.y,
-                                         gtkToggleButton->allocation.width, gtkToggleButton->allocation.height);
-
                 Q_ASSERT(gtkToggleButton);
                 gtkCachedPainter.paintBox( gtkToggleButton, "button", arrowButtonRect, buttonState,
                                      shadow, gtkToggleButton->style, buttonPath.toString() +
@@ -1436,8 +1425,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (focus)
                     GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
 
-            QHashableLatin1Literal buttonPath = comboBox->editable ? QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton")
-                                                : QHashableLatin1Literal("GtkComboBox.GtkToggleButton");
 
                 // Draw the separator between label and arrows
                 QHashableLatin1Literal vSeparatorPath = comboBox->editable
@@ -1643,6 +1630,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             style = scrollbarWidget->style;
             gboolean trough_under_steppers = true;
             gboolean trough_side_details = false;
+            gboolean activate_slider = false;
             gboolean stepper_size = 14;
             gint trough_border = 1;
             if (!d->gtk_check_version(2, 10, 0)) {
@@ -1650,6 +1638,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                            "trough-border",   &trough_border,
                                            "trough-side-details",   &trough_side_details,
                                            "trough-under-steppers", &trough_under_steppers,
+                                           "activate-slider",       &activate_slider,
                                            "stepper-size",          &stepper_size, NULL);
             }
             if (trough_under_steppers) {
@@ -1695,6 +1684,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 if (!(option->state & State_Enabled))
                     state = GTK_STATE_INSENSITIVE;
+                else if (activate_slider &&
+                         option->state & State_Sunken && (scrollBar->activeSubControls & SC_ScrollBarSlider))
+                    state = GTK_STATE_ACTIVE;
                 else if (option->state & State_MouseOver && (scrollBar->activeSubControls & SC_ScrollBarSlider))
                     state = GTK_STATE_PRELIGHT;
 
@@ -1932,14 +1924,11 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
 
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
             bool ticksBelow = slider->tickPosition & QSlider::TicksBelow;
-            QColor activeHighlight = option->palette.color(QPalette::Normal, QPalette::Highlight);
 
-            QPixmap cache;
             QBrush oldBrush = painter->brush();
             QPen oldPen = painter->pen();
 
@@ -1948,6 +1937,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             QColor highlightAlpha(Qt::white);
             highlightAlpha.setAlpha(80);
 
+            QGtkStylePrivate::gtk_widget_set_direction(hScaleWidget, slider->upsideDown ?
+                                                       GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             GtkWidget *scaleWidget = horizontal ? hScaleWidget : vScaleWidget;
             style = scaleWidget->style;
 
@@ -1981,11 +1972,21 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QRect lowerGroove = grooveRect;
 
                     if (horizontal) {
-                        upperGroove.setLeft(handle.center().x());
-                        lowerGroove.setRight(handle.center().x());
+                        if (slider->upsideDown) {
+                            lowerGroove.setLeft(handle.center().x());
+                            upperGroove.setRight(handle.center().x());
+                        } else {
+                            upperGroove.setLeft(handle.center().x());
+                            lowerGroove.setRight(handle.center().x());
+                        }
                     } else {
-                        upperGroove.setBottom(handle.center().y());
-                        lowerGroove.setTop(handle.center().y());
+                        if (!slider->upsideDown) {
+                            lowerGroove.setBottom(handle.center().y());
+                            upperGroove.setTop(handle.center().y());
+                        } else {
+                            upperGroove.setBottom(handle.center().y());
+                            lowerGroove.setTop(handle.center().y());
+                        }
                     }
 
                     gtkPainter.paintBox( scaleWidget, "trough-upper", upperGroove, state,
@@ -2543,7 +2544,6 @@ void QGtkStyle::drawControl(ControlElement element,
                                      d->gtkWidget("GtkMenu.GtkMenuItem");
 
             style = gtkPainter.getStyle(gtkMenuItem);
-            QColor borderColor = option->palette.background().color().darker(160);
             QColor shadow = option->palette.dark().color();
 
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
@@ -2768,8 +2768,6 @@ void QGtkStyle::drawControl(ControlElement element,
 
             // Arrow
             if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
-                QPoint buttonShift(pixelMetric(PM_ButtonShiftHorizontal, option, widget),
-                                   proxy()->pixelMetric(PM_ButtonShiftVertical, option, widget));
 
                 QFontMetrics fm(menuitem->font);
                 int arrow_size = fm.ascent() + fm.descent() - 2 * gtkMenuItem->style->ythickness;
@@ -3116,7 +3114,6 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
     case CC_ComboBox:
         if (const QStyleOptionComboBox *box = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             // We employ the gtk widget to position arrows and separators for us
-            QString comboBoxPath = box->editable ? QLS("GtkComboBoxEntry") : QLS("GtkComboBox");
             GtkWidget *gtkCombo = box->editable ? d->gtkWidget("GtkComboBoxEntry")
                                                 : d->gtkWidget("GtkComboBox");
             d->gtk_widget_set_direction(gtkCombo, (option->direction == Qt::RightToLeft) ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);

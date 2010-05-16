@@ -46,5 +46,5 @@
     The Pinch Zoom example shows how to use low-level multi-touch information
     to recognize a gesture.
 
-    \image multitouch-pinchzoom.png
+    \image multitouch-pinchzoom-example.png
 */

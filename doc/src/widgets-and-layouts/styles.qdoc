@@ -48,6 +48,7 @@
 /*!
     \page style-reference.html
     \title Implementing Styles and Style Aware Widgets
+    \ingroup qt-gui-concepts
     \brief An overview of styles and the styling of widgets.
 
     \ingroup frameworks-technologies

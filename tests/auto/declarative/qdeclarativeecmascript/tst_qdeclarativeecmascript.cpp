@@ -51,6 +51,7 @@
 #include <private/qdeclarativeengine_p.h>
 #include <private/qdeclarativeglobalscriptclass_p.h>
 #include "testtypes.h"
+#include "testhttpserver.h"
 
 /*
 This test covers evaluation of ECMAScript expressions and bindings from within
@@ -148,6 +149,8 @@ private slots:
     void functionAssignment();
     void eval();
     void function();
+
+    void include();
 
     void callQtInvokables();
 private:
@@ -2359,6 +2362,114 @@ void tst_qdeclarativeecmascript::function()
     QCOMPARE(o->property("test3").toBool(), true);
 
     delete o;
+}
+
+#define TRY_WAIT(expr) \
+    do { \
+        for (int ii = 0; ii < 6; ++ii) { \
+            if ((expr)) break; \
+            QTest::qWait(50); \
+        } \
+        QVERIFY((expr)); \
+    } while (false) 
+
+// Test the "Qt.include" method
+void tst_qdeclarativeecmascript::include()
+{
+    // Non-library relative include
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("include.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test0").toInt(), 99);
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test2_1").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test3_1").toBool(), true);
+
+    delete o;
+    }
+
+    // Library relative include
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("include_shared.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test0").toInt(), 99);
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test2_1").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test3_1").toBool(), true);
+
+    delete o;
+    }
+
+    // Callback
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("include_callback.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+    QCOMPARE(o->property("test6").toBool(), true);
+
+    delete o;
+    }
+
+    // Remote - success
+    {
+    TestHTTPServer server(8111);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QDeclarativeComponent component(&engine, TEST_FILE("include_remote.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    TRY_WAIT(o->property("done").toBool() == true);
+    TRY_WAIT(o->property("done2").toBool() == true);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+    QCOMPARE(o->property("test4").toBool(), true);
+    QCOMPARE(o->property("test5").toBool(), true);
+
+    QCOMPARE(o->property("test6").toBool(), true);
+    QCOMPARE(o->property("test7").toBool(), true);
+    QCOMPARE(o->property("test8").toBool(), true);
+    QCOMPARE(o->property("test9").toBool(), true);
+    QCOMPARE(o->property("test10").toBool(), true);
+
+    delete o;
+    }
+
+    // Remote - error
+    {
+    TestHTTPServer server(8111);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QDeclarativeComponent component(&engine, TEST_FILE("include_remote_missing.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    TRY_WAIT(o->property("done").toBool() == true);
+
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    QCOMPARE(o->property("test3").toBool(), true);
+
+    delete o;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

@@ -67,6 +67,7 @@
 #include "qdeclarativeextensioninterface.h"
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativeinclude_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -204,6 +205,11 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     // XXX used to add Qt.Sound class.
 
     //types
+    if (mainthread)
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::include, 2));
+    else
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::worker_include, 2));
+
     qtObject.setProperty(QLatin1String("isQtObject"), newFunction(QDeclarativeEnginePrivate::isQtObject, 1));
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QDeclarativeEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), newFunction(QDeclarativeEnginePrivate::hsla, 4));

@@ -32,5 +32,3 @@ symbian {
 
 FORMS = $$PWD/recopts.ui \
         $$PWD/proxysettings.ui
-
-include(../shared/deviceskin/deviceskin.pri)
