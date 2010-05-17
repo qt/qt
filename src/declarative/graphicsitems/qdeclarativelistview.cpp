@@ -1908,7 +1908,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
     pet.  The section expression is the size property.  If \c ListView.section and
     \c ListView.prevSection differ, the item will display a section header.
 
-    \snippet examples/declarative/listview/sections.qml 0
+    \snippet examples/declarative/modelviews/listview/sections.qml 0
 
     \image ListViewSections.png
 */
@@ -2263,6 +2263,9 @@ qreal QDeclarativeListView::maxXExtent() const
 void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeListView);
+    keyPressPreHandler(event);
+    if (event->isAccepted())
+        return;
 
     if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == QDeclarativeListView::Horizontal && event->key() == Qt::Key_Left)
@@ -2287,10 +2290,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
     event->ignore();
+    QDeclarativeFlickable::keyPressEvent(event);
 }
 
 /*!

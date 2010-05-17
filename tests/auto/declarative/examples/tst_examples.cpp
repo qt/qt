@@ -80,15 +80,14 @@ tst_examples::tst_examples()
 
 
     // Add directories you want excluded here
-    excludedDirs << "doc/src/snippets/declarative/graphicswidgets";
 
 #ifdef QT_NO_WEBKIT
-    excludedDirs << "examples/declarative/webview";
+    excludedDirs << "examples/declarative/modelviews/webview";
     excludedDirs << "demos/declarative/webbrowser";
 #endif
 
 #ifdef QT_NO_XMLPATTERNS
-    excludedDirs << "examples/declarative/xmldata";
+    excludedDirs << "examples/declarative/xml/xmldata";
     excludedDirs << "demos/declarative/twitter";
     excludedDirs << "demos/declarative/flickr";
     excludedDirs << "demos/declarative/photoviewer";

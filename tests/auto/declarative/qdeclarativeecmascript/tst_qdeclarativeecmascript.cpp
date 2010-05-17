@@ -149,6 +149,7 @@ private slots:
     void functionAssignment();
     void eval();
     void function();
+    void qtbug_10696();
 
     void include();
 
@@ -2470,6 +2471,14 @@ void tst_qdeclarativeecmascript::include()
 
     delete o;
     }
+}
+
+void tst_qdeclarativeecmascript::qtbug_10696()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_10696.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

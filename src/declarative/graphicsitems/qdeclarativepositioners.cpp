@@ -204,7 +204,11 @@ void QDeclarativeBasePositioner::prePositioning()
     if (!isComponentComplete())
         return;
 
+    if (d->doingPositioning)
+        return;
+
     d->queuedPositioning = false;
+    d->doingPositioning = true;
     //Need to order children by creation order modified by stacking order
     QList<QGraphicsItem *> children = d->QGraphicsItemPrivate::children;
     qSort(children.begin(), children.end(), d->insertionOrder);
@@ -242,6 +246,7 @@ void QDeclarativeBasePositioner::prePositioning()
     doPositioning(&contentSize);
     if(d->addTransition || d->moveTransition)
         finishApplyTransitions();
+    d->doingPositioning = false;
     //Set implicit size to the size of its children
     setImplicitHeight(contentSize.height());
     setImplicitWidth(contentSize.width());
@@ -339,7 +344,8 @@ Column {
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
-  the x or y properties, or use anchors on a child of a positioner, then the
+  the x or y properties, use anchors on a child of a positioner, or have the
+  height of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour.
 
 */
@@ -437,7 +443,7 @@ void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
 
 void QDeclarativeColumn::reportConflictingAnchors()
 {
-    bool childsWithConflictingAnchors(false);
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
@@ -446,15 +452,16 @@ void QDeclarativeColumn::reportConflictingAnchors()
                 QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
                 if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
                     usedAnchors & QDeclarativeAnchors::BottomAnchor ||
-                    usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
-                    childsWithConflictingAnchors = true;
+                    usedAnchors & QDeclarativeAnchors::VCenterAnchor ||
+                    anchors->fill() || anchors->centerIn()) {
+                    d->anchorConflict = true;
                     break;
                 }
             }
         }
     }
-    if (childsWithConflictingAnchors) {
-        qmlInfo(this) << "Cannot specify top, bottom or verticalCenter anchors for items inside Column";
+    if (d->anchorConflict) {
+        qmlInfo(this) << "Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column";
     }
 }
 
@@ -486,7 +493,8 @@ Row {
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
-  the x or y properties, or use anchors on a child of a positioner, then the
+  the x or y properties, use anchors on a child of a positioner, or have the
+  width of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour.
 
 */
@@ -574,7 +582,7 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 
 void QDeclarativeRow::reportConflictingAnchors()
 {
-    bool childsWithConflictingAnchors(false);
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
@@ -583,16 +591,16 @@ void QDeclarativeRow::reportConflictingAnchors()
                 QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
                 if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
                     usedAnchors & QDeclarativeAnchors::RightAnchor ||
-                    usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
-                    childsWithConflictingAnchors = true;
+                    usedAnchors & QDeclarativeAnchors::HCenterAnchor ||
+                    anchors->fill() || anchors->centerIn()) {
+                    d->anchorConflict = true;
                     break;
                 }
             }
         }
     }
-    if (childsWithConflictingAnchors) {
-        qmlInfo(this) << "Cannot specify left, right or horizontalCenter anchors for items inside Row";
-    }
+    if (d->anchorConflict)
+        qmlInfo(this) << "Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row";
 }
 
 /*!
@@ -638,7 +646,8 @@ Grid {
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
-  the x or y properties, or use anchors on a child of a positioner, then the
+  the x or y properties, use anchors on a child of a positioner, or have the
+  width or height of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour.
 */
 /*!
@@ -866,20 +875,19 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 
 void QDeclarativeGrid::reportConflictingAnchors()
 {
-    bool childsWithConflictingAnchors(false);
+    QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
             QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
-            if (anchors && anchors->usedAnchors()) {
-                childsWithConflictingAnchors = true;
+            if (anchors && (anchors->usedAnchors() || anchors->fill() || anchors->centerIn())) {
+                d->anchorConflict = true;
                 break;
             }
         }
     }
-    if (childsWithConflictingAnchors) {
+    if (d->anchorConflict)
         qmlInfo(this) << "Cannot specify anchors for items inside Grid";
-    }
 }
 
 /*!
@@ -888,6 +896,11 @@ void QDeclarativeGrid::reportConflictingAnchors()
   \brief The Flow item lines up its children side by side, wrapping as necessary.
   \inherits Item
 
+  Note that the positioner assumes that the x and y positions of its children
+  will not change. If you manually change the x or y properties in script, bind
+  the x or y properties, use anchors on a child of a positioner, or have the
+  width or height of a child depend on the position of a child, then the
+  positioner may exhibit strange behaviour.
 
 */
 /*!
@@ -1026,20 +1039,19 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
 
 void QDeclarativeFlow::reportConflictingAnchors()
 {
-    bool childsWithConflictingAnchors(false);
+    Q_D(QDeclarativeFlow);
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (child.item) {
             QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
-            if (anchors && anchors->usedAnchors()) {
-                childsWithConflictingAnchors = true;
+            if (anchors && (anchors->usedAnchors() || anchors->fill() || anchors->centerIn())) {
+                d->anchorConflict = true;
                 break;
             }
         }
     }
-    if (childsWithConflictingAnchors) {
+    if (d->anchorConflict)
         qmlInfo(this) << "Cannot specify anchors for items inside Flow";
-    }
 }
 
 QT_END_NAMESPACE

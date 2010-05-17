@@ -40,79 +40,89 @@
 ****************************************************************************/
 
 /*!
-    \title Animations
-    \example declarative/animations
+    \title Animation basics
+    \example declarative/animation/basics
 
     This example shows how to use animations in QML.
 */
 
 /*!
-    \title AspectRatio
-    \example declarative/aspectratio
-
-    This example shows how to implement different aspect ratios in QML.
+    \title Behaviors
+    \example declarative/animation/behaviors
 */
 
 /*!
-    \example declarative/behaviors
-    \title Behaviors
+    \title Easing types
+    \example declarative/animation/easing
+
+    This example shows the different easing modes available for animations.
+*/
+
+/*!
+    \title States
+    \example declarative/animation/states
 */
 
 /*!
     \title Border Image
-    \example declarative/border-image
+    \example declarative/imageelements/borderimage
 
     This example shows how to use a BorderImage in QML.
 */
 
 /*!
-    \title Clocks
-    \example declarative/clocks
+    \title Image
+    \example declarative/imageelements/image
 
-    This example shows how to create a Clock component and reuse it in a grid.
+    This example shows uses of the \l Image element in QML.
 */
 
 /*!
-    \title Connections
-    \example declarative/connections
-
-    This example shows how to use a Connection element in QML.
+    \title Reference examples
+    \example declarative/cppextensions/referenceexamples
 */
 
 /*!
-    \title Dial
-    \example declarative/dial
-
-    This example shows how to implement a dial in QML.
+    \title Plugins
+    \example declarative/cppextensions/plugins
 */
 
 /*!
-    \title Dynamic
-    \example declarative/dynamic
-
-    This example shows how to create dynamic objects QML.
+    \title QtWidgets
+    \example declarative/cppextensions/proxywidgets
 */
 
 /*!
-    \example declarative/extending
-    \title Extending
+    \title QGraphicsLayouts
+    \example declarative/cppextensions/qgraphicslayouts
 */
 
 /*!
-    \example declarative/fillmode
-    \title Fillmode
+    \title Image Provider
+    \example declarative/cppextensions/imageprovider
 */
 
 /*!
-    \title Flipable
-    \example declarative/flipable
+    \title Network access manager
+    \example declarative/cppextensions/proxyviewer
+*/
 
-    This example shows how to use a Flipable element in QML.
+/*!
+    \title Internationlization
+    \example declarative/i18n
+*/
+
+/*!
+    \title Positioners
+    \example declarative/positioners
+
+    This example shows how to use positioner elements such as Row, Column,
+    Grid and Flow.
 */
 
 /*!
     \title Focus
-    \example declarative/focus
+    \example declarative/keyinteraction/focus
 
     This example shows how to handle keys and focus in QML.
 
@@ -120,141 +130,149 @@
 */
 
 /*!
-    \example declarative/fonts
-    \title Fonts
-*/
-
-/*!
-    \example declarative/gridview
     \title GridView
+    \example declarative/modelviews/gridview
 */
 
 /*!
-    \example declarative/imageprovider
-    \title Image Provider
-*/
-
-/*!
-    \example declarative/images
-    \title Images
-*/
-
-/*!
-    \example declarative/layouts
-    \title Layouts
-*/
-
-/*!
-    \example declarative/listmodel-threaded
-    \title ListModel Threaded
-*/
-
-/*!
-    \example declarative/listview
     \title ListView
+    \example declarative/modelviews/listview
 */
 
 /*!
-    \example declarative/mousearea
-    \title Mouse Area
-*/
-
-/*!
-    \example declarative/objectlistmodel
     \title Object ListModel
+    \example declarative/modelviews/objectlistmodel
 */
 
 /*!
-    \example declarative/package
     \title Package
+    \example declarative/modelviews/package
 */
 
 /*!
-    \example declarative/parallax
     \title Parallax
+    \example declarative/modelviews/parallax
 */
 
 /*!
-    \example declarative/plugins
-    \title Plugins
-*/
-
-/*!
-    \example declarative/progressbar
-    \title Progress Bars
-*/
-
-/*!
-    \example declarative/proxywidgets
-    \title Proxy Widgets
-*/
-
-/*!
-    \example declarative/scrollbar
-    \title Scrollbar
-*/
-
-/*!
-    \example declarative/searchbox
-    \title Search Box
-*/
-
-/*!
-    \example declarative/slideswitch
-    \title Slide Switch
-*/
-
-/*!
-    \example declarative/sql
-    \title SQL
-*/
-
-/*!
-    \example declarative/states
-    \title States
-*/
-
-/*!
-    \example declarative/stringlistmodel
     \title String ListModel
+    \example declarative/modelviews/stringlistmodel
 */
 
 /*!
-    \example declarative/tabwidget
-    \title Tab Widget
-*/
-
-/*!
-    \example declarative/tic-tac-toe
-    \title Tic-Tac-Toe
-*/
-
-/*!
-    \example declarative/tvtennis
-    \title TV Tennis
-*/
-
-/*!
-    \example declarative/velocity
-    \title Velocity
-*/
-
-/*!
-    \example declarative/webview
     \title WebView
+    \example declarative/modelviews/webview
 */
 
 /*!
-    \example declarative/workerscript
+    \title SQL Local Storage
+    \example declarative/sqllocalstorage
+*/
+
+/*!
+    \title Fonts
+    \example declarative/text/fonts
+*/
+
+/*!
+    \title Threaded ListModel 
+    \example declarative/threading/threadedlistmodel
+*/
+
+/*!
     \title WorkerScript
+    \example declarative/threading/workerscript
 */
 
 /*!
-    \example declarative/xmldata
+    \title Clocks
+    \example declarative/toys/clocks
+
+    This example shows how to create a Clock component and reuse it in a grid.
+*/
+
+/*!
+    \title Dial
+    \example declarative/toys/dial
+
+    This example shows how to implement a dial in QML.
+*/
+
+/*!
+    \title Dynamic
+    \example declarative/toys/dynamic
+
+    This example shows how to create dynamic objects QML.
+*/
+
+/*!
+    \title Tic-Tac-Toe
+    \example declarative/toys/tic-tac-toe
+*/
+
+/*!
+    \title TV Tennis
+    \example declarative/toys/tvtennis
+*/
+
+/*!
+    \title Velocity
+    \example declarative/toys/velocity
+*/
+
+/*!
+    \title Gestures
+    \example declarative/touchinteraction/gestures
+*/
+
+/*!
+    \title Mouse Area
+    \example declarative/touchinteraction/mousearea
+*/
+
+/*!
+    \title Flipable
+    \example declarative/ui-components/flipable
+
+    This example shows how to use a Flipable element in QML.
+*/
+
+/*!
+    \title Progress Bars
+    \example declarative/ui-components/progressbar
+*/
+
+/*!
+    \title Scrollbar
+    \example declarative/ui-components/scrollbar
+*/
+
+/*!
+    \title Search Box
+    \example declarative/ui-components/searchbox
+*/
+
+/*!
+    \title Slide Switch
+    \example declarative/ui-components/slideswitch
+*/
+
+/*!
+    \title Spinner
+    \example declarative/ui-components/spinner
+*/
+
+/*!
+    \title Tab Widget
+    \example declarative/ui-components/tabwidget
+*/
+
+/*!
     \title XML Data
+    \example declarative/xml/xmldata
 */
 
 /*!
-    \example declarative/xmlhttprequest
     \title XMLHttpRequest
+    \example declarative/xml/xmlhttprequest
 */

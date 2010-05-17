@@ -124,7 +124,7 @@ public:
       _stateGroup(0), origin(QDeclarativeItem::Center),
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
-      smooth(false), transformOriginDirty(true), keyHandler(0),
+      smooth(false), transformOriginDirty(true), doneEventPreHandler(false), keyHandler(0),
       mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
@@ -263,6 +263,7 @@ public:
     bool _keepMouse:1;
     bool smooth:1;
     bool transformOriginDirty : 1;
+    bool doneEventPreHandler : 1;
 
     QDeclarativeItemKeyFilter *keyHandler;
 
@@ -324,11 +325,13 @@ public:
     QDeclarativeItemKeyFilter(QDeclarativeItem * = 0);
     virtual ~QDeclarativeItemKeyFilter();
 
-    virtual void keyPressed(QKeyEvent *event);
-    virtual void keyReleased(QKeyEvent *event);
-    virtual void inputMethodEvent(QInputMethodEvent *event);
+    virtual void keyPressed(QKeyEvent *event, bool post);
+    virtual void keyReleased(QKeyEvent *event, bool post);
+    virtual void inputMethodEvent(QInputMethodEvent *event, bool post);
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
     virtual void componentComplete();
+
+    bool m_processPost;
 
 private:
     QDeclarativeItemKeyFilter *m_next;
@@ -359,6 +362,9 @@ class QDeclarativeKeyNavigationAttached : public QObject, public QDeclarativeIte
     Q_PROPERTY(QDeclarativeItem *down READ down WRITE setDown NOTIFY changed)
     Q_PROPERTY(QDeclarativeItem *tab READ tab WRITE setTab NOTIFY changed)
     Q_PROPERTY(QDeclarativeItem *backtab READ backtab WRITE setBacktab NOTIFY changed)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
+
+    Q_ENUMS(Priority)
 
 public:
     QDeclarativeKeyNavigationAttached(QObject * = 0);
@@ -376,14 +382,19 @@ public:
     QDeclarativeItem *backtab() const;
     void setBacktab(QDeclarativeItem *);
 
+    enum Priority { BeforeItem, AfterItem };
+    Priority priority() const;
+    void setPriority(Priority);
+
     static QDeclarativeKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void changed();
+    void priorityChanged();
 
 private:
-    virtual void keyPressed(QKeyEvent *event);
-    virtual void keyReleased(QKeyEvent *event);
+    virtual void keyPressed(QKeyEvent *event, bool post);
+    virtual void keyReleased(QKeyEvent *event, bool post);
 };
 
 class QDeclarativeKeysAttachedPrivate : public QObjectPrivate
@@ -423,6 +434,9 @@ class QDeclarativeKeysAttached : public QObject, public QDeclarativeItemKeyFilte
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> forwardTo READ forwardTo)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
+
+    Q_ENUMS(Priority)
 
 public:
     QDeclarativeKeysAttached(QObject *parent=0);
@@ -437,6 +451,10 @@ public:
         }
     }
 
+    enum Priority { BeforeItem, AfterItem};
+    Priority priority() const;
+    void setPriority(Priority);
+
     QDeclarativeListProperty<QDeclarativeItem> forwardTo() {
         Q_D(QDeclarativeKeysAttached);
         return QDeclarativeListProperty<QDeclarativeItem>(this, d->targets);
@@ -448,6 +466,7 @@ public:
 
 Q_SIGNALS:
     void enabledChanged();
+    void priorityChanged();
     void pressed(QDeclarativeKeyEvent *event);
     void released(QDeclarativeKeyEvent *event);
     void digit0Pressed(QDeclarativeKeyEvent *event);
@@ -492,9 +511,9 @@ Q_SIGNALS:
     void volumeDownPressed(QDeclarativeKeyEvent *event);
 
 private:
-    virtual void keyPressed(QKeyEvent *event);
-    virtual void keyReleased(QKeyEvent *event);
-    virtual void inputMethodEvent(QInputMethodEvent *);
+    virtual void keyPressed(QKeyEvent *event, bool post);
+    virtual void keyReleased(QKeyEvent *event, bool post);
+    virtual void inputMethodEvent(QInputMethodEvent *, bool post);
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     const QByteArray keyToSignal(int key) {

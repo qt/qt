@@ -1624,6 +1624,8 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
             return false;
 
         int convertReg = acquireReg();
+        if (convertReg == -1)
+            return false;
 
         if (destination->type == QMetaType::QReal) {
             Instr convert;
@@ -2011,6 +2013,8 @@ bool QDeclarativeBindingCompilerPrivate::parseArith(QDeclarativeJS::AST::Node *n
     AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
 
     type.reg = acquireReg();
+    if (type.reg == -1)
+        return false;
 
     Result lhs;
     Result rhs;
@@ -2062,6 +2066,8 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
             return false;
 
         lhsTmp = acquireReg();
+        if (lhsTmp == -1)
+            return false;
 
         Instr conv;
         conv.common.type = Instr::ConvertGenericToReal;
@@ -2075,6 +2081,8 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
             return false;
 
         rhsTmp = acquireReg();
+        if (rhsTmp == -1)
+            return false;
 
         Instr conv;
         conv.common.type = Instr::ConvertGenericToReal;
@@ -2123,6 +2131,8 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
             return false;
 
         lhsTmp = acquireReg(Instr::CleanupString);
+        if (lhsTmp == -1)
+            return false;
 
         Instr convert;
         convert.common.type = Instr::ConvertGenericToString;
@@ -2136,6 +2146,8 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
             return false;
 
         rhsTmp = acquireReg(Instr::CleanupString);
+        if (rhsTmp == -1)
+            return false;
 
         Instr convert;
         convert.common.type = Instr::ConvertGenericToString;
@@ -2145,6 +2157,9 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     }
 
     type.reg = acquireReg(Instr::CleanupString);
+    if (type.reg == -1)
+        return false;
+
     type.type = QMetaType::QString;
 
     Instr add;
@@ -2185,6 +2200,9 @@ bool QDeclarativeBindingCompilerPrivate::parseLogic(QDeclarativeJS::AST::Node *n
     if (!parseExpression(expression->right, rhs)) return false;
 
     type.reg = acquireReg();
+    if (type.reg == -1)
+        return false;
+
     type.metaObject = 0;
     type.type = QVariant::Bool;
 
@@ -2310,6 +2328,8 @@ bool QDeclarativeBindingCompilerPrivate::parseConstant(QDeclarativeJS::AST::Node
     type.metaObject = 0;
     type.type = -1;
     type.reg = acquireReg();
+    if (type.reg == -1)
+        return false;
 
     if (node->kind == AST::Node::Kind_TrueLiteral) {
         type.type = QVariant::Bool;
@@ -2398,6 +2418,9 @@ bool QDeclarativeBindingCompilerPrivate::parseMethod(QDeclarativeJS::AST::Node *
     releaseReg(r1.reg);
 
     op.binaryop.output = acquireReg();
+    if (op.binaryop.output == -1)
+        return false;
+
     op.binaryop.src1 = r0.reg;
     op.binaryop.src2 = r1.reg;
     bytecode << op;
@@ -2473,6 +2496,8 @@ bool QDeclarativeBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo
 
     if (rv.type == QMetaType::QString) {
         int tmp = acquireReg();
+        if (tmp == -1)
+            return false;
         Instr copy;
         copy.common.type = Instr::Copy;
         copy.copy.reg = tmp;
@@ -2549,6 +2574,8 @@ int QDeclarativeBindingCompilerPrivate::registerLiteralString(const QString &str
     data += strdata;
 
     int reg = acquireReg(Instr::CleanupString);
+    if (reg == -1)
+        return false;
 
     Instr string;
     string.common.type = Instr::String;

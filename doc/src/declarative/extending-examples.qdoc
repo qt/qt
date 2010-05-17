@@ -40,13 +40,13 @@
 ****************************************************************************/
 
 /*!
-\example declarative/extending/adding
+\example declarative/cppextensions/referenceexamples/adding
 \title Extending QML - Adding Types Example
 
 The Adding Types Example shows how to add a new element type, \c Person, to QML.
 The \c Person type can be used from QML like this:
 
-\snippet examples/declarative/extending/adding/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/adding/example.qml 0
 
 \section1 Declare the Person class
 
@@ -55,11 +55,11 @@ with the two properties we want accessible on the QML type - name and shoeSize.
 Although in this example we use the same name for the C++ class as the QML 
 element, the C++ class can be named differently, or appear in a namespace.
 
-\snippet examples/declarative/extending/adding/person.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/adding/person.h 0
 
 \section1 Define the Person class
 
-\snippet examples/declarative/extending/adding/person.cpp 0
+\snippet examples/declarative/cppextensions/referenceexamples/adding/person.cpp 0
 
 The Person class implementation is quite basic.  The property accessors simply
 return members of the object instance.
@@ -75,7 +75,7 @@ loads and runs the QML snippet shown at the beginning of this page.
 */
 
 /*!
-\example declarative/extending/properties
+\example declarative/cppextensions/referenceexamples/properties
 \title Extending QML - Object and List Property Types Example
 
 This example builds on:
@@ -88,16 +88,16 @@ properties in QML.  This example adds a BirthdayParty element that specifies
 a birthday party, consisting of a celebrant and a list of guests.  People are
 specified using the People QML type built in the previous example.
 
-\snippet examples/declarative/extending/properties/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/properties/example.qml 0
 
 \section1 Declare the BirthdayParty
 
 The BirthdayParty class is declared like this:
 
-\snippet examples/declarative/extending/properties/birthdayparty.h 0
-\snippet examples/declarative/extending/properties/birthdayparty.h 1
-\snippet examples/declarative/extending/properties/birthdayparty.h 2
-\snippet examples/declarative/extending/properties/birthdayparty.h 3
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.h 1
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.h 2
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.h 3
 
 The class contains a member to store the celebrant object, and also a 
 QList<Person *> member.  
@@ -114,7 +114,7 @@ scenarios.
 
 The implementation of BirthdayParty property accessors is straight forward.
 
-\snippet examples/declarative/extending/properties/birthdayparty.cpp 0
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.cpp 0
 
 \section1 Running the example
 
@@ -123,7 +123,7 @@ loads and runs the QML snippet shown at the beginning of this page.
 */
 
 /*!
-\example declarative/extending/coercion
+\example declarative/cppextensions/referenceexamples/coercion
 \title Extending QML - Inheritance and Coercion Example
 
 This example builds on:
@@ -136,11 +136,11 @@ The Inheritance and Coercion Example shows how to use base classes to assign
 elements of more than one type to a property.  It specializes the Person element
 developed in the previous examples into two elements - a \c Boy and a \c Girl.
 
-\snippet examples/declarative/extending/coercion/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/coercion/example.qml 0
 
 \section1 Declare Boy and Girl
 
-\snippet examples/declarative/extending/coercion/person.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/coercion/person.h 0
 
 The Person class remains unaltered in this example and the Boy and Girl C++ 
 classes are trivial extensions of it.  As an example, the inheritance used here
@@ -155,7 +155,7 @@ previous example.  However, as we have repurposed the People class as a common
 base for Boy and Girl, we want to prevent it from being instantiated from QML
 directly - an explicit Boy or Girl should be instantiated instead.
 
-\snippet examples/declarative/extending/coercion/main.cpp 0
+\snippet examples/declarative/cppextensions/referenceexamples/coercion/main.cpp 0
 
 While we want to disallow instantiating Person from within QML, it still needs
 to be registered with the QML engine, so that it can be used as a property type
@@ -165,7 +165,7 @@ and other types can be coerced to it.
 
 The implementation of Boy and Girl are trivial.
 
-\snippet examples/declarative/extending/coercion/person.cpp 1
+\snippet examples/declarative/cppextensions/referenceexamples/coercion/person.cpp 1
 
 All that is necessary is to implement the constructor, and to register the types
 and their QML name with the QML engine.
@@ -175,7 +175,7 @@ and their QML name with the QML engine.
 The BirthdayParty element has not changed since the previous example.  The 
 celebrant and guests property still use the People type.  
 
-\snippet examples/declarative/extending/coercion/birthdayparty.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/coercion/birthdayparty.h 0
 
 However, as all three types, Person, Boy and Girl, have been registered with the
 QML system, on assignment QML automatically (and type-safely) converts the Boy
@@ -186,7 +186,7 @@ loads and runs the QML snippet shown at the beginning of this page.
 */
 
 /*!
-\example declarative/extending/default
+\example declarative/cppextensions/referenceexamples/default
 \title Extending QML - Default Property Example
 
 This example builds on:
@@ -200,14 +200,14 @@ The Default Property Example is a minor modification of the
 \l {Extending QML - Inheritance and Coercion Example} that simplifies the 
 specification of a BirthdayParty through the use of a default property.
 
-\snippet examples/declarative/extending/default/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/default/example.qml 0
 
 \section1 Declaring the BirthdayParty class
 
 The only difference between this example and the last, is the addition of the
 \c DefaultProperty class info annotation.  
 
-\snippet examples/declarative/extending/default/birthdayparty.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/default/birthdayparty.h 0
 
 The default property specifies the property to assign to whenever an explicit 
 property is not specified, in the case of the BirthdayParty element the guest
@@ -222,7 +222,7 @@ loads and runs the QML snippet shown at the beginning of this page.
 */
 
 /*!
-\example declarative/extending/grouped
+\example declarative/cppextensions/referenceexamples/grouped
 \title Extending QML - Grouped Properties Example
 
 This example builds on:
@@ -236,7 +236,7 @@ This example builds on:
 */
 
 /*!
-\example declarative/extending/grouped
+\example declarative/cppextensions/referenceexamples/grouped
 \title Extending QML - Attached Properties Example
 
 This example builds on:
@@ -251,7 +251,7 @@ This example builds on:
 */
 
 /*!
-\example declarative/extending/signal
+\example declarative/cppextensions/referenceexamples/signal
 \title Extending QML - Signal Support Example
 
 This example builds on:
@@ -267,7 +267,7 @@ This example builds on:
 */
 
 /*!
-\example declarative/extending/valuesource
+\example declarative/cppextensions/referenceexamples/valuesource
 \title Extending QML - Property Value Source Example
 
 This example builds on:
@@ -284,7 +284,7 @@ This example builds on:
 */
 
 /*!
-\example declarative/extending/binding
+\example declarative/cppextensions/referenceexamples/binding
 \title Extending QML - Binding Example
 
 This example builds on:
