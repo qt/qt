@@ -1908,7 +1908,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
     pet.  The section expression is the size property.  If \c ListView.section and
     \c ListView.prevSection differ, the item will display a section header.
 
-    \snippet examples/declarative/listview/sections.qml 0
+    \snippet examples/declarative/modelviews/listview/sections.qml 0
 
     \image ListViewSections.png
 */

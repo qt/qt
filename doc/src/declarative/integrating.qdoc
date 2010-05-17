@@ -110,7 +110,7 @@ of QML UIs:
 \section2 Loading QGraphicsWidget objects in QML
 
 An alternative approach is to expose your existing QGraphicsWidget objects to 
-QML and construct your scene in QML instead. See the \l {declarative/layouts/graphicsLayouts}{graphics layouts example}
+QML and construct your scene in QML instead. See the \l {declarative/cppextensions/qgraphicslayouts}{graphics layouts example}
 which shows how to expose Qt's graphics layout classes to QML in order
 to use QGraphicsWidget with classes like QGraphicsLinearLayout and QGraphicsGridLayout.
 

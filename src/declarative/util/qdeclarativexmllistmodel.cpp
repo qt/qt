@@ -536,7 +536,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     with a combined value of all key roles that is not already present in
     the model.
 
-    \sa {declarative/xmldata}{XML data example}
+    \sa {declarative/xml/xmldata}{XML data example}
 */
 
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
