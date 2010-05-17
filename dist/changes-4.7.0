@@ -233,7 +233,16 @@ Qt for Windows CE
 
 
 - Designer
-
+ - [QTBUG-9351] Fixed a bug that caused modified headerview-properties
+   of item views to be duplicated in the UI-file.
+ - [QTBUG-8347] Fixed a layout problem caused by embedded images in the rich
+   text of a QLabel.
+ - [QTBUG-8041], [QTBUG-8213] Fixed a crash related to undo while moving
+   widgets by arrow keys.
+ - [QTBUG-7822] Added support for the 'windowOpacity'-property.
+ - [QTBUG-7764] Fixed the emission of the propertyChanged()-signal of
+   QDesignerPropertyEditorInterface.
+ - [QTBUG-5492] Made widgetbox-filter match on class names, too.
 
 - Linguist
   - Linguist GUI
@@ -251,9 +260,10 @@ Qt for Windows CE
 
 - uic
 
-
 - uic3
 
+ - [QTBUG-9207] Fixed export of image files of type XPM, added
+   compatibility option -limit-xpm-linelength.
 
 - qmake
 
