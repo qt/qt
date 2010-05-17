@@ -33,7 +33,6 @@ New features
  - QNetworkSession, QNetworkConfiguration, QNetworkConfigurationManager
     * New bearer management classes added.
 
-
 Third party components
 ----------------------
 
@@ -68,6 +67,9 @@ QtGui
       functions, and replaced them with setCopyCount(), copyCount() and
       supportsMultipleCopies().
 
+ - QPrintDialog/QPrinter
+    * Added support for printing the current page.
+
  - QCommonStyle
     * Fixed a bug that led to missing text pixels in QTabBar when using
       small font sizes. (QTBUG-7137)
@@ -76,12 +78,30 @@ QtGui
     * Fixed rendering bugs when scrolling graphics items with drop
       shadows.
 
+ - QGraphicsItem
+    * [QTBUG-8112] itemChange() is now called when transformation
+      properties change (setRotation, setScale, setTransformOriginPoint).
+
+ - QGraphicsTextItem
+    * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
+      the item has focus and something else has the same shortcut sequence.
+
+ - QGraphicsView
+    * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
+      the mouse.
+
  - QImage
-    * [QTBUG-9640] Prevented unneccessary copy in
-      QImage::setAlphaChannel().
-    * Added QImage::bitPlaneCount(). (QTBUG-7982)
+    * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
+    * [QTBUG-7982] Added QImage::bitPlaneCount().
+
+ - QPicture
+    * [QTBUG-4974] Printing QPictures containing text to a high resolution
+      QPrinter would in many cases cause incorrect character spacing.
 
  - QPainter
+    * Added QPainter::drawPixmapFragments(), which makes it possible to draw
+      pixmaps, or sub-rectangles of pixmaps, at various positions with
+      different scale, opacity and rotation.
     * [QTBUG-10018] Fixed image drawing inconsistencies when drawing
       1x1 source rects with rotating / shear / perspective transforms.
     * Optimized various blending and rendering operations for ARM

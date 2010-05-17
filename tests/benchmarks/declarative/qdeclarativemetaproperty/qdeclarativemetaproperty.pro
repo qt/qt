@@ -14,4 +14,3 @@ symbian {
   # Define SRCDIR equal to test's source directory
   DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
-

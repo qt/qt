@@ -1627,7 +1627,7 @@ InspectorController* QWebPagePrivate::inspectorController()
 /*!
    \enum QWebPage::FindFlag
 
-   This enum describes the options available to QWebPage's findText() function. The options
+   This enum describes the options available to the findText() function. The options
    can be OR-ed together from the following list:
 
    \value FindBackward Searches backwards instead of forwards.
@@ -1648,6 +1648,8 @@ InspectorController* QWebPagePrivate::inspectorController()
     \value DelegateExternalLinks When activating links that point to documents not stored on the
     local filesystem or an equivalent - such as the Qt resource system - then linkClicked() is emitted.
     \value DelegateAllLinks Whenever a link is activated the linkClicked() signal is emitted.
+
+    \sa QWebPage::linkDelegationPolicy
 */
 
 /*!
@@ -1662,6 +1664,8 @@ InspectorController* QWebPagePrivate::inspectorController()
     \value NavigationTypeReload The user activated the reload action.
     \value NavigationTypeFormResubmitted An HTML form was submitted a second time.
     \value NavigationTypeOther A navigation to another document using a method not listed above.
+
+    \sa acceptNavigationRequest()
 */
 
 /*!
@@ -1671,7 +1675,7 @@ InspectorController* QWebPagePrivate::inspectorController()
 
     Actions only have an effect when they are applicable. The availability of
     actions can be be determined by checking \l{QAction::}{isEnabled()} on the
-    action returned by \l{QWebPage::}{action()}.
+    action returned by action().
 
     One method of enabling the text editing, cursor movement, and text selection actions
     is by setting \l contentEditable to true.
@@ -1753,6 +1757,8 @@ InspectorController* QWebPagePrivate::inspectorController()
 /*!
     \enum QWebPage::WebWindowType
 
+    This enum describes the types of window that can be created by the createWindow() function.
+
     \value WebBrowserWindow The window is a regular web browser window.
     \value WebModalDialog The window acts as modal dialog.
 */
@@ -1769,11 +1775,13 @@ InspectorController* QWebPagePrivate::inspectorController()
     to provide functionality like QWebView in a widget-less environment.
 
     QWebPage's API is very similar to QWebView, as you are still provided with
-    common functions like action() (known as \l{QWebView::}{pageAction()} in
-    QWebView), triggerAction(), findText() and settings(). More QWebView-like
-    functions can be found in the main frame of QWebPage, obtained via
-    QWebPage::mainFrame(). For example, the load(), setUrl() and setHtml()
-    unctions for QWebPage can be accessed using QWebFrame.
+    common functions like action() (known as
+    \l{QWebView::pageAction()}{pageAction}() in QWebView), triggerAction(),
+    findText() and settings(). More QWebView-like functions can be found in the
+    main frame of QWebPage, obtained via the mainFrame() function. For example,
+    the \l{QWebFrame::load()}{load}(), \l{QWebFrame::setUrl()}{setUrl}() and
+    \l{QWebFrame::setHtml()}{setHtml}() functions for QWebPage can be accessed
+    using QWebFrame.
 
     The loadStarted() signal is emitted when the page begins to load.The
     loadProgress() signal, on the other hand, is emitted whenever an element
@@ -1877,7 +1885,8 @@ QWebFrame *QWebPage::currentFrame() const
 /*!
     \since 4.6
 
-    Returns the frame at the given point \a pos.
+    Returns the frame at the given point \a pos, or 0 if there is no frame at
+    that position.
 
     \sa mainFrame(), currentFrame()
 */
@@ -1996,7 +2005,7 @@ bool QWebPage::javaScriptConfirm(QWebFrame *frame, const QString& msg)
     result should be written to \a result and true should be returned. If the prompt was not cancelled by the
     user, the implementation should return true and the result string must not be null.
 
-    The default implementation uses QInputDialog::getText.
+    The default implementation uses QInputDialog::getText().
 */
 bool QWebPage::javaScriptPrompt(QWebFrame *frame, const QString& msg, const QString& defaultValue, QString* result)
 {
@@ -2210,6 +2219,8 @@ QSize QWebPage::viewportSize() const
 
     By default, for a newly-created Web page, this property contains a size with
     zero width and height.
+
+    \sa QWebFrame::render(), preferredContentsSize
 */
 void QWebPage::setViewportSize(const QSize &size) const
 {
@@ -2238,11 +2249,12 @@ QSize QWebPage::preferredContentsSize() const
 /*!
     \property QWebPage::preferredContentsSize
     \since 4.6
-    \brief the size of the fixed layout
+    \brief the preferred size of the contents
 
-    The size affects the layout of the page in the viewport.  If set to a fixed size of
-    1024x768 for example then webkit will layout the page as if the viewport were that size
-    rather than something different.
+    If this property is set to a valid size, it is used to lay out the page.
+    If it is not set (the default), the viewport size is used instead.
+
+    \sa viewportSize
 */
 void QWebPage::setPreferredContentsSize(const QSize &size) const
 {
@@ -2590,9 +2602,11 @@ QAction *QWebPage::action(WebAction action) const
 
 /*!
     \property QWebPage::modified
-    \brief whether the page contains unsubmitted form data
+    \brief whether the page contains unsubmitted form data, or the contents have been changed.
 
     By default, this property is false.
+
+    \sa contentsChanged(), contentEditable, undoStack()
 */
 bool QWebPage::isModified() const
 {
@@ -2608,6 +2622,8 @@ bool QWebPage::isModified() const
 #ifndef QT_NO_UNDOSTACK
 /*!
     Returns a pointer to the undo stack used for editable content.
+
+    \sa modified
 */
 QUndoStack *QWebPage::undoStack() const
 {
@@ -2730,7 +2746,7 @@ bool QWebPage::event(QEvent *ev)
 }
 
 /*!
-    Similar to QWidget::focusNextPrevChild it focuses the next focusable web element
+    Similar to QWidget::focusNextPrevChild() it focuses the next focusable web element
     if \a next is true; otherwise the previous element is focused.
 
     Returns true if it can find a new focusable element, or false if it can't.
@@ -2757,6 +2773,8 @@ bool QWebPage::focusNextPrevChild(bool next)
     If this property is enabled the contents of the page can be edited by the user through a visible
     cursor. If disabled (the default) only HTML elements in the web page with their
     \c{contenteditable} attribute set are editable.
+
+    \sa modified, contentsChanged(), WebAction
 */
 void QWebPage::setContentEditable(bool editable)
 {
@@ -2926,17 +2944,21 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     as a result of the user clicking on a "file upload" button in a HTML form where multiple
     file selection is allowed.
 
-    \omitvalue ErrorPageExtension (introduced in Qt 4.6)
+    \value ErrorPageExtension Whether the web page can provide an error page when loading fails.
+    (introduced in Qt 4.6)
+
+    \sa ChooseMultipleFilesExtensionOption, ChooseMultipleFilesExtensionReturn, ErrorPageExtensionOption, ErrorPageExtensionReturn
 */
 
 /*!
     \enum QWebPage::ErrorDomain
     \since 4.6
-    \internal
 
-    \value QtNetwork
-    \value Http
-    \value WebKit
+    This enum describes the domain of an ErrorPageExtensionOption object (i.e. the layer in which the error occurred).
+
+    \value QtNetwork The error occurred in the QtNetwork layer; the error code is of type QNetworkReply::NetworkError.
+    \value Http The error occurred in the HTTP layer; the error code is a HTTP status code (see QNetworkRequest::HttpStatusCodeAttribute).
+    \value WebKit The error is an internal WebKit error.
 */
 
 /*!
@@ -2946,7 +2968,18 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
 
     \inmodule QtWebKit
 
-    \sa QWebPage::extension()
+    \sa QWebPage::extension() QWebPage::ExtensionReturn
+*/
+
+
+/*!
+    \class QWebPage::ExtensionReturn
+    \since 4.4
+    \brief The ExtensionReturn class provides an output result from a QWebPage's extension.
+
+    \inmodule QtWebKit
+
+    \sa QWebPage::extension() QWebPage::ExtensionOption
 */
 
 /*!
@@ -2957,12 +2990,38 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
 
     \inmodule QtWebKit
 
-    The ErrorPageExtensionOption class holds the \a url for which an error occoured as well as
+    The ErrorPageExtensionOption class holds the \a url for which an error occurred as well as
     the associated \a frame.
 
     The error itself is reported by an error \a domain, the \a error code as well as \a errorString.
 
-    \sa QWebPage::ErrorPageExtensionReturn
+    \sa QWebPage::extension() QWebPage::ErrorPageExtensionReturn
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionOption::url
+    \brief the url for which an error occurred
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionOption::frame
+    \brief the frame associated with the error
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionOption::domain
+    \brief the domain that reported the error
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionOption::error
+    \brief the error code. Interpretation of the value depends on the \a domain
+    \sa QWebPage::ErrorDomain
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionOption::errorString
+    \brief a string that describes the error
 */
 
 /*!
@@ -2983,13 +3042,36 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     External objects such as stylesheets or images referenced in the HTML are located relative to
     \a baseUrl.
 
-    \sa QWebPage::ErrorPageExtensionOption, QString::toUtf8()
+    \sa QWebPage::extension() QWebPage::ErrorPageExtensionOption, QString::toUtf8()
 */
 
 /*!
     \fn QWebPage::ErrorPageExtensionReturn::ErrorPageExtensionReturn()
 
     Constructs a new error page object.
+*/
+
+
+/*!
+    \variable QWebPage::ErrorPageExtensionReturn::contentType
+    \brief the error page's content type
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionReturn::encoding
+    \brief the error page encoding
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionReturn::baseUrl
+    \brief the base url
+
+    External objects such as stylesheets or images referenced in the HTML are located relative to this url.
+*/
+
+/*!
+    \variable QWebPage::ErrorPageExtensionReturn::content
+    \brief the HTML content of the error page
 */
 
 /*!
@@ -3003,7 +3085,22 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     The ChooseMultipleFilesExtensionOption class holds the frame originating the request
     and the suggested filenames which might be provided.
 
-    \sa QWebPage::chooseFile(), QWebPage::ChooseMultipleFilesExtensionReturn
+    \sa QWebPage::extension() QWebPage::chooseFile(), QWebPage::ChooseMultipleFilesExtensionReturn
+*/
+
+/*!
+    \variable QWebPage::ChooseMultipleFilesExtensionOption::parentFrame
+    \brief The frame in which the request originated
+*/
+
+/*!
+    \variable QWebPage::ChooseMultipleFilesExtensionOption::suggestedFileNames
+    \brief The suggested filenames
+*/
+
+/*!
+    \variable QWebPage::ChooseMultipleFilesExtensionReturn::fileNames
+    \brief The selected filenames
 */
 
 /*!
@@ -3017,14 +3114,17 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     The ChooseMultipleFilesExtensionReturn class holds the filenames selected by the user
     when the extension is invoked.
 
-    \sa QWebPage::ChooseMultipleFilesExtensionOption
+    \sa QWebPage::extension() QWebPage::ChooseMultipleFilesExtensionOption
 */
 
 /*!
     This virtual function can be reimplemented in a QWebPage subclass to provide support for extensions. The \a option
     argument is provided as input to the extension; the output results can be stored in \a output.
 
-    The behavior of this function is determined by \a extension.
+    The behavior of this function is determined by \a extension. The \a option
+    and \a output values are typically casted to the corresponding types (for
+    example, ChooseMultipleFilesExtensionOption and
+    ChooseMultipleFilesExtensionReturn for ChooseMultipleFilesExtension).
 
     You can call supportsExtension() to check if an extension is supported by the page.
 
@@ -3116,6 +3216,8 @@ QWebSettings *QWebPage::settings() const
 
     A suggested filename may be provided in \a suggestedFile. The frame originating the
     request is provided as \a parentFrame.
+
+    \sa ChooseMultipleFilesExtension
 */
 QString QWebPage::chooseFile(QWebFrame *parentFrame, const QString& suggestedFile)
 {
@@ -3369,6 +3471,15 @@ QString QWebPage::userAgentForUrl(const QUrl&) const
         case QSysInfo::SV_9_4:
             firstPartTemp += QString::fromLatin1("/9.4");
             break;
+        case QSysInfo::SV_SF_2:
+            firstPartTemp += QString::fromLatin1("^2");
+            break;
+        case QSysInfo::SV_SF_3:
+            firstPartTemp += QString::fromLatin1("^3");
+            break;
+        case QSysInfo::SV_SF_4:
+            firstPartTemp += QString::fromLatin1("^4");
+            break;
         default:
             firstPartTemp += QString::fromLatin1("/Unknown");
         }
@@ -3479,7 +3590,7 @@ quint64 QWebPage::totalBytes() const
 /*!
     Returns the number of bytes that were received from the network to render the current page.
 
-    \sa totalBytes()
+    \sa totalBytes(), loadProgress()
 */
 quint64 QWebPage::bytesReceived() const
 {
@@ -3511,7 +3622,7 @@ quint64 QWebPage::bytesReceived() const
     This signal is emitted when a load of the page is finished.
     \a ok will indicate whether the load was successful or any error occurred.
 
-    \sa loadStarted()
+    \sa loadStarted(), ErrorPageExtension
 */
 
 /*!
@@ -3538,12 +3649,15 @@ quint64 QWebPage::bytesReceived() const
     \fn void QWebPage::frameCreated(QWebFrame *frame)
 
     This signal is emitted whenever the page creates a new \a frame.
+
+    \sa currentFrame()
 */
 
 /*!
     \fn void QWebPage::selectionChanged()
 
-    This signal is emitted whenever the selection changes.
+    This signal is emitted whenever the selection changes, either interactively
+    or programmatically (e.g. by calling triggerAction() with a selection action).
 
     \sa selectedText()
 */
@@ -3555,7 +3669,7 @@ quint64 QWebPage::bytesReceived() const
     This signal is emitted whenever the text in form elements changes
     as well as other editable content.
 
-    \sa contentEditable, QWebFrame::toHtml(), QWebFrame::toPlainText()
+    \sa contentEditable, modified, QWebFrame::toHtml(), QWebFrame::toPlainText()
 */
 
 /*!
@@ -3631,9 +3745,9 @@ quint64 QWebPage::bytesReceived() const
     \fn void QWebPage::microFocusChanged()
 
     This signal is emitted when for example the position of the cursor in an editable form
-    element changes. It is used inform input methods about the new on-screen position where
-    the user is able to enter text. This signal is usually connected to QWidget's updateMicroFocus()
-    slot.
+    element changes. It is used to inform input methods about the new on-screen position where
+    the user is able to enter text. This signal is usually connected to the
+    QWidget::updateMicroFocus() slot.
 */
 
 /*!
@@ -3674,6 +3788,8 @@ quint64 QWebPage::bytesReceived() const
 
     This signal is emitted whenever the web site shown in \a frame is asking to store data
     to the database \a databaseName and the quota allocated to that web site is exceeded.
+
+    \sa QWebDatabase
 */
 
 /*!

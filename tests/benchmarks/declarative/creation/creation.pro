@@ -6,7 +6,7 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_creation.cpp
 
-symbian* {
+symbian {
     data.sources = data
     data.path = .
     DEPLOYMENT += data

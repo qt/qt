@@ -12,12 +12,12 @@ Rectangle {
     FolderListModel {
         id: folders1
         nameFilters: [ "*.qml" ]
-        folder: qmlViewerFolder
+        folder: qmlLauncherFolder
     }
     FolderListModel {
         id: folders2
         nameFilters: [ "*.qml" ]
-        folder: qmlViewerFolder
+        folder: qmlLauncherFolder
     }
 
     SystemPalette { id: palette }
@@ -62,7 +62,7 @@ Rectangle {
                 if (folders.isFolder(index)) {
                     down(filePath);
                 } else {
-                    qmlViewer.launch(filePath);
+                    qmlLauncher.launch(filePath);
                 }
             }
             width: root.width

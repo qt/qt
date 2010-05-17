@@ -2536,13 +2536,13 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 viaData->pc << vpc;
                 viaData->actions << myAction;
                 QDeclarativeAction dummyAction;
-                QDeclarativeAction &xAction = pc->xIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &yAction = pc->yIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &sAction = pc->scaleIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &rAction = pc->rotationIsSet() ? actions[++i] : dummyAction;
+                QDeclarativeAction &xAction = pc->xIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
+                QDeclarativeAction &yAction = pc->yIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
+                QDeclarativeAction &sAction = pc->scaleIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
+                QDeclarativeAction &rAction = pc->rotationIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
                 bool forward = (direction == QDeclarativeAbstractAnimation::Forward);
                 QDeclarativeItem *target = pc->object();
-                QDeclarativeItem *targetParent = forward ? pc->parent() : pc->originalParent();
+                QDeclarativeItem *targetParent = action.reverseEvent ? pc->originalParent() : pc->parent();
 
                 //### this mirrors the logic in QDeclarativeParentChange.
                 bool ok;
@@ -2583,9 +2583,9 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 if (ok && target->transformOrigin() != QDeclarativeItem::TopLeft) {
                     qreal w = target->width();
                     qreal h = target->height();
-                    if (pc->widthIsSet())
+                    if (pc->widthIsSet() && i < actions.size() - 1)
                         w = actions[++i].toValue.toReal();
-                    if (pc->heightIsSet())
+                    if (pc->heightIsSet() && i < actions.size() - 1)
                         h = actions[++i].toValue.toReal();
                     const QPointF &transformOrigin
                             = d->computeTransformOrigin(target->transformOrigin(), w,h);

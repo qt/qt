@@ -42,7 +42,9 @@
 /*!
     \page phonon-overview.html
     \title Phonon multimedia framework
+    \brief Using the Phonon multimedia framework in Qt.
     \ingroup technology-apis
+    \ingroup best-practices
 
     \tableofcontents
 

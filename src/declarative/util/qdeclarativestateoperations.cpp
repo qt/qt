@@ -408,7 +408,7 @@ void QDeclarativeParentChange::saveOriginals()
     d->origStackBefore = d->rewindStackBefore;
 }
 
-void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
+/*void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
 {
     Q_D(QDeclarativeParentChange);
     QDeclarativeParentChange *pc = static_cast<QDeclarativeParentChange*>(other);
@@ -417,7 +417,7 @@ void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
     d->origStackBefore = pc->d_func()->rewindStackBefore;
 
     saveCurrentValues();
-}
+}*/
 
 void QDeclarativeParentChange::execute(Reason)
 {
@@ -1241,24 +1241,28 @@ QList<QDeclarativeAction> QDeclarativeAnchorChanges::additionalActions()
     Q_D(QDeclarativeAnchorChanges);
     QList<QDeclarativeAction> extra;
 
+    QDeclarativeAnchors::Anchors combined = d->anchorSet->d_func()->usedAnchors | d->anchorSet->d_func()->resetAnchors;
+    bool hChange = combined & QDeclarativeAnchors::Horizontal_Mask;
+    bool vChange = combined & QDeclarativeAnchors::Vertical_Mask;
+
     if (d->target) {
         QDeclarativeAction a;
-        if (d->fromX != d->toX) {
+        if (hChange && d->fromX != d->toX) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("x"));
             a.toValue = d->toX;
             extra << a;
         }
-        if (d->fromY != d->toY) {
+        if (vChange && d->fromY != d->toY) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("y"));
             a.toValue = d->toY;
             extra << a;
         }
-        if (d->fromWidth != d->toWidth) {
+        if (hChange && d->fromWidth != d->toWidth) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("width"));
             a.toValue = d->toWidth;
             extra << a;
         }
-        if (d->fromHeight != d->toHeight) {
+        if (vChange && d->fromHeight != d->toHeight) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("height"));
             a.toValue = d->toHeight;
             extra << a;

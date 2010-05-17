@@ -202,6 +202,11 @@ static void cleanupCocoaWindowDelegate()
         QWindowStateChangeEvent e(Qt::WindowStates(widgetData->window_state
                                                    & ~Qt::WindowMaximized));
         qt_sendSpontaneousEvent(qwidget, &e);
+    } else {
+        widgetData->window_state = widgetData->window_state & ~Qt::WindowMaximized;
+        QWindowStateChangeEvent e(Qt::WindowStates(widgetData->window_state
+                                                   | Qt::WindowMaximized));
+        qt_sendSpontaneousEvent(qwidget, &e);
     }
     NSRect rect = [[window contentView] frame];
     const QSize newSize(rect.size.width, rect.size.height);
@@ -305,9 +310,19 @@ static void cleanupCocoaWindowDelegate()
     Q_UNUSED(newFrame);
     // saving the current window geometry before the window is maximized
     QWidget *qwidget = m_windowHash->value(window);
-    if (qwidget->isWindow() && !(qwidget->windowState() & Qt::WindowMaximized)) {
-        QWidgetPrivate *widgetPrivate = qt_widget_private(qwidget);
-        widgetPrivate->topData()->normalGeometry = qwidget->geometry();
+    QWidgetPrivate *widgetPrivate = qt_widget_private(qwidget);
+    if (qwidget->isWindow()) {
+        if(qwidget->windowState() & Qt::WindowMaximized) {
+            // Restoring
+            widgetPrivate->topData()->wasMaximized = false;
+        } else {
+            // Maximizing
+            widgetPrivate->topData()->normalGeometry = qwidget->geometry();
+            // If the window was maximized we need to update the coordinates since now it will start at 0,0.
+            // We do this in a special field that is only used when not restoring but manually resizing the window.
+            // Since the coordinates are fixed we just set a boolean flag.
+            widgetPrivate->topData()->wasMaximized = true;
+        }
     }
     return YES;
 }

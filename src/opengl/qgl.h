@@ -431,6 +431,7 @@ private:
     friend class QGLFramebufferObjectPrivate;
     friend class QGLFBOGLPaintDevice;
     friend class QGLPaintDevice;
+    friend class QGLWidgetGLPaintDevice;
     friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
 private:
