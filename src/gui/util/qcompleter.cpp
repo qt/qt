@@ -527,17 +527,22 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
     QMatchData old = cache[parent].take(part);
     cost = cost + m.indices.cost() - old.indices.cost();
     if (cost * sizeof(int) > 1024 * 1024) {
-        QMap<QModelIndex, CacheItem>::iterator it1 ;
-        for (it1 = cache.begin(); it1 != cache.end(); ++it1) {
+        QMap<QModelIndex, CacheItem>::iterator it1 = cache.begin();
+        while (it1 != cache.end()) {
             CacheItem& ci = it1.value();
             int sz = ci.count()/2;
             QMap<QString, QMatchData>::iterator it2 = ci.begin();
-            for (int i = 0; it2 != ci.end() && i < sz; i++, ++it2) {
+            int i = 0;
+            while (it2 != ci.end() && i < sz) {
                 cost -= it2.value().indices.cost();
-                ci.erase(it2);
+                it2 = ci.erase(it2);
+                i++;
             }
-            if (ci.count() == 0)
-                cache.erase(it1);
+            if (ci.count() == 0) {
+              it1 = cache.erase(it1);
+            } else {
+              ++it1;
+            }
         }
     }
 
