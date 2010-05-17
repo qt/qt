@@ -889,10 +889,8 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
-            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
                 p->setFocus();
-                break;
-            }
             p = p->parentItem();
         }
         setFocus(true);
