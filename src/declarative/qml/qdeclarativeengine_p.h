@@ -91,6 +91,7 @@ class QDeclarativeEngine;
 class QDeclarativeContextPrivate;
 class QDeclarativeExpression;
 class QDeclarativeContextScriptClass;
+class QDeclarativeImportDatabase;
 class QDeclarativeObjectScriptClass;
 class QDeclarativeTypeNameScriptClass;
 class QDeclarativeValueTypeScriptClass;
