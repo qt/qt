@@ -286,7 +286,7 @@ QDeclarativeAbstractBinding::QDeclarativeAbstractBinding()
 
 QDeclarativeAbstractBinding::~QDeclarativeAbstractBinding()
 {
-    removeFromObject();
+    Q_ASSERT(m_prevBinding == 0);
     if (m_mePtr)
         *m_mePtr = 0;
 }
