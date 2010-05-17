@@ -43,6 +43,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qpolygon.h>
+#include <QtCore/qstringbuilder.h>
 
 #ifndef QSTYLEHELPER_P_H
 #define QSTYLEHELPER_P_H
