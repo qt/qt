@@ -45,9 +45,7 @@
 #include <qdeclarative.h>
 #include <QStringList>
 #include <QUrl>
-#include "../../src/declarative/3rdparty/qlistmodelinterface_p.h"
-
-QT_BEGIN_NAMESPACE
+#include <private/qlistmodelinterface_p.h>
 
 class QDeclarativeContext;
 class QModelIndex;
@@ -70,8 +68,6 @@ class QDeclarativeFolderListModel : public QListModelInterface, public QDeclarat
 public:
     QDeclarativeFolderListModel(QObject *parent = 0);
     ~QDeclarativeFolderListModel();
-
-    static void registerTypes();
 
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
     virtual QVariant data(int index, int role) const;
@@ -120,8 +116,6 @@ private:
     Q_DISABLE_COPY(QDeclarativeFolderListModel)
     QDeclarativeFolderListModelPrivate *d;
 };
-
-QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeFolderListModel)
 
