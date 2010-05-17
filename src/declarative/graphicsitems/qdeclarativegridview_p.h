@@ -82,6 +82,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
 
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(SnapMode)
+    Q_ENUMS(Flow)
+    Q_ENUMS(PositionMode)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -120,7 +122,6 @@ public:
     qreal preferredHighlightEnd() const;
     void setPreferredHighlightEnd(qreal);
 
-    Q_ENUMS(Flow)
     enum Flow { LeftToRight, TopToBottom };
     Flow flow() const;
     void setFlow(Flow);
@@ -142,7 +143,6 @@ public:
     void setSnapMode(SnapMode mode);
 
     enum PositionMode { Beginning, Center, End, Visible, Contain };
-    Q_ENUMS(PositionMode)
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;
