@@ -1753,7 +1753,7 @@ QStringList QCompleter::splitPath(const QString& path) const
 
     This signal is sent when an item in the popup() is highlighted by
     the user. It is also sent if complete() is called with the completionMode()
-    set to QCOmpleter::InlineCompletion. The item's \a text is given.
+    set to QCompleter::InlineCompletion. The item's \a text is given.
 */
 
 QT_END_NAMESPACE
