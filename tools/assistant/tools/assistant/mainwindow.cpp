@@ -88,6 +88,8 @@
 #include <QtHelp/QHelpIndexModel>
 #include <QtHelp/QHelpSearchEngine>
 
+#include <cstdlib>
+
 QT_BEGIN_NAMESPACE
 
 MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
@@ -152,6 +154,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     openPagesDock->setWidget(openPagesManager->openPagesWidget());
     addDockWidget(Qt::LeftDockWidgetArea, openPagesDock);
 
+#if 0
     connect(bookMarkManager, SIGNAL(escapePressed()), this,
             SLOT(activateCurrentCentralWidgetTab()));
     connect(bookMarkManager, SIGNAL(setSource(QUrl)), m_centralWidget,
@@ -164,6 +167,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
+#endif
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -171,106 +175,113 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     setupActions();
     statusBar()->show();
 
-    if (initHelpDB()) {
-        setupFilterToolbar();
-        setupAddressToolbar();
-
-        const QString windowTitle = helpEngineWrapper.windowTitle();
-        setWindowTitle(windowTitle.isEmpty() ? defWindowTitle : windowTitle);
-        QByteArray iconArray = helpEngineWrapper.applicationIcon();
-        if (iconArray.size() > 0) {
-            QPixmap pix;
-            pix.loadFromData(iconArray);
-            QIcon appIcon(pix);
-            qApp->setWindowIcon(appIcon);
-        } else {
-            QIcon appIcon(QLatin1String(":/trolltech/assistant/images/assistant-128.png"));
-            qApp->setWindowIcon(appIcon);
-        }
-
-        // Show the widget here, otherwise the restore geometry and state won't work
-        // on x11.
-        show();
-        QByteArray ba(helpEngineWrapper.mainWindow());
-        if (!ba.isEmpty())
-            restoreState(ba);
-
-        ba = helpEngineWrapper.mainWindowGeometry();
-        if (!ba.isEmpty()) {
-            restoreGeometry(ba);
-        } else {
-            tabifyDockWidget(contentDock, indexDock);
-            tabifyDockWidget(indexDock, bookmarkDock);
-            tabifyDockWidget(bookmarkDock, openPagesDock);
-            tabifyDockWidget(openPagesDock, searchDock);
-            contentDock->raise();
-            const QRect screen = QApplication::desktop()->screenGeometry();
-            resize(4*screen.width()/5, 4*screen.height()/5);
-        }
-
-        if (!helpEngineWrapper.hasFontSettings()) {
-            helpEngineWrapper.setUseAppFont(false);
-            helpEngineWrapper.setUseBrowserFont(false);
-            helpEngineWrapper.setAppFont(qApp->font());
-            helpEngineWrapper.setAppWritingSystem(QFontDatabase::Latin);
-            helpEngineWrapper.setBrowserFont(qApp->font());
-            helpEngineWrapper.setBrowserWritingSystem(QFontDatabase::Latin);
-        } else {
-            updateApplicationFont();
-        }
-
-        updateAboutMenuText();
-
-        QTimer::singleShot(0, this, SLOT(insertLastPages()));
-        if (m_cmdLine->enableRemoteControl())
-            (void)new RemoteControl(this);
-
-        if (m_cmdLine->contents() == CmdLineParser::Show)
-            showContents();
-        else if (m_cmdLine->contents() == CmdLineParser::Hide)
-            hideContents();
-
-        if (m_cmdLine->index() == CmdLineParser::Show)
-            showIndex();
-        else if (m_cmdLine->index() == CmdLineParser::Hide)
-            hideIndex();
-
-        if (m_cmdLine->bookmarks() == CmdLineParser::Show)
-            showBookmarksDockWidget();
-        else if (m_cmdLine->bookmarks() == CmdLineParser::Hide)
-            hideBookmarksDockWidget();
-
-        if (m_cmdLine->search() == CmdLineParser::Show)
-            showSearch();
-        else if (m_cmdLine->search() == CmdLineParser::Hide)
-            hideSearch();
-
-        if (m_cmdLine->contents() == CmdLineParser::Activate)
-            showContents();
-        else if (m_cmdLine->index() == CmdLineParser::Activate)
-            showIndex();
-        else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
-            showBookmarksDockWidget();
-
-        if (!m_cmdLine->currentFilter().isEmpty()) {
-            const QString &curFilter = m_cmdLine->currentFilter();
-            if (helpEngineWrapper.customFilters().contains(curFilter))
-                helpEngineWrapper.setCurrentFilter(curFilter);
-        }
-
-        if (usesDefaultCollection())
-            QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
-        else
-            checkInitState();
-
-        connect(&helpEngineWrapper, SIGNAL(documentationRemoved(QString)),
-                this, SLOT(documentationRemoved(QString)));
-        connect(&helpEngineWrapper, SIGNAL(documentationUpdated(QString)),
-                this, SLOT(documentationUpdated(QString)));
+    if (!initHelpDB()) {
+        qDebug("Fatal error: Help engine initialization failed. "
+            "Error message was: %s\nAssistant will now exit.",
+            qPrintable(HelpEngineWrapper::instance().error()));
+        std::exit(1);
     }
+
+    setupFilterToolbar();
+    setupAddressToolbar();
+
+    const QString windowTitle = helpEngineWrapper.windowTitle();
+    setWindowTitle(windowTitle.isEmpty() ? defWindowTitle : windowTitle);
+    QByteArray iconArray = helpEngineWrapper.applicationIcon();
+    if (iconArray.size() > 0) {
+        QPixmap pix;
+        pix.loadFromData(iconArray);
+        QIcon appIcon(pix);
+        qApp->setWindowIcon(appIcon);
+    } else {
+        QIcon appIcon(QLatin1String(":/trolltech/assistant/images/assistant-128.png"));
+        qApp->setWindowIcon(appIcon);
+    }
+
+    // Show the widget here, otherwise the restore geometry and state won't work
+    // on x11.
+    show();
+    QByteArray ba(helpEngineWrapper.mainWindow());
+    if (!ba.isEmpty())
+        restoreState(ba);
+
+    ba = helpEngineWrapper.mainWindowGeometry();
+    if (!ba.isEmpty()) {
+        restoreGeometry(ba);
+    } else {
+        tabifyDockWidget(contentDock, indexDock);
+        tabifyDockWidget(indexDock, bookmarkDock);
+        tabifyDockWidget(bookmarkDock, openPagesDock);
+        tabifyDockWidget(openPagesDock, searchDock);
+        contentDock->raise();
+        const QRect screen = QApplication::desktop()->screenGeometry();
+        resize(4*screen.width()/5, 4*screen.height()/5);
+    }
+
+    if (!helpEngineWrapper.hasFontSettings()) {
+        helpEngineWrapper.setUseAppFont(false);
+        helpEngineWrapper.setUseBrowserFont(false);
+        helpEngineWrapper.setAppFont(qApp->font());
+        helpEngineWrapper.setAppWritingSystem(QFontDatabase::Latin);
+        helpEngineWrapper.setBrowserFont(qApp->font());
+        helpEngineWrapper.setBrowserWritingSystem(QFontDatabase::Latin);
+    } else {
+        updateApplicationFont();
+    }
+
+    updateAboutMenuText();
+
+    QTimer::singleShot(0, this, SLOT(insertLastPages()));
+    if (m_cmdLine->enableRemoteControl())
+        (void)new RemoteControl(this);
+
+    if (m_cmdLine->contents() == CmdLineParser::Show)
+        showContents();
+    else if (m_cmdLine->contents() == CmdLineParser::Hide)
+        hideContents();
+
+    if (m_cmdLine->index() == CmdLineParser::Show)
+        showIndex();
+    else if (m_cmdLine->index() == CmdLineParser::Hide)
+        hideIndex();
+
+    if (m_cmdLine->bookmarks() == CmdLineParser::Show)
+        showBookmarksDockWidget();
+    else if (m_cmdLine->bookmarks() == CmdLineParser::Hide)
+        hideBookmarksDockWidget();
+
+    if (m_cmdLine->search() == CmdLineParser::Show)
+        showSearch();
+    else if (m_cmdLine->search() == CmdLineParser::Hide)
+        hideSearch();
+
+    if (m_cmdLine->contents() == CmdLineParser::Activate)
+        showContents();
+    else if (m_cmdLine->index() == CmdLineParser::Activate)
+        showIndex();
+    else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
+        showBookmarksDockWidget();
+
+    if (!m_cmdLine->currentFilter().isEmpty()) {
+        const QString &curFilter = m_cmdLine->currentFilter();
+        if (helpEngineWrapper.customFilters().contains(curFilter))
+            helpEngineWrapper.setCurrentFilter(curFilter);
+    }
+
+    if (usesDefaultCollection())
+        QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
+    else
+        checkInitState();
+
+    connect(&helpEngineWrapper, SIGNAL(documentationRemoved(QString)),
+            this, SLOT(documentationRemoved(QString)));
+    connect(&helpEngineWrapper, SIGNAL(documentationUpdated(QString)),
+            this, SLOT(documentationUpdated(QString)));
+
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
     GlobalActions::instance()->updateActions();
-    showNewAddress();
+    if (helpEngineWrapper.addressBarEnabled())
+        showNewAddress();
 }
 
 MainWindow::~MainWindow()
