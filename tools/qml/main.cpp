@@ -181,7 +181,7 @@ int main(int argc, char ** argv)
     atexit(showWarnings);
 #endif
 
-#if defined (Q_WS_X11)
+#if defined (Q_WS_X11) || defined (Q_WS_MAC)
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
@@ -234,6 +234,10 @@ int main(int argc, char ** argv)
 #if defined(Q_OS_SYMBIAN)
     maximized = true;
     useNativeFileBrowser = false;
+#endif
+
+#if defined(Q_WS_MAC)
+    useGL = true;
 #endif
 
     for (int i = 1; i < argc; ++i) {
