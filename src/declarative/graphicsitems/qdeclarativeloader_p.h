@@ -84,11 +84,14 @@ Q_SIGNALS:
     void sourceChanged();
     void statusChanged();
     void progressChanged();
+    void loaded();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     bool eventFilter(QObject *watched, QEvent *e);
+    void componentComplete();
+
 private:
     Q_DISABLE_COPY(QDeclarativeLoader)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeLoader)
