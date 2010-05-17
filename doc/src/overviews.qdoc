@@ -117,13 +117,28 @@
 */
 
 /*!
+  \group qt-sql
+  \title Using SQL in Qt
+  \brief Qt API's for using SQL.
+  \ingroup technology-apis
+  \ingroup best-practices
+
+  These pages document Qt's API's for using SQL database systems
+  in Qt applications.
+
+  \generatelist{related}
+*/
+
+/*!
     \group best-practices
     \title How-To's and Best Practices
 
     \brief How-To Guides and Best Practices
 
-    These documents provide guidelines and best practices explaining
-    how to use Qt to solve specific technical problems.
+    These documents provide guidelines and best practices for using Qt
+    to solve specific technical problems. They are listed
+    alphabetically by the first word in the title, so scan the entire
+    list to find what you want.
 
     \generatelist{related}
 */
