@@ -45,9 +45,13 @@
 #include <QGraphicsView>
 #include "ui_form.h"
 
+QT_BEGIN_NAMESPACE
+
 class QState;
 class QStateMachine;
 class Ui_Form;
+
+QT_END_NAMESPACE
 
 //! [0]
 class PadNavigator : public QGraphicsView
