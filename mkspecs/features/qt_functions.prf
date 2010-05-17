@@ -78,3 +78,14 @@ defineTest(qtAddLibrary) {
     export(QMAKE_LFLAGS)
     return(true)
 }
+
+# variable, default
+defineTest(qtPrepareTool) {
+    isEmpty($$1) {
+        !isEmpty(QT_BUILD_TREE):$$1 = $$QT_BUILD_TREE/bin/$$2
+        else:$$1 = $$[QT_INSTALL_BINS]/$$2
+    }
+    $$1 ~= s,[/\\\\],$$QMAKE_DIR_SEP,
+    contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.exe$):$$1 = $$eval($$1).exe
+    export($$1)
+}

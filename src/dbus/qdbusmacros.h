@@ -48,8 +48,10 @@
 
 #if defined(QDBUS_MAKEDLL)
 # define QDBUS_EXPORT Q_DECL_EXPORT
-#else
+#elif defined(QT_SHARED)
 # define QDBUS_EXPORT Q_DECL_IMPORT
+#else
+# define QDBUS_EXPORT
 #endif
 
 #ifndef Q_MOC_RUN

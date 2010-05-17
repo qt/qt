@@ -352,16 +352,18 @@ void *qt_wince_bsearch(const void *key,
     size_t low = 0;
     size_t high = num - 1;
     while (low <= high) {
-        unsigned int mid = ((unsigned) (low + high)) >> 1;
+        size_t mid = (low + high) >> 1;
         int c = compare(key, (char*)base + mid * size);
-        if (c < 0)
+        if (c < 0) {
+            if (!mid)
+                break;
             high = mid - 1;
-        else if (c > 0)
+        } else if (c > 0)
             low = mid + 1;
         else
             return (char*) base + mid * size;
     }
-    return (NULL);
+    return 0;
 }
 
 void *lfind(const void* key, const void* base, size_t* elements, size_t size,

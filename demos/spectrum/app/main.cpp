@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,41 +38,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qdebug.h>
 
-#include <QtTest/QtTest>
-#include <QtDBus/QtDBus>
+#include <QtGui/QApplication>
+#include "mainwidget.h"
 
-static const QString bus = "unix:path=/tmp/qdbus-test";
-static const QString service = "com.trolltech.Qt.Autotests.QDBusServer";
-static const QString path = "/com/trolltech/test";
-
-class tst_QDBusServer : public QObject
+int main(int argc, char **argv)
 {
-    Q_OBJECT
+    QApplication app(argc, argv);
+    app.setApplicationName("QtMultimedia spectrum analyser");
+    MainWidget w;
 
-    void connectToServer();
-    void callMethod();
-private slots:
-};
+#ifdef Q_OS_SYMBIAN
+    w.showMaximized();
+#else
+    w.show();
+#endif
 
-void tst_QDBusServer::connectToServer()
-{
-    QDBusConnection connection = QDBusConnection::connectToBus(bus, "test-connection");
-    QTest::qWait(100);
-    QVERIFY(connection.isConnected());
+    return app.exec();
 }
-
-void tst_QDBusServer::callMethod()
-{
-    QDBusConnection connection = QDBusConnection::connectToBus(bus, "test-connection");
-    QTest::qWait(100);
-    QVERIFY(connection.isConnected());
-    //QDBusMessage msg = QDBusMessage::createMethodCall(bus, path, /*service*/"", "method");
-    //QDBusMessage reply = connection.call(msg, QDBus::Block);
-}
-
-QTEST_MAIN(tst_QDBusServer)
-
-#include "tst_qdbusserver.moc"

@@ -126,6 +126,7 @@ static void qt_wce_enable_soft_key(HWND handle, uint command)
     if (ptrEnableSoftKey)
         ptrEnableSoftKey(handle, command, false, true);
 }
+
 static void qt_wce_disable_soft_key(HWND handle, uint command) 
 {
     resolveAygLibs();
@@ -133,7 +134,8 @@ static void qt_wce_disable_soft_key(HWND handle, uint command)
         ptrEnableSoftKey(handle, command, false, false);
 }
 
-static void qt_wce_delete_action_list(QList<QWceMenuAction*> *list) {
+static void qt_wce_delete_action_list(QList<QWceMenuAction*> *list)
+{
     for(QList<QWceMenuAction*>::Iterator it = list->begin(); it != list->end(); ++it) {
         QWceMenuAction *action = (*it);
         delete action;
@@ -143,7 +145,8 @@ static void qt_wce_delete_action_list(QList<QWceMenuAction*> *list) {
 }
 
 //search for first QuitRole in QMenuBar
-static QAction* qt_wce_get_quit_action(QList<QAction *> actionItems) {
+static QAction* qt_wce_get_quit_action(QList<QAction *> actionItems)
+{
     QAction *returnAction = 0;
     for (int i = 0; i < actionItems.size(); ++i) {
         QAction *action = actionItems.at(i);
@@ -158,7 +161,8 @@ static QAction* qt_wce_get_quit_action(QList<QAction *> actionItems) {
     return 0; //nothing found;
 }
 
-static QAction* qt_wce_get_quit_action(QList<QWceMenuAction*> actionItems) {
+static QAction* qt_wce_get_quit_action(QList<QWceMenuAction*> actionItems)
+{
     for (int i = 0; i < actionItems.size(); ++i) {
         if (actionItems.at(i)->action->menuRole() == QAction::QuitRole)
             return actionItems.at(i)->action;
@@ -171,7 +175,8 @@ static QAction* qt_wce_get_quit_action(QList<QWceMenuAction*> actionItems) {
     return 0;
 }
 
-static HMODULE qt_wce_get_module_handle() {
+static HMODULE qt_wce_get_module_handle()
+{
     HMODULE module =  0; //handle to resources
     if (!(module = GetModuleHandle(L"QtGui4"))) //release dynamic
         if (!(module = GetModuleHandle(L"QtGuid4"))) //debug dynamic
@@ -180,7 +185,8 @@ static HMODULE qt_wce_get_module_handle() {
     return module;
 }
 
-static void qt_wce_change_command(HWND menuHandle, int item, int command) {
+static void qt_wce_change_command(HWND menuHandle, int item, int command)
+{
 TBBUTTONINFOA tbbi;
     memset(&tbbi,0,sizeof(tbbi));
     tbbi.cbSize = sizeof(tbbi);
@@ -189,7 +195,8 @@ TBBUTTONINFOA tbbi;
     SendMessage(menuHandle, TB_SETBUTTONINFO, item, (LPARAM)&tbbi);
 }
 
-static void qt_wce_rename_menu_item(HWND menuHandle, int item, const QString &newText) {
+static void qt_wce_rename_menu_item(HWND menuHandle, int item, const QString &newText)
+{
     TBBUTTONINFOA tbbi;
     memset(&tbbi,0,sizeof(tbbi));
     tbbi.cbSize = sizeof(tbbi);
@@ -200,7 +207,8 @@ static void qt_wce_rename_menu_item(HWND menuHandle, int item, const QString &ne
     SendMessage(menuHandle, TB_SETBUTTONINFO, item, (LPARAM)&tbbi);
 }
 
-static HWND qt_wce_create_menubar(HWND parentHandle, HINSTANCE resourceHandle, int toolbarID, int flags = 0) {
+static HWND qt_wce_create_menubar(HWND parentHandle, HINSTANCE resourceHandle, int toolbarID, int flags = 0)
+{
     resolveAygLibs();
 
     if (ptrCreateMenuBar) {
@@ -225,8 +233,8 @@ static HWND qt_wce_create_menubar(HWND parentHandle, HINSTANCE resourceHandle, i
     return 0;
 }
 
-static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action, bool created) {
-
+static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action)
+{
     Q_ASSERT_X(menu, "AppendMenu", "menu is 0");
     if (action->action->isVisible()) {
         int flags;
@@ -240,7 +248,7 @@ static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action, bool create
         else if (action->action->menu()) {
             text.remove(QChar::fromLatin1('&'));
             AppendMenu (menu, MF_STRING | flags | MF_POPUP,
-            (UINT) action->action->menu()->wceMenu(created), reinterpret_cast<const wchar_t *> (text.utf16()));
+            (UINT) action->action->menu()->wceMenu(), reinterpret_cast<const wchar_t *> (text.utf16()));
         }
         else {
             AppendMenu (menu, MF_STRING | flags, action->command, reinterpret_cast<const wchar_t *> (text.utf16()));
@@ -265,12 +273,14 @@ static void qt_wce_clear_menu(HMENU hMenu)
     This function refreshes the native Windows CE menu.
 */
 
-void QMenuBar::wceRefresh() {
+void QMenuBar::wceRefresh()
+{
     for (int i = 0; i < nativeMenuBars.size(); ++i)
         nativeMenuBars.at(i)->d_func()->wceRefresh();
 }
 
-void QMenuBarPrivate::wceRefresh() {
+void QMenuBarPrivate::wceRefresh()
+{
     DrawMenuBar(wce_menubar->menubarHandle);
 }
 
@@ -280,7 +290,8 @@ void QMenuBarPrivate::wceRefresh() {
     This function sends native Windows CE commands to Qt menus.
 */
 
-QAction* QMenu::wceCommands(uint command) { 
+QAction* QMenu::wceCommands(uint command)
+{
     Q_D(QMenu);
     return d->wceCommands(command);
 }
@@ -292,22 +303,27 @@ QAction* QMenu::wceCommands(uint command) {
     and all their child menus.
 */
 
-void QMenuBar::wceCommands(uint command, HWND) {
-    for (int i = 0; i < nativeMenuBars.size(); ++i)
-            nativeMenuBars.at(i)->d_func()->wceCommands(command);
+void QMenuBar::wceCommands(uint command)
+{
+    const HWND hwndActiveWindow = GetActiveWindow();
+    for (int i = 0; i < nativeMenuBars.size(); ++i) {
+        QMenuBarPrivate* nativeMenuBar = nativeMenuBars.at(i)->d_func();
+        if (hwndActiveWindow == nativeMenuBar->wce_menubar->parentWindowHandle)
+            nativeMenuBar->wceCommands(command);
+    }
 }
 
-bool QMenuBarPrivate::wceEmitSignals(QList<QWceMenuAction*> actions, uint command) {
+bool QMenuBarPrivate::wceEmitSignals(QList<QWceMenuAction*> actions, uint command)
+{
     QAction *foundAction = 0;
     for (int i = 0; i < actions.size(); ++i) {
-        if (foundAction)
-            break;
         QWceMenuAction *action = actions.at(i);
         if (action->action->menu()) {
             foundAction = action->action->menu()->wceCommands(command);
+            if (foundAction)
+                break;
         }
         else if (action->command == command) {
-            emit q_func()->triggered(action->action);
             action->action->activate(QAction::Trigger);
             return true;
         }
@@ -319,13 +335,14 @@ bool QMenuBarPrivate::wceEmitSignals(QList<QWceMenuAction*> actions, uint comman
     return false;
 }
 
-void QMenuBarPrivate::wceCommands(uint command) {
+void QMenuBarPrivate::wceCommands(uint command)
+{
     if (wceClassicMenu) {
         for (int i = 0; i < wce_menubar->actionItemsClassic.size(); ++i)
             wceEmitSignals(wce_menubar->actionItemsClassic.at(i), command);
     } else {
         if (wceEmitSignals(wce_menubar->actionItems, command)) {
-            return ;
+            return;
         }
         else if (wce_menubar->leftButtonIsMenu) {//check if command is on the left quick button
             wceEmitSignals(wce_menubar->actionItemsLeftButton, command);
@@ -337,7 +354,8 @@ void QMenuBarPrivate::wceCommands(uint command) {
     }
 }
 
-QAction *QMenuPrivate::wceCommands(uint command) {
+QAction *QMenuPrivate::wceCommands(uint command)
+{
     QAction *foundAction = 0;
     for (int i  = 0; i < wce_menu->actionItems.size(); ++i) {
         if (foundAction)
@@ -347,7 +365,7 @@ QAction *QMenuPrivate::wceCommands(uint command) {
             foundAction = action->action->menu()->d_func()->wceCommands(command);
         }
         else if (action->command == command) {
-            action->action->activate(QAction::Trigger);
+            activateAction(action->action, QAction::Trigger);
             return action->action;
         }
     }
@@ -356,8 +374,8 @@ QAction *QMenuPrivate::wceCommands(uint command) {
     return foundAction;
 }
 
-void QMenuBarPrivate::wceCreateMenuBar(QWidget *parent) {
-
+void QMenuBarPrivate::wceCreateMenuBar(QWidget *parent)
+{
     Q_Q(QMenuBar);
     wce_menubar = new QWceMenuBarPrivate(this);
 
@@ -371,21 +389,25 @@ void QMenuBarPrivate::wceCreateMenuBar(QWidget *parent) {
     wceClassicMenu = (!qt_wince_is_smartphone() && !qt_wince_is_pocket_pc());
 }
 
-void QMenuBarPrivate::wceDestroyMenuBar() {
+void QMenuBarPrivate::wceDestroyMenuBar()
+{
     Q_Q(QMenuBar);
     int index = nativeMenuBars.indexOf(q);
     nativeMenuBars.removeAt(index);
-    if (wce_menubar)
-      delete wce_menubar;
-    wce_menubar = 0;
+    if (wce_menubar) {
+        delete wce_menubar;
+        wce_menubar = 0;
+    }
 }
 
-QMenuBarPrivate::QWceMenuBarPrivate::QWceMenuBarPrivate(QMenuBarPrivate *menubar) : 
-                                     menubarHandle(0), menuHandle(0),leftButtonMenuHandle(0) , 
-                                     leftButtonAction(0), leftButtonIsMenu(false), d(menubar) {
+QMenuBarPrivate::QWceMenuBarPrivate::QWceMenuBarPrivate(QMenuBarPrivate *menubar)
+:   menubarHandle(0), menuHandle(0), leftButtonMenuHandle(0),
+    leftButtonAction(0), leftButtonIsMenu(false), d(menubar)
+{
 }
 
-QMenuBarPrivate::QWceMenuBarPrivate::~QWceMenuBarPrivate() {
+QMenuBarPrivate::QWceMenuBarPrivate::~QWceMenuBarPrivate()
+{
     if (menubarHandle)
         DestroyWindow(menubarHandle);
     qt_wce_delete_action_list(&actionItems);
@@ -403,24 +425,28 @@ QMenuBarPrivate::QWceMenuBarPrivate::~QWceMenuBarPrivate() {
     QMenuBar::wceRefresh();
 }
 
-QMenuPrivate::QWceMenuPrivate::QWceMenuPrivate() {
-    menuHandle = 0;
+QMenuPrivate::QWceMenuPrivate::QWceMenuPrivate()
+:   menuHandle(0)
+{
 }
 
-QMenuPrivate::QWceMenuPrivate::~QWceMenuPrivate() {
+QMenuPrivate::QWceMenuPrivate::~QWceMenuPrivate()
+{
     qt_wce_delete_action_list(&actionItems);
     if (menuHandle)
         DestroyMenu(menuHandle);
 }
 
-void QMenuPrivate::QWceMenuPrivate::addAction(QAction *a, QWceMenuAction *before) {
+void QMenuPrivate::QWceMenuPrivate::addAction(QAction *a, QWceMenuAction *before)
+{
     QWceMenuAction *action = new QWceMenuAction;
     action->action = a;
     action->command = qt_wce_menu_static_cmd_id++;
     addAction(action, before);
 }
 
-void QMenuPrivate::QWceMenuPrivate::addAction(QWceMenuAction *action, QWceMenuAction *before) {
+void QMenuPrivate::QWceMenuPrivate::addAction(QWceMenuAction *action, QWceMenuAction *before)
+{
     if (!action)
         return;
     int before_index = actionItems.indexOf(before);
@@ -439,12 +465,16 @@ void QMenuPrivate::QWceMenuPrivate::addAction(QWceMenuAction *action, QWceMenuAc
     Windows CE menu bar bindings.
 */
 
-HMENU QMenu::wceMenu(bool create) { return d_func()->wceMenu(create); }
+HMENU QMenu::wceMenu()
+{
+    return d_func()->wceMenu();
+}
 
-HMENU QMenuPrivate::wceMenu(bool create) {
+HMENU QMenuPrivate::wceMenu()
+{
     if (!wce_menu)
         wce_menu = new QWceMenuPrivate;
-    if (!wce_menu->menuHandle || create) 
+    if (!wce_menu->menuHandle)
         wce_menu->rebuild();
     return wce_menu->menuHandle;
 }
@@ -459,30 +489,33 @@ void QMenuPrivate::QWceMenuPrivate::rebuild()
     for (int i = 0; i < actionItems.size(); ++i) {
         QWceMenuAction *action = actionItems.at(i);
         action->menuHandle = menuHandle;
-        qt_wce_insert_action(menuHandle, action, true);
+        qt_wce_insert_action(menuHandle, action);
     }
     QMenuBar::wceRefresh();
 }
 
-void QMenuPrivate::QWceMenuPrivate::syncAction(QWceMenuAction *) {
+void QMenuPrivate::QWceMenuPrivate::syncAction(QWceMenuAction *)
+{
     rebuild();
 }
 
-void QMenuPrivate::QWceMenuPrivate::removeAction(QWceMenuAction *action) {
-        actionItems.removeAll(action);
-        delete action;
-        action = 0;
-        rebuild();
+void QMenuPrivate::QWceMenuPrivate::removeAction(QWceMenuAction *action)
+{
+    actionItems.removeAll(action);
+    delete action;
+    rebuild();
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QAction *a, QWceMenuAction *before) {
+void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QAction *a, QWceMenuAction *before)
+{
     QWceMenuAction *action = new QWceMenuAction;
     action->action = a;
     action->command = qt_wce_menu_static_cmd_id++;
     addAction(action, before);
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QWceMenuAction *action, QWceMenuAction *before) {
+void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QWceMenuAction *action, QWceMenuAction *before)
+{
     if (!action)
         return;
     int before_index = actionItems.indexOf(before);
@@ -494,25 +527,27 @@ void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QWceMenuAction *action, QWce
     rebuild();
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::syncAction(QWceMenuAction*) {
+void QMenuBarPrivate::QWceMenuBarPrivate::syncAction(QWceMenuAction*)
+{
     QMenuBar::wceRefresh();
     rebuild();
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::removeAction(QWceMenuAction *action) {
+void QMenuBarPrivate::QWceMenuBarPrivate::removeAction(QWceMenuAction *action)
+{
     actionItems.removeAll(action);
     delete action;
-    action = 0;
     rebuild();
 }
 
-void QMenuBarPrivate::_q_updateDefaultAction() {
+void QMenuBarPrivate::_q_updateDefaultAction()
+{
     if (wce_menubar)
         wce_menubar->rebuild();
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
-
+void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
+{
     d->q_func()->resize(0,0);
     parentWindowHandle = d->q_func()->parentWidget() ? d->q_func()->parentWidget()->winId() : d->q_func()->winId();
     if (d->wceClassicMenu) {
@@ -559,7 +594,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
                 action->command = qt_wce_menu_static_cmd_id++;
                 action->menuHandle = subMenuHandle;
                 actionItemsClassic.last().append(action);
-                qt_wce_insert_action(subMenuHandle, action, true);
+                qt_wce_insert_action(subMenuHandle, action);
             }
         }
         for (int i = actions.size();i<maxEntries;++i) {
@@ -602,7 +637,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
         for (int i = 0; i < actionItems.size(); ++i) {
             QWceMenuAction *action = actionItems.at(i);
             action->menuHandle = menuHandle;
-            qt_wce_insert_action(menuHandle, action, true);
+            qt_wce_insert_action(menuHandle, action);
         }
         if (!leftButtonIsMenu) {
             if (leftButtonAction) {
@@ -622,7 +657,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild() {
                 action->command = qt_wce_menu_static_cmd_id++;
                 action->menuHandle = leftButtonMenuHandle;
                 actionItemsLeftButton.append(action);
-                qt_wce_insert_action(leftButtonMenuHandle, action, true);
+                qt_wce_insert_action(leftButtonMenuHandle, action);
             }
         }
     }
