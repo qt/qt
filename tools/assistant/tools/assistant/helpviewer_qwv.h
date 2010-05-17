@@ -100,6 +100,7 @@ Q_SIGNALS:
     void backwardAvailable(bool enabled);
     void highlighted(const QString &);
     void sourceChanged(const QUrl &);
+    void printRequested();
 
 protected:
     virtual void wheelEvent(QWheelEvent *);
