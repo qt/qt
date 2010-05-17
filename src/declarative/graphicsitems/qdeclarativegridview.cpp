@@ -1651,6 +1651,9 @@ qreal QDeclarativeGridView::maxXExtent() const
 void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeGridView);
+    keyPressPreHandler(event);
+    if (event->isAccepted())
+        return;
     if (d->model && d->model->count() && d->interactive) {
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         int oldCurrent = currentIndex();
@@ -1676,10 +1679,8 @@ void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
         }
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
     event->ignore();
+    QDeclarativeFlickable::keyPressEvent(event);
 }
 
 /*!

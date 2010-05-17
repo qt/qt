@@ -184,8 +184,8 @@ void tst_qdeclarativelistmodel::dynamic_data()
 
     QTest::newRow("count") << "count" << 0 << "";
 
-    QTest::newRow("get1") << "{get(0)}" << 0 << "<Unknown File>: QML ListModel: get: index 0 out of range";
-    QTest::newRow("get2") << "{get(-1)}" << 0 << "<Unknown File>: QML ListModel: get: index -1 out of range";
+    QTest::newRow("get1") << "{get(0)}" << 0 << "";
+    QTest::newRow("get2") << "{get(-1)}" << 0 << "";
 
     QTest::newRow("append1") << "{append({'foo':123});count}" << 1 << "";
     QTest::newRow("append2") << "{append({'foo':123,'bar':456});count}" << 1 << "";
@@ -196,13 +196,13 @@ void tst_qdeclarativelistmodel::dynamic_data()
 
     QTest::newRow("clear1") << "{append({'foo':456});clear();count}" << 0 << "";
     QTest::newRow("clear2") << "{append({'foo':123});append({'foo':456});clear();count}" << 0 << "";
-    QTest::newRow("clear3") << "{append({'foo':123});clear();get(0).foo}" << 0 << "<Unknown File>: QML ListModel: get: index 0 out of range";
+    QTest::newRow("clear3") << "{append({'foo':123});clear()}" << 0 << "";
 
     QTest::newRow("remove1") << "{append({'foo':123});remove(0);count}" << 0 << "";
     QTest::newRow("remove2a") << "{append({'foo':123});append({'foo':456});remove(0);count}" << 1 << "";
     QTest::newRow("remove2b") << "{append({'foo':123});append({'foo':456});remove(0);get(0).foo}" << 456 << "";
     QTest::newRow("remove2c") << "{append({'foo':123});append({'foo':456});remove(1);get(0).foo}" << 123 << "";
-    QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "<Unknown File>: QML ListModel: get: index 0 out of range";
+    QTest::newRow("remove3") << "{append({'foo':123});remove(0)}" << 0 << "";
     QTest::newRow("remove3a") << "{append({'foo':123});remove(-1);count}" << 1 << "<Unknown File>: QML ListModel: remove: index -1 out of range";
     QTest::newRow("remove4a") << "{remove(0)}" << 0 << "<Unknown File>: QML ListModel: remove: index 0 out of range";
     QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0);count}" << 0 << "<Unknown File>: QML ListModel: remove: index 0 out of range";
@@ -327,12 +327,6 @@ void tst_qdeclarativelistmodel::dynamic_worker()
         // changes are reflected in the list model in the main thread
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script");
-
-        if (QByteArray(QTest::currentDataTag()).startsWith("nested-append")) {
-            int callsToGet = script.count(QLatin1String(";get("));
-            for (int i=0; i<callsToGet; i++)
-                QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: get: index 0 out of range");
-        }
 
         QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
                 Q_ARG(QVariant, operations.mid(0, operations.length()-1))));

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass TextInput QDeclarativeTextInput
   \since 4.7
-    The TextInput item allows you to add an editable line of text to a scene.
+    \brief The TextInput item allows you to add an editable line of text to a scene.
 
     TextInput can only display a single line of text, and can only display
     plain text. However it can provide addition input constraints on the text.
@@ -863,6 +863,9 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QDeclarativeTextInput);
+    keyPressPreHandler(ev);
+    if (ev->isAccepted())
+        return;
     if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
         || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()

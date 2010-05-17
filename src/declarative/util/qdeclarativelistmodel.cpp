@@ -537,10 +537,7 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
 */
 QScriptValue QDeclarativeListModel::get(int index) const
 {
-    // the internal flat/nested class takes care of return value for bad index
-    if (index >= count() || index < 0) 
-        qmlInfo(this) << tr("get: index %1 out of range").arg(index);
-
+    // the internal flat/nested class checks for bad index
     return m_flat ? m_flat->get(index) : m_nested->get(index);
 }
 
