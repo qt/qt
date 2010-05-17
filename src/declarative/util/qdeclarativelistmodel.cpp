@@ -207,11 +207,11 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     Here is an example that uses WorkerScript to periodically append the
     current time to a list model:
 
-    \snippet examples/declarative/listmodel-threaded/timedisplay.qml 0
+    \snippet examples/declarative/threading/threadedlistmodel/timedisplay.qml 0
 
     The included file, \tt dataloader.js, looks like this:
 
-    \snippet examples/declarative/listmodel-threaded/dataloader.js 0
+    \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
     The application's \tt Timer object periodically sends a message to the
     worker script by calling \tt WorkerScript::sendMessage(). When this message
@@ -537,10 +537,7 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
 */
 QScriptValue QDeclarativeListModel::get(int index) const
 {
-    // the internal flat/nested class takes care of return value for bad index
-    if (index >= count() || index < 0) 
-        qmlInfo(this) << tr("get: index %1 out of range").arg(index);
-
+    // the internal flat/nested class checks for bad index
     return m_flat ? m_flat->get(index) : m_nested->get(index);
 }
 

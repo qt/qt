@@ -858,8 +858,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
-
+    keyPressPreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyPressEvent(event);
 }
@@ -871,7 +872,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
+    keyReleasePreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
@@ -903,10 +906,8 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
-            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
                 p->setFocus();
-                break;
-            }
             p = p->parentItem();
         }
         setFocus(true);

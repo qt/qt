@@ -687,7 +687,13 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     component.setData("import Qt 4.7\nColumn { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
-    QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom or verticalCenter anchors for items inside Column"));
+    QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column"));
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nColumn { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column"));
     warningMessage.clear();
 
     component.setData("import Qt 4.7\nColumn { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
@@ -699,7 +705,13 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     component.setData("import Qt 4.7\nRow { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
-    QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right or horizontalCenter anchors for items inside Row"));
+    QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row"));
+    warningMessage.clear();
+
+    component.setData("import Qt 4.7\nRow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row"));
     warningMessage.clear();
 
     component.setData("import Qt 4.7\nRow { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
@@ -714,7 +726,18 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
     warningMessage.clear();
 
+    component.setData("import Qt 4.7\nGrid { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
+    warningMessage.clear();
+
     component.setData("import Qt 4.7\nFlow { Item { anchors.verticalCenter: parent.verticalCenter } }", QUrl::fromLocalFile(""));
+    item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+    QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
+
+    component.setData("import Qt 4.7\nFlow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
