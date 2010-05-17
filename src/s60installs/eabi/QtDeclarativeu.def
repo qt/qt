@@ -1008,7 +1008,7 @@ EXPORTS
 	_ZN21QDeclarativeDomObjectD1Ev @ 1007 NONAME
 	_ZN21QDeclarativeDomObjectD2Ev @ 1008 NONAME
 	_ZN21QDeclarativeDomObjectaSERKS_ @ 1009 NONAME
-	_ZN21QDeclarativeFlickable10flickEndedEv @ 1010 NONAME
+	_ZN21QDeclarativeFlickable10flickEndedEv @ 1010 NONAME ABSENT
 	_ZN21QDeclarativeFlickable10timerEventEP11QTimerEvent @ 1011 NONAME
 	_ZN21QDeclarativeFlickable10wheelEventEP24QGraphicsSceneWheelEvent @ 1012 NONAME
 	_ZN21QDeclarativeFlickable11cancelFlickEv @ 1013 NONAME
@@ -1018,10 +1018,10 @@ EXPORTS
 	_ZN21QDeclarativeFlickable11setContentXEf @ 1017 NONAME
 	_ZN21QDeclarativeFlickable11setContentYEf @ 1018 NONAME
 	_ZN21QDeclarativeFlickable11visibleAreaEv @ 1019 NONAME
-	_ZN21QDeclarativeFlickable12flickStartedEv @ 1020 NONAME
+	_ZN21QDeclarativeFlickable12flickStartedEv @ 1020 NONAME ABSENT
 	_ZN21QDeclarativeFlickable12setOverShootEb @ 1021 NONAME
 	_ZN21QDeclarativeFlickable13flickableDataEv @ 1022 NONAME
-	_ZN21QDeclarativeFlickable13movementEndedEv @ 1023 NONAME
+	_ZN21QDeclarativeFlickable13movementEndedEv @ 1023 NONAME ABSENT
 	_ZN21QDeclarativeFlickable13movingChangedEv @ 1024 NONAME
 	_ZN21QDeclarativeFlickable13setPressDelayEi @ 1025 NONAME
 	_ZN21QDeclarativeFlickable13viewportMovedEv @ 1026 NONAME
@@ -1034,7 +1034,7 @@ EXPORTS
 	_ZN21QDeclarativeFlickable15flickingChangedEv @ 1033 NONAME
 	_ZN21QDeclarativeFlickable15geometryChangedERK6QRectFS2_ @ 1034 NONAME
 	_ZN21QDeclarativeFlickable15mousePressEventEP24QGraphicsSceneMouseEvent @ 1035 NONAME
-	_ZN21QDeclarativeFlickable15movementStartedEv @ 1036 NONAME
+	_ZN21QDeclarativeFlickable15movementStartedEv @ 1036 NONAME ABSENT
 	_ZN21QDeclarativeFlickable15setContentWidthEf @ 1037 NONAME
 	_ZN21QDeclarativeFlickable16movementStartingEv @ 1038 NONAME
 	_ZN21QDeclarativeFlickable16overShootChangedEv @ 1039 NONAME
@@ -1044,14 +1044,14 @@ EXPORTS
 	_ZN21QDeclarativeFlickable17flickableChildrenEv @ 1043 NONAME
 	_ZN21QDeclarativeFlickable17mouseReleaseEventEP24QGraphicsSceneMouseEvent @ 1044 NONAME
 	_ZN21QDeclarativeFlickable17pressDelayChangedEv @ 1045 NONAME
-	_ZN21QDeclarativeFlickable17setFlickDirectionENS_14FlickDirectionE @ 1046 NONAME
+	_ZN21QDeclarativeFlickable17setFlickDirectionENS_14FlickDirectionE @ 1046 NONAME ABSENT
 	_ZN21QDeclarativeFlickable18interactiveChangedEv @ 1047 NONAME
 	_ZN21QDeclarativeFlickable19contentWidthChangedEv @ 1048 NONAME
 	_ZN21QDeclarativeFlickable19getStaticMetaObjectEv @ 1049 NONAME
 	_ZN21QDeclarativeFlickable19isAtBoundaryChangedEv @ 1050 NONAME
 	_ZN21QDeclarativeFlickable20contentHeightChangedEv @ 1051 NONAME
 	_ZN21QDeclarativeFlickable20setFlickDecelerationEf @ 1052 NONAME
-	_ZN21QDeclarativeFlickable21flickDirectionChangedEv @ 1053 NONAME
+	_ZN21QDeclarativeFlickable21flickDirectionChangedEv @ 1053 NONAME ABSENT
 	_ZN21QDeclarativeFlickable23setMaximumFlickVelocityEf @ 1054 NONAME
 	_ZN21QDeclarativeFlickable23verticalVelocityChangedEv @ 1055 NONAME
 	_ZN21QDeclarativeFlickable24flickDecelerationChangedEv @ 1056 NONAME
@@ -1941,9 +1941,9 @@ EXPORTS
 	_ZN27QDeclarativeVisualDataModel7setPartERK7QString @ 1940 NONAME
 	_ZN27QDeclarativeVisualDataModel8evaluateEiRK7QStringP7QObject @ 1941 NONAME
 	_ZN27QDeclarativeVisualDataModel8setModelERK8QVariant @ 1942 NONAME
-	_ZN27QDeclarativeVisualDataModelC1EP19QDeclarativeContext @ 1943 NONAME
+	_ZN27QDeclarativeVisualDataModelC1EP19QDeclarativeContext @ 1943 NONAME ABSENT
 	_ZN27QDeclarativeVisualDataModelC1Ev @ 1944 NONAME
-	_ZN27QDeclarativeVisualDataModelC2EP19QDeclarativeContext @ 1945 NONAME
+	_ZN27QDeclarativeVisualDataModelC2EP19QDeclarativeContext @ 1945 NONAME ABSENT
 	_ZN27QDeclarativeVisualDataModelC2Ev @ 1946 NONAME
 	_ZN27QDeclarativeVisualDataModelD0Ev @ 1947 NONAME
 	_ZN27QDeclarativeVisualDataModelD1Ev @ 1948 NONAME
@@ -1960,8 +1960,8 @@ EXPORTS
 	_ZN27QDeclarativeVisualItemModel7releaseEP16QDeclarativeItem @ 1959 NONAME
 	_ZN27QDeclarativeVisualItemModel8childrenEv @ 1960 NONAME
 	_ZN27QDeclarativeVisualItemModel8evaluateEiRK7QStringP7QObject @ 1961 NONAME
-	_ZN27QDeclarativeVisualItemModelC1Ev @ 1962 NONAME
-	_ZN27QDeclarativeVisualItemModelC2Ev @ 1963 NONAME
+	_ZN27QDeclarativeVisualItemModelC1Ev @ 1962 NONAME ABSENT
+	_ZN27QDeclarativeVisualItemModelC2Ev @ 1963 NONAME ABSENT
 	_ZN28QDeclarativeCustomParserNodeC1ERKS_ @ 1964 NONAME
 	_ZN28QDeclarativeCustomParserNodeC1Ev @ 1965 NONAME
 	_ZN28QDeclarativeCustomParserNodeC2ERKS_ @ 1966 NONAME
