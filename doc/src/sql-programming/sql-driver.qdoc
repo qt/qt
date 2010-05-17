@@ -44,7 +44,7 @@
     \title SQL Database Drivers
     \brief How to configure and install QtSql drivers for supported databases.
 
-    \ingroup best-practices
+    \ingroup qt-sql
 
     The QtSql module uses driver \l{How to Create Qt
     Plugins}{plugins} to communicate with the different database

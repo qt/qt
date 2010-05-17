@@ -75,6 +75,7 @@ public:
     QDeclarativeBasePositionerPrivate()
         : spacing(0), type(QDeclarativeBasePositioner::None)
         , moveTransition(0), addTransition(0), queuedPositioning(false)
+        , doingPositioning(false), anchorConflict(false)
     {
     }
 
@@ -95,7 +96,9 @@ public:
 
     void watchChanges(QDeclarativeItem *other);
     void unwatchChanges(QDeclarativeItem* other);
-    bool queuedPositioning;
+    bool queuedPositioning : 1;
+    bool doingPositioning : 1;
+    bool anchorConflict : 1;
 
     virtual void itemSiblingOrderChanged(QDeclarativeItem* other)
     {

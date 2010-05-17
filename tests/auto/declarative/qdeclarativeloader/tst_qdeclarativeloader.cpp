@@ -104,13 +104,14 @@ tst_QDeclarativeLoader::tst_QDeclarativeLoader()
 void tst_QDeclarativeLoader::url()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 0; onLoaded: did_load=123; source: \"Rect120x60.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
     QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/Rect120x60.qml"));
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->status(), QDeclarativeLoader::Ready);
+    QCOMPARE(loader->property("did_load").toInt(), 123);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
 
     delete loader;
@@ -427,7 +428,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"http://127.0.0.1:14450/Rect120x60.qml\" }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: did_load=123 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
     if (component.isError())
         qDebug() << component.errors();
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -437,6 +438,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
 
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
+    QCOMPARE(loader->property("did_load").toInt(), 123);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
 
     delete loader;
@@ -483,7 +485,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: Network error for URL http://127.0.0.1:14450/IDontExist.qml");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"http://127.0.0.1:14450/IDontExist.qml\" }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
+    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -491,6 +493,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
 
     QVERIFY(loader->item() == 0);
     QCOMPARE(loader->progress(), 0.0);
+    QCOMPARE(loader->property("did_load").toInt(), 123);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
 
     delete loader;

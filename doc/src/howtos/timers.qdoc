@@ -42,7 +42,7 @@
 /*!
     \page timers.html
     \title Timers
-    \brief How to use timers in your application.
+    \brief How to use Qt timers in your application.
 
     \ingroup best-practices
 

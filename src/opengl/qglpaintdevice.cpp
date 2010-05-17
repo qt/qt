@@ -175,7 +175,10 @@ void QGLWidgetGLPaintDevice::beginPaint()
             float alpha = c.alphaF();
             glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
         }
-        glClear(GL_COLOR_BUFFER_BIT);
+        if (context()->d_func()->workaround_needsFullClearOnEveryFrame)
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        else
+            glClear(GL_COLOR_BUFFER_BIT);
     }
 }
 

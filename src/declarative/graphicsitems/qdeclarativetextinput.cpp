@@ -863,6 +863,9 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QDeclarativeTextInput);
+    keyPressPreHandler(ev);
+    if (ev->isAccepted())
+        return;
     if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
         || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
@@ -886,10 +889,8 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if(d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
-            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
                 p->setFocus();
-                break;
-            }
             p = p->parentItem();
         }
         setFocus(true);

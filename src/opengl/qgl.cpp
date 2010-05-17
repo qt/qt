@@ -1612,6 +1612,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
+    workaround_needsFullClearOnEveryFrame = false;
+    workaround_brokenFBOReadBack = false;
+    workaroundsCached = false;
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
