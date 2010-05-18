@@ -219,8 +219,9 @@ Binary to ASCII - this function returns a base64 encoding of \c data.
 ASCII to binary - this function returns a base64 decoding of \c data.
 
 \section3 Qt.quit()
-This function causes the QML engine to emit the quit signal, which in
-\l {Qt Declarative UI Runtime}{qml} causes the runtime to quit.
+This function causes the QDeclarativeEngine::quit() signal to be emitted.
+Within the \l {Qt Declarative UI Runtime}{qml} application this causes the 
+launcher application to exit.
 
 \section3 Qt.resolvedUrl(url)
 This function returns \c url resolved relative to the URL of the

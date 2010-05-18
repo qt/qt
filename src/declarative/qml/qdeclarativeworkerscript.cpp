@@ -527,7 +527,7 @@ void QDeclarativeWorkerScriptEngine::run()
     \snippet doc/src/snippets/declarative/workerscript.qml 0
 
     The above worker script specifies a javascript file, "script.js", that handles
-    the operations to be performed in the new thread:
+    the operations to be performed in the new thread. Here is \c script.js:
 
     \qml
     WorkerScript.onMessage = function(message) {
@@ -538,7 +538,7 @@ void QDeclarativeWorkerScriptEngine::run()
 
     When the user clicks anywhere within the rectangle, \c sendMessage() is
     called, triggering the \tt WorkerScript.onMessage() handler in
-    \tt source.js. This in turn sends a reply message that is then received
+    \tt script.js. This in turn sends a reply message that is then received
     by the \tt onMessage() handler of \tt myWorker.
 */
 QDeclarativeWorkerScript::QDeclarativeWorkerScript(QObject *parent)

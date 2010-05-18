@@ -1,3 +1,4 @@
+QObject.log
 tst_*
 !tst_*.*
 tst_*.log

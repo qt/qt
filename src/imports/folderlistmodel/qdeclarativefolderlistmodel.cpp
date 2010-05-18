@@ -44,8 +44,6 @@
 #include <QDebug>
 #include <qdeclarativecontext.h>
 
-QT_BEGIN_NAMESPACE
-
 class QDeclarativeFolderListModelPrivate
 {
 public:
@@ -112,8 +110,13 @@ public:
 */
 
 QDeclarativeFolderListModel::QDeclarativeFolderListModel(QObject *parent)
-    : QListModelInterface(parent)
+    : QAbstractListModel(parent)
 {
+    QHash<int, QByteArray> roles;
+    roles[FileNameRole] = "fileName";
+    roles[FilePathRole] = "filePath";
+    setRoleNames(roles);
+
     d = new QDeclarativeFolderListModelPrivate;
     d->model.setFilter(QDir::AllDirs | QDir::Files | QDir::Drives | QDir::NoDotAndDotDot);
     connect(&d->model, SIGNAL(rowsInserted(const QModelIndex&,int,int))
@@ -131,56 +134,23 @@ QDeclarativeFolderListModel::~QDeclarativeFolderListModel()
     delete d;
 }
 
-QHash<int,QVariant> QDeclarativeFolderListModel::data(int index, const QList<int> &roles) const
-{
-    Q_UNUSED(roles);
-    QHash<int,QVariant> folderData;
-    QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
-    if (modelIndex.isValid()) {
-        folderData[QDirModel::FileNameRole] = d->model.data(modelIndex, QDirModel::FileNameRole);
-        folderData[QDirModel::FilePathRole] = QUrl::fromLocalFile(d->model.data(modelIndex, QDirModel::FilePathRole).toString());
-    }
-
-    return folderData;
-}
-
-QVariant QDeclarativeFolderListModel::data(int index, int role) const
+QVariant QDeclarativeFolderListModel::data(const QModelIndex &index, int role) const
 {
     QVariant rv;
-    QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
+    QModelIndex modelIndex = d->model.index(index.row(), 0, d->folderIndex);
     if (modelIndex.isValid()) {
-        if (role == QDirModel::FileNameRole)
-            rv = d->model.data(modelIndex, QDirModel::FileNameRole);
-        else if (role == QDirModel::FilePathRole)
+        if (role == FileNameRole)
+            rv = d->model.data(modelIndex, QDirModel::FileNameRole).toString();
+        else if (role == FilePathRole)
             rv = QUrl::fromLocalFile(d->model.data(modelIndex, QDirModel::FilePathRole).toString());
     }
-
     return rv;
 }
 
-int QDeclarativeFolderListModel::count() const
+int QDeclarativeFolderListModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return d->count;
-}
-
-QList<int> QDeclarativeFolderListModel::roles() const
-{
-    QList<int> r;
-    r << QDirModel::FileNameRole;
-    r << QDirModel::FilePathRole;
-    return r;
-}
-
-QString QDeclarativeFolderListModel::toString(int role) const
-{
-    switch (role) {
-    case QDirModel::FileNameRole:
-        return QLatin1String("fileName");
-    case QDirModel::FilePathRole:
-        return QLatin1String("filePath");
-    }
-
-    return QString();
 }
 
 /*!
@@ -315,37 +285,41 @@ void QDeclarativeFolderListModel::refresh()
 {
     d->folderIndex = QModelIndex();
     if (d->count) {
-        int tmpCount = d->count;
+        emit beginRemoveRows(QModelIndex(), 0, d->count);
         d->count = 0;
-        emit itemsRemoved(0, tmpCount);
+        emit endRemoveRows();
     }
     d->folderIndex = d->model.index(d->folder.toLocalFile());
-    d->count = d->model.rowCount(d->folderIndex);
-    if (d->count) {
-        emit itemsInserted(0, d->count);
+    int newcount = d->model.rowCount(d->folderIndex);
+    if (newcount) {
+        emit beginInsertRows(QModelIndex(), 0, newcount-1);
+        d->count = newcount;
+        emit endInsertRows();
     }
 }
 
 void QDeclarativeFolderListModel::inserted(const QModelIndex &index, int start, int end)
 {
     if (index == d->folderIndex) {
+        emit beginInsertRows(QModelIndex(), start, end);
         d->count = d->model.rowCount(d->folderIndex);
-        emit itemsInserted(start, end - start + 1);
+        emit endInsertRows();
     }
 }
 
 void QDeclarativeFolderListModel::removed(const QModelIndex &index, int start, int end)
 {
     if (index == d->folderIndex) {
+        emit beginRemoveRows(QModelIndex(), start, end);
         d->count = d->model.rowCount(d->folderIndex);
-        emit itemsRemoved(start, end - start + 1);
+        emit endRemoveRows();
     }
 }
 
 void QDeclarativeFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
 {
     if (start.parent() == d->folderIndex)
-        emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
+        emit dataChanged(index(start.row(),0), index(end.row(),0));
 }
 
 /*!
@@ -413,11 +387,3 @@ void QDeclarativeFolderListModel::setShowOnlyReadable(bool on)
     else
         d->model.setFilter(d->model.filter() & ~QDir::Readable);
 }
-
-void QDeclarativeFolderListModel::registerTypes()
-{
-    qmlRegisterType<QDeclarativeFolderListModel>("Qt",4,7,"FolderListModel");
-}
-
-QT_END_NAMESPACE
-

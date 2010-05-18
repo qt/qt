@@ -175,7 +175,7 @@
 */
 
 /*!
-    \title Threaded ListModel 
+    \title Threaded ListModel
     \example declarative/threading/threadedlistmodel
 */
 
@@ -265,11 +265,6 @@
 /*!
     \title Tab Widget
     \example declarative/ui-components/tabwidget
-*/
-
-/*!
-    \title XML Data
-    \example declarative/xml/xmldata
 */
 
 /*!

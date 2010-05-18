@@ -190,7 +190,7 @@ class MyExpression : public QDeclarativeExpression
     Q_OBJECT
 public:
     MyExpression(QDeclarativeContext *ctxt, const QString &expr)
-        : QDeclarativeExpression(ctxt, expr, 0), changed(false)
+        : QDeclarativeExpression(ctxt, 0, expr), changed(false)
     {
         QObject::connect(this, SIGNAL(valueChanged()), this, SLOT(expressionValueChanged()));
         setNotifyOnValueChanged(true);

@@ -122,7 +122,6 @@ For example, from your build directory, run:
 
 \section2 XML
 \list
-\o \l{declarative/xml/xmldata}{XML data}
 \o \l{declarative/xml/xmlhttprequest}{XmlHttpRequest}
 \endlist
 
@@ -161,9 +160,10 @@ For example, from your build directory, run:
 
 \list
 \o \l{demos/declarative/calculator}{Calculator}
+\o \l{demos/declarative/flickr}{Flickr Mobile}
 \o \l{demos/declarative/minehunt}{Minehunt}
 \o \l{demos/declarative/photoviewer}{Photo Viewer}
-\o \l{demos/declarative/flickr}{Flickr Mobile}
+\o \l{demos/declarative/rssnews}{RSS News Reader}
 \o \l{demos/declarative/samegame}{Same Game}
 \o \l{demos/declarative/snake}{Snake}
 \endlist
