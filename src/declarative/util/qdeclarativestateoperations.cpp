@@ -659,7 +659,7 @@ void QDeclarativeStateChangeScript::execute(Reason)
     Q_D(QDeclarativeStateChangeScript);
     const QString &script = d->script.script();
     if (!script.isEmpty()) {
-        QDeclarativeExpression expr(d->script.context(), script, d->script.scopeObject());
+        QDeclarativeExpression expr(d->script.context(), d->script.scopeObject(), script);
         QDeclarativeData *ddata = QDeclarativeData::get(this);
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);

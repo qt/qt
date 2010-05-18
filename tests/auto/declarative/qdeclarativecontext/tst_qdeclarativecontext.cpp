@@ -398,7 +398,7 @@ void tst_qdeclarativecontext::destruction()
 
     QObject obj;
     QDeclarativeEngine::setContextForObject(&obj, ctxt);
-    QDeclarativeExpression expr(ctxt, "a", 0);
+    QDeclarativeExpression expr(ctxt, 0, "a");
 
     QCOMPARE(ctxt, QDeclarativeEngine::contextForObject(&obj));
     QCOMPARE(ctxt, expr.context());
