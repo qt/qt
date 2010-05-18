@@ -352,6 +352,10 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
                     instr.storeDouble.propertyIndex = prop.propertyIndex();
                     instr.storeDouble.value = n;
                 }
+            } else if(v->value.isBoolean()) {
+                instr.type = QDeclarativeInstruction::StoreVariantBool;
+                instr.storeBool.propertyIndex = prop.propertyIndex();
+                instr.storeBool.value = v->value.asBoolean();
             } else {
                 instr.type = QDeclarativeInstruction::StoreVariant;
                 instr.storeString.propertyIndex = prop.propertyIndex();
@@ -607,6 +611,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
     Q_ASSERT(root);
 
     this->engine = engine;
+    this->enginePrivate = QDeclarativeEnginePrivate::get(engine);
     this->unit = unit;
     this->unitRoot = root;
     compileTree(root);
@@ -624,6 +629,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
     savedCompileStates.clear();
     output = 0;
     this->engine = 0;
+    this->enginePrivate = 0;
     this->unit = 0;
     this->unitRoot = 0;
 
@@ -688,14 +694,12 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     def.type = QDeclarativeInstruction::SetDefault;
     output->bytecode << def;
 
-    output->imports = unit->imports;
-
     output->importCache = new QDeclarativeTypeNameCache(engine);
 
     for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
         output->importCache->add(importedScriptIndexes.at(ii), ii);
 
-    output->imports.cache(output->importCache, engine);
+    unit->imports.cache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -706,7 +710,7 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         output->root = &output->rootData;
     }
     if (!tree->metadata.isEmpty()) 
-        QDeclarativeEnginePrivate::get(engine)->registerCompositeType(output);
+        enginePrivate->registerCompositeType(output);
 }
 
 static bool ValuePtrLessThan(const Value *t1, const Value *t2) 
@@ -938,19 +942,28 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         meta.storeMeta.propertyCache = output->propertyCaches.count();
         // ### Surely the creation of this property cache could be more efficient
         QDeclarativePropertyCache *propertyCache = 0;
-        if (tr.component && QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache) {
+        if (tr.component)
             propertyCache = QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache->copy();
-        } else {
-            propertyCache = QDeclarativePropertyCache::create(engine, obj->metaObject()->superClass());
-        }
+        else
+            propertyCache = enginePrivate->cache(obj->metaObject()->superClass())->copy();
+
         propertyCache->append(engine, obj->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
                               QDeclarativePropertyCache::Data::IsVMEFunction);
+
         if (obj == unitRoot) {
             propertyCache->addref();
             output->rootPropertyCache = propertyCache;
         }
+
         output->propertyCaches << propertyCache;
         output->bytecode << meta;
+    } else if (obj == unitRoot) {
+        if (tr.component)
+            output->rootPropertyCache = QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache;
+        else
+            output->rootPropertyCache = enginePrivate->cache(obj->metaObject());
+
+        output->rootPropertyCache->addref();
     }
 
     // Set the object id
@@ -1359,9 +1372,9 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
         }
 
         QDeclarativeType *type = 0;
-        QDeclarativeEnginePrivate::ImportedNamespace *typeNamespace = 0;
-        QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, prop->name, 
-                                                   &type, 0, 0, 0, &typeNamespace);
+        QDeclarativeImportedNamespace *typeNamespace = 0;
+        enginePrivate->importDatabase.resolveType(unit->imports, prop->name, 
+                                                  &type, 0, 0, 0, &typeNamespace);
 
         if (typeNamespace) {
             // ### We might need to indicate that this property is a namespace 
@@ -1436,7 +1449,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
 
         COMPILE_CHECK(buildGroupedProperty(prop, obj, ctxt));
 
-    } else if (QDeclarativeEnginePrivate::get(engine)->isList(prop->type)) {
+    } else if (enginePrivate->isList(prop->type)) {
 
         COMPILE_CHECK(buildListProperty(prop, obj, ctxt));
 
@@ -1453,11 +1466,10 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
     return true;
 }
 
-bool 
-QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeEnginePrivate::ImportedNamespace *ns,
-                                      QDeclarativeParser::Property *nsProp, 
-                                      QDeclarativeParser::Object *obj, 
-                                      const BindingContext &ctxt)
+bool QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeImportedNamespace *ns,
+                                                    QDeclarativeParser::Property *nsProp, 
+                                                    QDeclarativeParser::Object *obj, 
+                                                    const BindingContext &ctxt)
 {
     if (!nsProp->value)
         COMPILE_EXCEPTION(nsProp, tr("Invalid use of namespace"));
@@ -1470,8 +1482,7 @@ QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeEnginePrivate::Import
         // Setup attached property data
 
         QDeclarativeType *type = 0;
-        QDeclarativeEnginePrivate::get(engine)->resolveTypeInNamespace(ns, prop->name,
-                                                              &type, 0, 0, 0);
+        enginePrivate->importDatabase.resolveTypeInNamespace(ns, prop->name, &type, 0, 0, 0);
 
         if (!type || !type->attachedPropertiesType()) 
             COMPILE_EXCEPTION(prop, tr("Non-existent attached object"));
@@ -1492,7 +1503,7 @@ QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeEnginePrivate::Import
 void QDeclarativeCompiler::genValueProperty(QDeclarativeParser::Property *prop,
                                    QDeclarativeParser::Object *obj)
 {
-    if (QDeclarativeEnginePrivate::get(engine)->isList(prop->type)) {
+    if (enginePrivate->isList(prop->type)) {
         genListProperty(prop, obj);
     } else {
         genPropertyAssignment(prop, obj);
@@ -1502,7 +1513,7 @@ void QDeclarativeCompiler::genValueProperty(QDeclarativeParser::Property *prop,
 void QDeclarativeCompiler::genListProperty(QDeclarativeParser::Property *prop,
                                   QDeclarativeParser::Object *obj)
 {
-    int listType = QDeclarativeEnginePrivate::get(engine)->listType(prop->type);
+    int listType = enginePrivate->listType(prop->type);
 
     QDeclarativeInstruction fetch;
     fetch.type = QDeclarativeInstruction::FetchQList;
@@ -1756,8 +1767,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
 
     } else {
         // Load the nested property's meta type
-        prop->value->metatype = 
-            QDeclarativeEnginePrivate::get(engine)->metaObjectForType(prop->type);
+        prop->value->metatype = enginePrivate->metaObjectForType(prop->type);
         if (!prop->value->metatype)
             COMPILE_EXCEPTION(prop, tr("Invalid grouped property access"));
 
@@ -1836,13 +1846,13 @@ bool QDeclarativeCompiler::buildListProperty(QDeclarativeParser::Property *prop,
                                              QDeclarativeParser::Object *obj,
                                              const BindingContext &ctxt)
 {
-    Q_ASSERT(QDeclarativeEnginePrivate::get(engine)->isList(prop->type));
+    Q_ASSERT(enginePrivate->isList(prop->type));
 
     int t = prop->type;
 
     obj->addValueProperty(prop);
 
-    int listType = QDeclarativeEnginePrivate::get(engine)->listType(t);
+    int listType = enginePrivate->listType(t);
     bool listTypeIsInterface = QDeclarativeMetaType::isInterface(listType);
 
     bool assignedBinding = false;
@@ -1957,8 +1967,7 @@ bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Pro
         // We want to raw metaObject here as the raw metaobject is the
         // actual property type before we applied any extensions that might
         // effect the properties on the type, but don't effect assignability
-        const QMetaObject *propertyMetaObject =
-            QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(prop->type);
+        const QMetaObject *propertyMetaObject = enginePrivate->rawMetaObjectForType(prop->type);
 
         // Will be true if the assgned type inherits propertyMetaObject
         bool isAssignable = false;
@@ -2100,8 +2109,8 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
 
     QString typeName = parts.at(0);
     QDeclarativeType *type = 0;
-    QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, typeName.toUtf8(),
-                                               &type, 0, 0, 0, 0);
+    enginePrivate->importDatabase.resolveType(unit->imports, typeName.toUtf8(),
+                                              &type, 0, 0, 0, 0);
 
     if (!type || obj->typeName != type->qmlTypeName())
         return true;
@@ -2128,7 +2137,7 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
     int dot = script.indexOf('.');
     if (dot > 0) {
         QDeclarativeType *type = 0;
-        QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
+        enginePrivate->importDatabase.resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
         if (!type)
             return -1;
         const QMetaObject *mo = type->metaObject();
@@ -2282,13 +2291,12 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
                 QByteArray customTypeName;
                 QDeclarativeType *qmltype = 0;
                 QUrl url;
-                QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(engine);
-                if (!priv->resolveType(unit->imports, p.customType, &qmltype, 
-                                       &url, 0, 0, 0)) 
+                if (!enginePrivate->importDatabase.resolveType(unit->imports, p.customType, &qmltype, 
+                                                               &url, 0, 0, 0)) 
                     COMPILE_EXCEPTION(&p, tr("Invalid property type"));
 
                 if (!qmltype) {
-                    QDeclarativeCompositeTypeData *tdata = priv->typeManager.get(url);
+                    QDeclarativeCompositeTypeData *tdata = enginePrivate->typeManager.get(url);
                     Q_ASSERT(tdata);
                     Q_ASSERT(tdata->status == QDeclarativeCompositeTypeData::Complete);
 
@@ -2460,7 +2468,7 @@ bool QDeclarativeCompiler::checkValidId(QDeclarativeParser::Value *v, const QStr
 
     }
 
-    if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(val))
+    if (enginePrivate->globalClass->illegalNames().contains(val))
         COMPILE_EXCEPTION(v, tr( "ID illegally masks global JavaScript property"));
 
     return true;
@@ -2653,8 +2661,8 @@ int QDeclarativeCompiler::genValueTypeData(QDeclarativeParser::Property *valueTy
 {
     QByteArray data =
         QDeclarativePropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, 
-                                              QDeclarativeEnginePrivate::get(engine)->valueTypes[prop->type]->metaObject(), 
-                                              valueTypeProp->index);
+                                                   enginePrivate->valueTypes[prop->type]->metaObject(), 
+                                                   valueTypeProp->index);
 //                valueTypeProp->index, valueTypeProp->type);
 
     return output->indexForByteArray(data);
@@ -2690,7 +2698,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         expr.expression = binding.expression;
         expr.imports = unit->imports;
 
-        int index = bindingCompiler.compile(expr, QDeclarativeEnginePrivate::get(engine));
+        int index = bindingCompiler.compile(expr, enginePrivate);
         if (index != -1) {
             binding.dataType = BindingReference::Experimental;
             binding.compiledIndex = index;
@@ -2798,7 +2806,7 @@ void QDeclarativeCompiler::dumpStats()
 bool QDeclarativeCompiler::canCoerce(int to, QDeclarativeParser::Object *from)
 {
     const QMetaObject *toMo = 
-        QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(to);
+        enginePrivate->rawMetaObjectForType(to);
     const QMetaObject *fromMo = from->metaObject();
 
     while (fromMo) {

@@ -523,6 +523,10 @@ void tst_LargeFile::mapFile()
 
 void tst_LargeFile::mapOffsetOverflow()
 {
+#if defined(Q_OS_MAC)
+    QSKIP("mmap'ping beyond EOF may succeed; generate bus error on access", SkipAll);
+#endif
+
     // Out-of-range mappings should fail, and not silently clip the offset
     for (int i = 50; i < 63; ++i) {
         uchar *address = 0;

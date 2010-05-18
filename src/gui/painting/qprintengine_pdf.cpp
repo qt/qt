@@ -931,29 +931,16 @@ void QPdfEnginePrivate::writeHeader()
 void QPdfEnginePrivate::writeInfo()
 {
     info = addXrefEntry(-1);
-
-    // The 'text string' type in PDF is encoded either as PDFDocEncoding, or
-    // Unicode UTF-16 with a Unicode byte order mark as the first character
-    // (0xfeff), with the high-order byte first.
-    QByteArray array("<<\n/Title (\xfe\xff");
-    const ushort *utf16Title = title.utf16();
-    for (int i=0; i < title.size(); ++i) {
-        array.append((*(utf16Title + i)) >> 8);
-        array.append((*(utf16Title + i)) & 0xff);
-    }
-    array.append(")\n/Creator (\xfe\xff");
-    const ushort *utf16Creator = creator.utf16();
-    for (int i=0; i < creator.size(); ++i) {
-        array.append((*(utf16Creator + i)) >> 8);
-        array.append((*(utf16Creator + i)) & 0xff);
-    }
-    array.append(")\n/Producer (Qt " QT_VERSION_STR " (C) 2010 Nokia Corporation and/or its subsidiary(-ies))\n");
-    write(array);
-
+    xprintf("<<\n/Title ");
+    printString(title);
+    xprintf("\n/Creator ");
+    printString(creator);
+    xprintf("\n/Producer ");
+    printString(QString::fromLatin1("Qt " QT_VERSION_STR " (C) 2010 Nokia Corporation and/or its subsidiary(-ies)"));
     QDateTime now = QDateTime::currentDateTime().toUTC();
     QTime t = now.time();
     QDate d = now.date();
-    xprintf("/CreationDate (D:%d%02d%02d%02d%02d%02d)\n",
+    xprintf("\n/CreationDate (D:%d%02d%02d%02d%02d%02d)\n",
             d.year(),
             d.month(),
             d.day(),
@@ -1228,6 +1215,25 @@ int QPdfEnginePrivate::addXrefEntry(int object, bool printostr)
         xprintf("%d 0 obj\n",object);
 
     return object;
+}
+
+void QPdfEnginePrivate::printString(const QString &string) {
+    // The 'text string' type in PDF is encoded either as PDFDocEncoding, or
+    // Unicode UTF-16 with a Unicode byte order mark as the first character
+    // (0xfeff), with the high-order byte first.
+    QByteArray array("(\xfe\xff");
+    const ushort *utf16 = string.utf16();
+    
+    for (int i=0; i < string.size(); ++i) {
+        char part[2] = {char((*(utf16 + i)) >> 8), char((*(utf16 + i)) & 0xff)};
+        for(int j=0; j < 2; ++j) {
+            if (part[j] == '(' || part[j] == ')' || part[j] == '\\')
+                array.append('\\');
+            array.append(part[j]);
+        }
+    }
+    array.append(")");
+    write(array);
 }
 
 QT_END_NAMESPACE

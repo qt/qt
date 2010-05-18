@@ -26,6 +26,7 @@
 #include <QLocale>
 #include <QMenu>
 #include <QPushButton>
+#include <QStyle>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #include <qgraphicsscene.h>
@@ -109,6 +110,8 @@ private slots:
     void errorPageExtensionInFrameset();
     void userAgentApplicationName();
     void userAgentLocaleChange();
+
+    void viewModes();
 
     void crashTests_LazyInitializationOfMainFrame();
 
@@ -355,6 +358,21 @@ void tst_QWebPage::userStyleSheet()
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
+}
+
+void tst_QWebPage::viewModes()
+{
+    m_view->setHtml("<body></body>");
+    m_page->setProperty("_q_viewMode", "minimized");
+
+    QVariant empty = m_page->mainFrame()->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webkit-view-mode)\")");
+    QVERIFY(empty.type() == QVariant::Bool && empty.toBool());
+
+    QVariant minimized = m_page->mainFrame()->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webkit-view-mode: minimized)\")");
+    QVERIFY(minimized.type() == QVariant::Bool && minimized.toBool());
+
+    QVariant maximized = m_page->mainFrame()->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webkit-view-mode: maximized)\")");
+    QVERIFY(maximized.type() == QVariant::Bool && !maximized.toBool());
 }
 
 void tst_QWebPage::modified()
@@ -1350,7 +1368,27 @@ void tst_QWebPage::inputMethods()
     page->event(&evrel);
 
 #if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
-    QVERIFY(!viewEventSpy.contains(QEvent::RequestSoftwareInputPanel));
+    // This part of the test checks if the SIP (Software Input Panel) is triggered,
+    // which normally happens on mobile platforms, when a user input form receives
+    // a mouse click.
+    int  inputPanel = 0;
+    if (viewType == "QWebView") {
+        if (QWebView* wv = qobject_cast<QWebView*>(view))
+            inputPanel = wv->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
+    } else if (viewType == "QGraphicsWebView") {
+        if (QGraphicsWebView* wv = qobject_cast<QGraphicsWebView*>(view))
+            inputPanel = wv->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
+    }
+
+    // For non-mobile platforms RequestSoftwareInputPanel event is not called
+    // because there is no SIP (Software Input Panel) triggered. In the case of a
+    // mobile platform, an input panel, e.g. virtual keyboard, is usually invoked
+    // and the RequestSoftwareInputPanel event is called. For these two situations
+    // this part of the test can verified as the checks below.
+    if (inputPanel)
+        QVERIFY(viewEventSpy.contains(QEvent::RequestSoftwareInputPanel));
+    else
+        QVERIFY(!viewEventSpy.contains(QEvent::RequestSoftwareInputPanel));
 #endif
     viewEventSpy.clear();
 

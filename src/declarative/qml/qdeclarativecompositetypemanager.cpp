@@ -338,7 +338,7 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
 // WARNING, there is a copy of this function in qdeclarativeengine.cpp
 static QString toLocalFileOrQrc(const QUrl& url)
 {
-    if (url.scheme() == QLatin1String("qrc")) {
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             return QLatin1Char(':') + url.path();
         return QString();
@@ -360,7 +360,10 @@ void QDeclarativeCompositeTypeManager::loadResource(QDeclarativeCompositeTypeRes
         } else {
             resource->status = QDeclarativeCompositeTypeResource::Error;
         }
+    } else if (url.scheme().isEmpty()) {
 
+        // We can't open this, so just declare as an error
+        resource->status = QDeclarativeCompositeTypeResource::Error;
     } else {
 
         QNetworkReply *reply = 
@@ -382,27 +385,29 @@ void QDeclarativeCompositeTypeManager::loadSource(QDeclarativeCompositeTypeData 
         if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();
             setData(unit, data, url);
-        } else {
-            QString errorDescription;
-            // ### - Fill in error
-            errorDescription = QLatin1String("File error for URL ") + url.toString();
-            unit->status = QDeclarativeCompositeTypeData::Error;
-            // ### FIXME
-            QDeclarativeError error;
-            error.setDescription(errorDescription);
-            unit->errorType = QDeclarativeCompositeTypeData::AccessError;
-            unit->errors << error;
-            doComplete(unit);
+            return; // success
         }
-
-    } else {
+    } else if (!url.scheme().isEmpty()) {
         QNetworkReply *reply = 
             engine->networkAccessManager()->get(QNetworkRequest(url));
         QObject::connect(reply, SIGNAL(finished()),
                          this, SLOT(replyFinished()));
         QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                          this, SLOT(requestProgress(qint64,qint64)));
+        return; // waiting
     }
+
+    // error happened
+    QString errorDescription;
+    // ### - Fill in error
+    errorDescription = QLatin1String("File error for URL ") + url.toString();
+    unit->status = QDeclarativeCompositeTypeData::Error;
+    // ### FIXME
+    QDeclarativeError error;
+    error.setDescription(errorDescription);
+    unit->errorType = QDeclarativeCompositeTypeData::AccessError;
+    unit->errors << error;
+    doComplete(unit);
 }
 
 void QDeclarativeCompositeTypeManager::requestProgress(qint64 received, qint64 total)
@@ -509,7 +514,9 @@ void QDeclarativeCompositeTypeManager::checkComplete(QDeclarativeCompositeTypeDa
                     unit->errors = u->errors;
                     doComplete(unit);
                     return;
-                } else if (u->status == QDeclarativeCompositeTypeData::Waiting) {
+                } else if (u->status == QDeclarativeCompositeTypeData::Waiting
+                        || u->status == QDeclarativeCompositeTypeData::WaitingResources)
+                {
                     waiting++;
                 }
             }
@@ -525,16 +532,15 @@ void QDeclarativeCompositeTypeManager::checkComplete(QDeclarativeCompositeTypeDa
 int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData *unit)
 {
     // not called until all resources are loaded (they include import URLs)
-
     int waiting = 0;
 
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+    QDeclarativeImportDatabase &importDatabase = ep->importDatabase;
 
-    /*
-     For local urls, add an implicit import "." as first (most overridden) lookup. This will also trigger
-     the loading of the qmldir and the import of any native types from available plugins.
-     */
+    // For local urls, add an implicit import "." as first (most overridden) lookup. 
+    // This will also trigger the loading of the qmldir and the import of any native 
+    // types from available plugins.
     {
-
         QDeclarativeDirComponents qmldircomponentsnetwork;
         if (QDeclarativeCompositeTypeResource *resource
             = resources.value(unit->imports.baseUrl().resolved(QUrl(QLatin1String("./qmldir"))))) {
@@ -544,14 +550,9 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             qmldircomponentsnetwork = parser.components();
         }
 
-        QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports,
-                            qmldircomponentsnetwork,
-                            QLatin1String("."),
-                            QString(),
-                            -1, -1,
-                            QDeclarativeScriptParser::Import::File,
-                            0); // error ignored (just means no fallback)
+        importDatabase.addToImport(&unit->imports, qmldircomponentsnetwork, QLatin1String("."),
+                                   QString(), -1, -1, QDeclarativeScriptParser::Import::File,
+                                   0); // error ignored (just means no fallback)
     }
 
 
@@ -588,9 +589,8 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         }
 
         QString errorString;
-        if (!QDeclarativeEnginePrivate::get(engine)->
-                addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, vmaj, vmin, imp.type, &errorString))
-        {
+        if (!importDatabase.addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, 
+                                        vmaj, vmin, imp.type, &errorString)) {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
             error.setDescription(errorString);
@@ -616,11 +616,10 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         QUrl url;
         int majorVersion;
         int minorVersion;
-        QDeclarativeEnginePrivate::ImportedNamespace *typeNamespace = 0;
+        QDeclarativeImportedNamespace *typeNamespace = 0;
         QString errorString;
-        if (!QDeclarativeEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace, &errorString)
-                || typeNamespace)
-        {
+        if (!importDatabase.resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, 
+                                        &typeNamespace, &errorString) || typeNamespace) {
             // Known to not be a type:
             //  - known to be a namespace (Namespace {})
             //  - type with unknown namespace (UnknownNamespace.SomeType {})
@@ -724,8 +723,10 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
         }
     }
 
-    QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
-    if (toLocalFileOrQrc(importUrl).isEmpty())
+    QUrl importUrl;
+    if (!unit->imports.baseUrl().scheme().isEmpty())
+        importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
+    if (!importUrl.scheme().isEmpty() && toLocalFileOrQrc(importUrl).isEmpty())
         resourceList.prepend(importUrl);
 
     for (int ii = 0; ii < resourceList.count(); ++ii) {

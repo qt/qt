@@ -63,14 +63,13 @@ public:
         OfflineStorageDatabaseEnabled,
         OfflineWebApplicationCacheEnabled,
         LocalStorageEnabled,
-#ifdef QT_DEPRECATED
+#if defined(QT_DEPRECATED) || defined(qdoc)
         LocalStorageDatabaseEnabled = LocalStorageEnabled,
 #endif
         LocalContentCanAccessRemoteUrls,
         DnsPrefetchEnabled,
         XSSAuditorEnabled,
         AcceleratedCompositingEnabled,
-        WebGLEnabled,
         SpatialNavigationEnabled,
         LocalContentCanAccessFileUrls,
         TiledBackingStoreEnabled,

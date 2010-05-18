@@ -1090,6 +1090,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     if (newParent == parent)
         return;
 
+    if (isWidget)
+        static_cast<QGraphicsWidgetPrivate *>(this)->fixFocusChainBeforeReparenting((newParent &&
+                                                        newParent->isWidget()) ? static_cast<QGraphicsWidget *>(newParent) : 0,
+                                                        scene);
     if (scene) {
         // Deliver the change to the index
         if (scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
@@ -1422,6 +1426,13 @@ QGraphicsItem::~QGraphicsItem()
 
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
+
+    if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
+        QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
+        QGestureManager *manager = QGestureManager::instance();
+        foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+            manager->cleanupCachedGestures(o, type);
+    }
 
     clearFocus();
 
@@ -1796,9 +1807,6 @@ static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::Graphics
 */
 void QGraphicsItem::setFlags(GraphicsItemFlags flags)
 {
-    if (isWindow())
-        flags |= ItemIsPanel;
-
     // Notify change and check for adjustment.
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
@@ -1812,7 +1820,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
-        d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+        d_ptr->updatePaintedViewBoundingRects(/*children=*/true);
 
     // Keep the old flags to compare the diff.
     GraphicsItemFlags oldFlags = GraphicsItemFlags(d_ptr->flags);
@@ -5432,6 +5440,24 @@ void QGraphicsItemPrivate::removeExtraItemCache()
     unsetExtra(ExtraCacheData);
 }
 
+void QGraphicsItemPrivate::updatePaintedViewBoundingRects(bool updateChildren)
+{
+    if (!scene)
+        return;
+
+    for (int i = 0; i < scene->d_func()->views.size(); ++i) {
+        QGraphicsViewPrivate *viewPrivate = scene->d_func()->views.at(i)->d_func();
+        QRect rect = paintedViewBoundingRects.value(viewPrivate->viewport);
+        rect.translate(viewPrivate->dirtyScrollOffset);
+        viewPrivate->updateRect(rect);
+    }
+
+    if (updateChildren) {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->updatePaintedViewBoundingRects(true);
+    }
+}
+
 // Traverses all the ancestors up to the top-level and updates the pointer to
 // always point to the top-most item that has a dirty scene transform.
 // It then backtracks to the top-most dirty item and start calculating the
@@ -5635,8 +5661,9 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 // Adjust with 2 pixel margin. Notice the loss of precision
                 // when converting to QRect.
                 int adjust = 2;
+                QRectF scrollRect = !rect.isNull() ? rect : boundingRect();
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
-                QRect irect = rect.toRect().translated(-br.x(), -br.y());
+                QRect irect = scrollRect.toRect().translated(-br.x(), -br.y());
 
                 pix.scroll(dx, dy, irect);
 
@@ -5644,11 +5671,11 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
 
                 // Translate the existing expose.
                 foreach (QRectF exposedRect, c->exposed)
-                    c->exposed += exposedRect.translated(dx, dy) & rect;
+                    c->exposed += exposedRect.translated(dx, dy) & scrollRect;
 
                 // Calculate exposure.
                 QRegion exposed;
-                QRect r = rect.toRect();
+                QRect r = scrollRect.toRect();
                 exposed += r;
                 exposed -= r.translated(dx, dy);
                 foreach (QRect rect, exposed.rects())
@@ -7131,7 +7158,11 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     // calculate their diff by mapping viewport coordinates
                     // directly to parent coordinates.
                     // COMBINE
-                    QTransform viewToParentTransform = (item->d_func()->transformData->computedFullTransform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
+                    QTransform itemTransform;
+                    if (item->d_ptr->transformData)
+                        itemTransform = item->d_ptr->transformData->computedFullTransform();
+                    itemTransform.translate(item->d_ptr->pos.x(), item->d_ptr->pos.y());
+                    QTransform viewToParentTransform = itemTransform
                                                        * (item->sceneTransform() * view->viewportTransform()).inverted();
                     currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
                     buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
@@ -7637,7 +7668,13 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
         manager->cleanupCachedGestures(this, gesture);
     }
 }
+/*!
+    Updates the item's micro focus. This is slot for convenience.
 
+    \since 4.7
+
+    \sa QInputContext
+*/
 void QGraphicsObject::updateMicroFocus()
 {
     QGraphicsItem::updateMicroFocus();
@@ -7943,6 +7980,13 @@ void QGraphicsItemPrivate::resetHeight()
 
   This signal gets emitted whenever the children list changes
   \internal
+*/
+
+/*!
+  \property QGraphicsObject::effect
+  \brief the effect attached to this item
+
+  \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
 */
 
 /*!

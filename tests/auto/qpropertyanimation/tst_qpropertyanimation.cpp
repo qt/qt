@@ -133,6 +133,7 @@ private slots:
     void twoAnimations();
     void deletedInUpdateCurrentTime();
     void totalDuration();
+    void zeroLoopCount();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -1214,6 +1215,29 @@ void tst_QPropertyAnimation::totalDuration()
     QCOMPARE(anim.totalDuration(), 0);
 }
 
+void tst_QPropertyAnimation::zeroLoopCount()
+{
+    DummyPropertyAnimation* anim;
+    anim = new DummyPropertyAnimation;
+    anim->setStartValue(0);
+    anim->setDuration(20);
+    anim->setLoopCount(0);
+
+    QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy finishedSpy(anim, SIGNAL(finished()));
+
+    QCOMPARE(anim->state(), QAnimationGroup::Stopped);
+    QCOMPARE(anim->currentValue().toInt(), 0);
+    QCOMPARE(runningSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 0);
+
+    anim->start();
+
+    QCOMPARE(anim->state(), QAnimationGroup::Stopped);
+    QCOMPARE(anim->currentValue().toInt(), 0);
+    QCOMPARE(runningSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 0);
+}
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"

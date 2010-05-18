@@ -116,6 +116,7 @@ public:
         StoreVariant,             /* storeString */
         StoreVariantInteger,      /* storeInteger */
         StoreVariantDouble,       /* storeDouble */
+        StoreVariantBool,         /* storeBool */
         StoreObject,              /* storeObject */
         StoreVariantObject,       /* storeObject */
         StoreInterface,           /* storeObject */

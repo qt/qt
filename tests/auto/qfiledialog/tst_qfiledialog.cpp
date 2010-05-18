@@ -529,10 +529,6 @@ void tst_QFiledialog::completer()
 #endif
                 ++expected;
         }
-#if !defined(Q_OS_WIN)
-        if (inputStartsWithRootPath)
-            expected++;
-#endif
     }
 
     QTest::qWait(1000);

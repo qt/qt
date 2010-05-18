@@ -67,7 +67,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     \brief The Repeater item allows you to repeat an Item-based component using a model.
 
-    The Repeater item is used when you want to create a large number of
+    The Repeater item is used to create a large number of
     similar items.  For each entry in the model, an item is instantiated
     in a context seeded with data from the model.  If the repeater will
     be instantiating a large number of instances, it may be more efficient to
@@ -193,7 +193,7 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))

@@ -315,7 +315,7 @@ static Picture getPatternFill(int screen, const QBrush &b)
             return X11->pattern_fills[i].picture;
     }
     // none found, replace one
-    int i = rand() % 16;
+    int i = qrand() % 16;
 
     if (X11->pattern_fills[i].screen != screen && X11->pattern_fills[i].picture) {
 	XRenderFreePicture (X11->display, X11->pattern_fills[i].picture);

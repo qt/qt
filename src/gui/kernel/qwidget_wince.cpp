@@ -63,6 +63,7 @@ typedef BOOL        (API *PtrWTGet)(HCTX, LPLOGCONTEXT);
 typedef int     (API *PtrWTQueueSizeGet)(HCTX);
 typedef BOOL    (API *PtrWTQueueSizeSet)(HCTX, int);
 
+#ifndef QT_NO_TABLETEVENT
 static void qt_tablet_init_wce();
 static void qt_tablet_cleanup_wce();
 
@@ -135,6 +136,7 @@ static void qt_tablet_cleanup_wce() {
     delete qt_tablet_widget;
     qt_tablet_widget = 0;
 }
+#endif // QT_NO_TABLETEVENT
 
 
 // The internal qWinRequestConfig, defined in qapplication_win.cpp, stores move,
@@ -358,8 +360,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         DestroyWindow(destroyw);
     }
 
+#ifndef QT_NO_TABLETEVENT
     if (q != qt_tablet_widget && QWidgetPrivate::mapper)
         qt_tablet_init_wce();
+#endif // QT_NO_TABLETEVENT
 
     if (q->testAttribute(Qt::WA_DropSiteRegistered))
         registerDropSite(true);

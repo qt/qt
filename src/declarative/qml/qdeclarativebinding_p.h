@@ -164,6 +164,6 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QDeclarativeBinding*);
+Q_DECLARE_METATYPE(QDeclarativeBinding*)
 
 #endif // QDECLARATIVEBINDING_P_H

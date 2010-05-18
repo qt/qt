@@ -9,7 +9,7 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             drag.target: pic
-            drag.axis: "XAxis"
+            drag.axis: Drag.XAxis
             drag.minimumX: 0
             drag.maximumX: blurtest.width-pic.width
         }

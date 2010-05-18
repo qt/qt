@@ -1,19 +1,20 @@
-HEADERS += \
-        panel.h \
-        roundrectitem.h \
-        splashitem.h
+SOURCES += main.cpp \
+    roundrectitem.cpp \
+    flippablepad.cpp \
+    padnavigator.cpp \
+    splashitem.cpp
 
-SOURCES += \
-        panel.cpp \
-        roundrectitem.cpp \
-        splashitem.cpp \
-        main.cpp
+HEADERS += \
+    roundrectitem.h \
+    flippablepad.h \
+    padnavigator.h \
+    splashitem.h
 
 RESOURCES += \
-        padnavigator.qrc
+    padnavigator.qrc
 
 FORMS += \
-        backside.ui
+    form.ui
 
 contains(QT_CONFIG, opengl):QT += opengl
 

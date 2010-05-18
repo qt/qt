@@ -345,7 +345,7 @@ public:
     HDC hbitmap_hdc;
 #endif
 #ifndef QT_NO_EGL
-    bool ownsEglContext;
+    uint ownsEglContext : 1;
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
@@ -382,6 +382,12 @@ public:
     uint internal_context : 1;
     uint version_flags_cached : 1;
     uint extension_flags_cached : 1;
+
+    // workarounds for driver/hw bugs on different platforms
+    uint workaround_needsFullClearOnEveryFrame : 1;
+    uint workaround_brokenFBOReadBack : 1;
+    uint workaroundsCached : 1;
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;

@@ -4,6 +4,10 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativetimer.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    DEFINES += SRCDIR=\".\"
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 CONFIG += parallel_test

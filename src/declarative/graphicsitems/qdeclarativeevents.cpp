@@ -151,7 +151,7 @@ Item {
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MidButton
+    \o Qt.MiddleButton
     \endlist
 */
 
@@ -174,7 +174,7 @@ Item {
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MidButton
+    \o Qt.MiddleButton
     \endlist
 */
 

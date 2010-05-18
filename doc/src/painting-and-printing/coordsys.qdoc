@@ -41,7 +41,8 @@
 
 /*!
     \page coordsys.html
-    \title The Coordinate System
+    \title Coordinate System
+    \ingroup qt-graphics
     \brief Information about the coordinate system used by the paint
     system.
 
