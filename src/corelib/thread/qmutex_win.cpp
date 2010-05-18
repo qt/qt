@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive), contenders(0), lastSpinCount(0), owner(0), count(0)
+    : QMutexData(mode), lastSpinCount(0), owner(0), count(0)
 {
     event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
