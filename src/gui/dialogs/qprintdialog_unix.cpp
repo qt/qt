@@ -973,7 +973,7 @@ void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 void QUnixPrintWidgetPrivate::setCupsProperties()
 {
-    if (cups && QCUPSSupport::isAvailable()) {
+    if (cups && QCUPSSupport::isAvailable() && cups->pageSizes()) {
         QPrintEngine *engine = printer->printEngine();
         const ppd_option_t* pageSizes = cups->pageSizes();
         QByteArray cupsPageSize;

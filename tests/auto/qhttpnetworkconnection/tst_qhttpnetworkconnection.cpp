@@ -109,6 +109,9 @@ private Q_SLOTS:
     void getMultipleWithPriorities();
 
     void getEmptyWithPipelining();
+
+    void getAndThenDeleteObject();
+    void getAndThenDeleteObject_data();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -1031,6 +1034,47 @@ void tst_QHttpNetworkConnection::getEmptyWithPipelining()
 
     qDeleteAll(requests);
     qDeleteAll(replies);
+}
+
+void tst_QHttpNetworkConnection::getAndThenDeleteObject_data()
+{
+    QTest::addColumn<bool>("replyFirst");
+
+    QTest::newRow("delete-reply-first") << true;
+    QTest::newRow("delete-connection-first") << false;
+}
+
+void tst_QHttpNetworkConnection::getAndThenDeleteObject()
+{
+    // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
+    QHttpNetworkConnection *connection = new QHttpNetworkConnection(QtNetworkSettings::serverName());
+    QHttpNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
+    QHttpNetworkReply *reply = connection->sendRequest(request);
+    reply->setDownstreamLimited(true);
+
+    QTime stopWatch;
+    stopWatch.start();
+    forever {
+        QCoreApplication::instance()->processEvents();
+        if (reply->bytesAvailable())
+            break;
+        if (stopWatch.elapsed() >= 30000)
+            break;
+    }
+
+    QVERIFY(reply->bytesAvailable());
+    QCOMPARE(reply->statusCode() ,200);
+    QVERIFY(!reply->isFinished()); // must not be finished
+
+    QFETCH(bool, replyFirst);
+
+    if (replyFirst) {
+        delete reply;
+        delete connection;
+    } else {
+        delete connection;
+        delete reply;
+    }
 }
 
 

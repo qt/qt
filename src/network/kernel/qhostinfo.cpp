@@ -44,14 +44,10 @@
 
 #include "QtCore/qscopedpointer.h"
 #include <qabstracteventdispatcher.h>
-#include <private/qunicodetables_p.h>
 #include <qcoreapplication.h>
 #include <qmetaobject.h>
-#include <qregexp.h>
-#include <private/qnativesocketengine_p.h>
 #include <qstringlist.h>
 #include <qthread.h>
-#include <qtimer.h>
 #include <qurl.h>
 
 #ifdef Q_OS_UNIX
