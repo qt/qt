@@ -147,18 +147,6 @@ QVariant QDeclarativeFolderListModel::data(const QModelIndex &index, int role) c
     return rv;
 }
 
-QString QDeclarativeFolderListModel::fileName(int index) const
-{
-    QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
-    return d->model.data(modelIndex, QDirModel::FileNameRole).toString();
-}
-
-QUrl QDeclarativeFolderListModel::filePath(int index) const
-{
-    QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
-    return QUrl::fromLocalFile(d->model.data(modelIndex, QDirModel::FilePathRole).toString());
-}
-
 int QDeclarativeFolderListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);

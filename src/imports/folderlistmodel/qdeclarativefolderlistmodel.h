@@ -77,9 +77,6 @@ public:
 
     int count() const { return rowCount(QModelIndex()); }
 
-    Q_INVOKABLE QString fileName(int index) const;
-    Q_INVOKABLE QUrl filePath(int index) const;
-
     QUrl folder() const;
     void setFolder(const QUrl &folder);
 

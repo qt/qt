@@ -1,4 +1,4 @@
-TARGET  = qmlviewerplugin
+TARGET  = qmlfolderlistmodelplugin
 TARGETPATH = Qt/labs/folderlistmodel
 include(../qimportbase.pri)
 
@@ -17,7 +17,7 @@ symbian:{
     load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
-    importFiles.sources = qmlviewerplugin.dll qmldir
+    importFiles.sources = qmlfolderlistmodelplugin.dll qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
     
     DEPLOYMENT = importFiles

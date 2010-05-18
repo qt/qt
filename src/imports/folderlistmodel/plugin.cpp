@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlViewerPlugin : public QDeclarativeExtensionPlugin
+class QmlFolderListModelPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
@@ -61,5 +61,5 @@ QT_END_NAMESPACE
 
 #include "plugin.moc"
 
-Q_EXPORT_PLUGIN2(qmlviewerplugin, QT_PREPEND_NAMESPACE(QmlViewerPlugin));
+Q_EXPORT_PLUGIN2(qmlfolderlistmodelplugin, QT_PREPEND_NAMESPACE(QmlFolderListModelPlugin));
 
