@@ -578,7 +578,7 @@
     \page examples-mainwindow.html
     \ingroup all-examples
     \title Main Window Examples
-    \building applications around a main window.
+    \brief Building applications around a main window.
 
     \previouspage Dialog Examples
     \contentspage Qt Examples
