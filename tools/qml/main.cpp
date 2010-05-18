@@ -50,7 +50,6 @@
 #include <QDebug>
 #include <QMessageBox>
 #include "qdeclarativetester.h"
-#include "qdeclarativefolderlistmodel.h"
 
 QT_USE_NAMESPACE
 
@@ -203,7 +202,6 @@ int main(int argc, char ** argv)
 
     QDeclarativeViewer::registerTypes();
     QDeclarativeTester::registerTypes();
-    QDeclarativeFolderListModel::registerTypes();
 
     bool frameless = false;
     QString fileName;

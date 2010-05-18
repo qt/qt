@@ -1138,12 +1138,10 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     yTarget.resize(rows + 1);
 
     bool oldAA = painter->testRenderHint(QPainter::Antialiasing);
-    bool oldSmooth = painter->testRenderHint(QPainter::SmoothPixmapTransform);
     if (painter->paintEngine()->type() != QPaintEngine::OpenGL
         && painter->paintEngine()->type() != QPaintEngine::OpenGL2
-        && (oldSmooth || oldAA) && painter->combinedTransform().type() != QTransform::TxNone) {
+        && oldAA && painter->combinedTransform().type() != QTransform::TxNone) {
         painter->setRenderHint(QPainter::Antialiasing, false);
-        painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
     }
 
     xTarget[0] = targetRect.left();
@@ -1354,8 +1352,6 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
 
     if (oldAA)
         painter->setRenderHint(QPainter::Antialiasing, true);
-    if (oldSmooth)
-        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
 }
 
 QT_END_NAMESPACE

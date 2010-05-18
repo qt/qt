@@ -45,15 +45,13 @@
 #include <qdeclarative.h>
 #include <QStringList>
 #include <QUrl>
-#include "../../src/declarative/3rdparty/qlistmodelinterface_p.h"
-
-QT_BEGIN_NAMESPACE
+#include <QAbstractListModel>
 
 class QDeclarativeContext;
 class QModelIndex;
 
 class QDeclarativeFolderListModelPrivate;
-class QDeclarativeFolderListModel : public QListModelInterface, public QDeclarativeParserStatus
+class QDeclarativeFolderListModel : public QAbstractListModel, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QDeclarativeParserStatus)
@@ -66,18 +64,21 @@ class QDeclarativeFolderListModel : public QListModelInterface, public QDeclarat
     Q_PROPERTY(bool showDirs READ showDirs WRITE setShowDirs)
     Q_PROPERTY(bool showDotAndDotDot READ showDotAndDotDot WRITE setShowDotAndDotDot)
     Q_PROPERTY(bool showOnlyReadable READ showOnlyReadable WRITE setShowOnlyReadable)
+    Q_PROPERTY(int count READ count)
 
 public:
     QDeclarativeFolderListModel(QObject *parent = 0);
     ~QDeclarativeFolderListModel();
 
-    static void registerTypes();
+    enum Roles { FileNameRole = Qt::UserRole+1, FilePathRole = Qt::UserRole+2 };
 
-    virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
-    virtual QVariant data(int index, int role) const;
-    virtual int count() const;
-    virtual QList<int> roles() const;
-    virtual QString toString(int role) const;
+    int rowCount(const QModelIndex &parent) const;
+    QVariant data(const QModelIndex &index, int role) const;
+
+    int count() const { return rowCount(QModelIndex()); }
+
+    Q_INVOKABLE QString fileName(int index) const;
+    Q_INVOKABLE QUrl filePath(int index) const;
 
     QUrl folder() const;
     void setFolder(const QUrl &folder);
@@ -120,8 +121,6 @@ private:
     Q_DISABLE_COPY(QDeclarativeFolderListModel)
     QDeclarativeFolderListModelPrivate *d;
 };
-
-QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeFolderListModel)
 

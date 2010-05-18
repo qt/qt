@@ -906,6 +906,7 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
+        fi.setFile(fileName);
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;
