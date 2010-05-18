@@ -3683,15 +3683,6 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
 </context>
 <context>
-    <name>QGstreamerPlayerSession</name>
-    <message>
-        <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+423"/>
-        <location line="+16"/>
-        <source>Unable to play %1</source>
-        <translation>%1 kann nicht abgespielt werden</translation>
-    </message>
-</context>
-<context>
     <name>QHostInfo</name>
     <message>
         <location filename="../src/network/kernel/qhostinfo_p.h" line="+103"/>
