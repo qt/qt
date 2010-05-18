@@ -149,9 +149,11 @@ QObjectPrivate::QObjectPrivate(int version)
     postedEvents = 0;
     extraData = 0;
     connectedSignals[0] = connectedSignals[1] = 0;
-    inEventHandler = false;
     inThreadChangeEvent = false;
+#ifdef QT_JAMBI_BUILD
+    inEventHandler = false;
     deleteWatch = 0;
+#endif
     metaObject = 0;
     hasGuards = false;
 }
@@ -159,8 +161,10 @@ QObjectPrivate::QObjectPrivate(int version)
 QObjectPrivate::~QObjectPrivate()
 {
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
+#ifdef QT_JAMBI_BUILD
     if (deleteWatch)
         *deleteWatch = 1;
+#endif
 #ifndef QT_NO_USERDATA
     if (extraData)
         qDeleteAll(extraData->userData);
@@ -169,6 +173,7 @@ QObjectPrivate::~QObjectPrivate()
 }
 
 
+#ifdef QT_JAMBI_BUILD
 int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
     int *old = d->deleteWatch;
     d->deleteWatch = w;
@@ -183,10 +188,7 @@ void QObjectPrivate::resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int dele
     if (oldWatch)
         *oldWatch = deleteWatch;
 }
-
-
-
-
+#endif
 
 #ifdef QT3_SUPPORT
 void QObjectPrivate::sendPendingChildInsertedEvents()
@@ -476,11 +478,6 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(object);
-
-    if (!priv->hasGuards)
-        return;
-
     GuardHash *hash = 0;
     QMutex *mutex = 0;
     QT_TRY {
@@ -732,13 +729,15 @@ QObject::QObject(QObject *parent)
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    QT_TRY {
-        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-            parent = 0;
-        setParent(parent);
-    } QT_CATCH(...) {
-        d->threadData->deref();
-        QT_RETHROW;
+    if (parent) {
+        QT_TRY {
+            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+                parent = 0;
+            setParent(parent);
+        } QT_CATCH(...) {
+            d->threadData->deref();
+            QT_RETHROW;
+        }
     }
     qt_addObject(this);
 }
@@ -757,9 +756,11 @@ QObject::QObject(QObject *parent, const char *name)
     qt_addObject(d_ptr->q_ptr = this);
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-        parent = 0;
-    setParent(parent);
+    if (parent) {
+        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+            parent = 0;
+        setParent(parent);
+    }
     setObjectName(QString::fromAscii(name));
 }
 #endif
@@ -773,21 +774,23 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
     d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    QT_TRY {
-        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-            parent = 0;
-        if (d->isWidget) {
-            if (parent) {
-                d->parent = parent;
-                d->parent->d_func()->children.append(this);
+    if (parent) {
+        QT_TRY {
+            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+                parent = 0;
+            if (d->isWidget) {
+                if (parent) {
+                    d->parent = parent;
+                    d->parent->d_func()->children.append(this);
+                }
+                // no events sent here, this is done at the end of the QWidget constructor
+            } else {
+                setParent(parent);
             }
-            // no events sent here, this is done at the end of the QWidget constructor
-        } else {
-            setParent(parent);
+        } QT_CATCH(...) {
+            d->threadData->deref();
+            QT_RETHROW;
         }
-    } QT_CATCH(...) {
-        d->threadData->deref();
-        QT_RETHROW;
     }
     qt_addObject(this);
 }
@@ -822,7 +825,7 @@ QObject::~QObject()
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
-    if (!d->isWidget) {
+    if (d->hasGuards && !d->isWidget) {
         // set all QPointers for this object to zero - note that
         // ~QWidget() does this for us, so we don't have to do it twice
         QObjectPrivate::clearGuards(this);
@@ -840,22 +843,16 @@ QObject::~QObject()
             delete d->sharedRefcount;
     }
 
-    QT_TRY {
-        emit destroyed(this);
-    } QT_CATCH(...) {
-        // all the signal/slots connections are still in place - if we don't
-        // quit now, we will crash pretty soon.
-        qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
-#if defined(Q_BUILD_INTERNAL) && !defined(QT_NO_EXCEPTIONS)
-        struct AutotestException : public std::exception
-        {
-            const char *what() const throw() { return "autotest swallow"; }
-        } autotestException;
-        // throw autotestException;
 
-#else
-        QT_RETHROW;
-#endif
+    if (d->isSignalConnected(0)) {
+        QT_TRY {
+            emit destroyed(this);
+        } QT_CATCH(...) {
+            // all the signal/slots connections are still in place - if we don't
+            // quit now, we will crash pretty soon.
+            qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
+            QT_RETHROW;
+        }
     }
 
     if (d->declarativeData)
@@ -893,7 +890,7 @@ QObject::~QObject()
                         if (c->next) c->next->prev = c->prev;
                     }
                     if (needToUnlock)
-                        m->unlock();
+                        m->unlockInline();
 
                     connectionList.first = c->nextConnectionList;
                     delete c;
@@ -917,7 +914,7 @@ QObject::~QObject()
             bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
             if (!node || node->sender != sender) {
-                m->unlock();
+                m->unlockInline();
                 continue;
             }
             node->receiver = 0;
@@ -927,7 +924,7 @@ QObject::~QObject()
 
             node = node->next;
             if (needToUnlock)
-                m->unlock();
+                m->unlockInline();
         }
     }
 
@@ -936,12 +933,6 @@ QObject::~QObject()
         if (d->threadData->eventDispatcher)
             d->threadData->eventDispatcher->unregisterTimers(this);
     }
-
-#ifdef QT3_SUPPORT
-    d->pendingChildInsertedEvents.clear();
-#endif
-
-    d->eventFilters.clear();
 
     if (!d->children.isEmpty())
         d->deleteChildren();
@@ -1198,7 +1189,9 @@ bool QObject::event(QEvent *e)
 
     case QEvent::MetaCall:
         {
+#ifdef QT_JAMBI_BUILD
             d_func()->inEventHandler = false;
+#endif
             QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
             QObjectPrivate::Sender currentSender;
             currentSender.sender = const_cast<QObject*>(mce->sender());
@@ -1516,11 +1509,14 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
         currentSender->ref = 0;
     currentSender = 0;
 
+#ifdef QT_JAMBI_BUILD
     // the current event thread also shouldn't restore the delete watch
     inEventHandler = false;
+
     if (deleteWatch)
         *deleteWatch = 1;
     deleteWatch = 0;
+#endif
 
     // set new thread data
     targetData->ref();
@@ -2983,7 +2979,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
             }
 
             if (needToUnlock)
-                receiverMutex->unlock();
+                receiverMutex->unlockInline();
 
             c->receiver = 0;
 
