@@ -53,7 +53,8 @@
 #ifndef QAUDIO_SYMBIAN_P_H
 #define QAUDIO_SYMBIAN_P_H
 
-#include <QtCore/qnamespace.h>
+#include <QtCore/QList>
+#include <QtCore/QString>
 #include <QtMultimedia/qaudioformat.h>
 #include <QtMultimedia/qaudio.h>
 #include <sounddevice.h>
@@ -83,60 +84,92 @@ enum State {
     ,   SuspendedState
 };
 
-/*
- * Helper class for querying DevSound codec / format support
+/**
+ * Wrapper around DevSound instance
  */
-class DevSoundCapabilities {
+class DevSoundWrapper
+    :   public QObject
+    ,   public MDevSoundObserver
+{
+    Q_OBJECT
+
 public:
-    DevSoundCapabilities(CMMFDevSound &devsound, QAudio::Mode mode);
-    ~DevSoundCapabilities();
+    DevSoundWrapper(QAudio::Mode mode, QObject *parent = 0);
+    ~DevSoundWrapper();
 
-    const RArray<TFourCC>& fourCC() const   { return m_fourCC; }
-    const TMMFCapabilities& caps() const    { return m_caps; }
+public:
+    // List of supported codecs; can be called once object is constructed
+    const QList<QString>& supportedCodecs() const;
+
+    // Asynchronous initialization function; emits devsoundInitializeComplete
+    void initialize(const QString& codec);
+
+    // Capabilities, for selected codec.  Can be called once initialize has returned
+    // successfully.
+    const QList<int>& supportedFrequencies() const;
+    const QList<int>& supportedChannels() const;
+    const QList<int>& supportedSampleSizes() const;
+    const QList<QAudioFormat::Endian>& supportedByteOrders() const;
+    const QList<QAudioFormat::SampleType>& supportedSampleTypes() const;
+
+    bool isFormatSupported(const QAudioFormat &format) const;
+
+    int samplesProcessed() const;
+    bool setFormat(const QAudioFormat &format);
+    bool start();
+    void pause();
+    void stop();
+    void bufferProcessed();
+
+public:
+    // MDevSoundObserver
+    void InitializeComplete(TInt aError);
+    void ToneFinished(TInt aError);
+    void BufferToBeFilled(CMMFBuffer *aBuffer);
+    void PlayError(TInt aError);
+    void BufferToBeEmptied(CMMFBuffer *aBuffer);
+    void RecordError(TInt aError);
+    void ConvertError(TInt aError);
+    void DeviceMessage(TUid aMessageType, const TDesC8 &aMsg);
+
+signals:
+    void initializeComplete(int error);
+    void bufferToBeProcessed(CMMFBuffer *buffer);
+    void processingError(int error);
 
 private:
-    void constructL(CMMFDevSound &devsound, QAudio::Mode mode);
+    void getSupportedCodecs();
+    void populateCapabilities();
 
 private:
-    RArray<TFourCC> m_fourCC;
-    TMMFCapabilities m_caps;
+    const QAudio::Mode              m_mode;
+    TMMFState                       m_nativeMode;
+
+    enum State {
+        StateIdle,
+        StateInitializing,
+        StateInitialized
+    }                               m_state;
+
+    CMMFDevSound*                   m_devsound;
+    TFourCC                         m_fourcc;
+
+    QList<QString>                  m_supportedCodecs;
+    QList<int>                      m_supportedFrequencies;
+    QList<int>                      m_supportedChannels;
+    QList<int>                      m_supportedSampleSizes;
+    QList<QAudioFormat::Endian>     m_supportedByteOrders;
+    QList<QAudioFormat::SampleType> m_supportedSampleTypes;
+
 };
+
 
 namespace Utils {
 
 /**
- * Convert native audio capabilities to QAudio lists.
- */
-void capabilitiesNativeToQt(const DevSoundCapabilities &caps,
-                            QList<int> &frequencies,
-                            QList<int> &channels,
-                            QList<int> &sampleSizes,
-                            QList<QAudioFormat::Endian> &byteOrders,
-                            QList<QAudioFormat::SampleType> &sampleTypes);
-
-/**
- * Check whether format is supported.
- */
-bool isFormatSupported(const QAudioFormat &format,
-                       const DevSoundCapabilities &caps);
-
-/**
- * Convert QAudioFormat to native format types.
- *
- * Note that, despite the name, DevSound uses TMMFCapabilities to specify
- * single formats as well as capabilities.
- *
- * Note that this function does not modify outputFormat.iBufferSize.
- */
-bool formatQtToNative(const QAudioFormat &inputFormat,
-                      TUint32 &outputFourCC,
-                      TMMFCapabilities &outputFormat);
-
-/**
  * Convert internal states to QAudio states.
  */
-QAudio::State stateNativeToQt(State nativeState,
-                              QAudio::State initializingState);
+QAudio::State stateNativeToQt(State nativeState);
 
 /**
  * Convert data length to number of samples.

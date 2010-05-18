@@ -387,7 +387,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 | EPointerFilterMove | EPointerFilterDrag, 0);
             drawableWindow->EnableVisibilityChangeEvents();
 
-            s60UpdateIsOpaque();
         }
 
         q->setAttribute(Qt::WA_WState_Created);
@@ -399,6 +398,9 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         // We wait until the control is fully constructed before calling setWinId, because
         // this generates a WinIdChanged event.
         setWinId(control.take());
+
+        if (!desktop)
+            s60UpdateIsOpaque(); // must be called after setWinId()
 
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
 

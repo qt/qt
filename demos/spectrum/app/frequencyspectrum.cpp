@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,12 +38,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QtCore>
-#include <QtDBus/QtDBus>
 
-int main(int argc, char *argv[])
+#include "frequencyspectrum.h"
+
+FrequencySpectrum::FrequencySpectrum(int numPoints)
+    :   m_elements(numPoints)
 {
-    QCoreApplication app(argc, argv);
-    QDBusServer server("unix:path=/tmp/qdbus-test");
-    return app.exec();
+
+}
+
+void FrequencySpectrum::reset()
+{
+    iterator i = begin();
+    for ( ; i != end(); ++i)
+        *i = Element();
+}
+
+int FrequencySpectrum::count() const
+{
+    return m_elements.count();
+}
+
+FrequencySpectrum::Element& FrequencySpectrum::operator[](int index)
+{
+    return m_elements[index];
+}
+
+const FrequencySpectrum::Element& FrequencySpectrum::operator[](int index) const
+{
+    return m_elements[index];
+}
+
+FrequencySpectrum::iterator FrequencySpectrum::begin()
+{
+    return m_elements.begin();
+}
+
+FrequencySpectrum::iterator FrequencySpectrum::end()
+{
+    return m_elements.end();
+}
+
+FrequencySpectrum::const_iterator FrequencySpectrum::begin() const
+{
+    return m_elements.begin();
+}
+
+FrequencySpectrum::const_iterator FrequencySpectrum::end() const
+{
+    return m_elements.end();
 }
