@@ -174,6 +174,10 @@ private slots:
         ui.infoBox->hide();
         ui.flightStatus->hide();
         ui.flightName->setText("Enter flight number");
+        ui.flightEdit->setFocus();
+#ifdef QT_KEYPAD_NAVIGATION
+        ui.flightEdit->setEditFocus(true);
+#endif
         m_map = QPixmap();
         update();
     }
