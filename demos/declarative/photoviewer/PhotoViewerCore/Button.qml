@@ -4,7 +4,7 @@ Item {
     id: container
 
     property alias label: labelText.text
-    property color tint: "#FFFFFFFF"
+    property string tint: ""
     signal clicked
 
     width: labelText.width + 70 ; height: labelText.height + 18
@@ -19,7 +19,7 @@ Item {
 
     Rectangle {
         anchors.fill: container; color: container.tint; visible: container.tint != ""
-        opacity: 0.1; smooth: true
+        opacity: 0.25; smooth: true
     }
 
     Text { id: labelText; font.pixelSize: 15; anchors.centerIn: parent; smooth: true }
