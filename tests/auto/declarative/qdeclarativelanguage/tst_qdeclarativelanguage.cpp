@@ -1105,19 +1105,48 @@ void tst_qdeclarativelanguage::onDestruction()
 // Check that assignments to QDeclarativeScriptString properties work
 void tst_qdeclarativelanguage::scriptString()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("scriptString.qml"));
-    VERIFY_ERRORS(0);
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString.qml"));
+        VERIFY_ERRORS(0);
 
-    MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
-    QVERIFY(object != 0);
-    QCOMPARE(object->scriptProperty().script(), QString("foo + bar"));
-    QCOMPARE(object->scriptProperty().scopeObject(), qobject_cast<QObject*>(object));
-    QCOMPARE(object->scriptProperty().context(), qmlContext(object));
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("foo + bar"));
+        QCOMPARE(object->scriptProperty().scopeObject(), qobject_cast<QObject*>(object));
+        QCOMPARE(object->scriptProperty().context(), qmlContext(object));
 
-    QVERIFY(object->grouped() != 0);
-    QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
-    QCOMPARE(object->grouped()->script().scopeObject(), qobject_cast<QObject*>(object));
-    QCOMPARE(object->grouped()->script().context(), qmlContext(object));
+        QVERIFY(object->grouped() != 0);
+        QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
+        QCOMPARE(object->grouped()->script().scopeObject(), qobject_cast<QObject*>(object));
+        QCOMPARE(object->grouped()->script().context(), qmlContext(object));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString3.qml"));
+        VERIFY_ERRORS(0);
+
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("\"hello world\""));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString4.qml"));
+        VERIFY_ERRORS(0);
+
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("12.345"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString5.qml"));
+        VERIFY_ERRORS(0);
+
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("true"));
+    }
 }
 
 // Check that default property assignments are correctly spliced into explicit 
