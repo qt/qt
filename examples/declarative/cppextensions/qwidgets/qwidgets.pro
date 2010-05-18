@@ -1,12 +1,12 @@
 TEMPLATE = lib
-DESTDIR = ProxyWidgets
-TARGET  = proxywidgetsplugin
+DESTDIR = QWidgets
+TARGET = qwidgetsplugin
 CONFIG += qt plugin
 QT += declarative
 
-SOURCES += proxywidgets.cpp
+SOURCES += qwidgets.cpp
 
-sources.files += proxywidgets.pro proxywidgets.cpp proxywidgets.qml
+sources.files += qwidgets.pro qwidgets.cpp qwidgets.qml
 
 sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
 

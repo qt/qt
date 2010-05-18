@@ -82,7 +82,7 @@ private:
     QPushButton *widget;
 };
 
-class ProxyWidgetsPlugin : public QDeclarativeExtensionPlugin
+class QWidgetsPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
@@ -92,6 +92,6 @@ public:
     }
 };
 
-#include "proxywidgets.moc"
+#include "qwidgets.moc"
 
-Q_EXPORT_PLUGIN2(proxywidgetsplugin, ProxyWidgetsPlugin);
+Q_EXPORT_PLUGIN2(qwidgetsplugin, QWidgetsPlugin);

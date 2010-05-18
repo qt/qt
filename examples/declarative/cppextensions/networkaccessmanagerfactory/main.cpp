@@ -53,7 +53,7 @@
    create a QNetworkAccessManager with a proxy.
 
    Usage:
-     proxyviewer [-host <proxy> -port <port>] [file]
+     networkaccessmanagerfactory [-host <proxy> -port <port>] [file]
 */
 
 static QString proxyHost;
@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
         } else if (arg[0] != '-') {
             source = QUrl::fromLocalFile(arg);
         } else {
-            qWarning() << "Usage: proxyviewer [-host <proxy> -port <port>] [file]";
+            qWarning() << "Usage: networkaccessmanagerfactory [-host <proxy> -port <port>] [file]";
             exit(1);
         }
     }

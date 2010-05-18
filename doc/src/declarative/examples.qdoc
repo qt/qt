@@ -139,20 +139,20 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/cppextensions/referenceexamples}{Reference examples} (discussed in \l {Extending QML in C++})
 \o \l{declarative/cppextensions/plugins}{Plugins}
-\o \l{declarative/cppextensions/proxywidgets}{QtWidgets}
 \o \l{declarative/cppextensions/qgraphicslayouts}{QGraphicsLayouts}
+\o \l{declarative/cppextensions/qwidgets}{QWidgets}
 \o \l{declarative/cppextensions/imageprovider}{Image provider}
-\o \l{declarative/cppextensions/proxyviewer}{Network access manager factory}
+\o \l{declarative/cppextensions/networkaccessmanagerfactory}{Network access manager factory}
 \endlist
 
 \section2 Toys
 \list
 \o \l{declarative/toys/clocks}{Clocks}
+\o \l{declarative/toys/corkboards}{Corkboards}
 \o \l{declarative/toys/dial}{Dial}
-\o \l{declarative/toys/dynamic}{Dynamic}
+\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
 \o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
 \o \l{declarative/toys/tvtennis}{TV Tennis}
-\o \l{declarative/toys/velocity}{Velocity}
 \endlist
 
 
