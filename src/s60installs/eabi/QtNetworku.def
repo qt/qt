@@ -1167,4 +1167,5 @@ EXPORTS
 	_ZNK13QBearerEngine19configurationsInUseEv @ 1166 NONAME
 	_ZNK21QNetworkAccessManager17networkAccessibleEv @ 1167 NONAME
 	_ZN35QNetworkConfigurationManagerPrivate12capabilitiesEv @ 1168 NONAME
+	_ZN10QTcpServer20addPendingConnectionEP10QTcpSocket @ 1169 NONAME
 

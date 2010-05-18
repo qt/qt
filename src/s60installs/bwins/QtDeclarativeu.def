@@ -3563,7 +3563,7 @@ EXPORTS
 	?computeTransformOrigin@QDeclarativeItemPrivate@@QBE?AVQPointF@@XZ @ 3562 NONAME ; class QPointF QDeclarativeItemPrivate::computeTransformOrigin(void) const
 	?contextObject@QDeclarativeContext@@QBEPAVQObject@@XZ @ 3563 NONAME ; class QObject * QDeclarativeContext::contextObject(void) const
 	?copyOriginals@QDeclarativeAnchorChanges@@UAEXPAVQDeclarativeActionEvent@@@Z @ 3564 NONAME ; void QDeclarativeAnchorChanges::copyOriginals(class QDeclarativeActionEvent *)
-	?copyOriginals@QDeclarativeParentChange@@UAEXPAVQDeclarativeActionEvent@@@Z @ 3565 NONAME ; void QDeclarativeParentChange::copyOriginals(class QDeclarativeActionEvent *)
+	?copyOriginals@QDeclarativeParentChange@@UAEXPAVQDeclarativeActionEvent@@@Z @ 3565 NONAME ABSENT ; void QDeclarativeParentChange::copyOriginals(class QDeclarativeActionEvent *)
 	?countChanged@QDeclarativeListModel@@IAEXXZ @ 3566 NONAME ; void QDeclarativeListModel::countChanged(void)
 	?countChanged@QDeclarativePathView@@IAEXXZ @ 3567 NONAME ; void QDeclarativePathView::countChanged(void)
 	?create@QDeclarativeType@@QBEXPAPAVQObject@@PAPAXI@Z @ 3568 NONAME ; void QDeclarativeType::create(class QObject * *, void * *, unsigned int) const
@@ -4012,4 +4012,12 @@ EXPORTS
 	?setFlickDirection@QDeclarativeFlickable@@QAEXW4FlickableDirection@1@@Z @ 4011 NONAME ; void QDeclarativeFlickable::setFlickDirection(enum QDeclarativeFlickable::FlickableDirection)
 	?flickableDirectionChanged@QDeclarativeFlickable@@IAEXXZ @ 4012 NONAME ; void QDeclarativeFlickable::flickableDirectionChanged(void)
 	?isFlickingVertically@QDeclarativeFlickable@@QBE_NXZ @ 4013 NONAME ; bool QDeclarativeFlickable::isFlickingVertically(void) const
+	?componentComplete@QDeclarativeLoader@@MAEXXZ @ 4014 NONAME ; void QDeclarativeLoader::componentComplete(void)
+	?decrementCurrentIndex@QDeclarativePathView@@QAEXXZ @ 4015 NONAME ; void QDeclarativePathView::decrementCurrentIndex(void)
+	?incrementCurrentIndex@QDeclarativePathView@@QAEXXZ @ 4016 NONAME ; void QDeclarativePathView::incrementCurrentIndex(void)
+	?inputMethodPreHandler@QDeclarativeItem@@IAEXPAVQInputMethodEvent@@@Z @ 4017 NONAME ; void QDeclarativeItem::inputMethodPreHandler(class QInputMethodEvent *)
+	?keyPressPreHandler@QDeclarativeItem@@IAEXPAVQKeyEvent@@@Z @ 4018 NONAME ; void QDeclarativeItem::keyPressPreHandler(class QKeyEvent *)
+	?keyReleasePreHandler@QDeclarativeItem@@IAEXPAVQKeyEvent@@@Z @ 4019 NONAME ; void QDeclarativeItem::keyReleasePreHandler(class QKeyEvent *)
+	?loaded@QDeclarativeLoader@@IAEXXZ @ 4020 NONAME ; void QDeclarativeLoader::loaded(void)
+	?needsCopy@QDeclarativeAnchorChanges@@UAE_NXZ @ 4021 NONAME ; bool QDeclarativeAnchorChanges::needsCopy(void)
 
