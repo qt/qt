@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1364"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1366"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -287,7 +287,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
 <context>
     <name>FormMultiWidget</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+296"/>
+        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+302"/>
         <source>Alt+Delete</source>
         <extracomment>translate, but don&apos;t change</extracomment>
         <translation>Alt+Delete</translation>
@@ -531,11 +531,6 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
     </message>
     <message>
         <location/>
-        <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation>Pokaż informacje o bibliotece Qt Trolltech&apos;a.</translation>
-    </message>
-    <message>
-        <location/>
         <source>&amp;Done and Next</source>
         <translation>&amp;Zrobione i do następnego</translation>
     </message>
@@ -546,7 +541,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
     </message>
     <message>
         <location/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+742"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+764"/>
         <source>Edit</source>
         <translation>Edycja</translation>
     </message>
@@ -720,13 +715,13 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
         <translation>Zamienia tłumaczenia we wszystkich pasujących do wzorca wpisach.</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2011"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2035"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+188"/>
+        <location line="+190"/>
         <source>Source text</source>
         <translation>Tekst źródłowy</translation>
     </message>
@@ -840,12 +835,12 @@ Czy chcesz pominąć pierwszy plik?</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-511"/>
-        <location line="+1165"/>
+        <location line="+1187"/>
         <source>Release</source>
         <translation>Wydaj</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1164"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1186"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Pliki z wydanymi tłumaczeniami (*.qm)
@@ -912,7 +907,7 @@ Wszystkie pliki (*)</translation>
         <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
-        <location line="+516"/>
+        <location line="+538"/>
         <location line="+1"/>
         <location line="+274"/>
         <location line="+40"/>
@@ -921,7 +916,7 @@ Wszystkie pliki (*)</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1198"/>
+        <location line="-1220"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>Nie można znaleźć tekstu &apos;%1&apos;.</translation>
@@ -1047,7 +1042,7 @@ Wszystkie pliki (*)</translation>
         <translation>Wszystkie wyrażenia są przetłumaczone.</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+198"/>
         <source>&amp;Window</source>
         <translation>&amp;Okno</translation>
     </message>
@@ -1182,7 +1177,7 @@ Wszystkie pliki (*)</translation>
         <translation>Czy chcesz zachować książke wyrażeń &apos;%1&apos;?</translation>
     </message>
     <message>
-        <location line="+334"/>
+        <location line="+349"/>
         <source>All</source>
         <translation>Wszystko</translation>
     </message>
@@ -1248,7 +1243,7 @@ Wszystkie pliki (*)</translation>
     </message>
     <message>
         <location/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-481"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-496"/>
         <source>Translation</source>
         <translation>Tłumaczenie</translation>
     </message>
@@ -1505,6 +1500,11 @@ Wszystkie pliki (*)</translation>
         <source>Length Variants</source>
         <translation>Warianty tłumaczeń</translation>
     </message>
+    <message>
+        <location/>
+        <source>Display information about the Qt toolkit by Nokia.</source>
+        <translation>Pokaż informacje o pakiecie narzędziowym Qt oferowanym przez Nokię.</translation>
+    </message>
 </context>
 <context>
     <name>MessageEditor</name>
@@ -1545,12 +1545,12 @@ Wszystkie pliki (*)</translation>
         <translation>chiński</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+47"/>
         <source>This whole panel allows you to view and edit the translation of some source text.</source>
         <translation>Ten panel pozwala na podgląd i redagowanie tłumaczenia tekstu źródłowego.</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+10"/>
         <source>Source text</source>
         <translation>Tekst źródłowy</translation>
     </message>
@@ -1615,7 +1615,7 @@ Linia: %2</translation>
 <context>
     <name>MessageModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+825"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+839"/>
         <source>Completion status for %1</source>
         <translation>Stan ukończenia dla %1</translation>
     </message>
@@ -1638,7 +1638,7 @@ Linia: %2</translation>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-614"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-600"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1807,7 +1807,7 @@ Linia: %2</translation>
         <translation>Skompilowane tłumaczenia Qt</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1280"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1302"/>
         <source>Translation files (%1);;</source>
         <translation>Pliki z tłumaczeniami (%1);;</translation>
     </message>
@@ -1817,7 +1817,7 @@ Linia: %2</translation>
         <translation>Wszystkie pliki (*)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1120"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1134"/>
         <location line="+27"/>
         <location line="+67"/>
         <location line="+39"/>
@@ -1828,9 +1828,14 @@ Linia: %2</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+658"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+817"/>
         <source>GNU Gettext localization files</source>
         <translation>Pliki GNU Gettext</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>GNU Gettext localization template files</source>
+        <translation>Szablony plików GNU Gettext</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
@@ -1848,7 +1853,7 @@ Linia: %2</translation>
         <translation>Źródła tłumaczeń Qt (najnowszy format)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+827"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+829"/>
         <source>XLIFF localization files</source>
         <translation>Pliki XLIFF</translation>
     </message>
