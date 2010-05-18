@@ -1200,7 +1200,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         const Register &input = registers[instr->unaryop.src];
         Register &output = registers[instr->unaryop.output];
         if (input.isUndefined()) output.setUndefined();
-        else output.setint(int(input.getqreal()));
+        else output.setint(qRound(input.getqreal()));
     }
         break;
 
