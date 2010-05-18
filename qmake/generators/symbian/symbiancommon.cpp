@@ -305,11 +305,6 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
                 t << item << endl;
                 tw << item << endl;
             }
-            // Only regular and stub should have pkg header if that is defined using prerules.
-            else if (!item.startsWith("#")) {
-                t << item << endl;
-                ts << item << endl;
-            }
             else {
                 t << item << endl;
                 ts << item << endl;
