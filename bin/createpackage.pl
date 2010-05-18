@@ -292,7 +292,7 @@ if($stub) {
     # Create stub SIS.
     system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
-    if ($certtext eq "Self Signed" && !@certificates) {
+    if ($certtext eq "Self Signed" && !@certificates && $templatepkg !~ m/_installer\.pkg$/i) {
         print("Auto-patching capabilities for self signed package.\n");
         system ("patch_capabilities $pkgoutput");
     }
