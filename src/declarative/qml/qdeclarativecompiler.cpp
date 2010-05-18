@@ -1316,6 +1316,9 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
         } else {
             prop->values.at(0)->type = Value::SignalExpression;
 
+            if (!prop->values.at(0)->value.isScript())
+                COMPILE_EXCEPTION(prop, tr("Cannot assign a value to a signal (expecting a script to be run)"));
+
             QString script = prop->values.at(0)->value.asScript().trimmed();
             if (script.isEmpty())
                 COMPILE_EXCEPTION(prop, tr("Empty signal assignment"));
