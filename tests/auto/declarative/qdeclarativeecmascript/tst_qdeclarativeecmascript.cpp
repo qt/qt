@@ -2424,6 +2424,17 @@ void tst_qdeclarativeecmascript::include()
     delete o;
     }
 
+    // Including file with ".pragma library"
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("include_pragma.qml"));
+    qDebug() << "errors:" << component.errorsString();
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test1").toInt(), 100);
+
+    delete o;
+    }
+
     // Remote - success
     {
     TestHTTPServer server(8111);
