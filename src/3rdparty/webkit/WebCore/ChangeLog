@@ -1,3 +1,84 @@
+2010-05-17  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Laszlo Gombos.
+
+        REGRESSION(59563): [Qt] JSValue QtClass::fallbackObject can be optimized
+
+        Patch declared a variable index, which shadowed an earlier declared
+        variable.
+
+        * bridge/qt/qt_class.cpp:
+        (JSC::Bindings::QtClass::fallbackObject):
+
+2010-05-14  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer caches directly composited images
+        https://bugs.webkit.org/show_bug.cgi?id=38444
+
+        Directly-composited images and solid fills shouldn't be cached, as that cache
+        is never used (see GraphicsLayerQtImpl::paint). Cache is only relevant for HTML content,
+        but we were missing that test.
+        The fix makes sure we only cache HTML content.
+
+        No new tests: this is a minor optimization.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-05-15  Anders Bakken  <agbakken@gmail.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Don't unnecessarily copy data when searching for methods in QtClass.
+
+        [Qt] JSValue QtClass::fallbackObject can be optimized
+        https://bugs.webkit.org/show_bug.cgi?id=37684
+
+        * bridge/qt/qt_class.cpp:
+        (JSC::Bindings::QtClass::fallbackObject):
+
+2010-05-06  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Rubber-stamped by Simon Hausmann.
+
+        [Qt] use QT_MOBILE_THEME in Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=38440
+
+        Putting QT_MOBILE_THEME into use for Symbian.
+
+        * WebCore.pro:
+
+2010-05-14  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        CSSParser::parseColor() shouldn't alter 'color' unless passed a valid color string.
+        https://bugs.webkit.org/show_bug.cgi?id=39031
+
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseColor):
+        * editing/ApplyStyleCommand.cpp:
+        (WebCore::StyleChange::extractTextStyles): Don't depend on old behavior.
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::setShadow): Remove dead code.
+
+2010-05-14  Aaron Kennedy  <tffeeb@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] JavaScript unable to invoke methods declared in QML
+        https://bugs.webkit.org/show_bug.cgi?id=38949
+
+        JavaScript code executed by webkit cannot call into QML declared
+        methods, as it does not check for dynamic meta objects.
+
+        * bridge/qt/qt_instance.cpp:
+        (JSC::Bindings::QtInstance::stringValue): Use QMetaObject::metacall.
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::QtRuntimeMetaMethod::call): Ditto.
+
 2010-05-12  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.
