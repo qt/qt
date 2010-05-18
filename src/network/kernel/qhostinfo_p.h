@@ -60,8 +60,6 @@
 #include "QtCore/qwaitcondition.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
-
-#ifndef QT_NO_THREAD
 #include "QtCore/qthread.h"
 #include "QtCore/qthreadpool.h"
 #include "QtCore/qmutex.h"
@@ -70,7 +68,7 @@
 #include "QtCore/qqueue.h"
 #include <QTime>
 #include <QCache>
-#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -112,7 +110,6 @@ public:
     int lookupId;
 };
 
-#ifndef QT_NO_THREAD
 // These functions are outside of the QHostInfo class and strictly internal.
 // Do NOT use them outside of QAbstractSocket.
 QHostInfo Q_NETWORK_EXPORT qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char *member, bool *valid, int *id);
@@ -189,8 +186,6 @@ protected:
 private slots:
     void waitForThreadPoolDone() { threadPool.waitForDone(); }
 };
-
-#endif
 
 QT_END_NAMESPACE
 
