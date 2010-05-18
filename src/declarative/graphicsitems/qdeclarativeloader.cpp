@@ -366,6 +366,7 @@ QDeclarativeLoader::Status QDeclarativeLoader::status() const
 
 void QDeclarativeLoader::componentComplete()
 {
+    QDeclarativeItem::componentComplete();
     if (status() == Ready)
         emit loaded();
 }
