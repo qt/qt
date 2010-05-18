@@ -1893,7 +1893,7 @@ bool QDeclarativeCompiler::buildScriptStringProperty(QDeclarativeParser::Propert
     if (prop->values.count() > 1) 
         COMPILE_EXCEPTION(prop->values.at(1), tr( "Cannot assign multiple values to a script property"));
 
-    if (prop->values.at(0)->object || !prop->values.at(0)->value.isScript())
+    if (prop->values.at(0)->object)
         COMPILE_EXCEPTION(prop->values.at(0), tr( "Invalid property assignment: script expected"));
 
     obj->addScriptStringProperty(prop, ctxt.stack);
