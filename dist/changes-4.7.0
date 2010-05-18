@@ -199,6 +199,8 @@ Qt for Mac OS X
 Qt for Embedded Linux
 ---------------------
 
+  * Add support for WA_TranslucentBackground (QTBUG-5739)
+  * Add support for QFont::NoAntialias (QTBUG-5936)
 
 Qt for Windows CE
 -----------------
