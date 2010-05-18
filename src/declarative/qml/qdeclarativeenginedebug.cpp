@@ -414,7 +414,7 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         QDeclarativeContext *context = qmlContext(object);
         QVariant result;
         if (object && context) {
-            QDeclarativeExpression exprObj(context, expr, object);
+            QDeclarativeExpression exprObj(context, object, expr);
             bool undefined = false;
             QVariant value = exprObj.evaluate(&undefined);
             if (undefined)

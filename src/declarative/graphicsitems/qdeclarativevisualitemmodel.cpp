@@ -204,7 +204,7 @@ QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &express
     QDeclarativeContext *ccontext = qmlContext(this);
     QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
     ctxt->setContextObject(d->children.at(index));
-    QDeclarativeExpression e(ctxt, expression, objectContext);
+    QDeclarativeExpression e(ctxt, objectContext, expression);
     QVariant value = e.evaluate();
     delete ctxt;
     return value;
@@ -1176,7 +1176,7 @@ QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &express
     if (nobj) {
         QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
         if (item) {
-            QDeclarativeExpression e(qmlContext(item), expression, objectContext);
+            QDeclarativeExpression e(qmlContext(item), objectContext, expression);
             value = e.evaluate();
         }
     } else {
@@ -1185,7 +1185,7 @@ QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &express
         QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
         QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
         ctxt->setContextObject(data);
-        QDeclarativeExpression e(ctxt, expression, objectContext);
+        QDeclarativeExpression e(ctxt, objectContext, expression);
         value = e.evaluate();
         delete data;
         delete ctxt;
