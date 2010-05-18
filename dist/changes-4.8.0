@@ -36,6 +36,7 @@ Third party components
 
 QtCore
 ------
+ - Removed support for QT_NO_THREAD define for QHostInfo.
 
 QtGui
 -----
