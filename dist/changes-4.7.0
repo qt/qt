@@ -68,6 +68,9 @@ QtGui
     * Fixed a bug that would cause keyboard searches not to behave
       properly when used within 400 milliseconds of midnight.
 
+ - QComboBox
+    * [QTBUG-8796] Made ForegroundRole work for all styles.
+
  - QPrinter
     * Obsoleted the slightly confusing setNumCopies() and numCopies()
       functions, and replaced them with setCopyCount(), copyCount() and
@@ -123,8 +126,15 @@ QtGui
       operators (intersect, subtract, unite) to prevent numerical
       stability issues.
 
+ - QPlastiqueStyle
+    * [QTBUG-6516] Respect AlternateBase role for list views.
+
  - QRegion
     * [QTBUG-7699] Fixed crash caused by large x-coordinates.
+
+ - QSplitter
+    * [QTBUG-9335] Improve support for 1-pixel splitters by using a 
+      larger drag area.
 
  - QTransform
     * [QTBUG-8557] Fixed bug in QTransform::type() potentially occuring
@@ -194,10 +204,13 @@ Qt Plugins
 
 Qt for Linux/X11
 ----------------
-
+ - QGtkStyle
+    * Fixed rtl issues with sliders (QTBUG-8986)
+    * Fixed missing pressed appearance on scroll bar handles. (QTBUG-10396)  
 
 Qt for Windows
 --------------
+ - Popup windows now implicitly activate when shown. (QTBUG-7386)
 
  - QLocalSocket
     * Pipe handle leak fixed, when closing a QLocalSocket that still has
@@ -209,7 +222,9 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
-
+ - QMacStyle
+    * Removed frame around statusbar items. (QTBUG-3574)
+    * More native appearance of item view headers and frames. (QTBUG-10047)    
 
 Qt for Embedded Linux
 ---------------------

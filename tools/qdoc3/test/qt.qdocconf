@@ -46,6 +46,9 @@ qhp.Qt.extraFiles          = index.html \
 			     images/dynamiclayouts-example.png \
 			     scripts/functions.js \
 			     scripts/jquery.js \
+			     style/style_ie6.css \
+			     style/style_ie7.css \
+			     style/style_ie8.css \
 			     style/style.css
 
 qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc
