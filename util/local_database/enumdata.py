@@ -507,7 +507,8 @@ country_list = {
     242 : [ "Montenegro",                               "ME"  ],
     243 : [ "Serbia",                                   "RS"  ],
     244 : [ "Saint Barthelemy",                         "BL"  ],
-    245 : [ "Saint Martin",                             "MF"  ]
+    245 : [ "Saint Martin",                             "MF"  ],
+    246 : [ "LatinAmericaAndTheCaribbean",              "419" ]
 }
 
 def countryCodeToId(code):

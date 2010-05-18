@@ -50,6 +50,12 @@ Third party components
 QtCore
 ------
 
+ - QMetaType
+    * Significantly improved performance of the type() function
+ - QState
+    * [QTBUG-7741] Added a function to get the out-going transitions
+ - QStateMachine
+    * [QTBUG-8842] Reset history states when (re)starting machine
  - QXmlStreamReader
     * [QTBUG-9196] fixed crash when parsing
  - QTimer
@@ -146,6 +152,15 @@ QtNetwork
   * [QTBUG-2515] Do not make OpenSSL prompt for a password
   * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
 
+QtScript
+--------
+ - Updated src/3rdparty/javascriptcore to a more recent version
+ - Significantly improved performance of the Qt/C++<-->JavaScript bridge
+ - QScriptValueIterator: Significantly improved performance
+ - [QTBUG-3637] Added a wrap option for excluding slots from a QObject binding
+ - [QTBUG-6238] Added a function for reporting additional memory cost
+ - [QTBUG-6908] Significantly improved performance of qsTr()
+
 QtXmlPatterns
 -------------
 
@@ -199,6 +214,8 @@ Qt for Mac OS X
 Qt for Embedded Linux
 ---------------------
 
+  * Add support for WA_TranslucentBackground (QTBUG-5739)
+  * Add support for QFont::NoAntialias (QTBUG-5936)
 
 Qt for Windows CE
 -----------------
@@ -286,3 +303,10 @@ Qt for Windows CE
 *                   Important Behavior Changes                             *
 ****************************************************************************
 
+QtScript: Changes due to updating src/3rdparty/javascriptcore:
+ - It is no longer possible to delete an undeletable property from C++
+   using QScriptValue::setProperty().
+ - The QScriptEngineAgent::positionChange() callback will always report
+   a column number of 1.
+ - QScriptValueIterator will include the "length" property when iterating
+   over Array objects.

@@ -192,6 +192,7 @@ void tst_QLocale::ctor()
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
+    TEST_CTOR(Spanish, LatinAmericaAndTheCaribbean, QLocale::Spanish, QLocale::LatinAmericaAndTheCaribbean)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
 
@@ -323,6 +324,8 @@ void tst_QLocale::ctor()
     TEST_CTOR("no_NO", Norwegian, Norway)
     TEST_CTOR("nb_NO", Norwegian, Norway)
     TEST_CTOR("nn_NO", NorwegianNynorsk, Norway)
+    TEST_CTOR("es_ES", Spanish, Spain)
+    TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
 
 #undef TEST_CTOR
 
@@ -1896,8 +1899,8 @@ void tst_QLocale::ampm()
     QCOMPARE(c.pmText(), QLatin1String("PM"));
 
     QLocale de("de_DE");
-    QCOMPARE(de.amText(), QLatin1String("AM"));
-    QCOMPARE(de.pmText(), QLatin1String("PM"));
+    QCOMPARE(de.amText(), QLatin1String("vorm."));
+    QCOMPARE(de.pmText(), QLatin1String("nachm."));
 
     QLocale sv("sv_SE");
     QCOMPARE(sv.amText(), QLatin1String("fm"));

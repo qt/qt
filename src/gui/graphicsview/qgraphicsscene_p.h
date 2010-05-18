@@ -302,6 +302,7 @@ public:
     QHash<QGraphicsObject *, QSet<QGesture *> > cachedItemGestures;
     QHash<QGraphicsObject *, QSet<QGesture *> > cachedAlreadyDeliveredGestures;
     QHash<QGesture *, QGraphicsObject *> gestureTargets;
+    QHash<Qt::GestureType, int>  grabbedGestures;
     void gestureEventHandler(QGestureEvent *event);
     void gestureTargetsAtHotSpots(const QSet<QGesture *> &gestures,
                            Qt::GestureFlag flag,
@@ -310,6 +311,8 @@ public:
                            QSet<QGesture *> *normal = 0,
                            QSet<QGesture *> *conflicts = 0);
     void cancelGesturesForChildren(QGesture *original);
+    void grabGesture(QGraphicsItem *, Qt::GestureType gesture);
+    void ungrabGesture(QGraphicsItem *, Qt::GestureType gesture);
 
     void updateInputMethodSensitivityInViews();
 
