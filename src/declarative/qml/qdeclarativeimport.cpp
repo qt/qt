@@ -576,9 +576,9 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 {
     filePluginPath << QLatin1String(".");
 
-    QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
-    if (!builtinPath.isEmpty())
-        addImportPath(builtinPath);
+    // Search order is applicationDirPath(), $QML_IMPORT_PATH, QLibraryInfo::ImportsPath
+
+    addImportPath(QLibraryInfo::location(QLibraryInfo::ImportsPath));
 
     // env import paths
     QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
@@ -592,6 +592,8 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
         for (int ii = paths.count() - 1; ii >= 0; --ii)
             addImportPath(paths.at(ii));
     }
+
+    addImportPath(QCoreApplication::applicationDirPath());
 }
 
 QDeclarativeImportDatabase::~QDeclarativeImportDatabase()
@@ -843,6 +845,9 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
     if (qmlImportTrace())
         qDebug() << "QDeclarativeImportDatabase::addImportPath" << path;
 
+    if (path.isEmpty())
+        return;
+
     QUrl url = QUrl(path);
     QString cPath;
 
@@ -853,7 +858,8 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
         cPath = path;
     }
 
-    if (!fileImportPath.contains(cPath))
+    if (!cPath.isEmpty()
+        && !fileImportPath.contains(cPath))
         fileImportPath.prepend(cPath);
 }
 
