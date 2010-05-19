@@ -2083,10 +2083,9 @@ void tst_qdeclarativeecmascript::compiled()
     QCOMPARE(object->property("test15").toBool(), false);
     QCOMPARE(object->property("test16").toBool(), true);
 
-    QCOMPARE(object->property("test17").toInt(), 4);
+    QCOMPARE(object->property("test17").toInt(), 5);
     QCOMPARE(object->property("test18").toReal(), qreal(176));
-    QEXPECT_FAIL("", "QTBUG-9538", Continue);
-    QCOMPARE(object->property("test19").toInt(), 6);
+    QCOMPARE(object->property("test19").toInt(), 7);
     QCOMPARE(object->property("test20").toReal(), qreal(6.7));
     QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
     QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
@@ -2421,6 +2420,17 @@ void tst_qdeclarativeecmascript::include()
     QCOMPARE(o->property("test4").toBool(), true);
     QCOMPARE(o->property("test5").toBool(), true);
     QCOMPARE(o->property("test6").toBool(), true);
+
+    delete o;
+    }
+
+    // Including file with ".pragma library"
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("include_pragma.qml"));
+    qDebug() << "errors:" << component.errorsString();
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test1").toInt(), 100);
 
     delete o;
     }

@@ -76,6 +76,8 @@ private slots:
     void persistentSelection();
     void focusOnPress();
     void selection();
+    void mouseSelection_data();
+    void mouseSelection();
     void inputMethodHints();
 
     void cursorDelegate();
@@ -600,6 +602,49 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
     textEditObject->setSelectionEnd(100);
     QVERIFY(textEditObject->selectedText().size() == 10);
+}
+
+void tst_qdeclarativetextedit::mouseSelection_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+    QTest::addColumn<bool>("expectSelection");
+
+    // import installed
+    QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << true;
+    QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << false;
+    QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << false;
+}
+
+void tst_qdeclarativetextedit::mouseSelection()
+{
+    QFETCH(QString, qmlfile);
+    QFETCH(bool, expectSelection);
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEditObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textEditObject->height()/2;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str = textEditObject->selectedText();
+    if (expectSelection)
+        QVERIFY(str.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
+    else
+        QVERIFY(str.isEmpty());
 }
 
 void tst_qdeclarativetextedit::inputMethodHints()

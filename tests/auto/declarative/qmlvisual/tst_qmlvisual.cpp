@@ -105,6 +105,7 @@ void tst_qmlvisual::visual_data()
         files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativeflipable/test-flipable.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativepositioners/usingRepeater.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation2/parentAnimation2.qml";
 
         //these are tests we think are stable and useful enough to be run by the CI system
         files << QT_TEST_SOURCE_DIR "/animation/bindinganimation/bindinganimation.qml";

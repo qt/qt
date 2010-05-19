@@ -241,15 +241,17 @@ QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, vo
 }
 
 /*!
-    Create a QDeclarativeExpression object.
+    Create a QDeclarativeExpression object that is a child of \a parent.
 
     The \a expression JavaScript will be executed in the \a ctxt QDeclarativeContext.
     If specified, the \a scope object's properties will also be in scope during
     the expression's execution.
 */
-QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, const QString &expression,
-                                               QObject *scope)
-: QObject(*new QDeclarativeExpressionPrivate, 0)
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt,
+                                               QObject *scope,
+                                               const QString &expression,
+                                               QObject *parent)
+: QObject(*new QDeclarativeExpressionPrivate, parent)
 {
     Q_D(QDeclarativeExpression);
     d->init(QDeclarativeContextData::get(ctxt), expression, scope);
@@ -258,8 +260,8 @@ QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContext *ctxt, const 
 /*! 
     \internal
 */
-QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, const QString &expression,
-                                               QObject *scope)
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, QObject *scope,
+                                               const QString &expression)
 : QObject(*new QDeclarativeExpressionPrivate, 0)
 {
     Q_D(QDeclarativeExpression);
@@ -267,8 +269,8 @@ QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, co
 }
 
 /*!  \internal */
-QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, const QString &expression,
-                                               QObject *scope, QDeclarativeExpressionPrivate &dd)
+QDeclarativeExpression::QDeclarativeExpression(QDeclarativeContextData *ctxt, QObject *scope,
+                                               const QString &expression, QDeclarativeExpressionPrivate &dd)
 : QObject(dd, 0)
 {
     Q_D(QDeclarativeExpression);
