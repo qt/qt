@@ -3757,15 +3757,6 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     </message>
 </context>
 <context>
-    <name>QGstreamerPlayerSession</name>
-    <message>
-        <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+423"/>
-        <location line="+16"/>
-        <source>Unable to play %1</source>
-        <translation>Nie można odtworzyć %1</translation>
-    </message>
-</context>
-<context>
     <name>QHostInfo</name>
     <message>
         <location filename="../src/network/kernel/qhostinfo_p.h" line="+103"/>
@@ -4589,39 +4580,6 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <location line="-79"/>
         <source>- [%1]</source>
         <translation>- [%1]</translation>
-    </message>
-</context>
-<context>
-    <name>QMediaPlayer</name>
-    <message>
-        <location filename="../src/multimedia/mediaservices/playback/qmediaplayer.cpp" line="+496"/>
-        <source>The QMediaPlayer object does not have a valid service</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QMediaPlaylist</name>
-    <message>
-        <location filename="../src/multimedia/mediaservices/base/qmediaplaylist.cpp" line="+455"/>
-        <location line="+46"/>
-        <source>Could not add items to read only playlist.</source>
-        <translation>Nie można dodać elementów do listy odtwarzania (tylko do odczytu).</translation>
-    </message>
-    <message>
-        <location line="-27"/>
-        <location line="+46"/>
-        <source>Playlist format is not supported</source>
-        <translation>Format listy odtwarzania nie jest obsługiwany</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>The file could not be accessed.</source>
-        <translation>Brak dostępu do pliku.</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>Playlist format is not supported.</source>
-        <translation>Format listy odtwarzania nie jest obsługiwany.</translation>
     </message>
 </context>
 <context>
