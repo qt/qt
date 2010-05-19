@@ -50,12 +50,6 @@
 #include <QDeclarativeContext>
 #include <private/qobject_p.h>
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Application private dir is default serach path for files, so SRCDIR can be set to empty
-#define SRCDIR ""
-#endif
-
 class tst_creation : public QObject
 {
     Q_OBJECT
@@ -203,7 +197,7 @@ void tst_creation::qobject_10tree_cpp()
 
 void tst_creation::qobject_qmltype()
 {
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/QtObject", 4, 6);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/QtObject", 4, 7);
 
     QBENCHMARK {
         QObject *obj = t->create();
@@ -347,7 +341,7 @@ void tst_creation::elements_data()
 void tst_creation::elements()
 {
     QFETCH(QByteArray, type);
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType(type, 4, 6);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType(type, 4, 7);
     if (!t || !t->isCreatable())
         QSKIP("Non-creatable type", SkipSingle);
 

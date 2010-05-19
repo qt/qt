@@ -76,6 +76,7 @@ private slots:
     void focusOutClearSelection();
 
     void echoMode();
+    void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -575,6 +576,14 @@ void tst_qdeclarativetextinput::navigation()
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == true);
 
+    // Up and Down should NOT do Home/End, even on Mac OS X (QTBUG-10438).
+    input->setCursorPosition(2);
+    QCOMPARE(input->cursorPosition(),2);
+    simulateKey(canvas, Qt::Key_Up);
+    QCOMPARE(input->cursorPosition(),2);
+    simulateKey(canvas, Qt::Key_Down);
+    QCOMPARE(input->cursorPosition(),2);
+
     delete canvas;
 }
 
@@ -734,8 +743,6 @@ void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
     view.viewport()->setInputContext(&ic);
     QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
             view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
-    if ((behavior != QStyle::RSIP_OnMouseClick))
-        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
     QDeclarativeTextInput input;
     input.setText("Hello world");
     input.setPos(0, 0);
@@ -747,7 +754,14 @@ void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
     QApplication::processEvents();
-    QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, false);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+        QApplication::processEvents();
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    } else if (behavior == QStyle::RSIP_OnMouseClick) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    }
 }
 
 class MyTextInput : public QDeclarativeTextInput
@@ -803,6 +817,16 @@ void tst_qdeclarativetextinput::focusOutClearSelection()
     QApplication::processEvents();
     //The input lost the focus selection should be cleared
     QTRY_COMPARE(input.selectedText(), QLatin1String(""));
+}
+
+void tst_qdeclarativetextinput::geometrySignals()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("bindingWidth").toInt(), 400);
+    QCOMPARE(o->property("bindingHeight").toInt(), 500);
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

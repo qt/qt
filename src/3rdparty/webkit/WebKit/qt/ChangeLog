@@ -1,3 +1,203 @@
+2010-05-14  Kent Hansen <kent.hansen@nokia.com>, Jocelyn Turcotte <jocelyn.turcotte@nokia.com>, Tor Arne Vestbø <tor.arne.vestbo@nokia.com>, Henry Haverinen <henry.haverinen@nokia.com>, Jedrzej Nowacki <jedrzej.nowacki@nokia.com>, Andreas Kling <andreas.kling@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Merge overhaul of the QtWebKit API documentation
+
+        Numerous improvements in wording, qdoc warning fixes and
+        clarifications, done in a team work effort.
+
+        No functional changes.
+
+        * Api/qwebdatabase.cpp:
+        * Api/qwebelement.cpp:
+        * Api/qwebframe.cpp:
+        * Api/qwebhistoryinterface.cpp:
+        * Api/qwebinspector.cpp:
+        * Api/qwebkitversion.cpp:
+        * Api/qwebpage.cpp:
+        * Api/qwebpluginfactory.cpp:
+        * Api/qwebsecurityorigin.cpp:
+        * Api/qwebsettings.cpp:
+        * Api/qwebsettings.h:
+        * docs/qtwebkit.qdoc:
+        * docs/webkitsnippets/qtwebkit_qwebinspector_snippet.cpp:
+        (wrapInFunction):
+        * docs/webkitsnippets/webelement/main.cpp:
+        (findButtonAndClick):
+        (autocomplete1):
+        (autocomplete2):
+        (main):
+
+2010-05-14  Martin Smith  <msmith@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Documentation: Fix overview grouping.
+
+        * docs/qtwebkit.qdoc:
+
+2010-05-14  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [QT] Update the Symbian version for the user agent
+        https://bugs.webkit.org/show_bug.cgi?id=38389
+
+        Update the user agent for Symbian^2 to Symbian^4
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
+2010-05-11  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        [Qt] emit initialLayoutCompleted signal from FrameLoaderClientQt::dispatchDidFirstVisuallyNonEmptyLayout
+        https://bugs.webkit.org/show_bug.cgi?id=38921
+
+        Emit initialLayoutCompleted signal from FrameLoaderClientQt::dispatchDidFirstVisuallyNonEmptyLayout
+        instead of FrameLoaderClientQt::dispatchDidFirstLayout , because the former ensures that a
+        visual content layed out on the frame.
+
+        It matches to QWebFrame::initialLayoutCompleted signal documentation at:
+
+        "... This is the first time you will see contents displayed on the frame ..."
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::dispatchDidFirstLayout):
+        (WebCore::FrameLoaderClientQt::dispatchDidFirstVisuallyNonEmptyLayout):
+
+2010-05-11  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] REGRESSION(r58497) tst_QGraphicsWebView::crashOnViewlessWebPages() is failing
+        https://bugs.webkit.org/show_bug.cgi?id=38655
+
+        Fix double free by moving the connect till after the resize.
+
+        The bug is causes by the fact that a resize of an empty page causes a
+        layout, thus deleting the qgraphicswebview before setHtml is called,
+        which then deletes it again, causing a double free.
+
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (tst_QGraphicsWebView::crashOnViewlessWebPages):
+
+2010-05-11  Diego Gonzalez  <diegohcg@webkit.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] tst_QWebPage::inputMethods failing on Maemo5
+        https://bugs.webkit.org/show_bug.cgi?id=38685
+
+        Check if the SIP (Software Input Panel) is triggered, which normally
+        happens on mobile platforms, when a user input form receives a mouse click.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2010-05-09  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Crash in QGraphicsWebViewPrivate::~QGraphicsWebViewPrivate when animation were used
+        https://bugs.webkit.org/show_bug.cgi?id=38574
+
+        The fix uses a QWeakPointer for rootGraphicsLayer, protecting from a crash in case the layer is deleted before the QGraphicsWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::QGraphicsWebViewPrivate):
+        (QGraphicsWebViewPrivate::~QGraphicsWebViewPrivate):
+        (QGraphicsWebViewPrivate::setRootGraphicsLayer):
+        (QGraphicsWebViewPrivate::updateCompositingScrollPosition):
+
+2010-05-03  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Expose HTMLTokenizer yielding parameters
+        https://bugs.webkit.org/show_bug.cgi?id=37023
+
+        Enables to set TimeDelay and ChunkSize for 
+        HTMLTokenizer.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::dynamicPropertyChangeEvent):
+
+2010-05-04  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] QWebPage viewMode property
+        https://bugs.webkit.org/show_bug.cgi?id=38119
+
+        Rename the property from wrt_viewMode to _q_viewMode.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::dynamicPropertyChangeEvent):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::viewModes):
+
+2010-04-28  Luiz Agostini  <luiz.agostini@openbossa.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] QWebPage viewMode property
+        https://bugs.webkit.org/show_bug.cgi?id=38119
+
+        Replacing method qt_wrt_setViewMode by wrt_viewMode property.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::dynamicPropertyChangeEvent):
+        (QWebPage::event):
+        * Api/qwebpage_p.h:
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::wrt_viewModes):
+
+2010-04-09  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt]Fix compile error with QT_NO_IM
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * WebCoreSupport/QtFallbackWebPopup.cpp:
+        (WebCore::QtFallbackWebPopupCombo::hidePopup):
+
+2010-04-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_SETTINGS
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        If QT_NO_SETTINGS is defined, QSettings is not available.
+
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::populateSetting):
+        (WebCore::InspectorClientQt::storeSetting):
+
+2010-03-25  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_DESKTOPSERVICES
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * Api/qwebsettings.cpp:
+        (QWebSettings::enablePersistentStorage):
+
+2010-03-25  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt]Fix compile error with QT_NO_DEBUG_STREAM
+        https://bugs.webkit.org/show_bug.cgi?id=36533
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::graphicsItemVisibleRect):
+
 2010-04-29  Janne Koskinen  <janne.p.koskinen@digia.com>
 
         Reviewed by Simon Hausmann.

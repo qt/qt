@@ -50,6 +50,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#include <private/qpixmap_raster_p.h>
+
 Q_DECLARE_METATYPE(QLine)
 Q_DECLARE_METATYPE(QRect)
 Q_DECLARE_METATYPE(QSize)
@@ -123,6 +125,32 @@ struct PrimitiveSet {
     QPainterPath f_path_rect;
     QPainterPath f_path_ellipse;
 };
+
+
+QPixmap rasterPixmap(int width, int height)
+{
+    QPixmapData *data =
+        new QRasterPixmapData(QPixmapData::PixmapType);
+
+    data->resize(width, height);
+
+    return QPixmap(data);
+}
+
+QPixmap rasterPixmap(const QSize &size)
+{
+    return rasterPixmap(size.width(), size.height());
+}
+
+QPixmap rasterPixmap(const QImage &image)
+{
+    QPixmapData *data =
+        new QRasterPixmapData(QPixmapData::PixmapType);
+
+    data->fromImage(image, Qt::AutoColor);
+
+    return QPixmap(data);
+}
 
 
 class tst_QPainter : public QObject
@@ -222,7 +250,8 @@ private:
 
     QPaintDevice *surface()
     {
-        return new QPixmap(1024, 1024);
+        m_pixmap = rasterPixmap(1024, 1024);
+        return &m_pixmap;
     }
 
 
@@ -233,6 +262,7 @@ private:
     PrimitiveSet m_primitives_100;
     PrimitiveSet m_primitives_1000;
 
+    QPixmap m_pixmap;
     QPaintDevice *m_surface;
     QPainter m_painter;
 
@@ -490,7 +520,7 @@ void tst_QPainter::setupBrushes()
 
 void tst_QPainter::beginAndEnd()
 {
-    QPixmap pixmap(100, 100);
+    QPixmap pixmap = rasterPixmap(100, 100);
 
     QBENCHMARK {
         QPainter p;
@@ -505,10 +535,11 @@ void tst_QPainter::drawLine()
     QFETCH(QPen, pen);
 
     const int offset = 5;
-    QPixmap pixmapUnclipped(qMin(line.x1(), line.x2())
-                            + 2*offset + qAbs(line.dx()),
-                            qMin(line.y1(), line.y2())
-                            + 2*offset + qAbs(line.dy()));
+    QPixmap pixmapUnclipped =
+        rasterPixmap(qMin(line.x1(), line.x2())
+                     + 2*offset + qAbs(line.dx()),
+                     qMin(line.y1(), line.y2())
+                     + 2*offset + qAbs(line.dy()));
     pixmapUnclipped.fill(Qt::white);
 
     QPainter p(&pixmapUnclipped);
@@ -535,10 +566,11 @@ void tst_QPainter::drawLine_clipped()
     QFETCH(QPen, pen);
 
     const int offset = 5;
-    QPixmap pixmapClipped(qMin(line.x1(), line.x2())
-                          + 2*offset + qAbs(line.dx()),
-                          qMin(line.y1(), line.y2())
-                          + 2*offset + qAbs(line.dy()));
+    QPixmap pixmapClipped
+        = rasterPixmap(qMin(line.x1(), line.x2())
+                       + 2*offset + qAbs(line.dx()),
+                       qMin(line.y1(), line.y2())
+                       + 2*offset + qAbs(line.dy()));
 
     const QRect clip = QRect(line.p1(), line.p2()).normalized();
 
@@ -569,10 +601,11 @@ void tst_QPainter::drawLine_antialiased_clipped()
     QFETCH(QPen, pen);
 
     const int offset = 5;
-    QPixmap pixmapClipped(qMin(line.x1(), line.x2())
-                          + 2*offset + qAbs(line.dx()),
-                          qMin(line.y1(), line.y2())
-                          + 2*offset + qAbs(line.dy()));
+    QPixmap pixmapClipped
+        = rasterPixmap(qMin(line.x1(), line.x2())
+                       + 2*offset + qAbs(line.dx()),
+                       qMin(line.y1(), line.y2())
+                       + 2*offset + qAbs(line.dy()));
 
     const QRect clip = QRect(line.p1(), line.p2()).normalized();
 
@@ -696,8 +729,8 @@ void tst_QPainter::drawPixmap()
     QImage sourceImage = createImage(type, size).convertToFormat(sourceFormat);
     QImage targetImage(size, targetFormat);
 
-    QPixmap sourcePixmap = QPixmap::fromImage(sourceImage);
-    QPixmap targetPixmap = QPixmap::fromImage(targetImage);
+    QPixmap sourcePixmap = rasterPixmap(sourceImage);
+    QPixmap targetPixmap = rasterPixmap(targetImage);
 
     QPainter p(&targetPixmap);
 
@@ -759,10 +792,10 @@ void tst_QPainter::compositionModes()
     QFETCH(QSize, size);
     QFETCH(QColor, color);
 
-    QPixmap src(size);
+    QPixmap src = rasterPixmap(size);
     src.fill(color);
 
-    QPixmap dest(size);
+    QPixmap dest = rasterPixmap(size);
     if (mode < QPainter::RasterOp_SourceOrDestination)
         color.setAlpha(127); // porter-duff needs an alpha channel
     dest.fill(color);
@@ -844,11 +877,11 @@ void tst_QPainter::drawTiledPixmap()
     QFETCH(QColor, color);
     QFETCH(QPainter::RenderHint, renderHint);
 
-    QPixmap src(srcSize);
+    QPixmap src = rasterPixmap(srcSize);
     src.fill(color);
 
     const QRect dstRect = transform.mapRect(QRect(QPoint(), dstSize));
-    QPixmap dst(dstRect.right() + 5, dstRect.bottom() + 5);
+    QPixmap dst = rasterPixmap(dstRect.right() + 5, dstRect.bottom() + 5);
     QPainter p(&dst);
     p.setTransform(transform);
     p.setRenderHint(renderHint);
@@ -1411,7 +1444,7 @@ void tst_QPainter::drawBorderPixmapRoundedRect()
         rp.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, rectImage.width()-(pw+1), rectImage.height()-(pw+1)), radius, radius);
     else
         rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
-    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+    QPixmap rectPixmap = rasterPixmap(rectImage);
 
     //setup surface
     QImage surface(100, 100, QImage::Format_RGB16);
@@ -1466,7 +1499,7 @@ void tst_QPainter::drawScaledBorderPixmapRoundedRect()
     else
         rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
 
-    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+    QPixmap rectPixmap = rasterPixmap(rectImage);
 
     //setup surface
     QImage surface(400, 400, QImage::Format_RGB16);
@@ -1522,7 +1555,7 @@ void tst_QPainter::drawTransformedBorderPixmapRoundedRect()
     else
         rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
 
-    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+    QPixmap rectPixmap = rasterPixmap(rectImage);
 
     //setup surface
     QImage surface(400, 400, QImage::Format_RGB16);

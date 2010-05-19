@@ -77,10 +77,9 @@ public:
     QGraphicsObject *item;
     QDeclarativeComponent *component;
     bool ownComponent : 1;
-    QDeclarativeLoader::ResizeMode resizeMode;
 
     void _q_sourceLoaded();
-    void _q_updateSize();
+    void _q_updateSize(bool loaderGeometryChanged = true);
 };
 
 QT_END_NAMESPACE

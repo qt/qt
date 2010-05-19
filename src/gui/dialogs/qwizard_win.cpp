@@ -237,7 +237,8 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
 */
 
 QVistaHelper::QVistaHelper(QWizard *wizard)
-    : pressed(false)
+    : QObject(wizard)
+    , pressed(false)
     , wizard(wizard)
     , backButton_(0)
 {

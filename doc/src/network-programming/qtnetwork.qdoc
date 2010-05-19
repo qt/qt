@@ -50,6 +50,7 @@
 /*!
     \page network-programming.html
     \title Network Programming
+    \ingroup qt-network
     \brief An Introduction to Network Programming with Qt
 
     The QtNetwork module offers classes that allow you to write TCP/IP clients

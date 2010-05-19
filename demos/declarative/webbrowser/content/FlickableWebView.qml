@@ -12,17 +12,22 @@ Flickable {
 
     id: flickable
     width: parent.width
-    contentWidth: Math.max(parent.width,webView.width*webView.scale)
-    contentHeight: Math.max(parent.height,webView.height*webView.scale)
+    contentWidth: Math.max(parent.width,webView.width)
+    contentHeight: Math.max(parent.height,webView.height)
     anchors.top: headerSpace.bottom
-    anchors.bottom: footer.top
+    anchors.bottom: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
     pressDelay: 200
 
+    onWidthChanged : {
+        // Expand (but not above 1:1) if otherwise would be smaller that available width.
+        if (width > webView.width*webView.contentsScale && webView.contentsScale < 1.0)
+            webView.contentsScale = width / webView.width * webView.contentsScale;
+    }
+
     WebView {
         id: webView
-        pixelCacheSize: 4000000
         transformOrigin: Item.TopLeft
 
         function fixUrl(url)
@@ -42,8 +47,6 @@ Flickable {
 
         url: fixUrl(webBrowser.urlString)
         smooth: false // We don't want smooth scaling, since we only scale during (fast) transitions
-        smoothCache: true // We do want smooth rendering
-        fillColor: "white"
         focus: true
         zoomFactor: 1
 
@@ -53,14 +56,13 @@ Flickable {
         {
             if (centerX) {
                 var sc = zoom/contentsScale;
-                scaleAnim.to = sc;
+                scaleAnim.to = zoom;
                 flickVX.from = flickable.contentX
                 flickVX.to = Math.max(0,Math.min(centerX-flickable.width/2,webView.width*sc-flickable.width))
                 finalX.value = flickVX.to
                 flickVY.from = flickable.contentY
                 flickVY.to = Math.max(0,Math.min(centerY-flickable.height/2,webView.height*sc-flickable.height))
                 finalY.value = flickVY.to
-                finalZoom.value = zoom
                 quickZoom.start()
             }
         }
@@ -68,8 +70,8 @@ Flickable {
         Keys.onLeftPressed: webView.contentsScale -= 0.1
         Keys.onRightPressed: webView.contentsScale += 0.1
 
-        preferredWidth: flickable.width*zoomFactor
-        preferredHeight: flickable.height*zoomFactor
+        preferredWidth: flickable.width
+        preferredHeight: flickable.height
         contentsScale: 1/zoomFactor
         onContentsSizeChanged: {
             // zoom out
@@ -102,17 +104,16 @@ Flickable {
                 NumberAnimation {
                     id: scaleAnim
                     target: webView
-                    property: "scale"
-                    from: 1
-                    to: 0 // set before calling
-                    easing.type: "Linear"
+                    property: "contentsScale"
+                    // the to property is set before calling
+                    easing.type: Easing.Linear
                     duration: 200
                 }
                 NumberAnimation {
                     id: flickVX
                     target: flickable
                     property: "contentX"
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
@@ -121,21 +122,11 @@ Flickable {
                     id: flickVY
                     target: flickable
                     property: "contentY"
-                    easing.type: "Linear"
+                    easing.type: Easing.Linear
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
                 }
-            }
-            PropertyAction {
-                id: finalZoom
-                target: webView
-                property: "contentsScale"
-            }
-            PropertyAction {
-                target: webView
-                property: "scale"
-                value: 1.0
             }
             // Have to set the contentXY, since the above 2
             // size changes may have started a correction if

@@ -1,8 +1,11 @@
 TEMPLATE = subdirs
+!symbian: {
+    SUBDIRS += painting
+}
+
 SUBDIRS += \
            binding \
            creation \
-           painting \
            pointers \
            qdeclarativecomponent \
            qdeclarativeimage \

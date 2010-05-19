@@ -88,7 +88,10 @@ QML_DECLARE_TYPE(TestType);
 class ParserStatusTestType : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
+    void classBegin(){}
+    void componentComplete(){}
     Q_CLASSINFO("DefaultProperty", "foo") // Missing default property
+    Q_INTERFACES(QDeclarativeParserStatus)
 };
 QML_DECLARE_TYPE(ParserStatusTestType);
 

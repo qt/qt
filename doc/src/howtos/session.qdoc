@@ -42,7 +42,7 @@
 /*!
     \page session.html
     \title Session Management
-
+    \brief How to do session management with Qt.
     \ingroup best-practices
 
     A \e session is a group of running applications, each of which has a

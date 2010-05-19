@@ -40,8 +40,9 @@
 ****************************************************************************/
 
 /*!
-\page qdeclarativeexamples.html
-\title QML Examples and Demos
+  \page qdeclarativeexamples.html
+  \title QML Examples and Demos
+  \ingroup all-examples
 
 \previouspage Graphics View Examples
 \contentspage Qt Examples
@@ -70,49 +71,91 @@ For example, from your build directory, run:
 
 \section1 Examples
 
+\section2 Animation
 \list
-\o \l{declarative/animations}{Animations}
-\o \l{declarative/aspectratio}{Aspect Ratio}
-\o \l{declarative/behaviors}{Behaviors}
-\o \l{declarative/border-image}{Border Image}
-\o \l{declarative/clocks}{Clocks}
-\o \l{declarative/connections}{Connections}
-\o \l{declarative/dial}{Dial}
-\o \l{declarative/dynamic}{Dynamic}
-\o \l{declarative/extending}{Extending}
-\o \l{declarative/fillmode}{Fillmode}
-\o \l{declarative/flipable}{Flipable}
-\o \l{declarative/focus}{Focus}
-\o \l{declarative/fonts}{Fonts}
-\o \l{declarative/gridview}{GridView}
-\o \l{declarative/imageprovider}{Image Provider}
-\o \l{declarative/images}{Images}
-\o \l{declarative/layouts}{Layouts}
-\o \l{declarative/listmodel-threaded}{ListModel Threaded}
-\o \l{declarative/listview}{ListView}
-\o \l{declarative/mousearea}{Mouse Area}
-\o \l{declarative/objectlistmodel}{Object ListModel}
-\o \l{declarative/package}{Package}
-\o \l{declarative/parallax}{Parallax}
-\o \l{declarative/plugins}{Plugins}
-\o \l{declarative/progressbar}{Progress Bars}
-\o \l{declarative/proxywidgets}{Proxy Widgets}
-\o \l{declarative/scrollbar}{Scrollbar}
-\o \l{declarative/searchbox}{Search Box}
-\o \l{declarative/slideswitch}{Slide Switch}
-\o \l{declarative/sql}{SQL}
-\o \l{declarative/states}{States}
-\o \l{declarative/stringlistmodel}{String ListModel}
-\o \l{declarative/tabwidget}{Tab Widget}
-\o \l{declarative/tic-tac-toe}{Tic-Tac-Toe}
-\o \l{declarative/tvtennis}{TV Tennis}
-\o \l{declarative/velocity}{Velocity}
-\o \l{declarative/webview}{WebView}
-\o \l{declarative/workerscript}{WorkerScript}
-\o \l{declarative/xmldata}{XML Data}
-\o \l{declarative/xmlhttprequest}{XMLHttpRequest}
-
+\o \l{declarative/animation/basics}{Basics}
+\o \l{declarative/animation/behaviors}{Behaviors}
+\o \l{declarative/animation/easing}{Easing}
+\o \l{declarative/animation/states}{States}
 \endlist
+
+\section2 Image Elements
+\list
+\o \l{declarative/imageelements/borderimage}{BorderImage}
+\o \l{declarative/imageelements/image}{Image}
+\endlist
+
+\section2 \l{declarative/positioners}{Positioners}
+
+\section2 Key Interaction
+\list
+\o \l{declarative/keyinteraction/focus}{Focus}
+\endlist
+
+\section2 Touch Interaction
+\list
+\o \l{declarative/touchinteraction/gestures}{Gestures}
+\o \l{declarative/touchinteraction/mousearea}{MouseArea}
+\endlist
+
+\section2 UI Components
+\list
+\o \l{declarative/ui-components/flipable}{Flipable}
+\o \l{declarative/ui-components/progressbar}{Progress bar}
+\o \l{declarative/ui-components/scrollbar}{Scroll bar}
+\o \l{declarative/ui-components/searchbox}{Search box}
+\o \l{declarative/ui-components/slideswitch}{Slide switch}
+\o \l{declarative/ui-components/spinner}{Spinner}
+\o \l{declarative/ui-components/tabwidget}{Tab widget}
+\endlist
+
+\section2 Models and Views
+\list
+\o \l{declarative/modelviews/gridview}{GridView}
+\o \l{declarative/modelviews/listview}{ListView}
+\o \l{declarative/modelviews/objectlistmodel}{Object list model}
+\o \l{declarative/modelviews/package}{Package}
+\o \l{declarative/modelviews/parallax}{Parallax}
+\o \l{declarative/modelviews/stringlistmodel}{String list model}
+\o \l{declarative/modelviews/webview}{WebView}
+\endlist
+
+\section2 XML
+\list
+\o \l{declarative/xml/xmldata}{XML data}
+\o \l{declarative/xml/xmlhttprequest}{XmlHttpRequest}
+\endlist
+
+\section2 \l{declarative/i18n}{Internationalization (i18n)}
+
+\section2 Threading
+\list
+\o \l{declarative/threading/threadedlistmodel}{Threaded ListModel}
+\o \l{declarative/threading/workerscript}{WorkerScript}
+\endlist
+
+\section2 \l{declarative/sqllocalstorage}{SQL Local Storage}
+
+\section2 C++ Extensions
+\list
+\o \l{declarative/cppextensions/referenceexamples}{Reference examples} (discussed in \l {Extending QML in C++})
+\o \l{declarative/cppextensions/plugins}{Plugins}
+\o \l{declarative/cppextensions/proxywidgets}{QtWidgets}
+\o \l{declarative/cppextensions/qgraphicslayouts}{QGraphicsLayouts}
+\o \l{declarative/cppextensions/imageprovider}{Image provider}
+\o \l{declarative/cppextensions/proxyviewer}{Network access manager factory}
+\endlist
+
+\section2 Toys
+\list
+\o \l{declarative/toys/clocks}{Clocks}
+\o \l{declarative/toys/dial}{Dial}
+\o \l{declarative/toys/dynamic}{Dynamic}
+\o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
+\o \l{declarative/toys/tvtennis}{TV Tennis}
+\o \l{declarative/toys/velocity}{Velocity}
+\endlist
+
 
 \section1 Demos
 
@@ -126,3 +169,4 @@ For example, from your build directory, run:
 \endlist
 
 */
+

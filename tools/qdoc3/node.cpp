@@ -1289,7 +1289,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const ClassNode* cn)
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
-    setTitle((qmlOnly ? "" : "QML ") + name + " Element Reference");
+    setTitle((qmlOnly ? "" : "QML ") + name + " Element");
 }
 
 /*!

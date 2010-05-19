@@ -927,8 +927,6 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 #elif CPU(X86) && OS(WINDOWS) && COMPILER(MINGW) && GCC_VERSION >= 40100
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
-#elif CPU(X86_64) && OS(WINDOWS) && COMPILER(MINGW64) && GCC_VERSION >= 40100
-    #define ENABLE_JIT 1
 #elif CPU(X86) && OS(WINDOWS) && COMPILER(MSVC)
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_REGISTER 1
@@ -1008,7 +1006,9 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
     || (CPU(X86) && OS(LINUX) && GCC_VERSION >= 40100) \
     || (CPU(X86_64) && OS(LINUX) && GCC_VERSION >= 40100) \
     || (CPU(ARM_TRADITIONAL) && OS(LINUX)) \
-    || (CPU(MIPS) && OS(LINUX))
+    || (CPU(MIPS) && OS(LINUX)) \
+    || (CPU(X86) && OS(DARWIN)) \
+    || (CPU(X86_64) && OS(DARWIN))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
 #endif

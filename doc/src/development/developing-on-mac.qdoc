@@ -41,9 +41,8 @@
 
 /*!
     \page developing-on-mac.html
-    \title Developing Qt Applications on Mac OS X
-    \brief A overview of items to be aware of when developing Qt applications
-        on Mac OS X
+    \title Developing Qt Applications for Mac OS X
+    \brief Information for developing Qt applications for Mac OS X
     \ingroup platform-specific
 
     \tableofcontents

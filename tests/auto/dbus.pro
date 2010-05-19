@@ -13,7 +13,6 @@ SUBDIRS=\
            qdbuspendingreply \
            qdbusperformance \
            qdbusreply \
-           qdbusserver \
            qdbusservicewatcher \
            qdbusthreading \
            qdbusxmlparser \

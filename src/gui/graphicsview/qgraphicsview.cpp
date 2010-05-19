@@ -327,16 +327,21 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       dragMode(QGraphicsView::NoDrag),
       sceneInteractionAllowed(true), hasSceneRect(false),
       connectedToScene(false),
-      mousePressButton(Qt::NoButton),
+      useLastMouseEvent(false),
       identityMatrix(true),
       dirtyScroll(true),
       accelerateScrolling(true),
+      keepLastCenterPoint(true),
+      transforming(false),
+      handScrolling(false),
+      mustAllocateStyleOptions(false),
+      mustResizeBackgroundPixmap(true),
+      fullUpdatePending(true),
+      hasUpdateClip(false),
+      mousePressButton(Qt::NoButton),
       leftIndent(0), topIndent(0),
       lastMouseEvent(QEvent::None, QPoint(), Qt::NoButton, 0, 0),
-      useLastMouseEvent(false),
-      keepLastCenterPoint(true),
       alignment(Qt::AlignCenter),
-      transforming(false),
       transformationAnchor(QGraphicsView::AnchorViewCenter), resizeAnchor(QGraphicsView::NoAnchor),
       viewportUpdateMode(QGraphicsView::MinimalViewportUpdate),
       optimizationFlags(0),
@@ -345,14 +350,11 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       rubberBanding(false),
       rubberBandSelectionMode(Qt::IntersectsItemShape),
 #endif
-      handScrolling(false), handScrollMotions(0), cacheMode(0),
-      mustAllocateStyleOptions(false),
-      mustResizeBackgroundPixmap(true),
+      handScrollMotions(0), cacheMode(0),
 #ifndef QT_NO_CURSOR
       hasStoredOriginalCursor(false),
 #endif
       lastDragDropEvent(0),
-      fullUpdatePending(true),
       updateSceneSlotReimplementedChecked(false)
 {
     styleOptions.reserve(QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS);
@@ -879,6 +881,52 @@ static inline void QRect_unite(QRect *rect, const QRect &other)
     }
 }
 
+/*
+   Calling this function results in update rects being clipped to the item's
+   bounding rect. Note that updates prior to this function call is not clipped.
+   The clip is removed by passing 0.
+*/
+void QGraphicsViewPrivate::setUpdateClip(QGraphicsItem *item)
+{
+    Q_Q(QGraphicsView);
+    // We simply ignore the request if the update mode is either FullViewportUpdate
+    // or NoViewportUpdate; in that case there's no point in clipping anything.
+    if (!item || viewportUpdateMode == QGraphicsView::NoViewportUpdate
+        || viewportUpdateMode == QGraphicsView::FullViewportUpdate) {
+        hasUpdateClip = false;
+        return;
+    }
+
+    // Calculate the clip (item's bounding rect in view coordinates).
+    // Optimized version of:
+    // QRect clip = item->deviceTransform(q->viewportTransform())
+    //              .mapRect(item->boundingRect()).toAlignedRect();
+    QRect clip;
+    if (item->d_ptr->itemIsUntransformable()) {
+        QTransform xform = item->deviceTransform(q->viewportTransform());
+        clip = xform.mapRect(item->boundingRect()).toAlignedRect();
+    } else if (item->d_ptr->sceneTransformTranslateOnly && identityMatrix) {
+        QRectF r(item->boundingRect());
+        r.translate(item->d_ptr->sceneTransform.dx() - horizontalScroll(),
+                    item->d_ptr->sceneTransform.dy() - verticalScroll());
+        clip = r.toAlignedRect();
+    } else if (!q->isTransformed()) {
+        clip = item->d_ptr->sceneTransform.mapRect(item->boundingRect()).toAlignedRect();
+    } else {
+        QTransform xform = item->d_ptr->sceneTransform;
+        xform *= q->viewportTransform();
+        clip = xform.mapRect(item->boundingRect()).toAlignedRect();
+    }
+
+    if (hasUpdateClip) {
+        // Intersect with old clip.
+        updateClip &= clip;
+    } else {
+        updateClip = clip;
+        hasUpdateClip = true;
+    }
+}
+
 bool QGraphicsViewPrivate::updateRegion(const QRectF &rect, const QTransform &xform)
 {
     if (rect.isEmpty())
@@ -909,6 +957,8 @@ bool QGraphicsViewPrivate::updateRegion(const QRectF &rect, const QTransform &xf
             viewRect.adjust(-1, -1, 1, 1);
         else
             viewRect.adjust(-2, -2, 2, 2);
+        if (hasUpdateClip)
+            viewRect &= updateClip;
         dirtyRegion += viewRect;
     }
 
@@ -930,7 +980,10 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        QRect_unite(&dirtyBoundingRect, r);
+        if (hasUpdateClip)
+            QRect_unite(&dirtyBoundingRect, r & updateClip);
+        else
+            QRect_unite(&dirtyBoundingRect, r);
         if (containsViewport(dirtyBoundingRect, viewport->width(), viewport->height())) {
             fullUpdatePending = true;
             viewport->update();
@@ -938,7 +991,10 @@ bool QGraphicsViewPrivate::updateRect(const QRect &r)
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        dirtyRegion += r;
+        if (hasUpdateClip)
+            dirtyRegion += r & updateClip;
+        else
+            dirtyRegion += r;
         break;
     default:
         break;
@@ -1819,8 +1875,6 @@ void QGraphicsView::centerOn(const QGraphicsItem *item)
 void QGraphicsView::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
 {
     Q_D(QGraphicsView);
-    Q_UNUSED(xmargin);
-    Q_UNUSED(ymargin);
     qreal width = viewport()->width();
     qreal height = viewport()->height();
     QRectF viewRect = d->matrix.mapRect(rect);

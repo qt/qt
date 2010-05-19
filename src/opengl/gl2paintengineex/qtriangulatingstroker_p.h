@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 class QTriangulatingStroker
 {
 public:
+    QTriangulatingStroker() : m_vertices(0) {}
     void process(const QVectorPath &path, const QPen &pen, const QRectF &clip);
 
     inline int vertexCount() const { return m_vertices.size(); }

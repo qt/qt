@@ -357,14 +357,6 @@ void GraphicsLayerQtImpl::updateTransform()
         return;
     }
 
-    // Simplistic depth test - we stack the item behind its parent if its computed z is lower than the parent's computed z at the item's center point.
-    if (parent) {
-        const QPointF centerPointMappedToRoot = rootLayer()->mapFromItem(this, m_size.width() / 2, m_size.height() / 2);
-        setFlag(ItemStacksBehindParent,
-                m_transformRelativeToRootLayer.mapPoint(FloatPoint3D(centerPointMappedToRoot.x(), centerPointMappedToRoot.y(), 0)).z() <
-                parent->m_transformRelativeToRootLayer.mapPoint(FloatPoint3D(centerPointMappedToRoot.x(), centerPointMappedToRoot.y(), 0)).z());
-    }
-
     // The item is front-facing or backface-visibility is on.
     setVisible(true);
 
@@ -607,8 +599,10 @@ void GraphicsLayerQtImpl::flushChanges(bool recursive, bool forceUpdateTransform
     if (m_maskEffect)
         m_maskEffect.data()->update();
     else if (m_changeMask & DisplayChange) {        
-        // Recache now: all the content is ready and we don't want to wait until the paint event.
-        recache(m_pendingContent.regionToUpdate);
+        // Recache now: all the content is ready and we don't want to wait until the paint event. We only need to do this for HTML content, 
+        // there's no point in caching directly composited content like images or solid rectangles.
+        if (m_pendingContent.contentType == HTMLContentType)
+            recache(m_pendingContent.regionToUpdate);
         update(m_pendingContent.regionToUpdate.boundingRect());
         m_pendingContent.regionToUpdate = QRegion();
     }

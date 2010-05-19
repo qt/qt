@@ -149,7 +149,6 @@ QString AudioDevice::deviceSourceName(AudioDeviceID deviceID)
     size = sizeof(translation);
     err = AudioDeviceGetProperty(deviceID, 0, 0, kAudioDevicePropertyDataSourceNameForIDCFString, &size, &translation);
 	if (err != noErr){
-        CFRelease(cfName);
         return QString();
     }
 	QString name = PhononCFString::toQString(cfName);

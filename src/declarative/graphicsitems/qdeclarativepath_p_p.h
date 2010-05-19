@@ -65,7 +65,7 @@ class QDeclarativePathPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativePath)
 
 public:
-    QDeclarativePathPrivate() : startX(0), startY(0), closed(false) { }
+    QDeclarativePathPrivate() : startX(0), startY(0), closed(false), componentComplete(true) { }
 
     QPainterPath _path;
     QList<QDeclarativePathElement*> _pathElements;
@@ -75,6 +75,7 @@ public:
     int startX;
     int startY;
     bool closed;
+    bool componentComplete;
 };
 
 QT_END_NAMESPACE

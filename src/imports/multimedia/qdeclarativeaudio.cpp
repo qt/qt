@@ -330,9 +330,14 @@ QDeclarativeAudio::Error QDeclarativeAudio::error() const
     return Error(m_error);
 }
 
+void QDeclarativeAudio::classBegin()
+{
+}
+
 void QDeclarativeAudio::componentComplete()
 {
-    setObject(this);
+    if (m_playerControl == 0)
+        setObject(this);
 }
 
 

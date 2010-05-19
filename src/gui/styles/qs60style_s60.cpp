@@ -50,17 +50,17 @@
 #include "qapplication.h"
 
 #include <w32std.h>
-#include <AknsConstants.h>
+#include <aknsconstants.h>
 #include <aknconsts.h>
-#include <AknsItemID.h>
-#include <AknsUtils.h>
-#include <AknsDrawUtils.h>
-#include <AknsSkinInstance.h>
-#include <AknsBasicBackgroundControlContext.h>
+#include <aknsitemid.h>
+#include <aknsutils.h>
+#include <aknsdrawutils.h>
+#include <aknsskininstance.h>
+#include <aknsbasicbackgroundcontrolcontext.h>
 #include <avkon.mbg>
 #include <aknfontaccess.h>
 #include <aknlayoutfont.h>
-#include <AknUtils.h>
+#include <aknutils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
 #include <aknbitmapanimation.h>
@@ -654,6 +654,14 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
 
         pixmap = QPixmap::fromImage(iconImage);
     }
+    if ((flags & QS60StylePrivate::SF_Mirrored_X_Axis) ||
+        (flags & QS60StylePrivate::SF_Mirrored_Y_Axis)) {
+        QImage iconImage = pixmap.toImage().mirrored(
+            flags & QS60StylePrivate::SF_Mirrored_X_Axis,
+            flags & QS60StylePrivate::SF_Mirrored_Y_Axis);
+        pixmap = QPixmap::fromImage(iconImage);
+    }
+
     return pixmap;
 }
 
@@ -969,7 +977,7 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
-            if (QSysInfo::s60Version()!=QSysInfo::SV_S60_3_1) {
+            if (QSysInfo::s60Version() != QSysInfo::SV_S60_3_1) {
                 centerId.Set(EAknsMajorGeneric, 0x19c2);
                 frameId.Set(EAknsMajorSkin, 0x5300);
             } else {
@@ -978,7 +986,8 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             }
             break;
         case QS60StylePrivate::SF_ToolBar:
-            if (QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
+            if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || 
+                QSysInfo::s60Version() == QSysInfo::SV_S60_3_2) {
                 centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
                 frameId.Set(KAknsIIDQsnFrPopupSub);
             }

@@ -115,7 +115,7 @@ public:
     void setDefaultAction(QAction *);
     QAction *defaultAction() const;
 
-    static void wceCommands(uint command, HWND controlHandle);
+    static void wceCommands(uint command);
     static void wceRefresh();
 #endif
 

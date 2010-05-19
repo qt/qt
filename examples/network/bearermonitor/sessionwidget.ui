@@ -195,7 +195,7 @@
        <item>
         <widget class="QLabel" name="errorStringLabel">
          <property name="text">
-          <string>Error String</string>
+          <string>Error String:</string>
          </property>
         </widget>
        </item>

@@ -56,7 +56,6 @@
 #include <QtMultimedia/qaudioengine.h>
 #include <QTime>
 #include <QTimer>
-#include <sounddevice.h>
 #include "qaudio_symbian_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -82,7 +81,6 @@ private:
 
 class QAudioInputPrivate
     :   public QAbstractAudioInput
-    ,   public MDevSoundObserver
 {
     friend class SymbianAudioInputPrivate;
     Q_OBJECT
@@ -109,23 +107,15 @@ public:
     QAudio::State state() const;
     QAudioFormat format() const;
 
-    // MDevSoundObserver
-    void InitializeComplete(TInt aError);
-    void ToneFinished(TInt aError);
-    void BufferToBeFilled(CMMFBuffer *aBuffer);
-    void PlayError(TInt aError);
-    void BufferToBeEmptied(CMMFBuffer *aBuffer);
-    void RecordError(TInt aError);
-    void ConvertError(TInt aError);
-    void DeviceMessage(TUid aMessageType, const TDesC8 &aMsg);
-
 private slots:
     void pullData();
+    void devsoundInitializeComplete(int err);
+    void devsoundBufferToBeEmptied(CMMFBuffer *);
+    void devsoundRecordError(int err);
 
 private:
    void open();
    void startRecording();
-   void startDevSoundL();
    void startDataTransfer();
    CMMFDataBuffer* currentBuffer() const;
    void pushData();
@@ -137,8 +127,6 @@ private:
 
    void setError(QAudio::Error error);
    void setState(SymbianAudio::State state);
-
-   QAudio::State initializingState() const;
 
 private:
     const QByteArray m_device;
@@ -158,9 +146,7 @@ private:
 
     QScopedPointer<QTimer> m_pullTimer;
 
-    QScopedPointer<CMMFDevSound> m_devSound;
-    TUint32 m_nativeFourCC;
-    TMMFCapabilities m_nativeFormat;
+    SymbianAudio::DevSoundWrapper* m_devSound;
 
     // Latest buffer provided by DevSound, to be empied of data.
     CMMFDataBuffer *m_devSoundBuffer;

@@ -82,15 +82,19 @@ bool QSvgIOHandlerPrivate::load(QIODevice *device)
     if (q->format().isEmpty())
         q->canRead();
 
+    // # The SVG renderer doesn't handle trailing, unrelated data, so we must
+    // assume that all available data in the device is to be read.
     bool res = false;
     QBuffer *buf = qobject_cast<QBuffer *>(device);
     if (buf) {
-        res = r.load(buf->data());
+        const QByteArray &ba = buf->data();
+        res = r.load(QByteArray::fromRawData(ba.constData() + buf->pos(), ba.size() - buf->pos()));
+        buf->seek(ba.size());
     } else if (q->format() == "svgz") {
-        res = r.load(device->readAll());   // ### can't stream svgz
+        res = r.load(device->readAll());
     } else {
         xmlReader.setDevice(device);
-        res = r.load(&xmlReader);   //### doesn't leave pos() correctly
+        res = r.load(&xmlReader);
     }
 
     if (res) {
