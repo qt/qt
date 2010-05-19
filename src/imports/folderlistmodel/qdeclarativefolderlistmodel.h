@@ -47,15 +47,25 @@
 #include <QUrl>
 #include <QAbstractListModel>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QDeclarativeContext;
 class QModelIndex;
 
 class QDeclarativeFolderListModelPrivate;
+
+//![class begin]
 class QDeclarativeFolderListModel : public QAbstractListModel, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QDeclarativeParserStatus)
+//![class begin]
 
+//![class props]
     Q_PROPERTY(QUrl folder READ folder WRITE setFolder NOTIFY folderChanged)
     Q_PROPERTY(QUrl parentFolder READ parentFolder NOTIFY folderChanged)
     Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
@@ -65,7 +75,9 @@ class QDeclarativeFolderListModel : public QAbstractListModel, public QDeclarati
     Q_PROPERTY(bool showDotAndDotDot READ showDotAndDotDot WRITE setShowDotAndDotDot)
     Q_PROPERTY(bool showOnlyReadable READ showOnlyReadable WRITE setShowOnlyReadable)
     Q_PROPERTY(int count READ count)
+//![class props]
 
+//![abslistmodel]
 public:
     QDeclarativeFolderListModel(QObject *parent = 0);
     ~QDeclarativeFolderListModel();
@@ -74,9 +86,13 @@ public:
 
     int rowCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
+//![abslistmodel]
 
+//![count]
     int count() const { return rowCount(QModelIndex()); }
+//![count]
 
+//![prop funcs]
     QUrl folder() const;
     void setFolder(const QUrl &folder);
 
@@ -84,11 +100,6 @@ public:
 
     QStringList nameFilters() const;
     void setNameFilters(const QStringList &filters);
-
-    virtual void classBegin();
-    virtual void componentComplete();
-
-    Q_INVOKABLE bool isFolder(int index) const;
 
     enum SortField { Unsorted, Name, Time, Size, Type };
     SortField sortField() const;
@@ -104,10 +115,23 @@ public:
     void  setShowDotAndDotDot(bool);
     bool showOnlyReadable() const;
     void  setShowOnlyReadable(bool);
+//![prop funcs]
 
+//![isfolder]
+    Q_INVOKABLE bool isFolder(int index) const;
+//![isfolder]
+
+//![parserstatus]
+    virtual void classBegin();
+    virtual void componentComplete();
+//![parserstatus]
+
+//![notifier]
 Q_SIGNALS:
     void folderChanged();
+//![notifier]
 
+//![class end]
 private Q_SLOTS:
     void refresh();
     void inserted(const QModelIndex &index, int start, int end);
@@ -118,7 +142,14 @@ private:
     Q_DISABLE_COPY(QDeclarativeFolderListModel)
     QDeclarativeFolderListModelPrivate *d;
 };
+//![class end]
 
+QT_END_NAMESPACE
+
+//![qml decl]
 QML_DECLARE_TYPE(QDeclarativeFolderListModel)
+//![qml decl]
+
+QT_END_HEADER
 
 #endif // QDECLARATIVEFOLDERLISTMODEL_H

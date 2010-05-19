@@ -23,9 +23,9 @@ The QDeclarativeExpression constructor has changed from
 to
     QDeclarativeExpression(context, scope, expression, parent = 0)
 
-QML Launcher
+QML Viewer
 ------------
-The standalone executable has been renamed to qml launcher. Runtime warnings
+The standalone qml executable has been renamed back to Qml Viewer. Runtime warnings
 can be now accessed via the menu (Debugging->Show Warnings).
 
 =============================================================================
