@@ -3700,4 +3700,11 @@ EXPORTS
 	_ZN23QEventDispatcherSymbian12selectThreadEv @ 3699 NONAME
 	_ZN10QByteArray10setRawDataEPKcj @ 3700 NONAME
 	_ZN7QString10setRawDataEPK5QChari @ 3701 NONAME
+	_ZN23QCoreApplicationPrivate11symbianInitEv @ 3702 NONAME
+	_ZN23QEventDispatcherSymbian11qt_metacallEN11QMetaObject4CallEiPPv @ 3703 NONAME
+	_ZN23QEventDispatcherSymbian11qt_metacastEPKc @ 3704 NONAME
+	_ZN23QEventDispatcherSymbian16staticMetaObjectE @ 3705 NONAME DATA 16
+	_ZN23QEventDispatcherSymbian19getStaticMetaObjectEv @ 3706 NONAME
+	_ZNK23QEventDispatcherSymbian10metaObjectEv @ 3707 NONAME
+	_ZNK9QDateTime7msecsToERKS_ @ 3708 NONAME
 

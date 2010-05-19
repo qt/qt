@@ -7,8 +7,7 @@ CONFIG += release
 
 SOURCES += tst_qdeclarativeimage.cpp
 
-symbian: {
-    DEFINES += SRCDIR=\".\"
+symbian {
     importFiles.sources = image.png
     importFiles.path = 
     DEPLOYMENT = importFiles

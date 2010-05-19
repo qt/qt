@@ -1143,4 +1143,5 @@ EXPORTS
 	?setNetworkAccessible@QNetworkAccessManager@@QAEXW4NetworkAccessibility@1@@Z @ 1142 NONAME ; void QNetworkAccessManager::setNetworkAccessible(enum QNetworkAccessManager::NetworkAccessibility)
 	?startPolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1143 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
 	?capabilities@QNetworkConfigurationManagerPrivate@@QAE?AV?$QFlags@W4Capability@QNetworkConfigurationManager@@@@XZ @ 1144 NONAME ; class QFlags<enum QNetworkConfigurationManager::Capability> QNetworkConfigurationManagerPrivate::capabilities(void)
+	?addPendingConnection@QTcpServer@@IAEXPAVQTcpSocket@@@Z @ 1145 NONAME ; void QTcpServer::addPendingConnection(class QTcpSocket *)
 

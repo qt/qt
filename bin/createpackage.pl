@@ -181,7 +181,7 @@ if ($signed_sis_name eq "") {
 }
 
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
-my $stub_sis_name = $sisoutputbasename."_stub.sis";
+my $stub_sis_name = $sisoutputbasename.".sis";
 
 # Store some utility variables
 my $scriptpath = dirname(__FILE__);
@@ -292,7 +292,7 @@ if($stub) {
     # Create stub SIS.
     system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
-    if ($certtext eq "Self Signed" && !@certificates) {
+    if ($certtext eq "Self Signed" && !@certificates && $templatepkg !~ m/_installer\.pkg$/i) {
         print("Auto-patching capabilities for self signed package.\n");
         system ("patch_capabilities $pkgoutput");
     }

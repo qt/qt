@@ -175,6 +175,12 @@ void SymbianMakefileGenerator::writeHeader(QTextStream &t)
 
 bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 {
+    if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
+        fprintf(stderr, "Project files not generated because all requirements are not met:\n\t%s\n",
+                qPrintable(var("QMAKE_FAILED_REQUIREMENTS")));
+        return false;
+    }
+
     writeHeader(t);
 
     QString numberOfIcons;
@@ -208,7 +214,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     // Generate empty wrapper makefile here, because wrapper makefile must exist before writeMkFile,
     // but all required data is not yet available.
     bool isPrimaryMakefile = true;
-    QString wrapperFileName("Makefile");
+    QString wrapperFileName = Option::output_dir + QLatin1Char('/') + QLatin1String("Makefile");
     QString outputFileName = fileInfo(Option::output.fileName()).fileName();
     if (outputFileName != BLD_INF_FILENAME) {
         wrapperFileName.append(".").append(outputFileName.startsWith(BLD_INF_FILENAME)
@@ -240,10 +246,8 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     shortProFilename.replace(0, shortProFilename.lastIndexOf("/") + 1, QString(""));
     shortProFilename.replace(Option::pro_ext, QString(""));
 
-    QString mmpFilename = shortProFilename;
-    mmpFilename.append("_");
-    mmpFilename.append(uid3);
-    mmpFilename.append(Option::mmp_ext);
+    QString mmpFilename = Option::output_dir + QLatin1Char('/') + shortProFilename + QLatin1Char('_')
+                          + uid3 + Option::mmp_ext;
     writeMmpFile(mmpFilename, symbianLangCodes);
 
     if (targetType == TypeExe) {
@@ -264,7 +268,7 @@ void SymbianMakefileGenerator::writeCustomDefFile()
 {
     if (targetType == TypePlugin && !project->isActiveConfig("stdbinary")) {
         // Create custom def file for plugin
-        QFile ft(QLatin1String(PLUGIN_COMMON_DEF_FILE_ACTUAL));
+        QFile ft(Option::output_dir + QLatin1Char('/') + QLatin1String(PLUGIN_COMMON_DEF_FILE_ACTUAL));
 
         if (ft.open(QIODevice::WriteOnly)) {
             generatedFiles << ft.fileName();
