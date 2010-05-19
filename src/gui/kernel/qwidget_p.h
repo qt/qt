@@ -170,6 +170,14 @@ struct QTLWExtra {
     WindowGroupRef group;
     IconRef windowIcon; // the current window icon, if set with setWindowIcon_sys.
     quint32 savedWindowAttributesFromMaximized; // Saved attributes from when the calling updateMaximizeButton_sys()
+#ifdef QT_MAC_USE_COCOA
+    // This value is just to make sure we maximize and restore to the right location, yet we allow apps to be maximized and
+    // manually resized.
+    // The name is misleading, since this is set when maximizing the window. It is a hint to saveGeometry(..) to record the
+    // starting position as 0,0 instead of the normal starting position.
+    bool wasMaximized;
+#endif // QT_MAC_USE_COCOA
+
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;

@@ -408,7 +408,7 @@ void QDeclarativeParentChange::saveOriginals()
     d->origStackBefore = d->rewindStackBefore;
 }
 
-void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
+/*void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
 {
     Q_D(QDeclarativeParentChange);
     QDeclarativeParentChange *pc = static_cast<QDeclarativeParentChange*>(other);
@@ -417,7 +417,7 @@ void QDeclarativeParentChange::copyOriginals(QDeclarativeActionEvent *other)
     d->origStackBefore = pc->d_func()->rewindStackBefore;
 
     saveCurrentValues();
-}
+}*/
 
 void QDeclarativeParentChange::execute(Reason)
 {
@@ -1056,40 +1056,41 @@ void QDeclarativeAnchorChanges::execute(Reason reason)
     if (!d->target)
         return;
 
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
     //incorporate any needed "reverts"
     if (d->applyOrigLeft) {
         if (!d->origLeftBinding)
-            d->target->anchors()->resetLeft();
+            targetPrivate->anchors()->resetLeft();
         QDeclarativePropertyPrivate::setBinding(d->leftProp, d->origLeftBinding);
     }
     if (d->applyOrigRight) {
         if (!d->origRightBinding)
-            d->target->anchors()->resetRight();
+            targetPrivate->anchors()->resetRight();
         QDeclarativePropertyPrivate::setBinding(d->rightProp, d->origRightBinding);
     }
     if (d->applyOrigHCenter) {
         if (!d->origHCenterBinding)
-            d->target->anchors()->resetHorizontalCenter();
+            targetPrivate->anchors()->resetHorizontalCenter();
         QDeclarativePropertyPrivate::setBinding(d->hCenterProp, d->origHCenterBinding);
     }
     if (d->applyOrigTop) {
         if (!d->origTopBinding)
-            d->target->anchors()->resetTop();
+            targetPrivate->anchors()->resetTop();
         QDeclarativePropertyPrivate::setBinding(d->topProp, d->origTopBinding);
     }
     if (d->applyOrigBottom) {
         if (!d->origBottomBinding)
-            d->target->anchors()->resetBottom();
+            targetPrivate->anchors()->resetBottom();
         QDeclarativePropertyPrivate::setBinding(d->bottomProp, d->origBottomBinding);
     }
     if (d->applyOrigVCenter) {
         if (!d->origVCenterBinding)
-            d->target->anchors()->resetVerticalCenter();
+            targetPrivate->anchors()->resetVerticalCenter();
         QDeclarativePropertyPrivate::setBinding(d->vCenterProp, d->origVCenterBinding);
     }
     if (d->applyOrigBaseline) {
         if (!d->origBaselineBinding)
-            d->target->anchors()->resetBaseline();
+            targetPrivate->anchors()->resetBaseline();
         QDeclarativePropertyPrivate::setBinding(d->baselineProp, d->origBaselineBinding);
     }
 
@@ -1105,31 +1106,31 @@ void QDeclarativeAnchorChanges::execute(Reason reason)
 
     //reset any anchors that have been specified as "undefined"
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::LeftAnchor) {
-        d->target->anchors()->resetLeft();
+        targetPrivate->anchors()->resetLeft();
         QDeclarativePropertyPrivate::setBinding(d->leftProp, 0);
     }
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::RightAnchor) {
-        d->target->anchors()->resetRight();
+        targetPrivate->anchors()->resetRight();
         QDeclarativePropertyPrivate::setBinding(d->rightProp, 0);
     }
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::HCenterAnchor) {
-        d->target->anchors()->resetHorizontalCenter();
+        targetPrivate->anchors()->resetHorizontalCenter();
         QDeclarativePropertyPrivate::setBinding(d->hCenterProp, 0);
     }
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::TopAnchor) {
-        d->target->anchors()->resetTop();
+        targetPrivate->anchors()->resetTop();
         QDeclarativePropertyPrivate::setBinding(d->topProp, 0);
     }
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::BottomAnchor) {
-        d->target->anchors()->resetBottom();
+        targetPrivate->anchors()->resetBottom();
         QDeclarativePropertyPrivate::setBinding(d->bottomProp, 0);
     }
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::VCenterAnchor) {
-        d->target->anchors()->resetVerticalCenter();
+        targetPrivate->anchors()->resetVerticalCenter();
         QDeclarativePropertyPrivate::setBinding(d->vCenterProp, 0);
     }
     if (d->anchorSet->d_func()->resetAnchors & QDeclarativeAnchors::BaselineAnchor) {
-        d->target->anchors()->resetBaseline();
+        targetPrivate->anchors()->resetBaseline();
         QDeclarativePropertyPrivate::setBinding(d->baselineProp, 0);
     }
 
@@ -1161,51 +1162,52 @@ void QDeclarativeAnchorChanges::reverse(Reason reason)
     if (!d->target)
         return;
 
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
     //reset any anchors set by the state
     if (d->leftBinding) {
-        d->target->anchors()->resetLeft();
+        targetPrivate->anchors()->resetLeft();
         QDeclarativePropertyPrivate::setBinding(d->leftBinding->property(), 0);
         if (reason == ActualChange) {
             d->leftBinding->destroy(); d->leftBinding = 0;
         }
     }
     if (d->rightBinding) {
-        d->target->anchors()->resetRight();
+        targetPrivate->anchors()->resetRight();
         QDeclarativePropertyPrivate::setBinding(d->rightBinding->property(), 0);
         if (reason == ActualChange) {
             d->rightBinding->destroy(); d->rightBinding = 0;
         }
     }
     if (d->hCenterBinding) {
-        d->target->anchors()->resetHorizontalCenter();
+        targetPrivate->anchors()->resetHorizontalCenter();
         QDeclarativePropertyPrivate::setBinding(d->hCenterBinding->property(), 0);
         if (reason == ActualChange) {
             d->hCenterBinding->destroy(); d->hCenterBinding = 0;
         }
     }
     if (d->topBinding) {
-        d->target->anchors()->resetTop();
+        targetPrivate->anchors()->resetTop();
         QDeclarativePropertyPrivate::setBinding(d->topBinding->property(), 0);
         if (reason == ActualChange) {
             d->topBinding->destroy(); d->topBinding = 0;
         }
     }
     if (d->bottomBinding) {
-        d->target->anchors()->resetBottom();
+        targetPrivate->anchors()->resetBottom();
         QDeclarativePropertyPrivate::setBinding(d->bottomBinding->property(), 0);
         if (reason == ActualChange) {
             d->bottomBinding->destroy(); d->bottomBinding = 0;
         }
     }
     if (d->vCenterBinding) {
-        d->target->anchors()->resetVerticalCenter();
+        targetPrivate->anchors()->resetVerticalCenter();
         QDeclarativePropertyPrivate::setBinding(d->vCenterBinding->property(), 0);
         if (reason == ActualChange) {
             d->vCenterBinding->destroy(); d->vCenterBinding = 0;
         }
     }
     if (d->baselineBinding) {
-        d->target->anchors()->resetBaseline();
+        targetPrivate->anchors()->resetBaseline();
         QDeclarativePropertyPrivate::setBinding(d->baselineBinding->property(), 0);
         if (reason == ActualChange) {
             d->baselineBinding->destroy(); d->baselineBinding = 0;
@@ -1239,24 +1241,28 @@ QList<QDeclarativeAction> QDeclarativeAnchorChanges::additionalActions()
     Q_D(QDeclarativeAnchorChanges);
     QList<QDeclarativeAction> extra;
 
+    QDeclarativeAnchors::Anchors combined = d->anchorSet->d_func()->usedAnchors | d->anchorSet->d_func()->resetAnchors;
+    bool hChange = combined & QDeclarativeAnchors::Horizontal_Mask;
+    bool vChange = combined & QDeclarativeAnchors::Vertical_Mask;
+
     if (d->target) {
         QDeclarativeAction a;
-        if (d->fromX != d->toX) {
+        if (hChange && d->fromX != d->toX) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("x"));
             a.toValue = d->toX;
             extra << a;
         }
-        if (d->fromY != d->toY) {
+        if (vChange && d->fromY != d->toY) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("y"));
             a.toValue = d->toY;
             extra << a;
         }
-        if (d->fromWidth != d->toWidth) {
+        if (hChange && d->fromWidth != d->toWidth) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("width"));
             a.toValue = d->toWidth;
             extra << a;
         }
-        if (d->fromHeight != d->toHeight) {
+        if (vChange && d->fromHeight != d->toHeight) {
             a.property = QDeclarativeProperty(d->target, QLatin1String("height"));
             a.toValue = d->toHeight;
             extra << a;
@@ -1335,37 +1341,38 @@ void QDeclarativeAnchorChanges::clearBindings()
     d->fromWidth = d->target->width();
     d->fromHeight = d->target->height();
 
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
     //reset any anchors with corresponding reverts
     //reset any anchors that have been specified as "undefined"
     //reset any anchors that we'll be setting in the state
     QDeclarativeAnchors::Anchors combined = d->anchorSet->d_func()->resetAnchors |
                                             d->anchorSet->d_func()->usedAnchors;
     if (d->applyOrigLeft || (combined & QDeclarativeAnchors::LeftAnchor)) {
-        d->target->anchors()->resetLeft();
+        targetPrivate->anchors()->resetLeft();
         QDeclarativePropertyPrivate::setBinding(d->leftProp, 0);
     }
     if (d->applyOrigRight || (combined & QDeclarativeAnchors::RightAnchor)) {
-        d->target->anchors()->resetRight();
+        targetPrivate->anchors()->resetRight();
         QDeclarativePropertyPrivate::setBinding(d->rightProp, 0);
     }
     if (d->applyOrigHCenter || (combined & QDeclarativeAnchors::HCenterAnchor)) {
-        d->target->anchors()->resetHorizontalCenter();
+        targetPrivate->anchors()->resetHorizontalCenter();
         QDeclarativePropertyPrivate::setBinding(d->hCenterProp, 0);
     }
     if (d->applyOrigTop || (combined & QDeclarativeAnchors::TopAnchor)) {
-        d->target->anchors()->resetTop();
+        targetPrivate->anchors()->resetTop();
         QDeclarativePropertyPrivate::setBinding(d->topProp, 0);
     }
     if (d->applyOrigBottom || (combined & QDeclarativeAnchors::BottomAnchor)) {
-        d->target->anchors()->resetBottom();
+        targetPrivate->anchors()->resetBottom();
         QDeclarativePropertyPrivate::setBinding(d->bottomProp, 0);
     }
     if (d->applyOrigVCenter || (combined & QDeclarativeAnchors::VCenterAnchor)) {
-        d->target->anchors()->resetVerticalCenter();
+        targetPrivate->anchors()->resetVerticalCenter();
         QDeclarativePropertyPrivate::setBinding(d->vCenterProp, 0);
     }
     if (d->applyOrigBaseline || (combined & QDeclarativeAnchors::BaselineAnchor)) {
-        d->target->anchors()->resetBaseline();
+        targetPrivate->anchors()->resetBaseline();
         QDeclarativePropertyPrivate::setBinding(d->baselineProp, 0);
     }
 }
@@ -1387,21 +1394,22 @@ void QDeclarativeAnchorChanges::rewind()
     if (!d->target)
         return;
 
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
     //restore previous anchors
     if (d->rewindLeft.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setLeft(d->rewindLeft);
+        targetPrivate->anchors()->setLeft(d->rewindLeft);
     if (d->rewindRight.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setRight(d->rewindRight);
+        targetPrivate->anchors()->setRight(d->rewindRight);
     if (d->rewindHCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setHorizontalCenter(d->rewindHCenter);
+        targetPrivate->anchors()->setHorizontalCenter(d->rewindHCenter);
     if (d->rewindTop.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setTop(d->rewindTop);
+        targetPrivate->anchors()->setTop(d->rewindTop);
     if (d->rewindBottom.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setBottom(d->rewindBottom);
+        targetPrivate->anchors()->setBottom(d->rewindBottom);
     if (d->rewindVCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setVerticalCenter(d->rewindVCenter);
+        targetPrivate->anchors()->setVerticalCenter(d->rewindVCenter);
     if (d->rewindBaseline.anchorLine != QDeclarativeAnchorLine::Invalid)
-        d->target->anchors()->setBaseline(d->rewindBaseline);
+        targetPrivate->anchors()->setBaseline(d->rewindBaseline);
 
     d->target->setX(d->rewindX);
     d->target->setY(d->rewindY);
@@ -1415,13 +1423,14 @@ void QDeclarativeAnchorChanges::saveCurrentValues()
     if (!d->target)
         return;
 
-    d->rewindLeft = d->target->anchors()->left();
-    d->rewindRight = d->target->anchors()->right();
-    d->rewindHCenter = d->target->anchors()->horizontalCenter();
-    d->rewindTop = d->target->anchors()->top();
-    d->rewindBottom = d->target->anchors()->bottom();
-    d->rewindVCenter = d->target->anchors()->verticalCenter();
-    d->rewindBaseline = d->target->anchors()->baseline();
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
+    d->rewindLeft = targetPrivate->anchors()->left();
+    d->rewindRight = targetPrivate->anchors()->right();
+    d->rewindHCenter = targetPrivate->anchors()->horizontalCenter();
+    d->rewindTop = targetPrivate->anchors()->top();
+    d->rewindBottom = targetPrivate->anchors()->bottom();
+    d->rewindVCenter = targetPrivate->anchors()->verticalCenter();
+    d->rewindBaseline = targetPrivate->anchors()->baseline();
 
     d->rewindX = d->target->x();
     d->rewindY = d->target->y();

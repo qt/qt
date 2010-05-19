@@ -71,14 +71,17 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
     adjustWindowFlags(&wFlags);
     windowFlags = wFlags;
 
-    q->setParentItem(parentItem);
+    if (parentItem)
+        setParentItemHelper(parentItem, 0, 0);
+
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, QSizePolicy::DefaultType));
     q->setGraphicsItem(q);
 
     resolveLayoutDirection();
     q->unsetWindowFrameMargins();
-    q->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
-    q->setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+    flags |= QGraphicsItem::ItemUsesExtendedStyleOption | QGraphicsItem::ItemSendsGeometryChanges;
+    if (windowFlags & Qt::Window)
+        flags |= QGraphicsItem::ItemIsPanel;
 }
 
 qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const

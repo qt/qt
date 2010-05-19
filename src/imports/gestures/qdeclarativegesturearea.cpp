@@ -259,7 +259,7 @@ bool QDeclarativeGestureAreaPrivate::gestureEvent(QGestureEvent *event)
     bool accept = true;
     for (Bindings::Iterator it = bindings.begin(); it != bindings.end(); ++it) {
         if ((gesture = event->gesture(it.key()))) {
-            it.value()->value();
+            it.value()->evaluate();
             event->setAccepted(true); // XXX only if value returns true?
         }
     }

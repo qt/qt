@@ -19,7 +19,7 @@ QtObject {
 
         myObject.deleteOnSet = 1;
 
-        test3 = myObject.value == undefined;
-        test4 = obj.value == undefined;
+        test3 = myObject == null
+        test4 = obj == null
     }
 }

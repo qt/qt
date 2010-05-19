@@ -1,10 +1,8 @@
-
 /* START non link areas where cursor should change to pointing hand */
 $('.t_button').mouseover(function() {
     $('.t_button').css('cursor','pointer');
 		/*document.getElementById(this.id).style.cursor='pointer';*/
 });
-
 /* END non link areas  */
 $('#smallA').click(function() {
 		$('.content .heading,.content h1, .content h2, .content h3, .content p, .content li, .content table').css('font-size','smaller');
@@ -35,27 +33,139 @@ $('#bigA').click(function() {
 		$(this).addClass('active')
 });
 
-function doSearch(str){
 
-if (str.length>3)
-  {
-  alert('Search is not yet activated.');
- // document.getElementById("refWrapper").innerHTML="";
-  return;
-  }
- else
-  return;
-    
-//    var url="indexSearch.php";
-//    url=url+"?q="+str;
- //   url=url+"&sid="+Math.random();
-   // var url="http://localhost:8983/solr/select?";
-   // url=url+"&q="+str;
-   // url=url+"&fq=&start=0&rows=10&fl=&qt=&wt=&explainOther=&hl.fl=";
-    
-  //  $.get(url, function(data){ 
-   // alert(data);
-  // document.getElementById("refWrapper").innerHTML=data; 
- //});
-   
+var lookupCount = 0;
+var articleCount = 0;
+var exampleCount = 0;
+var qturl = ""; // change from "http://doc.qt.nokia.com/4.6/" to 0 so we can have relative links
+
+function processNokiaData(response){
+$('.sidebar .search form input').addClass('loading');
+	// debug $('.content').prepend('<li>handling search results</li>'); // debuging
+	var propertyTags = response.getElementsByTagName('page');
+	
+ 	for (var i=0; i< propertyTags.length; i++) {
+		var linkStart   = "<li class=\"liveResult\"><a href='"+qturl+"";
+		var linkEnd  = "</a></li>";
+		
+		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
+			lookupCount++;
+			//$('.live001').css('display','block');
+
+			
+			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
+				full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+				full_li_element = full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd;
+					
+				$('#ul001').append(full_li_element);
+			$('#ul001 .defaultLink').css('display','none');
+
+		   		}
+			}
+	 
+		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
+			articleCount++;
+	 		//$('.live002').css('display','block');
+
+				 
+			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
+			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
+					
+				$('#ul002').append(full_li_element);
+			$('#ul002 .defaultLink').css('display','none');
+
+	   		}
+		}
+		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
+			exampleCount++;
+	 		//$('.live003').css('display','block');
+
+
+			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
+			    full_li_element = linkStart + propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+				full_li_element =full_li_element + "'>" + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + linkEnd ;
+					
+				$('#ul003').append(full_li_element);
+			$('#ul003 .defaultLink').css('display','none');
+
+	   		}
+		} 
+	}	
+	 
+	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');
 }
+    if(articleCount == 0){$('#ul002').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
+	if(exampleCount == 0){$('#ul003').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
+	// reset count variables;
+	 lookupCount=0;
+	 articleCount = 0;
+     exampleCount = 0;
+	
+}
+
+//build regular expression object to find empty string or any number of blank
+var blankRE=/^\s*$/;
+function CheckEmptyAndLoadList()
+{
+	$('.liveResult').remove();
+	var value = document.getElementById('pageType').value; 
+	if((blankRE.test(value)) || (value.length < 3))
+	{
+	//empty inputbox
+		// load default li elements into the ul if empty
+	//	loadAllList(); // replaced
+	 $('.defaultLink').css('display','block');
+	// $('.liveResult').css('display','none');
+	}else{
+	 $('.defaultLink').css('display','none');
+	}
+}
+/*
+$(window).resize(function(){
+if($(window).width()<400)
+	$('body').addClass('offline');
+else
+	$('body').removeClass('offline');
+	});
+	*/
+// Loads on doc ready
+	$(document).ready(function () {
+	var pageTitle = $('title').html();
+		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
+          var currentString = $('#pageType').val() ;
+		  if(currentString.length < 1){
+			$('.defaultLink').css('display','block');
+      	   		CheckEmptyAndLoadList();			
+		  }
+
+        $('#pageType').keyup(function () {
+          var searchString = $('#pageType').val() ;
+          if ((searchString == null) || (searchString.length < 3)) {
+				 $('.liveResult').remove(); // replaces removeResults();
+      	   		CheckEmptyAndLoadList();
+				$('.report').remove();
+				// debug$('.content').prepend('<li>too short or blank</li>'); // debug
+				return;
+		   }
+            if (this.timer) clearTimeout(this.timer);
+            this.timer = setTimeout(function () {
+				// debug$('.content').prepend('<li>new search started </li>');// debug
+				// debug$('.content').prepend('<p class=\"report\">Search string ' +searchString +'</p>'); // debug
+
+               $.ajax({
+                contentType: "application/x-www-form-urlencoded",
+                url: 'http://' + location.host + '/nokiasearch/GetDataServlet',
+                data: 'searchString='+searchString,
+                dataType:'xml',
+				type: 'post',	 
+                success: function (response, textStatus) {
+
+				$('.liveResult').remove(); // replaces removeResults();
+                processNokiaData(response);
+
+ }     
+              });
+            }, 500);
+        });
+      }); 

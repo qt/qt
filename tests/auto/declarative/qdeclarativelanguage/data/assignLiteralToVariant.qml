@@ -10,5 +10,7 @@ QtObject {
     property variant test7: "10x10"
     property variant test8: "100,100,100"
     property variant test9: String("#FF008800")
+    property variant test10: true
+    property variant test11: false
 }
 

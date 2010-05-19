@@ -45,7 +45,7 @@
 
 This example shows how to create a reusable switch component in QML.
 
-The code for this example can be found in the \c $QTDIR/examples/declarative/slideswitch directory.
+The code for this example can be found in the \c $QTDIR/examples/declarative/ui-components/slideswitch directory.
 
 \section1 Overview
 
@@ -61,12 +61,12 @@ The elements that composed the switch are:
 \endlist
 
 \section1 Switch.qml
-\snippet examples/declarative/slideswitch/content/Switch.qml 0
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 0
 
 \section1 Walkthrough
 
 \section2 Interface
-\snippet examples/declarative/slideswitch/content/Switch.qml 1
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 1
 
 This property is the interface of the switch. By default, the switch is off and this property is \c false.
 It can be used to activate/disactivate the switch or to query its current state.
@@ -81,14 +81,14 @@ Text { text: "The switch is on"; visible: mySwitch.on == true }
 the text will only be visible when the switch is on.
 
 \section2 Images and user interaction
-\snippet examples/declarative/slideswitch/content/Switch.qml 4
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 4
 
 First, we create the background image of the switch.
 In order for the switch to toggle when the user clicks on the background, we add a \l{MouseArea} as a child item of the image.
 A \c MouseArea has a \c onClicked property that is triggered when the item is clicked. For the moment we will just call a
 \c toggle() function. We will see what this function does in a moment.
 
-\snippet examples/declarative/slideswitch/content/Switch.qml 5
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 5
 
 Then, we place the image of the knob on top of the background.
 The interaction here is a little more complex. We want the knob to move with the finger when it is clicked. That is what the \c drag
@@ -96,7 +96,7 @@ property of the \c MouseArea is for. We also want to toggle the switch if the kn
 in the \c dorelease() function that is called in the \c onReleased property.
 
 \section2 States
-\snippet examples/declarative/slideswitch/content/Switch.qml 6
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 6
 
 We define the two states of the switch:
 \list
@@ -110,13 +110,13 @@ For more information on states see \l{qmlstates}{QML States}.
 
 We add two JavaScript functions to our switch:
 
-\snippet examples/declarative/slideswitch/content/Switch.qml 2
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 2
 
 This first function is called when the background image or the knob are clicked. We simply want the switch to toggle between the two
 states (\e on and \e off).
 
 
-\snippet examples/declarative/slideswitch/content/Switch.qml 3
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 3
 
 This second function is called when the knob is released and we want to make sure that the knob does not end up between states
 (neither \e on nor \e off). If it is the case call the \c toggle() function otherwise we do nothing.
@@ -124,7 +124,7 @@ This second function is called when the knob is released and we want to make sur
 For more information on scripts see \l{Integrating JavaScript}.
 
 \section2 Transition
-\snippet examples/declarative/slideswitch/content/Switch.qml 7
+\snippet examples/declarative/ui-components/slideswitch/content/Switch.qml 7
 
 At this point, when the switch toggles between the two states the knob will instantly change its \c x position between 1 and 78.
 In order for the the knob to move smoothly we add a transition that will animate the \c x property with an easing curve for a duration of 200ms.
@@ -133,5 +133,5 @@ For more information on transitions see \l{state-transitions}{QML Transitions}.
 
 \section1 Usage
 The switch can be used in a QML file, like this:
-\snippet examples/declarative/slideswitch/slideswitch.qml 0
+\snippet examples/declarative/ui-components/slideswitch/slideswitch.qml 0
 */

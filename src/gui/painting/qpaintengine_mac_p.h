@@ -148,7 +148,7 @@ class QCoreGraphicsPaintEnginePrivate : public QPaintEnginePrivate
     Q_DECLARE_PUBLIC(QCoreGraphicsPaintEngine)
 public:
     QCoreGraphicsPaintEnginePrivate()
-        : hd(0), shading(0), stackCount(0), complexXForm(false)
+        : hd(0), shading(0), stackCount(0), complexXForm(false), disabledSmoothFonts(false)
     {
     }
 
@@ -168,6 +168,7 @@ public:
     CGShadingRef shading;
     int stackCount;
     bool complexXForm;
+    bool disabledSmoothFonts;
     enum { CosmeticNone, CosmeticTransformPath, CosmeticSetPenWidth } cosmeticPen;
 
     // pixel and cosmetic pen size in user coordinates.

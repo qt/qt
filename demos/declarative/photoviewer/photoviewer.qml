@@ -27,7 +27,7 @@ Rectangle {
     Column {
         spacing: 20; anchors { bottom: parent.bottom; right: parent.right; rightMargin: 20; bottomMargin: 20 }
         Button {
-            id: newButton; label: "New"; rotation: 3
+            id: newButton; label: qsTr("Add"); rotation: 3
             anchors.horizontalCenter: parent.horizontalCenter
             onClicked: {
                 mainWindow.editMode = false
@@ -36,7 +36,7 @@ Rectangle {
             }
         }
         Button {
-            id: deleteButton; label: "Delete"; rotation: -2;
+            id: deleteButton; label: qsTr("Edit"); rotation: -2;
             onClicked: mainWindow.editMode = !mainWindow.editMode
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -49,7 +49,7 @@ Rectangle {
 
     ListView { anchors.fill: parent; model: albumVisualModel.parts.browser; interactive: false }
 
-    Button { id: backButton; label: "Back"; rotation: 3; x: parent.width - backButton.width - 6; y: -backButton.height - 8 }
+    Button { id: backButton; label: qsTr("Back"); rotation: 3; x: parent.width - backButton.width - 6; y: -backButton.height - 8 }
 
     Rectangle { id: photosShade; color: 'black'; width: parent.width; height: parent.height; opacity: 0; visible: opacity != 0.0 }
 

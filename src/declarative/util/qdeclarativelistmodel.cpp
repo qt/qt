@@ -207,11 +207,11 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     Here is an example that uses WorkerScript to periodically append the
     current time to a list model:
 
-    \snippet examples/declarative/listmodel-threaded/timedisplay.qml 0
+    \snippet examples/declarative/threading/threadedlistmodel/timedisplay.qml 0
 
     The included file, \tt dataloader.js, looks like this:
 
-    \snippet examples/declarative/listmodel-threaded/dataloader.js 0
+    \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
     The application's \tt Timer object periodically sends a message to the
     worker script by calling \tt WorkerScript::sendMessage(). When this message
@@ -537,11 +537,7 @@ void QDeclarativeListModel::append(const QScriptValue& valuemap)
 */
 QScriptValue QDeclarativeListModel::get(int index) const
 {
-    if (index >= count() || index < 0) {
-        qmlInfo(this) << tr("get: index %1 out of range").arg(index);
-        return 0;
-    }
-
+    // the internal flat/nested class checks for bad index
     return m_flat ? m_flat->get(index) : m_nested->get(index);
 }
 
@@ -591,7 +587,7 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
     Changes the \a property of the item at \a index in the list model to \a value.
 
     \code
-        fruitModel.set(3, "cost", 5.95)
+        fruitModel.setProperty(3, "cost", 5.95)
     \endcode
 
     The \a index must be an element in the list.
@@ -930,12 +926,13 @@ bool FlatListModel::insert(int index, const QScriptValue &value)
 
 QScriptValue FlatListModel::get(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_values.count());
-
     QScriptEngine *scriptEngine = m_scriptEngine ? m_scriptEngine : QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(m_listModel));
 
-    if (!scriptEngine)
+    if (!scriptEngine) 
         return 0;
+
+    if (index < 0 || index >= m_values.count())
+        return scriptEngine->undefinedValue();
 
     QScriptValue rv = scriptEngine->newObject();
 
@@ -999,7 +996,8 @@ bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *ro
     QScriptValueIterator it(value);
     while (it.hasNext()) {
         it.next();
-        if (it.value().isObject()) {
+        QScriptValue value = it.value();
+        if (!value.isVariant() && !value.isRegExp() && !value.isDate() && value.isObject()) {
             qmlInfo(m_listModel) << "Cannot add nested list values when modifying or after modification from a worker script";
             return false;
         }
@@ -1182,12 +1180,20 @@ bool NestedListModel::append(const QScriptValue& valuemap)
 }
 
 QScriptValue NestedListModel::get(int index) const
-{
-    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-    if (!node)
-        return 0;
+{   
     QDeclarativeEngine *eng = qmlEngine(m_listModel);
     if (!eng) 
+        return 0;
+
+    if (index < 0 || index >= count()) {
+        QScriptEngine *seng = QDeclarativeEnginePrivate::getScriptEngine(eng);
+        if (seng)
+            return seng->undefinedValue();
+        return 0;
+    }
+
+    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+    if (!node)
         return 0;
     
     return QDeclarativeEnginePrivate::qmlScriptObject(node->object(this), eng);

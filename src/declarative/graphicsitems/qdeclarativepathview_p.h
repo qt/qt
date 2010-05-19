@@ -132,6 +132,10 @@ public:
 
     static QDeclarativePathViewAttached *qmlAttachedProperties(QObject *);
 
+public Q_SLOTS:
+    void incrementCurrentIndex();
+    void decrementCurrentIndex();
+
 Q_SIGNALS:
     void currentIndexChanged();
     void offsetChanged();
@@ -215,6 +219,7 @@ Q_SIGNALS:
 
 private:
     friend class QDeclarativePathViewPrivate;
+    friend class QDeclarativePathView;
     QDeclarativePathView *m_view;
     QDeclarativeOpenMetaObject *m_metaobject;
     bool m_onPath : 1;

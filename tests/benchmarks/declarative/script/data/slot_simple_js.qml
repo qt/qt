@@ -1,13 +1,7 @@
 import Qt.test 1.0
+import "slot_simple_js.js" as Logic
 
 TestObject {
-
-    Script {
-        function myCustomFunction() {
-            return 0;
-        }
-    }
-
-    onMySignal: { for (var ii = 0; ii < 10000; ++ii) { myCustomFunction(); } }
+    onMySignal: { for (var ii = 0; ii < 10000; ++ii) { Logic.myCustomFunction(); } }
 }
 

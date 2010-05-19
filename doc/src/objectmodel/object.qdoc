@@ -41,7 +41,8 @@
 
 /*!
     \page object.html
-    \title Qt Object Model
+    \title Object Model
+    \ingroup qt-basic-concepts
     \brief A description of the powerful features made possible by Qt's dynamic object model.
 
     \ingroup frameworks-technologies

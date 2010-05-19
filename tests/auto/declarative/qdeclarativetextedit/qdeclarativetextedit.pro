@@ -6,4 +6,11 @@ SOURCES += tst_qdeclarativetextedit.cpp ../shared/testhttpserver.cpp
 HEADERS += ../shared/testhttpserver.h
 
 # Define SRCDIR equal to test's source directory
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    DEFINES += SRCDIR=\".\"
+    importFiles.sources = data
+    importFiles.path = 
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}

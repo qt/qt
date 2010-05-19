@@ -107,7 +107,7 @@ public:
     virtual ActionList actions();
 
     virtual void saveOriginals();
-    virtual void copyOriginals(QDeclarativeActionEvent*);
+    //virtual void copyOriginals(QDeclarativeActionEvent*);
     virtual void execute(Reason reason = ActualChange);
     virtual bool isReversable();
     virtual void reverse(Reason reason = ActualChange);
@@ -277,6 +277,7 @@ public:
     virtual bool override(QDeclarativeActionEvent*other);
     virtual bool changesBindings();
     virtual void saveOriginals();
+    virtual bool needsCopy() { return true; }
     virtual void copyOriginals(QDeclarativeActionEvent*);
     virtual void clearBindings();
     virtual void rewind();

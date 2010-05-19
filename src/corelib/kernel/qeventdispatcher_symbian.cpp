@@ -1105,3 +1105,5 @@ void CQtActiveScheduler::Error(TInt aError) const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventdispatcher_symbian_p.cpp"
