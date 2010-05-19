@@ -69,7 +69,7 @@ public:
         rewindParent(0), rewindStackBefore(0) {}
 
     QDeclarativeItem *target;
-    QDeclarativeItem *parent;
+    QDeclarativeGuard<QDeclarativeItem> parent;
     QDeclarativeGuard<QDeclarativeItem> origParent;
     QDeclarativeGuard<QDeclarativeItem> origStackBefore;
     QDeclarativeItem *rewindParent;
