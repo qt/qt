@@ -209,6 +209,10 @@ QAudioFormat QAudioOutput::format() const
     If a problem occurs during this process the error() is set to QAudio::OpenError,
     state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
 
+    In either case, the stateChanged() signal may be emitted either synchronously
+    during execution of the start() function or asynchronously after start() has
+    returned to the caller.
+
     \sa QIODevice
 */
 
@@ -227,6 +231,10 @@ void QAudioOutput::start(QIODevice* device)
 
     If a problem occurs during this process the error() is set to QAudio::OpenError,
     state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
+
+    In either case, the stateChanged() signal may be emitted either synchronously
+    during execution of the start() function or asynchronously after start() has
+    returned to the caller.
 
     \sa QIODevice
 */
@@ -276,6 +284,8 @@ void QAudioOutput::suspend()
     Sets state() to QAudio::ActiveState if you previously called start(QIODevice*).
     Sets state() to QAudio::IdleState if you previously called start().
     emits stateChanged() signal.
+
+    Note: signal will always be emitted during execution of the resume() function.
 */
 
 void QAudioOutput::resume()

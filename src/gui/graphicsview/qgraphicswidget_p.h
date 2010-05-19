@@ -139,6 +139,7 @@ public:
     qreal height() const;
     void setHeight(qreal);
     void resetHeight();
+    void setGeometryFromSetPos();
 
     // State
     inline int attributeToBitIndex(Qt::WidgetAttribute att) const

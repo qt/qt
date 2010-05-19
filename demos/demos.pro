@@ -59,6 +59,7 @@ contains(QT_CONFIG, phonon):!static:SUBDIRS += demos_mediaplayer
 contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):!symbian:SUBDIRS += demos_browser
 contains(QT_CONFIG, multimedia):SUBDIRS += demos_multimedia
 contains(QT_CONFIG, declarative):SUBDIRS += demos_declarative
+contains(QT_CONFIG, multimedia):SUBDIRS += demos_spectrum
 
 # install
 sources.files = README *.pro
@@ -96,6 +97,7 @@ demos_browser.subdir = browser
 
 demos_boxes.subdir = boxes
 demos_sub-attaq.subdir = sub-attaq
+demos_spectrum.subdir = spectrum
 
 #CONFIG += ordered
 !ordered {
