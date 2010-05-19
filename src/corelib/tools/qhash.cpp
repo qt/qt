@@ -1666,7 +1666,7 @@ void QHashData::checkSanity()
     This function requires the key and value types to implement \c
     operator<<().
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 /*! \fn QDataStream &operator>>(QDataStream &in, QHash<Key, T> &hash)
@@ -1677,7 +1677,7 @@ void QHashData::checkSanity()
     This function requires the key and value types to implement \c
     operator>>().
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 /*! \class QMultiHash

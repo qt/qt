@@ -1333,7 +1333,7 @@ QChar QChar::fromAscii(char c)
 
     Writes the char \a chr to the stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QChar &chr)
 {
@@ -1346,7 +1346,7 @@ QDataStream &operator<<(QDataStream &out, const QChar &chr)
 
     Reads a char from the stream \a in into char \a chr.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QChar &chr)
 {

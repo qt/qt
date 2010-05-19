@@ -7385,7 +7385,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
     Writes the given \a string to the specified \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &out, const QString &str)
@@ -7433,7 +7433,7 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
 
     Reads a string from the specified \a stream into the given \a string.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QString &str)
