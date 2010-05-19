@@ -1008,7 +1008,7 @@ EXPORTS
 	_ZN21QDeclarativeDomObjectD1Ev @ 1007 NONAME
 	_ZN21QDeclarativeDomObjectD2Ev @ 1008 NONAME
 	_ZN21QDeclarativeDomObjectaSERKS_ @ 1009 NONAME
-	_ZN21QDeclarativeFlickable10flickEndedEv @ 1010 NONAME ABSENT
+	_ZN21QDeclarativeFlickable10flickEndedEv @ 1010 NONAME
 	_ZN21QDeclarativeFlickable10timerEventEP11QTimerEvent @ 1011 NONAME
 	_ZN21QDeclarativeFlickable10wheelEventEP24QGraphicsSceneWheelEvent @ 1012 NONAME
 	_ZN21QDeclarativeFlickable11cancelFlickEv @ 1013 NONAME
@@ -1018,10 +1018,10 @@ EXPORTS
 	_ZN21QDeclarativeFlickable11setContentXEf @ 1017 NONAME
 	_ZN21QDeclarativeFlickable11setContentYEf @ 1018 NONAME
 	_ZN21QDeclarativeFlickable11visibleAreaEv @ 1019 NONAME
-	_ZN21QDeclarativeFlickable12flickStartedEv @ 1020 NONAME ABSENT
+	_ZN21QDeclarativeFlickable12flickStartedEv @ 1020 NONAME
 	_ZN21QDeclarativeFlickable12setOverShootEb @ 1021 NONAME
 	_ZN21QDeclarativeFlickable13flickableDataEv @ 1022 NONAME
-	_ZN21QDeclarativeFlickable13movementEndedEv @ 1023 NONAME ABSENT
+	_ZN21QDeclarativeFlickable13movementEndedEv @ 1023 NONAME
 	_ZN21QDeclarativeFlickable13movingChangedEv @ 1024 NONAME
 	_ZN21QDeclarativeFlickable13setPressDelayEi @ 1025 NONAME
 	_ZN21QDeclarativeFlickable13viewportMovedEv @ 1026 NONAME
@@ -1034,7 +1034,7 @@ EXPORTS
 	_ZN21QDeclarativeFlickable15flickingChangedEv @ 1033 NONAME
 	_ZN21QDeclarativeFlickable15geometryChangedERK6QRectFS2_ @ 1034 NONAME
 	_ZN21QDeclarativeFlickable15mousePressEventEP24QGraphicsSceneMouseEvent @ 1035 NONAME
-	_ZN21QDeclarativeFlickable15movementStartedEv @ 1036 NONAME ABSENT
+	_ZN21QDeclarativeFlickable15movementStartedEv @ 1036 NONAME
 	_ZN21QDeclarativeFlickable15setContentWidthEf @ 1037 NONAME
 	_ZN21QDeclarativeFlickable16movementStartingEv @ 1038 NONAME
 	_ZN21QDeclarativeFlickable16overShootChangedEv @ 1039 NONAME
