@@ -39,4 +39,6 @@ mac {
     QMAKE_INFO_PLIST=Info_mac.plist
     TARGET=QMLViewer
     ICON=qml.icns
+} else {
+    TARGET=qmlviewer
 }

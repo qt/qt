@@ -42,7 +42,7 @@
 /*!
     \page qmlruntime.html
     \title Qt Declarative UI Runtime
-    \keyword QML Viewer (qml)
+    \keyword QML Viewer
     \ingroup qttools
 
     This page documents the \e{Declarative UI Runtime} for the Qt GUI
@@ -67,7 +67,7 @@
     To run an application with the \QQV, pass the filename as an argument:
 
     \code
-    qml myQmlFile.qml
+    qmlviewer myQmlFile.qml
     \endcode
 
     Deploying a QML application via the \QQV allows for QML only deployments, but can also
@@ -92,7 +92,7 @@
     as the appropriate module file is chosen based on platform naming conventions. The C++ 
     modules must contain a QDeclarativeExtentionPlugin subclass.
 
-    The application would be executed either with your own application, the command 'qml MyApp.qml' or by
+    The application would be executed either with your own application, the command 'qmlviewer MyApp.qml' or by
     opening the file if your system has the \QQV registered as the handler for QML files. The MyApp.qml file would have access
     to all of the deployed types using the import statements such as the following:
 
@@ -109,7 +109,7 @@
 
     \section2 Options
 
-    When run with the \c -help option, \c qml shows available options.
+    When run with the \c -help option, \c qmlviewer shows available options.
 
     \section2 Translations
 

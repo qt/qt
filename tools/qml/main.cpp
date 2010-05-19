@@ -110,7 +110,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 void usage()
 {
-    qWarning("Usage: qml [options] <filename>");
+    qWarning("Usage: qmlviewer [options] <filename>");
     qWarning(" ");
     qWarning(" options:");
     qWarning("  -v, -version ............................. display version");
@@ -148,7 +148,7 @@ void usage()
 
 void scriptOptsUsage()
 {
-    qWarning("Usage: qml -scriptopts <option>[,<option>...] ...");
+    qWarning("Usage: qmlviewer -scriptopts <option>[,<option>...] ...");
     qWarning(" options:");
     qWarning("  record ................................... record a new script");
     qWarning("  play ..................................... playback an existing script");
