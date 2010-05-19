@@ -114,6 +114,8 @@ Lastly, the boilerplare to declare the type for QML use:
 
 \snippet src/imports/folderlistmodel/qdeclarativefolderlistmodel.h qml decl
 
+\section1 Connecting the Model to QML
+
 To make this class available to QML, we only need to make a simple subclass of QDeclarativeExtensionPlugin:
 
 \snippet src/imports/folderlistmodel/plugin.cpp class decl
