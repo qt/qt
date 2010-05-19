@@ -327,6 +327,10 @@ void tst_QLocale::ctor()
     TEST_CTOR("es_ES", Spanish, Spain)
     TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
 
+    // test default countries for languages
+    TEST_CTOR("mn", Mongolian, Mongolia)
+    TEST_CTOR("ne", Nepali, Nepal)
+
 #undef TEST_CTOR
 
 }
