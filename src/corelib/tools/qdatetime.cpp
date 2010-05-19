@@ -3573,7 +3573,7 @@ void QDateTime::detach()
 
     Writes the \a date to stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &out, const QDate &date)
@@ -3586,7 +3586,7 @@ QDataStream &operator<<(QDataStream &out, const QDate &date)
 
     Reads a date from stream \a in into the \a date.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QDate &date)
@@ -3602,7 +3602,7 @@ QDataStream &operator>>(QDataStream &in, QDate &date)
 
     Writes \a time to stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &out, const QTime &time)
@@ -3615,7 +3615,7 @@ QDataStream &operator<<(QDataStream &out, const QTime &time)
 
     Reads a time from stream \a in into the given \a time.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QTime &time)
@@ -3631,7 +3631,7 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 
     Writes \a dateTime to the \a out stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
@@ -3646,7 +3646,7 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 
     Reads a datetime from the stream \a in into \a dateTime.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)

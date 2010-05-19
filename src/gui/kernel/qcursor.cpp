@@ -229,7 +229,7 @@ QT_BEGIN_NAMESPACE
 
     Writes the \a cursor to the \a stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QCursor &c)
@@ -256,7 +256,7 @@ QDataStream &operator<<(QDataStream &s, const QCursor &c)
 
     Reads the \a cursor from the \a stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QCursor &c)

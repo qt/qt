@@ -45,7 +45,7 @@
 #include <QtNetwork/qnetworkconfiguration.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -67,7 +67,7 @@ private slots:
     void configurationFromIdentifier();
 
 private:
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -79,7 +79,7 @@ private:
 
 void tst_QNetworkConfigurationManager::initTestCase()
 {
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -153,7 +153,7 @@ void tst_QNetworkConfigurationManager::initTestCase()
 
 void tst_QNetworkConfigurationManager::cleanupTestCase()
 {
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();

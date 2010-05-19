@@ -542,7 +542,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
 
     \reentrant
 
-    QObject is the heart of the \l{Qt object model}. The central
+    QObject is the heart of the Qt \l{Object Model}. The central
     feature in this model is a very powerful mechanism for seamless
     object communication called \l{signals and slots}. You can
     connect a signal to a slot with connect() and destroy the
@@ -551,13 +551,13 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     protected functions connectNotify() and disconnectNotify() make
     it possible to track connections.
 
-    QObjects organize themselves in \l {Object Trees and Object
-    Ownership} {object trees}. When you create a QObject with another
-    object as parent, the object will automatically add itself to the
-    parent's children() list. The parent takes ownership of the
-    object; i.e., it will automatically delete its children in its
-    destructor. You can look for an object by name and optionally type
-    using findChild() or findChildren().
+    QObjects organize themselves in \l {Object Trees & Ownership}
+    {object trees}. When you create a QObject with another object as
+    parent, the object will automatically add itself to the parent's
+    children() list. The parent takes ownership of the object; i.e.,
+    it will automatically delete its children in its destructor. You
+    can look for an object by name and optionally type using
+    findChild() or findChildren().
 
     Every object has an objectName() and its class name can be found
     via the corresponding metaObject() (see QMetaObject::className()).
@@ -609,7 +609,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     Qt classes derived from QObject (direct or indirect) use this
     macro to declare their copy constructor and assignment operator to
     be private. The reasoning is found in the discussion on
-    \l{Identity vs Value} {Identity vs Value} on the \l{Qt Object
+    \l{Identity vs Value} {Identity vs Value} on the Qt \l{Object
     Model} page.
 
     The main consequence is that you should use pointers to QObject
@@ -656,7 +656,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l{Writing Source Code for Translation} document.
 
     \sa QMetaObject, QPointer, QObjectCleanupHandler, Q_DISABLE_COPY()
-    \sa {Object Trees and Object Ownership}
+    \sa {Object Trees & Ownership}
 */
 
 /*!

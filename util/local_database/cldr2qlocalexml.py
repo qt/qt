@@ -459,6 +459,14 @@ print \
             <language>Persian</language>\n\
             <country>Iran</country>\n\
         </defaultCountry>\n\
+        <defaultCountry>\n\
+            <language>Mongolian</language>\n\
+            <country>Mongolia</country>\n\
+        </defaultCountry>\n\
+        <defaultCountry>\n\
+            <language>Nepali</language>\n\
+            <country>Nepal</country>\n\
+        </defaultCountry>\n\
     </defaultCountryList>"
 
 print "    <localeList>"

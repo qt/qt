@@ -7482,7 +7482,7 @@ fi
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 [ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
-[ "$CFG_ICD" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICD"
+[ "$CFG_ICD" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICD"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`

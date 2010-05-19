@@ -192,6 +192,7 @@ void tst_QLocale::ctor()
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
+    TEST_CTOR(Spanish, LatinAmericaAndTheCaribbean, QLocale::Spanish, QLocale::LatinAmericaAndTheCaribbean)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
 
@@ -323,6 +324,12 @@ void tst_QLocale::ctor()
     TEST_CTOR("no_NO", Norwegian, Norway)
     TEST_CTOR("nb_NO", Norwegian, Norway)
     TEST_CTOR("nn_NO", NorwegianNynorsk, Norway)
+    TEST_CTOR("es_ES", Spanish, Spain)
+    TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
+
+    // test default countries for languages
+    TEST_CTOR("mn", Mongolian, Mongolia)
+    TEST_CTOR("ne", Nepali, Nepal)
 
 #undef TEST_CTOR
 
@@ -1321,10 +1328,12 @@ static const LocaleListItem g_locale_list[] = {
     {      9,    11}, // Armenian/Armenia
     {     10,   100}, // Assamese/India
     {     12,    15}, // Azerbaijani/Azerbaijan
+    {     12,   102}, // Azerbaijani/Iran
     {     14,   197}, // Basque/Spain
     {     15,    18}, // Bengali/Bangladesh
     {     15,   100}, // Bengali/India
     {     16,    25}, // Bhutani/Bhutan
+    {     19,    74}, // Breton/France
     {     20,    33}, // Bulgarian/Bulgaria
     {     21,   147}, // Burmese/Myanmar
     {     22,    20}, // Byelorussian/Belarus
@@ -1354,6 +1363,7 @@ static const LocaleListItem g_locale_list[] = {
     {     31,   107}, // English/Jamaica
     {     31,   133}, // English/Malta
     {     31,   134}, // English/MarshallIslands
+    {     31,   137}, // English/Mauritius
     {     31,   148}, // English/Namibia
     {     31,   154}, // English/NewZealand
     {     31,   160}, // English/NorthernMarianaIslands
@@ -1371,11 +1381,23 @@ static const LocaleListItem g_locale_list[] = {
     {     36,    73}, // Finnish/Finland
     {     37,    74}, // French/France
     {     37,    21}, // French/Belgium
+    {     37,    37}, // French/Cameroon
     {     37,    38}, // French/Canada
+    {     37,    41}, // French/CentralAfricanRepublic
+    {     37,    53}, // French/IvoryCoast
+    {     37,    88}, // French/Guadeloupe
+    {     37,    91}, // French/Guinea
     {     37,   125}, // French/Luxembourg
+    {     37,   128}, // French/Madagascar
+    {     37,   132}, // French/Mali
+    {     37,   135}, // French/Martinique
     {     37,   142}, // French/Monaco
+    {     37,   156}, // French/Niger
+    {     37,   176}, // French/Reunion
     {     37,   187}, // French/Senegal
     {     37,   206}, // French/Switzerland
+    {     37,   244}, // French/Saint Barthelemy
+    {     37,   245}, // French/Saint Martin
     {     40,   197}, // Galician/Spain
     {     41,    81}, // Georgian/Georgia
     {     42,    82}, // German/Germany
@@ -1406,6 +1428,9 @@ static const LocaleListItem g_locale_list[] = {
     {     64,   179}, // Kinyarwanda/Rwanda
     {     65,   116}, // Kirghiz/Kyrgyzstan
     {     66,   114}, // Korean/RepublicOfKorea
+    {     67,   102}, // Kurdish/Iran
+    {     67,   103}, // Kurdish/Iraq
+    {     67,   207}, // Kurdish/SyrianArabRepublic
     {     67,   217}, // Kurdish/Turkey
     {     69,   117}, // Laothian/Lao
     {     71,   118}, // Latvian/Latvia
@@ -1413,16 +1438,19 @@ static const LocaleListItem g_locale_list[] = {
     {     72,    50}, // Lingala/PeoplesRepublicOfCongo
     {     73,   124}, // Lithuanian/Lithuania
     {     74,   127}, // Macedonian/Macedonia
+    {     75,   128}, // Malagasy/Madagascar
     {     76,   130}, // Malay/Malaysia
     {     76,    32}, // Malay/BruneiDarussalam
     {     77,   100}, // Malayalam/India
     {     78,   133}, // Maltese/Malta
+    {     79,   154}, // Maori/NewZealand
     {     80,   100}, // Marathi/India
     {     82,    44}, // Mongolian/China
     {     82,   143}, // Mongolian/Mongolia
     {     84,   100}, // Nepali/India
     {     84,   150}, // Nepali/Nepal
     {     85,   161}, // Norwegian/Norway
+    {     86,    74}, // Occitan/France
     {     87,   100}, // Oriya/India
     {     88,     1}, // Pashto/Afghanistan
     {     89,   102}, // Persian/Iran
@@ -1430,22 +1458,30 @@ static const LocaleListItem g_locale_list[] = {
     {     90,   172}, // Polish/Poland
     {     91,   173}, // Portuguese/Portugal
     {     91,    30}, // Portuguese/Brazil
+    {     91,    92}, // Portuguese/GuineaBissau
+    {     91,   146}, // Portuguese/Mozambique
     {     92,   100}, // Punjabi/India
     {     92,   163}, // Punjabi/Pakistan
+    {     94,   206}, // RhaetoRomance/Switzerland
     {     95,   141}, // Romanian/Moldova
     {     95,   177}, // Romanian/Romania
     {     96,   178}, // Russian/RussianFederation
+    {     96,   141}, // Russian/Moldova
     {     96,   222}, // Russian/Ukraine
+    {     98,    41}, // Sangho/CentralAfricanRepublic
     {     99,   100}, // Sanskrit/India
     {    100,   241}, // Serbian/SerbiaAndMontenegro
     {    100,    27}, // Serbian/BosniaAndHerzegowina
     {    100,   238}, // Serbian/Yugoslavia
+    {    100,   242}, // Serbian/Montenegro
+    {    100,   243}, // Serbian/Serbia
     {    101,   241}, // SerboCroatian/SerbiaAndMontenegro
     {    101,    27}, // SerboCroatian/BosniaAndHerzegowina
     {    101,   238}, // SerboCroatian/Yugoslavia
     {    102,   120}, // Sesotho/Lesotho
     {    102,   195}, // Sesotho/SouthAfrica
     {    103,   195}, // Setswana/SouthAfrica
+    {    104,   240}, // Shona/Zimbabwe
     {    106,   198}, // Singhalese/SriLanka
     {    107,   195}, // Siswati/SouthAfrica
     {    107,   204}, // Siswati/Swaziland
@@ -1464,6 +1500,7 @@ static const LocaleListItem g_locale_list[] = {
     {    111,    61}, // Spanish/DominicanRepublic
     {    111,    63}, // Spanish/Ecuador
     {    111,    65}, // Spanish/ElSalvador
+    {    111,    66}, // Spanish/EquatorialGuinea
     {    111,    90}, // Spanish/Guatemala
     {    111,    96}, // Spanish/Honduras
     {    111,   139}, // Spanish/Mexico
@@ -1481,9 +1518,12 @@ static const LocaleListItem g_locale_list[] = {
     {    114,    73}, // Swedish/Finland
     {    116,   209}, // Tajik/Tajikistan
     {    117,   100}, // Tamil/India
+    {    117,   198}, // Tamil/SriLanka
     {    118,   178}, // Tatar/RussianFederation
     {    119,   100}, // Telugu/India
     {    120,   211}, // Thai/Thailand
+    {    121,    44}, // Tibetan/China
+    {    121,   100}, // Tibetan/India
     {    122,    67}, // Tigrinya/Eritrea
     {    122,    69}, // Tigrinya/Ethiopia
     {    123,   214}, // Tonga/Tonga
@@ -1524,9 +1564,63 @@ static const LocaleListItem g_locale_list[] = {
     {    160,   195}, // Venda/SouthAfrica
     {    161,    83}, // Ewe/Ghana
     {    161,   212}, // Ewe/Togo
+    {    162,    69}, // Walamo/Ethiopia
     {    163,   225}, // Hawaiian/UnitedStates
     {    164,   157}, // Tyap/Nigeria
-    {    165,   129}  // Chewa/Malawi
+    {    165,   129}, // Chewa/Malawi
+    {    166,   170}, // Filipino/Philippines
+    {    167,   206}, // Swiss German/Switzerland
+    {    168,    44}, // Sichuan Yi/China
+    {    169,    91}, // Kpelle/Guinea
+    {    169,   121}, // Kpelle/Liberia
+    {    170,    82}, // Low German/Germany
+    {    171,   195}, // South Ndebele/SouthAfrica
+    {    172,   195}, // Northern Sotho/SouthAfrica
+    {    173,    73}, // Northern Sami/Finland
+    {    173,   161}, // Northern Sami/Norway
+    {    174,   208}, // Taroko/Taiwan
+    {    175,   111}, // Gusii/Kenya
+    {    176,   111}, // Taita/Kenya
+    {    177,   187}, // Fulah/Senegal
+    {    178,   111}, // Kikuyu/Kenya
+    {    179,   111}, // Samburu/Kenya
+    {    180,   146}, // Sena/Mozambique
+    {    181,   240}, // North Ndebele/Zimbabwe
+    {    182,   210}, // Rombo/Tanzania
+    {    183,   145}, // Tachelhit/Morocco
+    {    184,     3}, // Kabyle/Algeria
+    {    185,   221}, // Nyankole/Uganda
+    {    186,   210}, // Bena/Tanzania
+    {    187,   210}, // Vunjo/Tanzania
+    {    188,   132}, // Bambara/Mali
+    {    189,   111}, // Embu/Kenya
+    {    190,   225}, // Cherokee/UnitedStates
+    {    191,   137}, // Morisyen/Mauritius
+    {    192,   210}, // Makonde/Tanzania
+    {    193,   210}, // Langi/Tanzania
+    {    194,   221}, // Ganda/Uganda
+    {    195,   239}, // Bemba/Zambia
+    {    196,    39}, // Kabuverdianu/CapeVerde
+    {    197,   111}, // Meru/Kenya
+    {    198,   111}, // Kalenjin/Kenya
+    {    199,   148}, // Nama/Namibia
+    {    200,   210}, // Machame/Tanzania
+    {    201,    82}, // Colognian/Germany
+    {    202,   111}, // Masai/Kenya
+    {    202,   210}, // Masai/Tanzania
+    {    203,   221}, // Soga/Uganda
+    {    204,   111}, // Luyia/Kenya
+    {    205,   210}, // Asu/Tanzania
+    {    206,   111}, // Teso/Kenya
+    {    206,   221}, // Teso/Uganda
+    {    207,    67}, // Saho/Eritrea
+    {    208,   132}, // Koyra Chiini/Mali
+    {    209,   210}, // Rwa/Tanzania
+    {    210,   111}, // Luo/Kenya
+    {    211,   221}, // Chiga/Uganda
+    {    212,   145}, // Central Morocco Tamazight/Morocco
+    {    213,   132}, // Koyraboro Senni/Mali
+    {    214,   210}  // Shambala/Tanzania
 };
 static const int g_locale_list_count = sizeof(g_locale_list)/sizeof(g_locale_list[0]);
 
@@ -1896,8 +1990,8 @@ void tst_QLocale::ampm()
     QCOMPARE(c.pmText(), QLatin1String("PM"));
 
     QLocale de("de_DE");
-    QCOMPARE(de.amText(), QLatin1String("AM"));
-    QCOMPARE(de.pmText(), QLatin1String("PM"));
+    QCOMPARE(de.amText(), QLatin1String("vorm."));
+    QCOMPARE(de.pmText(), QLatin1String("nachm."));
 
     QLocale sv("sv_SE");
     QCOMPARE(sv.amText(), QLatin1String("fm"));

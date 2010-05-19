@@ -4,20 +4,20 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindow.cpp" line="+351"/>
+        <location filename="../tools/qtconfig/mainwindow.cpp" line="+353"/>
         <source>On The Spot</source>
         <translation>W oknie dokumentu (On-The-Spot)</translation>
     </message>
     <message>
         <location line="+33"/>
         <location line="+1"/>
-        <location line="+38"/>
+        <location line="+40"/>
         <location line="+1"/>
         <source>Auto (default)</source>
         <translation>Automatyczny (domyślnie)</translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-40"/>
         <source>Choose audio output automatically.</source>
         <translation>Wybierz automatycznie wyjście dźwiękowe.</translation>
     </message>
@@ -33,7 +33,7 @@
         <translation>Eksperymentalna obsługa aRts dla GStreamer.</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <source>Phonon GStreamer backend not available.</source>
         <translation>Końcówka Phonon GStreamer nie jest dostępna.</translation>
     </message>
@@ -58,11 +58,6 @@
         <location line="+1"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Use OpenGL if avaiable</source>
-        <translation>Użyj OpenGL jeśli dostępne</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -138,7 +133,7 @@
         <translation>Brak zmian do zapisania.</translation>
     </message>
     <message>
-        <location line="-259"/>
+        <location line="-261"/>
         <source>Desktop Settings (Default)</source>
         <translation>Ustawienia pulpitu (domyślne)</translation>
     </message>
@@ -148,7 +143,12 @@
         <translation>Wybierz styl i paletę na podstawie ustawień Twojego pulpitu.</translation>
     </message>
     <message>
-        <location line="+258"/>
+        <location line="+226"/>
+        <source>Use OpenGL if available</source>
+        <translation>Użyj OpenGL jeśli jest dostępny</translation>
+    </message>
+    <message>
+        <location line="+34"/>
         <source>Saving changes...</source>
         <translation>Zapisywanie zmian...</translation>
     </message>
