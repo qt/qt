@@ -1,7 +1,7 @@
+//![0]
 import Qt 4.7
 
 ListModel {
-    id: contactModel
     ListElement {
         name: "Bill Smith"
         number: "555 3264"
@@ -15,3 +15,4 @@ ListModel {
         number: "555 0473"
     }
 }
+//![0]

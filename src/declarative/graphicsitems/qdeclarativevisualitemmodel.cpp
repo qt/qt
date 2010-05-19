@@ -775,9 +775,6 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
     The delegate provides a template defining each item instantiated by a view.
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
-
-    Here is an example delegate:
-    \snippet doc/src/snippets/declarative/listview/listview.qml 0
 */
 QDeclarativeComponent *QDeclarativeVisualDataModel::delegate() const
 {
