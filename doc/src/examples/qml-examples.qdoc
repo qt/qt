@@ -71,13 +71,6 @@
 */
 
 /*!
-    \title Image
-    \example declarative/imageelements/image
-
-    This example shows uses of the \l Image element in QML.
-*/
-
-/*!
     \title Reference examples
     \example declarative/cppextensions/referenceexamples
 */
@@ -88,13 +81,13 @@
 */
 
 /*!
-    \title QtWidgets
-    \example declarative/cppextensions/proxywidgets
+    \title QGraphicsLayouts
+    \example declarative/cppextensions/qgraphicslayouts
 */
 
 /*!
-    \title QGraphicsLayouts
-    \example declarative/cppextensions/qgraphicslayouts
+    \title QWidgets
+    \example declarative/cppextensions/qwidgets
 */
 
 /*!
@@ -104,7 +97,7 @@
 
 /*!
     \title Network access manager
-    \example declarative/cppextensions/proxyviewer
+    \example declarative/cppextensions/networkaccessmanagerfactory
 */
 
 /*!
@@ -175,7 +168,7 @@
 */
 
 /*!
-    \title Threaded ListModel 
+    \title Threaded ListModel
     \example declarative/threading/threadedlistmodel
 */
 
@@ -192,6 +185,11 @@
 */
 
 /*!
+    \title Corkboards
+    \example declarative/toys/corkboards
+*/
+
+/*!
     \title Dial
     \example declarative/toys/dial
 
@@ -199,8 +197,8 @@
 */
 
 /*!
-    \title Dynamic
-    \example declarative/toys/dynamic
+    \title Dynamic Scene
+    \example declarative/toys/dynamicscene
 
     This example shows how to create dynamic objects QML.
 */
@@ -213,11 +211,6 @@
 /*!
     \title TV Tennis
     \example declarative/toys/tvtennis
-*/
-
-/*!
-    \title Velocity
-    \example declarative/toys/velocity
 */
 
 /*!
@@ -265,11 +258,6 @@
 /*!
     \title Tab Widget
     \example declarative/ui-components/tabwidget
-*/
-
-/*!
-    \title XML Data
-    \example declarative/xml/xmldata
 */
 
 /*!

@@ -321,7 +321,7 @@ void QDeclarativePropertyChangesPrivate::decode()
 
         QDeclarativeProperty prop = property(name);      //### better way to check for signal property?
         if (prop.type() & QDeclarativeProperty::SignalProperty) {
-            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
+            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), object, data.toString());
             QDeclarativeData *ddata = QDeclarativeData::get(q);
             if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
                 expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
@@ -330,7 +330,7 @@ void QDeclarativePropertyChangesPrivate::decode()
             handler->expression = expression;
             signalReplacements << handler;
         } else if (isScript) {
-            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
+            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), object, data.toString());
             QDeclarativeData *ddata = QDeclarativeData::get(q);
             if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
                 expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);

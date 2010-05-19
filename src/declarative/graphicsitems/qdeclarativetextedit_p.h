@@ -86,6 +86,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection NOTIFY persistentSelectionChanged)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
+    Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
 
 public:
     QDeclarativeTextEdit(QDeclarativeItem *parent=0);
@@ -167,6 +168,9 @@ public:
     qreal textMargin() const;
     void setTextMargin(qreal margin);
 
+    bool selectByMouse() const;
+    void setSelectByMouse(bool);
+
     virtual void componentComplete();
 
     /* FROM EDIT */
@@ -200,6 +204,7 @@ Q_SIGNALS:
     void focusOnPressChanged(bool focusIsPressed);
     void persistentSelectionChanged(bool isPersistentSelection);
     void textMarginChanged(qreal textMargin);
+    void selectByMouseChanged(bool selectByMouse);
 
 public Q_SLOTS:
     void selectAll();

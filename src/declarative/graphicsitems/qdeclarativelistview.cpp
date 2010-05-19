@@ -1308,23 +1308,43 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \inherits Flickable
     \brief The ListView item provides a list view of items provided by a model.
 
-    The model is typically provided by a QAbstractListModel "C++ model object",
-    but can also be created directly in QML. The items are laid out vertically
-    or horizontally and may be flicked to scroll.
+    A ListView displays data from models created from built-in QML elements like ListModel
+    and XmlListModel, or custom model classes defined in C++ that inherit from
+    QAbstractListModel.
 
-    The below example creates a very simple vertical list, using a QML model.
-    \image trivialListView.png
+    A ListView has a \l model, which defines the data to be displayed, and
+    a \l delegate, which defines how the data should be displayed. Items in a 
+    ListView are laid out horizontally or vertically. List views are inherently flickable
+    as ListView inherits from \l Flickable.
 
-    The user interface defines a delegate to display an item, a highlight,
-    and the ListView which uses the above.
+    For example, if there is a simple list model defined in a file \c ContactModel.qml like this:
 
-    \snippet doc/src/snippets/declarative/listview/listview.qml 3
+    \snippet doc/src/snippets/declarative/listview/ContactModel.qml 0
 
-    The model is defined as a ListModel using QML:
-    \quotefile doc/src/snippets/declarative/listview/dummydata/ContactModel.qml
+    A ListView can display the data in the model, like this:
 
-    In this case ListModel is a handy way for us to test our UI.  In practice
-    the model would be implemented in C++, or perhaps via a SQL data source.
+    \table 
+    \row 
+    \o \snippet doc/src/snippets/declarative/listview/listview.qml import
+    \codeline
+    \snippet doc/src/snippets/declarative/listview/listview.qml classdocs simple
+    \o \image listview-simple.png
+    \endtable
+
+    Here, the ListView creates a \c ContactModel component for its model, and a \l Text element
+    for its delegate. The view creates a new \l Text component for each item in the model. Note
+    the delegate is able to access the model's \c name and \c number data directly.
+
+    An improved list view is shown below. The delegate is visually improved and is moved 
+    into a separate \c contactDelegate component. Also, the currently selected item is highlighted
+    with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
+    to enable keyboard navigation for the list.
+    
+    \table
+    \row
+    \o \snippet doc/src/snippets/declarative/listview/listview.qml classdocs advanced
+    \o \image listview-highlight.png
+    \endtable
 
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
@@ -1360,7 +1380,7 @@ QDeclarativeListView::~QDeclarativeListView()
 
     This property may be used to adjust the appearance of the current item, for example:
 
-    \snippet doc/src/snippets/declarative/listview/highlight.qml 0
+    \snippet doc/src/snippets/declarative/listview/listview.qml isCurrentItem
 */
 
 /*!
@@ -1397,22 +1417,10 @@ QDeclarativeListView::~QDeclarativeListView()
     It is sometimes necessary to delay the destruction of an item
     until an animation completes.
 
-    The example below ensures that the animation completes before
+    The example delegate below ensures that the animation completes before
     the item is removed from the list.
 
-    \code
-    Component {
-        id: myDelegate
-        Item {
-            id: wrapper
-            ListView.onRemove: SequentialAnimation {
-                PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
-                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
-                PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
-            }
-        }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/listview/listview.qml delayRemove
 */
 
 /*!
@@ -1429,13 +1437,10 @@ QDeclarativeListView::~QDeclarativeListView()
     \qmlproperty model ListView::model
     This property holds the model providing data for the list.
 
-    The model provides a set of data that is used to create the items
-    for the view.  For large or dynamic datasets the model is usually
-    provided by a C++ model object.  The C++ model object must be a \l
-    {QAbstractItemModel} subclass or a simple list.
-
-    Models can also be created directly in QML, using a \l{ListModel},
-    \l{XmlListModel} or \l{VisualItemModel}.
+    The model provides the set of data that is used to create the items
+    in the view. Models can be created directly in QML using \l ListModel, \l XmlListModel
+    or \l VisualItemModel, or provided by C++ model classes. If a C++ model class is
+    used, it must be a subclass of \l QAbstractItemModel or a simple list.
 
     \sa {qmlmodels}{Data Models}
 */
@@ -1511,11 +1516,11 @@ void QDeclarativeListView::setModel(const QVariant &model)
     that is not needed for the normal display of the delegate in a \l Loader which
     can load additional elements when needed.
 
-    Note that the ListView will layout the items based on the size of the root item
+    Tthe ListView will lay out the items based on the size of the root item
     in the delegate.
 
-    Here is an example delegate:
-    \snippet doc/src/snippets/declarative/listview/listview.qml 0
+    \note Delegates are instantiated as needed and may be destroyed at any time.
+    State should \e never be stored in a delegate.
 */
 QDeclarativeComponent *QDeclarativeListView::delegate() const
 {
@@ -1591,10 +1596,9 @@ QDeclarativeItem *QDeclarativeListView::currentItem()
 /*!
   \qmlproperty Item ListView::highlightItem
 
-  \c highlightItem holds the highlight item, which was created
-  from the \l highlight component.
+    This holds the highlight item created from the \l highlight component.
 
-  The highlightItem is managed by the view unless
+  The \c highlightItem is managed by the view unless
   \l highlightFollowsCurrentItem is set to false.
 
   \sa highlight, highlightFollowsCurrentItem
@@ -1623,16 +1627,10 @@ int QDeclarativeListView::count() const
     \qmlproperty Component ListView::highlight
     This property holds the component to use as the highlight.
 
-    An instance of the highlight component will be created for each list.
-    The geometry of the resultant component instance will be managed by the list
+    An instance of the highlight component is created for each list.
+    The geometry of the resultant component instance is managed by the list
     so as to stay with the current item, unless the highlightFollowsCurrentItem
     property is false.
-
-    The below example demonstrates how to make a simple highlight
-    for a vertical list.
-
-    \snippet doc/src/snippets/declarative/listview/listview.qml 1
-    \image trivialListView.png
 
     \sa highlightItem, highlightFollowsCurrentItem
 */
@@ -1658,13 +1656,14 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
     \qmlproperty bool ListView::highlightFollowsCurrentItem
     This property holds whether the highlight is managed by the view.
 
-    If highlightFollowsCurrentItem is true, the highlight will be moved smoothly
-    to follow the current item.  If highlightFollowsCurrentItem is false, the
-    highlight will not be moved by the view, and must be implemented
-    by the highlight.  The following example creates a highlight with
-    its motion defined by the spring \l {SpringFollow}:
+    If this property is true, the highlight is moved smoothly
+    to follow the current item.  Otherwise, the
+    highlight is not moved by the view, and any movement must be implemented
+    by the highlight.  
+    
+    Here is a highlight with its motion defined by the a \l {SpringFollow} item:
 
-    \snippet doc/src/snippets/declarative/listview/highlight.qml 1
+    \snippet doc/src/snippets/declarative/listview/listview.qml highlightFollowsCurrentItem
 
     Note that the highlight animation also affects the way that the view
     is scrolled.  This is because the view moves to maintain the
@@ -1695,31 +1694,29 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     \qmlproperty enumeration ListView::highlightRangeMode
 
     These properties set the preferred range of the highlight (current item)
-    within the view.
+    within the view. The \c preferredHighlightEnd must be greater than or equal to
+    \c preferredHighlightBegin.
 
-    Note that this is the correct way to influence where the
-    current item ends up when the list scrolls. For example, if you want the
-    currently selected item to be in the middle of the list, then set the
-    highlight range to be where the middle item would go. Then, when the list scrolls,
-    the currently selected item will be the item at that spot. This also applies to
-    when the currently selected item changes - it will scroll to within the preferred
-    highlight range. Furthermore, the behaviour of the current item index will occur
-    whether or not a highlight exists.
+    These properties affect the position of the current item when the list is scrolled.
+    For example, if the currently selected item should stay in the middle of the
+    list when the view is scrolled, set the \c preferredHighlightBegin and 
+    \c preferredHighlightEnd values to the top and bottom coordinates of where the middle 
+    item would be. If the \c currentItem is changed programmatically, the list will
+    automatically scroll so that the current item is in the middle of the view.
+    Furthermore, the behavior of the current item index will occur whether or not a
+    highlight exists.
 
-    If highlightRangeMode is set to \e ListView.ApplyRange the view will
-    attempt to maintain the highlight within the range, however
-    the highlight can move outside of the range at the ends of the list
-    or due to a mouse interaction.
+    Valid values for \c highlightRangeMode are:
 
-    If highlightRangeMode is set to \e ListView.StrictlyEnforceRange the highlight will never
-    move outside of the range.  This means that the current item will change
-    if a keyboard or mouse action would cause the highlight to move
-    outside of the range.
-
-    The default value is \e ListView.NoHighlightRange.
-
-    Note that a valid range requires preferredHighlightEnd to be greater
-    than or equal to preferredHighlightBegin.
+    \list
+    \o ListView.ApplyRange - the view attempts to maintain the highlight within the range.
+       However, the highlight can move outside of the range at the ends of the list or due
+       to mouse interaction.
+    \o ListView.StrictlyEnforceRange - the highlight never moves outside of the range.
+       The current item changes if a keyboard or mouse action would cause the highlight to move
+       outside of the range.
+    \o ListView.NoHighlightRange - this is the default value.
+    \endlist
 */
 qreal QDeclarativeListView::preferredHighlightBegin() const
 {
@@ -1772,7 +1769,7 @@ void QDeclarativeListView::setHighlightRangeMode(HighlightRangeMode mode)
 /*!
     \qmlproperty real ListView::spacing
 
-    This property holds the spacing to leave between items.
+    This property holds the spacing between items.
 */
 qreal QDeclarativeListView::spacing() const
 {
@@ -1794,12 +1791,22 @@ void QDeclarativeListView::setSpacing(qreal spacing)
     \qmlproperty enumeration ListView::orientation
     This property holds the orientation of the list.
 
-    Possible values are \c Vertical (default) and \c Horizontal.
+    Possible values:
 
-    ListView.Vertical Example:
-    \image trivialListView.png
-    ListView.Horizontal Example:
+    \list
+    \o ListView.Horizontal - Items are laid out horizontally.
+    \o ListView.Vertical - Items are laid out vertically. This is the default value.
+    \endlist
+
+    \table
+    \row
+    \o Horizontal orientation:
     \image ListViewHorizontal.png
+
+    \row
+    \o Vertical orientation:
+    \image listview-highlight.png
+    \endtable
 */
 QDeclarativeListView::Orientation QDeclarativeListView::orientation() const
 {
@@ -1829,10 +1836,11 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
 
 /*!
     \qmlproperty bool ListView::keyNavigationWraps
-    This property holds whether the list wraps key navigation
+    This property holds whether the list wraps key navigation.
 
-    If this property is true then key presses to move off of one end of the list will cause the
-    current item to jump to the other end.
+    If this is true, key navigation that would move the current item selection
+    past the end of the list instead wraps around and moves the selection to
+    the start of the list, and vice-versa.
 */
 bool QDeclarativeListView::isWrapEnabled() const
 {
@@ -1854,8 +1862,8 @@ void QDeclarativeListView::setWrapEnabled(bool wrap)
     This property determines whether delegates are retained outside the
     visible area of the view.
 
-    If non-zero the view will keep as many delegates
-    instantiated as will fit within the buffer specified.  For example,
+    If this value is non-zero, the view keeps as many delegates
+    instantiated as it can fit within the buffer specified.  For example,
     if in a vertical view the delegate is 20 pixels high and \c cacheBuffer is
     set to 40, then up to 2 delegates above and 2 delegates below the visible
     area may be retained.
@@ -1863,9 +1871,9 @@ void QDeclarativeListView::setWrapEnabled(bool wrap)
     Note that cacheBuffer is not a pixel buffer - it only maintains additional
     instantiated delegates.
 
-    Setting this value can make scrolling the list smoother at the expense
+    Setting this value can improve the smoothness of scrolling behavior at the expense
     of additional memory usage.  It is not a substitute for creating efficient
-    delegates; the fewer elements in a delegate, the faster a view may be
+    delegates; the fewer elements in a delegate, the faster a view can be
     scrolled.
 */
 int QDeclarativeListView::cacheBuffer() const
@@ -1890,13 +1898,14 @@ void QDeclarativeListView::setCacheBuffer(int b)
 /*!
     \qmlproperty string ListView::section.property
     \qmlproperty enumeration ListView::section.criteria
-    These properties hold the expression to be evaluated for the section attached property.
+    These properties hold the expression to be evaluated for the \l section attached property.
 
-    section.property hold the name of the property to use to determine
-    the section the item is in.
+    \c section.property hold the name of the property to use to determine
+    the section that holds the item.
 
-    section.criteria holds the criteria to use to get the section. It
+    \c section.criteria holds the criteria to use to access the section. It
     can be either:
+
     \list
     \o ViewSection.FullString (default) - section is the value of the property.
     \o ViewSection.FirstCharacter - section is the first character of the property value.
@@ -1935,9 +1944,10 @@ QString QDeclarativeListView::currentSection() const
     \qmlproperty int ListView::highlightMoveDuration
     \qmlproperty real ListView::highlightResizeSpeed
     \qmlproperty int ListView::highlightResizeDuration
+
     These properties hold the move and resize animation speed of the highlight delegate.
 
-    highlightFollowsCurrentItem must be true for these properties
+    \c highlightFollowsCurrentItem must be true for these properties
     to have effect.
 
     The default value for the speed properties is 400 pixels/second.
@@ -2019,21 +2029,21 @@ void QDeclarativeListView::setHighlightResizeDuration(int duration)
 /*!
     \qmlproperty enumeration ListView::snapMode
 
-    This property determines where the view will settle following a drag or flick.
+    This property determines where the view's scrolling behavior stops following a drag or flick.
     The allowed values are:
 
     \list
-    \o ListView.NoSnap (default) - the view will stop anywhere within the visible area.
-    \o ListView.SnapToItem - the view will settle with an item aligned with the start of
+    \o ListView.NoSnap (default) - the view stops anywhere within the visible area.
+    \o ListView.SnapToItem - the view settles with an item aligned with the start of
     the view.
-    \o ListView.SnapOneItem - the view will settle no more than one item away from the first
+    \o ListView.SnapOneItem - the view settles no more than one item away from the first
     visible item at the time the mouse button is released.  This mode is particularly
     useful for moving one page at a time.
     \endlist
 
-    snapMode does not affect the currentIndex.  To update the
-    currentIndex as the list is moved set \e highlightRangeMode
-    to \e ListView.StrictlyEnforceRange.
+    \c snapMode does not affect the \l currentIndex.  To update the
+    \l currentIndex as the list is moved, set \l highlightRangeMode
+    to \c ListView.StrictlyEnforceRange.
 
     \sa highlightRangeMode
 */
@@ -2335,23 +2345,23 @@ void QDeclarativeListView::decrementCurrentIndex()
     \a mode:
 
     \list
-    \o Beginning - position item at the top (or left for horizontal orientation) of the view.
-    \o Center- position item in the center of the view.
-    \o End - position item at bottom (or right for horizontal orientation) of the view.
-    \o Visible - if any part of the item is visible then take no action, otherwise
+    \o ListView.Beginning - position item at the top (or left for horizontal orientation) of the view.
+    \o ListView.Center - position item in the center of the view.
+    \o ListView.End - position item at bottom (or right for horizontal orientation) of the view.
+    \o ListView.Visible - if any part of the item is visible then take no action, otherwise
     bring the item into view.
-    \o Contain - ensure the entire item is visible.  If the item is larger than
+    \o ListView.Contain - ensure the entire item is visible.  If the item is larger than
     the view the item is positioned at the top (or left for horizontal orientation) of the view.
     \endlist
 
-    If positioning the view at the index would cause empty space to be displayed at
+    If positioning the view at \a index would cause empty space to be displayed at
     the beginning or end of the view, the view will be positioned at the boundary.
 
-    It is not recommended to use contentX or contentY to position the view
+    It is not recommended to use \l {Flickable::}{contentX} or \l {Flickable::}{contentY} to position the view
     at a particular index.  This is unreliable since removing items from the start
     of the list does not cause all other items to be repositioned, and because
     the actual start of the view can vary based on the size of the delegates.
-    The correct way to bring an item into view is with positionViewAtIndex.
+    The correct way to bring an item into view is with \c positionViewAtIndex.
 */
 void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 {

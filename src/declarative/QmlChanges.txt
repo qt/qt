@@ -18,9 +18,14 @@ C++ API
 QDeclarativeExpression::value() has been renamed to
 QDeclarativeExpression::evaluate()
 
-QML Launcher
+The QDeclarativeExpression constructor has changed from
+    QDeclarativeExpression(context, expression, scope)
+to
+    QDeclarativeExpression(context, scope, expression, parent = 0)
+
+QML Viewer
 ------------
-The standalone executable has been renamed to qml launcher. Runtime warnings
+The standalone qml executable has been renamed back to Qml Viewer. Runtime warnings
 can be now accessed via the menu (Debugging->Show Warnings).
 
 =============================================================================
