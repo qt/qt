@@ -74,5 +74,7 @@ private slots:
     void sampleTypeChanged(int idx);
     void endianChanged(int idx);
     void test();
+    void populateTable();
+
 };
 

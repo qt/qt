@@ -55,11 +55,11 @@ docs_zh_CN.commands = $$QT_ZH_CN_DOCUMENTATION
 # Install rules
 htmldocs.files = $$QT_BUILD_TREE/doc/html
 htmldocs.path = $$[QT_INSTALL_DOCS]
-htmldocs.CONFIG += no_check_exist
+htmldocs.CONFIG += no_check_exist directory
 
 qchdocs.files= $$QT_BUILD_TREE/doc/qch
 qchdocs.path = $$[QT_INSTALL_DOCS]
-qchdocs.CONFIG += no_check_exist
+qchdocs.CONFIG += no_check_exist directory
 
 docimages.files = $$QT_BUILD_TREE/doc/src/images
 docimages.path = $$[QT_INSTALL_DOCS]/src
