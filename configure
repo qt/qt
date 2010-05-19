@@ -607,7 +607,7 @@ mkdir -p "$outpath/config.tests"
 rm -f "$outpath/config.tests/.qmake.cache"
 cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
 
-QMakeVar add styles "cde mac motif plastique cleanlooks windows s60"
+QMakeVar add styles "cde mac motif plastique cleanlooks windows"
 QMakeVar add decorations "default windows styled"
 QMakeVar add mouse-drivers "pc"
 if [ "$UNAME_SYSTEM" = "Linux" ] ; then
@@ -4699,6 +4699,8 @@ if [ "$CFG_ZLIB" = "auto" ]; then
 fi
 
 case "$XPLATFORM" in *symbian*)
+    QMakeVar set styles "windows s60"   #overwrite previous default
+
     if test -z "$EPOCROOT"; then
         echo "Please export EPOCROOT. It should point to the sdk install dir"
         exit 1
@@ -4828,7 +4830,14 @@ fi
 
 # detect accessibility
 if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
-    CFG_ACCESSIBILITY=yes
+    case "$XPLATFORM" in
+    symbian*)
+        # accessibility is currently unsupported
+        CFG_ACCESSIBILITY=no
+    ;;
+    *)
+        CFG_ACCESSIBILITY=yes
+    esac
 fi
 
 # auto-detect SQL-modules support
