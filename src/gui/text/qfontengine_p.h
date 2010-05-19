@@ -462,6 +462,7 @@ private:
     CGFontRef cgFont;
     QCoreTextFontEngineMulti *parentEngine;
     int synthesisFlags;
+    CGAffineTransform transform;
     friend class QCoreTextFontEngineMulti;
 };
 
@@ -493,7 +494,7 @@ private:
     uint fontIndexForFont(CTFontRef id) const;
     CTFontRef ctfont;
     mutable QCFType<CFMutableDictionaryRef> attributeDict;
-
+    CGAffineTransform transform;
     friend class QFontDialogPrivate;
 };
 #  endif //MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
