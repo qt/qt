@@ -1390,7 +1390,11 @@ QCoreGraphicsPaintEngine::updateRenderHints(QPainter::RenderHints hints)
         CGContextSetInterpolationQuality(d->hd, (hints & QPainter::SmoothPixmapTransform) ?
                                          kCGInterpolationHigh : kCGInterpolationNone);
     }
-    CGContextSetShouldSmoothFonts(d->hd, hints & QPainter::TextAntialiasing);
+    bool textAntialiasing = (hints & QPainter::TextAntialiasing) == QPainter::TextAntialiasing;
+    if (!textAntialiasing || d->disabledSmoothFonts) {
+        d->disabledSmoothFonts = !textAntialiasing;
+        CGContextSetShouldSmoothFonts(d->hd, textAntialiasing);
+    }
 }
 
 /*
