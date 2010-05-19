@@ -1,4 +1,5 @@
 import Qt 4.7
+import Qt.labs.folderlistmodel 1.0
 
 Rectangle {
     id: root
@@ -12,12 +13,12 @@ Rectangle {
     FolderListModel {
         id: folders1
         nameFilters: [ "*.qml" ]
-        folder: qmlLauncherFolder
+        folder: qmlViewerFolder
     }
     FolderListModel {
         id: folders2
         nameFilters: [ "*.qml" ]
-        folder: qmlLauncherFolder
+        folder: qmlViewerFolder
     }
 
     SystemPalette { id: palette }
@@ -62,7 +63,7 @@ Rectangle {
                 if (folders.isFolder(index)) {
                     down(filePath);
                 } else {
-                    qmlLauncher.launch(filePath);
+                    qmlViewer.launch(filePath);
                 }
             }
             width: root.width

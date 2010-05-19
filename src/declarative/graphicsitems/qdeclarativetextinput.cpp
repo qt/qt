@@ -907,8 +907,12 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
-    d->control->moveCursor(d->xToPos(event->pos().x()), true);
-    event->setAccepted(true);
+    if (d->selectByMouse) {
+        d->control->moveCursor(d->xToPos(event->pos().x()), true);
+        event->setAccepted(true);
+    } else {
+        QDeclarativePaintedItem::mouseMoveEvent(event);
+    }
 }
 
 /*!
@@ -939,6 +943,8 @@ bool QDeclarativeTextInput::event(QEvent* ev)
         case QEvent::GraphicsSceneMouseRelease:
             break;
         default:
+            if (ev->type() == QEvent::GraphicsSceneMouseDoubleClick && !d->selectByMouse)
+                break;
             handled = d->control->processEvent(ev);
             if (ev->type() == QEvent::InputMethod)
                 updateSize();
@@ -1112,6 +1118,32 @@ QString QDeclarativeTextInput::displayText() const
     Q_D(const QDeclarativeTextInput);
     return d->control->displayText();
 }
+
+/*!
+    \qmlproperty string TextInput::selectByMouse
+
+    Defaults to false.
+
+    If true, the user can use the mouse to select text in some
+    platform-specific way. Note that for some platforms this may
+    not be an appropriate interaction (eg. may conflict with how
+    the text needs to behave inside a Flickable.
+*/
+bool QDeclarativeTextInput::selectByMouse() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->selectByMouse;
+}
+
+void QDeclarativeTextInput::setSelectByMouse(bool on)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse != on) {
+        d->selectByMouse = on;
+        emit selectByMouseChanged(on);
+    }
+}
+
 
 /*!
     \qmlmethod void TextInput::moveCursorSelection(int position)

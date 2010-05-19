@@ -3,8 +3,8 @@ TEMPLATE = subdirs
 SUBDIRS += \
     imageprovider \
     plugins \
-    proxyviewer \
-    proxywidgets \
+    networkaccessmanagerfactory \
+    qwidgets \
     qgraphicslayouts \
     referenceexamples
 

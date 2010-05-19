@@ -995,7 +995,7 @@ private:
     int m_status;
     QString m_statusText;
     QNetworkRequest m_request;
-    QNetworkReply *m_network;
+    QDeclarativeGuard<QNetworkReply> m_network;
     void destroyNetwork();
 
     QNetworkAccessManager *m_nam;

@@ -119,7 +119,7 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, cons
     QDeclarative_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 
-    m_expression = new QDeclarativeExpression(ctxt, val, scope);
+    m_expression = new QDeclarativeExpression(ctxt, scope, val);
 }
 
 QDeclarativeBoundSignal::~QDeclarativeBoundSignal()

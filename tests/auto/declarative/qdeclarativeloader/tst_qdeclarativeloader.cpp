@@ -78,6 +78,7 @@ private slots:
     void clear();
     void urlToComponent();
     void componentToUrl();
+    void anchoredLoader();
     void sizeLoaderToItem();
     void sizeItemToLoader();
     void noResize();
@@ -264,6 +265,27 @@ void tst_QDeclarativeLoader::componentToUrl()
     QCOMPARE(loader->height(), 60.0);
 
     delete item;
+}
+
+void tst_QDeclarativeLoader::anchoredLoader()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("/AnchoredLoader.qml"));
+    QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(rootItem != 0);
+    QDeclarativeItem *loader = rootItem->findChild<QDeclarativeItem*>("loader");
+    QDeclarativeItem *sourceElement = rootItem->findChild<QDeclarativeItem*>("sourceElement");
+
+    QVERIFY(loader != 0);
+    QVERIFY(sourceElement != 0);
+
+    QCOMPARE(rootItem->width(), 300.0);
+    QCOMPARE(rootItem->height(), 200.0);
+
+    QCOMPARE(loader->width(), 300.0);
+    QCOMPARE(loader->height(), 200.0);
+
+    QCOMPARE(sourceElement->width(), 300.0);
+    QCOMPARE(sourceElement->height(), 200.0);
 }
 
 void tst_QDeclarativeLoader::sizeLoaderToItem()

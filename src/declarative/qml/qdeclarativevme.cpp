@@ -627,7 +627,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 QDeclarativeBoundSignal *bs = new QDeclarativeBoundSignal(target, signal, target);
                 QDeclarativeExpression *expr = 
-                    new QDeclarativeExpression(ctxt, primitives.at(instr.storeSignal.value), context);
+                    new QDeclarativeExpression(ctxt, context, primitives.at(instr.storeSignal.value));
                 expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }
