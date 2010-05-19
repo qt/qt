@@ -77,7 +77,10 @@
    deliberately show off Qt's features. You might want to look at
    these as well.
 
-   \section1 Examples by functional area
+   These examples are provided under the terms of the \l{BSD License}.
+
+
+   \section1 Examples by Functional Area
 
    \generatelist{related}
 */
