@@ -68,9 +68,13 @@ public:
     ~QDeclarativeContextScriptClass();
 
     QScriptValue newContext(QDeclarativeContextData *, QObject * = 0);
+    QScriptValue newUrlContext(QDeclarativeContextData *, QObject *, const QString &);
+    QScriptValue newUrlContext(const QString &);
     QScriptValue newSharedContext();
 
     QDeclarativeContextData *contextFromValue(const QScriptValue &);
+    QUrl urlFromValue(const QScriptValue &);
+
     QObject *setOverrideObject(QScriptValue &, QObject *);
 
 protected:

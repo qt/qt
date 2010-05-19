@@ -1,0 +1,23 @@
+import Qt 4.7
+
+QtObject {
+    property bool test1: false;        
+    property bool test2: false;        
+    property bool test3: false;        
+    property bool test4: false;        
+    property bool test5: false;        
+
+
+    property int a: 7
+    property int b: 8
+
+    Component.onCompleted: {
+        var b = 9;
+
+        test1 = (eval("a") == 7);
+        test2 = (eval("b") == 9);
+        test3 = (eval("c") == undefined);
+        test4 = (eval("console") == console);
+        test5 = (eval("Qt") == Qt);
+    }
+}

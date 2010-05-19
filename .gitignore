@@ -52,7 +52,6 @@ bin/Qt*.dll
 bin/assistant*
 bin/designer*
 bin/dumpcpp*
-bin/duiviewer*
 bin/idc*
 bin/linguist*
 bin/lrelease*

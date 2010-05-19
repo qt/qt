@@ -62,13 +62,13 @@ QT_BEGIN_NAMESPACE
     delegate it should appear in.  This allows an item to move
     between views.
 
-    \snippet examples/declarative/package/Delegate.qml 0
+    \snippet examples/declarative/modelviews/package/Delegate.qml 0
 
     These named items are used as the delegates by the two views who
     reference the special VisualDataModel.parts property to select
     a model which provides the chosen delegate.
 
-    \snippet examples/declarative/package/view.qml 0
+    \snippet examples/declarative/modelviews/package/view.qml 0
 
     \sa QtDeclarative
 */

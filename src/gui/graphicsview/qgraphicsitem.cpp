@@ -1090,6 +1090,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     if (newParent == parent)
         return;
 
+    if (isWidget)
+        static_cast<QGraphicsWidgetPrivate *>(this)->fixFocusChainBeforeReparenting((newParent &&
+                                                        newParent->isWidget()) ? static_cast<QGraphicsWidget *>(newParent) : 0,
+                                                        scene);
     if (scene) {
         // Deliver the change to the index
         if (scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
@@ -1422,6 +1426,13 @@ QGraphicsItem::~QGraphicsItem()
 
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
+
+    if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
+        QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
+        QGestureManager *manager = QGestureManager::instance();
+        foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+            manager->cleanupCachedGestures(o, type);
+    }
 
     clearFocus();
 
@@ -1796,9 +1807,6 @@ static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::Graphics
 */
 void QGraphicsItem::setFlags(GraphicsItemFlags flags)
 {
-    if (isWindow())
-        flags |= ItemIsPanel;
-
     // Notify change and check for adjustment.
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
@@ -7660,7 +7668,13 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
         manager->cleanupCachedGestures(this, gesture);
     }
 }
+/*!
+    Updates the item's micro focus. This is slot for convenience.
 
+    \since 4.7
+
+    \sa QInputContext
+*/
 void QGraphicsObject::updateMicroFocus()
 {
     QGraphicsItem::updateMicroFocus();
@@ -7966,6 +7980,13 @@ void QGraphicsItemPrivate::resetHeight()
 
   This signal gets emitted whenever the children list changes
   \internal
+*/
+
+/*!
+  \property QGraphicsObject::effect
+  \brief the effect attached to this item
+
+  \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
 */
 
 /*!

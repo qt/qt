@@ -55,6 +55,7 @@
 #include <QFile>
 #include <QThread>
 #include <QMutex>
+#include <QBuffer>
 #include <QWaitCondition>
 #include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
@@ -342,7 +343,10 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
             errorString = reply->errorString();
         } else {
             QSize read_impsize;
-            if (readImage(reply->url(), reply, &image, &errorString, &read_impsize, job->forcedWidth(), job->forcedHeight())) {
+            QByteArray all = reply->readAll();
+            QBuffer buff(&all);
+            buff.open(QIODevice::ReadOnly);
+            if (readImage(reply->url(), &buff, &image, &errorString, &read_impsize, job->forcedWidth(), job->forcedHeight())) {
                 qmlOriginalSizes()->insert(reply->url(), read_impsize);
                 error = QDeclarativeImageReaderEvent::NoError;
             } else {

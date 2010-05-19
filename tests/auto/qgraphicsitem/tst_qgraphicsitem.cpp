@@ -45,6 +45,7 @@
 #include <private/qtextcontrol_p.h>
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicsview_p.h>
+#include <private/qgraphicsscene_p.h>
 #include <QStyleOptionGraphicsItem>
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
@@ -447,6 +448,7 @@ private slots:
     void QT_2649_focusScope();
     void sortItemsWhileAdding();
     void doNotMarkFullUpdateIfNotInScene();
+    void itemDiesDuringDraggingOperation();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -10484,5 +10486,27 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
     QTRY_COMPARE(item3->painted, 3);
 }
 
+void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 100, 100));
+    item->setFlag(QGraphicsItem::ItemIsMovable);
+    item->setAcceptDrops(true);
+    scene.addItem(item);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+    QGraphicsSceneDragDropEvent dragEnter(QEvent::GraphicsSceneDragEnter);
+    dragEnter.setScenePos(item->boundingRect().center());
+    QApplication::sendEvent(&scene, &dragEnter);
+    QGraphicsSceneDragDropEvent event(QEvent::GraphicsSceneDragMove);
+    event.setScenePos(item->boundingRect().center());
+    QApplication::sendEvent(&scene, &event);
+    QVERIFY(QGraphicsScenePrivate::get(&scene)->dragDropItem == item);
+    delete item;
+    QVERIFY(QGraphicsScenePrivate::get(&scene)->dragDropItem == 0);
+}
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

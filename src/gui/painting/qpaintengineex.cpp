@@ -149,6 +149,7 @@ QDebug Q_GUI_EXPORT &operator<<(QDebug &s, const QVectorPath &path)
 
 
 struct StrokeHandler {
+    StrokeHandler(int reserve) : pts(reserve), types(reserve) {}
     QDataBuffer<qreal> pts;
     QDataBuffer<QPainterPath::ElementType> types;
 };
@@ -394,7 +395,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     if (!d->strokeHandler) {
-        d->strokeHandler = new StrokeHandler;
+        d->strokeHandler = new StrokeHandler(path.elementCount()+4);
         d->stroker.setMoveToHook(qpaintengineex_moveTo);
         d->stroker.setLineToHook(qpaintengineex_lineTo);
         d->stroker.setCubicToHook(qpaintengineex_cubicTo);
@@ -460,6 +461,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         // change the current transform. Normal transformed,
         // non-cosmetic pens will be transformed as part of fill
         // later, so they are also covered here..
+        d->activeStroker->setCurveThresholdFromTransform(state()->matrix);
         d->activeStroker->begin(d->strokeHandler);
         if (types) {
             while (points < lastPoint) {
@@ -517,6 +519,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
             QPainterPath painterPath = state()->matrix.map(path.convertToPainterPath());
             d->activeStroker->strokePath(painterPath, d->strokeHandler, QTransform());
         } else {
+            d->activeStroker->setCurveThresholdFromTransform(state()->matrix);
             d->activeStroker->begin(d->strokeHandler);
             if (types) {
                 while (points < lastPoint) {

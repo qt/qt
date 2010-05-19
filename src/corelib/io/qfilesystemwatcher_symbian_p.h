@@ -113,14 +113,14 @@ private:
     friend class QNotifyChangeEvent;
     void emitPathChanged(QNotifyChangeEvent *e);
 
-    bool startWatcher();
+    void startWatcher();
 
     QHash<QNotifyChangeEvent*, QString> activeObjectToPath;
     QMutex mutex;
     QWaitCondition syncCondition;
-    int errorCode;
     bool watcherStarted;
-    QNotifyChangeEvent *currentEvent;
+    QNotifyChangeEvent *currentAddEvent;
+    QNotifyChangeEvent *currentRemoveEvent;
 };
 
 #endif // QT_NO_FILESYSTEMWATCHER

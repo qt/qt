@@ -47,6 +47,8 @@
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworksession.h>
 
+#include <QEventLoop>
+#include <QTimer>
 #include <QDebug>
 
 QT_USE_NAMESPACE
@@ -60,15 +62,14 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
-    // Cannot read/write to processes on WinCE or Symbian.
-    // Easiest alternative is to use sockets for IPC.
-
-    QLocalSocket oopSocket;
-
-    oopSocket.connectToServer("tst_qnetworksession");
-    oopSocket.waitForConnected(-1);
-
+    // Update configurations so that everything is up to date for this process too.
+    // Event loop is used to wait for awhile.
     QNetworkConfigurationManager manager;
+    manager.updateConfigurations();
+    QEventLoop iIgnoreEventLoop;
+    QTimer::singleShot(3000, &iIgnoreEventLoop, SLOT(quit()));
+    iIgnoreEventLoop.exec();
+
     QList<QNetworkConfiguration> discovered =
         manager.allConfigurations(QNetworkConfiguration::Discovered);
 
@@ -81,6 +82,13 @@ int main(int argc, char** argv)
         qDebug("Lackey: no discovered configurations, returning empty error.");
         return NO_DISCOVERED_CONFIGURATIONS_ERROR;
     }
+
+    // Cannot read/write to processes on WinCE or Symbian.
+    // Easiest alternative is to use sockets for IPC.
+    QLocalSocket oopSocket;
+
+    oopSocket.connectToServer("tst_qnetworksession");
+    oopSocket.waitForConnected(-1);
 
     qDebug() << "Lackey started";
 

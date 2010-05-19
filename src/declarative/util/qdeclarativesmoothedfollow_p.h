@@ -106,7 +106,7 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeSmoothedFollow);
+QML_DECLARE_TYPE(QDeclarativeSmoothedFollow)
 
 QT_END_HEADER
 

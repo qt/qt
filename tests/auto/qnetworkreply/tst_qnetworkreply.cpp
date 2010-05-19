@@ -522,8 +522,8 @@ public:
         active->connectToHost("127.0.0.1", server.serverPort());
 #ifndef Q_OS_SYMBIAN
         // need more time as working with embedded
-		// device and testing from emualtor
-		// things tend to get slower
+        // device and testing from emualtor
+        // things tend to get slower
         if (!active->waitForConnected(1000))
             return false;
 
@@ -929,7 +929,7 @@ void tst_QNetworkReply::invalidProtocol()
 
 void tst_QNetworkReply::getFromData_data()
 {
-	QTest::addColumn<QString>("request");
+    QTest::addColumn<QString>("request");
     QTest::addColumn<QByteArray>("expected");
     QTest::addColumn<QString>("mimeType");
 
@@ -1025,7 +1025,7 @@ void tst_QNetworkReply::getFromData()
 
 void tst_QNetworkReply::getFromFile()
 {
-	// create the file:
+    // create the file:
     QTemporaryFile file(QDir::currentPath() + "/temp-XXXXXX");
     file.setAutoRemove(true);
     QVERIFY(file.open());
@@ -1073,11 +1073,14 @@ void tst_QNetworkReply::getFromFileSpecial_data()
     QTest::newRow("resource") << ":/resource" <<  "qrc:/resource";
     QTest::newRow("search-path") << "srcdir:/rfc3252.txt" << "srcdir:/rfc3252.txt";
     QTest::newRow("bigfile-path") << "srcdir:/bigfile" << "srcdir:/bigfile";
+#ifdef Q_OS_WIN
+    QTest::newRow("smb-path") << "srcdir:/smb-file.txt" << "file://" + QtNetworkSettings::winServerName() + "/testshare/test.pri";
+#endif
 }
 
 void tst_QNetworkReply::getFromFileSpecial()
 {
-	QFETCH(QString, fileName);
+    QFETCH(QString, fileName);
     QFETCH(QString, url);
 
     // open the resource so we can find out its size
@@ -1107,7 +1110,7 @@ void tst_QNetworkReply::getFromFtp_data()
 
 void tst_QNetworkReply::getFromFtp()
 {
-	QFETCH(QString, referenceName);
+    QFETCH(QString, referenceName);
     QFETCH(QString, url);
 
     QFile reference(referenceName);
@@ -1136,7 +1139,7 @@ void tst_QNetworkReply::getFromHttp_data()
 
 void tst_QNetworkReply::getFromHttp()
 {
-	QFETCH(QString, referenceName);
+    QFETCH(QString, referenceName);
     QFETCH(QString, url);
 
     QFile reference(referenceName);
@@ -3456,8 +3459,8 @@ void tst_QNetworkReply::downloadProgress_data()
     QTest::newRow("big") << 4096;
 #else
     // it can run even with 4096
-	// but it takes lot time
-	//especially on emulator
+    // but it takes lot time
+    //especially on emulator
     QTest::newRow("big") << 1024;
 #endif
 }
@@ -3646,7 +3649,7 @@ void tst_QNetworkReply::receiveCookiesFromHttp_data()
 
 void tst_QNetworkReply::receiveCookiesFromHttp()
 {
-	QFETCH(QString, cookieString);
+    QFETCH(QString, cookieString);
 
     QByteArray data = cookieString.toLatin1() + '\n';
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/set-cookie.cgi");

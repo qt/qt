@@ -3824,9 +3824,35 @@ void QWidgetPrivate::raise_sys()
 #if QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
-        // Calling orderFront shows the window on Cocoa too.
+        // With the introduction of spaces it is not as simple as just raising the window.
+        // First we need to check if we are in the right space. If we are, then we just continue
+        // as usual. The problem comes when we are not in the active space. There are two main cases:
+        // 1. Our parent was moved to a new space. In this case we want the window to be raised
+        // in the same space as its parent.
+        // 2. We don't have a parent. For this case we will just raise the window and let Cocoa
+        // switch to the corresponding space.
+        // NOTICE: There are a lot of corner cases here. We are keeping this simple for now, if
+        // required we will introduce special handling for some of them.
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
-            [qt_mac_window_for(q) orderFront:qt_mac_window_for(q)];
+            OSWindowRef window = qt_mac_window_for(q);
+            // isOnActiveSpace is available only from 10.6 onwards, so we need to check if it is
+            // available before calling it.
+            if([window respondsToSelector:@selector(isOnActiveSpace)]) {
+                if(![window performSelector:@selector(isOnActiveSpace)]) {
+                    QWidget *parentWidget = q->parentWidget();
+                    if(parentWidget) {
+                        OSWindowRef parentWindow = qt_mac_window_for(parentWidget);
+                        if(parentWindow && [parentWindow isOnActiveSpace]) {
+                            // The window was created in a different space. Therefore if we want
+                            // to show it in the current space we need to recreate it in the new
+                            // space.
+                            recreateMacWindow();
+                            window = qt_mac_window_for(q);
+                        }
+                    }
+                }
+            }
+            [window orderFront:window];
         }
         if (qt_mac_raise_process) { //we get to be the active process now
             ProcessSerialNumber psn;

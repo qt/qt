@@ -1,18 +1,8 @@
 import Qt.test 1.0
+import "slot_complex_js.js" as Logic
 
 TestObject {
-    Script {
-        function myCustomFunction(n) {
-            var a = 1;
-            while (n > 0) {
-                a = a * n;
-                n--; 
-            }
-            return a;
-        }
-    }
-
-    onMySignal: { for (var ii = 0; ii < 10000; ++ii) { myCustomFunction(10); } }
+    onMySignal: { for (var ii = 0; ii < 10000; ++ii) { Logic.myCustomFunction(10); } }
 }
 
 

@@ -40,12 +40,11 @@
 ****************************************************************************/
 
 /*!
-\page bearer-management.html
+  \page bearer-management.html
 
-\title Bearer Management
-\brief An API to control the system's connectivity state.
-
-\ingroup network
+  \title Bearer Management
+  \ingroup qt-network
+  \brief An API to control the system's connectivity state.
 
 Bearer Management controls the connectivity state of the system so that
 the user can start or stop interfaces or roam transparently between

@@ -163,6 +163,11 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
         int matchingCount = 0;
         chosenVisualInfo = XGetVisualInfo(X11->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
         if (chosenVisualInfo) {
+            // Skip size checks if implementation supports non-matching visual
+            // and config (http://bugreports.qt.nokia.com/browse/QTBUG-9444).
+            if (QEgl::hasExtension("EGL_NV_post_convert_replication"))
+                return visualId;
+
             int visualRedSize = countBits(chosenVisualInfo->red_mask);
             int visualGreenSize = countBits(chosenVisualInfo->green_mask);
             int visualBlueSize = countBits(chosenVisualInfo->blue_mask);

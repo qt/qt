@@ -42,12 +42,13 @@
 #ifndef QDECLARATIVEWEBVIEW_H
 #define QDECLARATIVEWEBVIEW_H
 
-#include <private/qdeclarativepainteditem_p.h>
+#include <qdeclarativeitem.h>
 
 #include <QtGui/QAction>
 #include <QtCore/QUrl>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWebKit/QWebPage>
+#include <QtWebKit/QGraphicsWebView>
 
 QT_BEGIN_HEADER
 
@@ -61,6 +62,7 @@ class QDeclarativeWebSettings;
 class QDeclarativeWebViewPrivate;
 class QNetworkRequest;
 class QDeclarativeWebView;
+class QDeclarativeWebViewPrivate;
 
 class QDeclarativeWebPage : public QWebPage
 {
@@ -85,7 +87,7 @@ class QDeclarativeWebViewAttached;
 
 //### TODO: browser plugins
 
-class QDeclarativeWebView : public QDeclarativePaintedItem
+class QDeclarativeWebView : public QDeclarativeItem
 {
     Q_OBJECT
 
@@ -119,6 +121,9 @@ class QDeclarativeWebView : public QDeclarativePaintedItem
     Q_PROPERTY(QDeclarativeItem* newWindowParent READ newWindowParent WRITE setNewWindowParent NOTIFY newWindowParentChanged)
 
     Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled NOTIFY renderingEnabledChanged)
+
+    Q_PROPERTY(QSize contentsSize READ contentsSize NOTIFY contentsSizeChanged)
+    Q_PROPERTY(qreal contentsScale READ contentsScale WRITE setContentsScale NOTIFY contentsScaleChanged)
 
 public:
     QDeclarativeWebView(QDeclarativeItem *parent=0);
@@ -182,6 +187,13 @@ public:
     QDeclarativeItem *newWindowParent() const;
     void setNewWindowParent(QDeclarativeItem *newWindow);
 
+    bool isComponentCompletePublic() const { return isComponentComplete(); }
+
+    QSize contentsSize() const;
+
+    void setContentsScale(qreal scale);
+    qreal contentsScale() const;
+
 Q_SIGNALS:
     void preferredWidthChanged();
     void preferredHeightChanged();
@@ -197,6 +209,8 @@ Q_SIGNALS:
     void newWindowComponentChanged();
     void newWindowParentChanged();
     void renderingEnabledChanged();
+    void contentsSizeChanged(const QSize&);
+    void contentsScaleChanged();
 
     void loadStarted();
     void loadFinished();
@@ -212,38 +226,36 @@ public Q_SLOTS:
     QVariant evaluateJavaScript(const QString&);
 
 private Q_SLOTS:
-    void expandToWebPage();
-    void paintPage(const QRect&);
     void doLoadStarted();
     void doLoadProgress(int p);
     void doLoadFinished(bool ok);
     void setStatusText(const QString&);
     void windowObjectCleared();
     void pageUrlChanged();
-    void noteContentsSizeChanged(const QSize&);
     void initialLayout();
 
-protected:
-    void drawContents(QPainter *, const QRect &);
+    void propagateFocusToWebPage(bool);
 
+    void updateDeclarativeWebViewSize();
+
+protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void timerEvent(QTimerEvent *event);
     void hoverMoveEvent (QGraphicsSceneHoverEvent * event);
-    void keyPressEvent(QKeyEvent* event);
-    void keyReleaseEvent(QKeyEvent* event);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
     virtual bool sceneEvent(QEvent *event);
     QDeclarativeWebView *createWindow(QWebPage::WebWindowType type);
 
 private:
+    void updateContentsSize();
     void init();
     virtual void componentComplete();
     Q_DISABLE_COPY(QDeclarativeWebView)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeWebView)
+    QDeclarativeWebViewPrivate* d;
     QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *);
     QMouseEvent *sceneHoverMoveEventToMouseEvent(QGraphicsSceneHoverEvent *);
     friend class QDeclarativeWebPage;

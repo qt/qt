@@ -50,6 +50,7 @@
 #include <qgesturerecognizer.h>
 #include <qgraphicsitem.h>
 #include <qgraphicsview.h>
+#include <qmainwindow.h>
 
 #include <qdebug.h>
 
@@ -355,6 +356,7 @@ private slots:
     void deleteGestureTargetItem();
     void viewportCoordinates();
     void partialGesturePropagation();
+    void testQGestureRecognizerCleanup();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1947,6 +1949,75 @@ void tst_Gestures::partialGesturePropagation()
     QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount-2); // except for started and finished
     QCOMPARE(item3->gestureEventsReceived, 0);
     QCOMPARE(item4->gestureEventsReceived, 0);
+}
+
+class WinNativePan : public QPanGesture {
+public:
+    WinNativePan() {}
+};
+
+class Pan : public QPanGesture {
+public:
+    Pan() {}
+};
+
+class CustomPan : public QPanGesture {
+public:
+    CustomPan() {}
+};
+
+// Recognizer for active gesture triggers on mouse press
+class PanRecognizer : public QGestureRecognizer {
+public:
+    enum PanType { Platform, Default, Custom };
+
+    PanRecognizer(int id) : m_id(id) {}
+    QGesture *create(QObject *) {
+        switch(m_id) {
+        case Platform: return new WinNativePan();
+        case Default:  return new Pan();
+        default:       return new CustomPan();
+        }
+    }
+
+    Result recognize(QGesture *, QObject *, QEvent *) { return QGestureRecognizer::Ignore; }
+
+    const int m_id;
+};
+
+void tst_Gestures::testQGestureRecognizerCleanup()
+{
+    // Clean first the current recognizers in QGManager
+    QGestureRecognizer::unregisterRecognizer(Qt::PanGesture);
+
+    // v-- Qt singleton QGManager initialization
+
+    // Mimic QGestureManager: register both default and "platform" recognizers
+    // (this is done in windows when QT_NO_NATIVE_GESTURES is not defined)
+    PanRecognizer *def = new PanRecognizer(PanRecognizer::Default);
+    QGestureRecognizer::registerRecognizer(def);
+    PanRecognizer *plt = new PanRecognizer(PanRecognizer::Platform);
+    QGestureRecognizer::registerRecognizer(plt);
+    qDebug () << "register: default =" << def << "; platform =" << plt;
+
+    // ^-- Qt singleton QGManager initialization
+
+    // Here, application code would start
+
+    // Create QGV (has a QAScrollArea, which uses Qt::PanGesture)
+    QMainWindow    *w = new QMainWindow;
+    QGraphicsView  *v = new QGraphicsView();
+    w->setCentralWidget(v);
+
+    // Unregister Qt recognizers
+    QGestureRecognizer::unregisterRecognizer(Qt::PanGesture);
+
+    // Register a custom Pan recognizer
+    //QGestureRecognizer::registerRecognizer(new PanRecognizer(PanRecognizer::Custom));
+
+    w->show();
+    QTest::qWaitForWindowShown(w);
+    delete w;
 }
 
 QTEST_MAIN(tst_Gestures)

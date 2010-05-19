@@ -63,7 +63,7 @@ public:
 
 private:
     void updateSessionState(QNetworkSession::State state);
-    void updateSessionError(QNetworkSession::SessionError error);
+    void clearError();
 
 private Q_SLOTS:
     void openSession();
@@ -71,9 +71,12 @@ private Q_SLOTS:
     void closeSession();
     void stopSession();
     void updateSession();
+    void updateSessionError(QNetworkSession::SessionError error);
 #if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
     void deleteSession();
 #endif
+
+
 private:
     QNetworkSession *session;
     int statsTimer;

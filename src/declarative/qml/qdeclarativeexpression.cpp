@@ -57,9 +57,11 @@ QT_BEGIN_NAMESPACE
 
 bool QDeclarativeDelayedError::addError(QDeclarativeEnginePrivate *e)
 {
-    if (!e || prevError) return false;
+    if (!e) return false;
 
     if (e->inProgressCreations == 0) return false; // Not in construction
+
+    if (prevError) return true; // Already in error chain
 
     prevError = &e->erroredBindings;
     nextError = e->erroredBindings;

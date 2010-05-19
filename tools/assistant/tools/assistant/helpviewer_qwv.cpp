@@ -269,6 +269,7 @@ HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
+    connect(page(), SIGNAL(printRequested(QWebFrame*)), this, SIGNAL(printRequested()));
 
     setFont(viewerFont());
     setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);

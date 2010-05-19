@@ -347,6 +347,7 @@
     \row    \o vcapp         \o Creates a Visual Studio Project file to build
                              an application.
     \row    \o vclib         \o Creates a Visual Studio Project file to build a library.
+    \row    \o vcsubdirs     \o Creates a Visual Studio Solution file to build projects in sub-directories.
     \endtable
 
     See the \l{qmake Tutorial} for advice on writing project files for

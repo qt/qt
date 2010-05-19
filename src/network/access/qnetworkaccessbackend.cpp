@@ -327,6 +327,11 @@ void QNetworkAccessBackend::authenticationRequired(QAuthenticator *authenticator
     manager->authenticationRequired(this, authenticator);
 }
 
+void QNetworkAccessBackend::cacheCredentials(QAuthenticator *authenticator)
+{
+    manager->addCredentials(this->reply->url, authenticator);
+}
+
 void QNetworkAccessBackend::metaDataChanged()
 {
     reply->metaDataChanged();

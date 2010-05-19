@@ -124,15 +124,15 @@ QT_USE_NAMESPACE
 
 #ifdef QT_MAC_USE_COCOA
 
-@class QCocoaPrintPanelDelegate;
+@class QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate);
 
-@interface QCocoaPrintPanelDelegate : NSObject {
+@interface QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) : NSObject {
 }
 - (void)printPanelDidEnd:(NSPrintPanel *)printPanel
         returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
 
-@implementation QCocoaPrintPanelDelegate
+@implementation QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate)
 - (void)printPanelDidEnd:(NSPrintPanel *)printPanel
         returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
@@ -313,7 +313,7 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
 
     macStartInterceptWindowTitle(q);
     printPanel = [NSPrintPanel printPanel];
-    QCocoaPrintPanelDelegate *delegate = [[QCocoaPrintPanelDelegate alloc] init];
+    QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] init];
     [printPanel setOptions:macOptions];
 
     if (modality == Qt::ApplicationModal) {

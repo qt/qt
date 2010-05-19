@@ -72,7 +72,7 @@ public:
                  color((QRgb)0), style(QDeclarativeText::Normal),
                  styleColor((QRgb)0), hAlign(QDeclarativeTextInput::AlignLeft),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
-                 cursorVisible(false), autoScroll(true)
+                 cursorVisible(false), autoScroll(true), clickCausedFocus(false)
     {
     }
 
@@ -116,6 +116,7 @@ public:
     bool focusOnPress;
     bool cursorVisible;
     bool autoScroll;
+    bool clickCausedFocus;
 };
 
 QT_END_NAMESPACE

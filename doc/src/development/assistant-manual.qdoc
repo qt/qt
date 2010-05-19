@@ -359,7 +359,7 @@
 
     The \menu{Options} page lets you specify the homepage \QA will display when
     you click the \gui{Home} button in \QA's main user interface. You can specify
-    the hompage by typing it here or clicking on one of the buttons below the
+    the homepage by typing it here or clicking on one of the buttons below the
     textbox. \gui{Current Page} sets the currently displayed page as your home
     page while \gui{Restore to default} will reset your home page to the default
     home page.
