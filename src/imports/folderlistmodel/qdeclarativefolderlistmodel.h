@@ -47,6 +47,12 @@
 #include <QUrl>
 #include <QAbstractListModel>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QDeclarativeContext;
 class QModelIndex;
 
@@ -119,6 +125,10 @@ private:
     QDeclarativeFolderListModelPrivate *d;
 };
 
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(QDeclarativeFolderListModel)
+
+QT_END_HEADER
 
 #endif // QDECLARATIVEFOLDERLISTMODEL_H
