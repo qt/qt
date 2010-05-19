@@ -113,6 +113,7 @@ QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementati
     QStringList filters;
     filters.append(QLatin1String("*.ttf"));
     filters.append(QLatin1String("*.ccc"));
+    filters.append(QLatin1String("*.ltt"));
     const QFileInfoList fontFiles = alternativeFilePaths(QLatin1String("resource\\Fonts"), filters);
 
     const TInt heapMinLength = 0x1000;

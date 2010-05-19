@@ -62,6 +62,9 @@ class tst_CompilerWarnings: public QObject
 private slots:
     void warnings_data();
     void warnings();
+
+private:
+    bool shouldIgnoreWarning(QString const&);
 };
 
 #if 0
@@ -242,14 +245,35 @@ void tst_CompilerWarnings::warnings()
     if (!errs.isEmpty()) {
         errList = errs.split("\n");
         qDebug() << "Arguments:" << args;
-        foreach (QString err, errList) {
-            qDebug() << err;
+        QStringList validErrors;
+        foreach (QString const& err, errList) {
+            bool ignore = shouldIgnoreWarning(err);
+            qDebug() << err << (ignore ? " [ignored]" : "");
+            if (!ignore) {
+                validErrors << err;
+            }
         }
+        errList = validErrors;
     }
     QCOMPARE(errList.count(), 0); // verbose info how many lines of errors in output
-    QVERIFY(errs.isEmpty());
 
     tmpQSourceFile.remove();
+}
+
+bool tst_CompilerWarnings::shouldIgnoreWarning(QString const& warning)
+{
+    if (warning.isEmpty()) {
+        return true;
+    }
+
+    // icecc outputs warnings if some icecc node breaks
+    if (warning.startsWith("ICECC[")) {
+        return true;
+    }
+
+    // Add more bogus warnings here
+
+    return false;
 }
 
 QTEST_APPLESS_MAIN(tst_CompilerWarnings)

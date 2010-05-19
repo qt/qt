@@ -179,6 +179,9 @@ qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
 QByteArray QHttpNetworkReply::readAny()
 {
     Q_D(QHttpNetworkReply);
+    if (d->responseData.bufferCount() == 0)
+        return QByteArray();
+
     // we'll take the last buffer, so schedule another read from http
     if (d->downstreamLimited && d->responseData.bufferCount() == 1)
         d->connection->d_func()->readMoreLater(this);

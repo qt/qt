@@ -358,7 +358,7 @@ public:
             return 0;
         }
     } *wce_menu;
-    HMENU wceMenu(bool create = false);
+    HMENU wceMenu();
     QAction* wceCommands(uint command);
 #endif
 #if defined(Q_WS_S60)

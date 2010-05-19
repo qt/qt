@@ -142,7 +142,7 @@ public:
 #endif
 
 #ifdef Q_WS_WINCE
-    HMENU wceMenu(bool create = false);
+    HMENU wceMenu();
 #endif
 
     bool separatorsCollapsible() const;
