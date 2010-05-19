@@ -710,6 +710,9 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     cachedTargetItems.removeOne(dummy);
     cachedItemGestures.remove(dummy);
     cachedAlreadyDeliveredGestures.remove(dummy);
+
+    foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
+        ungrabGesture(item, gesture);
 }
 
 /*!
@@ -2594,6 +2597,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->allItemsIgnoreTouchEvents = false;
         d->enableTouchEventsOnViews();
     }
+
+    foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
+        d->grabGesture(item, gesture);
 
     // Update selection lists
     if (item->isSelected())
@@ -5609,6 +5615,8 @@ bool QGraphicsScene::sendEvent(QGraphicsItem *item, QEvent *event)
 void QGraphicsScenePrivate::addView(QGraphicsView *view)
 {
     views << view;
+    foreach (Qt::GestureType gesture, grabbedGestures.keys())
+        view->viewport()->grabGesture(gesture);
 }
 
 void QGraphicsScenePrivate::removeView(QGraphicsView *view)
@@ -6303,6 +6311,27 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
     for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
         gestureManager->recycle(*setIter);
         gestureTargets.remove(*setIter);
+    }
+}
+
+void QGraphicsScenePrivate::grabGesture(QGraphicsItem *, Qt::GestureType gesture)
+{
+    (void)QGestureManager::instance(); // create a gesture manager
+    if (!grabbedGestures[gesture]++) {
+        foreach (QGraphicsView *view, views)
+            view->viewport()->grabGesture(gesture);
+    }
+}
+
+void QGraphicsScenePrivate::ungrabGesture(QGraphicsItem *item, Qt::GestureType gesture)
+{
+    // we know this can only be an object
+    Q_ASSERT(item->d_ptr->isObject);
+    QGraphicsObject *obj = static_cast<QGraphicsObject *>(item);
+    QGestureManager::instance()->cleanupCachedGestures(obj, gesture);
+    if (!--grabbedGestures[gesture]) {
+        foreach (QGraphicsView *view, views)
+            view->viewport()->ungrabGesture(gesture);
     }
 }
 

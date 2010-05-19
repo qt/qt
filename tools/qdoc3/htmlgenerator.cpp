@@ -1801,6 +1801,21 @@ void HtmlGenerator::generateHeader(const QString& title,
 
     out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
 
+	out() << "  <!--[if IE]>";
+	out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">";
+	out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">";
+	out() << "<![endif]-->";
+    out() << "<!--[if lt IE 7]>";
+	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">";
+	out() << "<![endif]-->";
+    out() << "<!--[if IE 7]>";
+	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">";
+	out() << "<![endif]-->";
+    out() << "<!--[if IE 8]>";
+	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">";
+	out() << "<![endif]-->";
+
+
     //out() << "  <title>Qt Reference Documentation</title>";
     out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
     out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";

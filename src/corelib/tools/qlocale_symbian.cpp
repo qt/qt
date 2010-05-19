@@ -104,6 +104,7 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangSwedish,             "sv_SE" },
     { ELangDanish,              "da_DK" },
     { ELangNorwegian,           "no_NO" },
+    { ELangNorwegianNynorsk,    "nn_NO" },
     { ELangFinnish,             "fi_FI" },
     { ELangAmerican,            "en_US" },
     { ELangPortuguese,          "pt_PT" },
@@ -140,10 +141,11 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangBrazilianPortuguese, "pt_BR" },
     { ELangRomanian,            "ro_RO" },
     { ELangSerbian,             "sr_RS" },
-    { ELangLatinAmericanSpanish, "es" },
+    { ELangLatinAmericanSpanish,"es_419" },
     { ELangUkrainian,           "uk_UA" },
     { ELangUrdu,                "ur_PK" }, // India/Pakistan
     { ELangVietnamese,          "vi_VN" },
+    { ELangKorean,              "ko_KO" },
 #ifdef __E32LANG_H__
 // 5.0
     { ELangBasque,              "eu_ES" },
