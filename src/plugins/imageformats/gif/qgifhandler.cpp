@@ -1119,8 +1119,11 @@ bool QGifHandler::write(const QImage &image)
 
 bool QGifHandler::supportsOption(ImageOption option) const
 {
-    return option == Size
-        || option == Animation;
+    if (!device() || device()->isSequential())
+        return option == Animation;
+    else
+        return option == Size
+            || option == Animation;
 }
 
 QVariant QGifHandler::option(ImageOption option) const

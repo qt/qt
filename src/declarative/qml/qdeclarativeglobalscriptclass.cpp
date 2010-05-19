@@ -53,19 +53,29 @@ QT_BEGIN_NAMESPACE
 QDeclarativeGlobalScriptClass::QDeclarativeGlobalScriptClass(QScriptEngine *engine)
 : QScriptClass(engine)
 {
+    QString eval = QLatin1String("eval");
+
     QScriptValue globalObject = engine->globalObject();
+
     m_globalObject = engine->newObject();
+    QScriptValue newGlobalObject = engine->newObject();
 
     QScriptValueIterator iter(globalObject);
+
     while (iter.hasNext()) {
         iter.next();
-        m_globalObject.setProperty(iter.scriptName(), iter.value());
-        m_illegalNames.insert(iter.name());
+
+        QString name = iter.name();
+
+        if (name != eval)
+            m_globalObject.setProperty(iter.scriptName(), iter.value());
+        newGlobalObject.setProperty(iter.scriptName(), iter.value());
+
+        m_illegalNames.insert(name);
     }
 
-    QScriptValue v = engine->newObject();
-    v.setScriptClass(this);
-    engine->setGlobalObject(v);
+    newGlobalObject.setScriptClass(this);
+    engine->setGlobalObject(newGlobalObject);
 }
 
 QScriptClass::QueryFlags 

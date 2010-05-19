@@ -388,10 +388,10 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
 
     Sets how the SmoothedAnimation behaves if an animation direction is reversed.
 
-    If reversing mode is \c Eased, the animation will smoothly decelerate, and
-    then reverse direction.  If the reversing mode is \c Immediate, the
+    If reversing mode is \c SmoothedAnimation.Eased, the animation will smoothly decelerate, and
+    then reverse direction.  If the reversing mode is \c SmoothedAnimation.Immediate, the
     animation will immediately begin accelerating in the reverse direction,
-    begining with a velocity of 0.  If the reversing mode is \c Sync, the
+    begining with a velocity of 0.  If the reversing mode is \c SmoothedAnimation.Sync, the
     property is immediately set to the target value.
 */
 QDeclarativeSmoothedAnimation::ReversingMode QDeclarativeSmoothedAnimation::reversingMode() const

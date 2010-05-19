@@ -97,6 +97,7 @@
 #include <qdebug.h>
 #include <qlibrary.h>
 #include <qdatetimeedit.h>
+#include <qmath.h>
 #include <QtGui/qgraphicsproxywidget.h>
 #include <QtGui/qgraphicsview.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -2142,6 +2143,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         // The combo box popup has no frame.
         if (qstyleoption_cast<const QStyleOptionComboBox *>(opt) != 0)
             ret = 0;
+        // Frame of mac style line edits is two pixels on top and one on the bottom
+        else if (qobject_cast<const QLineEdit *>(widget) != 0)
+            ret = 2;
         else
             ret = 1;
         break;
@@ -5437,14 +5441,12 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                     CGFloat height;
                     QCFString groupText = qt_mac_removeMnemonics(groupBox->text);
                     HIThemeGetTextDimensions(groupText, 0, &tti, &width, &height, 0);
-                    tw = int(width);
-                    h = int(height);
+                    tw = qRound(width);
+                    h = qCeil(height);
                 } else {
-                    QFontMetrics fm = groupBox->fontMetrics;
-                    if (!checkable && !fontIsSet)
-                        fm = QFontMetrics(qt_app_fonts_hash()->value("QSmallFont", QFont()));
-                    h = fm.height();
-                    tw = fm.size(Qt::TextShowMnemonic, groupBox->text).width();
+                    QFontMetricsF fm = QFontMetricsF(groupBox->fontMetrics);
+                    h = qCeil(fm.height());
+                    tw = qCeil(fm.size(Qt::TextShowMnemonic, groupBox->text).width());
                 }
                 ret.setHeight(h);
 
@@ -5491,10 +5493,10 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                         fm = QFontMetrics(qt_app_fonts_hash()->value("QSmallFont", QFont()));
                     yOffset = 5;
                     if (hasNoText)
-                        yOffset = -fm.height();
+                        yOffset = -qCeil(QFontMetricsF(fm).height());
                 }
 
-                ret = opt->rect.adjusted(0, fm.height() + yOffset, 0, 0);
+                ret = opt->rect.adjusted(0, qCeil(QFontMetricsF(fm).height()) + yOffset, 0, 0);
                 if (sc == SC_GroupBoxContents)
                     ret.adjust(3, 3, -3, -4);    // guess
             }

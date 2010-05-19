@@ -9,3 +9,4 @@ wince*|symbian: {
    DEPLOYMENT += testFiles
 }
 
+symbian: TARGET.CAPABILITY = NetworkServices

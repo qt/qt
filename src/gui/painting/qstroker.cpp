@@ -120,8 +120,8 @@ private:
 class QSubpathFlatIterator
 {
 public:
-    QSubpathFlatIterator(const QDataBuffer<QStrokerOps::Element> *path)
-        : m_path(path), m_pos(0), m_curve_index(-1) { }
+    QSubpathFlatIterator(const QDataBuffer<QStrokerOps::Element> *path, qreal threshold)
+        : m_path(path), m_pos(0), m_curve_index(-1), m_curve_threshold(threshold) { }
 
     inline bool hasNext() const { return m_curve_index >= 0 || m_pos < m_path->size(); }
 
@@ -152,7 +152,7 @@ public:
                                           QPointF(qt_fixed_to_real(m_path->at(m_pos+1).x),
                                                   qt_fixed_to_real(m_path->at(m_pos+1).y)),
                                           QPointF(qt_fixed_to_real(m_path->at(m_pos+2).x),
-                                                  qt_fixed_to_real(m_path->at(m_pos+2).y))).toPolygon();
+                                                  qt_fixed_to_real(m_path->at(m_pos+2).y))).toPolygon(m_curve_threshold);
             m_curve_index = 1;
             e.type = QPainterPath::LineToElement;
             e.x = m_curve.at(0).x();
@@ -169,6 +169,7 @@ private:
     int m_pos;
     QPolygonF m_curve;
     int m_curve_index;
+    qreal m_curve_threshold;
 };
 
 template <class Iterator> bool qt_stroke_side(Iterator *it, QStroker *stroker,
@@ -187,14 +188,18 @@ static inline qreal adapted_angle_on_x(const QLineF &line)
 }
 
 QStrokerOps::QStrokerOps()
-    : m_customData(0), m_moveTo(0), m_lineTo(0), m_cubicTo(0)
+    : m_elements(0)
+    , m_curveThreshold(qt_real_to_fixed(0.25))
+    , m_customData(0)
+    , m_moveTo(0)
+    , m_lineTo(0)
+    , m_cubicTo(0)
 {
 }
 
 QStrokerOps::~QStrokerOps()
 {
 }
-
 
 /*!
     Prepares the stroker. Call this function once before starting a
@@ -238,6 +243,7 @@ void QStrokerOps::strokePath(const QPainterPath &path, void *customData, const Q
     if (path.isEmpty())
         return;
 
+    setCurveThresholdFromTransform(matrix);
     begin(customData);
     int count = path.elementCount();
     if (matrix.isIdentity()) {
@@ -308,6 +314,8 @@ void QStrokerOps::strokePolygon(const QPointF *points, int pointCount, bool impl
 {
     if (!pointCount)
         return;
+
+    setCurveThresholdFromTransform(matrix);
     begin(data);
     if (matrix.isIdentity()) {
         moveTo(qt_real_to_fixed(points[0].x()), qt_real_to_fixed(points[0].y()));
@@ -348,6 +356,7 @@ void QStrokerOps::strokeEllipse(const QRectF &rect, void *data, const QTransform
         }
     }
 
+    setCurveThresholdFromTransform(matrix);
     begin(data);
     moveTo(qt_real_to_fixed(start.x()), qt_real_to_fixed(start.y()));
     for (int i=0; i<12; i+=3) {
@@ -366,12 +375,10 @@ QStroker::QStroker()
 {
     m_strokeWidth = qt_real_to_fixed(1);
     m_miterLimit = qt_real_to_fixed(2);
-    m_curveThreshold = qt_real_to_fixed(0.25);
 }
 
 QStroker::~QStroker()
 {
-
 }
 
 Qt::PenCapStyle QStroker::capForJoinMode(LineJoinMode mode)
@@ -1135,7 +1142,7 @@ void QDashStroker::processCurrentSubpath()
 
     QPainterPath dashPath;
 
-    QSubpathFlatIterator it(&m_elements);
+    QSubpathFlatIterator it(&m_elements, m_curveThreshold);
     qfixed2d prev = it.next();
 
     bool clipping = !m_clip_rect.isEmpty();

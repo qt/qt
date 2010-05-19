@@ -52,6 +52,7 @@
 /*!
     \page dialogs.html
     \title Dialog Windows
+    \ingroup qt-gui-concepts
     \brief An overview over dialog windows.
     
     \previouspage The Application Main Window

@@ -55,11 +55,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeLoader : public QDeclarativeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
-    Q_ENUMS(ResizeMode)
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QDeclarativeComponent *sourceComponent READ sourceComponent WRITE setSourceComponent RESET resetSourceComponent NOTIFY sourceChanged)
-    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode NOTIFY resizeModeChanged)
     Q_PROPERTY(QGraphicsObject *item READ item NOTIFY itemChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
@@ -79,10 +77,6 @@ public:
     Status status() const;
     qreal progress() const;
 
-    enum ResizeMode { NoResize, SizeLoaderToItem, SizeItemToLoader };
-    ResizeMode resizeMode() const;
-    void setResizeMode(ResizeMode mode);
-
     QGraphicsObject *item() const;
 
 Q_SIGNALS:
@@ -90,12 +84,14 @@ Q_SIGNALS:
     void sourceChanged();
     void statusChanged();
     void progressChanged();
-    void resizeModeChanged();
+    void loaded();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     bool eventFilter(QObject *watched, QEvent *e);
+    void componentComplete();
+
 private:
     Q_DISABLE_COPY(QDeclarativeLoader)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeLoader)

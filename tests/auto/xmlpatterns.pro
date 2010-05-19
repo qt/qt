@@ -36,6 +36,7 @@ SUBDIRS=\
 xmlpatternsdiagnosticsts.depends = xmlpatternssdk
 xmlpatternsview.depends = xmlpatternssdk
 xmlpatternsxslts.depends = xmlpatternssdk
+xmlpatternsxqts.depends = xmlpatternssdk
 xmlpatternsschemats.depends = xmlpatternssdk
 xmlpatternsxqts.depends = xmlpatternssdk
 

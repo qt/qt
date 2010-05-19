@@ -80,22 +80,14 @@ tst_examples::tst_examples()
 
 
     // Add directories you want excluded here
-    excludedDirs << "examples/declarative/extending";
-    excludedDirs << "examples/declarative/tutorials/extending";
-    excludedDirs << "examples/declarative/plugins";
-    excludedDirs << "examples/declarative/proxywidgets";
-    excludedDirs << "examples/declarative/gestures";
-
-    excludedDirs << "examples/declarative/imageprovider";
-    excludedDirs << "demos/declarative/minehunt";
 
 #ifdef QT_NO_WEBKIT
-    excludedDirs << "examples/declarative/webview";
+    excludedDirs << "examples/declarative/modelviews/webview";
     excludedDirs << "demos/declarative/webbrowser";
 #endif
 
 #ifdef QT_NO_XMLPATTERNS
-    excludedDirs << "examples/declarative/xmldata";
+    excludedDirs << "examples/declarative/xml/xmldata";
     excludedDirs << "demos/declarative/twitter";
     excludedDirs << "demos/declarative/flickr";
     excludedDirs << "demos/declarative/photoviewer";
@@ -157,11 +149,14 @@ QStringList tst_examples::findQmlFiles(const QDir &d)
 
     QStringList rv;
 
-    QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"),
-                                    QDir::Files);
-    foreach (const QString &file, files) {
-        if (file.at(0).isLower()) {
-            rv << d.absoluteFilePath(file);
+    QStringList cppfiles = d.entryList(QStringList() << QLatin1String("*.cpp"), QDir::Files);
+    if (cppfiles.isEmpty()) {
+        QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"),
+                                        QDir::Files);
+        foreach (const QString &file, files) {
+            if (file.at(0).isLower()) {
+                rv << d.absoluteFilePath(file);
+            }
         }
     }
 

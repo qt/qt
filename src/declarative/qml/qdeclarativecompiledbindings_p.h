@@ -77,7 +77,7 @@ public:
         QDeclarativeParser::Property *property;
         QDeclarativeParser::Variant expression;
         QHash<QString, QDeclarativeParser::Object *> ids;
-        QDeclarativeEnginePrivate::Imports imports;
+        QDeclarativeImports imports;
     };
 
     // -1 on failure, otherwise the binding index to use
@@ -104,8 +104,8 @@ protected:
     int qt_metacall(QMetaObject::Call, int, void **);
 
 private:
-    Q_DISABLE_COPY(QDeclarativeCompiledBindings);
-    Q_DECLARE_PRIVATE(QDeclarativeCompiledBindings);
+    Q_DISABLE_COPY(QDeclarativeCompiledBindings)
+    Q_DECLARE_PRIVATE(QDeclarativeCompiledBindings)
 };
 
 QT_END_NAMESPACE

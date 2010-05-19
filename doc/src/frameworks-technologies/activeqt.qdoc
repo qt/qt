@@ -53,11 +53,10 @@
 
 /*!
     \page activeqt.html
-    \title ActiveQt Framework
+    \title Qt's ActiveX Framework (ActiveQt)
     \brief An overview of Qt's ActiveX and COM integration on Windows.
 
-    \ingroup platform-specific
-    \ingroup frameworks-technologies
+    \ingroup qt-activex
     \keyword ActiveQt
 
     Qt's ActiveX and COM support allows Qt for Windows developers to:

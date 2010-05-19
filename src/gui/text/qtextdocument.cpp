@@ -1947,7 +1947,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
 #endif
 
     // handle data: URLs
-    if (r.isNull() && name.scheme() == QLatin1String("data"))
+    if (r.isNull() && name.scheme().compare(QLatin1String("data"), Qt::CaseInsensitive) == 0)
         r = qDecodeDataUrl(name).second;
 
     // if resource was not loaded try to load it here

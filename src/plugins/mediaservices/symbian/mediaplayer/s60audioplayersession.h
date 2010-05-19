@@ -48,15 +48,19 @@
 typedef CMdaAudioPlayerUtility CAudioPlayer;
 typedef MMdaAudioPlayerCallback MAudioPlayerObserver;
 
-#include <AudioOutput.h>
+#ifndef HAS_NO_AUDIOROUTING
+#include <phonon/audiooutput.h>
 #include <MAudioOutputObserver.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class S60AudioPlayerSession : public S60MediaPlayerSession
                             , public MAudioPlayerObserver
                             , public MAudioLoadingObserver
+#ifndef HAS_NO_AUDIOROUTING
                             , public MAudioOutputObserver
+#endif
 {
     Q_OBJECT
 
@@ -72,10 +76,11 @@ public:
     void MaloLoadingStarted();
     void MaloLoadingComplete();
 
+#ifndef HAS_NO_AUDIOROUTING
     // From MAudioOutputObserver
     void DefaultAudioOutputChanged( CAudioOutput& aAudioOutput,
         CAudioOutput::TAudioOutputPreference aNewDefault );
-
+#endif
 public:
     // From S60MediaPlayerAudioEndpointSelector
     QString activeEndpoint() const;
@@ -103,11 +108,14 @@ protected:
 private:
     void MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds& aDuration);
     void MapcPlayComplete(TInt aError);
+#ifndef HAS_NO_AUDIOROUTING
     QString qStringFromTAudioOutputPreference(CAudioOutput::TAudioOutputPreference output) const;
-
+#endif
 private:
     CAudioPlayer *m_player;
+#ifndef HAS_NO_AUDIOROUTING
     CAudioOutput *m_audioOutput;
+#endif
     QString m_audioEndpoint;
 };
 

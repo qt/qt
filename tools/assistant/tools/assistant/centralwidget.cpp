@@ -466,6 +466,7 @@ void CentralWidget::connectSignals(HelpViewer *page)
         SLOT(handleSourceChanged(QUrl)));
     connect(page, SIGNAL(highlighted(QString)), this,
             SIGNAL(highlighted(QString)));
+    connect(page, SIGNAL(printRequested()), this, SLOT(print()));
 }
 
 bool CentralWidget::eventFilter(QObject *object, QEvent *e)

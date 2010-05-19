@@ -50,7 +50,6 @@
 #include "private/qnativesocketengine_p.h"
 #include <ws2tcpip.h>
 #include <qlibrary.h>
-#include <qtimer.h>
 #include <qmutex.h>
 #include <qurl.h>
 #include <private/qmutexpool_p.h>

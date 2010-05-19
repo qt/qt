@@ -11,6 +11,7 @@ QT = core network
 
 # Symbian toolchain does not support correct include semantics
 symbian:INCPATH+=..\..\..\include\QtNetwork\private
+symbian: TARGET.CAPABILITY = NetworkServices
 
 
 requires(contains(QT_CONFIG,private_tests))

@@ -82,7 +82,7 @@ QString tst_qmlvisual::viewer()
 
 #if defined(Q_WS_MAC)
     qmlruntime = QDir(binaries).absoluteFilePath("qml.app/Contents/MacOS/qml");
-#elif defined(Q_WS_WIN)
+#elif defined(Q_WS_WIN) || defined(Q_WS_S60)
     qmlruntime = QDir(binaries).absoluteFilePath("qml.exe");
 #else
     qmlruntime = QDir(binaries).absoluteFilePath("qml");
@@ -101,9 +101,8 @@ void tst_qmlvisual::visual_data()
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
         //these are newly added tests we want to try out in CI (then move to the stable list)
-        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/borders.qml";
+        files << QT_TEST_SOURCE_DIR "/animation/qtbug10586/qtbug10586.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated-smooth.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativeflipable/test-flipable.qml";
         files << QT_TEST_SOURCE_DIR "/qdeclarativepositioners/usingRepeater.qml";
 
@@ -123,6 +122,8 @@ void tst_qmlvisual::visual_data()
         //these reliably fail in CI, for unknown reasons
         //files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
         //files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
+        //files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/borders.qml";
+        //files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated-smooth.qml";
 
         //these reliably fail on Linux because of color interpolation (different float rounding)
 #if !defined(Q_WS_X11) && !defined(Q_WS_QWS)

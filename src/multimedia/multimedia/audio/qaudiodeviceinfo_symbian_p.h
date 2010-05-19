@@ -53,10 +53,15 @@
 #ifndef QAUDIODEVICEINFO_SYMBIAN_P_H
 #define QAUDIODEVICEINFO_SYMBIAN_P_H
 
+#include <QtCore/QMap>
 #include <QtMultimedia/qaudioengine.h>
 #include <sounddevice.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace SymbianAudio {
+class DevSoundWrapper;
+}
 
 class QAudioDeviceInfoInternal
     :   public QAbstractAudioDeviceInfo
@@ -82,24 +87,33 @@ public:
     static QByteArray defaultOutputDevice();
     static QList<QByteArray> availableDevices(QAudio::Mode);
 
+private slots:
+    void devsoundInitializeComplete(int err);
+
 private:
     void getSupportedFormats() const;
 
 private:
-    QScopedPointer<CMMFDevSound> m_devsound;
+    mutable bool m_initializing;
+    int m_intializationResult;
 
     QString m_deviceName;
     QAudio::Mode m_mode;
 
+    struct Capabilities
+    {
+        QList<int> m_frequencies;
+        QList<int> m_channels;
+        QList<int> m_sampleSizes;
+        QList<QAudioFormat::Endian> m_byteOrders;
+        QList<QAudioFormat::SampleType> m_sampleTypes;
+    };
+
     // Mutable to allow lazy initialization when called from const-qualified
     // public functions (isFormatSupported, nearestFormat)
     mutable bool m_updated;
-    mutable QStringList m_codecs;
-    mutable QList<int> m_frequencies;
-    mutable QList<int> m_channels;
-    mutable QList<int> m_sampleSizes;
-    mutable QList<QAudioFormat::Endian> m_byteOrders;
-    mutable QList<QAudioFormat::SampleType> m_sampleTypes;
+    mutable QMap<QString, Capabilities> m_capabilities;
+    mutable Capabilities m_unionCapabilities;
 };
 
 QT_END_NAMESPACE

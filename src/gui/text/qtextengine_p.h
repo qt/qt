@@ -389,7 +389,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     mutable uint gridfitted : 1;
     uint hasTrailingSpaces : 1;
     uint leadingIncluded : 1;
-    QFixed height() const { return ascent + descent + 1
+    QFixed height() const { return (ascent + descent).ceil() + 1
                             + (leadingIncluded?  qMax(QFixed(),leading) : QFixed()); }
     QFixed base() const { return ascent
                           + (leadingIncluded ? qMax(QFixed(),leading) : QFixed()); }

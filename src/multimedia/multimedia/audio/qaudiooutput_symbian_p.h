@@ -80,7 +80,6 @@ private:
 
 class QAudioOutputPrivate
     :   public QAbstractAudioOutput
-    ,   public MDevSoundObserver
 {
     friend class SymbianAudioOutputPrivate;
     Q_OBJECT
@@ -107,24 +106,16 @@ public:
     QAudio::State state() const;
     QAudioFormat format() const;
 
-    // MDevSoundObserver
-    void InitializeComplete(TInt aError);
-    void ToneFinished(TInt aError);
-    void BufferToBeFilled(CMMFBuffer *aBuffer);
-    void PlayError(TInt aError);
-    void BufferToBeEmptied(CMMFBuffer *aBuffer);
-    void RecordError(TInt aError);
-    void ConvertError(TInt aError);
-    void DeviceMessage(TUid aMessageType, const TDesC8 &aMsg);
-
 private slots:
     void dataReady();
     void underflowTimerExpired();
+    void devsoundInitializeComplete(int err);
+    void devsoundBufferToBeFilled(CMMFBuffer *);
+    void devsoundPlayError(int err);
 
 private:
    void open();
    void startPlayback();
-   void startDevSoundL();
    void writePaddingData();
    qint64 pushData(const char *data, qint64 len);
    void pullData();
@@ -138,7 +129,6 @@ private:
    void setState(SymbianAudio::State state);
 
    bool isDataReady() const;
-   QAudio::State initializingState() const;
 
 private:
     const QByteArray m_device;
@@ -156,9 +146,7 @@ private:
     bool m_pullMode;
     QIODevice *m_source;
 
-    QScopedPointer<CMMFDevSound> m_devSound;
-    TUint32 m_nativeFourCC;
-    TMMFCapabilities m_nativeFormat;
+    SymbianAudio::DevSoundWrapper* m_devSound;
 
     // Buffer provided by DevSound, to be filled with data.
     CMMFDataBuffer *m_devSoundBuffer;

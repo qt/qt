@@ -9,4 +9,5 @@ MOC_DIR=tmp
 
 QT = core network
 
+symbian: TARGET.CAPABILITY = NetworkServices
 
