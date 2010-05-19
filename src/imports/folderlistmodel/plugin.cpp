@@ -46,6 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
+//![class decl]
 class QmlFolderListModelPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
@@ -56,10 +57,13 @@ public:
         qmlRegisterType<QDeclarativeFolderListModel>(uri,1,0,"FolderListModel");
     }
 };
+//![class decl]
 
 QT_END_NAMESPACE
 
 #include "plugin.moc"
 
+//![plugin export decl]
 Q_EXPORT_PLUGIN2(qmlfolderlistmodelplugin, QT_PREPEND_NAMESPACE(QmlFolderListModelPlugin));
+//![plugin export decl]
 

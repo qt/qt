@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+//![code]
 #include "qdeclarativefolderlistmodel.h"
 #include <QDirModel>
 #include <QDebug>
@@ -100,6 +101,12 @@ public:
     used as a path separator in URLs. If you always use "/" as a directory
     separator, Qt will translate your paths to conform to the underlying
     operating system.
+
+    This type is made available by importing the \c Qt.labs.folderlistmodel module.
+    \e {Elements in the Qt.labs module are not guaranteed to remain compatible
+    in future versions.}
+
+    \bold{import Qt.labs.folderlistmodel 1.0}
 
     The roles available are:
     \list
@@ -390,4 +397,5 @@ void QDeclarativeFolderListModel::setShowOnlyReadable(bool on)
         d->model.setFilter(d->model.filter() & ~QDir::Readable);
 }
 
+//![code]
 QT_END_NAMESPACE
