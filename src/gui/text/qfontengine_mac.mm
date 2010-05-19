@@ -162,9 +162,14 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
     QCFString name;
     ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
 
+    transform = CGAffineTransformIdentity;
+    if (fontDef.stretch != 100) {
+        transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
+    }
+
     QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pixelSize);
-    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, 0);
-    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, 0, symbolicTraits, symbolicTraits);
+    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, &transform);
+    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, &transform, symbolicTraits, symbolicTraits);
 
     // CTFontCreateCopyWithSymbolicTraits returns NULL if we ask for a trait that does
     // not exist for the given font. (for example italic)
@@ -378,7 +383,10 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def,
     if (fontDef.style != QFont::StyleNormal && !(traits & kCTFontItalicTrait)) {
         synthesisFlags |= SynthesizedItalic;
     }
-
+    transform = CGAffineTransformIdentity;
+    if (fontDef.stretch != 100) {
+        transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
+    }
     QByteArray os2Table = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
     if (os2Table.size() >= 10)
         fsType = qFromBigEndian<quint16>(reinterpret_cast<const uchar *>(os2Table.constData() + 8));
@@ -503,7 +511,7 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -tanf(14 * acosf(0) / 90), 1, 0, 0));
 
-// ###    cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
+    cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
     CGContextSetTextMatrix(ctx, cgMatrix);
 
@@ -626,7 +634,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, tanf(14 * acosf(0) / 90), 1, 0, 0));
 
-// ###    cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
+    cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
     CGContextSetTextMatrix(ctx, cgMatrix);
     CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
