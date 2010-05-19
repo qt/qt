@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include "qwindowsysteminterface.h"
 #include "qapplication_p.h"
+#include <QAbstractEventDispatcher>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,5 +121,16 @@ QWindowSystemInterface::UserEvent * QWindowSystemInterfacePrivate::getUserEvent(
         ret = userEventQueue.takeFirst();
     queueMutex.unlock();
     return ret;
+}
+
+void QWindowSystemInterfacePrivate::queueUserEvent(QWindowSystemInterface::UserEvent *ev)
+{
+    queueMutex.lock();
+    userEventQueue.append(ev);
+    queueMutex.unlock();
+
+    QAbstractEventDispatcher *dispatcher = QApplicationPrivate::qt_lite_core_dispatcher();
+    if (dispatcher)
+        dispatcher->wakeUp();
 }
 QT_END_NAMESPACE

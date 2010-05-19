@@ -322,6 +322,9 @@ public:
 #if defined(Q_WS_LITE)
     static QPlatformIntegration *platformIntegration()
     { return platform_integration; }
+
+    static QAbstractEventDispatcher *qt_lite_core_dispatcher()
+    { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
 #endif
 
     void createEventDispatcher();

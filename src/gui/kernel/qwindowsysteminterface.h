@@ -133,7 +133,7 @@ public:
 
     static int userEventsQueued() { queueMutex.lock(); int ret = userEventQueue.count(); queueMutex.unlock(); return ret; }
     static QWindowSystemInterface::UserEvent * getUserEvent();
-    static void queueUserEvent(QWindowSystemInterface::UserEvent *ev) { queueMutex.lock(); userEventQueue.append(ev); queueMutex.unlock(); }
+    static void queueUserEvent(QWindowSystemInterface::UserEvent *ev);
 };
 
 QT_END_NAMESPACE
