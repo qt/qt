@@ -91,12 +91,13 @@ static void createPluginStub(const QFileInfo& info,
                              QStringList& generatedDirs,
                              QStringList& generatedFiles)
 {
-    QDir().mkpath(QLatin1String(PLUGIN_STUB_DIR));
-    if (!generatedDirs.contains(PLUGIN_STUB_DIR))
-        generatedDirs << PLUGIN_STUB_DIR;
+    QString pluginStubDir = Option::output_dir + QLatin1Char('/') + QLatin1String(PLUGIN_STUB_DIR);
+    QDir().mkpath(pluginStubDir);
+    if (!generatedDirs.contains(pluginStubDir))
+        generatedDirs << pluginStubDir;
     // Plugin stubs must have different name from the actual plugins, because
     // the toolchain for creating ROM images cannot handle non-binary .dll files properly.
-    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "/") + info.completeBaseName() + "." SUFFIX_QTPLUGIN);
+    QFile stubFile(pluginStubDir + QLatin1Char('/') + info.completeBaseName() + QLatin1Char('.') + QLatin1String(SUFFIX_QTPLUGIN));
     if (stubFile.open(QIODevice::WriteOnly)) {
         if (!generatedFiles.contains(stubFile.fileName()))
             generatedFiles << stubFile.fileName();
