@@ -133,11 +133,13 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
     if (m_contentWidget && o == m_contentWidget->viewport()
         && e->type() == QEvent::MouseButtonRelease) {
         QMouseEvent *me = static_cast<QMouseEvent*>(e);
-        QModelIndex index = m_contentWidget->indexAt(me->pos());
-        QItemSelectionModel *sm = m_contentWidget->selectionModel();
+        const QModelIndex &index = m_contentWidget->indexAt(me->pos());
+        if (!index.isValid())
+            return QWidget::eventFilter(o, e);
 
-        Qt::MouseButtons button = me->button();
-        if (index.isValid() && (sm && sm->isSelected(index))) {
+        const Qt::MouseButtons button = me->button();
+        QItemSelectionModel *sm = m_contentWidget->selectionModel();
+        if (sm->isSelected(index)) {
             if ((button == Qt::LeftButton && (me->modifiers() & Qt::ControlModifier))
                 || (button == Qt::MidButton)) {
                 QHelpContentModel *contentModel =
@@ -189,9 +191,11 @@ void ContentWindow::itemClicked(const QModelIndex &index)
         qobject_cast<QHelpContentModel*>(m_contentWidget->model());
 
     if (contentModel) {
-        QHelpContentItem *itm = contentModel->contentItemAt(index);
-        if (itm)
-            emit linkActivated(itm->url());
+        if (QHelpContentItem *itm = contentModel->contentItemAt(index)) {
+            const QUrl &url = itm->url();
+            if (url != CentralWidget::instance()->currentSource())
+                emit linkActivated(url);
+        }
     }
 }
 

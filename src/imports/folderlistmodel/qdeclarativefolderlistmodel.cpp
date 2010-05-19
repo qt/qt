@@ -45,6 +45,8 @@
 #include <QDebug>
 #include <qdeclarativecontext.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDeclarativeFolderListModelPrivate
 {
 public:
@@ -396,3 +398,4 @@ void QDeclarativeFolderListModel::setShowOnlyReadable(bool on)
 }
 
 //![code]
+QT_END_NAMESPACE

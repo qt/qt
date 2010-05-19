@@ -1,9 +1,9 @@
 TEMPLATE = app
-TARGET = proxyviewer
+TARGET = networkaccessmanagerfactory
 DEPENDPATH += .
 INCLUDEPATH += .
 QT += declarative network
 
 # Input
 SOURCES += main.cpp 
-RESOURCES += proxyviewer.qrc
+RESOURCES += networkaccessmanagerfactory.qrc

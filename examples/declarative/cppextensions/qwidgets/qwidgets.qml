@@ -1,5 +1,5 @@
 import Qt 4.7
-import "ProxyWidgets" 1.0
+import "QWidgets" 1.0
 
 Rectangle {
     id: window

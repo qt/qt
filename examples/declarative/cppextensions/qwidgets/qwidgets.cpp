@@ -39,33 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef PADNAVIGATOR_H
-#define PADNAVIGATOR_H
+#include <QtDeclarative/QDeclarativeExtensionPlugin>
+#include <QtDeclarative/qdeclarative.h>
+#include <QtGui/QGraphicsProxyWidget>
+#include <QtGui/QPushButton>
+#include <QDebug>
 
-#include <QGraphicsView>
-#include "ui_form.h"
+class MyPushButton : public QGraphicsProxyWidget
+{
+    Q_OBJECT
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
 
-QT_BEGIN_NAMESPACE
+public:
+    MyPushButton(QGraphicsItem* parent = 0)
+        : QGraphicsProxyWidget(parent)
+    {
+        widget = new QPushButton("MyPushButton");
+        widget->setAttribute(Qt::WA_NoSystemBackground);
+        setWidget(widget);
 
-class QState;
-class QStateMachine;
-class Ui_Form;
+        QObject::connect(widget, SIGNAL(clicked(bool)), this, SIGNAL(clicked(bool)));
+    }
 
-QT_END_NAMESPACE
+    QString text() const
+    {
+        return widget->text();
+    }
 
-//! [0]
-class PadNavigator : public QGraphicsView
+    void setText(const QString& text)
+    {
+        if (text != widget->text()) {
+            widget->setText(text);
+            emit textChanged();
+        }
+    }
+
+Q_SIGNALS:
+    void clicked(bool);
+    void textChanged();
+
+private:
+    QPushButton *widget;
+};
+
+class QWidgetsPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    explicit PadNavigator(const QSize &size, QWidget *parent = 0);
-
-protected:
-    void resizeEvent(QResizeEvent *event);
-
-private:
-    Ui_Form form;
+    void registerTypes(const char *uri)
+    {
+        qmlRegisterType<MyPushButton>(uri, 1, 0, "MyPushButton");
+    }
 };
-//! [0]
 
-#endif // PADNAVIGATOR_H
+#include "qwidgets.moc"
+
+Q_EXPORT_PLUGIN2(qwidgetsplugin, QWidgetsPlugin);

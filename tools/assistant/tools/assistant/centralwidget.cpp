@@ -565,6 +565,7 @@ void CentralWidget::connectSignals()
             SIGNAL(highlighted(QString)));
         connect(viewer, SIGNAL(sourceChanged(QUrl)), this,
             SLOT(setTabTitle(QUrl)));
+        connect(viewer, SIGNAL(printRequested()), this, SLOT(print()));
     }
 }
 

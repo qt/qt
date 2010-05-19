@@ -351,8 +351,8 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidAttachedProperty.12") << "invalidAttachedProperty.12.qml" << "invalidAttachedProperty.12.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.13") << "invalidAttachedProperty.13.qml" << "invalidAttachedProperty.13.errors.txt" << false;
 
+    QTest::newRow("assignValueToSignal") << "assignValueToSignal.qml" << "assignValueToSignal.errors.txt" << false;
     QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
-    QTest::newRow("emptySignal.2") << "emptySignal.2.qml" << "emptySignal.2.errors.txt" << false;
 
     QTest::newRow("nestedErrors") << "nestedErrors.qml" << "nestedErrors.errors.txt" << false;
     QTest::newRow("defaultGrouped") << "defaultGrouped.qml" << "defaultGrouped.errors.txt" << false;
@@ -1127,8 +1127,7 @@ void tst_qdeclarativelanguage::scriptString()
 
         MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
         QVERIFY(object != 0);
-        QEXPECT_FAIL("", "Variant.asScript() returns incorrect value for string (bug pending)", Continue);
-        QCOMPARE(object->scriptProperty().script(), QString("\"hello world\""));
+        QCOMPARE(object->scriptProperty().script(), QString("\"hello\\n\\\"world\\\"\""));
     }
 
     {

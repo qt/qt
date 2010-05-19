@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,59 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/QDeclarativeExtensionPlugin>
-#include <QtDeclarative/qdeclarative.h>
-#include <QtGui/QGraphicsProxyWidget>
-#include <QtGui/QPushButton>
-#include <QDebug>
+/*!
+    \title RSS News
+    \example demos/declarative/rssnews
 
-class MyPushButton : public QGraphicsProxyWidget
-{
-    Q_OBJECT
-    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    This demo shows how to write a RSS news reader in QML.
 
-public:
-    MyPushButton(QGraphicsItem* parent = 0)
-        : QGraphicsProxyWidget(parent)
-    {
-        widget = new QPushButton("MyPushButton");
-        widget->setAttribute(Qt::WA_NoSystemBackground);
-        setWidget(widget);
-
-        QObject::connect(widget, SIGNAL(clicked(bool)), this, SIGNAL(clicked(bool)));
-    }
-
-    QString text() const
-    {
-        return widget->text();
-    }
-
-    void setText(const QString& text)
-    {
-        if (text != widget->text()) {
-            widget->setText(text);
-            emit textChanged();
-        }
-    }
-
-Q_SIGNALS:
-    void clicked(bool);
-    void textChanged();
-
-private:
-    QPushButton *widget;
-};
-
-class ProxyWidgetsPlugin : public QDeclarativeExtensionPlugin
-{
-    Q_OBJECT
-public:
-    void registerTypes(const char *uri)
-    {
-        qmlRegisterType<MyPushButton>(uri, 1, 0, "MyPushButton");
-    }
-};
-
-#include "proxywidgets.moc"
-
-Q_EXPORT_PLUGIN2(proxywidgetsplugin, ProxyWidgetsPlugin);
+    \image qml-rssnews-example.png
+*/
