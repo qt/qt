@@ -126,6 +126,10 @@ QtGui
       operators (intersect, subtract, unite) to prevent numerical
       stability issues.
 
+ - QPixmap
+    * [QTBUG-4149] Fixed QPixmap::grabWidget() on widgets that have not yet
+      been shown.
+    
  - QPlastiqueStyle
     * [QTBUG-6516] Respect AlternateBase role for list views.
 
@@ -162,6 +166,12 @@ QtNetwork
   * [QTBUG-2515] Do not make OpenSSL prompt for a password
   * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
 
+QtOpenGL
+--------
+ - QGLWidget
+  * [QTBUG-7865] Fixed bug where GL widgets were not fully updated on
+    Windows Vista/7 with Aero disabled.
+
 QtScript
 --------
  - Updated src/3rdparty/javascriptcore to a more recent version
@@ -170,6 +180,12 @@ QtScript
  - [QTBUG-3637] Added a wrap option for excluding slots from a QObject binding
  - [QTBUG-6238] Added a function for reporting additional memory cost
  - [QTBUG-6908] Significantly improved performance of qsTr()
+
+QtSvg
+-----
+ - QSvgRenderer
+  * [QTBUG-8264] Fixed rounded rectangles when 'rx' or 'ry' is zero.
+  * [QTBUG-10022] Fixed assert failure when loading an invalid SVG.
 
 QtXmlPatterns
 -------------
