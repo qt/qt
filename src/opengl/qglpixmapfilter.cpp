@@ -591,10 +591,11 @@ bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos,
 
         qt_blurImage(image, r * qreal(0.5), false, 1);
 
-        GLuint texture = generateBlurTexture(image.size(), GL_ALPHA);
-
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width(), image.height(), GL_ALPHA,
-                        GL_UNSIGNED_BYTE, image.bits());
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, image.width(), image.height(),
+                     0, GL_ALPHA, GL_UNSIGNED_BYTE, image.bits());
 
         info = new QGLBlurTextureInfo(image, texture, r);
     }

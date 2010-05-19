@@ -682,8 +682,6 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=auto
-CFG_MEDIASERVICES=auto
-CFG_MEDIA_BACKEND=auto
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
 CFG_DECLARATIVE=auto
@@ -938,7 +936,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservices|-media-backend|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2161,20 +2159,6 @@ while [ "$#" -gt 0 ]; do
     multimedia)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_MULTIMEDIA="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    mediaservices)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_MEDIASERVICES="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    media-backend)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_MEDIA_BACKEND="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3409,8 +3393,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-multimedia] [-multimedia] [-no-mediaservices] [-mediaservices]
-        [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
+        [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-media-backend] [-media-backend] [-no-audio-backend] [-audio-backend] 
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
@@ -3554,12 +3537,6 @@ fi
 
     -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
  +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
-
-    -no-mediaservices... Do not build the QtMediaServices module.
- +  -mediaservices...... Build the QtMediaServices module.
-
-    -no-media-backend... Do not build platform mediaservices plugin.
- +  -media-backend..... Build the platform mediaservices plugin.
 
     -no-phonon ......... Do not build the Phonon module.
  +  -phonon ............ Build the Phonon module.
@@ -5216,21 +5193,8 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
-    if [ "$CFG_GUI" = "no" ]; then
-        if [ "$CFG_MEDIA_BACKEND" = "auto" ]; then
-            CFG_MEDIA_BACKEND=no
-        fi
-        if [ "$CFG_MEDIA_BACKEND" != "no" ]; then
-            echo "Medias backend enabled, but GUI disabled."
-            echo " You might need to either enable the GUI or disable the media backend"
-            exit 1
-        fi
-    elif [ "$CFG_MEDIA_BACKEND" = "auto" ]; then
-        CFG_MEDIA_BACKEND=yes
-    fi
-
     # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
-    if [ "$CFG_PHONON" != "no" -o "$CFG_MEDIASERVICES" != "no" ]; then
+    if [ "$CFG_PHONON" != "no" ]; then
         if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
             if [ -n "$PKG_CONFIG" ]; then
                 QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
@@ -6924,15 +6888,6 @@ else
     QT_CONFIG="$QT_CONFIG multimedia"
 fi
 
-if [ "$CFG_MEDIASERVICES" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MEDIASERVICES"
-else
-    QT_CONFIG="$QT_CONFIG mediaservices"
-    if [ "$CFG_MEDIA_BACKEND" != "no" ]; then
-        QT_CONFIG="$QT_CONFIG media-backend"
-    fi
-fi
-
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG audio-backend"
 fi
@@ -7890,7 +7845,6 @@ echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
 echo "Phonon module .......... $CFG_PHONON"
 echo "Multimedia module ...... $CFG_MULTIMEDIA"
-echo "Mediaservices module ... $CFG_MEDIASERVICES"
 echo "SVG module ............. $CFG_SVG"
 echo "WebKit module .......... $CFG_WEBKIT"
 if [ "$CFG_WEBKIT" = "yes" ]; then 
