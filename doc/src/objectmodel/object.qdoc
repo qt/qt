@@ -45,8 +45,6 @@
     \ingroup qt-basic-concepts
     \brief A description of the powerful features made possible by Qt's dynamic object model.
 
-    \ingroup frameworks-technologies
-
     The standard C++ object model provides very efficient runtime
     support for the object paradigm. But its static nature is
     inflexibile in certain problem domains. Graphical user interface
