@@ -168,5 +168,11 @@ For example, from your build directory, run:
 \o \l{demos/declarative/snake}{Snake}
 \endlist
 
+\section1 Labs
+
+\list
+\o \l{src/imports/folderlistmodel}{Folder List Model} - a C++ model plugin
+\endlist
+
 */
 
