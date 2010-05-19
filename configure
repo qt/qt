@@ -4677,6 +4677,7 @@ fi
 
 case "$XPLATFORM" in *symbian*)
     QMakeVar set styles "windows s60"   #overwrite previous default
+    CFG_LIBFREETYPE=no
 
     if test -z "$EPOCROOT"; then
         echo "Please export EPOCROOT. It should point to the sdk install dir"
