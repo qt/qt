@@ -94,8 +94,6 @@ public:
 #endif
     QNetworkCacheMetaData fetchCacheMetaData(const QNetworkCacheMetaData &metaData) const;
 
-    qint64 deviceReadData(char *buffer, qint64 maxlen);
-
     // we return true since HTTP needs to send PUT/POST data again after having authenticated
     bool needsResetableUploadData() { return true; }
 

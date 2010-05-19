@@ -476,6 +476,8 @@ public:
         SF_StateDisabled =    0x0020,
         SF_ColorSkinned =     0x0040, // pixmap is colored with foreground pen color
         SF_Animation =        0x0080,
+        SF_Mirrored_X_Axis =  0x0100,
+        SF_Mirrored_Y_Axis =  0x0200
     };
 
     enum CacheClearReason {

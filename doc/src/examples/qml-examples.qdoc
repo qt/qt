@@ -71,13 +71,6 @@
 */
 
 /*!
-    \title Image
-    \example declarative/imageelements/image
-
-    This example shows uses of the \l Image element in QML.
-*/
-
-/*!
     \title Reference examples
     \example declarative/cppextensions/referenceexamples
 */

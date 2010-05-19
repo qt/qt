@@ -1096,13 +1096,7 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         }
         break;
     case ItemPositionHasChanged:
-        if (!d->inSetGeometry) {
-            d->inSetPos = 1;
-            // Ensure setGeometry is called (avoid recursion when setPos is
-            // called from within setGeometry).
-            setGeometry(QRectF(pos(), size()));
-            d->inSetPos = 0 ;
-        }
+        d->setGeometryFromSetPos();
         break;
     case ItemParentChange: {
         // Deliver ParentAboutToChange.

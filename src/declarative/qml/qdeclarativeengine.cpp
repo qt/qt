@@ -1550,8 +1550,9 @@ void QDeclarativeEngine::addImportPath(const QString& path)
   provided by that module. A \c qmldir file is required for defining the
   type version mapping and possibly declarative extensions plugins.
 
-  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
-  variable, then the builtin \c ImportsPath from QLibraryInfo.
+  By default, the list contains the directory of the application executable,
+  paths specified in the \c QML_IMPORT_PATH environment variable,
+  and the builtin \c ImportsPath from QLibraryInfo.
 
   \sa addImportPath() setImportPathList()
 */
@@ -1565,8 +1566,9 @@ QStringList QDeclarativeEngine::importPathList() const
   Sets \a paths as the list of directories where the engine searches for
   installed modules in a URL-based directory structure.
 
-  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
-  variable, then the builtin \c ImportsPath from QLibraryInfo.
+  By default, the list contains the directory of the application executable,
+  paths specified in the \c QML_IMPORT_PATH environment variable,
+  and the builtin \c ImportsPath from QLibraryInfo.
 
   \sa importPathList() addImportPath()
   */
