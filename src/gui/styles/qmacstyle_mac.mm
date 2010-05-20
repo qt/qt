@@ -108,15 +108,15 @@ extern QRegion qt_mac_convert_mac_region(RgnHandle); //qregion_mac.cpp
 
 // The following constants are used for adjusting the size
 // of push buttons so that they are drawn inside their bounds.
-static const int PushButtonLeftOffset = 6;
-static const int PushButtonTopOffset = 4;
-static const int PushButtonRightOffset = 12;
-static const int PushButtonBottomOffset = 12;
-static const int MiniButtonH = 26;
-static const int SmallButtonH = 30;
-static const int BevelButtonW = 50;
-static const int BevelButtonH = 22;
-static const int PushButtonContentPadding = 6;
+const int QMacStyle::PushButtonLeftOffset = 6;
+const int QMacStyle::PushButtonTopOffset = 4;
+const int QMacStyle::PushButtonRightOffset = 12;
+const int QMacStyle::PushButtonBottomOffset = 12;
+const int QMacStyle::MiniButtonH = 26;
+const int QMacStyle::SmallButtonH = 30;
+const int QMacStyle::BevelButtonW = 50;
+const int QMacStyle::BevelButtonH = 22;
+const int QMacStyle::PushButtonContentPadding = 6;
 
 // These colors specify the titlebar gradient colors on
 // Leopard. Ideally we should get them from the system.
@@ -1055,10 +1055,10 @@ HIRect QMacStylePrivate::pushButtonContentBounds(const QStyleOptionButton *btn,
     // Adjust the bounds to correct for
     // carbon not calculating the content bounds fully correct
     if (bdi->kind == kThemePushButton || bdi->kind == kThemePushButtonSmall){
-        outerBounds.origin.y += PushButtonTopOffset;
-        outerBounds.size.height -= PushButtonBottomOffset;
+        outerBounds.origin.y += QMacStyle::PushButtonTopOffset;
+        outerBounds.size.height -= QMacStyle::PushButtonBottomOffset;
     } else if (bdi->kind == kThemePushButtonMini) {
-        outerBounds.origin.y += PushButtonTopOffset;
+        outerBounds.origin.y += QMacStyle::PushButtonTopOffset;
     }
 
     HIRect contentBounds;
@@ -1074,7 +1074,7 @@ QSize QMacStylePrivate::pushButtonSizeFromContents(const QStyleOptionButton *btn
 {
     QSize csz(0, 0);
     QSize iconSize = btn->icon.isNull() ? QSize(0, 0)
-                : (btn->iconSize + QSize(PushButtonContentPadding, 0));
+                : (btn->iconSize + QSize(QMacStyle::PushButtonContentPadding, 0));
     QRect textRect = btn->text.isEmpty() ? QRect(0, 0, 1, 1)
                 : btn->fontMetrics.boundingRect(QRect(), Qt::AlignCenter, btn->text);
     csz.setWidth(iconSize.width() + textRect.width()
@@ -1149,12 +1149,12 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
             // Choose the button kind that closest match the button rect, but at the
             // same time displays the button contents without clipping.
             bdi->kind = kThemeBevelButton;
-            if (btn->rect.width() >= BevelButtonW && btn->rect.height() >= BevelButtonH){
+            if (btn->rect.width() >= QMacStyle::BevelButtonW && btn->rect.height() >= QMacStyle::BevelButtonH){
                 if (widget && widget->testAttribute(Qt::WA_MacVariableSize)) {
-                    if (btn->rect.height() <= MiniButtonH){
+                    if (btn->rect.height() <= QMacStyle::MiniButtonH){
                         if (contentFitsInPushButton(btn, bdi, kThemePushButtonMini))
                             bdi->kind = kThemePushButtonMini;
-                    } else if (btn->rect.height() <= SmallButtonH){
+                    } else if (btn->rect.height() <= QMacStyle::SmallButtonH){
                         if (contentFitsInPushButton(btn, bdi, kThemePushButtonSmall))
                             bdi->kind = kThemePushButtonSmall;
                     } else if (contentFitsInPushButton(btn, bdi, kThemePushButton)) {
@@ -3470,6 +3470,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         QCommonStyle::drawControl(ce, opt, p, w);
         break;
     case CE_PushButtonBevel:
+        qDebug() << "here";
         if (const QStyleOptionButton *btn = ::qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if (!(btn->state & (State_Raised | State_Sunken | State_On)))
                 break;

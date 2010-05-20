@@ -61,10 +61,13 @@
 #include <QDir>
 #endif
 
+QT_BEGIN_NAMESPACE
 class QAudioInput;
 class QAudioOutput;
-class FrequencySpectrum;
 class QFile;
+QT_END_NAMESPACE
+
+class FrequencySpectrum;
 
 /**
  * This class interfaces with the QtMultimedia audio classes, and also with
