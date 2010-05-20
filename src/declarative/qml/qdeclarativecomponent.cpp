@@ -246,7 +246,7 @@ QDeclarativeComponent::~QDeclarativeComponent()
     \o Component.Ready - the component has been loaded, and can be used to create instances.
     \o Component.Loading - the component is currently being loaded
     \o Component.Error - an error occurred while loading the component.
-               Calling errorsString() will provide a human-readable description of any errors.
+               Calling errorString() will provide a human-readable description of any errors.
     \endlist
  */
 
@@ -492,7 +492,7 @@ QList<QDeclarativeError> QDeclarativeComponent::errors() const
 }
 
 /*!
-    \qmlmethod string Component::errorsString()
+    \qmlmethod string Component::errorString()
 
     Returns a human-readable description of any errors.
 
@@ -504,9 +504,9 @@ QList<QDeclarativeError> QDeclarativeComponent::errors() const
 
 /*!
     \internal
-    errorsString is only meant as a way to get the errors in script
+    errorString is only meant as a way to get the errors in script
 */
-QString QDeclarativeComponent::errorsString() const
+QString QDeclarativeComponent::errorString() const
 {
     Q_D(const QDeclarativeComponent);
     QString ret;

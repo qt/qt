@@ -36,7 +36,7 @@ function createItem() {
     } else if (itemComponent.status == Component.Error) {
         draggedItem = null;
         console.log("error creating component");
-        console.log(component.errorsString());
+        console.log(component.errorString());
     }
 }
 

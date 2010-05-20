@@ -2427,7 +2427,6 @@ void tst_qdeclarativeecmascript::include()
     // Including file with ".pragma library"
     {
     QDeclarativeComponent component(&engine, TEST_FILE("include_pragma.qml"));
-    qDebug() << "errors:" << component.errorsString();
     QObject *o = component.create();
     QVERIFY(o != 0);
     QCOMPARE(o->property("test1").toInt(), 100);
