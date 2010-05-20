@@ -35,3 +35,8 @@ symbian {
     reg_rsc.path    = $$REG_RESOURCE_IMPORT_DIR
     DEPLOYMENT += bin rsc mif reg_rsc
 }
+
+sources.files = README.txt spectrum.pri spectrum.pro TODO.txt
+sources.path = $$[QT_INSTALL_DEMOS]/spectrum
+INSTALLS += sources
+
