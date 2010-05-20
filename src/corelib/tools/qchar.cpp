@@ -1567,20 +1567,20 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
         int p2 = pos+1;
         uint u1 = s.at(pos).unicode();
         if (QChar(u1).isHighSurrogate()) {
-            ushort low = s.at(pos+1).unicode();
+            ushort low = s.at(p2).unicode();
             if (QChar(low).isLowSurrogate()) {
-                p2++;
                 u1 = QChar::surrogateToUcs4(u1, low);
                 if (p2 >= l)
                     break;
+                ++p2;
             }
         }
         uint u2 = s.at(p2).unicode();
-        if (QChar(u2).isHighSurrogate() && p2 < l-1) {
+        if (QChar(u2).isHighSurrogate() && p2 < l) {
             ushort low = s.at(p2+1).unicode();
             if (QChar(low).isLowSurrogate()) {
-                p2++;
                 u2 = QChar::surrogateToUcs4(u2, low);
+                ++p2;
             }
         }
 
