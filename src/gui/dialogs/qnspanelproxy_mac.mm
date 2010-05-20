@@ -42,6 +42,7 @@
 #include <qdialogbuttonbox.h>
 #if defined(Q_WS_MAC)
 #include <private/qt_mac_p.h>
+#include <private/qcocoaintrospection_p.h>
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <objc/objc-class.h>
@@ -137,46 +138,6 @@ QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-void macStartIntercept(SEL originalSel, SEL fakeSel, Class baseClass, Class proxyClass)
-{
-#ifndef QT_MAC_USE_COCOA
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
-#endif
-    {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-        // The following code replaces the _implementation_ for the selector we want to hack
-        // (originalSel) with the implementation found in proxyClass. Then it creates
-        // a new 'backup' method inside baseClass containing the old, original,
-        // implementation (fakeSel). You can let the proxy implementation of originalSel
-        // call fakeSel if needed (similar approach to calling a super class implementation).
-        // fakeSel must also be implemented in proxyClass, as the signature is used
-        // as template for the method one we add into baseClass.
-        // NB: You will typically never create any instances of proxyClass; we use it
-        // only for stealing its contents and put it into baseClass. 
-        Method originalMethod = class_getInstanceMethod(baseClass, originalSel);
-        Method newMethod = class_getInstanceMethod(proxyClass, originalSel);
-        Method fakeMethod = class_getInstanceMethod(proxyClass, fakeSel);
-
-        IMP originalImp = method_setImplementation(originalMethod, method_getImplementation(newMethod));
-        class_addMethod(baseClass, fakeSel, originalImp, method_getTypeEncoding(fakeMethod));
-#endif
-    }
-}
-
-void macStopIntercept(SEL originalSel, SEL fakeSel, Class baseClass, Class /* proxyClass */)
-{
-#ifndef QT_MAC_USE_COCOA
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
-#endif
-    {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-        Method originalMethod = class_getInstanceMethod(baseClass, originalSel);
-        Method fakeMethodInBaseClass = class_getInstanceMethod(baseClass, fakeSel);
-        method_setImplementation(originalMethod, method_getImplementation(fakeMethodInBaseClass));
-#endif
-    }
-}
-
 /*
     Intercept the NSColorPanel constructor if the shared
     color panel doesn't exist yet. What's going on here is
@@ -188,12 +149,18 @@ void macStopIntercept(SEL originalSel, SEL fakeSel, Class baseClass, Class /* pr
 */
 void macStartInterceptNSPanelCtor()
 {
-    macStartIntercept(@selector(initWithContentRect:styleMask:backing:defer:),
-                      @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:),
-                      [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
-    macStartIntercept(@selector(initWithContentRect:styleMask:backing:defer:screen:),
-                      @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:),
-                      [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
+    qt_cocoa_change_implementation(
+            [NSPanel class],
+            @selector(initWithContentRect:styleMask:backing:defer:),
+            [QT_MANGLE_NAMESPACE(QNSPanelProxy) class],
+            @selector(initWithContentRect:styleMask:backing:defer:),
+            @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:));
+    qt_cocoa_change_implementation(
+            [NSPanel class],
+            @selector(initWithContentRect:styleMask:backing:defer:screen:),
+            [QT_MANGLE_NAMESPACE(QNSPanelProxy) class],
+            @selector(initWithContentRect:styleMask:backing:defer:screen:),
+            @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:));
 }
 
 /*
@@ -201,12 +168,14 @@ void macStartInterceptNSPanelCtor()
 */
 void macStopInterceptNSPanelCtor()
 {
-    macStopIntercept(@selector(initWithContentRect:styleMask:backing:defer:screen:),
-                     @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:),
-                     [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
-    macStopIntercept(@selector(initWithContentRect:styleMask:backing:defer:),
-                     @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:),
-                     [NSPanel class], [QT_MANGLE_NAMESPACE(QNSPanelProxy) class]);
+    qt_cocoa_change_back_implementation(
+            [NSPanel class],
+            @selector(initWithContentRect:styleMask:backing:defer:screen:),
+            @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:));
+    qt_cocoa_change_back_implementation(
+            [NSPanel class],
+            @selector(initWithContentRect:styleMask:backing:defer:),
+            @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:));
 }
 
 /*
@@ -216,8 +185,12 @@ void macStopInterceptNSPanelCtor()
 void macStartInterceptWindowTitle(QWidget *window)
 {
     currentWindow = window;
-    macStartIntercept(@selector(setTitle:), @selector(qt_fakeSetTitle:),
-                      [NSWindow class], [QT_MANGLE_NAMESPACE(QNSWindowProxy) class]);
+    qt_cocoa_change_implementation(
+            [NSWindow class],
+            @selector(setTitle:),
+            [QT_MANGLE_NAMESPACE(QNSWindowProxy) class],
+            @selector(setTitle:),
+            @selector(qt_fakeSetTitle:));
 }
 
 /*
@@ -226,8 +199,10 @@ void macStartInterceptWindowTitle(QWidget *window)
 void macStopInterceptWindowTitle()
 {
     currentWindow = 0;
-    macStopIntercept(@selector(setTitle:), @selector(qt_fakeSetTitle:),
-                     [NSWindow class], [QT_MANGLE_NAMESPACE(QNSWindowProxy) class]);
+    qt_cocoa_change_back_implementation(
+            [NSWindow class],
+            @selector(setTitle:),
+            @selector(qt_fakeSetTitle:));
 }
 
 /*

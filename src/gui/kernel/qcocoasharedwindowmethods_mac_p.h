@@ -149,17 +149,6 @@ QT_END_NAMESPACE
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if ([event type] == NSApplicationDefined) {
-        switch ([event subtype]) {
-            case QtCocoaEventSubTypePostMessage:
-                [NSApp qt_sendPostedMessage:event];
-                return;
-            default:
-                break;
-        }
-        return;
-    }
-
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
     // Cocoa can hold onto the window after we've disavowed its knowledge. So,
     // if we get sent an event afterwards just have it go through the super's

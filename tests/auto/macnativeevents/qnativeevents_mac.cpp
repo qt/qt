@@ -54,11 +54,11 @@ static Qt::KeyboardModifiers getModifiersFromQuartzEvent(CGEventRef inEvent)
     if (flags & kCGEventFlagMaskShift || flags & kCGEventFlagMaskAlphaShift)
         m |= Qt::ShiftModifier;
     if (flags & kCGEventFlagMaskControl)
-        m |= Qt::MetaModifier;
+        m |= Qt::ControlModifier;
     if (flags & kCGEventFlagMaskAlternate)
         m |= Qt::AltModifier;
     if (flags & kCGEventFlagMaskCommand)
-        m |= Qt::ControlModifier;
+        m |= Qt::MetaModifier;
     return m;
 }
 
@@ -67,11 +67,11 @@ static void setModifiersFromQNativeEvent(CGEventRef inEvent, const QNativeEvent 
     CGEventFlags flags = 0;
     if (event.modifiers.testFlag(Qt::ShiftModifier))
         flags |= kCGEventFlagMaskShift;
-    if (event.modifiers.testFlag(Qt::MetaModifier))
+    if (event.modifiers.testFlag(Qt::ControlModifier))
         flags |= kCGEventFlagMaskControl;
     if (event.modifiers.testFlag(Qt::AltModifier))
         flags |= kCGEventFlagMaskAlternate;
-    if (event.modifiers.testFlag(Qt::ControlModifier))
+    if (event.modifiers.testFlag(Qt::MetaModifier))
         flags |= kCGEventFlagMaskCommand;
     CGEventSetFlags(inEvent, flags);
 }
