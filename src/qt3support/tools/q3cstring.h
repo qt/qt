@@ -161,75 +161,75 @@ inline Q3CString &Q3CString::setNum(float n, char f, int prec)
   Q3CString non-member operators
  *****************************************************************************/
 
-Q_COMPAT_EXPORT inline bool operator==(const Q3CString &s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator==(const Q3CString &s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) == 0; }
 
-Q_COMPAT_EXPORT inline bool operator==(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE bool operator==(const Q3CString &s1, const char *s2)
 { return qstrcmp(s1, s2) == 0; }
 
-Q_COMPAT_EXPORT inline bool operator==(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator==(const char *s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) == 0; }
 
-Q_COMPAT_EXPORT inline bool operator!=(const Q3CString &s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator!=(const Q3CString &s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) != 0; }
 
-Q_COMPAT_EXPORT inline bool operator!=(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE bool operator!=(const Q3CString &s1, const char *s2)
 { return qstrcmp(s1, s2) != 0; }
 
-Q_COMPAT_EXPORT inline bool operator!=(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator!=(const char *s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) != 0; }
 
-Q_COMPAT_EXPORT inline bool operator<(const Q3CString &s1, const Q3CString& s2)
+Q_COMPAT_EXPORT_INLINE bool operator<(const Q3CString &s1, const Q3CString& s2)
 { return qstrcmp(s1, s2) < 0; }
 
-Q_COMPAT_EXPORT inline bool operator<(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE bool operator<(const Q3CString &s1, const char *s2)
 { return qstrcmp(s1, s2) < 0; }
 
-Q_COMPAT_EXPORT inline bool operator<(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator<(const char *s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) < 0; }
 
-Q_COMPAT_EXPORT inline bool operator<=(const Q3CString &s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator<=(const Q3CString &s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) <= 0; }
 
-Q_COMPAT_EXPORT inline bool operator<=(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE bool operator<=(const Q3CString &s1, const char *s2)
 { return qstrcmp(s1, s2) <= 0; }
 
-Q_COMPAT_EXPORT inline bool operator<=(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator<=(const char *s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) <= 0; }
 
-Q_COMPAT_EXPORT inline bool operator>(const Q3CString &s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator>(const Q3CString &s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) > 0; }
 
-Q_COMPAT_EXPORT inline bool operator>(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE bool operator>(const Q3CString &s1, const char *s2)
 { return qstrcmp(s1, s2) > 0; }
 
-Q_COMPAT_EXPORT inline bool operator>(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator>(const char *s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) > 0; }
 
-Q_COMPAT_EXPORT inline bool operator>=(const Q3CString &s1, const Q3CString& s2)
+Q_COMPAT_EXPORT_INLINE bool operator>=(const Q3CString &s1, const Q3CString& s2)
 { return qstrcmp(s1, s2) >= 0; }
 
-Q_COMPAT_EXPORT inline bool operator>=(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE bool operator>=(const Q3CString &s1, const char *s2)
 { return qstrcmp(s1, s2) >= 0; }
 
-Q_COMPAT_EXPORT inline bool operator>=(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE bool operator>=(const char *s1, const Q3CString &s2)
 { return qstrcmp(s1, s2) >= 0; }
 
-Q_COMPAT_EXPORT inline const Q3CString operator+(const Q3CString &s1,
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(const Q3CString &s1,
                                           const Q3CString &s2)
 {
     Q3CString tmp(s1);
     tmp += s2;
     return tmp;
 }
-Q_COMPAT_EXPORT inline const Q3CString operator+(const Q3CString &s1,
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(const Q3CString &s1,
                                           const QByteArray &s2)
 {
     QByteArray tmp(s1);
     tmp += s2;
     return tmp;
 }
-Q_COMPAT_EXPORT inline const Q3CString operator+(const QByteArray &s1,
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(const QByteArray &s1,
                                           const Q3CString &s2)
 {
     QByteArray tmp(s1);
@@ -237,28 +237,28 @@ Q_COMPAT_EXPORT inline const Q3CString operator+(const QByteArray &s1,
     return tmp;
 }
 
-Q_COMPAT_EXPORT inline const Q3CString operator+(const Q3CString &s1, const char *s2)
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(const Q3CString &s1, const char *s2)
 {
     Q3CString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
-Q_COMPAT_EXPORT inline const Q3CString operator+(const char *s1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(const char *s1, const Q3CString &s2)
 {
     Q3CString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
-Q_COMPAT_EXPORT inline const Q3CString operator+(const Q3CString &s1, char c2)
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(const Q3CString &s1, char c2)
 {
     Q3CString tmp(s1);
     tmp += c2;
     return tmp;
 }
 
-Q_COMPAT_EXPORT inline const Q3CString operator+(char c1, const Q3CString &s2)
+Q_COMPAT_EXPORT_INLINE const Q3CString operator+(char c1, const Q3CString &s2)
 {
     Q3CString tmp;
     tmp += c1;
