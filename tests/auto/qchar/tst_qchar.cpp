@@ -75,6 +75,7 @@ private slots:
     void isPrint();
     void isUpper();
     void isLower();
+    void isTitle();
     void category();
     void direction();
     void joining();
@@ -234,6 +235,11 @@ void tst_QChar::isUpper()
     QVERIFY(!QChar('?').isUpper());
     QVERIFY(QChar(0xC2).isUpper());   // A with ^
     QVERIFY(!QChar(0xE2).isUpper());  // a with ^
+
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::category(codepoint) == QChar::Letter_Uppercase)
+            QVERIFY(codepoint == QChar::toUpper(codepoint));
+    }
 }
 
 void tst_QChar::isLower()
@@ -245,6 +251,19 @@ void tst_QChar::isLower()
     QVERIFY(!QChar('?').isLower());
     QVERIFY(!QChar(0xC2).isLower());   // A with ^
     QVERIFY(QChar(0xE2).isLower());  // a with ^
+
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::category(codepoint) == QChar::Letter_Lowercase)
+            QVERIFY(codepoint == QChar::toLower(codepoint));
+    }
+}
+
+void tst_QChar::isTitle()
+{
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::category(codepoint) == QChar::Letter_Titlecase)
+            QVERIFY(codepoint == QChar::toTitleCase(codepoint));
+    }
 }
 
 void tst_QChar::category()
