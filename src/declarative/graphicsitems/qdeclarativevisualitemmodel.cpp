@@ -1224,7 +1224,7 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                     if (d->m_listModelInterface)
                         roleName = d->m_listModelInterface->toString(role);
                     else if (d->m_abstractItemModel)
-                        roleName = d->m_abstractItemModel->roleNames().value(role);
+                        roleName = QString::fromUtf8(d->m_abstractItemModel->roleNames().value(role));
                     qmlInfo(this) << "Changing role not present in item: " << roleName;
                 }
             }
