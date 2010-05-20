@@ -305,7 +305,7 @@ void QDeclarativeOpenMetaObject::setCached(bool c)
     QDeclarativeData *qmldata = QDeclarativeData::get(d->object, true);
     if (d->cacheProperties) {
         if (!d->type->d->cache)
-            d->type->d->cache = QDeclarativePropertyCache::create(d->type->d->engine, this);
+            d->type->d->cache = new QDeclarativePropertyCache(d->type->d->engine, this);
         qmldata->propertyCache = d->type->d->cache;
         d->type->d->cache->addref();
     } else {

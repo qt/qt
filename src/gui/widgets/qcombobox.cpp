@@ -56,6 +56,7 @@
 #include <qscrollbar.h>
 #include <qtreeview.h>
 #include <qheaderview.h>
+#include <qmath.h>
 #ifndef QT_NO_IM
 #include "qinputcontext.h"
 #endif
@@ -151,7 +152,10 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.icon = qvariant_cast<QPixmap>(variant);
         break;
     }
-
+    if (qVariantCanConvert<QBrush>(index.data(Qt::BackgroundRole))) {
+        menuOption.palette.setBrush(QPalette::All, QPalette::Background,
+                                    qvariant_cast<QBrush>(index.data(Qt::BackgroundRole)));
+    }
     menuOption.text = index.model()->data(index, Qt::DisplayRole).toString()
                            .replace(QLatin1Char('&'), QLatin1String("&&"));
     menuOption.tabWidth = 0;
@@ -328,7 +332,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
 
 
         // height
-        sh.setHeight(qMax(fm.height(), 14) + 2);
+        sh.setHeight(qMax(qCeil(QFontMetricsF(fm).height()), 14) + 2);
         if (hasIcon) {
             sh.setHeight(qMax(sh.height(), iconSize.height() + 2));
         }

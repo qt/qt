@@ -4463,4 +4463,20 @@ EXPORTS
 	?parentChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4462 NONAME ; void (*QAbstractDeclarativeData::parentChanged)(class QAbstractDeclarativeData *, class QObject *, class QObject *)
 	?destroyed@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4463 NONAME ; void (*QAbstractDeclarativeData::destroyed)(class QAbstractDeclarativeData *, class QObject *)
 	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4464 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
+	?setRawData@QByteArray@@QAEAAV1@PBDI@Z @ 4465 NONAME ; class QByteArray & QByteArray::setRawData(char const *, unsigned int)
+	?setRawData@QString@@QAEAAV1@PBVQChar@@H@Z @ 4466 NONAME ; class QString & QString::setRawData(class QChar const *, int)
+	?getStaticMetaObject@QEventDispatcherSymbian@@SAABUQMetaObject@@XZ @ 4467 NONAME ; struct QMetaObject const & QEventDispatcherSymbian::getStaticMetaObject(void)
+	?isHighSurrogate@QChar@@SA_NI@Z @ 4468 NONAME ; bool QChar::isHighSurrogate(unsigned int)
+	?isLowSurrogate@QChar@@SA_NI@Z @ 4469 NONAME ; bool QChar::isLowSurrogate(unsigned int)
+	?metaObject@QEventDispatcherSymbian@@UBEPBUQMetaObject@@XZ @ 4470 NONAME ; struct QMetaObject const * QEventDispatcherSymbian::metaObject(void) const
+	?msecsTo@QDateTime@@QBE_JABV1@@Z @ 4471 NONAME ; long long QDateTime::msecsTo(class QDateTime const &) const
+	?qt_metacall@QEventDispatcherSymbian@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4472 NONAME ; int QEventDispatcherSymbian::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QEventDispatcherSymbian@@UAEPAXPBD@Z @ 4473 NONAME ; void * QEventDispatcherSymbian::qt_metacast(char const *)
+	?requiresSurrogates@QChar@@SA_NI@Z @ 4474 NONAME ; bool QChar::requiresSurrogates(unsigned int)
+	?symbianInit@QCoreApplicationPrivate@@QAEXXZ @ 4475 NONAME ; void QCoreApplicationPrivate::symbianInit(void)
+	?tr@QEventDispatcherSymbian@@SA?AVQString@@PBD0@Z @ 4476 NONAME ; class QString QEventDispatcherSymbian::tr(char const *, char const *)
+	?tr@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4477 NONAME ; class QString QEventDispatcherSymbian::tr(char const *, char const *, int)
+	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0@Z @ 4478 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *)
+	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4479 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *, int)
+	?staticMetaObject@QEventDispatcherSymbian@@2UQMetaObject@@B @ 4480 NONAME ; struct QMetaObject const QEventDispatcherSymbian::staticMetaObject
 

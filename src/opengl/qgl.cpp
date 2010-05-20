@@ -1612,6 +1612,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
+    workaround_needsFullClearOnEveryFrame = false;
+    workaround_brokenFBOReadBack = false;
+    workaroundsCached = false;
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -1723,7 +1726,6 @@ QGLTextureCache::QGLTextureCache()
 
 QGLTextureCache::~QGLTextureCache()
 {
-    Q_ASSERT(size() == 0);
     QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
@@ -2773,23 +2775,27 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
 /*!
     \since 4.4
 
-    Draws the given texture, \a textureId, to the given target rectangle,
-    \a target, in OpenGL model space. The \a textureTarget should be a 2D
-    texture target.
+    This function supports the following use cases:
 
-    \note This function is not supported under OpenGL/ES 2.0.
+    \list
+    \i On OpenGL and OpenGL ES 1.x it draws the given texture, \a textureId,
+    to the given target rectangle, \a target, in OpenGL model space. The
+    \a textureTarget should be a 2D texture target.
+    \i On OpenGL and OpenGL ES 2.x, if a painter is active, not inside a
+    beginNativePainting / endNativePainting block, and uses the
+    engine with type QPaintEngine::OpenGL2, the function will draw the given
+    texture, \a textureId, to the given target rectangle, \a target,
+    respecting the current painter state. This will let you draw a texture
+    with the clip, transform, render hints, and composition mode set by the
+    painter. Note that the texture target needs to be GL_TEXTURE_2D for this
+    use case, and that this is the only supported use case under OpenGL ES 2.x.
+    \endlist
+
 */
 void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
-#ifndef QT_OPENGL_ES_2
-#ifdef QT_OPENGL_ES
-    if (textureTarget != GL_TEXTURE_2D) {
-        qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
-        return;
-    }
-#else
-
-     if (d_ptr->active_engine && 
+#if !defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2)
+     if (d_ptr->active_engine &&
          d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
          QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
          if (!eng->isNativePaintingActive()) {
@@ -2799,7 +2805,15 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
                 return;
         }
      }
+#endif
 
+#ifndef QT_OPENGL_ES_2
+#ifdef QT_OPENGL_ES
+    if (textureTarget != GL_TEXTURE_2D) {
+        qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
+        return;
+    }
+#else
     const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
     GLint oldTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -2821,7 +2835,7 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
     Q_UNUSED(target);
     Q_UNUSED(textureId);
     Q_UNUSED(textureTarget);
-    qWarning("drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES/2.0");
+    qWarning("drawTexture() with OpenGL ES 2.0 requires an active OpenGL2 paint engine");
 #endif
 }
 
@@ -2836,14 +2850,26 @@ void QGLContext::drawTexture(const QRectF &target, QMacCompatGLuint textureId, Q
 /*!
     \since 4.4
 
-    Draws the given texture at the given \a point in OpenGL model
-    space. The \a textureTarget should be a 2D texture target.
+    This function supports the following use cases:
 
-    \note This function is not supported under OpenGL/ES.
+    \list
+    \i By default it draws the given texture, \a textureId,
+    at the given \a point in OpenGL model space. The
+    \a textureTarget should be a 2D texture target.
+    \i If a painter is active, not inside a
+    beginNativePainting / endNativePainting block, and uses the
+    engine with type QPaintEngine::OpenGL2, the function will draw the given
+    texture, \a textureId, at the given \a point,
+    respecting the current painter state. This will let you draw a texture
+    with the clip, transform, render hints, and composition mode set by the
+    painter. Note that the texture target needs to be GL_TEXTURE_2D for this
+    use case.
+    \endlist
+
+    \note This function is not supported under any version of OpenGL ES.
 */
 void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {
-    // this would be ok on OpenGL ES 2.0, but currently we don't have a define for that
 #ifdef QT_OPENGL_ES
     Q_UNUSED(point);
     Q_UNUSED(textureId);
@@ -2864,7 +2890,7 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
 
-    if (d_ptr->active_engine && 
+    if (d_ptr->active_engine &&
         d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
         QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
         if (!eng->isNativePaintingActive()) {
@@ -4911,11 +4937,8 @@ void QGLWidget::deleteTexture(QMacCompatGLuint id)
 /*!
     \since 4.4
 
-    Draws the given texture, \a textureId to the given target rectangle,
-    \a target, in OpenGL model space. The \a textureTarget should be a 2D
-    texture target.
-
-    Equivalent to the corresponding QGLContext::drawTexture().
+    Calls the corresponding QGLContext::drawTexture() on
+    this widget's context.
 */
 void QGLWidget::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
@@ -4935,10 +4958,8 @@ void QGLWidget::drawTexture(const QRectF &target, QMacCompatGLuint textureId, QM
 /*!
     \since 4.4
 
-    Draws the given texture, \a textureId, at the given \a point in OpenGL
-    model space. The \a textureTarget should be a 2D texture target.
-
-    Equivalent to the corresponding QGLContext::drawTexture().
+    Calls the corresponding QGLContext::drawTexture() on
+    this widget's context.
 */
 void QGLWidget::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {

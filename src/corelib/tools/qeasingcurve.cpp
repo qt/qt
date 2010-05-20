@@ -859,7 +859,7 @@ QDebug operator<<(QDebug debug, const QEasingCurve &item)
     Writes the given \a easing curve to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
@@ -884,7 +884,7 @@ QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
     Reads an easing curve from the given \a stream into the given \a
     easing curve and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)

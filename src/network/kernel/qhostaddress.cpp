@@ -1097,7 +1097,7 @@ uint qHash(const QHostAddress &key)
     Writes host address \a address to the stream \a out and returns a reference
     to the stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QHostAddress &address)
 {
@@ -1127,7 +1127,7 @@ QDataStream &operator<<(QDataStream &out, const QHostAddress &address)
     Reads a host address into \a address from the stream \a in and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QHostAddress &address)
 {

@@ -63,7 +63,7 @@ static void report_error(int code, const char *where, const char *what)
 
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive), contenders(0), lastSpinCount(0), owner(0), count(0), wakeup(false)
+    : QMutexData(mode), lastSpinCount(0), owner(0), count(0), wakeup(false)
 {
     report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
     report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");

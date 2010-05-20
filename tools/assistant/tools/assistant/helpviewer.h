@@ -125,6 +125,7 @@ signals:
     void forwardAvailable(bool enabled);
     void backwardAvailable(bool enabled);
     void highlighted(const QString &link);
+    void printRequested();
 #else
     void loadFinished(bool finished);
 #endif

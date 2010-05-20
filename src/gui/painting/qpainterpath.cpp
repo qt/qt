@@ -2307,7 +2307,7 @@ QPainterPath &QPainterPath::operator-=(const QPainterPath &other)
     Writes the given painter \a path to the given \a stream, and
     returns a reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &s, const QPainterPath &p)
 {
@@ -2334,7 +2334,7 @@ QDataStream &operator<<(QDataStream &s, const QPainterPath &p)
     Reads a painter path from the given \a stream into the specified \a path,
     and returns a reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &s, QPainterPath &p)
 {

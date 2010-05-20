@@ -238,8 +238,8 @@ void tst_languageChange::retranslatability()
         QString fooName = tmpParentDir + "/foo";
         QDir dir;
         QCOMPARE(dir.mkpath(tmpDir), true);
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-        // Just create a new file instead of copying exe, because exe is not there in emulator
+#if defined(Q_OS_SYMBIAN)
+        // Just create a new file instead of copying exe, because there is no read access to /sys/bin
         {
             QFile fooFile(fooName);
             QVERIFY(fooFile.open(QIODevice::WriteOnly | QIODevice::Text));

@@ -58,7 +58,7 @@
 
     \keyword Unicode
 
-    \ingroup frameworks-technologies
+    \ingroup technology-apis
 
     Unicode is a multi-byte character set, portable across all major
     computing platforms and with decent coverage over most of the world.

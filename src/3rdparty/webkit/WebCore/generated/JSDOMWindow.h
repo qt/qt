@@ -231,7 +231,7 @@ void setJSDOMWindowParent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowTop(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMWindowTop(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDocument(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
-JSC::JSValue jsDOMWindowMedia(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
+JSC::JSValue jsDOMWindowStyleMedia(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 JSC::JSValue jsDOMWindowDevicePixelRatio(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);
 void setJSDOMWindowDevicePixelRatio(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowApplicationCache(JSC::ExecState*, JSC::JSValue, const JSC::Identifier&);

@@ -53,9 +53,9 @@ QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-@class QNSPanelProxy;
+@class QT_MANGLE_NAMESPACE(QNSPanelProxy);
 
-@interface QNSPanelProxy : NSWindow {
+@interface QT_MANGLE_NAMESPACE(QNSPanelProxy) : NSWindow {
 }
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle
     backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
@@ -67,7 +67,7 @@ QT_USE_NAMESPACE
     backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation screen:(NSScreen *)screen;
 @end
 
-@implementation QNSPanelProxy
+@implementation QT_MANGLE_NAMESPACE(QNSPanelProxy)
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle
       backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation
 {
@@ -109,15 +109,15 @@ QT_USE_NAMESPACE
 }
 @end
 
-@class QNSWindowProxy;
+@class QT_MANGLE_NAMESPACE(QNSWindowProxy);
 
-@interface QNSWindowProxy : NSWindow {
+@interface QT_MANGLE_NAMESPACE(QNSWindowProxy) : NSWindow {
 }
 - (void)setTitle:(NSString *)title;
 - (void)qt_fakeSetTitle:(NSString *)title;
 @end
 
-@implementation QNSWindowProxy
+@implementation QT_MANGLE_NAMESPACE(QNSWindowProxy)
 - (void)setTitle:(NSString *)title
 {
     QCFString cftitle(currentWindow->windowTitle());
@@ -152,13 +152,13 @@ void macStartInterceptNSPanelCtor()
     qt_cocoa_change_implementation(
             [NSPanel class],
             @selector(initWithContentRect:styleMask:backing:defer:),
-            [QNSPanelProxy class],
+            [QT_MANGLE_NAMESPACE(QNSPanelProxy) class],
             @selector(initWithContentRect:styleMask:backing:defer:),
             @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:));
     qt_cocoa_change_implementation(
             [NSPanel class],
             @selector(initWithContentRect:styleMask:backing:defer:screen:),
-            [QNSPanelProxy class],
+            [QT_MANGLE_NAMESPACE(QNSPanelProxy) class],
             @selector(initWithContentRect:styleMask:backing:defer:screen:),
             @selector(qt_fakeInitWithContentRect:styleMask:backing:defer:screen:));
 }
@@ -188,7 +188,7 @@ void macStartInterceptWindowTitle(QWidget *window)
     qt_cocoa_change_implementation(
             [NSWindow class],
             @selector(setTitle:),
-            [QNSWindowProxy class],
+            [QT_MANGLE_NAMESPACE(QNSWindowProxy) class],
             @selector(setTitle:),
             @selector(qt_fakeSetTitle:));
 }

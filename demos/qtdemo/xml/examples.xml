@@ -19,6 +19,7 @@
     <example filename="qmediaplayer" name="Media Player" />
     <example filename="boxes" name="Boxes" />
     <example filename="sub-attaq" name="Sub-attaq" />
+    <example filename="spectrum" name="Spectrum Analyzer" />
   </demos>
   <category dirname="animation" name="Animation Framework">
     <example filename="animatedtiles" name="Animated Tiles" />

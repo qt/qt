@@ -549,7 +549,10 @@ def main():
     # Country code list
     print "static const unsigned char country_code_list[] ="
     for key in country_map.keys():
-        print "\"%2s\" // %s" % (country_map[key][1], country_map[key][0])
+        code = country_map[key][1]
+        if len(code) == 2:
+            code += "\\0"
+        print "\"%2s\" // %s" % (code, country_map[key][0])
     print ";"
 
 

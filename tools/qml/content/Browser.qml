@@ -1,4 +1,5 @@
 import Qt 4.7
+import Qt.labs.folderlistmodel 1.0
 
 Rectangle {
     id: root

@@ -146,17 +146,13 @@
 
         \list
             \o ClamshellPhone
-            \o pda
-            \o PDAPhone
-            \o Qt ExtendedPDA
-            \o Qt ExtendedPhone-Advanced
-            \o Qt ExtendedPhone-Simple
+            \o PortableMedia
+            \o S60-nHD-Touchscreen
+            \o S60-QVGA-Candybar
             \o SmartPhone
             \o SmartPhone2
             \o SmartPhoneWithButtons
             \o TouchscreenPhone
-            \o Trolltech-Keypad
-            \o Trolltech-Touchscreen
         \endlist
 
         In addition, it is possible to create custom skins.

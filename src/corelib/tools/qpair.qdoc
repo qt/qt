@@ -214,7 +214,7 @@
 
     This function requires the T1 and T2 types to implement \c operator>>().
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 /*! \fn QDataStream &operator<<(QDataStream &out, const QPair<T1, T2> &pair)
@@ -225,5 +225,5 @@
 
     This function requires the T1 and T2 types to implement \c operator<<().
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */

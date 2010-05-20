@@ -48,7 +48,7 @@
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworksession.h>
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -100,10 +100,11 @@ private slots:
 
 private:
     QNetworkConfigurationManager manager;
+    QMap<QString, bool> testsToRun;
 
     int inProcessSessionManagementCount;
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -117,6 +118,7 @@ private:
 bool openSession(QNetworkSession *session);
 bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration = true);
 void updateConfigurations();
+void printConfigurations();
 QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfiguration::Type configType);
 
 void tst_QNetworkSession::initTestCase()
@@ -125,8 +127,20 @@ void tst_QNetworkSession::initTestCase()
     qRegisterMetaType<QNetworkSession::SessionError>("QNetworkSession::SessionError");
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfiguration::Type>("QNetworkConfiguration::Type");
-
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+	
+    // If you wish to skip tests, set value as false. This is often very convinient because tests are so lengthy.
+    // Better way still would be to make this readable from a file.
+    testsToRun["robustnessBombing"] = true;
+    testsToRun["outOfProcessSession"] = true;
+    testsToRun["invalidSession"] = true;
+    testsToRun["repeatedOpenClose"] = true;
+    testsToRun["roamingErrorCodes"] = true;
+    testsToRun["sessionStop"] = true;
+    testsToRun["sessionProperties"] = true;
+    testsToRun["userChoiceSession"] = true;
+    testsToRun["sessionOpenCloseStop"] = true;
+	
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -212,7 +226,7 @@ void tst_QNetworkSession::cleanupTestCase()
                  "inProcessSessionManagement()");
     }
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();
@@ -238,6 +252,10 @@ void tst_QNetworkSession::cleanupTestCase()
 // Robustness test for calling interfaces in nonsense order / with nonsense parameters
 void tst_QNetworkSession::robustnessBombing() 
 {
+    if (!testsToRun["robustnessBombing"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
+    
     QNetworkConfigurationManager mgr;
     QNetworkSession testSession(mgr.defaultConfiguration());
     // Should not reset even session is not opened
@@ -245,15 +263,14 @@ void tst_QNetworkSession::robustnessBombing()
     testSession.accept();
     testSession.ignore();
     testSession.reject();
-    quint64 temp;
-    temp = testSession.bytesWritten();
-    temp = testSession.bytesReceived();
-    temp = testSession.activeTime();
 }
 
 
 void tst_QNetworkSession::invalidSession()
-{
+{ 
+    if (!testsToRun["invalidSession"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
     // 1. Verify that session created with invalid configuration remains in invalid state
     QNetworkSession session(QNetworkConfiguration(), 0);
     QVERIFY(!session.isOpen());
@@ -270,11 +287,24 @@ void tst_QNetworkSession::invalidSession()
     QVERIFY(error == QNetworkSession::InvalidConfigurationError);
     QVERIFY(session.error() == QNetworkSession::InvalidConfigurationError);
     QVERIFY(session.state() == QNetworkSession::Invalid);
-
+    	
 #ifdef QNETWORKSESSION_MANUAL_TESTS
+
+    QNetworkConfiguration invalidatedConfig = suitableConfiguration("WLAN",QNetworkConfiguration::InternetAccessPoint);
+    if (invalidatedConfig.isValid()) {
+        // 3. Verify that invalidating a session after its successfully configured works
+        QNetworkSession invalidatedSession(invalidatedConfig);
+        qDebug() << "Delete the WLAN IAP from phone now (waiting 60 seconds): " << invalidatedConfig.name();
+        QTest::qWait(60000);
+        QVERIFY(!invalidatedConfig.isValid());
+        QVERIFY(invalidatedSession.state() == QNetworkSession::Invalid);
+        qDebug() << "Add the WLAN IAP back (waiting 60 seconds): " << invalidatedConfig.name();
+        QTest::qWait(60000);
+    }
+    
     QNetworkConfiguration definedConfig = suitableConfiguration("WLAN",QNetworkConfiguration::InternetAccessPoint);
     if (definedConfig.isValid()) {
-        // 3. Verify that opening a session with defined configuration emits error and enters notavailable-state
+        // 4. Verify that opening a session with defined configuration emits error and enters notavailable-state
         // TODO these timer waits should be changed to waiting appropriate signals, now these wait excessively
         qDebug() << "Shutdown WLAN IAP (waiting 60 seconds): " << definedConfig.name();
         QTest::qWait(60000);
@@ -283,43 +313,27 @@ void tst_QNetworkSession::invalidSession()
         QNetworkSession definedSession(definedConfig);
         QSignalSpy errorSpy(&definedSession, SIGNAL(error(QNetworkSession::SessionError)));
         QNetworkSession::SessionError sessionError;
+        updateConfigurations();
 
         definedSession.open();
+#ifdef Q_OS_SYMBIAN
+        // On symbian, the connection opening is tried even with defined state.
+        qDebug("Waiting for 10 seconds to all signals to propagate.");
+        QTest::qWait(10000);
+#endif
+        updateConfigurations();
 
         QVERIFY(definedConfig.isValid()); // Session remains valid
         QVERIFY(definedSession.state() == QNetworkSession::NotAvailable); // State is not available because WLAN is not in coverage
         QVERIFY(!errorSpy.isEmpty()); // Session tells with error about invalidated configuration
         sessionError = qvariant_cast<QNetworkSession::SessionError> (errorSpy.first().at(0));
-        qDebug() << "Error code is: " << sessionError;
         QVERIFY(sessionError == QNetworkSession::InvalidConfigurationError);
-        
         qDebug() << "Turn the WLAN IAP back on (waiting 60 seconds): " << definedConfig.name();
         QTest::qWait(60000);
-        updateConfigurations();
-        
+        updateConfigurations();        
         QVERIFY(definedConfig.state() == QNetworkConfiguration::Discovered);
     }
-        
-    QNetworkConfiguration invalidatedConfig = suitableConfiguration("WLAN",QNetworkConfiguration::InternetAccessPoint);
-    if (invalidatedConfig.isValid()) {
-        // 4. Verify that invalidating a session after its successfully configured works
-        QNetworkSession invalidatedSession(invalidatedConfig);
-        QSignalSpy errorSpy(&invalidatedSession, SIGNAL(error(QNetworkSession::SessionError)));
-        QNetworkSession::SessionError sessionError;
-        
-        qDebug() << "Delete the WLAN IAP from phone now (waiting 60 seconds): " << invalidatedConfig.name();
-        QTest::qWait(60000);
-        
-        invalidatedSession.open();
-        QVERIFY(!invalidatedConfig.isValid());
-        QVERIFY(invalidatedSession.state() == QNetworkSession::Invalid);
-        QVERIFY(!errorSpy.isEmpty());
-        
-        sessionError = qvariant_cast<QNetworkSession::SessionError> (errorSpy.first().at(0));
-        QVERIFY(sessionError == QNetworkSession::InvalidConfigurationError);
-        qDebug() << "Add the WLAN IAP back (waiting 60 seconds): " << invalidatedConfig.name();
-        QTest::qWait(60000);
-    }
+
 #endif
 }
 
@@ -337,12 +351,12 @@ void tst_QNetworkSession::sessionProperties_data()
 
 void tst_QNetworkSession::sessionProperties()
 {
+    if (!testsToRun["sessionProperties"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
     QFETCH(QNetworkConfiguration, configuration);
-
     QNetworkSession session(configuration);
-
     QVERIFY(session.configuration() == configuration);
-
     QStringList validBearerNames = QStringList() << QLatin1String("Unknown")
                                                  << QLatin1String("Ethernet")
                                                  << QLatin1String("WLAN")
@@ -356,9 +370,6 @@ void tst_QNetworkSession::sessionProperties()
     if (!configuration.isValid()) {
         QVERIFY(configuration.bearerName().isEmpty());
     } else {
-        qDebug() << "Type:" << configuration.type()
-                 << "Bearer:" << configuration.bearerName();
-
         switch (configuration.type())
         {
             case QNetworkConfiguration::ServiceNetwork:
@@ -374,9 +385,7 @@ void tst_QNetworkSession::sessionProperties()
 
     // QNetworkSession::interface() should return an invalid interface unless
     // session is in the connected state.
-    qDebug() << "Session state:" << session.state();
 #ifndef QT_NO_NETWORKINTERFACE
-    qDebug() << "Session iface:" << session.interface().isValid() << session.interface().name();
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
     // On Symbian emulator, the support for data bearers is limited
     QCOMPARE(session.state() == QNetworkSession::Connected, session.interface().isValid());
@@ -420,7 +429,12 @@ void tst_QNetworkSession::repeatedOpenClose_data() {
 }
 
 // Tests repeated-open close.
-void tst_QNetworkSession::repeatedOpenClose() {
+void tst_QNetworkSession::repeatedOpenClose() 
+{	
+    if (!testsToRun["repeatedOpenClose"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
+	
     QFETCH(QString, bearerType);
     QFETCH(QNetworkConfiguration::Type, configurationType);
     QFETCH(int, repeatTimes);
@@ -436,13 +450,20 @@ void tst_QNetworkSession::repeatedOpenClose() {
         !closeSession(&permanentSession)) {
         QSKIP("Unable to open/close session, skipping this round of repeated open-close test.", SkipSingle); 
     }
-    for (int i = repeatTimes; i > 0; i--) { 
+    for (int i = 0; i < repeatTimes; i++) { 
+       qDebug() << "Opening, loop number " << i;
        QVERIFY(openSession(&permanentSession));
+       qDebug() << "Closing, loop number, then waiting 5 seconds: " << i;
        QVERIFY(closeSession(&permanentSession));
+       QTest::qWait(5000);
     }
 }
 
-void tst_QNetworkSession::roamingErrorCodes() {
+void tst_QNetworkSession::roamingErrorCodes() 
+{
+    if (!testsToRun["roamingErrorCodes"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }    
 #ifndef Q_OS_SYMBIAN
     QSKIP("Roaming supported on Symbian.", SkipAll);
 #else 
@@ -466,41 +487,11 @@ void tst_QNetworkSession::roamingErrorCodes() {
     adminIapSession.stop(); // requires NetworkControl capabilities
     QTRY_VERIFY(!errorSpy.isEmpty()); // wait for error signals
     QNetworkSession::SessionError error = qvariant_cast<QNetworkSession::SessionError>(errorSpy.first().at(0));
+    QTest::qWait(2000); // Wait for a moment to all platform signals to propagate
     QVERIFY(error == QNetworkSession::SessionAbortedError);
     QVERIFY(iapSession.state() == QNetworkSession::Disconnected);
     QVERIFY(adminIapSession.state() == QNetworkSession::Disconnected);
 #endif // Q_OS_SYMBIAN
-   
-#ifdef QNETWORKSESSION_MANUAL_TESTS
-     // Check for roaming error.
-     // Case requires that you have controllable WLAN in Internet SNAP (only).
-    QNetworkConfiguration snapConfig = suitableConfiguration("bearer_not_relevant_with_snaps", QNetworkConfiguration::ServiceNetwork);
-    if (!snapConfig.isValid()) {
-        QSKIP("No SNAP accessible, skipping test.", SkipAll);
-    }
-    QNetworkSession snapSession(snapConfig);
-    QVERIFY(openSession(&snapSession));
-    QSignalSpy errorSpySnap(&snapSession, SIGNAL(error(QNetworkSession::SessionError)));
-    qDebug("Disconnect the WLAN now");
-    QTRY_VERIFY(!errorSpySnap.isEmpty()); // wait for error signals
-    QVERIFY(errorSpySnap.count() == 1);
-    error = qvariant_cast<QNetworkSession::SessionError>(errorSpySnap.first().at(0));
-    qDebug() << "Error received when turning off wlan on SNAP: " << error;
-    QVERIFY(error == QNetworkSession::RoamingError);
-    
-    qDebug("Connect the WLAN now");
-    QTest::qWait(60000); // Wait for WLAN to get up
-    QNetworkConfiguration wlanIapConfig2 = suitableConfiguration("WLAN", QNetworkConfiguration::InternetAccessPoint);
-    QNetworkSession iapSession2(wlanIapConfig2);
-    QVERIFY(openSession(&iapSession2));
-    QSignalSpy errorSpy2(&iapSession2, SIGNAL(error(QNetworkSession::SessionError)));
-    qDebug("Disconnect the WLAN now");
-    QTRY_VERIFY(!errorSpy2.isEmpty()); // wait for error signals
-    QVERIFY(errorSpy2.count() == 1);
-    error = qvariant_cast<QNetworkSession::SessionError>(errorSpy2.first().at(0));
-    QVERIFY(error == QNetworkSession::SessionAbortedError);
-    QVERIFY(iapSession2.state() == QNetworkSession::Disconnected);
-#endif
 }
 
 
@@ -515,6 +506,9 @@ void tst_QNetworkSession::sessionStop_data() {
 
 void tst_QNetworkSession::sessionStop() 
 {
+    if (!testsToRun["sessionStop"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
 #ifndef Q_OS_SYMBIAN
     QSKIP("Testcase contains mainly Symbian specific checks, because it is only platform to really support interface (IAP-level) Stop.", SkipAll);
 #endif 
@@ -522,6 +516,9 @@ void tst_QNetworkSession::sessionStop()
     QFETCH(QNetworkConfiguration::Type, configurationType);
     
     int configWaitdelayInMs = 2000;
+	
+    updateConfigurations();
+    printConfigurations();
     
     QNetworkConfiguration config = suitableConfiguration(bearerType, configurationType);
     if (!config.isValid()) {
@@ -539,6 +536,9 @@ void tst_QNetworkSession::sessionStop()
     QSignalSpy closedSessionStateChangedSpy(&closedSession, SIGNAL(stateChanged(QNetworkSession::State)));
     QSignalSpy closedErrorSpy(&closedSession, SIGNAL(error(QNetworkSession::SessionError)));
     
+    QSignalSpy openedSessionClosedSpy(&openedSession, SIGNAL(closed()));
+    QSignalSpy openedSessionStateChangedSpy(&openedSession, SIGNAL(stateChanged(QNetworkSession::State)));
+    
     QSignalSpy innocentSessionClosedSpy(&innocentSession, SIGNAL(closed()));
     QSignalSpy innocentSessionStateChangedSpy(&innocentSession, SIGNAL(stateChanged(QNetworkSession::State)));
     QSignalSpy innocentErrorSpy(&innocentSession, SIGNAL(error(QNetworkSession::SessionError)));
@@ -554,10 +554,18 @@ void tst_QNetworkSession::sessionStop()
     closedSessionClosedSpy.clear();
     closedSessionStateChangedSpy.clear();
     closedErrorSpy.clear();
+    openedSessionStateChangedSpy.clear();
+    openedSessionClosedSpy.clear();
+    
     openedSession.stop();
 
-    QVERIFY(openedSession.state() == QNetworkSession::Disconnected);
+    qDebug("Waiting for %d ms to get all configurationChange signals from platform.", configWaitdelayInMs);
     QTest::qWait(configWaitdelayInMs); // Wait to get all relevant configurationChange() signals
+    
+    // First to closing, then to disconnected
+    QVERIFY(openedSessionStateChangedSpy.count() == 2);
+    QVERIFY(!openedSessionClosedSpy.isEmpty());
+    QVERIFY(openedSession.state() == QNetworkSession::Disconnected);
     QVERIFY(config.state() != QNetworkConfiguration::Active);
     
     // 2. Verify that stopping a session based on non-connected configuration does nothing
@@ -583,18 +591,20 @@ void tst_QNetworkSession::sessionStop()
     // 3. Check that stopping a opened session affects also other opened session based on the same configuration.
     if (config.type() == QNetworkConfiguration::InternetAccessPoint) {
         qDebug("----------3. Check that stopping a opened session affects also other opened session based on the same configuration.");
+	
         QVERIFY(openSession(&openedSession));
         QVERIFY(openSession(&innocentSession));
-
+	    
         configChangeSpy.clear();
         innocentSessionClosedSpy.clear();
         innocentSessionStateChangedSpy.clear();
         innocentErrorSpy.clear();
-      
+        
         openedSession.stop();    
         qDebug("Waiting for %d ms to get all configurationChange signals from platform.", configWaitdelayInMs);
         QTest::qWait(configWaitdelayInMs); // Wait to get all relevant configurationChange() signals
-
+	QTest::qWait(configWaitdelayInMs); // Wait to get all relevant configurationChange() signals
+	    
         QVERIFY(!innocentSessionClosedSpy.isEmpty());
         QVERIFY(!innocentSessionStateChangedSpy.isEmpty());
         QVERIFY(!innocentErrorSpy.isEmpty());
@@ -614,14 +624,19 @@ void tst_QNetworkSession::sessionStop()
     if (config.type() == QNetworkConfiguration::ServiceNetwork) {
         qDebug("----------4. Skip for SNAP configuration.");
     } else if (config.type() == QNetworkConfiguration::InternetAccessPoint) {
-        qDebug("----------4. Check that stopping a non-opened session stops the other session based on the same configuration");
-        QVERIFY(openSession(&innocentSession));
+        qDebug("----------4.   Check that stopping a non-opened session stops the other session based on the same configuration");
+	qDebug("----------4.1 Opening innocent session");
+        QVERIFY(openSession(&innocentSession));    
         qDebug("Waiting for %d ms after open to make sure all platform indications are propagated", configWaitdelayInMs);
         QTest::qWait(configWaitdelayInMs);
+    qDebug("----------4.2 Calling closedSession.stop()");
         closedSession.stop();
         qDebug("Waiting for %d ms to get all configurationChange signals from platform..", configWaitdelayInMs);
         QTest::qWait(configWaitdelayInMs); // Wait to get all relevant configurationChange() signals
     
+	    QTest::qWait(configWaitdelayInMs);
+	    QTest::qWait(configWaitdelayInMs);
+	    
         QVERIFY(!innocentSessionClosedSpy.isEmpty());
         QVERIFY(!innocentSessionStateChangedSpy.isEmpty());
         QVERIFY(!innocentErrorSpy.isEmpty());
@@ -653,6 +668,9 @@ void tst_QNetworkSession::userChoiceSession_data()
 
 void tst_QNetworkSession::userChoiceSession()
 {
+    if (!testsToRun["userChoiceSession"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
     QFETCH(QNetworkConfiguration, configuration);
 
     QVERIFY(configuration.type() == QNetworkConfiguration::UserChoice);
@@ -682,7 +700,20 @@ void tst_QNetworkSession::userChoiceSession()
 
         session.open();
 
+#if defined(Q_OS_SYMBIAN)
+        // Opening & closing multiple connections in a row sometimes
+        // results hanging of connection opening on Symbian devices
+        // => If first open fails, wait a moment and try again.
+        if (!session.waitForOpened()) {
+            qDebug("**** Session open Timeout - Wait 5 seconds and try once again ****");        
+            session.close();
+            QTest::qWait(5000); // Wait a while before trying to open session again
+            session.open();
+            session.waitForOpened();
+        }
+#else        
         session.waitForOpened();
+#endif        
 
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
@@ -786,6 +817,9 @@ void tst_QNetworkSession::sessionOpenCloseStop_data()
 
 void tst_QNetworkSession::sessionOpenCloseStop()
 {
+    if (!testsToRun["sessionOpenCloseStop"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
     QFETCH(QNetworkConfiguration, configuration);
     QFETCH(bool, forceSessionStop);
 
@@ -818,7 +852,20 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         session.open();
 
+#if defined(Q_OS_SYMBIAN)
+        // Opening & closing multiple connections in a row sometimes
+        // results hanging of connection opening on Symbian devices
+        // => If first open fails, wait a moment and try again.
+        if (!session.waitForOpened()) {
+            qDebug("**** Session open Timeout - Wait 5 seconds and try once again ****");        
+            session.close();
+            QTest::qWait(5000); // Wait a while before trying to open session again
+            session.open();
+            session.waitForOpened();
+        }
+#else        
         session.waitForOpened();
+#endif        
 
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
@@ -894,26 +941,30 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         QVERIFY(session.error() == QNetworkSession::UnknownSessionError);
 
         session2.open();
-
+	    
         QTRY_VERIFY(!sessionOpenedSpy2.isEmpty() || !errorSpy2.isEmpty());
 
+        if (errorSpy2.isEmpty()) {
+            QVERIFY(session2.isOpen());
+            QVERIFY(session2.state() == QNetworkSession::Connected);
+        }
         QVERIFY(session.isOpen());
-        QVERIFY(session2.isOpen());
         QVERIFY(session.state() == QNetworkSession::Connected);
-        QVERIFY(session2.state() == QNetworkSession::Connected);
 #ifndef QT_NO_NETWORKINTERFACE
 #if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
         // On Symbian emulator, the support for data bearers is limited
         QVERIFY(session.interface().isValid());
 #endif
-        QCOMPARE(session.interface().hardwareAddress(), session2.interface().hardwareAddress());
-        QCOMPARE(session.interface().index(), session2.interface().index());
+        if (errorSpy2.isEmpty()) {
+            QCOMPARE(session.interface().hardwareAddress(), session2.interface().hardwareAddress());
+            QCOMPARE(session.interface().index(), session2.interface().index());
+        }
 #endif
     }
 
     sessionOpenedSpy2.clear();
 
-    if (forceSessionStop) {
+    if (forceSessionStop && session2.isOpen()) {
         // Test forcing the second session to stop the interface.
         QNetworkSession::State previousState = session.state();
 #ifdef Q_CC_NOKIAX86
@@ -922,15 +973,17 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 #else
         bool expectStateChange = previousState != QNetworkSession::Disconnected;
 #endif
-
         session2.stop();
 
+        // QNetworkSession::stop() must result either closed() signal
+        // or error() signal
         QTRY_VERIFY(!sessionClosedSpy2.isEmpty() || !errorSpy2.isEmpty());
-
         QVERIFY(!session2.isOpen());
 
         if (!errorSpy2.isEmpty()) {
-	    QVERIFY(!errorSpy.isEmpty());
+            // QNetworkSession::stop() resulted error() signal for session2
+            // => also session should emit error() signal
+            QTRY_VERIFY(!errorSpy.isEmpty());
 
             // check for SessionAbortedError
             QNetworkSession::SessionError error =
@@ -950,9 +1003,12 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         QVERIFY(errorSpy.isEmpty());
         QVERIFY(errorSpy2.isEmpty());
-
+        
+        // Wait for Disconnected state 
+        QTRY_NOOP(session2.state() == QNetworkSession::Disconnected);
+	
         if (expectStateChange)
-            QTRY_VERIFY(stateChangedSpy2.count() >= 2 || !errorSpy2.isEmpty());
+            QTRY_VERIFY(stateChangedSpy2.count() >= 1 || !errorSpy2.isEmpty());
 
         if (!errorSpy2.isEmpty()) {
             QVERIFY(session2.state() == previousState);
@@ -996,16 +1052,29 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(3).at(0));
                     QVERIFY(state == QNetworkSession::Disconnected);
                     
+			
+                    QTRY_VERIFY(session.state() == QNetworkSession::Roaming ||
+                                session.state() == QNetworkSession::Connected ||
+                                session.state() == QNetworkSession::Disconnected);
+                    
                     QTRY_VERIFY(stateChangedSpy.count() > 0);
-                    state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(0).at(0));
+                    state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 1).at(0));                    
+                    
                     if (state == QNetworkSession::Roaming) {
-                        QTRY_VERIFY(!errorSpy.isEmpty() || stateChangedSpy.count() > 1);
-                        if (stateChangedSpy.count() > 1 &&
-                            qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(1).at(0)) ==
-                            QNetworkSession::Connected) {
-                            roamedSuccessfully = true;
+                        QTRY_VERIFY(session.state() == QNetworkSession::Connected);
+                        QTRY_VERIFY(session2.state() == QNetworkSession::Connected);
+                        roamedSuccessfully = true;
+                    } else if (state == QNetworkSession::Disconnected) {
+                        QTRY_VERIFY(!errorSpy.isEmpty());
+                        QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
+                  	} else if (state == QNetworkSession::Connected) {
+                        QTRY_VERIFY(errorSpy.isEmpty());
+                        if (stateChangedSpy.count() > 1) {
+                            state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 2).at(0));                        
+                            QVERIFY(state == QNetworkSession::Roaming);
                         }
-                    }
+                        roamedSuccessfully = true;
+                  	}
 
                     if (roamedSuccessfully) {
                         QString configId = session.sessionProperty("ActiveConfiguration").toString();
@@ -1013,37 +1082,36 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         QNetworkSession session3(config);
                         QSignalSpy errorSpy3(&session3, SIGNAL(error(QNetworkSession::SessionError)));
                         QSignalSpy sessionOpenedSpy3(&session3, SIGNAL(opened()));
-                        
                         session3.open();
-                        session3.waitForOpened();
-                        
+                        session3.waitForOpened();      
                         if (session.isOpen())
                             QVERIFY(!sessionOpenedSpy3.isEmpty() || !errorSpy3.isEmpty());
-                        
                         session.stop();
-
                         QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
-                        QTRY_VERIFY(session3.state() == QNetworkSession::Disconnected);
                     }
 #ifndef Q_CC_NOKIAX86
                     if (!roamedSuccessfully)
                         QVERIFY(!errorSpy.isEmpty());
 #endif
                 } else {
-                    QCOMPARE(stateChangedSpy2.count(), 2);
-
-                    QNetworkSession::State state =
-                        qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
-                    QVERIFY(state == QNetworkSession::Closing);
-
-                    state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(1).at(0));
-                    QVERIFY(state == QNetworkSession::Disconnected);
+                    QTest::qWait(2000); // Wait awhile to get all signals from platform
+        
+                    if (stateChangedSpy2.count() == 2)  {
+                        QNetworkSession::State state =
+                            qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
+                        QVERIFY(state == QNetworkSession::Closing);
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(1).at(0));
+                        QVERIFY(state == QNetworkSession::Disconnected);
+                    } else { // Assume .count() == 1
+                        QCOMPARE(stateChangedSpy2.count(), 1); 
+                        QNetworkSession::State state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
+                         // Symbian version dependant.
+                        QVERIFY(state == QNetworkSession::Disconnected);	
+                    }
                 }
 
                 QTRY_VERIFY(!sessionClosedSpy.isEmpty());
-
                 QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
-                QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
             }
 
             QVERIFY(errorSpy2.isEmpty());
@@ -1062,7 +1130,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         QVERIFY(!session.isOpen());
 #endif
         QVERIFY(!session2.isOpen());
-    } else {
+    } else if (session2.isOpen()) {
         // Test closing the second session.
         {
             int stateChangedCountBeforeClose = stateChangedSpy2.count();
@@ -1161,11 +1229,15 @@ QDebug operator<<(QDebug debug, const QList<QNetworkConfiguration> &list)
 // at Discovered -state.
 void tst_QNetworkSession::outOfProcessSession()
 {
-    qDebug() << "START";
-
+    if (!testsToRun["outOfProcessSession"]) {
+	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
+    }
 #if defined(Q_OS_SYMBIAN) && defined(__WINS__)
     QSKIP("Symbian emulator does not support two [QR]PRocesses linking a dll (QtBearer.dll) with global writeable static data.", SkipAll);
 #endif
+	updateConfigurations();	   
+	QTest::qWait(2000);
+	
     QNetworkConfigurationManager manager;
     // Create a QNetworkConfigurationManager to detect configuration changes made in Lackey. This
     // is actually the essence of this testcase - to check that platform mediates/reflects changes
@@ -1182,16 +1254,15 @@ void tst_QNetworkSession::outOfProcessSession()
     QLocalServer::removeServer("tst_qnetworksession");
     oopServer.listen("tst_qnetworksession");
 
-    qDebug() << "starting lackey";
     QProcess lackey;
     lackey.start("lackey/lackey");
     qDebug() << lackey.error() << lackey.errorString();
     QVERIFY(lackey.waitForStarted());
 
-    qDebug() << "waiting for connection";
+
     QVERIFY(oopServer.waitForNewConnection(-1));
     QLocalSocket *oopSocket = oopServer.nextPendingConnection();
-    qDebug() << "got connection";
+
     do {
         QByteArray output;
 
@@ -1258,7 +1329,6 @@ void tst_QNetworkSession::outOfProcessSession()
     default:
         QSKIP("Lackey failed", SkipAll);
     }
-    qDebug("STOP");
 }
 
 // A convinience / helper function for testcases. Return the first matching configuration.
@@ -1269,6 +1339,7 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
     // Refresh configurations and derive configurations matching given parameters.
     QNetworkConfigurationManager mgr;
     QSignalSpy updateSpy(&mgr, SIGNAL(updateCompleted()));
+    
     mgr.updateConfigurations();
     QTRY_NOOP(updateSpy.count() == 1);
     if (updateSpy.count() != 1) {
@@ -1277,8 +1348,7 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
     }
     QList<QNetworkConfiguration> discoveredConfigs = mgr.allConfigurations(QNetworkConfiguration::Discovered);
     foreach(QNetworkConfiguration config, discoveredConfigs) {
-        if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-            // qDebug() << "Dumping config because is active: " << config.name();
+        if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {        
             discoveredConfigs.removeOne(config);
         } else if (config.type() != configType) {
             // qDebug() << "Dumping config because type (IAP/SNAP) mismatches: " << config.name();
@@ -1315,9 +1385,23 @@ void updateConfigurations()
     QTRY_NOOP(updateSpy.count() == 1);
 }
 
+// A convinience-function: updates and prints all available confiurations and their states
+void printConfigurations()
+{
+    QNetworkConfigurationManager manager;
+    QList<QNetworkConfiguration> allConfigs =
+    manager.allConfigurations();
+    qDebug("tst_QNetworkSession::printConfigurations QNetworkConfigurationManager gives following configurations: ");
+    foreach(QNetworkConfiguration config, allConfigs) {
+        qDebug() << "Name of the configuration: " << config.name();
+        qDebug() << "State of the configuration: " << config.state();
+    }
+}
+
 // A convinience function for test-cases: opens the given configuration and return
 // true if it was done gracefully.
 bool openSession(QNetworkSession *session) {
+    bool result = true;
     QNetworkConfigurationManager mgr;
     QSignalSpy openedSpy(session, SIGNAL(opened()));
     QSignalSpy stateChangeSpy(session, SIGNAL(stateChanged(QNetworkSession::State)));
@@ -1327,43 +1411,57 @@ bool openSession(QNetworkSession *session) {
     // active by some other session
     QNetworkConfiguration::StateFlags configInitState = session->configuration().state();
     QNetworkSession::State sessionInitState = session->state();
+    qDebug() << "tst_QNetworkSession::openSession() name of the configuration to be opened:  " << session->configuration().name();
+    qDebug() << "tst_QNetworkSession::openSession() state of the configuration to be opened:  " << session->configuration().state();
+    qDebug() << "tst_QNetworkSession::openSession() state of the session to be opened:  " << session->state();
 
     if (session->isOpen() ||
         !session->sessionProperty("ActiveConfiguration").toString().isEmpty()) {
         qDebug("tst_QNetworkSession::openSession() failure: session was already open / active.");
-        return false;
+        result = false;
     } else {
         session->open();
         session->waitForOpened(120000); // Bringing interfaces up and down may take time at platform
     }
+    QTest::qWait(5000); // Wait a moment to ensure all signals are propagated
     // Check that connection opening went by the book. Add checks here if more strictness needed.
     if (!session->isOpen()) {
         qDebug("tst_QNetworkSession::openSession() failure: QNetworkSession::open() failed.");
-        return false;
+        result =  false;
     }
     if (openedSpy.count() != 1) {
         qDebug("tst_QNetworkSession::openSession() failure: QNetworkSession::opened() - signal not received.");
-        return false;
+        result =  false;
     }
     if (!errorSpy.isEmpty()) {
         qDebug("tst_QNetworkSession::openSession() failure: QNetworkSession::error() - signal was detected.");
-        return false;
+        result = false;
     }
     if (sessionInitState != QNetworkSession::Connected && 
         stateChangeSpy.isEmpty()) {
         qDebug("tst_QNetworkSession::openSession() failure: QNetworkSession::stateChanged() - signals not detected.");
-        return false;
+        result =  false;
     }
     if (configInitState != QNetworkConfiguration::Active && 
         configChangeSpy.isEmpty()) {
         qDebug("tst_QNetworkSession::openSession() failure: QNetworkConfigurationManager::configurationChanged() - signals not detected.");
-        return false;
+        result =  false;
     }
     if (session->configuration().state() != QNetworkConfiguration::Active) {
         qDebug("tst_QNetworkSession::openSession() failure: session's configuration is not in 'Active' -state.");
-        return false;
+	qDebug() << "tst_QNetworkSession::openSession() state is:  " << session->configuration().state();
+        result =  false;
     }
-    return true;
+    if (result == false) {
+	    qDebug() << "tst_QNetworkSession::openSession() opening session failed.";
+    } else {
+	    qDebug() << "tst_QNetworkSession::openSession() opening session succeeded.";
+    }
+    qDebug() << "tst_QNetworkSession::openSession() name of the configuration is:  " << session->configuration().name();
+    qDebug() << "tst_QNetworkSession::openSession() configuration state is:  " << session->configuration().state();
+    qDebug() << "tst_QNetworkSession::openSession() session state is:  " << session->state();
+	    
+    return result;
 }
 
 // Helper function for closing opened session. Performs checks that 
@@ -1376,6 +1474,11 @@ bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration) {
         qDebug("tst_QNetworkSession::closeSession() failure: NULL session given");
         return false;
     }
+    
+    qDebug() << "tst_QNetworkSession::closeSession() name of the configuration to be closed:  " << session->configuration().name();
+    qDebug() << "tst_QNetworkSession::closeSession() state of the configuration to be closed:  " << session->configuration().state();
+    qDebug() << "tst_QNetworkSession::closeSession() state of the session to be closed:  " << session->state();
+    
     if (session->state() != QNetworkSession::Connected || 
         !session->isOpen()) {
         qDebug("tst_QNetworkSession::closeSession() failure: session is not opened.");
@@ -1387,38 +1490,48 @@ bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration) {
     QSignalSpy sessionErrorSpy(session, SIGNAL(error(QNetworkSession::SessionError)));
     QSignalSpy configChangeSpy(&mgr, SIGNAL(configurationChanged(QNetworkConfiguration)));
     
+    bool result = true;
     session->close();
+    QTest::qWait(5000); // Wait a moment so that all signals are propagated
     
     if (!sessionErrorSpy.isEmpty()) {
         qDebug("tst_QNetworkSession::closeSession() failure: QNetworkSession::error() received.");
-        return false;
+        result = false;
     }
     if (sessionClosedSpy.count() != 1) {
         qDebug("tst_QNetworkSession::closeSession() failure: QNetworkSession::closed() signal not received.");
-        return false;
+        result = false;
     }
     if (lastSessionOnConfiguration && 
         sessionStateChangedSpy.isEmpty()) {
         qDebug("tst_QNetworkSession::closeSession() failure: QNetworkSession::stateChanged() signals not received.");
-        return false;
+        result = false;
     }
     if (lastSessionOnConfiguration &&
         session->state() != QNetworkSession::Disconnected) {
         qDebug("tst_QNetworkSession::closeSession() failure: QNetworkSession is not in Disconnected -state");
-        return false;
+        result = false;
     }
     QTRY_NOOP(!configChangeSpy.isEmpty());
     if (lastSessionOnConfiguration &&
         configChangeSpy.isEmpty()) {
         qDebug("tst_QNetworkSession::closeSession() failure: QNetworkConfigurationManager::configurationChanged() - signal not detected.");
-        return false;
+        result = false;
     }
     if (lastSessionOnConfiguration &&
         session->configuration().state() == QNetworkConfiguration::Active) {
          qDebug("tst_QNetworkSession::closeSession() failure: session's configuration is still in active state.");
-         return false;
+         result = false;
     }
-    return true;
+    if (result == false) {
+	    qDebug() << "tst_QNetworkSession::closeSession() closing session failed.";
+    } else {
+	    qDebug() << "tst_QNetworkSession::closeSession() closing session succeeded.";
+    } 
+    qDebug() << "tst_QNetworkSession::closeSession() name of the configuration is:  " << session->configuration().name();
+    qDebug() << "tst_QNetworkSession::closeSession() configuration state is:  " << session->configuration().state();
+    qDebug() << "tst_QNetworkSession::closeSession() session state is:  " << session->state();
+    return result;
 }
 
 void tst_QNetworkSession::sessionAutoClose_data()

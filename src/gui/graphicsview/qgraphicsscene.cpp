@@ -50,7 +50,7 @@
     The class serves as a container for QGraphicsItems. It is used together
     with QGraphicsView for visualizing graphical items, such as lines,
     rectangles, text, or even custom items, on a 2D surface. QGraphicsScene is
-    part of \l{The Graphics View Framework}.
+    part of the \l{Graphics View Framework}.
 
     QGraphicsScene also provides functionality that lets you efficiently
     determine both the location of items, and for determining what items are
@@ -290,13 +290,19 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       updateAll(false),
       calledEmitUpdated(false),
       processDirtyItemsEmitted(false),
-      selectionChanging(0),
       needSortTopLevelItems(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
       scenePosDescendantsUpdatePending(false),
       stickyFocus(false),
       hasFocus(false),
+      lastMouseGrabberItemHasImplicitMouseGrab(false),
+      allItemsIgnoreHoverEvents(true),
+      allItemsUseDefaultCursor(true),
+      painterStateProtection(true),
+      sortCacheEnabled(false),
+      allItemsIgnoreTouchEvents(true),
+      selectionChanging(0),
       rectAdjust(2),
       focusItem(0),
       lastFocusItem(0),
@@ -306,16 +312,10 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       activationRefCount(0),
       childExplicitActivation(0),
       lastMouseGrabberItem(0),
-      lastMouseGrabberItemHasImplicitMouseGrab(false),
       dragDropItem(0),
       enterWidget(0),
       lastDropAction(Qt::IgnoreAction),
-      allItemsIgnoreHoverEvents(true),
-      allItemsUseDefaultCursor(true),
-      painterStateProtection(true),
-      sortCacheEnabled(false),
-      style(0),
-      allItemsIgnoreTouchEvents(true)
+      style(0)
 {
 }
 
@@ -690,6 +690,10 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == lastMouseGrabberItem)
         lastMouseGrabberItem = 0;
 
+    // Reset the current drop item
+    if (item == dragDropItem)
+        dragDropItem = 0;
+
     // Reenable selectionChanged() for individual items
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
@@ -706,6 +710,9 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     cachedTargetItems.removeOne(dummy);
     cachedItemGestures.remove(dummy);
     cachedAlreadyDeliveredGestures.remove(dummy);
+
+    foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
+        ungrabGesture(item, gesture);
 }
 
 /*!
@@ -1316,10 +1323,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             setFocus = true;
             break;
         }
-        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
+        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable))) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
                 setFocus = true;
-                if (item != q->focusItem())
+                if (item != q->focusItem() && item->d_ptr->mouseSetsFocus)
                     q->setFocusItem(item, Qt::MouseFocusReason);
                 break;
             }
@@ -2590,6 +2597,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->allItemsIgnoreTouchEvents = false;
         d->enableTouchEventsOnViews();
     }
+
+    foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
+        d->grabGesture(item, gesture);
 
     // Update selection lists
     if (item->isSelected())
@@ -5116,9 +5126,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
+        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
+        if (itemClipsChildrenToShape) {
+            // Make sure child updates are clipped to the item's bounding rect.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(item);
+        }
         if (!dirtyAncestorContainsChildren) {
             dirtyAncestorContainsChildren = item->d_ptr->fullUpdatePending
-                                            && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+                                            && itemClipsChildrenToShape;
         }
         const bool allChildrenDirty = item->d_ptr->allChildrenDirty;
         const bool parentIgnoresVisible = item->d_ptr->ignoreVisible;
@@ -5140,6 +5156,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 child->d_ptr->allChildrenDirty = 1;
             }
             processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
+        }
+
+        if (itemClipsChildrenToShape) {
+            // Reset updateClip.
+            for (int i = 0; i < views.size(); ++i)
+                views.at(i)->d_func()->setUpdateClip(0);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();
@@ -5593,6 +5615,8 @@ bool QGraphicsScene::sendEvent(QGraphicsItem *item, QEvent *event)
 void QGraphicsScenePrivate::addView(QGraphicsView *view)
 {
     views << view;
+    foreach (Qt::GestureType gesture, grabbedGestures.keys())
+        view->viewport()->grabGesture(gesture);
 }
 
 void QGraphicsScenePrivate::removeView(QGraphicsView *view)
@@ -6287,6 +6311,27 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
     for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
         gestureManager->recycle(*setIter);
         gestureTargets.remove(*setIter);
+    }
+}
+
+void QGraphicsScenePrivate::grabGesture(QGraphicsItem *, Qt::GestureType gesture)
+{
+    (void)QGestureManager::instance(); // create a gesture manager
+    if (!grabbedGestures[gesture]++) {
+        foreach (QGraphicsView *view, views)
+            view->viewport()->grabGesture(gesture);
+    }
+}
+
+void QGraphicsScenePrivate::ungrabGesture(QGraphicsItem *item, Qt::GestureType gesture)
+{
+    // we know this can only be an object
+    Q_ASSERT(item->d_ptr->isObject);
+    QGraphicsObject *obj = static_cast<QGraphicsObject *>(item);
+    QGestureManager::instance()->cleanupCachedGestures(obj, gesture);
+    if (!--grabbedGestures[gesture]) {
+        foreach (QGraphicsView *view, views)
+            view->viewport()->ungrabGesture(gesture);
     }
 }
 

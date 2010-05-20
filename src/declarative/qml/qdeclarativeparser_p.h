@@ -188,9 +188,6 @@ namespace QDeclarativeParser
             QList<int> lineNumbers;
             QList<Pragmas> pragmas;
         };
-#if 0
-        QList<ScriptBlock> scripts;
-#endif
 
         // The bytes to cast instances by to get to the QDeclarativeParserStatus 
         // interface.  -1 indicates the type doesn't support this interface.
@@ -310,8 +307,8 @@ namespace QDeclarativeParser
         };
         Type type;
 
-        // ### Temporary
-        QString primitive() const { return value.asScript(); }
+        // ### Temporary (for id only)
+        QString primitive() const { return value.isString() ? value.asString() : value.asScript(); }
 
         // Primitive value
         Variant value;

@@ -43,6 +43,7 @@
 #include "private/qdeclarativerectangle_p_p.h"
 
 #include <QPainter>
+#include <QStringBuilder>
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -155,8 +156,8 @@ void QDeclarativeGradient::doUpdate()
     \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
 
-    A Rectangle is painted having a solid fill (color) and an optional border.
-    You can also create rounded rectangles using the radius property.
+    A Rectangle is painted using a solid fill (color) and an optional border.
+    You can also create rounded rectangles using the \l radius property.
 
     \qml
     Rectangle {
@@ -223,14 +224,22 @@ QDeclarativePen *QDeclarativeRectangle::border()
     \o \image declarative-rect_gradient.png
     \o
     \qml
-    Rectangle { y: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { y: 100; width: 80; height: 80
+    Rectangle {
+        y: 0; width: 80; height: 80
+        color: "lightsteelblue"
+    }
+
+    Rectangle {
+        y: 100; width: 80; height: 80
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    Rectangle { rotation: 90; y: 200; width: 80; height: 80
+
+    Rectangle {
+        y: 200; width: 80; height: 80
+        rotation: 90
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
@@ -334,21 +343,29 @@ void QDeclarativeRectangle::generateRoundedRect()
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         const int radius = qCeil(d->radius);    //ensure odd numbered width/height so we get 1-pixel center
-        d->rectImage = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
-        d->rectImage.fill(Qt::transparent);
-        QPainter p(&(d->rectImage));
-        p.setRenderHint(QPainter::Antialiasing);
-        if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(d->pen->color()), d->pen->width());
-            p.setPen(pn);
-        } else {
-            p.setPen(Qt::NoPen);
+
+        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name() % QString::number(d->color.alpha(), 16) % QLatin1Char('_') % QString::number(radius);
+        if (d->pen && d->pen->isValid())
+            key += d->pen->color().name() % QString::number(d->pen->color().alpha(), 16);
+
+        if (!QPixmapCache::find(key, &d->rectImage)) {
+            d->rectImage = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
+            d->rectImage.fill(Qt::transparent);
+            QPainter p(&(d->rectImage));
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(d->pen->color()), d->pen->width());
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            if (pw%2)
+                p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
+            else
+                p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
+            QPixmapCache::insert(key, d->rectImage);
         }
-        p.setBrush(d->color);
-        if (pw%2)
-            p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
-        else
-            p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
     }
 }
 
@@ -357,22 +374,30 @@ void QDeclarativeRectangle::generateBorderedRect()
     Q_D(QDeclarativeRectangle);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
-        d->rectImage.fill(Qt::transparent);
-        QPainter p(&(d->rectImage));
-        p.setRenderHint(QPainter::Antialiasing);
-        if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(d->pen->color()), d->pen->width());
-            pn.setJoinStyle(Qt::MiterJoin);
-            p.setPen(pn);
-        } else {
-            p.setPen(Qt::NoPen);
+
+        QString key = QLatin1String("q_") % QString::number(pw) % d->color.name() % QString::number(d->color.alpha(), 16);
+        if (d->pen && d->pen->isValid())
+            key += d->pen->color().name() % QString::number(d->pen->color().alpha(), 16);
+
+        if (!QPixmapCache::find(key, &d->rectImage)) {
+            d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
+            d->rectImage.fill(Qt::transparent);
+            QPainter p(&(d->rectImage));
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(d->pen->color()), d->pen->width());
+                pn.setJoinStyle(Qt::MiterJoin);
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            if (pw%2)
+                p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
+            else
+                p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
+            QPixmapCache::insert(key, d->rectImage);
         }
-        p.setBrush(d->color);
-        if (pw%2)
-            p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
-        else
-            p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
     }
 }
 

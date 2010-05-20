@@ -175,15 +175,14 @@ function createBlock(column,row){
     // only work if the block QML is a local file. Otherwise the component will
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
-    if(component.isReady){
-        var dynamicObject = component.createObject();
+    if(component.status == Component.Ready){
+        var dynamicObject = component.createObject(gameCanvas);
         if(dynamicObject == null){
             console.log("error creating block");
-            console.log(component.errorsString());
+            console.log(component.errorString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
-        dynamicObject.parent = gameCanvas;
         dynamicObject.x = column*gameCanvas.blockSize;
         dynamicObject.targetX = column*gameCanvas.blockSize;
         dynamicObject.targetY = row*gameCanvas.blockSize;
@@ -193,7 +192,7 @@ function createBlock(column,row){
         board[index(column,row)] = dynamicObject;
     }else{
         console.log("error loading block component");
-        console.log(component.errorsString());
+        console.log(component.errorString());
         return false;
     }
     return true;

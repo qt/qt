@@ -212,6 +212,8 @@ void MinehuntGame::reset()
     }
     nMines = 12;
     nFlags = 0;
+    emit numMinesChanged();
+    emit numFlagsChanged();
     setPlaying(false);
     QTimer::singleShot(600,this, SLOT(setBoard()));
 }

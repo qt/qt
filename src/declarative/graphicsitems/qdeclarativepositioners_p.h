@@ -94,6 +94,7 @@ protected Q_SLOTS:
 
 protected:
     virtual void doPositioning(QSizeF *contentSize)=0;
+    virtual void reportConflictingAnchors()=0;
     struct PositionedItem {
         PositionedItem(QDeclarativeItem *i) : item(i), isNew(false), isVisible(true) {}
         bool operator==(const PositionedItem &other) const { return other.item == item; }
@@ -118,6 +119,7 @@ public:
     QDeclarativeColumn(QDeclarativeItem *parent=0);
 protected:
     virtual void doPositioning(QSizeF *contentSize);
+    virtual void reportConflictingAnchors();
 private:
     Q_DISABLE_COPY(QDeclarativeColumn)
 };
@@ -129,6 +131,7 @@ public:
     QDeclarativeRow(QDeclarativeItem *parent=0);
 protected:
     virtual void doPositioning(QSizeF *contentSize);
+    virtual void reportConflictingAnchors();
 private:
     Q_DISABLE_COPY(QDeclarativeRow)
 };
@@ -161,6 +164,7 @@ Q_SIGNALS:
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
+    virtual void reportConflictingAnchors();
 
 private:
     int m_rows;
@@ -187,7 +191,7 @@ Q_SIGNALS:
 
 protected:
     virtual void doPositioning(QSizeF *contentSize);
-
+    virtual void reportConflictingAnchors();
 protected:
     QDeclarativeFlow(QDeclarativeFlowPrivate &dd, QDeclarativeItem *parent);
 private:

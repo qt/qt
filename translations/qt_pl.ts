@@ -4,7 +4,7 @@
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2274"/>
+        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2313"/>
         <source>Close Tab</source>
         <translation>Zamknij kartę</translation>
     </message>
@@ -12,7 +12,7 @@
 <context>
     <name>FakeReply</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2217"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2273"/>
         <source>Fake error !</source>
         <translation>Fałszywy błąd!</translation>
     </message>
@@ -25,7 +25,7 @@
 <context>
     <name>MAC_APPLICATION_MENU</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2316"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2320"/>
         <source>Services</source>
         <translation>Usługi</translation>
     </message>
@@ -1281,7 +1281,7 @@ na
         <translation>Gniazdo nie jest podłączone</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+614"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+625"/>
         <location filename="../src/network/socket/qabstractsocket.cpp" line="-380"/>
         <source>Socket operation timed out</source>
         <translation>Przekroczony czas operacji gniazda</translation>
@@ -1598,7 +1598,7 @@ na
 <context>
     <name>QDeclarativeAbstractAnimation</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+165"/>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+166"/>
         <source>Cannot animate non-existent property &quot;%1&quot;</source>
         <translation>Nie można animować nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
@@ -1616,7 +1616,7 @@ na
 <context>
     <name>QDeclarativeAnchorAnimation</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+2542"/>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+2551"/>
         <source>Cannot set a duration of &lt; 0</source>
         <translation>Nie można ustawić ujemnego czasu trwania</translation>
     </message>
@@ -1624,7 +1624,7 @@ na
 <context>
     <name>QDeclarativeAnchors</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativeanchors.cpp" line="+181"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeanchors.cpp" line="+180"/>
         <source>Possible anchor loop detected on fill.</source>
         <translation>Wykryto możliwe zapętlenie dla kotwicy &quot;fill&quot;.</translation>
     </message>
@@ -1700,7 +1700,7 @@ na
 <context>
     <name>QDeclarativeBehavior</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativebehavior.cpp" line="+124"/>
+        <location filename="../src/declarative/util/qdeclarativebehavior.cpp" line="+127"/>
         <source>Cannot change the animation assigned to a Behavior.</source>
         <translation>Nie można zmienić animacji przypisanej do &quot;Zachowania&quot;.</translation>
     </message>
@@ -1708,7 +1708,7 @@ na
 <context>
     <name>QDeclarativeBinding</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativebinding.cpp" line="+225"/>
+        <location filename="../src/declarative/qml/qdeclarativebinding.cpp" line="+236"/>
         <source>Binding loop detected for property &quot;%1&quot;</source>
         <translation>Zapętlenie powiązania dla właściwości &quot;%1&quot;</translation>
     </message>
@@ -1725,16 +1725,16 @@ na
     <name>QDeclarativeCompiler</name>
     <message>
         <location filename="../src/declarative/qml/qdeclarativecompiler.cpp" line="+186"/>
-        <location line="+1561"/>
-        <location line="+187"/>
-        <location line="+82"/>
+        <location line="+1572"/>
+        <location line="+186"/>
+        <location line="+81"/>
         <location line="+75"/>
-        <location line="+488"/>
+        <location line="+487"/>
         <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
         <translation>Niepoprawne przypisanie wartości: &quot;%1&quot; jest właściwością tylko do odczytu</translation>
     </message>
     <message>
-        <location line="-2384"/>
+        <location line="-2392"/>
         <source>Invalid property assignment: unknown enumeration</source>
         <translation>Niepoprawne przypisanie wartości: nieznana wartość wyliczeniowa</translation>
     </message>
@@ -1819,12 +1819,12 @@ na
         <translation>Niepoprawne przypisanie wartości: nieobsługiwany typ &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+271"/>
+        <location line="+275"/>
         <source>Element is not creatable.</source>
         <translation>Nie można utworzyć elementu (&quot;creatable&quot; wyłączone).</translation>
     </message>
     <message>
-        <location line="+592"/>
+        <location line="+601"/>
         <source>Component elements may not contain properties other than id</source>
         <translation>Elementy komponentu nie mogą posiadać właściwości innych niż &quot;id&quot;</translation>
     </message>
@@ -1835,12 +1835,12 @@ na
     </message>
     <message>
         <location line="+6"/>
-        <location line="+477"/>
+        <location line="+475"/>
         <source>id is not unique</source>
         <translation>Wartość &quot;id&quot; nie jest unikatowa</translation>
     </message>
     <message>
-        <location line="-467"/>
+        <location line="-465"/>
         <source>Invalid component body specification</source>
         <translation>Niepoprawna specyfikacja &quot;body&quot; komponentu</translation>
     </message>
@@ -1886,29 +1886,29 @@ na
     </message>
     <message>
         <location line="+15"/>
-        <location line="+104"/>
+        <location line="+102"/>
         <source>Non-existent attached object</source>
         <translation>Nieistniejący dołączony obiekt</translation>
     </message>
     <message>
-        <location line="-100"/>
-        <location line="+103"/>
+        <location line="-98"/>
+        <location line="+101"/>
         <source>Invalid attached object assignment</source>
         <translation>Niepoprawne przypisanie dołączonego obiektu</translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-48"/>
         <source>Cannot assign to non-existent default property</source>
         <translation>Nie można przypisać wartości do nieistniejącej domyślnej właściwości</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+355"/>
+        <location line="+352"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
         <translation>Nie można przypisać wartości do nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="-324"/>
+        <location line="-322"/>
         <source>Invalid use of namespace</source>
         <translation>Niepoprawne użycie przestrzeni nazw</translation>
     </message>
@@ -1918,7 +1918,7 @@ na
         <translation>Nie jest to nazwa dołączonej właściwości</translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+182"/>
         <source>Invalid use of id property</source>
         <translation>Niepoprawne użycie właściwości &quot;id&quot;</translation>
     </message>
@@ -1930,7 +1930,7 @@ na
     </message>
     <message>
         <location line="+12"/>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Invalid grouped property access</source>
         <translation>Błędny dostęp do zgrupowanej właściwości</translation>
     </message>
@@ -1985,7 +1985,7 @@ na
         <translation>Niepoprawne przypisanie wartości: oczekiwano skryptu</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+105"/>
         <source>Cannot assign object to property</source>
         <translation>Nie można przypisać obiektu dla właściwości</translation>
     </message>
@@ -2045,7 +2045,7 @@ na
         <translation>Nie można nadpisać właściwości &quot;FINAL&quot;</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+24"/>
         <source>Invalid property type</source>
         <translation>Niepoprawny typ właściwości</translation>
     </message>
@@ -2084,23 +2084,23 @@ na
         <location line="-4"/>
         <location line="+25"/>
         <source>Invalid alias location</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawne położenie aliasu</translation>
     </message>
     <message>
         <location line="-16"/>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawna referencja aliasu. Referencja aliasu musi być podana jako &lt;id&gt; lub &lt;id&gt; &lt;property&gt;</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Niepoprawna referencja aliasu. Nie można odnaleźć identyfikatora &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeComponent</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativecomponent.cpp" line="+508"/>
+        <location filename="../src/declarative/qml/qdeclarativecomponent.cpp" line="+458"/>
         <source>Invalid empty URL</source>
         <translation>Niepoprawny pusty URL</translation>
     </message>
@@ -2108,13 +2108,13 @@ na
 <context>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativecompositetypemanager.cpp" line="+482"/>
-        <location line="+270"/>
+        <location filename="../src/declarative/qml/qdeclarativecompositetypemanager.cpp" line="+487"/>
+        <location line="+266"/>
         <source>Resource %1 unavailable</source>
         <translation>Zasób %1 nie jest dostępny</translation>
     </message>
     <message>
-        <location line="-120"/>
+        <location line="-122"/>
         <source>Namespace %1 cannot be used as a type</source>
         <translation>Przestrzeń nazw %1 nie może być użyta jako typ</translation>
     </message>
@@ -2132,14 +2132,13 @@ na
 <context>
     <name>QDeclarativeConnections</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeconnections.cpp" line="+180"/>
-        <location line="+54"/>
-        <location line="+7"/>
+        <location filename="../src/declarative/util/qdeclarativeconnections.cpp" line="+209"/>
+        <location line="+60"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
         <translation>Nie można przypisać wartości do nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="-51"/>
+        <location line="-50"/>
         <source>Connections: nested objects not allowed</source>
         <translation>Połączenia: zagnieżdżone obiekty nie są dozwolone</translation>
     </message>
@@ -2156,79 +2155,6 @@ na
 </context>
 <context>
     <name>QDeclarativeEngine</name>
-    <message>
-        <location filename="../src/declarative/qml/qdeclarativeengine.cpp" line="+1636"/>
-        <location line="+4"/>
-        <source>local directory</source>
-        <translation>lokalny katalog</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>is ambiguous. Found in %1 and in %2</source>
-        <translation>jest niejednoznaczny. Znaleziono w %1 i w %2</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
-        <translation>jest niejednoznaczny. Znaleziono w %1 w wersji %2.%3 i %4.%5</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>is instantiated recursively</source>
-        <translation>jest zinstancjonowany rekurencyjnie</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>is not a type</source>
-        <translation>nie jest typem</translation>
-    </message>
-    <message>
-        <location line="+34"/>
-        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation>definicja &quot;%2&quot; modułu &quot;%1&quot; nie może zostać odczytana</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation>wtyczka nie może zostać załadowana dla modułu &quot;%1&quot;: %2</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
-        <translation>wtyczka &quot;%2&quot; modułu &quot;%1&quot; nie została odnaleziona</translation>
-    </message>
-    <message>
-        <location line="+82"/>
-        <location line="+55"/>
-        <source>module &quot;%1&quot; version %2.%3 is not installed</source>
-        <translation>wersja %2.%3 modułu %1 nie jest zainstalowana</translation>
-    </message>
-    <message>
-        <location line="-53"/>
-        <source>module &quot;%1&quot; is not installed</source>
-        <translation>moduł &quot;%1&quot; nie jest zainstalowany</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+19"/>
-        <source>&quot;%1&quot;: no such directory</source>
-        <translation>&quot;%1&quot;: brak katalogu</translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <source>import &quot;%1&quot; has no qmldir and no namespace</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>- %1 is not a namespace</source>
-        <translation>- %1 nie jest przestrzenią nazw</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>- nested namespaces not allowed</source>
-        <translation>- zagnieżdżone przestrzenie nazw nie są dozwolone</translation>
-    </message>
     <message>
         <location filename="../src/declarative/qml/qdeclarativesqldatabase.cpp" line="+204"/>
         <source>executeSql called outside transaction()</source>
@@ -2264,7 +2190,7 @@ na
 <context>
     <name>QDeclarativeFlipable</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativeflipable.cpp" line="+129"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeflipable.cpp" line="+127"/>
         <source>front is a write-once property</source>
         <translation>&quot;front&quot; jest właściwością tylko do odczytu</translation>
     </message>
@@ -2275,9 +2201,85 @@ na
     </message>
 </context>
 <context>
+    <name>QDeclarativeImportDatabase</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativeimport.cpp" line="+303"/>
+        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
+        <translation>definicja &quot;%2&quot; modułu &quot;%1&quot; nie może zostać odczytana</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
+        <translation>wtyczka nie może zostać załadowana dla modułu &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
+        <translation>wtyczka &quot;%2&quot; modułu &quot;%1&quot; nie została odnaleziona</translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <location line="+55"/>
+        <source>module &quot;%1&quot; version %2.%3 is not installed</source>
+        <translation>wersja %2.%3 modułu %1 nie jest zainstalowana</translation>
+    </message>
+    <message>
+        <location line="-53"/>
+        <source>module &quot;%1&quot; is not installed</source>
+        <translation>moduł &quot;%1&quot; nie jest zainstalowany</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+19"/>
+        <source>&quot;%1&quot;: no such directory</source>
+        <translation>&quot;%1&quot;: brak katalogu</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>import &quot;%1&quot; has no qmldir and no namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>- %1 is not a namespace</source>
+        <translation>- %1 nie jest przestrzenią nazw</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>- nested namespaces not allowed</source>
+        <translation>- zagnieżdżone przestrzenie nazw nie są dozwolone</translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <location line="+4"/>
+        <source>local directory</source>
+        <translation>lokalny katalog</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>is ambiguous. Found in %1 and in %2</source>
+        <translation>jest niejednoznaczny. Znaleziono w %1 i w %2</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
+        <translation>jest niejednoznaczny. Znaleziono w %1 w wersji %2.%3 i %4.%5</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>is instantiated recursively</source>
+        <translation>jest zinstancjonowany rekurencyjnie</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>is not a type</source>
+        <translation>nie jest typem</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeKeyNavigationAttached</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativeitemsmodule.cpp" line="+62"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeitemsmodule.cpp" line="+64"/>
         <source>KeyNavigation is only available via attached properties</source>
         <translation>&quot;KeyNavigation&quot; jest dostępny jedynie poprzez dołączone właściwości</translation>
     </message>
@@ -2318,12 +2320,7 @@ na
         <translation>append: wartość nie jest obiektem</translation>
     </message>
     <message>
-        <location line="+34"/>
-        <source>get: index %1 out of range</source>
-        <translation>get: indeks %1 poza zakresem</translation>
-    </message>
-    <message>
-        <location line="+25"/>
+        <location line="+55"/>
         <source>set: value is not an object</source>
         <translation>set: wartość nie jest obiektem</translation>
     </message>
@@ -2358,7 +2355,7 @@ na
 <context>
     <name>QDeclarativeLoader</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativeloader.cpp" line="+317"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeloader.cpp" line="+309"/>
         <source>Loader does not support loading non-visual elements.</source>
         <translation>Ładowanie elementów niewizualnych nie jest obsługiwane.</translation>
     </message>
@@ -2479,19 +2476,19 @@ na
         <translation>Oczekiwany znak &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativescriptparser.cpp" line="+264"/>
-        <location line="+464"/>
+        <location filename="../src/declarative/qml/qdeclarativescriptparser.cpp" line="+260"/>
+        <location line="+431"/>
         <location line="+59"/>
         <source>Property value set multiple times</source>
         <translation>Wartość właściwości ustawiona wielokrotnie</translation>
     </message>
     <message>
-        <location line="-512"/>
+        <location line="-479"/>
         <source>Expected type name</source>
         <translation>Oczekiwana nazwa typu</translation>
     </message>
     <message>
-        <location line="+171"/>
+        <location line="+136"/>
         <source>Invalid import qualifier ID</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2541,7 +2538,7 @@ na
         <translation>&quot;Tylko do odczytu&quot; nie jest jeszcze obsługiwane</translation>
     </message>
     <message>
-        <location line="+213"/>
+        <location line="+215"/>
         <source>JavaScript declaration outside Script element</source>
         <translation>Deklaracja &quot;JavaScript&quot; na zewnątrz elementu &quot;Script&quot;</translation>
     </message>
@@ -2557,7 +2554,7 @@ na
 <context>
     <name>QDeclarativePixmapCache</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativepixmapcache.cpp" line="+197"/>
+        <location filename="../src/declarative/util/qdeclarativepixmapcache.cpp" line="+198"/>
         <source>Error decoding: %1: %2</source>
         <translation>Błąd dekodowania: %1: %2</translation>
     </message>
@@ -2568,7 +2565,7 @@ na
     </message>
     <message>
         <location line="+19"/>
-        <location line="+342"/>
+        <location line="+345"/>
         <source>Cannot open: %1</source>
         <translation>Nie można otworzyć: %1</translation>
     </message>
@@ -2589,12 +2586,12 @@ na
 <context>
     <name>QDeclarativePropertyChanges</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativepropertychanges.cpp" line="+232"/>
+        <location filename="../src/declarative/util/qdeclarativepropertychanges.cpp" line="+252"/>
         <source>PropertyChanges does not support creating state-specific objects.</source>
         <translation>&quot;PropertyChanges&quot; nie obsługuje tworzenia obiektów charakterystycznych dla stanów.</translation>
     </message>
     <message>
-        <location line="+151"/>
+        <location line="+157"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
         <translation>Nie można przypisać wartości do nieistniejącej właściwości &quot;%1&quot;</translation>
     </message>
@@ -2607,7 +2604,7 @@ na
 <context>
     <name>QDeclarativeTextInput</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativetextinput.cpp" line="+793"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativetextinput.cpp" line="+797"/>
         <location line="+8"/>
         <source>Could not load cursor delegate</source>
         <translation type="unfinished"></translation>
@@ -2626,7 +2623,7 @@ na
         <translation>Nie można utworzyć obiektu typu %1</translation>
     </message>
     <message>
-        <location line="+380"/>
+        <location line="+390"/>
         <source>Cannot assign value %1 to property %2</source>
         <translation>Nie można przypisać wartości %1 do właściwości %2</translation>
     </message>
@@ -2669,7 +2666,7 @@ na
 <context>
     <name>QDeclarativeVisualDataModel</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativevisualitemmodel.cpp" line="+1070"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativevisualitemmodel.cpp" line="+1091"/>
         <source>Delegate component must be Item type.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2694,7 +2691,7 @@ na
 <context>
     <name>QDeclarativeXmlRoleList</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="+642"/>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="+673"/>
         <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
         <translation>Zapytanie XmlListModel nie może rozpoczynać się od &quot;/&quot; ani od &quot;//&quot;</translation>
     </message>
@@ -2727,7 +2724,7 @@ na
     <message>
         <location line="-122"/>
         <source>Done</source>
-        <translation>Wykonano</translation>
+        <translation>Zrobione</translation>
     </message>
 </context>
 <context>
@@ -3757,15 +3754,6 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     </message>
 </context>
 <context>
-    <name>QGstreamerPlayerSession</name>
-    <message>
-        <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+423"/>
-        <location line="+16"/>
-        <source>Unable to play %1</source>
-        <translation>Nie można odtworzyć %1</translation>
-    </message>
-</context>
-<context>
     <name>QHostInfo</name>
     <message>
         <location filename="../src/network/kernel/qhostinfo_p.h" line="+103"/>
@@ -4134,7 +4122,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QIODevice</name>
     <message>
-        <location filename="../src/corelib/global/qglobal.cpp" line="+2108"/>
+        <location filename="../src/corelib/global/qglobal.cpp" line="+2129"/>
         <source>No space left on device</source>
         <translation>Brak wolnego miejsca na urządzeniu</translation>
     </message>
@@ -4154,7 +4142,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Zbyt wiele otwartych plików</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1596"/>
+        <location filename="../src/corelib/io/qiodevice.cpp" line="+1598"/>
         <source>Unknown error</source>
         <translation>Nieznany błąd</translation>
     </message>
@@ -4271,7 +4259,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QLineEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2089"/>
+        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2095"/>
         <source>&amp;Copy</source>
         <translation>S&amp;kopiuj</translation>
     </message>
@@ -4592,39 +4580,6 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     </message>
 </context>
 <context>
-    <name>QMediaPlayer</name>
-    <message>
-        <location filename="../src/multimedia/mediaservices/playback/qmediaplayer.cpp" line="+496"/>
-        <source>The QMediaPlayer object does not have a valid service</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QMediaPlaylist</name>
-    <message>
-        <location filename="../src/multimedia/mediaservices/base/qmediaplaylist.cpp" line="+455"/>
-        <location line="+46"/>
-        <source>Could not add items to read only playlist.</source>
-        <translation>Nie można dodać elementów do listy odtwarzania (tylko do odczytu).</translation>
-    </message>
-    <message>
-        <location line="-27"/>
-        <location line="+46"/>
-        <source>Playlist format is not supported</source>
-        <translation>Format listy odtwarzania nie jest obsługiwany</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>The file could not be accessed.</source>
-        <translation>Brak dostępu do pliku.</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>Playlist format is not supported.</source>
-        <translation>Format listy odtwarzania nie jest obsługiwany.</translation>
-    </message>
-</context>
-<context>
     <name>QMenu</name>
     <message>
         <location filename="../src/plugins/accessible/widgets/qaccessiblemenu.cpp" line="+157"/>
@@ -4649,7 +4604,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QMenuBar</name>
     <message>
-        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+452"/>
+        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+456"/>
         <source>Actions</source>
         <translation>Akcje</translation>
     </message>
@@ -4950,7 +4905,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QNetworkAccessHttpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+645"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+652"/>
         <source>No suitable proxy found</source>
         <translation>Nie odnaleziono odpowiedniego pośrednika</translation>
     </message>
@@ -4958,7 +4913,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QNetworkAccessManager</name>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+910"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+942"/>
         <source>Network access is disabled.</source>
         <translation>Dostęp do sieci wyłączony.</translation>
     </message>
@@ -4966,12 +4921,12 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QNetworkReply</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+101"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+100"/>
         <source>Error downloading %1 - server replied: %2</source>
         <translation>Błąd podczas pobierania %1 - odpowiedź serwera: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="-828"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="-860"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>Protokół &quot;%1&quot; nie jest znany</translation>
     </message>
@@ -4981,7 +4936,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Błąd sesji sieciowej.</translation>
     </message>
     <message>
-        <location line="+329"/>
+        <location line="+352"/>
         <source>Temporary network failure.</source>
         <translation>Chwilowy błąd w sieci.</translation>
     </message>
@@ -4989,7 +4944,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+111"/>
+        <location line="+120"/>
         <location line="+28"/>
         <source>Operation canceled</source>
         <translation>Operacja anulowana</translation>
@@ -5022,7 +4977,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     </message>
     <message>
         <location filename="../src/plugins/bearer/qnetworksession_impl.cpp" line="+272"/>
-        <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+227"/>
+        <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+280"/>
         <source>Unknown session error.</source>
         <translation>Nieznany błąd sesji.</translation>
     </message>
@@ -5219,7 +5174,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="-196"/>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="-227"/>
         <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6295,7 +6250,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QSQLiteDriver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+549"/>
+        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+550"/>
         <source>Error closing database</source>
         <translation>Błąd zamykania bazy danych</translation>
     </message>
@@ -6338,8 +6293,8 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Nie można wykonać polecenia</translation>
     </message>
     <message>
-        <location line="-129"/>
-        <location line="+62"/>
+        <location line="-130"/>
+        <location line="+63"/>
         <location line="+8"/>
         <source>Unable to fetch row</source>
         <translation>Nie można pobrać wiersza danych</translation>
@@ -6350,7 +6305,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Nie można skasować polecenia</translation>
     </message>
     <message>
-        <location line="-148"/>
+        <location line="-149"/>
         <source>No query</source>
         <translation>Brak zapytania</translation>
     </message>
@@ -8083,7 +8038,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Anuluj</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+319"/>
+        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+321"/>
         <source>Exit</source>
         <translation>Wyjście</translation>
     </message>
@@ -8427,7 +8382,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2047"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2049"/>
         <source>&amp;Copy</source>
         <translation>S&amp;kopiuj</translation>
     </message>
@@ -9128,12 +9083,17 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Nieznany</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+236"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+248"/>
         <source>Web Inspector - %2</source>
         <translation>Wizytator sieciowy - %2</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+456"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+347"/>
+        <source>Redirection limit reached</source>
+        <translation>Osiągnięto limit przekierowań</translation>
+    </message>
+    <message>
+        <location line="+121"/>
         <source>Bad HTTP request</source>
         <translation>Niepoprawna komenda HTTP</translation>
     </message>
@@ -9237,7 +9197,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1959"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1979"/>
         <source>JavaScript Alert - %1</source>
         <translation>Ostrzeżenie JavaScript - %1</translation>
     </message>
@@ -9262,7 +9222,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Skrypt na tej stronie nie działa poprawnie. Czy chcesz przerwać ten skrypt?</translation>
     </message>
     <message>
-        <location line="+374"/>
+        <location line="+376"/>
         <source>Move the cursor to the next character</source>
         <translation>Przesuń kursor do następnego znaku</translation>
     </message>
@@ -9483,7 +9443,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5814"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5793"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -9508,7 +9468,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+2"/>
         <source>Done</source>
-        <translation>Wykonano</translation>
+        <translation>Zrobione</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -10617,7 +10577,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+49"/>
         <source>The focus is undefined.</source>
-        <translation>Focus jest niezdefiniowany.</translation>
+        <translation>Fokus jest niezdefiniowany.</translation>
     </message>
     <message>
         <location filename="../src/xmlpatterns/utils/qoutputvalidator.cpp" line="+86"/>
@@ -11390,13 +11350,13 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
     <message>
         <location line="+28"/>
-        <location line="+408"/>
+        <location line="+415"/>
         <location line="+30"/>
         <source>Type %1 of %2 element cannot be resolved.</source>
         <translation>Nie można rozwiązać typu %1 elementu %2.</translation>
     </message>
     <message>
-        <location line="-416"/>
+        <location line="-423"/>
         <source>Base type %1 of complex type cannot be resolved.</source>
         <translation>Nie można rozwiązać typu podstawowego %1 dla typu złożonego.</translation>
     </message>
@@ -11406,7 +11366,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>%1 nie może mieć złożonego typu podstawowego który ma %2.</translation>
     </message>
     <message>
-        <location line="+279"/>
+        <location line="+286"/>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
         <translation>Model zawartości typu złożonego %1 posiada element %2 więc nie może być on wywiedziony poprzez rozszerzenie niepustego typu.</translation>
     </message>
@@ -12318,11 +12278,11 @@ Proszę wybrać inną nazwę pliku.</translation>
     </message>
 </context>
 <context>
-    <name>Widget</name>
+    <name>S60MediaPlayerControl</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/hybridPixmap/widget.ui"/>
-        <source>about:blank</source>
-        <translation>o:puste</translation>
+        <location filename="../src/plugins/mediaservices/symbian/mediaplayer/s60mediaplayercontrol.cpp" line="+231"/>
+        <source>Media couldn&apos;t be resolved</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

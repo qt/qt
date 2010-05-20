@@ -59,7 +59,6 @@ public:
 /*!
     \qmlclass SystemPalette QDeclarativeSystemPalette
     \since 4.7
-    \ingroup group_utility
     \brief The SystemPalette item gives access to the Qt palettes.
     \sa QPalette
 

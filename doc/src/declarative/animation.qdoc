@@ -73,9 +73,9 @@ Rectangle {
         y: 0
         SequentialAnimation on y {
             loops: Animation.Infinite
-            NumberAnimation { to: 200-img.height; easing.type: "OutBounce"; duration: 2000 }
+            NumberAnimation { to: 200-img.height; easing.type: Easing.OutBounce; duration: 2000 }
             PauseAnimation { duration: 1000 }
-            NumberAnimation { to: 0; easing.type: "OutQuad"; duration: 1000 }
+            NumberAnimation { to: 0; easing.type: Easing.OutQuad; duration: 1000 }
         }
     }
 }
@@ -136,7 +136,7 @@ transitions: [
     Transition {
         NumberAnimation {
             properties: "x,y"
-            easing.type: "OutBounce"
+            easing.type: Easing.OutBounce
             duration: 200
         }
     }
@@ -157,7 +157,7 @@ Transition {
     SequentialAnimation {
         NumberAnimation {
             duration: 1000
-            easing.type: "OutBounce"
+            easing.type: Easing.OutBounce
             // animate myItem's x and y if they have changed in the state
             target: myItem
             properties: "x,y"
@@ -199,7 +199,7 @@ Transition {
         ParallelAnimation {
             NumberAnimation {
                 duration: 1000
-                easing.type: "OutBounce"
+                easing.type: Easing.OutBounce
                 targets: box1
                 properties: "x,y"
             }
@@ -227,7 +227,7 @@ Rectangle {
     id: redRect
     color: "red"
     width: 100; height: 100
-    Behavior on x { NumberAnimation { duration: 300; easing.type: "InOutQuad" } }
+    Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
 }
 \endqml
 

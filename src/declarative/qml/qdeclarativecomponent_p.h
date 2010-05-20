@@ -102,6 +102,7 @@ public:
         ConstructionState() : componentAttached(0), completePending(false) {}
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> > bindValues;
         QList<QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> > parserStatus;
+        QList<QPair<QDeclarativeGuard<QObject>, int> > finalizedParserStatus;
         QDeclarativeComponentAttached *componentAttached;
         QList<QDeclarativeError> errors;
         bool completePending;
@@ -149,7 +150,7 @@ Q_SIGNALS:
     void destruction();
 
 private:
-    friend class QDeclarativeContextData;;
+    friend class QDeclarativeContextData;
     friend class QDeclarativeComponentPrivate;
 };
 

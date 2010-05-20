@@ -76,6 +76,7 @@ private slots:
     void atEnd();
     void readLineBoundaries();
     void writeAfterQByteArrayResize();
+    void read_null();
 
 protected slots:
     void readyReadSlot();
@@ -527,6 +528,31 @@ void tst_QBuffer::writeAfterQByteArrayResize()
 
     buffer.write(QByteArray().fill('b', 1000));
     QCOMPARE(buffer.buffer().size(), 1000);
+}
+
+void tst_QBuffer::read_null()
+{
+    QByteArray buffer;
+    buffer.resize(32000);
+    for (int i = 0; i < buffer.size(); ++i)
+        buffer[i] = char(i & 0xff);
+
+    QBuffer in(&buffer);
+    in.open(QIODevice::ReadOnly);
+
+    QByteArray chunk;
+
+    chunk.resize(16380);
+    in.read(chunk.data(), 16380);
+
+    QCOMPARE(chunk, buffer.mid(0, chunk.size()));
+
+    in.read(chunk.data(), 0);
+
+    chunk.resize(8);
+    in.read(chunk.data(), chunk.size());
+
+    QCOMPARE(chunk, buffer.mid(16380, chunk.size()));
 }
 
 QTEST_MAIN(tst_QBuffer)

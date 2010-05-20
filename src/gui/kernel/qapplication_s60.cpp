@@ -364,6 +364,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
+        m_doubleClickTimer.invalidate();
 
         DrawableWindow()->SetPointerGrab(ETrue);
     }
@@ -589,6 +590,178 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
     case EEventKeyUp:
     case EEventKey:
     {
+#ifndef QT_NO_CURSOR
+        if (S60->mouseInteractionEnabled && S60->virtualMouseRequired) {
+            //translate keys to pointer
+            if ((keyEvent.iScanCode >= EStdKeyLeftArrow && keyEvent.iScanCode <= EStdKeyDownArrow) ||
+                (keyEvent.iScanCode >= EStdKeyDevice10 && keyEvent.iScanCode <= EStdKeyDevice13) ||
+                keyEvent.iScanCode == EStdKeyDevice3) {
+                QPoint pos = QCursor::pos();
+                TPointerEvent fakeEvent;
+                fakeEvent.iType = (TPointerEvent::TType)(-1);
+                fakeEvent.iModifiers = keyEvent.iModifiers;
+                TInt x = pos.x();
+                TInt y = pos.y();
+                if (type == EEventKeyUp) {
+                    S60->virtualMouseAccelTimeout.start();
+                    switch (keyEvent.iScanCode) {
+                    case EStdKeyLeftArrow:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Left;
+                        break;
+                    case EStdKeyRightArrow:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Right;
+                        break;
+                    case EStdKeyUpArrow:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Up;
+                        break;
+                    case EStdKeyDownArrow:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Down;
+                        break;
+                    // diagonal keys (named aliases don't exist in 3.1 SDK)
+                    case EStdKeyDevice10:
+                        S60->virtualMousePressedKeys &= ~QS60Data::LeftUp;
+                        break;
+                    case EStdKeyDevice11:
+                        S60->virtualMousePressedKeys &= ~QS60Data::RightUp;
+                        break;
+                    case EStdKeyDevice12:
+                        S60->virtualMousePressedKeys &= ~QS60Data::RightDown;
+                        break;
+                    case EStdKeyDevice13:
+                        S60->virtualMousePressedKeys &= ~QS60Data::LeftDown;
+                        break;
+                    case EStdKeyDevice3: //select
+                        if (S60->virtualMousePressedKeys & QS60Data::Select)
+                            fakeEvent.iType = TPointerEvent::EButton1Up;
+                        S60->virtualMousePressedKeys &= ~QS60Data::Select;
+                        break;
+                    }
+                }
+                else if (type == EEventKey) {
+                    int dx = 0;
+                    int dy = 0;
+                    if (keyEvent.iScanCode != EStdKeyDevice3) {
+                        m_doubleClickTimer.invalidate();
+                        //reset mouse accelleration after a short time with no moves
+                        const int maxTimeBetweenKeyEventsMs = 500;
+                        if (S60->virtualMouseAccelTimeout.isValid() &&
+                            S60->virtualMouseAccelTimeout.hasExpired(maxTimeBetweenKeyEventsMs)) {
+                            S60->virtualMouseAccelDX = 0;
+                            S60->virtualMouseAccelDY = 0;
+                        }
+                        S60->virtualMouseAccelTimeout.invalidate();
+                    }
+                    switch (keyEvent.iScanCode) {
+                    case EStdKeyLeftArrow:
+                        S60->virtualMousePressedKeys |= QS60Data::Left;
+                        dx = -1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyRightArrow:
+                        S60->virtualMousePressedKeys |= QS60Data::Right;
+                        dx = 1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyUpArrow:
+                        S60->virtualMousePressedKeys |= QS60Data::Up;
+                        dy = -1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyDownArrow:
+                        S60->virtualMousePressedKeys |= QS60Data::Down;
+                        dy = 1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyDevice10:
+                        S60->virtualMousePressedKeys |= QS60Data::LeftUp;
+                        dx = -1;
+                        dy = -1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyDevice11:
+                        S60->virtualMousePressedKeys |= QS60Data::RightUp;
+                        dx = 1;
+                        dy = -1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyDevice12:
+                        S60->virtualMousePressedKeys |= QS60Data::RightDown;
+                        dx = 1;
+                        dy = 1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyDevice13:
+                        S60->virtualMousePressedKeys |= QS60Data::LeftDown;
+                        dx = -1;
+                        dy = 1;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case EStdKeyDevice3:
+                        // Platform bug. If you start pressing several keys simultaneously (for
+                        // example for drag'n'drop), Symbian starts producing spurious up and
+                        // down messages for some keys. Therefore, make sure we have a clean slate
+                        // of pressed keys before starting a new button press.
+                        if (S60->virtualMousePressedKeys & QS60Data::Select) {
+                            return EKeyWasConsumed;
+                        } else {
+                            S60->virtualMousePressedKeys |= QS60Data::Select;
+                            fakeEvent.iType = TPointerEvent::EButton1Down;
+                            if (m_doubleClickTimer.isValid()
+                                && !m_doubleClickTimer.hasExpired(QApplication::doubleClickInterval())) {
+                                fakeEvent.iModifiers |= EModifierDoubleClick;
+                                m_doubleClickTimer.invalidate();
+                            } else {
+                                m_doubleClickTimer.start();
+                            }
+                        }
+                        break;
+                    }
+                    if (dx) {
+                        int cdx = S60->virtualMouseAccelDX;
+                        //reset accel on change of sign, else double accel
+                        if (dx * cdx <= 0)
+                            cdx = dx;
+                        else
+                            cdx *= 4;
+                        //cap accelleration
+                        if (dx * cdx > S60->virtualMouseMaxAccel)
+                            cdx = dx * S60->virtualMouseMaxAccel;
+                        //move mouse position
+                        x += cdx;
+                        S60->virtualMouseAccelDX = cdx;
+                    }
+
+                    if (dy) {
+                        int cdy = S60->virtualMouseAccelDY;
+                        if (dy * cdy <= 0)
+                            cdy = dy;
+                        else
+                            cdy *= 4;
+                        if (dy * cdy > S60->virtualMouseMaxAccel)
+                            cdy = dy * S60->virtualMouseMaxAccel;
+                        y += cdy;
+                        S60->virtualMouseAccelDY = cdy;
+                    }
+                }
+                //clip to screen size (window server allows a sprite hotspot to be outside the screen)
+                if (x < 0)
+                    x = 0;
+                else if (x >= S60->screenWidthInPixels)
+                    x = S60->screenWidthInPixels - 1;
+                if (y < 0)
+                    y = 0;
+                else if (y >= S60->screenHeightInPixels)
+                    y = S60->screenHeightInPixels - 1;
+                TPoint epos(x, y);
+                TPoint cpos = epos - PositionRelativeToScreen();
+                fakeEvent.iPosition = cpos;
+                fakeEvent.iParentPosition = epos;
+                if(fakeEvent.iType != -1)
+                    HandlePointerEvent(fakeEvent);
+                return EKeyWasConsumed;
+            }
+        }
+#endif
         // S60 has a confusing way of delivering key events. There are three types of
         // events: EKeyEvent, EKeyEventDown and EKeyEventUp. When a key is pressed, the
         // two first events are generated. When releasing the key, the last one is
@@ -621,112 +794,6 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             // Special S60 keys.
             keyCode = qt_keymapper_private()->mapS60KeyToQt(s60Keysym);
         }
-
-#ifndef QT_NO_CURSOR
-        if (S60->mouseInteractionEnabled && S60->virtualMouseRequired) {
-            //translate keys to pointer
-            if (keyCode >= Qt::Key_Left && keyCode <= Qt::Key_Down || keyCode == Qt::Key_Select) {
-                /*Explanation about virtualMouseAccel:
-                 Tapping an arrow key allows precise pixel positioning
-                 Holding an arrow key down, acceleration is applied to allow cursor
-                 to be quickly moved to another part of the screen by key repeats.
-                 */
-                if (S60->virtualMouseLastKey == keyCode) {
-                    S60->virtualMouseAccel *= 2;
-                    if (S60->virtualMouseAccel > S60->virtualMouseMaxAccel)
-                        S60->virtualMouseAccel = S60->virtualMouseMaxAccel;
-                }
-                else
-                    S60->virtualMouseAccel = 1;
-                S60->virtualMouseLastKey = keyCode;
-
-                QPoint pos = QCursor::pos();
-                TPointerEvent fakeEvent;
-                TInt x = pos.x();
-                TInt y = pos.y();
-                if (type == EEventKeyUp) {
-                    if (keyCode == Qt::Key_Select)
-                        fakeEvent.iType = TPointerEvent::EButton1Up;
-                    S60->virtualMouseAccel = 1;
-                    S60->virtualMouseLastKey = 0;
-                    switch (keyCode) {
-                    case Qt::Key_Left:
-                        S60->virtualMousePressedKeys &= ~QS60Data::Left;
-                        break;
-                    case Qt::Key_Right:
-                        S60->virtualMousePressedKeys &= ~QS60Data::Right;
-                        break;
-                    case Qt::Key_Up:
-                        S60->virtualMousePressedKeys &= ~QS60Data::Up;
-                        break;
-                    case Qt::Key_Down:
-                        S60->virtualMousePressedKeys &= ~QS60Data::Down;
-                        break;
-                    case Qt::Key_Select:
-                        S60->virtualMousePressedKeys &= ~QS60Data::Select;
-                        break;
-                    }
-                }
-                else if (type == EEventKey) {
-                    switch (keyCode) {
-                    case Qt::Key_Left:
-                        S60->virtualMousePressedKeys |= QS60Data::Left;
-                        x -= S60->virtualMouseAccel;
-                        fakeEvent.iType = TPointerEvent::EMove;
-                        break;
-                    case Qt::Key_Right:
-                        S60->virtualMousePressedKeys |= QS60Data::Right;
-                        x += S60->virtualMouseAccel;
-                        fakeEvent.iType = TPointerEvent::EMove;
-                        break;
-                    case Qt::Key_Up:
-                        S60->virtualMousePressedKeys |= QS60Data::Up;
-                        y -= S60->virtualMouseAccel;
-                        fakeEvent.iType = TPointerEvent::EMove;
-                        break;
-                    case Qt::Key_Down:
-                        S60->virtualMousePressedKeys |= QS60Data::Down;
-                        y += S60->virtualMouseAccel;
-                        fakeEvent.iType = TPointerEvent::EMove;
-                        break;
-                    case Qt::Key_Select:
-                        // Platform bug. If you start pressing several keys simultaneously (for
-                        // example for drag'n'drop), Symbian starts producing spurious up and
-                        // down messages for some keys. Therefore, make sure we have a clean slate
-                        // of pressed keys before starting a new button press.
-                        if (S60->virtualMousePressedKeys != 0) {
-                            S60->virtualMousePressedKeys |= QS60Data::Select;
-                            return EKeyWasConsumed;
-                        } else {
-                            S60->virtualMousePressedKeys |= QS60Data::Select;
-                            fakeEvent.iType = TPointerEvent::EButton1Down;
-                        }
-                        break;
-                    }
-                }
-                //clip to screen size (window server allows a sprite hotspot to be outside the screen)
-                if (x < 0)
-                    x = 0;
-                else if (x >= S60->screenWidthInPixels)
-                    x = S60->screenWidthInPixels - 1;
-                if (y < 0)
-                    y = 0;
-                else if (y >= S60->screenHeightInPixels)
-                    y = S60->screenHeightInPixels - 1;
-                TPoint epos(x, y);
-                TPoint cpos = epos - PositionRelativeToScreen();
-                fakeEvent.iModifiers = keyEvent.iModifiers;
-                fakeEvent.iPosition = cpos;
-                fakeEvent.iParentPosition = epos;
-                HandlePointerEvent(fakeEvent);
-                return EKeyWasConsumed;
-            }
-            else {
-                S60->virtualMouseLastKey = keyCode;
-                S60->virtualMouseAccel = 1;
-            }
-        }
-#endif
 
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,

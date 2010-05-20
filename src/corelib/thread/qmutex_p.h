@@ -56,10 +56,11 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMutexPrivate {
+class QMutexPrivate : public QMutexData {
 public:
     QMutexPrivate(QMutex::RecursionMode mode);
     ~QMutexPrivate();
@@ -68,8 +69,6 @@ public:
     bool wait(int timeout = -1);
     void wakeUp();
 
-    const bool recursive;
-    QAtomicInt contenders;
     volatile int lastSpinCount;
     Qt::HANDLE owner;
     uint count;
@@ -82,6 +81,12 @@ public:
     HANDLE event;
 #endif
 };
+
+inline QMutexData::QMutexData(QMutex::RecursionMode mode)
+    : recursive(mode == QMutex::Recursive)
+{}
+
+inline QMutexData::~QMutexData() {}
 
 QT_END_NAMESPACE
 

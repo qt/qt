@@ -312,7 +312,7 @@ void QNetworkCacheMetaData::setAttributes(const AttributesMap &attributes)
 
     Writes \a metaData to the \a out stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QNetworkCacheMetaData &metaData)
 {
@@ -350,7 +350,7 @@ void QNetworkCacheMetaDataPrivate::save(QDataStream &out, const QNetworkCacheMet
 
     Reads a QNetworkCacheMetaData from the stream \a in into \a metaData.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QNetworkCacheMetaData &metaData)
 {

@@ -173,7 +173,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
-        if (!request.url().userInfo().isEmpty()) {
+        if (!request.url().userInfo().isEmpty() && request.withCredentials()) {
             QUrl url = request.url();
             QAuthenticator &auth = authenticator;
             if (url.userName() != auth.user()
@@ -187,7 +187,10 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             url.setUserInfo(QString());
             request.setUrl(url);
         }
-        connection->d_func()->createAuthorization(socket, request);
+        // Will only be false if QtWebKit is performing a cross-origin XMLHttpRequest
+        // and withCredentials has not been set to true.
+        if (request.withCredentials())
+            connection->d_func()->createAuthorization(socket, request);
 #ifndef QT_NO_NETWORKPROXY
         QByteArray header = QHttpNetworkRequestPrivate::header(request,
             (connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy));
@@ -291,7 +294,8 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         // ensure we try to receive a reply in all cases, even if _q_readyRead_ hat not been called
         // this is needed if the sends an reply before we have finished sending the request. In that
         // case receiveReply had been called before but ignored the server reply
-        QMetaObject::invokeMethod(this, "_q_receiveReply", Qt::QueuedConnection);
+        if (socket->bytesAvailable())
+            QMetaObject::invokeMethod(this, "_q_receiveReply", Qt::QueuedConnection);
         break;
     }
     case QHttpNetworkConnectionChannel::ReadingState:

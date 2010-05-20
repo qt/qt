@@ -788,6 +788,10 @@ void QApplicationPrivate::construct(
     qt_gui_eval_init(application_type);
 #endif
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+    symbianInit();
+#endif
+
 #ifndef QT_NO_LIBRARY
     if(load_testability) {
         QLibrary testLib(QLatin1String("qttestability"));
@@ -2364,6 +2368,19 @@ bool QApplication::event(QEvent *e)
             if (!(w->windowType() == Qt::Desktop))
                 postEvent(w, new QEvent(QEvent::LanguageChange));
         }
+#ifndef Q_OS_WIN
+    } else if (e->type() == QEvent::LocaleChange) {
+        // on Windows the event propagation is taken care by the
+        // WM_SETTINGCHANGE event handler.
+        QWidgetList list = topLevelWidgets();
+        for (int i = 0; i < list.size(); ++i) {
+            QWidget *w = list.at(i);
+            if (!(w->windowType() == Qt::Desktop)) {
+                if (!w->testAttribute(Qt::WA_SetLocale))
+                    w->d_func()->setLocale_helper(QLocale(), true);
+            }
+        }
+#endif
     } else if (e->type() == QEvent::Timer) {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         Q_ASSERT(te != 0);

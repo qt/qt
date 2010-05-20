@@ -50,7 +50,7 @@
     It provides a light-weight foundation for writing your own custom items.
     This includes defining the item's geometry, collision detection, its
     painting implementation and item interaction through its event handlers.
-    QGraphicsItem is part of \l{The Graphics View Framework}
+    QGraphicsItem is part of the \l{Graphics View Framework}
 
     \image graphicsview-items.png
 
@@ -264,7 +264,7 @@
     functionality is completely untouched by Qt itself; it is provided for the
     user's convenience.
 
-    \sa QGraphicsScene, QGraphicsView, {The Graphics View Framework}
+    \sa QGraphicsScene, QGraphicsView, {Graphics View Framework}
 */
 
 /*!
@@ -1090,6 +1090,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     if (newParent == parent)
         return;
 
+    if (isWidget)
+        static_cast<QGraphicsWidgetPrivate *>(this)->fixFocusChainBeforeReparenting((newParent &&
+                                                        newParent->isWidget()) ? static_cast<QGraphicsWidget *>(newParent) : 0,
+                                                        scene);
     if (scene) {
         // Deliver the change to the index
         if (scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
@@ -1422,6 +1426,13 @@ QGraphicsItem::~QGraphicsItem()
 
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
+
+    if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
+        QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
+        QGestureManager *manager = QGestureManager::instance();
+        foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+            manager->cleanupCachedGestures(o, type);
+    }
 
     clearFocus();
 
@@ -1796,9 +1807,6 @@ static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::Graphics
 */
 void QGraphicsItem::setFlags(GraphicsItemFlags flags)
 {
-    if (isWindow())
-        flags |= ItemIsPanel;
-
     // Notify change and check for adjustment.
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
@@ -1812,7 +1820,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
-        d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+        d_ptr->updatePaintedViewBoundingRects(/*children=*/true);
 
     // Keep the old flags to compare the diff.
     GraphicsItemFlags oldFlags = GraphicsItemFlags(d_ptr->flags);
@@ -3648,6 +3656,8 @@ void QGraphicsItem::setPos(const QPointF &pos)
     // Update and repositition.
     if (!(d_ptr->flags & (ItemSendsGeometryChanges | ItemSendsScenePositionChanges))) {
         d_ptr->setPosHelper(pos);
+        if (d_ptr->isWidget)
+            static_cast<QGraphicsWidget *>(this)->d_func()->setGeometryFromSetPos();
         return;
     }
 
@@ -5432,6 +5442,24 @@ void QGraphicsItemPrivate::removeExtraItemCache()
     unsetExtra(ExtraCacheData);
 }
 
+void QGraphicsItemPrivate::updatePaintedViewBoundingRects(bool updateChildren)
+{
+    if (!scene)
+        return;
+
+    for (int i = 0; i < scene->d_func()->views.size(); ++i) {
+        QGraphicsViewPrivate *viewPrivate = scene->d_func()->views.at(i)->d_func();
+        QRect rect = paintedViewBoundingRects.value(viewPrivate->viewport);
+        rect.translate(viewPrivate->dirtyScrollOffset);
+        viewPrivate->updateRect(rect);
+    }
+
+    if (updateChildren) {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->updatePaintedViewBoundingRects(true);
+    }
+}
+
 // Traverses all the ancestors up to the top-level and updates the pointer to
 // always point to the top-most item that has a dirty scene transform.
 // It then backtracks to the top-most dirty item and start calculating the
@@ -5635,8 +5663,9 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 // Adjust with 2 pixel margin. Notice the loss of precision
                 // when converting to QRect.
                 int adjust = 2;
+                QRectF scrollRect = !rect.isNull() ? rect : boundingRect();
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
-                QRect irect = rect.toRect().translated(-br.x(), -br.y());
+                QRect irect = scrollRect.toRect().translated(-br.x(), -br.y());
 
                 pix.scroll(dx, dy, irect);
 
@@ -5644,11 +5673,11 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
 
                 // Translate the existing expose.
                 foreach (QRectF exposedRect, c->exposed)
-                    c->exposed += exposedRect.translated(dx, dy) & rect;
+                    c->exposed += exposedRect.translated(dx, dy) & scrollRect;
 
                 // Calculate exposure.
                 QRegion exposed;
-                QRect r = rect.toRect();
+                QRect r = scrollRect.toRect();
                 exposed += r;
                 exposed -= r.translated(dx, dy);
                 foreach (QRect rect, exposed.rects())
@@ -7131,7 +7160,11 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     // calculate their diff by mapping viewport coordinates
                     // directly to parent coordinates.
                     // COMBINE
-                    QTransform viewToParentTransform = (item->d_func()->transformData->computedFullTransform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
+                    QTransform itemTransform;
+                    if (item->d_ptr->transformData)
+                        itemTransform = item->d_ptr->transformData->computedFullTransform();
+                    itemTransform.translate(item->d_ptr->pos.x(), item->d_ptr->pos.y());
+                    QTransform viewToParentTransform = itemTransform
                                                        * (item->sceneTransform() * view->viewportTransform()).inverted();
                     currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
                     buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
@@ -7619,9 +7652,10 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 */
 void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
 {
-    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
-    d->gestureContext.insert(gesture, flags);
-    (void)QGestureManager::instance(); // create a gesture manager
+    bool contains = QGraphicsItem::d_ptr->gestureContext.contains(gesture);
+    QGraphicsItem::d_ptr->gestureContext.insert(gesture, flags);
+    if (!contains && QGraphicsItem::d_ptr->scene)
+        QGraphicsItem::d_ptr->scene->d_func()->grabGesture(this, gesture);
 }
 
 /*!
@@ -7631,13 +7665,16 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flag
 */
 void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
 {
-    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
-    if (d->gestureContext.remove(gesture)) {
-        QGestureManager *manager = QGestureManager::instance();
-        manager->cleanupCachedGestures(this, gesture);
-    }
+    if (QGraphicsItem::d_ptr->gestureContext.remove(gesture) && QGraphicsItem::d_ptr->scene)
+        QGraphicsItem::d_ptr->scene->d_func()->ungrabGesture(this, gesture);
 }
+/*!
+    Updates the item's micro focus. This is slot for convenience.
 
+    \since 4.7
+
+    \sa QInputContext
+*/
 void QGraphicsObject::updateMicroFocus()
 {
     QGraphicsItem::updateMicroFocus();
@@ -7946,6 +7983,13 @@ void QGraphicsItemPrivate::resetHeight()
 */
 
 /*!
+  \property QGraphicsObject::effect
+  \brief the effect attached to this item
+
+  \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
+*/
+
+/*!
     \class QAbstractGraphicsShapeItem
     \brief The QAbstractGraphicsShapeItem class provides a common base for
     all path items.
@@ -7961,7 +8005,7 @@ void QGraphicsItemPrivate::resetHeight()
 
     \sa QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPathItem,
     QGraphicsPolygonItem, QGraphicsTextItem, QGraphicsLineItem,
-    QGraphicsPixmapItem, {The Graphics View Framework}
+    QGraphicsPixmapItem, {Graphics View Framework}
 */
 
 class QAbstractGraphicsShapeItemPrivate : public QGraphicsItemPrivate
@@ -8104,7 +8148,7 @@ QPainterPath QAbstractGraphicsShapeItem::opaqueArea() const
     setBrush() functions.
 
     \sa QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -8313,7 +8357,7 @@ QVariant QGraphicsPathItem::extension(const QVariant &variant) const
     those instead.
 
     \sa QGraphicsPathItem, QGraphicsEllipseItem, QGraphicsPolygonItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -8557,7 +8601,7 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
     brush, which you can set by calling setPen() and setBrush().
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsPolygonItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -8866,7 +8910,7 @@ QVariant QGraphicsEllipseItem::extension(const QVariant &variant) const
     setPen() and setBrush() functions.
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -9098,8 +9142,8 @@ QVariant QGraphicsPolygonItem::extension(const QVariant &variant) const
     function draws the line using the item's associated pen.
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsPixmapItem, {The
-    Graphics View Framework}
+    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsPixmapItem,
+    {Graphics View Framework}
 */
 
 class QGraphicsLineItemPrivate : public QGraphicsItemPrivate
@@ -9370,8 +9414,8 @@ QVariant QGraphicsLineItem::extension(const QVariant &variant) const
     transformation mode for the item.
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsLineItem, {The
-    Graphics View Framework}
+    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsLineItem,
+    {Graphics View Framework}
 */
 
 /*!
@@ -9741,7 +9785,7 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
 
     \sa QGraphicsSimpleTextItem, QGraphicsPathItem, QGraphicsRectItem,
         QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem,
-        QGraphicsLineItem, {The Graphics View Framework}
+        QGraphicsLineItem, {Graphics View Framework}
 */
 
 class QGraphicsTextItemPrivate
@@ -10657,9 +10701,9 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
 
     \img graphicsview-simpletextitem.png
 
-    \sa QGraphicsTextItem, QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsPixmapItem, QGraphicsPolygonItem, QGraphicsLineItem, {The
-    Graphics View Framework}
+    \sa QGraphicsTextItem, QGraphicsPathItem, QGraphicsRectItem,
+    QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem,
+    QGraphicsLineItem, {Graphics View Framework}
 */
 
 /*!
@@ -10920,7 +10964,7 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     item group. As with addToGroup(), the item's scene-relative
     position and transformation remain intact.
 
-    \sa QGraphicsItem, {The Graphics View Framework}
+    \sa QGraphicsItem, {Graphics View Framework}
 */
 
 class QGraphicsItemGroupPrivate : public QGraphicsItemPrivate
