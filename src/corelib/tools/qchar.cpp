@@ -1480,9 +1480,9 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
         if (!d || (canonical && tag != QChar::Canonical))
             continue;
 
-        s.replace(uc - utf16, ucs4 > 0x10000 ? 2 : 1, (const QChar *)d, length);
-        // since the insert invalidates the pointers and we do decomposition recursive
         int pos = uc - utf16;
+        s.replace(pos, QChar::requiresSurrogates(ucs4) ? 2 : 1, reinterpret_cast<const QChar *>(d), length);
+        // since the insert invalidates the pointers and we do decomposition recursive
         utf16 = reinterpret_cast<unsigned short *>(s.data());
         uc = utf16 + pos + length;
     }
@@ -1600,13 +1600,13 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             QChar *uc = s.data();
             int p = pos;
             // exchange characters
-            if (u2 < 0x10000) {
+            if (!QChar::requiresSurrogates(u2)) {
                 uc[p++] = u2;
             } else {
                 uc[p++] = QChar::highSurrogate(u2);
                 uc[p++] = QChar::lowSurrogate(u2);
             }
-            if (u1 < 0x10000) {
+            if (!QChar::requiresSurrogates(u1)) {
                 uc[p++] = u1;
             } else {
                 uc[p++] = QChar::highSurrogate(u1);
@@ -1618,7 +1618,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
                 --pos;
         } else {
             ++pos;
-            if (u1 > 0x10000)
+            if (QChar::requiresSurrogates(u1))
                 ++pos;
         }
     }
