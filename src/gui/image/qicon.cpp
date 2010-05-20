@@ -55,7 +55,6 @@
 #include "qcache.h"
 #include "qdebug.h"
 #include "private/qguiplatformplugin_p.h"
-#include "private/qstylehelper_p.h"
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -66,6 +65,8 @@
 #include "private/qt_x11_p.h"
 #include "private/qkde_p.h"
 #endif
+
+#include "private/qstylehelper_p.h"
 
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
