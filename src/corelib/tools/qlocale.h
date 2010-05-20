@@ -586,7 +586,8 @@ public:
         Serbia = 243,
         SaintBarthelemy = 244,
         SaintMartin = 245,
-        LastCountry = SaintMartin
+        LatinAmericaAndTheCaribbean = 246,
+        LastCountry = LatinAmericaAndTheCaribbean
     };
 
     enum MeasurementSystem { MetricSystem, ImperialSystem };

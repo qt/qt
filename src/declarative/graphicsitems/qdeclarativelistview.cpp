@@ -851,13 +851,15 @@ void QDeclarativeListViewPrivate::createHighlight()
             highlightPosAnimator->target = QDeclarativeProperty(highlight->item, posProp);
             highlightPosAnimator->velocity = highlightMoveSpeed;
             highlightPosAnimator->userDuration = highlightMoveDuration;
-            highlightPosAnimator->restart();
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QSmoothedAnimation(q);
             highlightSizeAnimator->velocity = highlightResizeSpeed;
             highlightSizeAnimator->userDuration = highlightResizeDuration;
             highlightSizeAnimator->target = QDeclarativeProperty(highlight->item, sizeProp);
-            highlightSizeAnimator->restart();
+            if (autoHighlight) {
+                highlightPosAnimator->restart();
+                highlightSizeAnimator->restart();
+            }
             changed = true;
         }
     }
@@ -1321,7 +1323,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/listview/ContactModel.qml 0
 
-    A ListView can display the data in the model, like this:
+    Another component can display this model data in a ListView, like this:
 
     \table 
     \row 
@@ -1332,13 +1334,13 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \endtable
 
     Here, the ListView creates a \c ContactModel component for its model, and a \l Text element
-    for its delegate. The view creates a new \l Text component for each item in the model. Note
+    for its delegate. The view will create a new \l Text component for each item in the model. Notice
     the delegate is able to access the model's \c name and \c number data directly.
 
     An improved list view is shown below. The delegate is visually improved and is moved 
     into a separate \c contactDelegate component. Also, the currently selected item is highlighted
     with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
-    to enable keyboard navigation for the list.
+    to enable keyboard navigation for the list view.
     
     \table
     \row
@@ -1346,10 +1348,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \o \image listview-highlight.png
     \endtable
 
-    Delegates are instantiated as needed and may be destroyed at any time.
+    In a ListView, delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
-    \bold Note that views do not enable \e clip automatically.  If the view
+    \note Views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
@@ -1682,7 +1684,14 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     Q_D(QDeclarativeListView);
     if (d->autoHighlight != autoHighlight) {
         d->autoHighlight = autoHighlight;
-        d->updateHighlight();
+        if (autoHighlight) {
+            d->updateHighlight();
+        } else {
+            if (d->highlightPosAnimator)
+                d->highlightPosAnimator->stop();
+            if (d->highlightSizeAnimator)
+                d->highlightSizeAnimator->stop();
+        }
         emit highlightFollowsCurrentItemChanged();
     }
 }
@@ -1693,9 +1702,9 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     \qmlproperty real ListView::preferredHighlightEnd
     \qmlproperty enumeration ListView::highlightRangeMode
 
-    These properties set the preferred range of the highlight (current item)
-    within the view. The \c preferredHighlightEnd must be greater than or equal to
-    \c preferredHighlightBegin.
+    These properties define the preferred range of the highlight (for the current item)
+    within the view. The \c preferredHighlightBegin value must be less than the
+    \c preferredHighlightEnd value. 
 
     These properties affect the position of the current item when the list is scrolled.
     For example, if the currently selected item should stay in the middle of the
@@ -1794,8 +1803,8 @@ void QDeclarativeListView::setSpacing(qreal spacing)
     Possible values:
 
     \list
-    \o ListView.Horizontal - Items are laid out horizontally.
-    \o ListView.Vertical - Items are laid out vertically. This is the default value.
+    \o ListView.Horizontal - Items are laid out horizontally
+    \o ListView.Vertical (default) - Items are laid out vertically
     \endlist
 
     \table

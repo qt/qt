@@ -48,7 +48,7 @@
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworksession.h>
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -104,7 +104,7 @@ private:
 
     int inProcessSessionManagementCount;
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -140,7 +140,7 @@ void tst_QNetworkSession::initTestCase()
     testsToRun["userChoiceSession"] = true;
     testsToRun["sessionOpenCloseStop"] = true;
 	
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -226,7 +226,7 @@ void tst_QNetworkSession::cleanupTestCase()
                  "inProcessSessionManagement()");
     }
 
-#if defined(Q_WS_MAEMO_6) || defined(Q_WS_MAEMO_5)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();

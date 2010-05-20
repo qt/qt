@@ -195,10 +195,37 @@ Configure::Configure( int& argc, char** argv )
             }
         }
 
+        // make patch_capabilities and createpackage scripts for Symbian that can be used from the shadow build
+        QFile patch_capabilities(buildPath + "/bin/patch_capabilities");
+        if(patch_capabilities.open(QFile::WriteOnly)) {
+            QTextStream stream(&patch_capabilities);
+            stream << "#!/usr/bin/perl -w" << endl
+                   << "require \"" << sourcePath + "/bin/patch_capabilities\";" << endl;
+        }
+        QFile patch_capabilities_bat(buildPath + "/bin/patch_capabilities.bat");
+        if(patch_capabilities_bat.open(QFile::WriteOnly)) {
+            QTextStream stream(&patch_capabilities_bat);
+            stream << "@echo off" << endl
+                   << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/patch_capabilities.bat %*") << endl;
+            patch_capabilities_bat.close();
+        }
+        QFile createpackage(buildPath + "/bin/createpackage");
+        if(createpackage.open(QFile::WriteOnly)) {
+            QTextStream stream(&createpackage);
+            stream << "#!/usr/bin/perl -w" << endl
+                   << "require \"" << sourcePath + "/bin/createpackage\";" << endl;
+        }
+        QFile createpackage_bat(buildPath + "/bin/createpackage.bat");
+        if(createpackage_bat.open(QFile::WriteOnly)) {
+            QTextStream stream(&createpackage_bat);
+            stream << "@echo off" << endl
+                   << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/createpackage.bat %*") << endl;
+            createpackage_bat.close();
+        }
+
         // For Windows CE and shadow builds we need to copy these to the
         // build directory.
         QFile::copy(sourcePath + "/bin/setcepaths.bat" , buildPath + "/bin/setcepaths.bat");
-
         //copy the mkspecs
         buildDir.mkpath("mkspecs");
         if(!Environment::cpdir(sourcePath + "/mkspecs", buildPath + "/mkspecs")){

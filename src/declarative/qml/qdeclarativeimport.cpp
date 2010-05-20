@@ -678,11 +678,11 @@ bool QDeclarativeImportDatabase::resolveType(const QDeclarativeImports& imports,
 
   If either return pointer is 0, the corresponding search is not done.
 */
-void QDeclarativeImportDatabase::resolveTypeInNamespace(QDeclarativeImportedNamespace* ns, const QByteArray& type, 
+bool QDeclarativeImportDatabase::resolveTypeInNamespace(QDeclarativeImportedNamespace* ns, const QByteArray& type, 
                                                         QDeclarativeType** type_return, QUrl* url_return, 
                                                         int *vmaj, int *vmin) const
 {
-    ns->find(type,vmaj,vmin,type_return,url_return);
+    return ns->find(type,vmaj,vmin,type_return,url_return);
 }
 
 /*!

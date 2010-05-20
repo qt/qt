@@ -236,7 +236,7 @@ This example builds on:
 */
 
 /*!
-\example declarative/cppextensions/referenceexamples/grouped
+\example declarative/cppextensions/referenceexamples/attached
 \title Extending QML - Attached Properties Example
 
 This example builds on:

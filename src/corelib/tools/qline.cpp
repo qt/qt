@@ -272,7 +272,7 @@ QDebug operator<<(QDebug d, const QLine &p)
     Writes the given \a line to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QLine &line)
@@ -287,7 +287,7 @@ QDataStream &operator<<(QDataStream &stream, const QLine &line)
     Reads a line from the given \a stream into the given \a line and
     returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QLine &line)
@@ -834,7 +834,7 @@ QDebug operator<<(QDebug d, const QLineF &p)
     Writes the given \a line to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QLineF &line)
@@ -849,7 +849,7 @@ QDataStream &operator<<(QDataStream &stream, const QLineF &line)
     Reads a line from the given \a stream into the given \a line and
     returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QLineF &line)

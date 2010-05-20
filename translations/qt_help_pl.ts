@@ -43,7 +43,7 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>Cannot open collection file: %1</source>
         <translation>Nie można otworzyć pliku z kolekcją: %1</translation>
     </message>
@@ -58,12 +58,12 @@
         <translation>Plik z kolekcją &quot;%1&quot; już istnieje!</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+151"/>
         <source>Unknown filter &apos;%1&apos;!</source>
         <translation>Nieznany filtr &quot;%1&quot;!</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+103"/>
         <source>Invalid documentation file &apos;%1&apos;!</source>
         <translation>Niepoprawny plik z dokumentacją &quot;%1&quot;!</translation>
     </message>
@@ -78,17 +78,17 @@
         <translation>Nie można otworzyć bazy danych &quot;%1&quot; do zoptymalizowania!</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-439"/>
         <source>Cannot create directory: %1</source>
         <translation>Nie można utworzyć katalogu: %1</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+26"/>
         <source>Cannot copy collection file: %1</source>
         <translation>Nie można skopiować pliku z kolekcją: %1</translation>
     </message>
     <message>
-        <location line="+174"/>
+        <location line="+172"/>
         <source>Cannot register filter %1!</source>
         <translation>Nie można zarejestrować pliku %1!</translation>
     </message>
@@ -120,23 +120,20 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+525"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+122"/>
+        <source>Cannot open documentation file %1: %2!</source>
+        <translation>Nie można otworzyć pliku z dokumentacją %1: %2!</translation>
+    </message>
+    <message>
+        <location line="+404"/>
         <source>The specified namespace does not exist!</source>
         <translation>Podana przestrzeń nazw nie istnieje!</translation>
     </message>
 </context>
 <context>
-    <name>QHelpEngineCorePrivate</name>
-    <message>
-        <location line="-403"/>
-        <source>Cannot open documentation file %1: %2!</source>
-        <translation>Nie można otworzyć pliku z dokumentacją %1: %2!</translation>
-    </message>
-</context>
-<context>
     <name>QHelpGenerator</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+157"/>
+        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+158"/>
         <source>Invalid help data!</source>
         <translation>Niepoprawne dane pomocy!</translation>
     </message>
@@ -161,7 +158,7 @@
         <translation>Nie można otworzyć pliku z bazą danych %1!</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>Cannot register namespace %1!</source>
         <translation>Nie można zarejestrować przestrzeni nazw %1!</translation>
     </message>
@@ -216,7 +213,7 @@
         <translation>Nie można otworzyć pliku %1! Zostaje on opuszczony.</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+133"/>
         <source>The filter %1 is already registered!</source>
         <translation>Filtr %1 jest już zarejestrowany!</translation>
     </message>
@@ -231,7 +228,7 @@
         <translation>Wstaw indeksy...</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+91"/>
         <source>Insert contents...</source>
         <translation>Wstaw zawartość...</translation>
     </message>
@@ -245,80 +242,31 @@
         <source>Cannot register contents!</source>
         <translation>Nie można zarejestrować zawartości!</translation>
     </message>
-</context>
-<context>
-    <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+411"/>
-        <source>Search for:</source>
-        <translation>Wyszukaj:</translation>
+        <location line="+56"/>
+        <source>File &apos;%1&apos; does not exist.</source>
+        <translation>Plik %1 nie istnieje.</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Previous search</source>
-        <translation>Poprzednie wyszukiwanie</translation>
+        <location line="+19"/>
+        <source>File &apos;%1&apos; cannot be opened.</source>
+        <translation>Nie można otworzyć pliku &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Next search</source>
-        <translation>Następne wyszukiwanie</translation>
+        <location line="+19"/>
+        <source>File &apos;%1&apos; contains an invalid link to file &apos;%2&apos;</source>
+        <translation>Plik &quot;%1&quot; zawiera niepoprawny odnośnik do pliku &quot;%2&quot;</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Search</source>
-        <translation>Wyszukaj</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Advanced search</source>
-        <translation>Wyszukiwanie zaawansowane</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
-        <translation>słowa &lt;B&gt;podobne&lt;/B&gt; do:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
-        <translation>&lt;B&gt;bez&lt;/B&gt; słów:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
-        <translation>z &lt;B&gt;dokładnym wyrażeniem&lt;/B&gt;:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
-        <translation>ze &lt;B&gt;wszystkimi&lt;/B&gt; słowami:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
-        <translation>z &lt;B&gt;przynajmniej jednym&lt;/B&gt; ze słów:</translation>
+        <location line="+9"/>
+        <source>Invalid links in HTML files.</source>
+        <translation>Niepoprawne odnośniki w plikach HTML.</translation>
     </message>
 </context>
 <context>
-    <name>QHelpSearchResultWidget</name>
+    <name>QHelpProject</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+235"/>
-        <source>0 - 0 of 0 Hits</source>
-        <translation>0 - 0 z 0 Trafień</translation>
-    </message>
-</context>
-<context>
-    <name>QHelpSearchResultWidgetPrivate</name>
-    <message>
-        <location line="-61"/>
-        <source>%1 - %2 of %3 Hits</source>
-        <translation>%1 - %2 z %3 Trafień</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+88"/>
         <source>Unknown token.</source>
         <translation>Nieznany znak.</translation>
     </message>
@@ -328,39 +276,109 @@
         <translation>Nieznany znak. Spodziewano się &quot;QtHelpProject&quot;!</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Error in line %1: %2</source>
         <translation>Błąd w linii %1: %2</translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>A virtual folder must not contain a &apos;/&apos; character!</source>
-        <translation>Wirtualny katalog nie może zawierać znaku &apos;/&apos;!</translation>
+        <location line="+14"/>
+        <source>Virtual folder has invalid syntax.</source>
+        <translation>Wirtualny katalog posiada niepoprawną składnię.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>A namespace must not contain a &apos;/&apos; character!</source>
-        <translation>Przestrzeń nazw nie może zawierać znaku &apos;/&apos;!</translation>
+        <location line="+5"/>
+        <source>Namespace has invalid syntax.</source>
+        <translation>Przestrzeń nazw posiada niepoprawną składnię.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+19"/>
         <source>Missing namespace in QtHelpProject.</source>
         <translation>Brak przestrzeni nazw w QtHelpProject.</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Missing virtual folder in QtHelpProject</source>
         <translation>Brak wirtualnego katalogu QtHelpProject</translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+89"/>
         <source>Missing attribute in keyword at line %1.</source>
         <translation>Brak atrybutu w słowie kluczowym w linii %1.</translation>
     </message>
     <message>
-        <location line="+123"/>
+        <location line="+141"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Nie można otworzyć pliku wejściowego %1!</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpSearchQueryWidget</name>
+    <message>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+124"/>
+        <source>Search for:</source>
+        <translation>Wyszukaj:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Previous search</source>
+        <translation>Poprzednie wyszukiwanie</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next search</source>
+        <translation>Następne wyszukiwanie</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Search</source>
+        <translation>Wyszukaj</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Advanced search</source>
+        <translation>Wyszukiwanie zaawansowane</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
+        <translation>słowa &lt;B&gt;podobne&lt;/B&gt; do:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
+        <translation>&lt;B&gt;bez&lt;/B&gt; słów:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
+        <translation>z &lt;B&gt;dokładnym wyrażeniem&lt;/B&gt;:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
+        <translation>ze &lt;B&gt;wszystkimi&lt;/B&gt; słowami:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
+        <translation>z &lt;B&gt;przynajmniej jednym&lt;/B&gt; ze słów:</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpSearchResultWidget</name>
+    <message numerus="yes">
+        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+174"/>
+        <source>%1 - %2 of %n Hits</source>
+        <translation>
+            <numerusform>%1 - %2 z %n trafienia</numerusform>
+            <numerusform>%1 - %2 z %n trafień</numerusform>
+            <numerusform>%1 - %2 z %n trafień</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+61"/>
+        <source>0 - 0 of 0 Hits</source>
+        <translation>0 - 0 z 0 Trafień</translation>
     </message>
 </context>
 </TS>

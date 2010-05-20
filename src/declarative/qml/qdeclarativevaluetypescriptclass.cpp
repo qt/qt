@@ -168,6 +168,8 @@ void QDeclarativeValueTypeScriptClass::setProperty(Object *obj, const Identifier
 
         ref->type->read(ref->object, ref->property);
         QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
+        if (p.isEnumType() && (QMetaType::Type)v.type() == QMetaType::QReal) 
+            v = v.toInt();
         p.write(ref->type, v);
         ref->type->write(ref->object, ref->property, 0);
     } else {

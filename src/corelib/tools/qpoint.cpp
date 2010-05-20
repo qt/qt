@@ -306,7 +306,7 @@ QT_BEGIN_NAMESPACE
     Writes the given \a point to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QPoint &p)
@@ -325,7 +325,7 @@ QDataStream &operator<<(QDataStream &s, const QPoint &p)
     Reads a point from the given \a stream into the given \a point
     and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QPoint &p)
@@ -647,7 +647,7 @@ qreal QPointF::manhattanLength() const
     Writes the given \a point to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QPointF &p)
@@ -663,7 +663,7 @@ QDataStream &operator<<(QDataStream &s, const QPointF &p)
     Reads a point from the given \a stream into the given \a point
     and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QPointF &p)

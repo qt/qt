@@ -534,7 +534,6 @@ void tst_qdeclarativeinstruction::dump()
         << "-------------------------------------------------------------------------------"
         << "0\t\t0\tINIT\t\t\t0\t3\t-1\t-1"
         << "1\t\t1\tCREATE\t\t\t0\t\t\t\"Test\""
-        << "1\t\t1\tCREATE_SIMPLE\t\t-1"
         << "2\t\t2\tSETID\t\t\t0\t\t\t\"testId\""
         << "3\t\t3\tSET_DEFAULT"
         << "4\t\t4\tCREATE_COMPONENT\t3"
