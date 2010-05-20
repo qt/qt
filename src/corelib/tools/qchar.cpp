@@ -1584,17 +1584,23 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             }
         }
 
-        int c2 = QChar::combiningClass(u2);
-        if (QChar::unicodeVersion(u2) > version)
-            c2 = 0;
-
+        ushort c2 = 0;
+        {
+            const QUnicodeTables::Properties *p = qGetProp(u2);
+            if ((QChar::UnicodeVersion)p->unicodeVersion <= version)
+                c2 = p->combiningClass;
+        }
         if (c2 == 0) {
             pos = p2+1;
             continue;
         }
-        int c1 = QChar::combiningClass(u1);
-        if (QChar::unicodeVersion(u1) > version)
-            c1 = 0;
+
+        ushort c1 = 0;
+        {
+            const QUnicodeTables::Properties *p = qGetProp(u1);
+            if ((QChar::UnicodeVersion)p->unicodeVersion <= version)
+                c1 = p->combiningClass;
+        }
 
         if (c1 > c2) {
             QChar *uc = s.data();
