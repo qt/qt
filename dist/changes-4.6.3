@@ -40,14 +40,29 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QXmlStreamReader
+    * [QTBUG-9196] fixed crash when parsing
 
 QtGui
 -----
 
- - foo
-    * bar
+ - QPainter
+	* [QTBUG-10421] Fixed WebKit-specific justification bug for text containing 
+       more than one script.
+	   
+ - QTextEdit
+	* [QTBUG-9599] Fixed crash when copying the current text cursor  as a result 
+      of deleting a character.
+	  
+ - QTextEngine
+    * [QTBUG-9374] Fixed possible crash in QTextEngine::boundingBox() when using 
+      multiscripted text.
+	  
+ - QTextLayout
+    * [QTBUG-9074] Fixed performance regression that was introduced in Qt 4.6.0.
+
+ - Improved scrolling horizontally with a mouse wheel over sliders.
+ - [QTBUG-7451] Gestures respect panels on QGraphicsView.
 
 QtDBus
 ------
@@ -82,8 +97,13 @@ QtSql
 QtXml
 -----
 
- - foo
-    * bar
+ - [QTBUG-8398] QDom: prevent infinite loop when cloning a DTD
+
+QtXmlPatterns
+-------------
+- [QTBUG-8920] fixed crash with anonymous types in XsdSchemaChecker
+- [QTBUG-8394] include/import/redefine schemas only once
+- QXmlSchema: fix crash with referencing elements
 
 Qt Plugins
 ----------
@@ -111,12 +131,16 @@ Qt for Unix (X11 and Mac OS X)
 Qt for Linux/X11
 ----------------
 
- -
+ - [MR 458] Improved handling of Shift-Tab with VNC on X11.
+ - [QTBUG-7063] Changed key bindings (XF86XK_MyComputer, Qt::Key_Launch0,
+   Key_Calculator) on X11 back to how it was in Qt 4.5 before MR 1742
+   accidentally changed it.
 
 Qt for Windows
 --------------
 
- -
+ - [QTBUG-6007] On Windows we query if there is a touch screen and do not try
+   to enable gestures otherwise.
 
 Qt for Mac OS X
 ---------------
