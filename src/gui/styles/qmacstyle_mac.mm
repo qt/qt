@@ -132,6 +132,8 @@ static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 static const QColor mainWindowGradientBegin(240, 240, 240);
 static const QColor mainWindowGradientEnd(200, 200, 200);
 
+static const int DisclosureOffset = 4;
+
 #if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
 enum {
     kThemePushButtonTextured = 31,
@@ -3100,7 +3102,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         else
             bi.value = opt->direction == Qt::LeftToRight ? kThemeDisclosureRight : kThemeDisclosureLeft;
         bi.adornment = kThemeAdornmentNone;
-        HIRect hirect = qt_hirectForQRect(opt->rect);
+        HIRect hirect = qt_hirectForQRect(opt->rect.adjusted(DisclosureOffset,0,-DisclosureOffset,0));
         HIThemeDrawButton(&hirect, &bi, cg, kHIThemeOrientationNormal, 0);
         break; }
 
@@ -4353,6 +4355,15 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     int controlSize = getControlSize(opt, widget);
 
     switch (sr) {
+    case SE_ItemViewItemText:
+        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+            int fw = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, widget);
+            // We add the focusframeargin between icon and text in commonstyle
+            rect = QCommonStyle::subElementRect(sr, opt, widget);
+            if (vopt->features & QStyleOptionViewItemV2::HasDecoration)
+                rect.adjust(-fw, 0, 0, 0);
+        }
+        break;
     case SE_ToolBoxTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
@@ -4370,9 +4381,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_HeaderLabel:
         if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             rect = QWindowsStyle::subElementRect(sr, opt, widget);
-            if (widget && widget->height() <= qt_mac_aqua_get_metric(kThemeMetricListHeaderHeight)){
-                // We need to allow the text a bit more space when the header is as
-                // small as kThemeMetricListHeaderHeight, otherwise it gets clipped:
+            if (widget && widget->height() <= 22){
+                // We need to allow the text a bit more space when the header is
+                // small, otherwise it gets clipped:
                 rect.setY(0);
                 rect.setHeight(widget->height());
             }
@@ -4399,8 +4410,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         HIRect outRect;
         HIThemeGetButtonShape(&inRect, &bdi, &shape);
         ptrHIShapeGetBounds(shape, &outRect);
-        rect = QRect(int(outRect.origin.x), int(outRect.origin.y),
-                  int(contentRect.origin.x - outRect.origin.x), int(outRect.size.height));
+        rect = QRect(int(outRect.origin.x + DisclosureOffset), int(outRect.origin.y),
+                  int(contentRect.origin.x - outRect.origin.x + DisclosureOffset),
+                  int(outRect.size.height));
         break;
     }
     case SE_TabWidgetLeftCorner:
@@ -5789,6 +5801,13 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = sz.expandedTo(QSize(sz.width(), minimumSize));
         }
         break;
+    case CT_ItemViewItem:
+        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+            sz = QCommonStyle::sizeFromContents(ct, vopt, csz, widget);
+            sz.setHeight(sz.height() + 2);
+        }
+        break;
+
     default:
         sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
     }
