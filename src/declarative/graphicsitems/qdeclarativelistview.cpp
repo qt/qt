@@ -851,13 +851,15 @@ void QDeclarativeListViewPrivate::createHighlight()
             highlightPosAnimator->target = QDeclarativeProperty(highlight->item, posProp);
             highlightPosAnimator->velocity = highlightMoveSpeed;
             highlightPosAnimator->userDuration = highlightMoveDuration;
-            highlightPosAnimator->restart();
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QSmoothedAnimation(q);
             highlightSizeAnimator->velocity = highlightResizeSpeed;
             highlightSizeAnimator->userDuration = highlightResizeDuration;
             highlightSizeAnimator->target = QDeclarativeProperty(highlight->item, sizeProp);
-            highlightSizeAnimator->restart();
+            if (autoHighlight) {
+                highlightPosAnimator->restart();
+                highlightSizeAnimator->restart();
+            }
             changed = true;
         }
     }
@@ -1682,7 +1684,14 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     Q_D(QDeclarativeListView);
     if (d->autoHighlight != autoHighlight) {
         d->autoHighlight = autoHighlight;
-        d->updateHighlight();
+        if (autoHighlight) {
+            d->updateHighlight();
+        } else {
+            if (d->highlightPosAnimator)
+                d->highlightPosAnimator->stop();
+            if (d->highlightSizeAnimator)
+                d->highlightSizeAnimator->stop();
+        }
         emit highlightFollowsCurrentItemChanged();
     }
 }
