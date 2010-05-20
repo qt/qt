@@ -49,7 +49,7 @@
 
 
 /*
-   This example illustrates using a QNetworkAccessManagerFactory to
+   This example illustrates using a QDeclarativeNetworkAccessManagerFactory to
    create a QNetworkAccessManager with a proxy.
 
    Usage:

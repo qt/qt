@@ -40,39 +40,43 @@
 ****************************************************************************/
 
 /*!
-    \title Animation basics
+    \title Animation: Basics
     \example declarative/animation/basics
 
-    This example shows how to use animations in QML.
+    This example shows how to create \l{QML Animation}{animations} in QML.
 */
 
 /*!
-    \title Behaviors
+    \title Animation: Behaviors
     \example declarative/animation/behaviors
+
+    This example shows how to use QML behaviors. 
 */
 
 /*!
-    \title Easing types
+    \title Animation: Easing types
     \example declarative/animation/easing
 
-    This example shows the different easing modes available for animations.
+    This example shows the different easing modes available for \l{QML Animation}{animations}.
 */
 
 /*!
-    \title States
+    \title Animation: States
     \example declarative/animation/states
+
+    This example shows how to use \l{States}{states} and \l{Transitions}{transitions}.
 */
 
 /*!
-    \title Border Image
+    \title Image Elements: Border Image
     \example declarative/imageelements/borderimage
 
-    This example shows how to use a BorderImage in QML.
+    This example shows how to use the BorderImage element.
 */
 
 /*!
     \page declarative-cppextensions-reference.html
-    \title C++ Extensions - Reference examples
+    \title C++ Extensions: Reference examples
 
     These examples show how QML can be extended from C++ in various ways. 
     
@@ -99,33 +103,67 @@
 */
 
 /*!
-    \title Plugins
+    \title C++ Extensions: Plugins
     \example declarative/cppextensions/plugins
+
+    This example shows how to create a C++ plugin extension by subclassing QDeclarativeExtensionPlugin.
 */
 
 /*!
-    \title QGraphicsLayouts
-    \example declarative/cppextensions/qgraphicslayouts
+    \title Graphics Layouts
+    \example declarative/cppextensions/qgraphicslayouts/graphicsLayouts
+
+    This example show how to integrate Qt \l{Graphics View Framework}{Graphics View} components
+    like QGraphicsLayoutItem, QGraphicsLinearLayout and QGraphicsGridLayout into QML.
+*/
+/*!
+    \title Layout Item
+    \example declarative/cppextensions/qgraphicslayouts/layoutItem
+
+    This example show how to integrate QML into an existing 
+    \l{Graphics View Framework}{Graphics View}-based application.
+*/
+/*!
+    \page declarative-cppextensions-qgraphicslayouts.html
+    \title C++ Extensions: QGraphicsLayouts
+
+    These examples show how to integrate \l{Graphics View Framework}{Graphics View}
+    layout components with QML:
+
+    \list
+    \o \l{declarative/cppextensions/qgraphicslayouts/graphicsLayouts}{Graphics Layouts}
+    \o \l{declarative/cppextensions/qgraphicslayouts/layoutItem}{Layout Item}
+    \endlist
 */
 
 /*!
-    \title QWidgets
+    \title C++ Extensions: QWidgets
     \example declarative/cppextensions/qwidgets
+
+    This example shows how to embed QWidget-based objects into QML using QGraphicsProxyWidget.
 */
 
 /*!
-    \title Image Provider
+    \title C++ Extensions: Image Provider
     \example declarative/cppextensions/imageprovider
+
+    This examples shows how to use QDeclarativeImageProvider to serve images asynchronously
+    into a QML item.
 */
 
 /*!
-    \title Network access manager
+    \title C++ Extensions: Network access manager
     \example declarative/cppextensions/networkaccessmanagerfactory
+
+    This example shows how to use QDeclarativeNetworkAccessManagerFactory to create a QNetworkAccessManager
+    with a proxy.
 */
 
 /*!
     \title Internationlization
     \example declarative/i18n
+
+    This example shows how to enable text translation in QML.
 */
 
 /*!
@@ -137,7 +175,7 @@
 */
 
 /*!
-    \title Focus
+    \title Key Interaction: Focus
     \example declarative/keyinteraction/focus
 
     This example shows how to handle keys and focus in QML.
@@ -146,144 +184,204 @@
 */
 
 /*!
-    \title GridView
+    \title Models and Views: GridView
     \example declarative/modelviews/gridview
+
+    This example shows how to use the GridView element.
 */
 
 /*!
-    \title ListView
+    \title Models and Views: ListView
     \example declarative/modelviews/listview
+
+    This example shows how to use the ListView element.
 */
 
 /*!
-    \title Object ListModel
+    \title Models and Views: Object ListModel
     \example declarative/modelviews/objectlistmodel
+
+    This example shows how to create a C++ extension that exposes a
+    QList<QObject*> as a model in QML.
 */
 
 /*!
-    \title Package
+    \title Models and Views: Package
     \example declarative/modelviews/package
+
+    This example shows how to use the Package element.
 */
 
 /*!
-    \title Parallax
+    \title Models and Views: Parallax
     \example declarative/modelviews/parallax
+
+    This example shows how to combine and switch between views.
 */
 
 /*!
-    \title String ListModel
+    \title Models and Views: String ListModel
     \example declarative/modelviews/stringlistmodel
+
+    This example shows how to create a C++ extension that exposes a
+    QStringList as a model in QML.
 */
 
 /*!
-    \title WebView
+    \title Models and Views: WebView
     \example declarative/modelviews/webview
+
+    This example shows how to use the WebView element.
 */
 
 /*!
     \title SQL Local Storage
     \example declarative/sqllocalstorage
+
+    This example shows how to use the SQL Local Storage API in QML.
 */
 
 /*!
-    \title Fonts
+    \title Text: Fonts
     \example declarative/text/fonts
+
+    This example shows how to discover available fonts from QML and use
+    fonts in different ways.
 */
 
 /*!
-    \title Threaded ListModel
+    \title Threading: Threaded ListModel
     \example declarative/threading/threadedlistmodel
+
+    This example shows how to use a ListModel from multiple threads using
+    WorkerScript.
 */
 
 /*!
-    \title WorkerScript
+    \title Threading: WorkerScript
     \example declarative/threading/workerscript
+
+    This example shows how to use the WorkerScript element for threading in QML.
 */
 
 /*!
-    \title Clocks
+    \title Toys: Clocks
     \example declarative/toys/clocks
 
-    This example shows how to create a Clock component and reuse it in a grid.
+    This example displays a set of clocks with different times for different cities.
+    Each clock is created by combining \l Image elements with \l Rotation transforms 
+    and \l SpringFollow animations.
 */
 
 /*!
-    \title Corkboards
+    \title Toys: Corkboards
     \example declarative/toys/corkboards
+
+    This example presents a flickable set of interactive corkboards. It is created
+    through a combination of elements like \l ListModel, \l Repeater and \l TextEdit
+    together with rotation and scaling transforms, animation and mouse interaction.
 */
 
 /*!
-    \title Dial
+    \title Toys: Dial
     \example declarative/toys/dial
 
-    This example shows how to implement a dial in QML.
+    This example presents an interactive speedometer-type dial by combining
+    \l Image elements with \l Rotation transforms and \l SpringFollow animations.
 */
 
 /*!
-    \title Dynamic Scene
+    \title Toys: Dynamic Scene
     \example declarative/toys/dynamicscene
 
-    This example shows how to create dynamic objects QML.
+    This example presents an interactive drag-and-drop scene. It demonstrates
+    how to use QML's \l{Dynamic Object Creation} support to dynamically create and
+    destroy objects.
 */
 
 /*!
-    \title Tic-Tac-Toe
+    \title Toys: Tic-Tac-Toe
     \example declarative/toys/tic-tac-toe
+
+    This example presents a simple implementation of Tic Tac Toe.
 */
 
 /*!
-    \title TV Tennis
+    \title Toys: TV Tennis
     \example declarative/toys/tvtennis
+
+    This example shows how to use animation components such as \l SpringFollow,
+    \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
 */
 
 /*!
-    \title Gestures
+    \title Touch Interaction: Gestures
     \example declarative/touchinteraction/gestures
+
+    This example shows how to use the GestureArea element.
 */
 
 /*!
-    \title Mouse Area
+    \title Touch Interaction: Mouse Area
     \example declarative/touchinteraction/mousearea
+
+    This example shows how to use the MouseArea element.
 */
 
 /*!
-    \title Flipable
+    \title UI Components: Flipable
     \example declarative/ui-components/flipable
 
-    This example shows how to use a Flipable element in QML.
+    This example shows how to use the Flipable element.
 */
 
 /*!
-    \title Progress Bars
+    \title UI Components: Progress Bars
     \example declarative/ui-components/progressbar
+
+    This example shows how to create a progress bar.
 */
 
 /*!
-    \title Scrollbar
+    \title UI Components: Scroll Bar
     \example declarative/ui-components/scrollbar
+
+    This example shows how to create scroll bars for a Flickable element
+    using the \l {Flickable::visibleArea.xPosition}{Flickable::visibleArea}
+    properties.
 */
 
 /*!
-    \title Search Box
+    \title UI Components: Search Box
     \example declarative/ui-components/searchbox
+
+    This example shows how to create a search box.
 */
 
 /*!
-    \title Slide Switch
+    \title UI Components: Slide Switch
     \example declarative/ui-components/slideswitch
+
+    This example shows how to create a slide switch.
 */
 
 /*!
-    \title Spinner
+    \title UI Components: Spinner
     \example declarative/ui-components/spinner
+
+    This example shows how to create a spinner-type component.
 */
 
 /*!
-    \title Tab Widget
+    \title UI Components: Tab Widget
     \example declarative/ui-components/tabwidget
+
+    This example shows how to create a tab widget.
 */
 
 /*!
-    \title XMLHttpRequest
+    \title XML: XMLHttpRequest
     \example declarative/xml/xmlhttprequest
+
+    This example shows how to use \l XmlHttpRequest in QML.
 */

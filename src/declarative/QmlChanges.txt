@@ -6,8 +6,11 @@ Flickable:
    - flickingHorizontally and flickingVertically properties added
    - movingHorizontally and movingVertically properties added
    - flickDirection is renamed flickableDirection
-Component: isReady, isLoading, isError and isNull properties removed, use
-    status property instead
+Component:
+    - isReady, isLoading, isError and isNull properties removed, use
+      status property instead
+    - errorsString() renamed to errorString()
+
 QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property
 "foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"
