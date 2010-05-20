@@ -164,12 +164,6 @@ QtNetwork
   * [QTBUG-2515] Do not make OpenSSL prompt for a password
   * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
 
-QtOpenGL
---------
- - QGLWidget
-  * [QTBUG-7865] Fixed bug where GL widgets were not fully updated on
-    Windows Vista/7 with Aero disabled.
-
 QtScript
 --------
  - Updated src/3rdparty/javascriptcore to a more recent version
