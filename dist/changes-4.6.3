@@ -61,6 +61,9 @@ QtGui
  - QTextLayout
     * [QTBUG-9074] Fixed performance regression that was introduced in Qt 4.6.0.
 
+ - Improved scrolling horizontally with a mouse wheel over sliders.
+ - [QTBUG-7451] Gestures respect panels on QGraphicsView.
+
 QtDBus
 ------
 
@@ -128,12 +131,16 @@ Qt for Unix (X11 and Mac OS X)
 Qt for Linux/X11
 ----------------
 
- -
+ - [MR 458] Improved handling of Shift-Tab with VNC on X11.
+ - [QTBUG-7063] Changed key bindings (XF86XK_MyComputer, Qt::Key_Launch0,
+   Key_Calculator) on X11 back to how it was in Qt 4.5 before MR 1742
+   accidentally changed it.
 
 Qt for Windows
 --------------
 
- -
+ - [QTBUG-6007] On Windows we query if there is a touch screen and do not try
+   to enable gestures otherwise.
 
 Qt for Mac OS X
 ---------------
