@@ -5,7 +5,7 @@ var posnInWindow;
 
 function startDrag(mouse)
 {
-    posnInWindow = paletteItem.mapToItem(null, 0, 0);
+    posnInWindow = paletteItem.mapToItem(window, 0, 0);
     startingMouse = { x: mouse.x, y: mouse.y }
     loadComponent();
 }
