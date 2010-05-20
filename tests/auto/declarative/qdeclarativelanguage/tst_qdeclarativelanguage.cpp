@@ -683,6 +683,7 @@ void tst_qdeclarativelanguage::listProperties()
 // ### Not complete
 void tst_qdeclarativelanguage::dynamicObjectProperties()
 {
+    {
     QDeclarativeComponent component(&engine, TEST_FILE("dynamicObjectProperties.qml"));
     VERIFY_ERRORS(0);
     QObject *object = component.create();
@@ -690,6 +691,16 @@ void tst_qdeclarativelanguage::dynamicObjectProperties()
 
     QVERIFY(object->property("objectProperty") == qVariantFromValue((QObject*)0));
     QVERIFY(object->property("objectProperty2") != qVariantFromValue((QObject*)0));
+    }
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("dynamicObjectProperties.2.qml"));
+    QEXPECT_FAIL("", "QTBUG-10822", Abort);
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("objectProperty") != qVariantFromValue((QObject*)0));
+    }
 }
 
 // Tests the declaration of dynamic signals and slots
