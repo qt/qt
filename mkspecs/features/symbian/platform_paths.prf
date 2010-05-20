@@ -473,5 +473,3 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
     STLLIB_USAGE_DEFINES = _WCHAR_T_DECLARED
 
 }
-
-epocroot_prefix =
