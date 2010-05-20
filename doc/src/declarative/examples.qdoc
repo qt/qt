@@ -75,7 +75,7 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/animation/basics}{Basics}
 \o \l{declarative/animation/behaviors}{Behaviors}
-\o \l{declarative/animation/easing}{Easing}
+\o \l{declarative/animation/easing}{Easing types}
 \o \l{declarative/animation/states}{States}
 \endlist
 
@@ -138,7 +138,7 @@ For example, from your build directory, run:
 \list
 \o \l{declarative-cppextensions-reference.html}{Reference examples} (discussed in \l {Extending QML in C++})
 \o \l{declarative/cppextensions/plugins}{Plugins}
-\o \l{declarative/cppextensions/qgraphicslayouts}{QGraphicsLayouts}
+\o \l{declarative-cppextensions-qgraphicslayouts.html}{QGraphicsLayouts}
 \o \l{declarative/cppextensions/qwidgets}{QWidgets}
 \o \l{declarative/cppextensions/imageprovider}{Image provider}
 \o \l{declarative/cppextensions/networkaccessmanagerfactory}{Network access manager factory}
