@@ -59,7 +59,7 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
                                    )
 
         ok_stub_sis_target.target = ok_stub_sis
-        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
+        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $$basename(TARGET)_stub.pkg \
                                           $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         QMAKE_EXTRA_TARGETS += sis_target \

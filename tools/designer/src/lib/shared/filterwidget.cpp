@@ -163,7 +163,7 @@ FilterWidget::FilterWidget(QWidget *parent, LayoutMode lm)  :
     m_editor->setPlaceholderText(tr("Filter"));
 
     // Let the style determine minimum height for our widget
-    QSize size(ICONBUTTON_SIZE + 2, ICONBUTTON_SIZE + 2);
+    QSize size(ICONBUTTON_SIZE + 6, ICONBUTTON_SIZE + 2);
 
     // Note KDE does not reserve space for the highlight color
     if (style()->inherits("OxygenStyle")) {

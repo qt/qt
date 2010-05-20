@@ -219,8 +219,9 @@ Binary to ASCII - this function returns a base64 encoding of \c data.
 ASCII to binary - this function returns a base64 decoding of \c data.
 
 \section3 Qt.quit()
-This function causes the QML engine to emit the quit signal, which in
-\l {Qt Declarative UI Runtime}{qml} causes the runtime to quit.
+This function causes the QDeclarativeEngine::quit() signal to be emitted.
+Within the \l {Qt Declarative UI Runtime}{qml} application this causes the 
+launcher application to exit.
 
 \section3 Qt.resolvedUrl(url)
 This function returns \c url resolved relative to the URL of the
@@ -257,7 +258,7 @@ If you are certain the files will be local, you could simplify to:
 The methods and properties of the Component element are defined in its own
 page, but when using it dynamically only two methods are usually used.
 \c Component.createObject() returns the created object or \c null if there is an error.
-If there is an error, \l {Component::errorsString()}{Component.errorsString()} describes
+If there is an error, \l {Component::errorString()}{Component.errorString()} describes
 the error that occurred. Note that createObject() takes exactly one argument, which is set
 to the parent of the created object. Graphical objects without a parent will not appear
 on the scene, but if you do not wish to parent the item at this point you can safely pass

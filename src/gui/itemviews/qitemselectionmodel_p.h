@@ -78,6 +78,7 @@ public:
     void _q_columnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
     void _q_layoutAboutToBeChanged();
     void _q_layoutChanged();
+    void _q_modelAboutToBeReset();
 
     inline void remove(QList<QItemSelectionRange> &r)
     {
@@ -92,6 +93,8 @@ public:
         if (!currentSelection.isEmpty())  // ### perhaps this should be in QList
             currentSelection.clear();
     }
+
+    void clearCurrentIndex();
 
     QPointer<QAbstractItemModel> model;
     QItemSelection ranges;

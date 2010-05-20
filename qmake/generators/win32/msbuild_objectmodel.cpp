@@ -396,6 +396,7 @@ VCXCLCompilerTool::VCXCLCompilerTool()
         MultiProcessorCompilation(unset),
         OmitDefaultLibName(unset),
         OmitFramePointers(unset),
+        Optimization("Disabled"),
         OpenMPSupport(unset),
         PreprocessKeepComments(unset),
         PreprocessSuppressLineNumbers(unset),

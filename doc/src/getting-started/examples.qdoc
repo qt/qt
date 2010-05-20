@@ -40,16 +40,6 @@
 ****************************************************************************/
 
 /*!
-    \page examples-overview.html
-    \raw HTML
-    <script>
-    document.location.href = "examples.html";
-    </script>
-    \endraw
-    Click this \l{Qt Examples}{link} if you don't get redirected.
-*/
-
-/*!
    \group all-examples
    \title Qt Examples
 
@@ -581,7 +571,7 @@
     \page examples-mainwindow.html
     \ingroup all-examples
     \title Main Window Examples
-    \building applications around a main window.
+    \brief Building applications around a main window.
 
     \previouspage Dialog Examples
     \contentspage Qt Examples

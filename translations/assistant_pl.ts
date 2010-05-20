@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+110"/>
+        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+117"/>
         <source>&amp;Close</source>
         <translation>Za&amp;mknij</translation>
     </message>
@@ -12,7 +12,7 @@
 <context>
     <name>AboutLabel</name>
     <message>
-        <location line="-14"/>
+        <location line="-15"/>
         <source>Warning</source>
         <translation>Ostrzeżenie</translation>
     </message>
@@ -23,22 +23,82 @@
         <translation>Nie można uruchomić zewnętrznej aplikacji.</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
 </context>
 <context>
-    <name>BookmarkDialog</name>
+    <name>Assistant</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+184"/>
-        <location line="+18"/>
-        <location line="+39"/>
-        <location line="+18"/>
-        <location line="+30"/>
-        <source>Bookmarks</source>
-        <translation>Zakładki</translation>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+177"/>
+        <source>Error registering documentation file &apos;%1&apos;: %2</source>
+        <translation>Błąd podczas zarejestrowania pliku z dokumentacją &quot;%1&quot;: %2</translation>
     </message>
+    <message>
+        <location line="+39"/>
+        <source>Error: %1</source>
+        <translation>Błąd: %1</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Could not register documentation file
+%1
+
+Reason:
+%2</source>
+        <translation>Nie można zarejestrować pliku z dokumentacją
+%1
+
+Powód:
+%2</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Documentation successfully registered.</source>
+        <translation>Dokumentacja poprawnie zarejestrowana.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Could not unregister documentation file
+%1
+
+Reason:
+%2</source>
+        <translation>Nie można wyrejestrować pliku z dokumentacją
+%1
+
+Powód:
+%2</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Documentation successfully unregistered.</source>
+        <translation>Dokumentacja poprawnie wyrejestrowana.</translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>Error reading collection file &apos;%1&apos;: %2.</source>
+        <translation>Błąd podczas czytania pliku kolekcji &quot;%1&quot;: %2.</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Error creating collection file &apos;%1&apos;: %2.</source>
+        <translation>Błąd podczas tworzenia pliku kolekcji &quot;%1&quot;: %2.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Error reading collection file &apos;%1&apos;: %2</source>
+        <translation>Błąd podczas czytania pliku kolekcji &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Cannot load sqlite database driver!</source>
+        <translation>Nie można załadować sterownika bazy danych sqlite!</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkDialog</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/bookmarkdialog.ui"/>
         <source>Add Bookmark</source>
@@ -64,26 +124,16 @@
         <source>New Folder</source>
         <translation>Nowy katalog</translation>
     </message>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="-61"/>
-        <source>Delete Folder</source>
-        <translation>Usuń katalog</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Rename Folder</source>
-        <translation>Zmień nazwę katalogu</translation>
-    </message>
 </context>
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+435"/>
-        <source>Bookmarks</source>
-        <translation>Zakładki</translation>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+151"/>
+        <source>Untitled</source>
+        <translation>Nienazwany</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+65"/>
         <source>Remove</source>
         <translation>Usuń</translation>
     </message>
@@ -93,26 +143,22 @@
         <translation>Zamierzasz usunąć katalog co spowoduje również usunięcie jego zawartości. Czy chcesz kontynuować?</translation>
     </message>
     <message>
-        <location line="+143"/>
-        <location line="+9"/>
-        <source>New Folder</source>
-        <translation>Nowy katalog</translation>
-    </message>
-</context>
-<context>
-    <name>BookmarkWidget</name>
-    <message>
-        <location line="-417"/>
-        <source>Filter:</source>
-        <translation>Filtr:</translation>
+        <location line="+147"/>
+        <source>Manage Bookmarks...</source>
+        <translation>Zarządzanie zakładkami...</translation>
     </message>
     <message>
-        <location line="+33"/>
-        <source>Remove</source>
-        <translation>Usuń</translation>
+        <location line="+3"/>
+        <source>Add Bookmark...</source>
+        <translation>Dodaj zakładkę...</translation>
     </message>
     <message>
-        <location line="-79"/>
+        <location line="+1"/>
+        <source>Ctrl+D</source>
+        <translation>Ctrl+D</translation>
+    </message>
+    <message>
+        <location line="+68"/>
         <source>Delete Folder</source>
         <translation>Usuń katalog</translation>
     </message>
@@ -132,7 +178,7 @@
         <translation>Pokaż zakładkę w nowej karcie</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Delete Bookmark</source>
         <translation>Usuń zakładkę</translation>
     </message>
@@ -141,16 +187,11 @@
         <source>Rename Bookmark</source>
         <translation>Zmień nazwę zakładki</translation>
     </message>
-    <message>
-        <location line="+62"/>
-        <source>Add</source>
-        <translation>Dodaj</translation>
-    </message>
 </context>
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+239"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+121"/>
         <source>Add new page</source>
         <translation>Dodaj nową stronę</translation>
     </message>
@@ -160,18 +201,18 @@
         <translation>Zamknij bieżącą stronę</translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+287"/>
         <source>Print Document</source>
         <translation>Wydrukuj dokument</translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+126"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>nieznany</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+101"/>
         <source>Add New Page</source>
         <translation>Dodaj nową stronę</translation>
     </message>
@@ -191,15 +232,78 @@
         <translation>Dodaj zakładkę dla tej strony...</translation>
     </message>
     <message>
-        <location line="+235"/>
+        <location line="+264"/>
         <source>Search</source>
         <translation>Wyszukaj</translation>
     </message>
 </context>
 <context>
+    <name>CmdLineParser</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+137"/>
+        <source>Unknown option: %1</source>
+        <translation>Nieznana opcja: %1</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>The collection file &apos;%1&apos; does not exist.</source>
+        <translation>Plik kolekcji &quot;%1&quot; nie istnieje.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Missing collection file.</source>
+        <translation>Brak pliku kolekcji.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Invalid URL &apos;%1&apos;.</source>
+        <translation>Niepoprawny URL &quot;%1&quot;.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Missing URL.</source>
+        <translation>Brak URL.</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Unknown widget: %1</source>
+        <translation>Nieznany widżet: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Missing widget.</source>
+        <translation>Brak widżetu.</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>The Qt help file &apos;%1&apos; does not exist.</source>
+        <translation>Plik pomocy Qt &quot;%1&quot; nie istnieje.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Missing help file.</source>
+        <translation>Brak pliku pomocy.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Missing filter argument.</source>
+        <translation>Brak argumentu dla filtru.</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Error</source>
+        <translation>Błąd</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Notice</source>
+        <translation>Uwaga</translation>
+    </message>
+</context>
+<context>
     <name>ContentWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+158"/>
+        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+173"/>
         <source>Open Link</source>
         <translation>Otwórz odsyłacz</translation>
     </message>
@@ -220,34 +324,6 @@
         <location/>
         <source>Filter Name:</source>
         <translation>Nazwa filtru:</translation>
-    </message>
-</context>
-<context>
-    <name>FindWidget</name>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-918"/>
-        <source>Previous</source>
-        <translation>Poprzedni</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Next</source>
-        <translation>Następny</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Case Sensitive</source>
-        <translation>Uwzględniaj wielkość liter</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Whole words</source>
-        <translation>Tylko całe słowa</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
-        <translation>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Szukanie od początku</translation>
     </message>
 </context>
 <context>
@@ -281,52 +357,25 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+489"/>
-        <source>Help</source>
-        <translation>Pomoc</translation>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+58"/>
+        <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
+        <translation>&lt;title&gt;o:pusty&lt;/title&gt;</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <location line="-62"/>
+        <location line="+6"/>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
         <translation>&lt;title&gt;Błąd 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Strona nie może być znaleziona&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
-    </message>
-    <message>
-        <location line="+125"/>
-        <source>Copy &amp;Link Location</source>
-        <translation>Skopiuj &amp;odsyłacz</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Open Link in New Tab	Ctrl+LMB</source>
-        <translation>Otwórz odsyłacz w nowej karcie	Ctrl+LMB</translation>
-    </message>
-    <message>
-        <location line="-275"/>
-        <source>Open Link in New Tab</source>
-        <translation>Otwórz odsyłacz w nowej karcie</translation>
-    </message>
-    <message>
-        <location line="+209"/>
-        <source>Unable to launch external application.
-</source>
-        <translation>Nie można uruchomić zewnętrznej aplikacji.
-</translation>
     </message>
 </context>
 <context>
     <name>IndexWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+66"/>
+        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+68"/>
         <source>&amp;Look for:</source>
         <translation>Wy&amp;szukaj:</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+74"/>
         <source>Open Link</source>
         <translation>Otwórz odsyłacz</translation>
     </message>
@@ -340,29 +389,29 @@
     <name>InstallDialog</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+76"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+78"/>
         <source>Install Documentation</source>
         <translation>Zainstaluj dokumentację</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+30"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+33"/>
         <source>Downloading documentation info...</source>
         <translation>Pobieranie informacji o dokumentacji...</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Download canceled.</source>
         <translation>Anulowano pobieranie.</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <location line="+78"/>
+        <location line="+28"/>
+        <location line="+79"/>
         <location line="+27"/>
         <source>Done.</source>
         <translation>Zrobione.</translation>
     </message>
     <message>
-        <location line="-90"/>
+        <location line="-91"/>
         <source>The file %1 already exists. Do you want to overwrite it?</source>
         <translation>Plik %1 już istnieje. Czy chcesz go nadpisać?</translation>
     </message>
@@ -377,14 +426,14 @@
         <translation>Pobieranie %1...</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <location line="+42"/>
-        <location line="+38"/>
+        <location line="+40"/>
         <source>Download failed: %1.</source>
         <translation>Pobieranie nie powiodło się: %1.</translation>
     </message>
     <message>
-        <location line="-70"/>
+        <location line="-72"/>
         <source>Documentation info file is corrupt!</source>
         <translation>Plik z informacjami o dokumentacji jest uszkodzony!</translation>
     </message>
@@ -399,7 +448,7 @@
         <translation>Instalowanie dokumentacji %1...</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
         <source>Error while installing documentation:
 %1</source>
         <translation>Błąd podczas instalowania dokumentacji:
@@ -439,20 +488,20 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
-        <location line="+383"/>
+        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+123"/>
+        <location line="+369"/>
         <source>Index</source>
         <translation>Indeks</translation>
     </message>
     <message>
-        <location line="-377"/>
-        <location line="+375"/>
+        <location line="-363"/>
+        <location line="+361"/>
         <source>Contents</source>
         <translation>Spis treści</translation>
     </message>
     <message>
-        <location line="-370"/>
-        <location line="+374"/>
+        <location line="-354"/>
+        <location line="+358"/>
         <source>Bookmarks</source>
         <translation>Zakładki</translation>
     </message>
@@ -462,20 +511,14 @@
         <translation>Wyszukaj</translation>
     </message>
     <message>
-        <location line="-364"/>
-        <location line="+207"/>
-        <location line="+514"/>
+        <location line="-338"/>
+        <location line="+680"/>
+        <location line="+284"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-546"/>
-        <location line="+5"/>
-        <source>Unfiltered</source>
-        <translation>Nieprzefiltrowany</translation>
-    </message>
-    <message>
-        <location line="+107"/>
+        <location line="-705"/>
         <source>Page Set&amp;up...</source>
         <translation>&amp;Ustawienia strony...</translation>
     </message>
@@ -490,22 +533,27 @@
         <translation>Wy&amp;drukuj...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-10"/>
         <source>New &amp;Tab</source>
         <translation>Nowa kar&amp;ta</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+17"/>
         <source>&amp;Close Tab</source>
         <translation>&amp;Zamknij kartę</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>&amp;Quit</source>
         <translation>Za&amp;kończ</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
+        <source>CTRL+Q</source>
+        <translation>CTRL+Q</translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>&amp;Copy selected Text</source>
         <translation>S&amp;kopiuj zaznaczony tekst</translation>
     </message>
@@ -615,27 +663,27 @@
         <translation></translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Add Bookmark...</source>
-        <translation>Dodaj zakładkę...</translation>
+        <location line="+596"/>
+        <source>Could not register file &apos;%1&apos;: %2</source>
+        <translation>Nie można zarejestrować pliku &quot;%1&quot;: %2</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-589"/>
         <source>About...</source>
         <translation>Informacje o programie...</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+21"/>
         <source>Navigation Toolbar</source>
         <translation>Pasek do nawigacji</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+69"/>
         <source>Toolbars</source>
         <translation>Paski narzędzi</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>Filter Toolbar</source>
         <translation>Pasek filtrowania</translation>
     </message>
@@ -645,7 +693,7 @@
         <translation>Przefiltrowane przez:</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+26"/>
         <source>Address Toolbar</source>
         <translation>Pasek adresu</translation>
     </message>
@@ -655,27 +703,27 @@
         <translation>Adres:</translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+112"/>
         <source>Could not find the associated content item.</source>
         <translation>Nie można znaleźć skojarzonego elementu zawartości.</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+60"/>
         <source>About %1</source>
         <translation>Informacje o %1</translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+175"/>
         <source>Updating search index</source>
         <translation>Uaktualnianie indeksu wyszukiwawczego</translation>
     </message>
     <message>
-        <location line="-640"/>
+        <location line="-669"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Szukanie dokumentacji Qt...</translation>
     </message>
     <message>
-        <location line="+241"/>
+        <location line="+227"/>
         <source>&amp;Window</source>
         <translation>&amp;Okno</translation>
     </message>
@@ -695,12 +743,12 @@
         <translation>Powiększenie</translation>
     </message>
     <message>
-        <location line="-159"/>
+        <location line="-169"/>
         <source>&amp;File</source>
         <translation>&amp;Plik</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+32"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edycja</translation>
     </message>
@@ -720,41 +768,36 @@
         <translation>ALT+Home</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>&amp;Bookmarks</source>
         <translation>&amp;Zakładki</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
         <source>&amp;Help</source>
         <translation>&amp;Pomoc</translation>
     </message>
     <message>
-        <location line="-40"/>
+        <location line="-38"/>
         <source>ALT+O</source>
         <translation>ALT+O</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>CTRL+D</source>
-        <translation>CTRL+D</translation>
     </message>
 </context>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+259"/>
-        <location line="+43"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+252"/>
+        <location line="+44"/>
         <source>Add Documentation</source>
         <translation>Dodaj dokumentację</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-44"/>
         <source>Qt Compressed Help Files (*.qch)</source>
         <translation>Skompresowane pliki pomocy Qt (*.qch)</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+38"/>
         <source>The specified file is not a valid Qt Help File!</source>
         <translation>Podany plik nie jest poprawnym plikiem pomocy Qt!</translation>
     </message>
@@ -764,7 +807,7 @@
         <translation>Przestrzeń nazw %1 jest już zarejestrowana!</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+32"/>
         <source>Remove Documentation</source>
         <translation>Usuń dokumentację</translation>
     </message>
@@ -784,7 +827,7 @@
         <translation>OK</translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+83"/>
         <source>Use custom settings</source>
         <translation>Użyj własnych ustawień</translation>
     </message>
@@ -908,120 +951,9 @@
     </message>
 </context>
 <context>
-    <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
-        <source>The specified collection file does not exist!</source>
-        <translation>Podany plik z kolekcją nie istnieje!</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Missing collection file!</source>
-        <translation>Brak pliku z kolekcją!</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Invalid URL!</source>
-        <translation>Niepoprawny URL!</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Missing URL!</source>
-        <translation>Brak URL!</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <location line="+19"/>
-        <location line="+19"/>
-        <source>Unknown widget: %1</source>
-        <translation>Nieznany widżet: %1</translation>
-    </message>
-    <message>
-        <location line="-34"/>
-        <location line="+19"/>
-        <location line="+19"/>
-        <source>Missing widget!</source>
-        <translation>Brak widżetu!</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+12"/>
-        <source>The specified Qt help file does not exist!</source>
-        <translation>Podany plik pomocy Qt nie istnieje!</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <location line="+12"/>
-        <source>Missing help file!</source>
-        <translation>Brak pliku pomocy!</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Missing filter argument!</source>
-        <translation>Brak argumentu filtra!</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Unknown option: %1</source>
-        <translation>Nieznana opcja: %1</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <location line="+2"/>
-        <source>Qt Assistant</source>
-        <translation>Qt Assistant</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+228"/>
-        <source>Could not register documentation file
-%1
-
-Reason:
-%2</source>
-        <translation>Nie można zarejestrować pliku z dokumentacją
-%1
-
-Powód:
-%2</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Documentation successfully registered.</source>
-        <translation>Dokumentacja poprawnie zarejestrowana.</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Could not unregister documentation file
-%1
-
-Reason:
-%2</source>
-        <translation>Nie można wyrejestrować pliku z dokumentacją
-%1
-
-Powód:
-%2</translation>
-    </message>
-    <message>
-        <location line="-3"/>
-        <source>Documentation successfully unregistered.</source>
-        <translation>Dokumentacja poprawnie wyrejestrowana.</translation>
-    </message>
-    <message>
-        <location line="+40"/>
-        <source>Cannot load sqlite database driver!</source>
-        <translation>Nie można odczytać sterownika bazy danych sqlite!</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>The specified collection file could not be read!</source>
-        <translation>Podany plik z kolekcją nie może być odczytany!</translation>
-    </message>
-</context>
-<context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+165"/>
         <source>Debugging Remote Control</source>
         <translation>Zdalne debugowanie</translation>
     </message>
@@ -1034,7 +966,7 @@ Powód:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+196"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+210"/>
         <source>&amp;Copy</source>
         <translation>S&amp;kopiuj</translation>
     </message>
@@ -1057,7 +989,7 @@ Powód:
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+54"/>
+        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+53"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;:</source>
         <translation>Wybierz temat dla &lt;b&gt;%1&lt;/b&gt;:</translation>
     </message>

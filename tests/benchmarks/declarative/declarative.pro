@@ -1,7 +1,4 @@
 TEMPLATE = subdirs
-!symbian: {
-    SUBDIRS += painting
-}
 
 SUBDIRS += \
            binding \
@@ -12,3 +9,7 @@ SUBDIRS += \
            qdeclarativemetaproperty \
            script \
            qmltime
+
+contains(QT_CONFIG, opengl): SUBDIRS += painting
+
+

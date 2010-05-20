@@ -180,11 +180,11 @@ EXPORTS
 	??0QDeclarativeView@@QAE@ABVQUrl@@PAVQWidget@@@Z @ 179 NONAME ; QDeclarativeView::QDeclarativeView(class QUrl const &, class QWidget *)
 	??0QDeclarativeView@@QAE@PAVQWidget@@@Z @ 180 NONAME ; QDeclarativeView::QDeclarativeView(class QWidget *)
 	??0QDeclarativeViewSection@@QAE@PAVQObject@@@Z @ 181 NONAME ; QDeclarativeViewSection::QDeclarativeViewSection(class QObject *)
-	??0QDeclarativeVisualDataModel@@QAE@PAVQDeclarativeContext@@@Z @ 182 NONAME ; QDeclarativeVisualDataModel::QDeclarativeVisualDataModel(class QDeclarativeContext *)
+	??0QDeclarativeVisualDataModel@@QAE@PAVQDeclarativeContext@@@Z @ 182 NONAME ABSENT ; QDeclarativeVisualDataModel::QDeclarativeVisualDataModel(class QDeclarativeContext *)
 	??0QDeclarativeVisualDataModel@@QAE@XZ @ 183 NONAME ; QDeclarativeVisualDataModel::QDeclarativeVisualDataModel(void)
-	??0QDeclarativeVisualItemModel@@QAE@XZ @ 184 NONAME ; QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(void)
+	??0QDeclarativeVisualItemModel@@QAE@XZ @ 184 NONAME ABSENT ; QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(void)
 	??0QDeclarativeVisualModel@@IAE@AAVQObjectPrivate@@PAVQObject@@@Z @ 185 NONAME ; QDeclarativeVisualModel::QDeclarativeVisualModel(class QObjectPrivate &, class QObject *)
-	??0QDeclarativeVisualModel@@QAE@XZ @ 186 NONAME ; QDeclarativeVisualModel::QDeclarativeVisualModel(void)
+	??0QDeclarativeVisualModel@@QAE@XZ @ 186 NONAME ABSENT ; QDeclarativeVisualModel::QDeclarativeVisualModel(void)
 	??0QDeclarativeWebPage@@QAE@PAVQDeclarativeWebView@@@Z @ 187 NONAME ABSENT ; QDeclarativeWebPage::QDeclarativeWebPage(class QDeclarativeWebView *)
 	??0QDeclarativeWebView@@QAE@PAVQDeclarativeItem@@@Z @ 188 NONAME ABSENT ; QDeclarativeWebView::QDeclarativeWebView(class QDeclarativeItem *)
 	??0QDeclarativeXmlListModel@@QAE@PAVQObject@@@Z @ 189 NONAME ; QDeclarativeXmlListModel::QDeclarativeXmlListModel(class QObject *)
@@ -1127,8 +1127,8 @@ EXPORTS
 	?flags@QMetaObjectBuilder@@QBE?AV?$QFlags@W4MetaObjectFlag@QMetaObjectBuilder@@@@XZ @ 1126 NONAME ; class QFlags<enum QMetaObjectBuilder::MetaObjectFlag> QMetaObjectBuilder::flags(void) const
 	?flickDeceleration@QDeclarativeFlickable@@QBEMXZ @ 1127 NONAME ; float QDeclarativeFlickable::flickDeceleration(void) const
 	?flickDecelerationChanged@QDeclarativeFlickable@@IAEXXZ @ 1128 NONAME ; void QDeclarativeFlickable::flickDecelerationChanged(void)
-	?flickDirection@QDeclarativeFlickable@@QBE?AW4FlickDirection@1@XZ @ 1129 NONAME ; enum QDeclarativeFlickable::FlickDirection QDeclarativeFlickable::flickDirection(void) const
-	?flickDirectionChanged@QDeclarativeFlickable@@IAEXXZ @ 1130 NONAME ; void QDeclarativeFlickable::flickDirectionChanged(void)
+	?flickDirection@QDeclarativeFlickable@@QBE?AW4FlickDirection@1@XZ @ 1129 NONAME ABSENT ; enum QDeclarativeFlickable::FlickDirection QDeclarativeFlickable::flickDirection(void) const
+	?flickDirectionChanged@QDeclarativeFlickable@@IAEXXZ @ 1130 NONAME ABSENT ; void QDeclarativeFlickable::flickDirectionChanged(void)
 	?flickEnded@QDeclarativeFlickable@@IAEXXZ @ 1131 NONAME ; void QDeclarativeFlickable::flickEnded(void)
 	?flickStarted@QDeclarativeFlickable@@IAEXXZ @ 1132 NONAME ; void QDeclarativeFlickable::flickStarted(void)
 	?flickableChildren@QDeclarativeFlickable@@QAE?AU?$QDeclarativeListProperty@VQDeclarativeItem@@@@XZ @ 1133 NONAME ABSENT ; struct QDeclarativeListProperty<class QDeclarativeItem> QDeclarativeFlickable::flickableChildren(void)
@@ -2416,7 +2416,7 @@ EXPORTS
 	?setFillMode@QDeclarativeImage@@QAEXW4FillMode@1@@Z @ 2415 NONAME ; void QDeclarativeImage::setFillMode(enum QDeclarativeImage::FillMode)
 	?setFlags@QMetaObjectBuilder@@QAEXV?$QFlags@W4MetaObjectFlag@QMetaObjectBuilder@@@@@Z @ 2416 NONAME ; void QMetaObjectBuilder::setFlags(class QFlags<enum QMetaObjectBuilder::MetaObjectFlag>)
 	?setFlickDeceleration@QDeclarativeFlickable@@QAEXM@Z @ 2417 NONAME ; void QDeclarativeFlickable::setFlickDeceleration(float)
-	?setFlickDirection@QDeclarativeFlickable@@QAEXW4FlickDirection@1@@Z @ 2418 NONAME ; void QDeclarativeFlickable::setFlickDirection(enum QDeclarativeFlickable::FlickDirection)
+	?setFlickDirection@QDeclarativeFlickable@@QAEXW4FlickDirection@1@@Z @ 2418 NONAME ABSENT ; void QDeclarativeFlickable::setFlickDirection(enum QDeclarativeFlickable::FlickDirection)
 	?setFlow@QDeclarativeFlow@@QAEXW4Flow@1@@Z @ 2419 NONAME ; void QDeclarativeFlow::setFlow(enum QDeclarativeFlow::Flow)
 	?setFlow@QDeclarativeGridView@@QAEXW4Flow@1@@Z @ 2420 NONAME ; void QDeclarativeGridView::setFlow(enum QDeclarativeGridView::Flow)
 	?setFocus@QDeclarativeItem@@QAEX_N@Z @ 2421 NONAME ; void QDeclarativeItem::setFocus(bool)
@@ -3563,7 +3563,7 @@ EXPORTS
 	?computeTransformOrigin@QDeclarativeItemPrivate@@QBE?AVQPointF@@XZ @ 3562 NONAME ; class QPointF QDeclarativeItemPrivate::computeTransformOrigin(void) const
 	?contextObject@QDeclarativeContext@@QBEPAVQObject@@XZ @ 3563 NONAME ; class QObject * QDeclarativeContext::contextObject(void) const
 	?copyOriginals@QDeclarativeAnchorChanges@@UAEXPAVQDeclarativeActionEvent@@@Z @ 3564 NONAME ; void QDeclarativeAnchorChanges::copyOriginals(class QDeclarativeActionEvent *)
-	?copyOriginals@QDeclarativeParentChange@@UAEXPAVQDeclarativeActionEvent@@@Z @ 3565 NONAME ; void QDeclarativeParentChange::copyOriginals(class QDeclarativeActionEvent *)
+	?copyOriginals@QDeclarativeParentChange@@UAEXPAVQDeclarativeActionEvent@@@Z @ 3565 NONAME ABSENT ; void QDeclarativeParentChange::copyOriginals(class QDeclarativeActionEvent *)
 	?countChanged@QDeclarativeListModel@@IAEXXZ @ 3566 NONAME ; void QDeclarativeListModel::countChanged(void)
 	?countChanged@QDeclarativePathView@@IAEXXZ @ 3567 NONAME ; void QDeclarativePathView::countChanged(void)
 	?create@QDeclarativeType@@QBEXPAPAVQObject@@PAPAXI@Z @ 3568 NONAME ; void QDeclarativeType::create(class QObject * *, void * *, unsigned int) const
@@ -3994,4 +3994,30 @@ EXPORTS
 	?top@QDeclarativeItemPrivate@@QBE?AVQDeclarativeAnchorLine@@XZ @ 3993 NONAME ; class QDeclarativeAnchorLine QDeclarativeItemPrivate::top(void) const
 	?transitions@QDeclarativeItemPrivate@@QAE?AV?$QDeclarativeListProperty@VQDeclarativeTransition@@@@XZ @ 3994 NONAME ; class QDeclarativeListProperty<class QDeclarativeTransition> QDeclarativeItemPrivate::transitions(void)
 	?verticalCenter@QDeclarativeItemPrivate@@QBE?AVQDeclarativeAnchorLine@@XZ @ 3995 NONAME ; class QDeclarativeAnchorLine QDeclarativeItemPrivate::verticalCenter(void) const
+	?flickDirection@QDeclarativeFlickable@@QBE?AW4FlickableDirection@1@XZ @ 3996 NONAME ; enum QDeclarativeFlickable::FlickableDirection QDeclarativeFlickable::flickDirection(void) const
+	?flickingHorizontallyChanged@QDeclarativeFlickable@@IAEXXZ @ 3997 NONAME ; void QDeclarativeFlickable::flickingHorizontallyChanged(void)
+	?flickableDirection@QDeclarativeFlickable@@QBE?AW4FlickableDirection@1@XZ @ 3998 NONAME ; enum QDeclarativeFlickable::FlickableDirection QDeclarativeFlickable::flickableDirection(void) const
+	?setFlickableDirection@QDeclarativeFlickable@@QAEXW4FlickableDirection@1@@Z @ 3999 NONAME ; void QDeclarativeFlickable::setFlickableDirection(enum QDeclarativeFlickable::FlickableDirection)
+	?isMovingVertically@QDeclarativeFlickable@@QBE_NXZ @ 4000 NONAME ; bool QDeclarativeFlickable::isMovingVertically(void) const
+	?movingHorizontallyChanged@QDeclarativeFlickable@@IAEXXZ @ 4001 NONAME ; void QDeclarativeFlickable::movingHorizontallyChanged(void)
+	?d_func@QDeclarativeView@@AAEPAVQDeclarativeViewPrivate@@XZ @ 4002 NONAME ; class QDeclarativeViewPrivate * QDeclarativeView::d_func(void)
+	?d_func@QDeclarativeView@@ABEPBVQDeclarativeViewPrivate@@XZ @ 4003 NONAME ; class QDeclarativeViewPrivate const * QDeclarativeView::d_func(void) const
+	??0QDeclarativeVisualDataModel@@QAE@PAVQDeclarativeContext@@PAVQObject@@@Z @ 4004 NONAME ; QDeclarativeVisualDataModel::QDeclarativeVisualDataModel(class QDeclarativeContext *, class QObject *)
+	?movingVerticallyChanged@QDeclarativeFlickable@@IAEXXZ @ 4005 NONAME ; void QDeclarativeFlickable::movingVerticallyChanged(void)
+	?isFlickingHorizontally@QDeclarativeFlickable@@QBE_NXZ @ 4006 NONAME ; bool QDeclarativeFlickable::isFlickingHorizontally(void) const
+	??0QDeclarativeVisualItemModel@@QAE@PAVQObject@@@Z @ 4007 NONAME ; QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(class QObject *)
+	?flickingVerticallyChanged@QDeclarativeFlickable@@IAEXXZ @ 4008 NONAME ; void QDeclarativeFlickable::flickingVerticallyChanged(void)
+	?isMovingHorizontally@QDeclarativeFlickable@@QBE_NXZ @ 4009 NONAME ; bool QDeclarativeFlickable::isMovingHorizontally(void) const
+	??0QDeclarativeVisualModel@@QAE@PAVQObject@@@Z @ 4010 NONAME ; QDeclarativeVisualModel::QDeclarativeVisualModel(class QObject *)
+	?setFlickDirection@QDeclarativeFlickable@@QAEXW4FlickableDirection@1@@Z @ 4011 NONAME ; void QDeclarativeFlickable::setFlickDirection(enum QDeclarativeFlickable::FlickableDirection)
+	?flickableDirectionChanged@QDeclarativeFlickable@@IAEXXZ @ 4012 NONAME ; void QDeclarativeFlickable::flickableDirectionChanged(void)
+	?isFlickingVertically@QDeclarativeFlickable@@QBE_NXZ @ 4013 NONAME ; bool QDeclarativeFlickable::isFlickingVertically(void) const
+	?componentComplete@QDeclarativeLoader@@MAEXXZ @ 4014 NONAME ; void QDeclarativeLoader::componentComplete(void)
+	?decrementCurrentIndex@QDeclarativePathView@@QAEXXZ @ 4015 NONAME ; void QDeclarativePathView::decrementCurrentIndex(void)
+	?incrementCurrentIndex@QDeclarativePathView@@QAEXXZ @ 4016 NONAME ; void QDeclarativePathView::incrementCurrentIndex(void)
+	?inputMethodPreHandler@QDeclarativeItem@@IAEXPAVQInputMethodEvent@@@Z @ 4017 NONAME ; void QDeclarativeItem::inputMethodPreHandler(class QInputMethodEvent *)
+	?keyPressPreHandler@QDeclarativeItem@@IAEXPAVQKeyEvent@@@Z @ 4018 NONAME ; void QDeclarativeItem::keyPressPreHandler(class QKeyEvent *)
+	?keyReleasePreHandler@QDeclarativeItem@@IAEXPAVQKeyEvent@@@Z @ 4019 NONAME ; void QDeclarativeItem::keyReleasePreHandler(class QKeyEvent *)
+	?loaded@QDeclarativeLoader@@IAEXXZ @ 4020 NONAME ; void QDeclarativeLoader::loaded(void)
+	?needsCopy@QDeclarativeAnchorChanges@@UAE_NXZ @ 4021 NONAME ; bool QDeclarativeAnchorChanges::needsCopy(void)
 

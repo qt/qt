@@ -45,7 +45,7 @@
     \brief Inter-Process communication in Qt applications.
 
     \ingroup technology-apis
-    \ingout qt-network
+    \ingroup qt-network
 
     Qt provides several ways to implement Inter-Process Communication
     (IPC) in Qt applications.

@@ -91,8 +91,7 @@ QT_BEGIN_NAMESPACE
     format that varies depending on the item's type. Supported Qt
     types include QBrush, QColor, QDateTime, QFont, QPixmap, QString,
     QVariant and many others. For the complete list of all Qt types
-    supporting data streaming see the \l{Format of the QDataStream
-    operators}.
+    supporting data streaming see \l{Serializing Qt Data Types}.
 
     For integers it is best to always cast to a Qt integer type for
     writing, and to read back into the same Qt integer type. This

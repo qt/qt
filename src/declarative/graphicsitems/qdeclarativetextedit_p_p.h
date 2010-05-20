@@ -72,7 +72,8 @@ public:
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
       persistentSelection(true), clickCausedFocus(false), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
       cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0),
-      wrapMode(QDeclarativeTextEdit::NoWrap)
+      wrapMode(QDeclarativeTextEdit::NoWrap),
+      selectByMouse(false)
     {
     }
 
@@ -110,6 +111,7 @@ public:
     QTextDocument *document;
     QTextControl *control;
     QDeclarativeTextEdit::WrapMode wrapMode;
+    bool selectByMouse;
 };
 
 QT_END_NAMESPACE

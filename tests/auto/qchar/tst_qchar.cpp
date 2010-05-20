@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <qchar.h>
 #include <qfile.h>
+#include <qstringlist.h>
 #include <private/qunicodetables_p.h>
 #if defined(Q_OS_WINCE)
 #include <qcoreapplication.h>
@@ -75,6 +76,7 @@ private slots:
     void isPrint();
     void isUpper();
     void isLower();
+    void isTitle();
     void category();
     void direction();
     void joining();
@@ -83,7 +85,9 @@ private slots:
     void decomposition();
 //     void ligature();
     void lineBreakClass();
+    void normalization_data();
     void normalization();
+    void normalization_manual();
     void normalizationCorrections();
     void unicodeVersion();
 #if defined(Q_OS_WINCE)
@@ -234,6 +238,11 @@ void tst_QChar::isUpper()
     QVERIFY(!QChar('?').isUpper());
     QVERIFY(QChar(0xC2).isUpper());   // A with ^
     QVERIFY(!QChar(0xE2).isUpper());  // a with ^
+
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::category(codepoint) == QChar::Letter_Uppercase)
+            QVERIFY(codepoint == QChar::toUpper(codepoint));
+    }
 }
 
 void tst_QChar::isLower()
@@ -245,6 +254,19 @@ void tst_QChar::isLower()
     QVERIFY(!QChar('?').isLower());
     QVERIFY(!QChar(0xC2).isLower());   // A with ^
     QVERIFY(QChar(0xE2).isLower());  // a with ^
+
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::category(codepoint) == QChar::Letter_Lowercase)
+            QVERIFY(codepoint == QChar::toLower(codepoint));
+    }
+}
+
+void tst_QChar::isTitle()
+{
+    for (uint codepoint = 0; codepoint <= UNICODE_LAST_CODEPOINT; ++codepoint) {
+        if (QChar::category(codepoint) == QChar::Letter_Titlecase)
+            QVERIFY(codepoint == QChar::toTitleCase(codepoint));
+    }
 }
 
 void tst_QChar::category()
@@ -486,31 +508,13 @@ void tst_QChar::lineBreakClass()
     QVERIFY(QUnicodeTables::lineBreakClass(0x0fffdu) == QUnicodeTables::LineBreak_AL);
 }
 
-void tst_QChar::normalization()
+void tst_QChar::normalization_data()
 {
-    {
-        QString composed;
-        composed += QChar(0xc0);
-        QString decomposed;
-        decomposed += QChar(0x41);
-        decomposed += QChar(0x300);
+    QTest::addColumn<QStringList>("columns");
+    QTest::addColumn<int>("part");
 
-        QVERIFY(composed.normalized(QString::NormalizationForm_D) == decomposed);
-        QVERIFY(composed.normalized(QString::NormalizationForm_C) == composed);
-        QVERIFY(composed.normalized(QString::NormalizationForm_KD) == decomposed);
-        QVERIFY(composed.normalized(QString::NormalizationForm_KC) == composed);
-    }
-    {
-        QString composed;
-        composed += QChar(0xa0);
-        QString decomposed;
-        decomposed += QChar(0x20);
-
-        QVERIFY(composed.normalized(QString::NormalizationForm_D) == composed);
-        QVERIFY(composed.normalized(QString::NormalizationForm_C) == composed);
-        QVERIFY(composed.normalized(QString::NormalizationForm_KD) == decomposed);
-        QVERIFY(composed.normalized(QString::NormalizationForm_KC) == decomposed);
-    }
+    int linenum = 0;
+    int part = 0;
 
     QFile f(SRCDIR "NormalizationTest.txt");
     QVERIFY(f.exists());
@@ -518,6 +522,8 @@ void tst_QChar::normalization()
     f.open(QIODevice::ReadOnly);
 
     while (!f.atEnd()) {
+        linenum++;
+
         QByteArray line;
         line.resize(1024);
         int len = f.readLine(line.data(), 1024);
@@ -527,8 +533,11 @@ void tst_QChar::normalization()
         if (comment >= 0)
             line = line.left(comment);
 
-        if (line.startsWith("@"))
+        if (line.startsWith("@")) {
+            if (line.startsWith("@Part") && line.size() > 5 && QChar(line.at(5)).isDigit())
+                part = QChar(line.at(5)).digitValue();
             continue;
+        }
 
         if (line.isEmpty())
             continue;
@@ -541,8 +550,10 @@ void tst_QChar::normalization()
 
         Q_ASSERT(l.size() == 5);
 
-        QString columns[5];
+        QStringList columns;
         for (int i = 0; i < 5; ++i) {
+            columns.append(QString());
+
             QList<QByteArray> c = l.at(i).split(' ');
             Q_ASSERT(!c.isEmpty());
 
@@ -553,14 +564,25 @@ void tst_QChar::normalization()
                     columns[i].append(QChar(uc));
                 else {
                     // convert to utf16
-                    uc -= 0x10000;
-                    ushort high = uc/0x400 + 0xd800;
-                    ushort low = uc%0x400 + 0xdc00;
+                    ushort high = QChar::highSurrogate(uc);
+                    ushort low = QChar::lowSurrogate(uc);
                     columns[i].append(QChar(high));
                     columns[i].append(QChar(low));
                 }
             }
         }
+
+        QString nm = QString("line #%1:").arg(linenum);
+        QTest::newRow(nm.toLatin1()) << columns << part;
+    }
+}
+
+void tst_QChar::normalization()
+{
+    QFETCH(QStringList, columns);
+    QFETCH(int, part);
+
+    Q_UNUSED(part)
 
         // CONFORMANCE:
         // 1. The following invariants must be true for all conformant implementations
@@ -611,6 +633,32 @@ void tst_QChar::normalization()
 
         // #################
 
+}
+
+void tst_QChar::normalization_manual()
+{
+    {
+        QString composed;
+        composed += QChar(0xc0);
+        QString decomposed;
+        decomposed += QChar(0x41);
+        decomposed += QChar(0x300);
+
+        QVERIFY(composed.normalized(QString::NormalizationForm_D) == decomposed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_C) == composed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_KD) == decomposed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_KC) == composed);
+    }
+    {
+        QString composed;
+        composed += QChar(0xa0);
+        QString decomposed;
+        decomposed += QChar(0x20);
+
+        QVERIFY(composed.normalized(QString::NormalizationForm_D) == composed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_C) == composed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_KD) == decomposed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_KC) == decomposed);
     }
 }
 

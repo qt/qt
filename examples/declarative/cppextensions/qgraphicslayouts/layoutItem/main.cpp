@@ -52,6 +52,7 @@
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+
     //Set up a graphics scene with a QGraphicsWidget and Layout
     QGraphicsView view;
     QGraphicsScene scene;
@@ -60,6 +61,7 @@ int main(int argc, char* argv[])
     widget->setLayout(layout);
     scene.addItem(widget);
     view.setScene(&scene);
+
     //Add the QML snippet into the layout
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl(":layoutItem.qml"));

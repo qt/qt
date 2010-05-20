@@ -566,6 +566,8 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *model)
                 q, SLOT(_q_layoutAboutToBeChanged()));
         QObject::connect(model, SIGNAL(layoutChanged()),
                 q, SLOT(_q_layoutChanged()));
+        QObject::connect(model, SIGNAL(modelAboutToBeReset()),
+                q, SLOT(_q_modelAboutToBeReset()));
     }
 }
 
@@ -896,6 +898,13 @@ void QItemSelectionModelPrivate::_q_layoutChanged()
     savedPersistentCurrentIndexes.clear();
 }
 
+void QItemSelectionModelPrivate::_q_modelAboutToBeReset()
+{
+    Q_Q(QItemSelectionModel);
+    q->clearSelection();
+    clearCurrentIndex();
+}
+
 /*!
     \class QItemSelectionModel
 
@@ -1095,12 +1104,18 @@ void QItemSelectionModel::clear()
 {
     Q_D(QItemSelectionModel);
     clearSelection();
-    QModelIndex previous = d->currentIndex;
-    d->currentIndex = QModelIndex();
+    d->clearCurrentIndex();
+}
+
+void QItemSelectionModelPrivate::clearCurrentIndex()
+{
+    Q_Q(QItemSelectionModel);
+    QModelIndex previous = currentIndex;
+    currentIndex = QModelIndex();
     if (previous.isValid()) {
-        emit currentChanged(d->currentIndex, previous);
-        emit currentRowChanged(d->currentIndex, previous);
-        emit currentColumnChanged(d->currentIndex, previous);
+        emit q->currentChanged(currentIndex, previous);
+        emit q->currentRowChanged(currentIndex, previous);
+        emit q->currentColumnChanged(currentIndex, previous);
     }
 }
 

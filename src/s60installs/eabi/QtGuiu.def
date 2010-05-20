@@ -9899,7 +9899,7 @@ EXPORTS
 	_ZNK7QAction9statusTipEv @ 9898 NONAME
 	_ZNK7QAction9whatsThisEv @ 9899 NONAME
 	_ZNK7QBezier10addIfCloseEPff @ 9900 NONAME
-	_ZNK7QBezier12addToPolygonEP9QPolygonF @ 9901 NONAME
+	_ZNK7QBezier12addToPolygonEP9QPolygonF @ 9901 NONAME ABSENT
 	_ZNK7QBezier16bezierOnIntervalEff @ 9902 NONAME
 	_ZNK7QBezier17addToPolygonMixedEP9QPolygonF @ 9903 NONAME ABSENT
 	_ZNK7QBezier17stationaryYPointsERfS0_ @ 9904 NONAME
@@ -9909,7 +9909,7 @@ EXPORTS
 	_ZNK7QBezier6lengthEf @ 9908 NONAME
 	_ZNK7QBezier7shiftedEPS_iff @ 9909 NONAME
 	_ZNK7QBezier9tAtLengthEf @ 9910 NONAME
-	_ZNK7QBezier9toPolygonEv @ 9911 NONAME
+	_ZNK7QBezier9toPolygonEv @ 9911 NONAME ABSENT
 	_ZNK7QBitmap11transformedERK10QTransform @ 9912 NONAME
 	_ZNK7QBitmap11transformedERK7QMatrix @ 9913 NONAME
 	_ZNK7QBitmapcv8QVariantEv @ 9914 NONAME
@@ -11999,4 +11999,17 @@ EXPORTS
 	_ZNK14QWindowSurface23hasPartialUpdateSupportEv @ 11998 NONAME
 	_ZNK5QIcon4nameEv @ 11999 NONAME
 	_ZN20QGraphicsViewPrivate12updateRegionERK6QRectFRK10QTransform @ 12000 NONAME
+	_ZN12QPixmapCache10allPixmapsEv @ 12001 NONAME
+	_ZN12QPixmapCache20flushDetachedPixmapsEv @ 12002 NONAME
+	_ZN12QPixmapCache9totalUsedEv @ 12003 NONAME
+	_ZN20QGraphicsItemPrivate30updatePaintedViewBoundingRectsEb @ 12004 NONAME
+	_ZN20QGraphicsViewPrivate13setUpdateClipEP13QGraphicsItem @ 12005 NONAME
+	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 12006 NONAME
+	_ZN23QImageTextureGlyphCache17createTextureDataEii @ 12007 NONAME
+	_ZN23QImageTextureGlyphCache17resizeTextureDataEii @ 12008 NONAME
+	_ZNK23QImageTextureGlyphCache11glyphMarginEv @ 12009 NONAME
+	_ZNK7QBezier12addToPolygonEP9QPolygonFf @ 12010 NONAME
+	_ZNK7QBezier9toPolygonEf @ 12011 NONAME
+	_ZTI23QImageTextureGlyphCache @ 12012 NONAME
+	_ZTV23QImageTextureGlyphCache @ 12013 NONAME
 

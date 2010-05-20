@@ -988,7 +988,7 @@ public:
         popup(QPoint());
         QTest::qWaitForWindowShown(this);
         setActiveAction(dialogActions[index]);
-        QTimer::singleShot(0, this, SLOT(checkVisibility()));
+        QTimer::singleShot(500, this, SLOT(checkVisibility()));
         QTest::keyClick(this, Qt::Key_Enter); //activation
     }
 

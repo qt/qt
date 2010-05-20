@@ -46,10 +46,6 @@
     \brief Information about the coordinate system used by the paint
     system.
 
-    \previouspage Drawing and Filling
-    \contentspage The Paint System
-    \nextpage Reading and Writing Image Files
-
     The coordinate system is controlled by the QPainter
     class. Together with the QPaintDevice and QPaintEngine classes,
     QPainter form the basis of Qt's painting system, Arthur. QPainter

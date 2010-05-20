@@ -44,7 +44,7 @@ function createBlock(column, row) {
         var dynamicObject = component.createObject(background);
         if (dynamicObject == null) {
             console.log("error creating block");
-            console.log(component.errorsString());
+            console.log(component.errorString());
             return false;
         }
         dynamicObject.x = column * blockSize;
@@ -54,7 +54,7 @@ function createBlock(column, row) {
         board[index(column, row)] = dynamicObject;
     } else {
         console.log("error loading block component");
-        console.log(component.errorsString());
+        console.log(component.errorString());
         return false;
     }
     return true;

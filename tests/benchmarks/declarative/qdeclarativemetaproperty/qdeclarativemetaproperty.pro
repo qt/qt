@@ -6,12 +6,11 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativemetaproperty.cpp 
 
-# Define SRCDIR equal to test's source directory
-symbian: {
-    DEFINES += SRCDIR=\".\"
-    importFiles.sources = data
-    importFiles.path = 
-    DEPLOYMENT = importFiles
+symbian {
+  data.sources += data
+  data.path = .
+  DEPLOYMENT += data
 } else {
-    DEFINES += SRCDIR=\\\"$$PWD\\\"
+  # Define SRCDIR equal to test's source directory
+  DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

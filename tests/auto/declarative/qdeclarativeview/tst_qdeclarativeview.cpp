@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
 #include <QtGui/qgraphicswidget.h>
+#include "../../../shared/util.h"
 
 class tst_QDeclarativeView : public QObject
 
@@ -106,9 +107,9 @@ void tst_QDeclarativeView::resizemodedeclarativeitem()
     // size update from root object
     declarativeItem->setWidth(250);
     declarativeItem->setHeight(350);
-    qApp->processEvents();
     QCOMPARE(declarativeItem->width(), 250.0);
     QCOMPARE(declarativeItem->height(), 350.0);
+    QTRY_COMPARE(canvas->size(), QSize(250, 350));
     QCOMPARE(canvas->size(), QSize(250, 350));
     QCOMPARE(canvas->size(), canvas->sizeHint());
     QCOMPARE(sceneResizedSpy.count(), 4);
@@ -134,9 +135,9 @@ void tst_QDeclarativeView::resizemodedeclarativeitem()
     // size update from root object
     declarativeItem->setWidth(80);
     declarativeItem->setHeight(100);
-    qApp->processEvents();
     QCOMPARE(declarativeItem->width(), 80.0);
     QCOMPARE(declarativeItem->height(), 100.0);
+    QTRY_COMPARE(canvas->size(), QSize(80, 100));
     QCOMPARE(canvas->size(), QSize(80, 100));
     QCOMPARE(canvas->size(), canvas->sizeHint());
     QCOMPARE(sceneResizedSpy2.count(), 2);

@@ -460,7 +460,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QString &sep)
     Reads a string list from the given \a in stream into the specified
     \a list.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 /*!
@@ -469,7 +469,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QString &sep)
 
     Writes the given string \a list to the specified \a out stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 #endif // QT_NO_DATASTREAM
 

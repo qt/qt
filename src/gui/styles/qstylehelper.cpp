@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qstylehelper_p.h"
-
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
@@ -54,6 +52,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
+#include "qstylehelper_p.h"
 #include <qstringbuilder.h>
 
 QT_BEGIN_NAMESPACE

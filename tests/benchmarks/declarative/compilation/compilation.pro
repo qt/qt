@@ -8,4 +8,10 @@ CONFIG += release
 
 SOURCES += tst_compilation.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian {
+  data.sources += data
+  data.path = .
+  DEPLOYMENT += data
+} else {
+  DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
