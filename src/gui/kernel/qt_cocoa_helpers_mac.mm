@@ -1238,7 +1238,7 @@ void qt_mac_replaceDrawRect(void * /*OSWindowRef */window, QWidgetPrivate *widge
         // We have the original method here. Proceed and swap the methods.
         method_exchangeImplementations(m1, m0);
         widget->originalDrawMethod = false;
-        [window display];
+        [theWindow display];
     }
 }
 
@@ -1261,7 +1261,7 @@ void qt_mac_replaceDrawRectOriginal(void * /*OSWindowRef */window, QWidgetPrivat
     }
     method_exchangeImplementations(m1, m0);
     widget->originalDrawMethod = true;
-    [window display];
+    [theWindow display];
 }
 #endif // QT_MAC_USE_COCOA
 
@@ -1509,7 +1509,7 @@ void macDrawRectOnTop(void * /*OSWindowRef */window)
     NSRect contentRect = [contentView frame];
     // Draw a line on top of the already drawn line.
     // We need to check if we are active or not to use the proper color.
-    if([window isKeyWindow] || [window isMainWindow]) {
+    if([theWindow isKeyWindow] || [theWindow isMainWindow]) {
         [[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
     } else {
         [[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
@@ -1529,7 +1529,7 @@ void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window)
 {
     OSWindowRef theWindow = static_cast<OSWindowRef>(window);
     NSApplication *application = [NSApplication sharedApplication];
-    NSToolbar *toolbar = [window toolbar];
+    NSToolbar *toolbar = [theWindow toolbar];
     if([application isActive]) {
         // Launched from finder
         [toolbar setShowsBaselineSeparator:NO];
