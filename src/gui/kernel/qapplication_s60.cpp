@@ -62,6 +62,10 @@
 #include "qpaintengine.h"
 #include "private/qmenubar_p.h"
 #include "private/qsoftkeymanager_p.h"
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+#include "private/qgraphicssystem_runtime_p.h"
+#endif
+
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
@@ -82,6 +86,10 @@
 #include <hal_data.h>
 
 QT_BEGIN_NAMESPACE
+
+// Goom Events through Window Server
+static const int KGoomMemoryLowEvent = 0x10282DBF;
+static const int KGoomMemoryGoodEvent = 0x20026790;
 
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
@@ -922,7 +930,16 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     const TRect backingStoreRect(TPoint(backingStoreBase.x(), backingStoreBase.y()), controlRect.Size());
 
     if (engine->type() == QPaintEngine::Raster) {
-        QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
+        QS60WindowSurface *s60Surface;
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+            QRuntimeWindowSurface *rtSurface =
+                    static_cast<QRuntimeWindowSurface*>(qwidget->windowSurface());
+            s60Surface = static_cast<QS60WindowSurface *>(rtSurface->m_windowSurface);
+        } else
+#endif
+            s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
+
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
@@ -1802,6 +1819,53 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             else
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
+        }
+#endif
+        break;
+    case KGoomMemoryLowEvent:
+#ifdef QT_DEBUG
+        qDebug() << "QApplicationPrivate::symbianProcessWsEvent - KGoomMemoryLowEvent";
+#endif
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+        if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+            bool switchToSwRendering(false);
+
+            foreach (QWidget *w, QApplication::topLevelWidgets()) {
+                if(w->d_func()->topData()->backingStore) {
+                    switchToSwRendering = true;
+                    break;
+                }
+            }
+
+            if (switchToSwRendering) {
+                QRuntimeGraphicsSystem *gs =
+                   static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
+
+                uint memoryUsage = gs->memoryUsage();
+                uint memoryForFullscreen = ( S60->screenDepth / 8 )
+                                           * S60->screenWidthInPixels
+                                           * S60->screenHeightInPixels;
+
+                S60->memoryLimitForHwRendering = memoryUsage - memoryForFullscreen;
+                gs->setGraphicsSystem(QLatin1String("raster"));
+            }
+        }
+#endif
+        break;
+    case KGoomMemoryGoodEvent:
+#ifdef QT_DEBUG
+        qDebug() << "QApplicationPrivate::symbianProcessWsEvent - KGoomMemoryGoodEvent";
+#endif
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+        if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+            QRuntimeGraphicsSystem *gs =
+                   static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
+            gs->setGraphicsSystem(QLatin1String("openvg"), S60->memoryLimitForHwRendering);
+            S60->memoryLimitForHwRendering = 0;
         }
 #endif
         break;
