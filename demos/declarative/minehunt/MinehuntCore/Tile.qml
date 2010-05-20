@@ -57,7 +57,7 @@ Flipable {
             PauseAnimation {
                 duration: pauseDur
             }
-            RotationAnimation { easing.type: "InOutQuad" }
+            RotationAnimation { easing.type: Easing.InOutQuad }
             ScriptAction { script: if (modelData.hasMine && modelData.flipped) { expl.explode = true } }
         }
     }

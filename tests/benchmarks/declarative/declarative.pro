@@ -1,11 +1,15 @@
 TEMPLATE = subdirs
+
 SUBDIRS += \
            binding \
            creation \
-           painting \
            pointers \
            qdeclarativecomponent \
            qdeclarativeimage \
            qdeclarativemetaproperty \
            script \
            qmltime
+
+contains(QT_CONFIG, opengl): SUBDIRS += painting
+
+

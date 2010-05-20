@@ -1049,26 +1049,24 @@ bool QDeclarativePropertyPrivate::write(QObject *object, const QDeclarativePrope
     } else {
         Q_ASSERT(variantType != propertyType);
 
-        QVariant v = value;
-        if (v.convert((QVariant::Type)propertyType)) {
-            void *a[] = { (void *)v.constData(), 0, &status, &flags};
-            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
-        } else if ((uint)propertyType >= QVariant::UserType && variantType == QVariant::String) {
-            QDeclarativeMetaType::StringConverter con = QDeclarativeMetaType::customStringConverter(propertyType);
-            if (!con)
-                return false;
-
-            QVariant v = con(value.toString());
-            if (v.userType() == propertyType) {
-                void *a[] = { (void *)v.constData(), 0, &status, &flags};
-                QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
+        bool ok = false;
+        QVariant v;
+        if (variantType == QVariant::String)
+            v = QDeclarativeStringConverters::variantFromString(value.toString(), propertyType, &ok);
+        if (!ok) {
+            v = value;
+            if (v.convert((QVariant::Type)propertyType)) {
+                ok = true;
+            } else if ((uint)propertyType >= QVariant::UserType && variantType == QVariant::String) {
+                QDeclarativeMetaType::StringConverter con = QDeclarativeMetaType::customStringConverter(propertyType);
+                if (con) {
+                    v = con(value.toString());
+                    if (v.userType() == propertyType)
+                        ok = true;
+                }
             }
-        } else if (variantType == QVariant::String) {
-            bool ok = false;
-            QVariant v = QDeclarativeStringConverters::variantFromString(value.toString(), propertyType, &ok);
-            if (!ok)
-                return false;
-
+        }
+        if (ok) {
             void *a[] = { (void *)v.constData(), 0, &status, &flags};
             QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
         } else {

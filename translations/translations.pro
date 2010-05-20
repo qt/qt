@@ -1,10 +1,6 @@
 TRANSLATIONS = $$files(*.ts)
 
-LRELEASE = $$QT_BUILD_TREE/bin/lrelease
-win32 {
-    LRELEASE ~= s,/,$$QMAKE_DIR_SEP,
-    LRELEASE = $${LRELEASE}.exe
-}
+qtPrepareTool(LRELEASE, lrelease)
 
 contains(TEMPLATE_PREFIX, vc):vcproj = 1
 

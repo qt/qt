@@ -75,6 +75,7 @@ private slots:
     void resetModel();
     void enforceRange();
     void QTBUG_8456();
+    void manualHighlight();
 
 private:
     QDeclarativeView *createView();
@@ -1106,6 +1107,35 @@ void tst_QDeclarativeGridView::QTBUG_8456()
 
     QTRY_COMPARE(gridview->currentIndex(), 0);
 }
+
+void tst_QDeclarativeGridView::manualHighlight()
+{
+    QDeclarativeView *canvas = createView();
+
+    QString filename(SRCDIR "/data/manual-highlight.qml");
+    canvas->setSource(QUrl::fromLocalFile(filename));
+
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *viewport = gridview->viewport();
+    QTRY_VERIFY(viewport != 0);
+
+    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 0));
+    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+
+    gridview->setCurrentIndex(2);
+
+    QTRY_COMPARE(gridview->currentIndex(), 2);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 2));
+    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+}
+
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()
 {

@@ -510,6 +510,7 @@ template <class T>
 class QMaxHeap
 {
 public:
+    QMaxHeap() : m_data(0) {}
     inline int size() const {return m_data.size();}
     inline bool empty() const {return m_data.isEmpty();}
     inline bool isEmpty() const {return m_data.isEmpty();}
@@ -1299,7 +1300,8 @@ public:
     class ComplexToSimple
     {
     public:
-        inline ComplexToSimple(QTriangulator *parent) : m_parent(parent) { }
+        inline ComplexToSimple(QTriangulator *parent) : m_parent(parent),
+            m_edges(0), m_events(0), m_splits(0) { }
         void decompose();
     private:
         struct Edge
@@ -1412,7 +1414,7 @@ public:
     class SimpleToMonotone
     {
     public:
-        inline SimpleToMonotone(QTriangulator *parent) : m_parent(parent) { }
+        inline SimpleToMonotone(QTriangulator *parent) : m_parent(parent), m_edges(0), m_upperVertex(0) { }
         void decompose();
     private:
         enum VertexType {MergeVertex, EndVertex, RegularVertex, StartVertex, SplitVertex};
@@ -1486,7 +1488,7 @@ public:
         int m_length;
     };
 
-    inline QTriangulator() { }
+    inline QTriangulator() : m_vertices(0) { }
 
     // Call this only once.
     void initialize(const qreal *polygon, int count, uint hint, const QTransform &matrix);
@@ -2709,7 +2711,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
         return;
 
     Q_ASSERT(!m_edgeList.root);
-    QDataBuffer<QPair<int, int> > diagonals;
+    QDataBuffer<QPair<int, int> > diagonals(m_upperVertex.size());
 
     int i = 0;
     for (int index = 1; index < m_edges.size(); ++index) {
@@ -2853,7 +2855,7 @@ bool QTriangulator::SimpleToMonotone::CompareVertices::operator () (int i, int j
 void QTriangulator::MonotoneToTriangles::decompose()
 {
     QVector<quint32> result;
-    QDataBuffer<int> stack;
+    QDataBuffer<int> stack(m_parent->m_indices.size());
     m_first = 0;
     // Require at least three more indices.
     while (m_first + 3 <= m_parent->m_indices.size()) {

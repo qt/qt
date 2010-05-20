@@ -612,7 +612,7 @@ void QPinchGesture::setRotationAngle(qreal value)
     If the gesture has either a horizontal or vertical component, the
     swipe angle describes the angle between the direction of motion and the
     x-axis as defined using the standard widget
-    \l{The Coordinate System}{coordinate system}.
+    \l{Coordinate System}{coordinate system}.
 
     \sa horizontalDirection, verticalDirection
 */

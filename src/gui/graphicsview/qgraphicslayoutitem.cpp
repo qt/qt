@@ -322,7 +322,7 @@ void QGraphicsLayoutItemPrivate::setSizeComponent(
     layout, or false otherwise.
 
     Qt uses QGraphicsLayoutItem to provide layout functionality in the
-    \l{The Graphics View Framework}, but in the future its use may spread
+    \l{Graphics View Framework}, but in the future its use may spread
     throughout Qt itself.
 
     \sa QGraphicsWidget, QGraphicsLayout, QGraphicsLinearLayout,

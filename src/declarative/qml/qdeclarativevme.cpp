@@ -360,6 +360,16 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             }
             break;
 
+        case QDeclarativeInstruction::StoreVariantBool:
+            {
+                QObject *target = stack.top();
+                QVariant v(instr.storeBool.value);
+                void *a[] = { &v, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
         case QDeclarativeInstruction::StoreString:
             {
                 QObject *target = stack.top();
@@ -617,7 +627,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
                 QDeclarativeBoundSignal *bs = new QDeclarativeBoundSignal(target, signal, target);
                 QDeclarativeExpression *expr = 
-                    new QDeclarativeExpression(ctxt, primitives.at(instr.storeSignal.value), context);
+                    new QDeclarativeExpression(ctxt, context, primitives.at(instr.storeSignal.value));
                 expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }
@@ -898,6 +908,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
         QDeclarativeEnginePrivate::clear(bindValues);
         QDeclarativeEnginePrivate::clear(parserStatus);
+        ep->finalizedParserStatus.clear();
         return 0;
     }
 

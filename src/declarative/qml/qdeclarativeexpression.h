@@ -64,7 +64,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeExpression : public QObject
     Q_OBJECT
 public:
     QDeclarativeExpression();
-    QDeclarativeExpression(QDeclarativeContext *, const QString &, QObject *);
+    QDeclarativeExpression(QDeclarativeContext *, QObject *, const QString &, QObject * = 0);
     virtual ~QDeclarativeExpression();
 
     QDeclarativeEngine *engine() const;
@@ -92,13 +92,13 @@ Q_SIGNALS:
     void valueChanged();
 
 protected:
-    QDeclarativeExpression(QDeclarativeContextData *, const QString &, QObject *, 
+    QDeclarativeExpression(QDeclarativeContextData *, QObject *, const QString &,
                            QDeclarativeExpressionPrivate &dd);
     QDeclarativeExpression(QDeclarativeContextData *, void *, QDeclarativeRefCount *rc, 
                            QObject *me, const QString &, int, QDeclarativeExpressionPrivate &dd);
 
 private:
-    QDeclarativeExpression(QDeclarativeContextData *, const QString &, QObject *);
+    QDeclarativeExpression(QDeclarativeContextData *, QObject *, const QString &);
 
     Q_DISABLE_COPY(QDeclarativeExpression)
     Q_DECLARE_PRIVATE(QDeclarativeExpression)

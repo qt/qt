@@ -1,6 +1,6 @@
 # JavaScriptCore - Qt4 build info
 VPATH += $$PWD
-CONFIG(debug, debug|release) {
+!CONFIG(release, debug|release) {
     # Output in JavaScriptCore/<config>
     JAVASCRIPTCORE_DESTDIR = debug
     # Use a config-specific target to prevent parallel builds file clashes on Mac
@@ -75,19 +75,22 @@ defineTest(addJavaScriptCoreLib) {
     # Argument is the relative path to JavaScriptCore.pro's qmake output
     pathToJavaScriptCoreOutput = $$ARGS/$$JAVASCRIPTCORE_DESTDIR
 
-    win32-msvc* {
+    win32-msvc*|wince* {
         LIBS += -L$$pathToJavaScriptCoreOutput
         LIBS += -l$$JAVASCRIPTCORE_TARGET
+        POST_TARGETDEPS += $${pathToJavaScriptCoreOutput}$${QMAKE_DIR_SEP}$${JAVASCRIPTCORE_TARGET}.lib
     } else:symbian {
         LIBS += -l$${JAVASCRIPTCORE_TARGET}.lib
         # The default symbian build system does not use library paths at all. However when building with
         # qmake's symbian makespec that uses Makefiles
         QMAKE_LIBDIR += $$pathToJavaScriptCoreOutput
+        POST_TARGETDEPS += $${pathToJavaScriptCoreOutput}$${QMAKE_DIR_SEP}$${JAVASCRIPTCORE_TARGET}.lib
     } else {
         # Make sure jscore will be early in the list of libraries to workaround a bug in MinGW
         # that can't resolve symbols from QtCore if libjscore comes after.
         QMAKE_LIBDIR = $$pathToJavaScriptCoreOutput $$QMAKE_LIBDIR
         LIBS += -l$$JAVASCRIPTCORE_TARGET
+        POST_TARGETDEPS += $${pathToJavaScriptCoreOutput}$${QMAKE_DIR_SEP}lib$${JAVASCRIPTCORE_TARGET}.a
     }
 
     win32-* {
@@ -101,6 +104,7 @@ defineTest(addJavaScriptCoreLib) {
 
     export(QMAKE_LIBDIR)
     export(LIBS)
+    export(POST_TARGETDEPS)
     export(CONFIG)
 
     return(true)

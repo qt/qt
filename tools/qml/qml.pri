@@ -10,12 +10,10 @@ HEADERS += $$PWD/qmlruntime.h \
            $$PWD/proxysettings.h \
            $$PWD/qdeclarativetester.h \
            $$PWD/deviceorientation.h \
-           $$PWD/qdeclarativefolderlistmodel.h \
            $$PWD/loggerwidget.h
 SOURCES += $$PWD/qmlruntime.cpp \
            $$PWD/proxysettings.cpp \
            $$PWD/qdeclarativetester.cpp \
-           $$PWD/qdeclarativefolderlistmodel.cpp \
            $$PWD/loggerwidget.cpp
 
 RESOURCES = $$PWD/qmlruntime.qrc
@@ -24,7 +22,11 @@ maemo5 {
 } else {
     SOURCES += $$PWD/deviceorientation.cpp
 }
+
+symbian {
+    INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
+    LIBS += -lesock -lcommdb -lconnmon -linsock
+}
+
 FORMS = $$PWD/recopts.ui \
         $$PWD/proxysettings.ui
-
-include(../shared/deviceskin/deviceskin.pri)

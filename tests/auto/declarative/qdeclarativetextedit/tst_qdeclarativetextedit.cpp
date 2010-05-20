@@ -76,6 +76,8 @@ private slots:
     void persistentSelection();
     void focusOnPress();
     void selection();
+    void mouseSelection_data();
+    void mouseSelection();
     void inputMethodHints();
 
     void cursorDelegate();
@@ -84,7 +86,7 @@ private slots:
     void navigation();
     void readOnly();
     void sendRequestSoftwareInputPanelEvent();
-
+    void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -202,7 +204,7 @@ void tst_qdeclarativetextedit::width()
         QFont f;
         QFontMetricsF fm(f);
         qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
-        metricWidth = floor(metricWidth);
+        metricWidth = ceil(metricWidth);
 
         QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
@@ -219,7 +221,7 @@ void tst_qdeclarativetextedit::width()
         document.setHtml(richText.at(i));
         document.setDocumentMargin(0);
 
-        int documentWidth = document.idealWidth();
+        int documentWidth = ceil(document.idealWidth());
 
         QString componentStr = "import Qt 4.7\nTextEdit { text: \"" + richText.at(i) + "\" }";
         QDeclarativeComponent texteditComponent(&engine);
@@ -602,6 +604,49 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
+void tst_qdeclarativetextedit::mouseSelection_data()
+{
+    QTest::addColumn<QString>("qmlfile");
+    QTest::addColumn<bool>("expectSelection");
+
+    // import installed
+    QTest::newRow("on") << SRCDIR "/data/mouseselection_true.qml" << true;
+    QTest::newRow("off") << SRCDIR "/data/mouseselection_false.qml" << false;
+    QTest::newRow("default") << SRCDIR "/data/mouseselection_default.qml" << false;
+}
+
+void tst_qdeclarativetextedit::mouseSelection()
+{
+    QFETCH(QString, qmlfile);
+    QFETCH(bool, expectSelection);
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit *>(canvas->rootObject());
+    QVERIFY(textEditObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textEditObject->height()/2;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    //QTest::mouseMove(canvas->viewport(), canvas->mapFromScene(QPoint(x2,y))); // doesn't work
+    QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+    QApplication::sendEvent(canvas->viewport(), &mv);
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str = textEditObject->selectedText();
+    if (expectSelection)
+        QVERIFY(str.length() > 3); // don't reallly care *what* was selected (and it's too sensitive to platform)
+    else
+        QVERIFY(str.isEmpty());
+}
+
 void tst_qdeclarativetextedit::inputMethodHints()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
@@ -793,8 +838,6 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     view.viewport()->setInputContext(&ic);
     QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
             view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
-    if ((behavior != QStyle::RSIP_OnMouseClick))
-        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
     QDeclarativeTextEdit edit;
     edit.setText("Hello world");
     edit.setPos(0, 0);
@@ -806,8 +849,26 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
     QApplication::processEvents();
-    QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, false);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+        QApplication::processEvents();
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    } else if (behavior == QStyle::RSIP_OnMouseClick) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    }
 }
+
+void tst_qdeclarativetextedit::geometrySignals()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("bindingWidth").toInt(), 400);
+    QCOMPARE(o->property("bindingHeight").toInt(), 500);
+    delete o;
+}
+
 QTEST_MAIN(tst_qdeclarativetextedit)
 
 #include "tst_qdeclarativetextedit.moc"

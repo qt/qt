@@ -47,8 +47,10 @@
 /*!
     \page accessible.html
     \title Accessibility
-    
-    \ingroup frameworks-technologies
+    \brief How to make your applications accessible to those with disabilities.
+
+    \ingroup technology-apis
+    \ingroup best-practices
 
     \tableofcontents
 

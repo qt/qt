@@ -70,9 +70,10 @@ public:
     QDeclarativeTextEditPrivate()
       : color("black"), hAlign(QDeclarativeTextEdit::AlignLeft), vAlign(QDeclarativeTextEdit::AlignTop),
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
-      persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
+      persistentSelection(true), clickCausedFocus(false), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
       cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0),
-      wrapMode(QDeclarativeTextEdit::NoWrap)
+      wrapMode(QDeclarativeTextEdit::NoWrap),
+      selectByMouse(false)
     {
     }
 
@@ -100,6 +101,7 @@ public:
     bool cursorVisible : 1;
     bool focusOnPress : 1;
     bool persistentSelection : 1;
+    bool clickCausedFocus : 1;
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;
@@ -109,6 +111,7 @@ public:
     QTextDocument *document;
     QTextControl *control;
     QDeclarativeTextEdit::WrapMode wrapMode;
+    bool selectByMouse;
 };
 
 QT_END_NAMESPACE

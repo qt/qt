@@ -41,13 +41,10 @@
 
 /*!
     \page coordsys.html
-    \title The Coordinate System
+    \title Coordinate System
+    \ingroup qt-graphics
     \brief Information about the coordinate system used by the paint
     system.
-
-    \previouspage Drawing and Filling
-    \contentspage The Paint System
-    \nextpage Reading and Writing Image Files
 
     The coordinate system is controlled by the QPainter
     class. Together with the QPaintDevice and QPaintEngine classes,

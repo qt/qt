@@ -149,7 +149,6 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \class QDeclarativeState
     \brief The QDeclarativeState class allows you to define configurations of objects and properties.
 
-    \ingroup group_states
 
     QDeclarativeState allows you to specify a state as a set of batched changes from the default
     configuration.
@@ -391,12 +390,13 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
                     if (action.event->override(event)) {
                         found = true;
 
-                        if (action.event != d->revertList.at(jj).event) {
+                        if (action.event != d->revertList.at(jj).event && action.event->needsCopy()) {
                             action.event->copyOriginals(d->revertList.at(jj).event);
 
                             QDeclarativeSimpleAction r(action);
                             additionalReverts << r;
                             d->revertList.removeAt(jj);
+                            --jj;
                         } else if (action.event->isRewindable())    //###why needed?
                             action.event->saveCurrentValues();
 

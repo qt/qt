@@ -653,14 +653,41 @@ bool QChar::isSymbol() const
     \fn bool QChar::isHighSurrogate() const
 
     Returns true if the QChar is the high part of a utf16 surrogate
-    (ie. if its code point is between 0xd800 and 0xdbff).
+    (ie. if its code point is between 0xd800 and 0xdbff, inclusive).
 */
 
 /*!
     \fn bool QChar::isLowSurrogate() const
 
     Returns true if the QChar is the low part of a utf16 surrogate
-    (ie. if its code point is between 0xdc00 and 0xdfff).
+    (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
+*/
+
+/*!
+    \fn static bool QChar::isHighSurrogate(uint ucs4)
+    \since 4.7
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is the high part of a utf16 surrogate
+    (ie. if its code point is between 0xd800 and 0xdbff, inclusive).
+*/
+
+/*!
+    \fn static bool QChar::isLowSurrogate(uint ucs4)
+    \since 4.7
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is the high part of a utf16 surrogate
+    (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
+*/
+
+/*!
+    \fn static bool QChar::requiresSurrogates(uint ucs4)
+    \since 4.7
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    can be splited to the high and low parts of a utf16 surrogate
+    (ie. if its code point is greater than or equals to 0x10000).
 */
 
 /*!
@@ -1306,7 +1333,7 @@ QChar QChar::fromAscii(char c)
 
     Writes the char \a chr to the stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QChar &chr)
 {
@@ -1319,7 +1346,7 @@ QDataStream &operator<<(QDataStream &out, const QChar &chr)
 
     Reads a char from the stream \a in into char \a chr.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QChar &chr)
 {

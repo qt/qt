@@ -76,6 +76,13 @@
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
 #endif
 
+#if defined QT_BUILD_INTERNAL
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT bool qt_test_isFetchedRoot();
+Q_GUI_EXPORT void qt_test_resetFetchedRoot();
+QT_END_NAMESPACE
+#endif
+
 class QNonNativeFileDialog : public QFileDialog
 {
     Q_OBJECT
@@ -139,7 +146,7 @@ private:
 };
 
 tst_QFileDialog2::tst_QFileDialog2()
-{   
+{
 #if defined(Q_OS_WINCE)
     qApp->setAutoMaximizeThreshold(-1);
 #endif
@@ -177,19 +184,18 @@ void tst_QFileDialog2::listRoot()
     QFileInfoGatherer fileInfoGatherer;
     fileInfoGatherer.start();
     QTest::qWait(1500);
-
-    QFileInfoGatherer::fetchedRoot = false;
+    qt_test_resetFetchedRoot();
     QString dir(QDir::currentPath());
     QNonNativeFileDialog fd(0, QString(), dir);
     fd.show();
-    QCOMPARE(QFileInfoGatherer::fetchedRoot,false);
+    QCOMPARE(qt_test_isFetchedRoot(),false);
     fd.setDirectory("");
 #ifdef Q_OS_WINCE
     QTest::qWait(1500);
 #else
     QTest::qWait(500);
 #endif
-    QCOMPARE(QFileInfoGatherer::fetchedRoot,true);
+    QCOMPARE(qt_test_isFetchedRoot(),true);
 #endif
 }
 

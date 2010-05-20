@@ -14,7 +14,7 @@ Rectangle {
         property int instantiated: 0
         Component {
             Item{
-                Component.onCompleted: {if(index!=model.idx) repeater.errors += 1; repeater.instantiated++}
+                Component.onCompleted: {if(index!=modelData.idx) repeater.errors += 1; repeater.instantiated++}
             }
         }
     }

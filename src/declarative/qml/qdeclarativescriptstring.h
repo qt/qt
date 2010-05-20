@@ -79,7 +79,7 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QDeclarativeScriptString);
+Q_DECLARE_METATYPE(QDeclarativeScriptString)
 
 QT_END_HEADER
 

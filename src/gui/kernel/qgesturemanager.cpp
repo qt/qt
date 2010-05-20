@@ -132,20 +132,21 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
         QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
         if (list.contains(recognizer)) {
             m_deletedRecognizers.insert(g, recognizer);
-            m_gestureToRecognizer.remove(g);
         }
     }
 
-    foreach (QGestureRecognizer *recognizer, list) {
-        QList<QGesture *> obsoleteGestures;
-        QMap<ObjectGesture, QList<QGesture *> >::Iterator iter = m_objectGestures.begin();
-        while (iter != m_objectGestures.end()) {
-            ObjectGesture objectGesture = iter.key();
-            if (objectGesture.gesture == type)
-                obsoleteGestures << iter.value();
-            ++iter;
+    QMap<ObjectGesture, QList<QGesture *> >::const_iterator iter = m_objectGestures.begin();
+    while (iter != m_objectGestures.end()) {
+        ObjectGesture objectGesture = iter.key();
+        if (objectGesture.gesture == type) {
+            foreach (QGesture *g, iter.value()) {
+                if (QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g)) {
+                    m_gestureToRecognizer.remove(g);
+                    m_obsoleteGestures[recognizer].insert(g);
+                }
+            }
         }
-        m_obsoleteGestures.insert(recognizer, obsoleteGestures);
+        ++iter;
     }
 }
 
@@ -155,7 +156,16 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
         if (objectGesture.gesture == type && target == objectGesture.object.data()) {
-            qDeleteAll(iter.value());
+            QSet<QGesture *> gestures = iter.value().toSet();
+            for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
+                 it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
+                it.value() -= gestures;
+            }
+            foreach (QGesture *g, gestures) {
+                m_deletedRecognizers.remove(g);
+                m_gestureToRecognizer.remove(g);
+            }
+            qDeleteAll(gestures);
             iter = m_objectGestures.erase(iter);
         } else {
             ++iter;
@@ -177,6 +187,9 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
 #ifndef QT_NO_GRAPHICSVIEW
     } else {
         Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(object);
+        if (graphicsObject->QGraphicsItem::d_func()->inDestructor)
+            return 0;
 #endif
     }
 
@@ -275,24 +288,14 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
     // i.e. were canceled
     QSet<QGesture *> canceledGestures = m_activeGestures & notGestures;
 
-    // start timers for new gestures in maybe state
-    foreach (QGesture *state, newMaybeGestures) {
-        QBasicTimer &timer = m_maybeGestures[state];
-        if (!timer.isActive())
-            timer.start(3000, this);
-    }
-    // kill timers for gestures that were in maybe state
+    // new gestures in maybe state
+    m_maybeGestures += newMaybeGestures;
+
+    // gestures that were in maybe state
     QSet<QGesture *> notMaybeGestures = (startedGestures | triggeredGestures
                                          | finishedGestures | canceledGestures
                                          | notGestures);
-    foreach(QGesture *gesture, notMaybeGestures) {
-        QHash<QGesture *, QBasicTimer>::iterator it =
-                m_maybeGestures.find(gesture);
-        if (it != m_maybeGestures.end()) {
-            it.value().stop();
-            m_maybeGestures.erase(it);
-        }
-    }
+    m_maybeGestures -= notMaybeGestures;
 
     Q_ASSERT((startedGestures & finishedGestures).isEmpty());
     Q_ASSERT((startedGestures & newMaybeGestures).isEmpty());
@@ -336,7 +339,7 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         !finishedGestures.isEmpty() || !canceledGestures.isEmpty()) {
         DEBUG() << "QGestureManager::filterEventThroughContexts:"
                 << "\n\tactiveGestures:" << m_activeGestures
-                << "\n\tmaybeGestures:" << m_maybeGestures.keys()
+                << "\n\tmaybeGestures:" << m_maybeGestures
                 << "\n\tstarted:" << startedGestures
                 << "\n\ttriggered:" << triggeredGestures
                 << "\n\tfinished:" << finishedGestures
@@ -671,26 +674,6 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
                     m_gestureTargets[gesture] = w;
                 }
             }
-        }
-    }
-}
-
-void QGestureManager::timerEvent(QTimerEvent *event)
-{
-    QHash<QGesture *, QBasicTimer>::iterator it = m_maybeGestures.begin(),
-                                             e = m_maybeGestures.end();
-    for (; it != e; ) {
-        QBasicTimer &timer = it.value();
-        Q_ASSERT(timer.isActive());
-        if (timer.timerId() == event->timerId()) {
-            timer.stop();
-            QGesture *gesture = it.key();
-            it = m_maybeGestures.erase(it);
-            DEBUG() << "QGestureManager::timerEvent: gesture stopped due to timeout:"
-                    << gesture;
-            recycle(gesture);
-        } else {
-            ++it;
         }
     }
 }

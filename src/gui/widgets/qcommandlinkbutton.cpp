@@ -46,6 +46,7 @@
 #include "qtextlayout.h"
 #include "qcolor.h"
 #include "qfont.h"
+#include <qmath.h>
 
 #include "private/qpushbutton_p.h"
 
@@ -242,7 +243,7 @@ int QCommandLinkButtonPrivate::descriptionHeight(int widgetWidth) const
         }
         layout.endLayout();
     }
-    return qRound(descriptionheight);
+    return qCeil(descriptionheight);
 }
 
 /*!

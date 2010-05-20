@@ -7,12 +7,11 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_binding.cpp testtypes.cpp
 HEADERS += testtypes.h
 
-# Define SRCDIR equal to test's source directory
-DEFINES += SRCDIR=\\\"$$PWD\\\"
-
-symbian* {
-    data.sources = data/*
-    data.path = data
+symbian {
+    data.sources = data
+    data.path = .
     DEPLOYMENT = data
+} else {
+    # Define SRCDIR equal to test's source directory
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
-

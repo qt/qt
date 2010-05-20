@@ -25,8 +25,8 @@ function startNewGame() {
     maxIndex = maxRow * maxColumn;
 
     //Close dialogs
-    nameInputDialog.forceClose();
-    dialog.forceClose();
+    nameInputDialog.hide();
+    dialog.hide();
 
     //Initialize Board
     board = new Array(maxIndex);
@@ -45,18 +45,17 @@ function createBlock(column, row) {
     if (component == null)
         component = Qt.createComponent("content/BoomBlock.qml");
 
-    // Note that if Block.qml was not a local file, component.isReady would be
-    // false and we should wait for the component's statusChanged() signal to
-    // know when the file is downloaded and fully loaded before calling createObject().
-    if (component.isReady) {
-        var dynamicObject = component.createObject();
+    // Note that if Block.qml was not a local file, component.status would be
+    // Loading and we should wait for the component's statusChanged() signal to
+    // know when the file is downloaded and ready before calling createObject().
+    if (component.status == Component.Ready) {
+        var dynamicObject = component.createObject(gameCanvas);
         if (dynamicObject == null) {
             console.log("error creating block");
-            console.log(component.errorsString());
+            console.log(component.errorString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
-        dynamicObject.parent = gameCanvas;
         dynamicObject.x = column * gameCanvas.blockSize;
         dynamicObject.targetX = column * gameCanvas.blockSize;
         dynamicObject.targetY = row * gameCanvas.blockSize;
@@ -66,16 +65,15 @@ function createBlock(column, row) {
         board[index(column, row)] = dynamicObject;
     } else {
         console.log("error loading block component");
-        console.log(component.errorsString());
+        console.log(component.errorString());
         return false;
     }
     return true;
 }
 
-var fillFound;
-//Set after a floodFill call to the number of blocks found
-var floodBoard;
-//Set to 1 if the floodFill reaches off that node
+var fillFound; //Set after a floodFill call to the number of blocks found
+var floodBoard; //Set to 1 if the floodFill reaches off that node
+
 function handleClick(xPos, yPos) {
     var column = Math.floor(xPos / gameCanvas.blockSize);
     var row = Math.floor(yPos / gameCanvas.blockSize);
@@ -157,7 +155,9 @@ function shuffleDown() {
     }
 }
 
+//![3]
 function victoryCheck() {
+//![3]
     //Award bonus points if no blocks left
     var deservesBonus = true;
     for (var column = maxColumn - 1; column >= 0; column--)
@@ -166,12 +166,14 @@ function victoryCheck() {
     if (deservesBonus)
         gameCanvas.score += 500;
 
+//![4]
     //Check whether game has finished
     if (deservesBonus || !(floodMoveCheck(0, maxRow - 1, -1))) {
         gameDuration = new Date() - gameDuration;
-        nameInputDialog.show("You won! Please enter your name:                 ");
+        nameInputDialog.showWithInput("You won! Please enter your name: ");
     }
 }
+//![4]
 
 //only floods up and right, to see if it can find adjacent same-typed blocks 
 function floodMoveCheck(column, row, type) {

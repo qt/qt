@@ -2022,7 +2022,7 @@ void QProcess::start(const QString &program, OpenMode mode)
     \note Terminating running processes from other processes will typically
     cause a panic in Symbian due to platform security.
 
-    \sa \l {Symbian Platform Security Requirements}
+    \sa {Symbian Platform Security Requirements}
     \sa kill()
 */
 void QProcess::terminate()
@@ -2040,7 +2040,7 @@ void QProcess::terminate()
     On Symbian, this function requires platform security capability
     \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
 
-    \sa \l {Symbian Platform Security Requirements}
+    \sa {Symbian Platform Security Requirements}
     \sa terminate()
 */
 void QProcess::kill()

@@ -596,11 +596,11 @@ void tst_QColumnView::clicked()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, localPoint);
     QCOMPARE(clickedSpy.count(), 1);
     qApp->processEvents();
-    
+
     if (sizeof(qreal) != sizeof(double)) {
         QSKIP("Skipped due to rounding errors", SkipAll);
     }
-    
+
     for (int i = 0; i < view.createdColumns.count(); ++i) {
         QAbstractItemView *column = view.createdColumns.at(i);
         if (column && column->selectionModel() && (column->rootIndex() == home))
@@ -961,9 +961,9 @@ void tst_QColumnView::parentCurrentIndex()
     QVERIFY(third.isValid());
     view.setCurrentIndex(third);
     QTest::qWait(ANIMATION_DELAY);
-    QCOMPARE(view.createdColumns[0]->currentIndex(), first);
-    QCOMPARE(view.createdColumns[1]->currentIndex(), second);
-    QCOMPARE(view.createdColumns[2]->currentIndex(), third);
+    QTRY_COMPARE(view.createdColumns[0]->currentIndex(), first);
+    QTRY_COMPARE(view.createdColumns[1]->currentIndex(), second);
+    QTRY_COMPARE(view.createdColumns[2]->currentIndex(), third);
 
     first = model.index(0, 0, QModelIndex());
     second = model.index(secondRow, 0, first);

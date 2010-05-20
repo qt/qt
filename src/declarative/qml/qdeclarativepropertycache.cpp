@@ -45,7 +45,7 @@
 #include "private/qdeclarativebinding_p.h"
 #include <QtCore/qdebug.h>
 
-Q_DECLARE_METATYPE(QScriptValue);
+Q_DECLARE_METATYPE(QScriptValue)
 
 QT_BEGIN_NAMESPACE
 
@@ -106,9 +106,25 @@ void QDeclarativePropertyCache::Data::load(const QMetaMethod &m)
 }
 
 
+/*!
+Creates a new empty QDeclarativePropertyCache.
+*/
 QDeclarativePropertyCache::QDeclarativePropertyCache(QDeclarativeEngine *e)
 : QDeclarativeCleanup(e), engine(e)
 {
+    Q_ASSERT(engine);
+}
+
+/*!
+Creates a new QDeclarativePropertyCache of \a metaObject.
+*/
+QDeclarativePropertyCache::QDeclarativePropertyCache(QDeclarativeEngine *e, const QMetaObject *metaObject)
+: QDeclarativeCleanup(e), engine(e)
+{
+    Q_ASSERT(engine);
+    Q_ASSERT(metaObject);
+
+    update(engine, metaObject);
 }
 
 QDeclarativePropertyCache::~QDeclarativePropertyCache()
@@ -135,7 +151,7 @@ void QDeclarativePropertyCache::clear()
 }
 
 QDeclarativePropertyCache::Data QDeclarativePropertyCache::create(const QMetaObject *metaObject, 
-                                                const QString &property)
+                                                                  const QString &property)
 {
     Q_ASSERT(metaObject);
 
@@ -243,17 +259,6 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
         identifierCache.insert(data->identifier.identifier, data);
         data->addref();
     }
-}
-
-// ### Optimize - check engine for the parent meta object etc.
-QDeclarativePropertyCache *QDeclarativePropertyCache::create(QDeclarativeEngine *engine, const QMetaObject *metaObject)
-{
-    Q_ASSERT(engine);
-    Q_ASSERT(metaObject);
-
-    QDeclarativePropertyCache *cache = new QDeclarativePropertyCache(engine);
-    cache->update(engine, metaObject);
-    return cache;
 }
 
 void QDeclarativePropertyCache::update(QDeclarativeEngine *engine, const QMetaObject *metaObject)

@@ -64,10 +64,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeComponent : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeComponent)
-    Q_PROPERTY(bool isNull READ isNull NOTIFY statusChanged)
-    Q_PROPERTY(bool isReady READ isReady NOTIFY statusChanged)
-    Q_PROPERTY(bool isError READ isError NOTIFY statusChanged)
-    Q_PROPERTY(bool isLoading READ isLoading NOTIFY statusChanged)
+
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QUrl url READ url CONSTANT)
@@ -89,7 +86,7 @@ public:
     bool isLoading() const;
 
     QList<QDeclarativeError> errors() const;
-    Q_INVOKABLE QString errorsString() const;
+    Q_INVOKABLE QString errorString() const;
 
     qreal progress() const;
 
@@ -112,7 +109,7 @@ Q_SIGNALS:
 
 protected:
     QDeclarativeComponent(QDeclarativeComponentPrivate &dd, QObject* parent);
-    Q_INVOKABLE QScriptValue createObject();
+    Q_INVOKABLE QScriptValue createObject(QObject* parent);
 
 private:
     QDeclarativeComponent(QDeclarativeEngine *, QDeclarativeCompiledData *, int, int, QObject *parent);

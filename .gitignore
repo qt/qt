@@ -7,6 +7,8 @@ examples/*/*/*
 examples/*/*/*[.]app
 !examples/declarative/*
 demos/*/*
+!demos/spectrum/*
+demos/spectrum/bin
 !demos/*/*[.]*
 demos/*/*[.]app
 !demos/declarative/*
@@ -52,13 +54,13 @@ bin/Qt*.dll
 bin/assistant*
 bin/designer*
 bin/dumpcpp*
-bin/duiviewer*
 bin/idc*
 bin/linguist*
 bin/lrelease*
 bin/lupdate*
 bin/lconvert*
 bin/moc*
+bin/makeqpf*
 bin/pixeltool*
 bin/qmake*
 bin/qdoc3*

@@ -48,16 +48,85 @@
 */
 
 /*!
-    \group frameworks-technologies
-    \title Frameworks and Technologies
+    \group qt-basic-concepts
+    \title Basic Qt Architecture
 
-    \brief Documentation about the frameworks and technologies in Qt
+    \brief The basic architecture of the Qt cross-platform application and UI framework.
 
-    These documents dive into the frameworks of classes that Qt provides,
-    and provide background information about the technical solutions used
-    in Qt's architecture.
+    Qt is a cross-platform application and UI framework for writing
+    web-enabled applications for desktop, mobile, and embedded
+    operating systems. These pages explain basic architectural
+    concepts of Qt:
+
+    \generatelist {related}
+ */
+
+/*!
+    \group qt-gui-concepts
+    \title Qt Desktop UI Components
+
+    \brief The Qt components for constructing native look & feel desktop UI's.
+
+    These pages are about Qt's traditional set of GUI components for
+    building both native look ^ feel and custom UI's for the desktop
+    environment. Use \l {declarativeui.html} {Qt Quick} for building 
+    UI's for mobile devices.
+
+    \generatelist {related}
+ */
+
+/*!
+    \group qt-graphics
+    \title Qt Graphics and Painting
+
+    \brief The Qt components for doing graphics.
+
+    \generatelist {related}
+ */
+
+/*!
+    \group qt-network
+    \title Network programming with Qt
+
+    \brief The these pages are about Qt's support for network programming.
+
+    \generatelist {related}
+ */
+
+/*!
+    \group technology-apis
+    \title Qt API's for other technologies
+
+    These pages document Qt's API's for some widely-used standards and
+    technologies.
 
     \generatelist{related}
+*/
+
+/*!
+  \group qt-activex
+  \title Qt For ActiveX
+  \brief Qt API's for using ActiveX controls, servers, and COM.
+  \ingroup technology-apis
+  \ingroup platform-specific
+
+  These pages document Qt's API's for developing with ActiveX
+  controls, servers, and COM.
+
+  \generatelist{related}
+*/
+
+/*!
+  \group qt-sql
+  \title Using SQL in Qt
+  \brief Qt API's for using SQL.
+  \ingroup technology-apis
+  \ingroup best-practices
+
+  These pages document Qt's API's for using SQL database systems
+  in Qt applications.
+
+  \generatelist{related}
 */
 
 /*!
@@ -66,8 +135,10 @@
 
     \brief How-To Guides and Best Practices
 
-    These documents provide guidelines and best practices explaining
-    how to use Qt to solve specific technical problems.
+    These documents provide guidelines and best practices for using Qt
+    to solve specific technical problems. They are listed
+    alphabetically by the first word in the title, so scan the entire
+    list to find what you want.
 
     \generatelist{related}
 */

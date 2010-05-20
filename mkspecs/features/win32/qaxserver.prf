@@ -14,7 +14,8 @@ equals(TEMPLATE, "vcapp"):ACTIVEQT_IDE = VisualStudio
 equals(TEMPLATE, "vclib"):ACTIVEQT_IDE = VisualStudio
 
 equals(ACTIVEQT_IDE, "VisualStudio") {
-    ACTIVEQT_IDC = $${QMAKE_IDC}
+    ACTIVEQT_IDC = $${QMAKE_IDC}   ### Qt5: remove me
+    qtPrepareTool(ACTIVEQT_IDC, idc)
     ACTIVEQT_IDL = $${QMAKE_IDL}
     ACTIVEQT_TARGET = "$(TargetPath)"
     win32-msvc {

@@ -48,7 +48,11 @@
 #include <QSizeF>
 #include <QRect>
 #include <QRectF>
+#include <QVector2D>
 #include <QVector3D>
+#include <QVector4D>
+#include <QQuaternion>
+#include <QMatrix4x4>
 #include <QFont>
 #include <qdeclarative.h>
 #include <QDeclarativePropertyValueSource>
@@ -66,7 +70,11 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QSize sizereadonly READ size NOTIFY changed)
     Q_PROPERTY(QRect rect READ rect WRITE setRect NOTIFY changed)
     Q_PROPERTY(QRectF rectf READ rectf WRITE setRectf NOTIFY changed)
+    Q_PROPERTY(QVector2D vector2 READ vector2 WRITE setVector2 NOTIFY changed)
     Q_PROPERTY(QVector3D vector READ vector WRITE setVector NOTIFY changed)
+    Q_PROPERTY(QVector4D vector4 READ vector4 WRITE setVector4 NOTIFY changed)
+    Q_PROPERTY(QQuaternion quaternion READ quaternion WRITE setQuaternion NOTIFY changed)
+    Q_PROPERTY(QMatrix4x4 matrix READ matrix WRITE setMatrix NOTIFY changed)
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY changed)
 
 public:
@@ -77,7 +85,11 @@ public:
         m_sizef(0.1, 100923.2),
         m_rect(2, 3, 109, 102),
         m_rectf(103.8, 99.2, 88.1, 77.6),
-        m_vector(23.88, 3.1, 4.3)
+        m_vector2(32.88, 1.3),
+        m_vector(23.88, 3.1, 4.3),
+        m_vector4(54.2, 23.88, 3.1, 4.3),
+        m_quaternion(4.3, 54.2, 23.88, 3.1),
+        m_matrix(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
     {
         m_font.setFamily("Arial");
         m_font.setBold(true);
@@ -87,7 +99,7 @@ public:
         m_font.setOverline(true);
         m_font.setStrikeOut(true);
         m_font.setPointSize(29);
-        m_font.setCapitalization(QFont::AllUppercase);
+        m_font.setCapitalization(QFont::AllLowercase);
         m_font.setLetterSpacing(QFont::AbsoluteSpacing, 10.2);
         m_font.setWordSpacing(19.7);
     }
@@ -116,9 +128,25 @@ public:
     QRectF rectf() const { return m_rectf; }
     void setRectf(const QRectF &v) { m_rectf = v; emit changed(); }
 
+    QVector2D m_vector2;
+    QVector2D vector2() const { return m_vector2; }
+    void setVector2(const QVector2D &v) { m_vector2 = v; emit changed(); }
+
     QVector3D m_vector;
     QVector3D vector() const { return m_vector; }
     void setVector(const QVector3D &v) { m_vector = v; emit changed(); }
+
+    QVector4D m_vector4;
+    QVector4D vector4() const { return m_vector4; }
+    void setVector4(const QVector4D &v) { m_vector4 = v; emit changed(); }
+
+    QQuaternion m_quaternion;
+    QQuaternion quaternion() const { return m_quaternion; }
+    void setQuaternion(const QQuaternion &v) { m_quaternion = v; emit changed(); }
+
+    QMatrix4x4 m_matrix;
+    QMatrix4x4 matrix() const { return m_matrix; }
+    void setMatrix(const QMatrix4x4 &v) { m_matrix = v; emit changed(); }
 
     QFont m_font;
     QFont font() const { return m_font; }
