@@ -1050,18 +1050,21 @@ bool QDeclarativePropertyPrivate::write(QObject *object, const QDeclarativePrope
         Q_ASSERT(variantType != propertyType);
 
         bool ok = false;
-        QVariant v = value;
-        if (v.convert((QVariant::Type)propertyType)) {
-            ok = true;
-        } else if ((uint)propertyType >= QVariant::UserType && variantType == QVariant::String) {
-            QDeclarativeMetaType::StringConverter con = QDeclarativeMetaType::customStringConverter(propertyType);
-            if (con) {
-                v = con(value.toString());
-                if (v.userType() == propertyType)
-                    ok = true;
-            }
-        } else if (variantType == QVariant::String) {
+        QVariant v;
+        if (variantType == QVariant::String)
             v = QDeclarativeStringConverters::variantFromString(value.toString(), propertyType, &ok);
+        if (!ok) {
+            v = value;
+            if (v.convert((QVariant::Type)propertyType)) {
+                ok = true;
+            } else if ((uint)propertyType >= QVariant::UserType && variantType == QVariant::String) {
+                QDeclarativeMetaType::StringConverter con = QDeclarativeMetaType::customStringConverter(propertyType);
+                if (con) {
+                    v = con(value.toString());
+                    if (v.userType() == propertyType)
+                        ok = true;
+                }
+            }
         }
         if (ok) {
             void *a[] = { (void *)v.constData(), 0, &status, &flags};
