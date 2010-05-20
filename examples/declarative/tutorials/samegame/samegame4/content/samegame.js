@@ -52,7 +52,7 @@ function createBlock(column, row) {
         var dynamicObject = component.createObject(gameCanvas);
         if (dynamicObject == null) {
             console.log("error creating block");
-            console.log(component.errorsString());
+            console.log(component.errorString());
             return false;
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
@@ -65,7 +65,7 @@ function createBlock(column, row) {
         board[index(column, row)] = dynamicObject;
     } else {
         console.log("error loading block component");
-        console.log(component.errorsString());
+        console.log(component.errorString());
         return false;
     }
     return true;

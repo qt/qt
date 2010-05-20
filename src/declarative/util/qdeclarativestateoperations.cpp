@@ -69,18 +69,18 @@ public:
         rewindParent(0), rewindStackBefore(0) {}
 
     QDeclarativeItem *target;
-    QDeclarativeItem *parent;
+    QDeclarativeGuard<QDeclarativeItem> parent;
     QDeclarativeGuard<QDeclarativeItem> origParent;
     QDeclarativeGuard<QDeclarativeItem> origStackBefore;
     QDeclarativeItem *rewindParent;
     QDeclarativeItem *rewindStackBefore;
 
-    QDeclarativeNullableValue<qreal> x;
-    QDeclarativeNullableValue<qreal> y;
-    QDeclarativeNullableValue<qreal> width;
-    QDeclarativeNullableValue<qreal> height;
-    QDeclarativeNullableValue<qreal> scale;
-    QDeclarativeNullableValue<qreal> rotation;
+    QDeclarativeNullableValue<QDeclarativeScriptString> xString;
+    QDeclarativeNullableValue<QDeclarativeScriptString> yString;
+    QDeclarativeNullableValue<QDeclarativeScriptString> widthString;
+    QDeclarativeNullableValue<QDeclarativeScriptString> heightString;
+    QDeclarativeNullableValue<QDeclarativeScriptString> scaleString;
+    QDeclarativeNullableValue<QDeclarativeScriptString> rotationString;
 
     void doChange(QDeclarativeItem *targetParent, QDeclarativeItem *stackBefore = 0);
 };
@@ -196,112 +196,112 @@ QDeclarativeParentChange::~QDeclarativeParentChange()
     These properties hold the new position, size, scale, and rotation
     for the item in this state.
 */
-qreal QDeclarativeParentChange::x() const
+QDeclarativeScriptString QDeclarativeParentChange::x() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->x.isNull ? qreal(0.) : d->x.value;
+    return d->xString.value;
 }
 
-void QDeclarativeParentChange::setX(qreal x)
+void QDeclarativeParentChange::setX(QDeclarativeScriptString x)
 {
     Q_D(QDeclarativeParentChange);
-    d->x = x;
+    d->xString = x;
 }
 
 bool QDeclarativeParentChange::xIsSet() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->x.isValid();
+    return d->xString.isValid();
 }
 
-qreal QDeclarativeParentChange::y() const
+QDeclarativeScriptString QDeclarativeParentChange::y() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->y.isNull ? qreal(0.) : d->y.value;
+    return d->yString.value;
 }
 
-void QDeclarativeParentChange::setY(qreal y)
+void QDeclarativeParentChange::setY(QDeclarativeScriptString y)
 {
     Q_D(QDeclarativeParentChange);
-    d->y = y;
+    d->yString = y;
 }
 
 bool QDeclarativeParentChange::yIsSet() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->y.isValid();
+    return d->yString.isValid();
 }
 
-qreal QDeclarativeParentChange::width() const
+QDeclarativeScriptString QDeclarativeParentChange::width() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->width.isNull ? qreal(0.) : d->width.value;
+    return d->widthString.value;
 }
 
-void QDeclarativeParentChange::setWidth(qreal width)
+void QDeclarativeParentChange::setWidth(QDeclarativeScriptString width)
 {
     Q_D(QDeclarativeParentChange);
-    d->width = width;
+    d->widthString = width;
 }
 
 bool QDeclarativeParentChange::widthIsSet() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->width.isValid();
+    return d->widthString.isValid();
 }
 
-qreal QDeclarativeParentChange::height() const
+QDeclarativeScriptString QDeclarativeParentChange::height() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->height.isNull ? qreal(0.) : d->height.value;
+    return d->heightString.value;
 }
 
-void QDeclarativeParentChange::setHeight(qreal height)
+void QDeclarativeParentChange::setHeight(QDeclarativeScriptString height)
 {
     Q_D(QDeclarativeParentChange);
-    d->height = height;
+    d->heightString = height;
 }
 
 bool QDeclarativeParentChange::heightIsSet() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->height.isValid();
+    return d->heightString.isValid();
 }
 
-qreal QDeclarativeParentChange::scale() const
+QDeclarativeScriptString QDeclarativeParentChange::scale() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->scale.isNull ? qreal(1.) : d->scale.value;
+    return d->scaleString.value;
 }
 
-void QDeclarativeParentChange::setScale(qreal scale)
+void QDeclarativeParentChange::setScale(QDeclarativeScriptString scale)
 {
     Q_D(QDeclarativeParentChange);
-    d->scale = scale;
+    d->scaleString = scale;
 }
 
 bool QDeclarativeParentChange::scaleIsSet() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->scale.isValid();
+    return d->scaleString.isValid();
 }
 
-qreal QDeclarativeParentChange::rotation() const
+QDeclarativeScriptString QDeclarativeParentChange::rotation() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->rotation.isNull ? qreal(0.) : d->rotation.value;
+    return d->rotationString.value;
 }
 
-void QDeclarativeParentChange::setRotation(qreal rotation)
+void QDeclarativeParentChange::setRotation(QDeclarativeScriptString rotation)
 {
     Q_D(QDeclarativeParentChange);
-    d->rotation = rotation;
+    d->rotationString = rotation;
 }
 
 bool QDeclarativeParentChange::rotationIsSet() const
 {
     Q_D(const QDeclarativeParentChange);
-    return d->rotation.isValid();
+    return d->rotationString.isValid();
 }
 
 QDeclarativeItem *QDeclarativeParentChange::originalParent() const
@@ -356,34 +356,118 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     a.event = this;
     actions << a;
 
-    if (d->x.isValid()) {
-        QDeclarativeAction xa(d->target, QLatin1String("x"), x());
-        actions << xa;
+    if (d->xString.isValid()) {
+        bool ok = false;
+        QString script = d->xString.value.script();
+        qreal x = script.toFloat(&ok);
+        if (ok) {
+            QDeclarativeAction xa(d->target, QLatin1String("x"), x);
+            actions << xa;
+        } else {
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("x")));
+            QDeclarativeAction xa;
+            xa.property = newBinding->property();
+            xa.toBinding = newBinding;
+            xa.fromValue = xa.property.read();
+            xa.deletableToBinding = true;
+            actions << xa;
+        }
     }
 
-    if (d->y.isValid()) {
-        QDeclarativeAction ya(d->target, QLatin1String("y"), y());
-        actions << ya;
+    if (d->yString.isValid()) {
+        bool ok = false;
+        QString script = d->yString.value.script();
+        qreal y = script.toFloat(&ok);
+        if (ok) {
+            QDeclarativeAction ya(d->target, QLatin1String("y"), y);
+            actions << ya;
+        } else {
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("y")));
+            QDeclarativeAction ya;
+            ya.property = newBinding->property();
+            ya.toBinding = newBinding;
+            ya.fromValue = ya.property.read();
+            ya.deletableToBinding = true;
+            actions << ya;
+        }
     }
 
-    if (d->scale.isValid()) {
-        QDeclarativeAction sa(d->target, QLatin1String("scale"), scale());
-        actions << sa;
+    if (d->scaleString.isValid()) {
+        bool ok = false;
+        QString script = d->scaleString.value.script();
+        qreal scale = script.toFloat(&ok);
+        if (ok) {
+            QDeclarativeAction sa(d->target, QLatin1String("scale"), scale);
+            actions << sa;
+        } else {
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("scale")));
+            QDeclarativeAction sa;
+            sa.property = newBinding->property();
+            sa.toBinding = newBinding;
+            sa.fromValue = sa.property.read();
+            sa.deletableToBinding = true;
+            actions << sa;
+        }
     }
 
-    if (d->rotation.isValid()) {
-        QDeclarativeAction ra(d->target, QLatin1String("rotation"), rotation());
-        actions << ra;
+    if (d->rotationString.isValid()) {
+        bool ok = false;
+        QString script = d->rotationString.value.script();
+        qreal rotation = script.toFloat(&ok);
+        if (ok) {
+            QDeclarativeAction ra(d->target, QLatin1String("rotation"), rotation);
+            actions << ra;
+        } else {
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("rotation")));
+            QDeclarativeAction ra;
+            ra.property = newBinding->property();
+            ra.toBinding = newBinding;
+            ra.fromValue = ra.property.read();
+            ra.deletableToBinding = true;
+            actions << ra;
+        }
     }
 
-    if (d->width.isValid()) {
-        QDeclarativeAction wa(d->target, QLatin1String("width"), width());
-        actions << wa;
+    if (d->widthString.isValid()) {
+        bool ok = false;
+        QString script = d->widthString.value.script();
+        qreal width = script.toFloat(&ok);
+        if (ok) {
+            QDeclarativeAction wa(d->target, QLatin1String("width"), width);
+            actions << wa;
+        } else {
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("width")));
+            QDeclarativeAction wa;
+            wa.property = newBinding->property();
+            wa.toBinding = newBinding;
+            wa.fromValue = wa.property.read();
+            wa.deletableToBinding = true;
+            actions << wa;
+        }
     }
 
-    if (d->height.isValid()) {
-        QDeclarativeAction ha(d->target, QLatin1String("height"), height());
-        actions << ha;
+    if (d->heightString.isValid()) {
+        bool ok = false;
+        QString script = d->heightString.value.script();
+        qreal height = script.toFloat(&ok);
+        if (ok) {
+            QDeclarativeAction ha(d->target, QLatin1String("height"), height);
+            actions << ha;
+        } else {
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("height")));
+            QDeclarativeAction ha;
+            ha.property = newBinding->property();
+            ha.toBinding = newBinding;
+            ha.fromValue = ha.property.read();
+            ha.deletableToBinding = true;
+            actions << ha;
+        }
     }
 
     return actions;
@@ -575,7 +659,7 @@ void QDeclarativeStateChangeScript::execute(Reason)
     Q_D(QDeclarativeStateChangeScript);
     const QString &script = d->script.script();
     if (!script.isEmpty()) {
-        QDeclarativeExpression expr(d->script.context(), script, d->script.scopeObject());
+        QDeclarativeExpression expr(d->script.context(), d->script.scopeObject(), script);
         QDeclarativeData *ddata = QDeclarativeData::get(this);
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);

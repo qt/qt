@@ -54,7 +54,7 @@ function startNewGame()
         } else {
             if(linkComponent.status != Component.Ready) {
                 if(linkComponent.status == Component.Error) 
-                    console.log(linkComponent.errorsString());
+                    console.log(linkComponent.errorString());
                 else
                     console.log("Still loading linkComponent");
                 continue;//TODO: Better error handling?
@@ -294,7 +294,7 @@ function createCookie(value) {
 
     if(cookieComponent.status != Component.Ready) {
         if(cookieComponent.status == Component.Error)
-            console.log(cookieComponent.errorsString());
+            console.log(cookieComponent.errorString());
         else
             console.log("Still loading cookieComponent");
         return;//TODO: Better error handling?

@@ -838,6 +838,14 @@ void tst_qdeclarativevaluetypes::enums()
     QVERIFY(object->font().capitalization() == QFont::AllUppercase);
     delete object;
     }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("enums.5.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->font().capitalization() == QFont::AllUppercase);
+    delete object;
+    }
 }
 
 // Tests switching between "conflicting" bindings (eg. a binding on the core

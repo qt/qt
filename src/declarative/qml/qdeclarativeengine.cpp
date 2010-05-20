@@ -1024,14 +1024,14 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
         foreach (const QDeclarativeError &error, errors){
             errstr += QLatin1String("    ") + error.toString() + QLatin1String("\n");
             QScriptValue qmlErrObject = ctxt->engine()->newObject();
-            qmlErrObject.setProperty("lineNumber", QScriptValue(error.line()));
-            qmlErrObject.setProperty("columnNumber", QScriptValue(error.column()));
-            qmlErrObject.setProperty("fileName", QScriptValue(error.url().toString()));
-            qmlErrObject.setProperty("message", QScriptValue(error.description()));
+            qmlErrObject.setProperty(QLatin1String("lineNumber"), QScriptValue(error.line()));
+            qmlErrObject.setProperty(QLatin1String("columnNumber"), QScriptValue(error.column()));
+            qmlErrObject.setProperty(QLatin1String("fileName"), QScriptValue(error.url().toString()));
+            qmlErrObject.setProperty(QLatin1String("message"), QScriptValue(error.description()));
             arr.setProperty(i++, qmlErrObject);
         }
         QScriptValue err = ctxt->throwError(errstr);
-        err.setProperty("qmlErrors",arr);
+        err.setProperty(QLatin1String("qmlErrors"),arr);
         return err;
     }
 
@@ -1051,14 +1051,14 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
         foreach (const QDeclarativeError &error, errors){
             errstr += QLatin1String("    ") + error.toString() + QLatin1String("\n");
             QScriptValue qmlErrObject = ctxt->engine()->newObject();
-            qmlErrObject.setProperty("lineNumber", QScriptValue(error.line()));
-            qmlErrObject.setProperty("columnNumber", QScriptValue(error.column()));
-            qmlErrObject.setProperty("fileName", QScriptValue(error.url().toString()));
-            qmlErrObject.setProperty("message", QScriptValue(error.description()));
+            qmlErrObject.setProperty(QLatin1String("lineNumber"), QScriptValue(error.line()));
+            qmlErrObject.setProperty(QLatin1String("columnNumber"), QScriptValue(error.column()));
+            qmlErrObject.setProperty(QLatin1String("fileName"), QScriptValue(error.url().toString()));
+            qmlErrObject.setProperty(QLatin1String("message"), QScriptValue(error.description()));
             arr.setProperty(i++, qmlErrObject);
         }
         QScriptValue err = ctxt->throwError(errstr);
-        err.setProperty("qmlErrors",arr);
+        err.setProperty(QLatin1String("qmlErrors"),arr);
         return err;
     }
 
@@ -1550,8 +1550,9 @@ void QDeclarativeEngine::addImportPath(const QString& path)
   provided by that module. A \c qmldir file is required for defining the
   type version mapping and possibly declarative extensions plugins.
 
-  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
-  variable, then the builtin \c ImportsPath from QLibraryInfo.
+  By default, the list contains the directory of the application executable,
+  paths specified in the \c QML_IMPORT_PATH environment variable,
+  and the builtin \c ImportsPath from QLibraryInfo.
 
   \sa addImportPath() setImportPathList()
 */
@@ -1565,8 +1566,9 @@ QStringList QDeclarativeEngine::importPathList() const
   Sets \a paths as the list of directories where the engine searches for
   installed modules in a URL-based directory structure.
 
-  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
-  variable, then the builtin \c ImportsPath from QLibraryInfo.
+  By default, the list contains the directory of the application executable,
+  paths specified in the \c QML_IMPORT_PATH environment variable,
+  and the builtin \c ImportsPath from QLibraryInfo.
 
   \sa importPathList() addImportPath()
   */

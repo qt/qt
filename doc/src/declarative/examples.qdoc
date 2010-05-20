@@ -75,14 +75,13 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/animation/basics}{Basics}
 \o \l{declarative/animation/behaviors}{Behaviors}
-\o \l{declarative/animation/easing}{Easing}
+\o \l{declarative/animation/easing}{Easing types}
 \o \l{declarative/animation/states}{States}
 \endlist
 
 \section2 Image Elements
 \list
 \o \l{declarative/imageelements/borderimage}{BorderImage}
-\o \l{declarative/imageelements/image}{Image}
 \endlist
 
 \section2 \l{declarative/positioners}{Positioners}
@@ -122,7 +121,6 @@ For example, from your build directory, run:
 
 \section2 XML
 \list
-\o \l{declarative/xml/xmldata}{XML data}
 \o \l{declarative/xml/xmlhttprequest}{XmlHttpRequest}
 \endlist
 
@@ -138,22 +136,22 @@ For example, from your build directory, run:
 
 \section2 C++ Extensions
 \list
-\o \l{declarative/cppextensions/referenceexamples}{Reference examples} (discussed in \l {Extending QML in C++})
+\o \l{declarative-cppextensions-reference.html}{Reference examples} (discussed in \l {Extending QML in C++})
 \o \l{declarative/cppextensions/plugins}{Plugins}
-\o \l{declarative/cppextensions/proxywidgets}{QtWidgets}
-\o \l{declarative/cppextensions/qgraphicslayouts}{QGraphicsLayouts}
+\o \l{declarative-cppextensions-qgraphicslayouts.html}{QGraphicsLayouts}
+\o \l{declarative/cppextensions/qwidgets}{QWidgets}
 \o \l{declarative/cppextensions/imageprovider}{Image provider}
-\o \l{declarative/cppextensions/proxyviewer}{Network access manager factory}
+\o \l{declarative/cppextensions/networkaccessmanagerfactory}{Network access manager factory}
 \endlist
 
 \section2 Toys
 \list
 \o \l{declarative/toys/clocks}{Clocks}
+\o \l{declarative/toys/corkboards}{Corkboards}
 \o \l{declarative/toys/dial}{Dial}
-\o \l{declarative/toys/dynamic}{Dynamic}
+\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
 \o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
 \o \l{declarative/toys/tvtennis}{TV Tennis}
-\o \l{declarative/toys/velocity}{Velocity}
 \endlist
 
 
@@ -161,11 +159,18 @@ For example, from your build directory, run:
 
 \list
 \o \l{demos/declarative/calculator}{Calculator}
+\o \l{demos/declarative/flickr}{Flickr Mobile}
 \o \l{demos/declarative/minehunt}{Minehunt}
 \o \l{demos/declarative/photoviewer}{Photo Viewer}
-\o \l{demos/declarative/flickr}{Flickr Mobile}
+\o \l{demos/declarative/rssnews}{RSS News Reader}
 \o \l{demos/declarative/samegame}{Same Game}
 \o \l{demos/declarative/snake}{Snake}
+\endlist
+
+\section1 Labs
+
+\list
+\o \l{src/imports/folderlistmodel}{Folder List Model} - a C++ model plugin
 \endlist
 
 */

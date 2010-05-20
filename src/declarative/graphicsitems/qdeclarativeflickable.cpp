@@ -415,7 +415,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     These properties are typically used to draw a scrollbar. For example:
 
     \snippet doc/src/snippets/declarative/flickableScrollbar.qml 0
-    \dots 4
+    \dots 8
     \snippet doc/src/snippets/declarative/flickableScrollbar.qml 1
 
     \sa {declarative/ui-components/scrollbar}{scrollbar example}

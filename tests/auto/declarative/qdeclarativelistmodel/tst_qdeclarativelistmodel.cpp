@@ -275,7 +275,7 @@ void tst_qdeclarativelistmodel::dynamic()
     QDeclarativeListModel model;
     QDeclarativeEngine::setContextForObject(&model,engine.rootContext());
     engine.rootContext()->setContextObject(&model);
-    QDeclarativeExpression e(engine.rootContext(), script, &model);
+    QDeclarativeExpression e(engine.rootContext(), &model, script);
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 
@@ -332,7 +332,7 @@ void tst_qdeclarativelistmodel::dynamic_worker()
                 Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
         waitForWorker(item);
 
-        QDeclarativeExpression e(eng.rootContext(), operations.last().toString(), &model);
+        QDeclarativeExpression e(eng.rootContext(), &model, operations.last().toString());
         if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QVERIFY(e.evaluate().toInt() != result);
         else
