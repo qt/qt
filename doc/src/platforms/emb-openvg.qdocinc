@@ -135,8 +135,25 @@ transformations for non-image elements in performance critical code.
 \endlist
 
 The other members of QPainter::CompositionMode are not supported
-because OpenVG 1.1 does not have an equivalent in its \c VGBlendMode
-enumeration.  Any attempt to set an unsupported mode will result in
+unless the \c{VG_KHR_advanced_blending} extension is present,
+in which case the following additional modes are supported:
+
+\list
+\o QPainter::CompositionMode_Overlay
+\o QPainter::CompositionMode_ColorDodge
+\o QPainter::CompositionMode_ColorBurn
+\o QPainter::CompositionMode_HardLight
+\o QPainter::CompositionMode_SoftLight
+\o QPainter::CompositionMode_Difference
+\o QPainter::CompositionMode_Exclusion
+\o QPainter::CompositionMode_SourceOut
+\o QPainter::CompositionMode_DestinationOut
+\o QPainter::CompositionMode_SourceAtop
+\o QPainter::CompositionMode_DestinationAtop
+\o QPainter::CompositionMode_Xor
+\endlist
+
+Any attempt to set an unsupported mode will result in
 the actual mode being set to QPainter::CompositionMode_SourceOver.
 Client applications should avoid using unsupported modes.
 

@@ -127,7 +127,7 @@ private:
 
     int m_lastCustomGestureId;
 
-    QHash<QGestureRecognizer *, QList<QGesture *> > m_obsoleteGestures;
+    QHash<QGestureRecognizer *, QSet<QGesture *> > m_obsoleteGestures;
     QHash<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
     void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 

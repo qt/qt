@@ -4,7 +4,7 @@ Rectangle {
     width: 180; height: 200; color: "white"
 
     // ContactModel model is defined in dummydata/ContactModel.qml
-    // The viewer automatically loads files in dummydata/* to assist
+    // The launcher automatically loads files in dummydata/* to assist
     // development without a real data source.
 
     // Define a delegate component.  A component will be

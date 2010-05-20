@@ -679,7 +679,11 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
         connect(d->model, SIGNAL(modelReset()), this, SLOT(reset()));
         connect(d->model, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
     }
-    setSelectionModel(new QItemSelectionModel(d->model, this));
+
+    QItemSelectionModel *selection_model = new QItemSelectionModel(d->model, this);
+    connect(d->model, SIGNAL(destroyed()), selection_model, SLOT(deleteLater()));
+    setSelectionModel(selection_model);
+
     reset(); // kill editors, set new root and do layout
 }
 
@@ -1785,7 +1789,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         emit clicked(index);
         if (edited)
             return;
-        if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, 0, this))
+        QStyleOptionViewItemV4 option = d->viewOptionsV4();
+        if (d->pressedAlreadySelected)
+            option.state |= QStyle::State_Selected;
+        if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, &option, this))
             emit activated(index);
     }
 }

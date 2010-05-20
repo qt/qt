@@ -46,8 +46,7 @@
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
-// Application private dir is default serach path for files, so SRCDIR can be set to empty
-#define SRCDIR ""
+#define SRCDIR "."
 #endif
 
 class tst_compilation : public QObject
@@ -63,7 +62,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_compilation::tst_compilation() 
+tst_compilation::tst_compilation()
 {
 }
 

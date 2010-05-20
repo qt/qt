@@ -67,6 +67,7 @@
 #include "qdeclarativeextensioninterface.h"
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativeinclude_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -204,6 +205,11 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     // XXX used to add Qt.Sound class.
 
     //types
+    if (mainthread)
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::include, 2));
+    else
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::worker_include, 2));
+
     qtObject.setProperty(QLatin1String("isQtObject"), newFunction(QDeclarativeEnginePrivate::isQtObject, 1));
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QDeclarativeEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), newFunction(QDeclarativeEnginePrivate::hsla, 4));
@@ -327,11 +333,12 @@ Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
 void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
 {
     QObjectPrivate *p = QObjectPrivate::get(o);
-    Q_ASSERT(p->declarativeData);
-    QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
-    if (d->ownContext && d->context) {
-        d->context->destroy();
-        d->context = 0;
+    if (p->declarativeData) {
+        QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
+        if (d->ownContext && d->context) {
+            d->context->destroy();
+            d->context = 0;
+        }
     }
 }
 
@@ -555,9 +562,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 
   This example creates a provider with id \e colors:
 
-  \snippet examples/declarative/imageprovider/imageprovider.cpp 0
+  \snippet examples/declarative/cppextensions/imageprovider/imageprovider.cpp 0
 
-  \snippet examples/declarative/imageprovider/imageprovider-example.qml 0
+  \snippet examples/declarative/cppextensions/imageprovider/imageprovider-example.qml 0
 
   \sa removeImageProvider()
 */

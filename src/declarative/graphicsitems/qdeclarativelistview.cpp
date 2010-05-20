@@ -48,6 +48,7 @@
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativeinfo.h>
 
 #include <qlistmodelinterface_p.h>
 #include <qmath.h>
@@ -525,7 +526,7 @@ void QDeclarativeListViewPrivate::init()
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     addItemChangeListener(this, Geometry);
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
-    q->setFlickDirection(QDeclarativeFlickable::VerticalFlick);
+    q->setFlickableDirection(QDeclarativeFlickable::VerticalFlick);
     ::memset(sectionCache, 0, sizeof(QDeclarativeItem*) * sectionCacheSize);
 }
 
@@ -868,7 +869,7 @@ void QDeclarativeListViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    if (currentItem && autoHighlight && highlight && !moving) {
+    if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
         // auto-update highlight
         highlightPosAnimator->to = currentItem->position();
         highlightSizeAnimator->to = currentItem->size();
@@ -1208,7 +1209,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             else
                 v = maxVelocity;
         }
-        if (!flicked) {
+        if (!flickingHorizontally && !flickingVertically) {
             // the initial flick - estimate boundary
             qreal accel = deceleration;
             qreal v2 = v * v;
@@ -1256,9 +1257,18 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             timeline.reset(data.move);
             timeline.accel(data.move, v, accel, maxDistance + overshootDist);
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
+            if (!flickingHorizontally && q->xflick()) {
+                flickingHorizontally = true;
+                emit q->flickingChanged();
+                emit q->flickingHorizontallyChanged();
+                emit q->flickStarted();
+            }
+            if (!flickingVertically && q->yflick()) {
+                flickingVertically = true;
+                emit q->flickingChanged();
+                emit q->flickingVerticallyChanged();
+                emit q->flickStarted();
+            }
             correctFlick = true;
         } else {
             // reevaluate the target boundary.
@@ -1461,7 +1471,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
@@ -1804,10 +1814,10 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
         d->orient = orientation;
         if (d->orient == QDeclarativeListView::Vertical) {
             setContentWidth(-1);
-            setFlickDirection(VerticalFlick);
+            setFlickableDirection(VerticalFlick);
         } else {
             setContentHeight(-1);
-            setFlickDirection(HorizontalFlick);
+            setFlickableDirection(HorizontalFlick);
         }
         d->clear();
         d->setPosition(0);
@@ -1898,7 +1908,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
     pet.  The section expression is the size property.  If \c ListView.section and
     \c ListView.prevSection differ, the item will display a section header.
 
-    \snippet examples/declarative/listview/sections.qml 0
+    \snippet examples/declarative/modelviews/listview/sections.qml 0
 
     \image ListViewSections.png
 */
@@ -2106,7 +2116,7 @@ void QDeclarativeListView::viewportMoved()
     QDeclarativeFlickable::viewportMoved();
     d->lazyRelease = true;
     refill();
-    if (isFlicking() || d->moving)
+    if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
         d->moveReason = QDeclarativeListViewPrivate::Mouse;
     if (d->moveReason != QDeclarativeListViewPrivate::SetIndex) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -2126,7 +2136,7 @@ void QDeclarativeListView::viewportMoved()
         }
     }
 
-    if (d->flicked && d->correctFlick && !d->inFlickCorrection) {
+    if ((d->flickingHorizontally || d->flickingVertically) && d->correctFlick && !d->inFlickCorrection) {
         d->inFlickCorrection = true;
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
@@ -2253,6 +2263,9 @@ qreal QDeclarativeListView::maxXExtent() const
 void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeListView);
+    keyPressPreHandler(event);
+    if (event->isAccepted())
+        return;
 
     if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == QDeclarativeListView::Horizontal && event->key() == Qt::Key_Left)
@@ -2277,10 +2290,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
     event->ignore();
+    QDeclarativeFlickable::keyPressEvent(event);
 }
 
 /*!
@@ -2446,7 +2457,8 @@ void QDeclarativeListView::trackedPositionChanged()
     Q_D(QDeclarativeListView);
     if (!d->trackedItem || !d->currentItem)
         return;
-    if (!isFlicking() && !d->moving && d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
+    if (!d->flickingHorizontally && !d->flickingVertically && !d->movingHorizontally && !d->movingVertically
+        && d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
         const qreal trackedPos = qCeil(d->trackedItem->position());
         const qreal viewPos = d->position();
         if (d->haveHighlightRange) {

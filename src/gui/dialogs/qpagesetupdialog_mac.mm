@@ -50,9 +50,9 @@
 
 QT_USE_NAMESPACE
 
-@class QCocoaPageLayoutDelegate;
+@class QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate);
 
-@interface QCocoaPageLayoutDelegate : NSObject {
+@interface QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) : NSObject {
     QMacPrintEnginePrivate *pe;
 }
 - (id)initWithMacPrintEngine:(QMacPrintEnginePrivate *)printEngine;
@@ -60,7 +60,7 @@ QT_USE_NAMESPACE
         returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
 
-@implementation QCocoaPageLayoutDelegate
+@implementation QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate)
 - (id)initWithMacPrintEngine:(QMacPrintEnginePrivate *)printEngine;
 {
     self = [super init];
@@ -213,7 +213,7 @@ void QPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality)
     pageLayout = [NSPageLayout pageLayout];
     // Keep a copy to this since we plan on using it for a bit.
     [pageLayout retain];
-    QCocoaPageLayoutDelegate *delegate = [[QCocoaPageLayoutDelegate alloc] initWithMacPrintEngine:ep];
+    QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) alloc] initWithMacPrintEngine:ep];
 
     if (modality == Qt::ApplicationModal) {
         int rval = [pageLayout runModalWithPrintInfo:ep->printInfo];

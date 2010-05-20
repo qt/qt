@@ -858,8 +858,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
-
+    keyPressPreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyPressEvent(event);
 }
@@ -871,7 +872,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
+    keyReleasePreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
@@ -899,17 +902,18 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
+    bool hadFocus = hasFocus();
     if (d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
-            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
                 p->setFocus();
-                break;
-            }
             p = p->parentItem();
         }
         setFocus(true);
     }
+    if (!hadFocus && hasFocus())
+        d->clickCausedFocus = true;
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mousePressEvent(event);
@@ -924,11 +928,12 @@ void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextEdit);
     QWidget *widget = event->widget();
     if (widget && (d->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos()))
-        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+    d->clickCausedFocus = false;
 
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QDeclarativePaintedItem::mousePressEvent(event);
+        QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
 
 /*!
@@ -952,7 +957,8 @@ void QDeclarativeTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QDeclarativePaintedItem::mousePressEvent(event);
+        QDeclarativePaintedItem::mouseMoveEvent(event);
+    event->setAccepted(true);
 }
 
 /*!

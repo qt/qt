@@ -673,8 +673,12 @@ void QNetworkReplyImplPrivate::error(QNetworkReplyImpl::NetworkError code, const
 void QNetworkReplyImplPrivate::metaDataChanged()
 {
     Q_Q(QNetworkReplyImpl);
-    // do we have cookies?
-    if (cookedHeaders.contains(QNetworkRequest::SetCookieHeader) && !manager.isNull()) {
+    // 1. do we have cookies?
+    // 2. are we allowed to set them?
+    if (cookedHeaders.contains(QNetworkRequest::SetCookieHeader) && !manager.isNull()
+        && (static_cast<QNetworkRequest::LoadControl>
+            (request.attribute(QNetworkRequest::CookieSaveControlAttribute,
+                               QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic)) {
         QList<QNetworkCookie> cookies =
             qvariant_cast<QList<QNetworkCookie> >(cookedHeaders.value(QNetworkRequest::SetCookieHeader));
         QNetworkCookieJar *jar = manager->cookieJar();

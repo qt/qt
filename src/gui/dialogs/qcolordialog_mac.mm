@@ -65,9 +65,9 @@ typedef float CGFloat;  // Should only not be defined on 32-bit platforms
 
 QT_USE_NAMESPACE
 
-@class QCocoaColorPanelDelegate;
+@class QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate);
 
-@interface QCocoaColorPanelDelegate : NSObject<NSWindowDelegate> {
+@interface QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) : NSObject<NSWindowDelegate> {
     NSColorPanel *mColorPanel;
     NSView *mStolenContentView;
     NSButton *mOkButton;
@@ -99,7 +99,7 @@ QT_USE_NAMESPACE
 - (void)setResultSet:(BOOL)result;
 @end
 
-@implementation QCocoaColorPanelDelegate
+@implementation QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate)
 - (id)initWithColorPanel:(NSColorPanel *)panel
        stolenContentView:(NSView *)stolenContentView
                 okButton:(NSButton *)okButton
@@ -432,26 +432,26 @@ void QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
             [colorPanel setDefaultButtonCell:[okButton cell]];
         }
 
-        delegate = [[QCocoaColorPanelDelegate alloc] initWithColorPanel:colorPanel
+        delegate = [[QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) alloc] initWithColorPanel:colorPanel
             stolenContentView:stolenContentView
             okButton:okButton
             cancelButton:cancelButton
             priv:this];
-        [colorPanel setDelegate:static_cast<QCocoaColorPanelDelegate *>(delegate)];
+        [colorPanel setDelegate:static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate)];
     }
     [delegate setResultSet:false];
     setCocoaPanelColor(initial);
-    [static_cast<QCocoaColorPanelDelegate *>(delegate) showColorPanel];
+    [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) showColorPanel];
 }
 
 void QColorDialogPrivate::closeCocoaColorPanel()
 {
-    [static_cast<QCocoaColorPanelDelegate *>(delegate) onCancelClicked];
+    [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) onCancelClicked];
 }
 
 void QColorDialogPrivate::releaseCocoaColorPanelDelegate()
 {
-    [static_cast<QCocoaColorPanelDelegate *>(delegate) release];
+    [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) release];
 }
 
 void QColorDialogPrivate::mac_nativeDialogModalHelp()
@@ -471,13 +471,13 @@ void QColorDialogPrivate::mac_nativeDialogModalHelp()
 
 void QColorDialogPrivate::_q_macRunNativeAppModalPanel()
 {
-    [static_cast<QCocoaColorPanelDelegate *>(delegate) exec];
+    [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) exec];
 }
 
 void QColorDialogPrivate::setCocoaPanelColor(const QColor &color)
 {
     QMacCocoaAutoReleasePool pool;
-    QCocoaColorPanelDelegate *theDelegate = static_cast<QCocoaColorPanelDelegate *>(delegate);
+    QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *theDelegate = static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate);
     NSColor *nsColor;
     const QColor::Spec spec = color.spec();
     if (spec == QColor::Cmyk) {

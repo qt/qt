@@ -94,7 +94,7 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
 
 EGLNativeDisplayType QEgl::nativeDisplay()
 {
-    return EGL_DEFAULT_DISPLAY;
+    return  EGLNativeDisplayType(EGL_DEFAULT_DISPLAY);
 }
 
 EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)

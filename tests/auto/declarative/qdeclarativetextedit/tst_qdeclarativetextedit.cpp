@@ -793,8 +793,6 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     view.viewport()->setInputContext(&ic);
     QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
             view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
-    if ((behavior != QStyle::RSIP_OnMouseClick))
-        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
     QDeclarativeTextEdit edit;
     edit.setText("Hello world");
     edit.setPos(0, 0);
@@ -806,7 +804,14 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
     QApplication::processEvents();
-    QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, false);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+        QApplication::processEvents();
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    } else if (behavior == QStyle::RSIP_OnMouseClick) {
+        QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    }
 }
 
 void tst_qdeclarativetextedit::geometrySignals()

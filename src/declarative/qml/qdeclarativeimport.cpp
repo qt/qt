@@ -57,7 +57,7 @@ DEFINE_BOOL_CONFIG_OPTION(qmlCheckTypes, QML_CHECK_TYPES)
 
 static QString toLocalFileOrQrc(const QUrl& url)
 {
-    if (url.scheme() == QLatin1String("qrc")) {
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
         if (url.authority().isEmpty())
             return QLatin1Char(':') + url.path();
         return QString();

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass TextInput QDeclarativeTextInput
   \since 4.7
-    The TextInput item allows you to add an editable line of text to a scene.
+    \brief The TextInput item allows you to add an editable line of text to a scene.
 
     TextInput can only display a single line of text, and can only display
     plain text. However it can provide addition input constraints on the text.
@@ -863,6 +863,9 @@ void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
 void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QDeclarativeTextInput);
+    keyPressPreHandler(ev);
+    if (ev->isAccepted())
+        return;
     if (((ev->key() == Qt::Key_Up || ev->key() == Qt::Key_Down) && ev->modifiers() == Qt::NoModifier) // Don't allow MacOSX up/down support, and we don't allow a completer.
         || (((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
@@ -882,26 +885,30 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    bool hadFocus = hasFocus();
     if(d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
-            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
                 p->setFocus();
-                break;
-            }
             p = p->parentItem();
         }
         setFocus(true);
     }
+    if (!hadFocus && hasFocus())
+        d->clickCausedFocus = true;
+
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
+    event->setAccepted(true);
 }
 
 void QDeclarativeTextInput::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     d->control->moveCursor(d->xToPos(event->pos().x()), true);
+    event->setAccepted(true);
 }
 
 /*!
@@ -913,8 +920,10 @@ void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextInput);
     QWidget *widget = event->widget();
     if (widget && !d->control->isReadOnly() && boundingRect().contains(event->pos()))
-        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
-    d->control->processEvent(event);
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+    d->clickCausedFocus = false;
+    if (!event->isAccepted())
+        QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
 
 bool QDeclarativeTextInput::event(QEvent* ev)
@@ -935,8 +944,8 @@ bool QDeclarativeTextInput::event(QEvent* ev)
                 updateSize();
     }
     if(!handled)
-        return QDeclarativePaintedItem::event(ev);
-    return true;
+        handled = QDeclarativePaintedItem::event(ev);
+    return handled;
 }
 
 void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
@@ -1018,6 +1027,8 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 {
     Q_D(const QDeclarativeTextInput);
     switch(property) {
+    case Qt::ImMicroFocus:
+        return d->control->cursorRect();
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
@@ -1233,9 +1244,7 @@ void QDeclarativeTextInput::updateSize(bool needsRedraw)
     int cursorWidth = d->control->cursorWidth();
     if(d->cursorItem)
         cursorWidth = d->cursorItem->width();
-    //### Is QFontMetrics too slow?
-    QFontMetricsF fm(d->font);
-    setImplicitWidth(fm.width(d->control->displayText())+cursorWidth);
+    setImplicitWidth(d->control->naturalTextWidth() + cursorWidth);
     setContentsSize(QSize(width(), height()));//Repaints if changed
     if(w==width() && h==height() && needsRedraw){
         clearCache();

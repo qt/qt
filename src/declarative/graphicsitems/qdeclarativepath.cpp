@@ -322,6 +322,17 @@ QPainterPath QDeclarativePath::path() const
 QStringList QDeclarativePath::attributes() const
 {
     Q_D(const QDeclarativePath);
+    if (!d->componentComplete) {
+        QSet<QString> attrs;
+
+        // First gather up all the attributes
+        foreach (QDeclarativePathElement *pathElement, d->_pathElements) {
+            if (QDeclarativePathAttribute *attribute =
+                qobject_cast<QDeclarativePathAttribute *>(pathElement))
+                attrs.insert(attribute->name());
+        }
+        return attrs.toList();
+    }
     return d->_attributes;
 }
 
@@ -366,7 +377,9 @@ void QDeclarativePath::createPointCache() const
 {
     Q_D(const QDeclarativePath);
     qreal pathLength = d->_path.length();
-    const int points = int(pathLength*2);
+    // more points means less jitter between items as they move along the
+    // path, but takes longer to generate
+    const int points = int(pathLength*5);
     const int lastElement = d->_path.elementCount() - 1;
     d->_pointCache.resize(points+1);
 

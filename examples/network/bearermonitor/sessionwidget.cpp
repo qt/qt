@@ -59,7 +59,7 @@ SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *paren
     connect(session, SIGNAL(stateChanged(QNetworkSession::State)),
             this, SLOT(updateSession()));
     connect(session, SIGNAL(error(QNetworkSession::SessionError)),
-            this, SLOT(updateSession()));
+            this, SLOT(updateSessionError(QNetworkSession::SessionError)));
 
     updateSession();
 
@@ -105,7 +105,6 @@ void SessionWidget::deleteSession()
 void SessionWidget::updateSession()
 {
     updateSessionState(session->state());
-    updateSessionError(session->error());
 
     if (session->state() == QNetworkSession::Connected)
         statsTimer = startTimer(1000);
@@ -128,12 +127,14 @@ void SessionWidget::updateSession()
 
 void SessionWidget::openSession()
 {
+    clearError();
     session->open();
     updateSession();
 }
 
 void SessionWidget::openSyncSession()
 {
+    clearError();
     session->open();
     session->waitForOpened();
     updateSession();
@@ -141,12 +142,14 @@ void SessionWidget::openSyncSession()
 
 void SessionWidget::closeSession()
 {
+    clearError();
     session->close();
     updateSession();
 }
 
 void SessionWidget::stopSession()
 {
+    clearError();
     session->stop();
     updateSession();
 }
@@ -195,3 +198,8 @@ void SessionWidget::updateSessionError(QNetworkSession::SessionError error)
     errorString->setText(session->errorString());
 }
 
+void SessionWidget::clearError()
+{
+    lastError->clear();
+    errorString->clear();
+}

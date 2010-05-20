@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 18;
+const TInt KPMMinorVersion = 19;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -468,7 +468,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             TAknLayoutRect sliderSettingRect;
             sliderSettingRect.LayoutRect( sliderRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_cp() );
             TAknLayoutRect sliderGraph2Rect;
-            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g2() );
+            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g6() );
             value = sliderGraph2Rect.Rect().Width();
             }
             break;
@@ -483,7 +483,8 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             TAknLayoutRect sliderSettingRect;
             sliderSettingRect.LayoutRect( sliderRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_cp() );
             TAknLayoutRect sliderGraph2Rect;
-            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g2() );
+            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g6() );
+            //todo: make a proper calculation for tick marks
             value = (TInt)(sliderGraph2Rect.Rect().Height()*1.5); // add assumed tickmark height
             }
             break;
@@ -498,7 +499,8 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             TAknLayoutRect sliderSettingRect;
             sliderSettingRect.LayoutRect( sliderRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_cp() );
             TAknLayoutRect sliderGraph2Rect;
-            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g2() );
+            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g6() );
+            //todo: make a proper calculation for tick marks
             value = (TInt)(sliderGraph2Rect.Rect().Height()*0.5); // no tickmarks in S60, lets assume they are half the size of slider indicator
             }
             break;
@@ -513,7 +515,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             TAknLayoutRect sliderSettingRect;
             sliderSettingRect.LayoutRect( sliderRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_cp() );
             TAknLayoutRect sliderGraph2Rect;
-            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g2() );
+            sliderGraph2Rect.LayoutRect( sliderSettingRect.Rect(), AknLayoutScalable_Avkon::slider_set_pane_g6() );
             value = sliderGraph2Rect.Rect().Height();
             }
             break;

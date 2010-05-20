@@ -266,10 +266,12 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
 
     do {
         QByteArray source;
-        source.append(qShaderSnippets[prog.mainFragShader]);
-        source.append(qShaderSnippets[prog.srcPixelFragShader]);
+        // Insert the custom stage before the srcPixel shader to work around an ATI driver bug
+        // where you cannot forward declare a function that takes a sampler as argument.
         if (prog.srcPixelFragShader == CustomImageSrcFragmentShader)
             source.append(prog.customStageSource);
+        source.append(qShaderSnippets[prog.mainFragShader]);
+        source.append(qShaderSnippets[prog.srcPixelFragShader]);
         if (prog.compositionFragShader)
             source.append(qShaderSnippets[prog.compositionFragShader]);
         if (prog.maskFragShader)
@@ -777,8 +779,8 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     // doesn't use are disabled)
     QGLContextPrivate* ctx_d = ctx->d_func();
     ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
-    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, currentShaderProg->useTextureCoords);
-    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, currentShaderProg->useOpacityAttribute);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, currentShaderProg && currentShaderProg->useTextureCoords);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, currentShaderProg && currentShaderProg->useOpacityAttribute);
 
     shaderProgNeedsChanging = false;
     return true;

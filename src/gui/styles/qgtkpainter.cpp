@@ -47,6 +47,7 @@
 // This class is primarily a wrapper around the gtk painter functions
 // and takes care of converting all such calls into cached Qt pixmaps.
 
+#include <private/qstylehelper_p.h>
 #include <QtGui/QWidget>
 #include <QtGui/QStyleOption>
 #include <QtGui/QPixmapCache>
@@ -155,8 +156,12 @@ static QString uniqueName(const QString &key, GtkStateType state, GtkShadowType 
                           const QSize &size, GtkWidget *widget = 0)
 {
     // Note the widget arg should ideally use the widget path, though would compromise performance
-    QString tmp = QString(QLS("%0-%1-%2-%3x%4-%5")).arg(key).arg(uint(state)).arg(shadow)
-                          .arg(size.width()).arg(size.height()).arg(quintptr(widget));
+    QString tmp = key
+                  % HexString<uint>(state)
+                  % HexString<uint>(shadow)
+                  % HexString<uint>(size.width())
+                  % HexString<uint>(size.height())
+                  % HexString<quint64>(quint64(widget));
     return tmp;
 }
 

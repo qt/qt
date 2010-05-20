@@ -532,17 +532,22 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
     QMatchData old = cache[parent].take(part);
     cost = cost + m.indices.cost() - old.indices.cost();
     if (cost * sizeof(int) > 1024 * 1024) {
-        QMap<QModelIndex, CacheItem>::iterator it1 ;
-        for (it1 = cache.begin(); it1 != cache.end(); ++it1) {
+        QMap<QModelIndex, CacheItem>::iterator it1 = cache.begin();
+        while (it1 != cache.end()) {
             CacheItem& ci = it1.value();
             int sz = ci.count()/2;
             QMap<QString, QMatchData>::iterator it2 = ci.begin();
-            for (int i = 0; it2 != ci.end() && i < sz; i++, ++it2) {
+            int i = 0;
+            while (it2 != ci.end() && i < sz) {
                 cost -= it2.value().indices.cost();
-                ci.erase(it2);
+                it2 = ci.erase(it2);
+                i++;
             }
-            if (ci.count() == 0)
-                cache.erase(it1);
+            if (ci.count() == 0) {
+              it1 = cache.erase(it1);
+            } else {
+              ++it1;
+            }
         }
     }
 
@@ -873,7 +878,7 @@ void QCompleterPrivate::showPopup(const QRect& rect)
     const QRect screen = QApplication::desktop()->availableGeometry(widget);
     Qt::LayoutDirection dir = widget->layoutDirection();
     QPoint pos;
-    int rw, rh, w;
+    int rh, w;
     int h = (popup->sizeHintForRow(0) * qMin(maxVisibleItems, popup->model()->rowCount()) + 3) + 3;
     QScrollBar *hsb = popup->horizontalScrollBar();
     if (hsb && hsb->isVisible())
@@ -881,21 +886,30 @@ void QCompleterPrivate::showPopup(const QRect& rect)
 
     if (rect.isValid()) {
         rh = rect.height();
-        w = rw = rect.width();
+        w = rect.width();
         pos = widget->mapToGlobal(dir == Qt::RightToLeft ? rect.bottomRight() : rect.bottomLeft());
     } else {
         rh = widget->height();
-        rw = widget->width();
         pos = widget->mapToGlobal(QPoint(0, widget->height() - 2));
         w = widget->width();
     }
 
-    if ((pos.x() + rw) > (screen.x() + screen.width()))
+    if (w > screen.width())
+        w = screen.width();
+    if ((pos.x() + w) > (screen.x() + screen.width()))
         pos.setX(screen.x() + screen.width() - w);
     if (pos.x() < screen.x())
         pos.setX(screen.x());
-    if (((pos.y() + rh) > (screen.y() + screen.height())) && ((pos.y() - h - rh) >= 0))
-        pos.setY(pos.y() - qMax(h, popup->minimumHeight()) - rh + 2);
+
+    int top = pos.y() - rh - screen.top() + 2;
+    int bottom = screen.bottom() - pos.y();
+    h = qMax(h, popup->minimumHeight());
+    if (h > bottom) {
+        h = qMin(qMax(top, bottom), h);
+
+        if (top > bottom)
+            pos.setY(pos.y() - h - rh + 2);
+    }
 
     popup->setGeometry(pos.x(), pos.y(), w, h);
 
@@ -1799,7 +1813,7 @@ QStringList QCompleter::splitPath(const QString& path) const
 
     This signal is sent when an item in the popup() is highlighted by
     the user. It is also sent if complete() is called with the completionMode()
-    set to QCOmpleter::InlineCompletion. The item's \a text is given.
+    set to QCompleter::InlineCompletion. The item's \a text is given.
 */
 
 QT_END_NAMESPACE

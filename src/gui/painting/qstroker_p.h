@@ -124,6 +124,9 @@ typedef void (*qStrokerCubicToHook)(qfixed c1x, qfixed c1y,
                                     qfixed ex, qfixed ey,
                                     void *data);
 
+// qtransform.cpp
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+
 class Q_GUI_EXPORT QStrokerOps
 {
 public:
@@ -161,6 +164,16 @@ public:
     QRectF clipRect() const { return m_clip_rect; }
     void setClipRect(const QRectF &clip) { m_clip_rect = clip; }
 
+    void setCurveThresholdFromTransform(const QTransform &transform)
+    {
+        qreal scale;
+        qt_scaleForTransform(transform, &scale);
+        setCurveThreshold(scale == 0 ? qreal(0.5) : (qreal(0.5) / scale));
+    }
+
+    void setCurveThreshold(qfixed threshold) { m_curveThreshold = threshold; }
+    qfixed curveThreshold() const { return m_curveThreshold; }
+
 protected:
     inline void emitMoveTo(qfixed x, qfixed y);
     inline void emitLineTo(qfixed x, qfixed y);
@@ -170,6 +183,7 @@ protected:
     QDataBuffer<Element> m_elements;
 
     QRectF m_clip_rect;
+    qfixed m_curveThreshold;
 
     void *m_customData;
     qStrokerMoveToHook m_moveTo;
@@ -208,9 +222,6 @@ public:
     void setMiterLimit(qfixed length) { m_miterLimit = length; }
     qfixed miterLimit() const { return m_miterLimit; }
 
-    void setCurveThreshold(qfixed threshold) { m_curveThreshold = threshold; }
-    qfixed curveThreshold() const { return m_curveThreshold; }
-
     void joinPoints(qfixed x, qfixed y, const QLineF &nextLine, LineJoinMode join);
     inline void emitMoveTo(qfixed x, qfixed y);
     inline void emitLineTo(qfixed x, qfixed y);
@@ -227,7 +238,6 @@ protected:
 
     qfixed m_strokeWidth;
     qfixed m_miterLimit;
-    qfixed m_curveThreshold;
 
     LineJoinMode m_capStyle;
     LineJoinMode m_joinStyle;

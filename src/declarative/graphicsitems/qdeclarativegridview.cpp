@@ -349,7 +349,7 @@ void QDeclarativeGridViewPrivate::init()
     Q_Q(QDeclarativeGridView);
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
-    q->setFlickDirection(QDeclarativeFlickable::VerticalFlick);
+    q->setFlickableDirection(QDeclarativeFlickable::VerticalFlick);
     addItemChangeListener(this, Geometry);
 }
 
@@ -692,7 +692,7 @@ void QDeclarativeGridViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    if (currentItem && autoHighlight && highlight && !moving) {
+    if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
         // auto-update highlight
         highlightXAnimator->to = currentItem->item->x();
         highlightYAnimator->to = currentItem->item->y();
@@ -806,7 +806,8 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     Q_Q(QDeclarativeGridView);
 
     moveReason = Mouse;
-    if ((!haveHighlightRange || highlightRange != QDeclarativeGridView::StrictlyEnforceRange) && snapMode == QDeclarativeGridView::NoSnap) {
+    if ((!haveHighlightRange || highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
+        && snapMode == QDeclarativeGridView::NoSnap) {
         QDeclarativeFlickablePrivate::flick(data, minExtent, maxExtent, vSize, fixupCallback, velocity);
         return;
     }
@@ -874,9 +875,18 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         timeline.reset(data.move);
         timeline.accel(data.move, v, accel, maxDistance + overshootDist);
         timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
-        flicked = true;
-        emit q->flickingChanged();
-        emit q->flickStarted();
+        if (!flickingHorizontally && q->xflick()) {
+            flickingHorizontally = true;
+            emit q->flickingChanged();
+            emit q->flickingHorizontallyChanged();
+            emit q->flickStarted();
+        }
+        if (!flickingVertically && q->yflick()) {
+            flickingVertically = true;
+            emit q->flickingChanged();
+            emit q->flickingVerticallyChanged();
+            emit q->flickStarted();
+        }
     } else {
         timeline.reset(data.move);
         fixup(data, minExtent, maxExtent);
@@ -1027,7 +1037,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
@@ -1371,10 +1381,10 @@ void QDeclarativeGridView::setFlow(Flow flow)
         d->flow = flow;
         if (d->flow == LeftToRight) {
             setContentWidth(-1);
-            setFlickDirection(QDeclarativeFlickable::VerticalFlick);
+            setFlickableDirection(QDeclarativeFlickable::VerticalFlick);
         } else {
             setContentHeight(-1);
-            setFlickDirection(QDeclarativeFlickable::HorizontalFlick);
+            setFlickableDirection(QDeclarativeFlickable::HorizontalFlick);
         }
         d->clear();
         d->updateGrid();
@@ -1530,7 +1540,7 @@ void QDeclarativeGridView::viewportMoved()
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::viewportMoved();
     d->lazyRelease = true;
-    if (d->flicked) {
+    if (d->flickingHorizontally || d->flickingVertically) {
         if (yflick()) {
             if (d->vData.velocity > 0)
                 d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore;
@@ -1546,7 +1556,7 @@ void QDeclarativeGridView::viewportMoved()
         }
     }
     refill();
-    if (isFlicking() || d->moving)
+    if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
         d->moveReason = QDeclarativeGridViewPrivate::Mouse;
     if (d->moveReason != QDeclarativeGridViewPrivate::SetIndex) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -1641,6 +1651,9 @@ qreal QDeclarativeGridView::maxXExtent() const
 void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeGridView);
+    keyPressPreHandler(event);
+    if (event->isAccepted())
+        return;
     if (d->model && d->model->count() && d->interactive) {
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         int oldCurrent = currentIndex();
@@ -1666,10 +1679,8 @@ void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
         }
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;
-    QDeclarativeFlickable::keyPressEvent(event);
-    if (event->isAccepted())
-        return;
     event->ignore();
+    QDeclarativeFlickable::keyPressEvent(event);
 }
 
 /*!
@@ -1885,7 +1896,8 @@ void QDeclarativeGridView::trackedPositionChanged()
     Q_D(QDeclarativeGridView);
     if (!d->trackedItem || !d->currentItem)
         return;
-    if (!isFlicking() && !d->moving && d->moveReason == QDeclarativeGridViewPrivate::SetIndex) {
+    if (!d->flickingHorizontally && !d->flickingVertically && !d->movingHorizontally && !d->movingVertically
+        && d->moveReason == QDeclarativeGridViewPrivate::SetIndex) {
         const qreal trackedPos = d->trackedItem->rowPos();
         const qreal viewPos = d->position();
         if (d->haveHighlightRange) {

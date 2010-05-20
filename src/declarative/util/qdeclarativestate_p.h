@@ -96,6 +96,7 @@ public:
     virtual bool isReversable();
     virtual void reverse(Reason reason = ActualChange);
     virtual void saveOriginals() {}
+    virtual bool needsCopy() { return false; }
     virtual void copyOriginals(QDeclarativeActionEvent *) {}
 
     virtual bool isRewindable() { return isReversable(); }

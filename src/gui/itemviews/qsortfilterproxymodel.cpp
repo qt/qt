@@ -1099,7 +1099,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
     if (!source_top_left.isValid() || !source_bottom_right.isValid())
         return;
     QModelIndex source_parent = source_top_left.parent();
-    IndexMap::const_iterator it = create_mapping(source_parent);
+    IndexMap::const_iterator it = source_index_mapping.find(source_parent);
     if (it == source_index_mapping.constEnd()) {
         // Don't care, since we don't have mapping for this index
         return;

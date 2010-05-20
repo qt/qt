@@ -52,6 +52,9 @@
     #include <cmmanager.h>
 #endif
 
+// Uncomment and compile QtBearer to gain detailed state tracing
+// #define QT_BEARERMGMT_SYMBIAN_DEBUG
+
 class CCommsDatabase;
 class QEventLoop;
 
@@ -90,7 +93,18 @@ public:
 
     Bearer bearer;
 
+    // So called IAP id from the platform. Remains constant as long as the
+    // platform is aware of the configuration ie. it is stored in the databases
+    // --> does not depend on whether connections are currently open or not.
+    // In practice is the same for the lifetime of the QNetworkConfiguration.
     TUint32 numericId;
+    // So called connection id, or connection monitor ID. A dynamic ID assigned
+    // by RConnectionMonitor whenever a new connection is opened. ConnectionID and
+    // numericId/IAP id have 1-to-1 mapping during the lifetime of the connection at
+    // connection monitor. Notably however it changes whenever a new connection to
+    // a given IAP is created. In a sense it is constant during the time the
+    // configuration remains between states Discovered..Active..Discovered, do not
+    // however relay on this.
     TUint connectionId;
 };
 
@@ -123,6 +137,9 @@ public:
 
 Q_SIGNALS:
     void onlineStateChanged(bool isOnline);
+    
+    void configurationStateChanged(TUint32 accessPointId, TUint32 connMonId,
+                                   QNetworkSession::State newState);
     
 public Q_SLOTS:
     void updateConfigurations();
@@ -157,12 +174,17 @@ private:
     void startMonitoringIAPData(TUint32 aIapId);
     QNetworkConfigurationPrivatePointer dataByConnectionId(TUint aConnectionId);
 
-protected: // From CActive
+protected:
+    // From CActive
     void RunL();
     void DoCancel();
     
-private: // MConnectionMonitorObserver
+private:
+    // MConnectionMonitorObserver
     void EventL(const CConnMonEventBase& aEvent);
+    // For QNetworkSessionPrivate to indicate about state changes
+    void configurationStateChangeReport(TUint32 accessPointId,
+                                   QNetworkSession::State newState);
 
 private: // Data
     bool               iFirstUpdate; 
@@ -181,6 +203,7 @@ private: // Data
     
     friend class QNetworkSessionPrivate;
     friend class AccessPointsAvailabilityScanner;
+    friend class QNetworkSessionPrivateImpl;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     RCmManager iCmManager;

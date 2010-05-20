@@ -58,7 +58,7 @@ QT_FORWARD_DECLARE_CLASS(QMainWindowLayout);
 QT_FORWARD_DECLARE_CLASS(QToolBar);
 QT_FORWARD_DECLARE_CLASS(QCFString);
 
-@implementation QCocoaToolBarDelegate
+@implementation QT_MANGLE_NAMESPACE(QCocoaToolBarDelegate)
 
 - (id)initWithMainWindowLayout:(QMainWindowLayout *)layout
 {
