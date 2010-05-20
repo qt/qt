@@ -48,11 +48,10 @@
   \section1 Widgets
 
   Widgets are the primary elements for creating user interfaces in Qt.
-  \l{Widget Classes}{Widgets} can display data and status information,
+  \l{The Widget Classes}{Widgets} can display data and status information,
   receive user input, and provide a container for other widgets that
   should be grouped together. A widget that is not embedded in a
-  parent widget is called a \l{Application Windows and
-  Dialogs}{window}.
+  parent widget is called a \l{Window and Dialog Widgets} {window}.
 
   \image parent-child-widgets.png A parent widget containing various child widgets.
 
@@ -82,11 +81,10 @@
 
   \section1 Widget Styles
 
-  \l{Implementing Styles and Style Aware Widgets}{Styles} draw on
-  behalf of widgets and encapsulate the look and feel of a GUI. Qt's
-  built-in widgets use the QStyle class to perform nearly all of their
-  drawing, ensuring that they look exactly like the equivalent native
-  widgets.
+  \l{Styles &amp Style Aware Widgets}{Styles} draw on behalf of
+  widgets and encapsulate the look and feel of a GUI. Qt's built-in
+  widgets use the QStyle class to perform nearly all of their drawing,
+  ensuring that they look exactly like the equivalent native widgets.
     
   \table
   \row

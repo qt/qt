@@ -41,7 +41,9 @@
 #include <QtCore/qglobal.h>
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
 class QAudioFormat;
+QT_END_NAMESPACE
 
 //-----------------------------------------------------------------------------
 // Miscellaneous utility functions

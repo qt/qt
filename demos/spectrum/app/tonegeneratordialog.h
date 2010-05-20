@@ -42,10 +42,12 @@
 #include <QDialog>
 #include <QtMultimedia/QAudioDeviceInfo>
 
+QT_BEGIN_NAMESPACE
 class QCheckBox;
 class QSlider;
 class QSpinBox;
 class QGridLayout;
+QT_END_NAMESPACE
 
 /**
  * Dialog which controls the parameters of the tone generator.

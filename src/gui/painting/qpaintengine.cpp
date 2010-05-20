@@ -172,7 +172,7 @@ QFont QTextItem::font() const
   possible to adapt to multiple technologies on each platform and take
   advantage of each to the fullest.
 
-  \sa QPainter, QPaintDevice::paintEngine(), {The Paint System}
+  \sa QPainter, QPaintDevice::paintEngine(), {Paint System}
 */
 
 /*!
