@@ -2083,10 +2083,9 @@ void tst_qdeclarativeecmascript::compiled()
     QCOMPARE(object->property("test15").toBool(), false);
     QCOMPARE(object->property("test16").toBool(), true);
 
-    QCOMPARE(object->property("test17").toInt(), 4);
+    QCOMPARE(object->property("test17").toInt(), 5);
     QCOMPARE(object->property("test18").toReal(), qreal(176));
-    QEXPECT_FAIL("", "QTBUG-9538", Continue);
-    QCOMPARE(object->property("test19").toInt(), 6);
+    QCOMPARE(object->property("test19").toInt(), 7);
     QCOMPARE(object->property("test20").toReal(), qreal(6.7));
     QCOMPARE(object->property("test21").toString(), QLatin1String("6.7"));
     QCOMPARE(object->property("test22").toString(), QLatin1String("!"));
@@ -2103,20 +2102,21 @@ void tst_qdeclarativeecmascript::numberAssignment()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    QVERIFY(object->property("test1") == QVariant((qreal)6.7));
-    QVERIFY(object->property("test2") == QVariant((qreal)6.7));
-    QVERIFY(object->property("test3") == QVariant((qreal)6));
-    QVERIFY(object->property("test4") == QVariant((qreal)6));
+    QCOMPARE(object->property("test1"), QVariant((qreal)6.7));
+    QCOMPARE(object->property("test2"), QVariant((qreal)6.7));
+    QCOMPARE(object->property("test2"), QVariant((qreal)6.7));
+    QCOMPARE(object->property("test3"), QVariant((qreal)6));
+    QCOMPARE(object->property("test4"), QVariant((qreal)6));
 
-    QVERIFY(object->property("test5") == QVariant((int)7));
-    QVERIFY(object->property("test6") == QVariant((int)7));
-    QVERIFY(object->property("test7") == QVariant((int)6));
-    QVERIFY(object->property("test8") == QVariant((int)6));
+    QCOMPARE(object->property("test5"), QVariant((int)7));
+    QCOMPARE(object->property("test6"), QVariant((int)7));
+    QCOMPARE(object->property("test7"), QVariant((int)6));
+    QCOMPARE(object->property("test8"), QVariant((int)6));
 
-    QVERIFY(object->property("test9") == QVariant((unsigned int)7));
-    QVERIFY(object->property("test10") == QVariant((unsigned int)7));
-    QVERIFY(object->property("test11") == QVariant((unsigned int)6));
-    QVERIFY(object->property("test12") == QVariant((unsigned int)6));
+    QCOMPARE(object->property("test9"), QVariant((unsigned int)7));
+    QCOMPARE(object->property("test10"), QVariant((unsigned int)7));
+    QCOMPARE(object->property("test11"), QVariant((unsigned int)6));
+    QCOMPARE(object->property("test12"), QVariant((unsigned int)6));
 
     delete object;
 }
@@ -2421,6 +2421,16 @@ void tst_qdeclarativeecmascript::include()
     QCOMPARE(o->property("test4").toBool(), true);
     QCOMPARE(o->property("test5").toBool(), true);
     QCOMPARE(o->property("test6").toBool(), true);
+
+    delete o;
+    }
+
+    // Including file with ".pragma library"
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("include_pragma.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test1").toInt(), 100);
 
     delete o;
     }

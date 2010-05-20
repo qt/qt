@@ -77,7 +77,7 @@
     so scheduling several transformations of the same kind (e.g.,
     rotations) at the same step is not recommended.
 
-    \sa QTimeLine, {The Graphics View Framework}
+    \sa QTimeLine, {Graphics View Framework}
 */
 
 #include "qgraphicsitemanimation.h"

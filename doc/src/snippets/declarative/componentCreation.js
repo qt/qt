@@ -14,7 +14,7 @@ function finishCreation() {
         }
     } else if (component.status == Component.Error) {
         // Error Handling
-        console.log("Error loading component:", component.errorsString());
+        console.log("Error loading component:", component.errorString());
     }
 }
 //![0]
@@ -35,7 +35,7 @@ sprite = component.createObject(appWindow);
 
 if (sprite == null) {
     // Error Handling
-    console.log("Error loading component:", component.errorsString());
+    console.log("Error loading component:", component.errorString());
 } else {
     sprite.x = 100;
     sprite.y = 100;

@@ -1044,14 +1044,14 @@ EXPORTS
 	_ZN21QDeclarativeFlickable17flickableChildrenEv @ 1043 NONAME
 	_ZN21QDeclarativeFlickable17mouseReleaseEventEP24QGraphicsSceneMouseEvent @ 1044 NONAME
 	_ZN21QDeclarativeFlickable17pressDelayChangedEv @ 1045 NONAME
-	_ZN21QDeclarativeFlickable17setFlickDirectionENS_14FlickDirectionE @ 1046 NONAME
+	_ZN21QDeclarativeFlickable17setFlickDirectionENS_14FlickDirectionE @ 1046 NONAME ABSENT
 	_ZN21QDeclarativeFlickable18interactiveChangedEv @ 1047 NONAME
 	_ZN21QDeclarativeFlickable19contentWidthChangedEv @ 1048 NONAME
 	_ZN21QDeclarativeFlickable19getStaticMetaObjectEv @ 1049 NONAME
 	_ZN21QDeclarativeFlickable19isAtBoundaryChangedEv @ 1050 NONAME
 	_ZN21QDeclarativeFlickable20contentHeightChangedEv @ 1051 NONAME
 	_ZN21QDeclarativeFlickable20setFlickDecelerationEf @ 1052 NONAME
-	_ZN21QDeclarativeFlickable21flickDirectionChangedEv @ 1053 NONAME
+	_ZN21QDeclarativeFlickable21flickDirectionChangedEv @ 1053 NONAME ABSENT
 	_ZN21QDeclarativeFlickable23setMaximumFlickVelocityEf @ 1054 NONAME
 	_ZN21QDeclarativeFlickable23verticalVelocityChangedEv @ 1055 NONAME
 	_ZN21QDeclarativeFlickable24flickDecelerationChangedEv @ 1056 NONAME
@@ -1602,7 +1602,7 @@ EXPORTS
 	_ZN24QDeclarativeParentChange11qt_metacastEPKc @ 1601 NONAME
 	_ZN24QDeclarativeParentChange11setRotationEf @ 1602 NONAME
 	_ZN24QDeclarativeParentChange12isReversableEv @ 1603 NONAME
-	_ZN24QDeclarativeParentChange13copyOriginalsEP23QDeclarativeActionEvent @ 1604 NONAME
+	_ZN24QDeclarativeParentChange13copyOriginalsEP23QDeclarativeActionEvent @ 1604 NONAME ABSENT
 	_ZN24QDeclarativeParentChange13saveOriginalsEv @ 1605 NONAME
 	_ZN24QDeclarativeParentChange16staticMetaObjectE @ 1606 NONAME DATA 16
 	_ZN24QDeclarativeParentChange17saveCurrentValuesEv @ 1607 NONAME
@@ -1941,9 +1941,9 @@ EXPORTS
 	_ZN27QDeclarativeVisualDataModel7setPartERK7QString @ 1940 NONAME
 	_ZN27QDeclarativeVisualDataModel8evaluateEiRK7QStringP7QObject @ 1941 NONAME
 	_ZN27QDeclarativeVisualDataModel8setModelERK8QVariant @ 1942 NONAME
-	_ZN27QDeclarativeVisualDataModelC1EP19QDeclarativeContext @ 1943 NONAME
+	_ZN27QDeclarativeVisualDataModelC1EP19QDeclarativeContext @ 1943 NONAME ABSENT
 	_ZN27QDeclarativeVisualDataModelC1Ev @ 1944 NONAME
-	_ZN27QDeclarativeVisualDataModelC2EP19QDeclarativeContext @ 1945 NONAME
+	_ZN27QDeclarativeVisualDataModelC2EP19QDeclarativeContext @ 1945 NONAME ABSENT
 	_ZN27QDeclarativeVisualDataModelC2Ev @ 1946 NONAME
 	_ZN27QDeclarativeVisualDataModelD0Ev @ 1947 NONAME
 	_ZN27QDeclarativeVisualDataModelD1Ev @ 1948 NONAME
@@ -1960,8 +1960,8 @@ EXPORTS
 	_ZN27QDeclarativeVisualItemModel7releaseEP16QDeclarativeItem @ 1959 NONAME
 	_ZN27QDeclarativeVisualItemModel8childrenEv @ 1960 NONAME
 	_ZN27QDeclarativeVisualItemModel8evaluateEiRK7QStringP7QObject @ 1961 NONAME
-	_ZN27QDeclarativeVisualItemModelC1Ev @ 1962 NONAME
-	_ZN27QDeclarativeVisualItemModelC2Ev @ 1963 NONAME
+	_ZN27QDeclarativeVisualItemModelC1Ev @ 1962 NONAME ABSENT
+	_ZN27QDeclarativeVisualItemModelC2Ev @ 1963 NONAME ABSENT
 	_ZN28QDeclarativeCustomParserNodeC1ERKS_ @ 1964 NONAME
 	_ZN28QDeclarativeCustomParserNodeC1Ev @ 1965 NONAME
 	_ZN28QDeclarativeCustomParserNodeC2ERKS_ @ 1966 NONAME
@@ -3306,7 +3306,7 @@ EXPORTS
 	_ZThn8_N23QDeclarativePaintedItemD0Ev @ 3305 NONAME
 	_ZThn8_N23QDeclarativePaintedItemD1Ev @ 3306 NONAME
 	_ZThn8_N24QDeclarativeParentChange12isReversableEv @ 3307 NONAME
-	_ZThn8_N24QDeclarativeParentChange13copyOriginalsEP23QDeclarativeActionEvent @ 3308 NONAME
+	_ZThn8_N24QDeclarativeParentChange13copyOriginalsEP23QDeclarativeActionEvent @ 3308 NONAME ABSENT
 	_ZThn8_N24QDeclarativeParentChange13saveOriginalsEv @ 3309 NONAME
 	_ZThn8_N24QDeclarativeParentChange17saveCurrentValuesEv @ 3310 NONAME
 	_ZThn8_N24QDeclarativeParentChange6rewindEv @ 3311 NONAME
@@ -3578,4 +3578,28 @@ EXPORTS
 	_ZThn8_N23QDeclarativeConnections10classBeginEv @ 3577 NONAME
 	_ZThn8_N23QDeclarativePaintedItem10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 3578 NONAME
 	_ZThn8_N24QDeclarativeWorkerScript10classBeginEv @ 3579 NONAME
+	_ZN16QDeclarativeItem18keyPressPreHandlerEP9QKeyEvent @ 3580 NONAME
+	_ZN16QDeclarativeItem20keyReleasePreHandlerEP9QKeyEvent @ 3581 NONAME
+	_ZN16QDeclarativeItem21inputMethodPreHandlerEP17QInputMethodEvent @ 3582 NONAME
+	_ZN18QDeclarativeLoader17componentCompleteEv @ 3583 NONAME
+	_ZN18QDeclarativeLoader6loadedEv @ 3584 NONAME
+	_ZN20QDeclarativePathView21decrementCurrentIndexEv @ 3585 NONAME
+	_ZN20QDeclarativePathView21incrementCurrentIndexEv @ 3586 NONAME
+	_ZN21QDeclarativeFlickable17setFlickDirectionENS_18FlickableDirectionE @ 3587 NONAME
+	_ZN21QDeclarativeFlickable21setFlickableDirectionENS_18FlickableDirectionE @ 3588 NONAME
+	_ZN21QDeclarativeFlickable23movingVerticallyChangedEv @ 3589 NONAME
+	_ZN21QDeclarativeFlickable25flickableDirectionChangedEv @ 3590 NONAME
+	_ZN21QDeclarativeFlickable25flickingVerticallyChangedEv @ 3591 NONAME
+	_ZN21QDeclarativeFlickable25movingHorizontallyChangedEv @ 3592 NONAME
+	_ZN21QDeclarativeFlickable27flickingHorizontallyChangedEv @ 3593 NONAME
+	_ZN27QDeclarativeVisualDataModelC1EP19QDeclarativeContextP7QObject @ 3594 NONAME
+	_ZN27QDeclarativeVisualDataModelC2EP19QDeclarativeContextP7QObject @ 3595 NONAME
+	_ZN27QDeclarativeVisualItemModelC1EP7QObject @ 3596 NONAME
+	_ZN27QDeclarativeVisualItemModelC2EP7QObject @ 3597 NONAME
+	_ZNK21QDeclarativeFlickable18flickableDirectionEv @ 3598 NONAME
+	_ZNK21QDeclarativeFlickable18isMovingVerticallyEv @ 3599 NONAME
+	_ZNK21QDeclarativeFlickable20isFlickingVerticallyEv @ 3600 NONAME
+	_ZNK21QDeclarativeFlickable20isMovingHorizontallyEv @ 3601 NONAME
+	_ZNK21QDeclarativeFlickable22isFlickingHorizontallyEv @ 3602 NONAME
+	_ZThn16_N18QDeclarativeLoader17componentCompleteEv @ 3603 NONAME
 

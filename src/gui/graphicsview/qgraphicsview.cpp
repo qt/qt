@@ -2688,6 +2688,11 @@ void QGraphicsView::setupViewport(QWidget *widget)
     if (d->scene && !d->scene->d_func()->allItemsIgnoreTouchEvents)
         widget->setAttribute(Qt::WA_AcceptTouchEvents);
 
+    if (d->scene) {
+        foreach (Qt::GestureType gesture, d->scene->d_func()->grabbedGestures.keys())
+            widget->grabGesture(gesture);
+    }
+
     widget->setAcceptDrops(acceptDrops());
 }
 

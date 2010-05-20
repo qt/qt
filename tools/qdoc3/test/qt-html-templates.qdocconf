@@ -1,4 +1,8 @@
-HTML.stylesheets        = style/style.css
+HTML.stylesheets        =  style/style_ie6.css \
+									style/style_ie7.css \
+									style/style_ie8.css \
+									style/style.css
+									
 HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <div id=\"nav-logo\">\n" \
 			  "      <a href=\"index.html\">Home</a></div>\n" \

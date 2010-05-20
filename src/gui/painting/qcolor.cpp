@@ -133,7 +133,7 @@ QT_BEGIN_NAMESPACE
     QColor is platform and device independent. The QColormap class
     maps the color to the hardware.
 
-    For more information about painting in general, see \l{The Paint
+    For more information about painting in general, see the \l{Paint
     System} documentation.
 
     \tableofcontents
@@ -2523,7 +2523,7 @@ QDebug operator<<(QDebug dbg, const QColor &c)
 
     Writes the \a color to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &stream, const QColor &color)
 {
@@ -2559,7 +2559,7 @@ QDataStream &operator<<(QDataStream &stream, const QColor &color)
 
     Reads the \a color from the \a stream.
 
-    \sa { Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &stream, QColor &color)
 {

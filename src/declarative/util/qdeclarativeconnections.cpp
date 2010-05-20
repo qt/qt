@@ -262,7 +262,7 @@ void QDeclarativeConnections::connectSignals()
         if (prop.isValid() && (prop.type() & QDeclarativeProperty::SignalProperty)) {
             QDeclarativeBoundSignal *signal =
                 new QDeclarativeBoundSignal(target(), prop.method(), this);
-            signal->setExpression(new QDeclarativeExpression(qmlContext(this), script, 0));
+            signal->setExpression(new QDeclarativeExpression(qmlContext(this), 0, script));
             d->boundsignals += signal;
         } else {
             if (!d->ignoreUnknownSignals)

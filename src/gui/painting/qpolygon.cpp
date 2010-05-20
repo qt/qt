@@ -719,7 +719,7 @@ QPolygon::operator QVariant() const
     Writes the given \a polygon to the given \a stream, and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &s, const QPolygon &a)
 {
@@ -735,7 +735,7 @@ QDataStream &operator<<(QDataStream &s, const QPolygon &a)
     Reads a polygon from the given \a stream into the given \a
     polygon, and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &s, QPolygon &a)
 {
@@ -755,7 +755,7 @@ QDataStream &operator>>(QDataStream &s, QPolygon &a)
     Writes the given \a polygon to the given \a stream, and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QPolygonF &a)
@@ -776,7 +776,7 @@ QDataStream &operator<<(QDataStream &s, const QPolygonF &a)
     Reads a polygon from the given \a stream into the given \a
     polygon, and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QPolygonF &a)

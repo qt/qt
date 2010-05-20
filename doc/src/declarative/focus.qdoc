@@ -67,7 +67,12 @@ item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 \code
 Item {
     Item {
-        Keys.onPressed: if (event.key == Qt.Key_A) { console.log('Key A was pressed'); event.accepted = true }
+        Keys.onPressed: {
+            if (event.key == Qt.Key_A) { 
+                console.log('Key A was pressed');
+                event.accepted = true;
+            }
+        }
         Rectangle {}
     }
 }

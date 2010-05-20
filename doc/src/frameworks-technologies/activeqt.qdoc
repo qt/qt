@@ -58,6 +58,7 @@
 
     \ingroup qt-activex
     \keyword ActiveQt
+    \target ActiveQt Framework
 
     Qt's ActiveX and COM support allows Qt for Windows developers to:
 

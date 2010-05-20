@@ -42,17 +42,17 @@
 /*!
     \page qmlruntime.html
     \title Qt Declarative UI Runtime
-    \keyword qml runtime
+    \keyword QML Viewer
     \ingroup qttools
 
     This page documents the \e{Declarative UI Runtime} for the Qt GUI
-    toolkit, and the \QQL which can be used to run apps
-    written for the runtime. The \QQL reads a declarative
+    toolkit, and the \QQV which can be used to run apps
+    written for the runtime. The \QQV reads a declarative
     user interface definition (\c .qml) file and displays the user interface it describes.
 
     QML is a runtime, as you can run plain QML files which pull in their required modules.
     To run apps with the QML runtime, you can either start the runtime
-    from your own application (using a QDeclarativeView) or with the simple \QQL.
+    from your own application (using a QDeclarativeView) or with the simple \QQV.
     The launcher can be installed in a production environment, assuming that it is not already
     present in the system. It is generally packaged alongside Qt.
 
@@ -61,16 +61,16 @@
     \list
     \o Write your own Qt application including a QDeclarative view and deploy it the same as
     any other Qt application (not discussed further on this page), or
-    \o Write a main QML file for your application, and run your application using the included \QQL.
+    \o Write a main QML file for your application, and run your application using the included \QQV.
     \endlist
 
-    To run an application with the \QQL, pass the filename as an argument:
+    To run an application with the \QQV, pass the filename as an argument:
 
     \code
-    qml myQmlFile.qml
+    qmlviewer myQmlFile.qml
     \endcode
 
-    Deploying a QML application via the \QQL allows for QML only deployments, but can also
+    Deploying a QML application via the \QQV allows for QML only deployments, but can also
     include custom C++ modules just as easily. Below is an example of how you might structure
     a complex application deployed via the QML runtime, it is a listing of the files that would
     be included in the deployment package.
@@ -92,8 +92,8 @@
     as the appropriate module file is chosen based on platform naming conventions. The C++ 
     modules must contain a QDeclarativeExtentionPlugin subclass.
 
-    The application would be executed either with your own application, the command 'qml MyApp.qml' or by 
-    opening the  file if your system has the \QQL registered as the handler for QML files. The MyApp.qml file would have access
+    The application would be executed either with your own application, the command 'qmlviewer MyApp.qml' or by
+    opening the file if your system has the \QQV registered as the handler for QML files. The MyApp.qml file would have access
     to all of the deployed types using the import statements such as the following:
 
     \code
@@ -101,15 +101,15 @@
     import "OtherModule" 1.0 as Other
     \endcode
 
-    \section1 Qt QML Launcher functionality
-    The \QQL implements some additional functionality to help it supporting
+    \section1 Qt QML Viewer functionality
+    The \QQV implements some additional functionality to help it supporting
     myriad applications. If you implement your own application, you may also wish to reimplement
     some or all of this functionality. However, much of this functionality is intended to aid the prototyping of
     QML applications and may not be necessary for a deployed application.
 
     \section2 Options
 
-    When run with the \c -help option, \c qml shows available options.
+    When run with the \c -help option, \c qmlviewer shows available options.
 
     \section2 Translations
 

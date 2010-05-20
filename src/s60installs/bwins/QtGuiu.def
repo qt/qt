@@ -2125,7 +2125,7 @@ EXPORTS
 	?addText@QPainterPath@@QAEXMMABVQFont@@ABVQString@@@Z @ 2124 NONAME ; void QPainterPath::addText(float, float, class QFont const &, class QString const &)
 	?addToGroup@QGraphicsItemGroup@@QAEXPAVQGraphicsItem@@@Z @ 2125 NONAME ; void QGraphicsItemGroup::addToGroup(class QGraphicsItem *)
 	?addToIndex@QGraphicsItem@@IAEXXZ @ 2126 NONAME ; void QGraphicsItem::addToIndex(void)
-	?addToPolygon@QBezier@@QBEXPAVQPolygonF@@@Z @ 2127 NONAME ; void QBezier::addToPolygon(class QPolygonF *) const
+	?addToPolygon@QBezier@@QBEXPAVQPolygonF@@@Z @ 2127 NONAME ABSENT ; void QBezier::addToPolygon(class QPolygonF *) const
 	?addToPolygonIterative@QBezier@@QBEXPAVQPolygonF@@@Z @ 2128 NONAME ABSENT ; void QBezier::addToPolygonIterative(class QPolygonF *) const
 	?addToPolygonMixed@QBezier@@QBEXPAVQPolygonF@@@Z @ 2129 NONAME ABSENT ; void QBezier::addToPolygonMixed(class QPolygonF *) const
 	?addToolBar@QMainWindow@@QAEPAVQToolBar@@ABVQString@@@Z @ 2130 NONAME ; class QToolBar * QMainWindow::addToolBar(class QString const &)
@@ -3207,7 +3207,7 @@ EXPORTS
 	?cursorWordForward@QLineControl@@QAEX_N@Z @ 3206 NONAME ; void QLineControl::cursorWordForward(bool)
 	?cursorWordForward@QLineEdit@@QAEX_N@Z @ 3207 NONAME ; void QLineEdit::cursorWordForward(bool)
 	?curveThreshold@QPainterPathStroker@@QBEMXZ @ 3208 NONAME ; float QPainterPathStroker::curveThreshold(void) const
-	?curveThreshold@QStroker@@QBEMXZ @ 3209 NONAME ; float QStroker::curveThreshold(void) const
+	?curveThreshold@QStroker@@QBEMXZ @ 3209 NONAME ABSENT ; float QStroker::curveThreshold(void) const
 	?customButtonClicked@QWizard@@IAEXH@Z @ 3210 NONAME ; void QWizard::customButtonClicked(int)
 	?customColor@QColorDialog@@SAIH@Z @ 3211 NONAME ; unsigned int QColorDialog::customColor(int)
 	?customContextMenuRequested@QWidget@@IAEXABVQPoint@@@Z @ 3212 NONAME ; void QWidget::customContextMenuRequested(class QPoint const &)
@@ -8769,7 +8769,7 @@ EXPORTS
 	?setCursorWidth@QTextEdit@@QAEXH@Z @ 8768 NONAME ; void QTextEdit::setCursorWidth(int)
 	?setCursor_sys@QWidgetPrivate@@QAEXABVQCursor@@@Z @ 8769 NONAME ; void QWidgetPrivate::setCursor_sys(class QCursor const &)
 	?setCurveThreshold@QPainterPathStroker@@QAEXM@Z @ 8770 NONAME ; void QPainterPathStroker::setCurveThreshold(float)
-	?setCurveThreshold@QStroker@@QAEXM@Z @ 8771 NONAME ; void QStroker::setCurveThreshold(float)
+	?setCurveThreshold@QStroker@@QAEXM@Z @ 8771 NONAME ABSENT ; void QStroker::setCurveThreshold(float)
 	?setCustomColor@QColorDialog@@SAXHI@Z @ 8772 NONAME ; void QColorDialog::setCustomColor(int, unsigned int)
 	?setDashOffset@QDashStroker@@QAEXM@Z @ 8773 NONAME ; void QDashStroker::setDashOffset(float)
 	?setDashOffset@QPainterPathStroker@@QAEXM@Z @ 8774 NONAME ; void QPainterPathStroker::setDashOffset(float)
@@ -10990,7 +10990,7 @@ EXPORTS
 	?toPointF@QVector2D@@QBE?AVQPointF@@XZ @ 10989 NONAME ; class QPointF QVector2D::toPointF(void) const
 	?toPointF@QVector3D@@QBE?AVQPointF@@XZ @ 10990 NONAME ; class QPointF QVector3D::toPointF(void) const
 	?toPointF@QVector4D@@QBE?AVQPointF@@XZ @ 10991 NONAME ; class QPointF QVector4D::toPointF(void) const
-	?toPolygon@QBezier@@QBE?AVQPolygonF@@XZ @ 10992 NONAME ; class QPolygonF QBezier::toPolygon(void) const
+	?toPolygon@QBezier@@QBE?AVQPolygonF@@XZ @ 10992 NONAME ABSENT ; class QPolygonF QBezier::toPolygon(void) const
 	?toPolygon@QPolygonF@@QBE?AVQPolygon@@XZ @ 10993 NONAME ; class QPolygon QPolygonF::toPolygon(void) const
 	?toPrevious@QDataWidgetMapper@@QAEXXZ @ 10994 NONAME ; void QDataWidgetMapper::toPrevious(void)
 	?toReversed@QPainterPath@@QBE?AV1@XZ @ 10995 NONAME ; class QPainterPath QPainterPath::toReversed(void) const
@@ -12800,4 +12800,22 @@ EXPORTS
 	?iconName@QIconEngineV2@@QAE?AVQString@@XZ @ 12799 NONAME ; class QString QIconEngineV2::iconName(void)
 	?updateRectF@QGraphicsViewPrivate@@QAE_NABVQRectF@@@Z @ 12800 NONAME ; bool QGraphicsViewPrivate::updateRectF(class QRectF const &)
 	?updateRegion@QGraphicsViewPrivate@@QAE_NABVQRectF@@ABVQTransform@@@Z @ 12801 NONAME ; bool QGraphicsViewPrivate::updateRegion(class QRectF const &, class QTransform const &)
+	?totalUsed@QPixmapCache@@SAHXZ @ 12802 NONAME ; int QPixmapCache::totalUsed(void)
+	?allPixmaps@QPixmapCache@@SA?AV?$QList@U?$QPair@VQString@@VQPixmap@@@@@@XZ @ 12803 NONAME ; class QList<struct QPair<class QString, class QPixmap> > QPixmapCache::allPixmaps(void)
+	?flushDetachedPixmaps@QPixmapCache@@SAXXZ @ 12804 NONAME ; void QPixmapCache::flushDetachedPixmaps(void)
+	??0QImageTextureGlyphCache@@QAE@W4Type@QFontEngineGlyphCache@@ABVQTransform@@@Z @ 12805 NONAME ; QImageTextureGlyphCache::QImageTextureGlyphCache(enum QFontEngineGlyphCache::Type, class QTransform const &)
+	??1QImageTextureGlyphCache@@UAE@XZ @ 12806 NONAME ; QImageTextureGlyphCache::~QImageTextureGlyphCache(void)
+	??_EQImageTextureGlyphCache@@UAE@I@Z @ 12807 NONAME ; QImageTextureGlyphCache::~QImageTextureGlyphCache(unsigned int)
+	?addToPolygon@QBezier@@QBEXPAVQPolygonF@@M@Z @ 12808 NONAME ; void QBezier::addToPolygon(class QPolygonF *, float) const
+	?createTextureData@QImageTextureGlyphCache@@UAEXHH@Z @ 12809 NONAME ; void QImageTextureGlyphCache::createTextureData(int, int)
+	?curveThreshold@QStrokerOps@@QBEMXZ @ 12810 NONAME ; float QStrokerOps::curveThreshold(void) const
+	?fillTexture@QImageTextureGlyphCache@@UAEXABUCoord@QTextureGlyphCache@@I@Z @ 12811 NONAME ; void QImageTextureGlyphCache::fillTexture(struct QTextureGlyphCache::Coord const &, unsigned int)
+	?glyphMargin@QImageTextureGlyphCache@@UBEHXZ @ 12812 NONAME ; int QImageTextureGlyphCache::glyphMargin(void) const
+	?image@QImageTextureGlyphCache@@QBEABVQImage@@XZ @ 12813 NONAME ; class QImage const & QImageTextureGlyphCache::image(void) const
+	?resizeTextureData@QImageTextureGlyphCache@@UAEXHH@Z @ 12814 NONAME ; void QImageTextureGlyphCache::resizeTextureData(int, int)
+	?setCurveThreshold@QStrokerOps@@QAEXM@Z @ 12815 NONAME ; void QStrokerOps::setCurveThreshold(float)
+	?setCurveThresholdFromTransform@QStrokerOps@@QAEXABVQTransform@@@Z @ 12816 NONAME ; void QStrokerOps::setCurveThresholdFromTransform(class QTransform const &)
+	?setUpdateClip@QGraphicsViewPrivate@@QAEXPAVQGraphicsItem@@@Z @ 12817 NONAME ; void QGraphicsViewPrivate::setUpdateClip(class QGraphicsItem *)
+	?toPolygon@QBezier@@QBE?AVQPolygonF@@M@Z @ 12818 NONAME ; class QPolygonF QBezier::toPolygon(float) const
+	?updatePaintedViewBoundingRects@QGraphicsItemPrivate@@QAEX_N@Z @ 12819 NONAME ; void QGraphicsItemPrivate::updatePaintedViewBoundingRects(bool)
 

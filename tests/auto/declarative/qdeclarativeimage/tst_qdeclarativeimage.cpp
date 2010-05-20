@@ -400,7 +400,7 @@ T *tst_qdeclarativeimage::findItem(QGraphicsObject *parent, const QString &objec
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
-                QDeclarativeExpression e(qmlContext(item), "index", item);
+                QDeclarativeExpression e(qmlContext(item), item, "index");
                 if (e.evaluate().toInt() == index)
                     return static_cast<T*>(item);
             } else {
