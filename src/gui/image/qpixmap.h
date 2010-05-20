@@ -271,9 +271,7 @@ private:
     friend class QX11PaintEngine;
     friend class QCoreGraphicsPaintEngine;
     friend class QWidgetPrivate;
-    friend class QRasterPaintEngine;
     friend class QRasterBuffer;
-    friend class QPixmapCacheEntry;
 #if !defined(QT_NO_DATASTREAM)
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
 #endif
