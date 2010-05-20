@@ -52,6 +52,9 @@ QtGui
  - QPainter
 	* [QTBUG-10421] Fixed WebKit-specific justification bug for text containing 
        more than one script.
+
+ - QRegion
+    * [QTBUG-7699] Prevented crash on large x-coordinates.
 	   
  - QTextEdit
 	* [QTBUG-9599] Fixed crash when copying the current text cursor  as a result 
@@ -64,8 +67,17 @@ QtGui
  - QTextLayout
     * [QTBUG-9074] Fixed performance regression that was introduced in Qt 4.6.0.
 
+ - QTransform
+    * [QTBUG-8557] Fixed bug in QTransform::type() potentially occuring
+      after using operator/ or operator* or their overloads.
+
  - Improved scrolling horizontally with a mouse wheel over sliders.
  - [QTBUG-7451] Gestures respect panels on QGraphicsView.
+
+QtOpenGL
+--
+ - QGLWidget
+   * [QTBUG-8753] Worked around driver bug causing clipping errors on the N900.
 
 QtDBus
 ------
