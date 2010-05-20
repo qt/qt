@@ -217,6 +217,7 @@ private:
             const QPoint &globalPos,
             Qt::MouseButton button,
             Qt::KeyboardModifiers modifiers);
+    void processTouchEvent(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
