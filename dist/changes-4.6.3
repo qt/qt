@@ -40,8 +40,8 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QXmlStreamReader
+    * [QTBUG-9196] fixed crash when parsing
 
 QtGui
 -----
@@ -82,8 +82,13 @@ QtSql
 QtXml
 -----
 
- - foo
-    * bar
+ - [QTBUG-8398] QDom: prevent infinite loop when cloning a DTD
+
+QtXmlPatterns
+-------------
+- [QTBUG-8920] fixed crash with anonymous types in XsdSchemaChecker
+- [QTBUG-8394] include/import/redefine schemas only once
+- QXmlSchema: fix crash with referencing elements
 
 Qt Plugins
 ----------
