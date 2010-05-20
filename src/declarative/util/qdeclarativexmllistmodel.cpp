@@ -423,6 +423,7 @@ public:
     int highestRole;
     QNetworkReply *reply;
     QDeclarativeXmlListModel::Status status;
+    QString errorString;
     qreal progress;
     int queryId;
     QStringList keyRoleResultsCache;
@@ -495,10 +496,11 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     </rss>
     \endcode
 
-    Then it could be used to create the following model:
+    A XmlListModel could create a model from this data, like this:
 
     \qml
     XmlListModel {
+        id: xmlModel
         source: "http://www.mysite.com/feed.xml"
         query: "/rss/channel/item"
         XmlRole { name: "title"; query: "title/string()" }
@@ -510,6 +512,16 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     a model item for each \c <item> in the XML document. The XmlRole objects define the
     model item attributes; here, each model item will have \c title and \c pubDate 
     attributes that match the \c title and \c pubDate values of its corresponding \c <item>.
+
+    The model could be used in a ListView, like this:
+
+    \qml
+    ListView {
+        width: 180; height: 300
+        model: xmlModel
+        delegate: Text { title + " (" + pubDate + ")" }
+    }
+    \endqml
 
 
     \section2 Using key XML roles
@@ -722,7 +734,8 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     \o XmlListModel.Null - No XML data has been set for this model.
     \o XmlListModel.Ready - The XML data has been loaded into the model.
     \o XmlListModel.Loading - The model is in the process of reading and loading XML data.
-    \o XmlListModel.Error - An error occurred while the model was loading.
+    \o XmlListModel.Error - An error occurred while the model was loading. See errorString() for details
+       about the error.
     \endlist
 
     \sa progress
@@ -753,6 +766,12 @@ qreal QDeclarativeXmlListModel::progress() const
 {
     Q_D(const QDeclarativeXmlListModel);
     return d->progress;
+}
+
+QString QDeclarativeXmlListModel::errorString() const
+{
+    Q_D(const QDeclarativeXmlListModel);
+    return d->errorString;
 }
 
 void QDeclarativeXmlListModel::classBegin()
@@ -807,6 +826,7 @@ void QDeclarativeXmlListModel::reload()
         d->queryId = globalXmlQuery()->doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects, d->keyRoleResultsCache);
         d->progress = 1.0;
         d->status = Loading;
+        d->errorString.clear();
         emit progressChanged(d->progress);
         emit statusChanged(d->status);
         return;
@@ -816,6 +836,7 @@ void QDeclarativeXmlListModel::reload()
         d->queryId = XMLLISTMODEL_CLEAR_ID;
         d->progress = 1.0;
         d->status = Loading;
+        d->errorString.clear();
         emit progressChanged(d->progress);
         emit statusChanged(d->status);
         QTimer::singleShot(0, this, SLOT(dataCleared()));
@@ -824,6 +845,7 @@ void QDeclarativeXmlListModel::reload()
 
     d->progress = 0.0;
     d->status = Loading;
+    d->errorString.clear();
     emit progressChanged(d->progress);
     emit statusChanged(d->status);
 
@@ -854,6 +876,7 @@ void QDeclarativeXmlListModel::requestFinished()
     d->redirectCount = 0;
 
     if (d->reply->error() != QNetworkReply::NoError) {
+        d->errorString = d->reply->errorString();
         disconnect(d->reply, 0, this, 0);
         d->reply->deleteLater();
         d->reply = 0;
@@ -919,6 +942,7 @@ void QDeclarativeXmlListModel::queryCompleted(const QDeclarativeXmlQueryResult &
     d->data = result.data;
     d->keyRoleResultsCache = result.keyRoleResultsCache;
     d->status = Ready;
+    d->errorString.clear();
     d->queryId = -1;
 
     bool hasKeys = false;
