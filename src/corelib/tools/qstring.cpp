@@ -6195,8 +6195,10 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     if (simple)
         return;
 
-    QString &s = *data;
-    if (version != UNICODE_DATA_VERSION) {
+    if (version == QChar::Unicode_Unassigned) {
+        version = UNICODE_DATA_VERSION;
+    } else if (version != UNICODE_DATA_VERSION) {
+        QString &s = *data;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
