@@ -136,7 +136,7 @@ For example, from your build directory, run:
 
 \section2 C++ Extensions
 \list
-\o \l{declarative/cppextensions/referenceexamples}{Reference examples} (discussed in \l {Extending QML in C++})
+\o \l{declarative-cppextensions-reference.html}{Reference examples} (discussed in \l {Extending QML in C++})
 \o \l{declarative/cppextensions/plugins}{Plugins}
 \o \l{declarative/cppextensions/qgraphicslayouts}{QGraphicsLayouts}
 \o \l{declarative/cppextensions/qwidgets}{QWidgets}

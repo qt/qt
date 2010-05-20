@@ -71,8 +71,31 @@
 */
 
 /*!
-    \title Reference examples
-    \example declarative/cppextensions/referenceexamples
+    \page declarative-cppextensions-reference.html
+    \title C++ Extensions - Reference examples
+
+    These examples show how QML can be extended from C++ in various ways. 
+    
+    The code for these examples is used throughout the \l {Extending QML in C++} reference
+    documentation, which highlights the main principles demonstrated in each example.
+
+    Furthermore, here are additional pages that discuss each example in detail:
+
+    \list
+    \o \l {declarative/cppextensions/referenceexamples/adding}{Adding Types}
+    \o \l {declarative/cppextensions/referenceexamples/properties}{Object and List Property Types}
+    \o \l {declarative/cppextensions/referenceexamples/coercion}{Inheritance and Coercion}
+    \o \l {declarative/cppextensions/referenceexamples/default}{Default Property}
+    \o \l {declarative/cppextensions/referenceexamples/grouped}{Grouped Properties}
+    \o \l {declarative/cppextensions/referenceexamples/attached}{Attached Properties}
+    \o \l {declarative/cppextensions/referenceexamples/signal}{Signal Support}
+    \o \l {declarative/cppextensions/referenceexamples/valuesource}{Property Value Source}
+    \o \l {declarative/cppextensions/referenceexamples/binding}{Binding}
+    \endlist
+
+    \note These examples all print information to the console to demonstrate the concepts presented.
+    Ensure that you are able to view the application output when running these examples.
+    For example, the dbgView tool on Windows can be used to display application output.
 */
 
 /*!
