@@ -1536,6 +1536,43 @@ public:
     inline void reset() { QStandardItemModel::reset(); }
 };
 
+class ResetObserver : public QObject
+{
+  QItemSelectionModel * const m_selectionModel;
+  QItemSelection m_selection;
+  Q_OBJECT
+public:
+  ResetObserver(QItemSelectionModel *selectionModel)
+    : m_selectionModel(selectionModel)
+  {
+    connect(selectionModel->model(), SIGNAL(modelAboutToBeReset()),SLOT(modelAboutToBeReset()));
+    connect(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(selectionChanged(QItemSelection,QItemSelection)));
+    connect(selectionModel->model(), SIGNAL(modelReset()),SLOT(modelReset()));
+  }
+
+private slots:
+  void modelAboutToBeReset()
+  {
+    m_selection = m_selectionModel->selection();
+    foreach(const QItemSelectionRange &range, m_selection)
+    {
+      QVERIFY(range.isValid());
+    }
+  }
+
+  void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+  {
+    qDebug() << deselected << selected;
+    QCOMPARE(m_selection, deselected);
+    m_selection.clear();
+  }
+
+  void modelReset()
+  {
+    QVERIFY(m_selectionModel->selection().isEmpty());
+  }
+};
+
 void tst_QItemSelectionModel::resetModel()
 {
     MyStandardItemModel model(20, 20);
@@ -1555,11 +1592,13 @@ void tst_QItemSelectionModel::resetModel()
 
     view.selectionModel()->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
 
-    QCOMPARE(spy.count(), 2);
-    QCOMPARE(spy.at(1).count(), 2);
+    // We get this signal three times. Twice in this test method and once because the source reset causes the current selection to
+    // be deselected.
+    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.at(2).count(), 2);
     // make sure we don't get an "old selection"
-    QCOMPARE(spy.at(1).at(1).userType(), qMetaTypeId<QItemSelection>());
-    QVERIFY(qvariant_cast<QItemSelection>(spy.at(1).at(1)).isEmpty());
+    QCOMPARE(spy.at(2).at(1).userType(), qMetaTypeId<QItemSelection>());
+    QVERIFY(qvariant_cast<QItemSelection>(spy.at(2).at(1)).isEmpty());
 }
 
 void tst_QItemSelectionModel::removeRows_data()
