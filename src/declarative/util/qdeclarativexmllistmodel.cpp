@@ -42,7 +42,7 @@
 #include "private/qdeclarativexmllistmodel_p.h"
 
 #include <qdeclarativecontext.h>
-#include <qdeclarativeengine.h>
+#include <qdeclarativeengine_p.h>
 
 #include <QDebug>
 #include <QStringList>
@@ -724,6 +724,42 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
         reload();
         emit namespaceDeclarationsChanged();
     }
+}
+
+/*!
+    \qmlmethod object XmlListModel::get(int index)
+
+    Returns the item at \a index in the model.
+
+    For example, for a model like this:
+
+    \qml
+    XmlListModel {
+        id: model
+        source: "http://mysite.com/feed.xml"
+        query: "/feed/entry"
+        XmlRole { name: "title"; query: "title/string()" }
+    }
+    \qml
+
+    This will access the \c title value for the first item in the model:
+
+    \qml
+        var title = model.get(0).title;
+    \qml
+*/
+QScriptValue QDeclarativeXmlListModel::get(int index) const
+{
+    Q_D(const QDeclarativeXmlListModel);
+
+    QScriptEngine *sengine = QDeclarativeEnginePrivate::getScriptEngine(qmlContext(this)->engine());
+    if (index < 0 || index >= count())
+        return sengine->undefinedValue();
+
+    QScriptValue sv = sengine->newObject();
+    for (int i=0; i<d->roleObjects.count(); i++) 
+        sv.setProperty(d->roleObjects[i]->name(), qScriptValueFromValue(sengine, d->data.value(i).value(index)));
+    return sv;    
 }
 
 /*!
