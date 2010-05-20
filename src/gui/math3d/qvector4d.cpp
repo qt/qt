@@ -538,7 +538,7 @@ QDebug operator<<(QDebug dbg, const QVector4D &vector)
     Writes the given \a vector to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
@@ -555,7 +555,7 @@ QDataStream &operator<<(QDataStream &stream, const QVector4D &vector)
     Reads a 4D vector from the given \a stream into the given \a vector
     and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QVector4D &vector)

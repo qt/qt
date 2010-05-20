@@ -53,7 +53,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 
     QGraphicsView visualizes the contents of a QGraphicsScene in a scrollable
     viewport. To create a scene with geometrical items, see QGraphicsScene's
-    documentation. QGraphicsView is part of \l{The Graphics View Framework}.
+    documentation. QGraphicsView is part of the \l{Graphics View Framework}.
 
     To visualize a scene, you start by constructing a QGraphicsView object,
     passing the address of the scene you want to visualize to QGraphicsView's
