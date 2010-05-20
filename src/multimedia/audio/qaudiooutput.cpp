@@ -369,8 +369,17 @@ int QAudioOutput::notifyInterval() const
 }
 
 /*!
-    Returns the amount of audio data processed since start()
+    Returns the amount of audio data processed by the class since start()
     was called in microseconds.
+
+    Note: The amount of audio data played can be determined by subtracting
+    the microseconds of audio data still in the systems audio buffer.
+
+    \code
+    qint64 bytesInBuffer = bufferSize() - bytesFree();
+    qint64 usInBuffer = (qint64)(1000000) * bytesInBuffer / ( channels() * sampleSize() / 8 ) / frequency();
+    qint64 usPlayed = processedUSecs() - usInBuffer;
+    \endcode
 */
 
 qint64 QAudioOutput::processedUSecs() const
