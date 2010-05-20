@@ -54,8 +54,6 @@ QtCore
     * Significantly improved performance of the type() function
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
- - QStateMachine
-    * [QTBUG-8842] Reset history states when (re)starting machine
  - QXmlStreamReader
     * [QTBUG-9196] fixed crash when parsing
  - QTimer
@@ -126,6 +124,10 @@ QtGui
       operators (intersect, subtract, unite) to prevent numerical
       stability issues.
 
+ - QPixmap
+    * [QTBUG-4149] Fixed QPixmap::grabWidget() on widgets that have not yet
+      been shown.
+    
  - QPlastiqueStyle
     * [QTBUG-6516] Respect AlternateBase role for list views.
 
@@ -170,6 +172,12 @@ QtScript
  - [QTBUG-3637] Added a wrap option for excluding slots from a QObject binding
  - [QTBUG-6238] Added a function for reporting additional memory cost
  - [QTBUG-6908] Significantly improved performance of qsTr()
+
+QtSvg
+-----
+ - QSvgRenderer
+  * [QTBUG-8264] Fixed rounded rectangles when 'rx' or 'ry' is zero.
+  * [QTBUG-10022] Fixed assert failure when loading an invalid SVG.
 
 QtXmlPatterns
 -------------

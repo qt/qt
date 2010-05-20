@@ -44,6 +44,40 @@
 
 #include "audiodevices.h"
 
+// Utility functions for converting QAudioFormat fields into text
+
+QString toString(QAudioFormat::SampleType sampleType)
+{
+    QString result("Unknown");
+    switch (sampleType) {
+    case QAudioFormat::SignedInt:
+        result = "SignedInt";
+        break;
+    case QAudioFormat::UnSignedInt:
+        result = "UnSignedInt";
+        break;
+    case QAudioFormat::Float:
+        result = "Float";
+        break;
+    }
+    return result;
+}
+
+QString toString(QAudioFormat::Endian endian)
+{
+    QString result("Unknown");
+    switch (endian) {
+    case QAudioFormat::LittleEndian:
+        result = "LittleEndian";
+        break;
+    case QAudioFormat::BigEndian:
+        result = "BigEndian";
+        break;
+    }
+    return result;
+}
+
+
 AudioDevicesBase::AudioDevicesBase(QWidget *parent, Qt::WFlags f)
     : QMainWindow(parent, f)
 {
@@ -67,6 +101,7 @@ AudioTest::AudioTest(QWidget *parent, Qt::WFlags f)
     connect(sampleSizesBox, SIGNAL(activated(int)), SLOT(sampleSizeChanged(int)));
     connect(sampleTypesBox, SIGNAL(activated(int)), SLOT(sampleTypeChanged(int)));
     connect(endianBox, SIGNAL(activated(int)), SLOT(endianChanged(int)));
+    connect(populateTableButton, SIGNAL(clicked()), SLOT(populateTable()));
 
     modeBox->setCurrentIndex(0);
     modeChanged(0);
@@ -81,12 +116,11 @@ AudioTest::~AudioTest()
 void AudioTest::test()
 {
     // tries to set all the settings picked.
-    logOutput->clear();
-    logOutput->append("NOTE: an invalid codec audio/test exists for testing, to get a fail condition.");
+    testResult->clear();
 
     if (!deviceInfo.isNull()) {
         if (deviceInfo.isFormatSupported(settings)) {
-            logOutput->append(tr("Success"));
+            testResult->setText(tr("Success"));
             nearestFreq->setText("");
             nearestChannel->setText("");
             nearestCodec->setText("");
@@ -95,40 +129,23 @@ void AudioTest::test()
             nearestEndian->setText("");
         } else {
             QAudioFormat nearest = deviceInfo.nearestFormat(settings);
-            logOutput->append(tr("Failed"));
+            testResult->setText(tr("Failed"));
             nearestFreq->setText(QString("%1").arg(nearest.frequency()));
             nearestChannel->setText(QString("%1").arg(nearest.channels()));
             nearestCodec->setText(nearest.codec());
             nearestSampleSize->setText(QString("%1").arg(nearest.sampleSize()));
-
-            switch(nearest.sampleType()) {
-                case QAudioFormat::SignedInt:
-                    nearestSampleType->setText("SignedInt");
-                    break;
-                case QAudioFormat::UnSignedInt:
-                    nearestSampleType->setText("UnSignedInt");
-                    break;
-                case QAudioFormat::Float:
-                    nearestSampleType->setText("Float");
-                    break;
-                case QAudioFormat::Unknown:
-                    nearestSampleType->setText("Unknown");
-            }
-            switch(nearest.byteOrder()) {
-                case QAudioFormat::LittleEndian:
-                    nearestEndian->setText("LittleEndian");
-                    break;
-                case QAudioFormat::BigEndian:
-                    nearestEndian->setText("BigEndian");
-            }
+            nearestSampleType->setText(toString(nearest.sampleType()));
+            nearestEndian->setText(toString(nearest.byteOrder()));
         }
     }
     else
-        logOutput->append(tr("No Device"));
+        testResult->setText(tr("No Device"));
 }
 
 void AudioTest::modeChanged(int idx)
 {
+    testResult->clear();
+
     // mode has changed
     if (idx == 0)
         mode = QAudio::AudioInput;
@@ -138,10 +155,15 @@ void AudioTest::modeChanged(int idx)
     deviceBox->clear();
     foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(mode))
         deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
+
+    deviceBox->setCurrentIndex(0);
+    deviceChanged(0);
 }
 
 void AudioTest::deviceChanged(int idx)
 {
+    testResult->clear();
+
     if (deviceBox->count() == 0)
         return;
 
@@ -180,38 +202,68 @@ void AudioTest::deviceChanged(int idx)
 
     sampleTypesBox->clear();
     QList<QAudioFormat::SampleType> sampleTypez = deviceInfo.supportedSampleTypes();
-    for (int i = 0; i < sampleTypez.size(); ++i) {
-        switch(sampleTypez.at(i)) {
-            case QAudioFormat::SignedInt:
-                sampleTypesBox->addItem("SignedInt");
-                break;
-            case QAudioFormat::UnSignedInt:
-                sampleTypesBox->addItem("UnSignedInt");
-                break;
-            case QAudioFormat::Float:
-                sampleTypesBox->addItem("Float");
-                break;
-            case QAudioFormat::Unknown:
-                sampleTypesBox->addItem("Unknown");
-        }
-	if (sampleTypez.size())
-            settings.setSampleType(sampleTypez.at(0));
-    }
+
+    for (int i = 0; i < sampleTypez.size(); ++i)
+        sampleTypesBox->addItem(toString(sampleTypez.at(i)));
+    if (sampleTypez.size())
+        settings.setSampleType(sampleTypez.at(0));
 
     endianBox->clear();
     QList<QAudioFormat::Endian> endianz = deviceInfo.supportedByteOrders();
-    for (int i = 0; i < endianz.size(); ++i) {
-        switch (endianz.at(i)) {
-            case QAudioFormat::LittleEndian:
-                endianBox->addItem("Little Endian");
-                break;
-            case QAudioFormat::BigEndian:
-                endianBox->addItem("Big Endian");
-                break;
-        }
-    }
+    for (int i = 0; i < endianz.size(); ++i)
+        endianBox->addItem(toString(endianz.at(i)));
     if (endianz.size())
         settings.setByteOrder(endianz.at(0));
+
+    allFormatsTable->clearContents();
+}
+
+void AudioTest::populateTable()
+{
+    int row = 0;
+
+    QAudioFormat format;
+    foreach (QString codec, deviceInfo.supportedCodecs()) {
+        format.setCodec(codec);
+        foreach (int frequency, deviceInfo.supportedFrequencies()) {
+            format.setFrequency(frequency);
+            foreach (int channels, deviceInfo.supportedChannels()) {
+                format.setChannels(channels);
+                foreach (QAudioFormat::SampleType sampleType, deviceInfo.supportedSampleTypes()) {
+                    format.setSampleType(sampleType);
+                    foreach (int sampleSize, deviceInfo.supportedSampleSizes()) {
+                        format.setSampleSize(sampleSize);
+                        foreach (QAudioFormat::Endian endian, deviceInfo.supportedByteOrders()) {
+                            format.setByteOrder(endian);
+                            if (deviceInfo.isFormatSupported(format)) {
+                                allFormatsTable->setRowCount(row + 1);
+
+                                QTableWidgetItem *codecItem = new QTableWidgetItem(format.codec());
+                                allFormatsTable->setItem(row, 0, codecItem);
+
+                                QTableWidgetItem *frequencyItem = new QTableWidgetItem(QString("%1").arg(format.frequency()));
+                                allFormatsTable->setItem(row, 1, frequencyItem);
+
+                                QTableWidgetItem *channelsItem = new QTableWidgetItem(QString("%1").arg(format.channels()));
+                                allFormatsTable->setItem(row, 2, channelsItem);
+
+                                QTableWidgetItem *sampleTypeItem = new QTableWidgetItem(toString(format.sampleType()));
+                                allFormatsTable->setItem(row, 3, sampleTypeItem);
+
+                                QTableWidgetItem *sampleSizeItem = new QTableWidgetItem(QString("%1").arg(format.sampleSize()));
+                                allFormatsTable->setItem(row, 4, sampleSizeItem);
+
+                                QTableWidgetItem *byteOrderItem = new QTableWidgetItem(toString(format.byteOrder()));
+                                allFormatsTable->setItem(row, 5, byteOrderItem);
+
+                                ++row;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void AudioTest::freqChanged(int idx)

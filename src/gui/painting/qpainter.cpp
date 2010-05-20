@@ -970,7 +970,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     devices. If the painter is active, device() returns the paint
     device on which the painter paints, and paintEngine() returns the
     paint engine that the painter is currently operating on. For more
-    information, see \l {The Paint System} documentation.
+    information, see the \l {Paint System}.
 
     Sometimes it is desirable to make someone else paint on an unusual
     QPaintDevice. QPainter supports a static function to do this,
@@ -1015,7 +1015,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \o viewport(), window(), worldTransform() make up the painter's coordinate
         transformation system. For more information, see the \l
-        {Coordinate Transformations} section and the \l {The Coordinate
+        {Coordinate Transformations} section and the \l {Coordinate
         System} documentation.
 
     \o hasClipping() tells whether the painter clips at all. (The paint
@@ -1222,7 +1222,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     All the tranformation operations operate on the transformation
     worldTransform(). A matrix transforms a point in the plane to another
     point. For more information about the transformation matrix, see
-    the \l {The Coordinate System} and QTransform documentation.
+    the \l {Coordinate System} and QTransform documentation.
 
     The setWorldTransform() function can replace or add to the currently
     set worldTransform(). The resetTransform() function resets any
@@ -1244,7 +1244,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     logical coordinates, and the worldTransform() is identical with the
     transformation matrix.
 
-    See also \l {The Coordinate System} documentation.
+    See also \l {Coordinate System}
 
     \section1 Clipping
 
@@ -2880,8 +2880,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     functions is safe.
 
     For more information about the coordinate system, transformations
-    and window-viewport conversion, see \l {The Coordinate System}
-    documentation.
+    and window-viewport conversion, see \l {Coordinate System}.
 
     \sa setWorldTransform(), QTransform
 */
@@ -2901,7 +2900,7 @@ void QPainter::setWorldMatrix(const QMatrix &matrix, bool combine)
     preserve the properties of perspective transformations.
 
     \sa {QPainter#Coordinate Transformations}{Coordinate Transformations},
-    {The Coordinate System}
+    {Coordinate System}
 */
 
 const QMatrix &QPainter::worldMatrix() const
@@ -3044,7 +3043,7 @@ void QPainter::setWorldMatrixEnabled(bool enable)
     Returns true if world transformation is enabled; otherwise returns
     false.
 
-    \sa setWorldMatrixEnabled(), worldTransform(), {The Coordinate System}
+    \sa setWorldMatrixEnabled(), worldTransform(), {Coordinate System}
 */
 
 bool QPainter::worldMatrixEnabled() const
@@ -3386,7 +3385,7 @@ void QPainter::drawPath(const QPainterPath &path)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 6
     \endtable
 
-    \sa drawLines(), drawPolyline(), {The Coordinate System}
+    \sa drawLines(), drawPolyline(), {Coordinate System}
 */
 
 /*!
@@ -3433,7 +3432,7 @@ void QPainter::drawPath(const QPainterPath &path)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 7
     \endtable
 
-    \sa drawRects(), drawPolygon(), {The Coordinate System}
+    \sa drawRects(), drawPolygon(), {Coordinate System}
 */
 
 /*!
@@ -3597,7 +3596,7 @@ void QPainter::drawRects(const QRect *rects, int rectCount)
     Draws a single point at the given \a position using the current
     pen's color.
 
-    \sa {The Coordinate System}
+    \sa {Coordinate System}
 */
 
 /*!
@@ -3619,7 +3618,7 @@ void QPainter::drawRects(const QRect *rects, int rectCount)
     Draws the first \a pointCount points in the array \a points using
     the current pen's color.
 
-    \sa {The Coordinate System}
+    \sa {Coordinate System}
 */
 void QPainter::drawPoints(const QPointF *points, int pointCount)
 {
@@ -4225,7 +4224,7 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 9
     \endtable
 
-    \sa drawPie(), {The Coordinate System}
+    \sa drawPie(), {Coordinate System}
 */
 void QPainter::drawEllipse(const QRectF &r)
 {
@@ -4355,7 +4354,7 @@ void QPainter::drawEllipse(const QRect &r)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 10
     \endtable
 
-    \sa drawPie(), drawChord(), {The Coordinate System}
+    \sa drawPie(), drawChord(), {Coordinate System}
 */
 
 void QPainter::drawArc(const QRectF &r, int a, int alen)
@@ -4419,7 +4418,7 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 11
     \endtable
 
-    \sa drawEllipse(), drawChord(), {The Coordinate System}
+    \sa drawEllipse(), drawChord(), {Coordinate System}
 */
 void QPainter::drawPie(const QRectF &r, int a, int alen)
 {
@@ -4488,7 +4487,7 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 12
     \endtable
 
-    \sa drawArc(), drawPie(), {The Coordinate System}
+    \sa drawArc(), drawPie(), {Coordinate System}
 */
 void QPainter::drawChord(const QRectF &r, int a, int alen)
 {
@@ -4779,7 +4778,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 13
     \endtable
 
-    \sa drawLines(), drawPolygon(), {The Coordinate System}
+    \sa drawLines(), drawPolygon(), {Coordinate System}
 */
 void QPainter::drawPolyline(const QPointF *points, int pointCount)
 {
@@ -4918,7 +4917,7 @@ void QPainter::drawPolyline(const QPoint *points, int pointCount)
     \l{Qt::FillRule} for a more detailed description of these fill
     rules.
 
-    \sa  drawConvexPolygon(), drawPolyline(), {The Coordinate System}
+    \sa  drawConvexPolygon(), drawPolyline(), {Coordinate System}
 */
 void QPainter::drawPolygon(const QPointF *points, int pointCount, Qt::FillRule fillRule)
 {
@@ -5069,7 +5068,7 @@ void QPainter::drawPolygon(const QPoint *points, int pointCount, Qt::FillRule fi
     On some platforms (e.g. X11), the drawConvexPolygon() function can
     be faster than the drawPolygon() function.
 
-    \sa drawPolygon(), drawPolyline(), {The Coordinate System}
+    \sa drawPolygon(), drawPolyline(), {Coordinate System}
 */
 
 /*!
@@ -5977,12 +5976,17 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         gf.glyphs = engine.shapedGlyphs(&si);
         gf.chars = engine.layoutData->string.unicode() + si.position;
         gf.num_chars = engine.length(item);
-        gf.width = si.width;
+        if (engine.forceJustification) {
+            for (int j=0; j<gf.glyphs.numGlyphs; ++j)
+                gf.width += gf.glyphs.effectiveAdvance(j);
+        } else {
+            gf.width = si.width;
+        }
         gf.logClusters = engine.logClusters(&si);
 
         drawTextItem(QPointF(x.toReal(), p.y()), gf);
 
-        x += si.width;
+        x += gf.width;
     }
 }
 
@@ -7107,7 +7111,7 @@ bool QPainter::viewTransformEnabled() const
     The default window rectangle is the same as the device's
     rectangle.
 
-    \sa window(), viewTransformEnabled(), {The Coordinate
+    \sa window(), viewTransformEnabled(), {Coordinate
     System#Window-Viewport Conversion}{Window-Viewport Conversion}
 */
 
@@ -7171,7 +7175,7 @@ QRect QPainter::window() const
     The default viewport rectangle is the same as the device's
     rectangle.
 
-    \sa viewport(), viewTransformEnabled() {The Coordinate
+    \sa viewport(), viewTransformEnabled() {Coordinate
     System#Window-Viewport Conversion}{Window-Viewport Conversion}
 */
 
@@ -7255,7 +7259,7 @@ QRect QPainter::viewport() const
     Enables view transformations if \a enable is true, or disables
     view transformations if \a enable is false.
 
-    \sa viewTransformEnabled(), {The Coordinate System#Window-Viewport
+    \sa viewTransformEnabled(), {Coordinate System#Window-Viewport
     Conversion}{Window-Viewport Conversion}
 */
 

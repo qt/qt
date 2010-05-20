@@ -6,11 +6,10 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_creation.cpp
 
-symbian: {
-    DEFINES += SRCDIR=\".\"
-    importFiles.sources = data
-    importFiles.path = 
-    DEPLOYMENT = importFiles
+symbian {
+    data.sources = data
+    data.path = .
+    DEPLOYMENT += data
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

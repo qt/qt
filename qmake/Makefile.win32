@@ -200,7 +200,7 @@ clean::
 	-del symmake.obj
 	-del symmake_abld.obj
 	-del symmake_sbsv2.obj
-        -del symbiancommon.obj
+	-del symbiancommon.obj
 	-del initprojectdeploy_symbian.obj
 	-del registry.obj
 	-del epocroot.obj
@@ -442,7 +442,7 @@ pbuilder_pbx.obj: $(SOURCE_PATH)/qmake/generators/mac/pbuilder_pbx.cpp
 makefiledeps.obj: $(SOURCE_PATH)/qmake/generators/makefiledeps.cpp
 	$(CXX) $(CXXFLAGS) generators/makefiledeps.cpp
 
-metamakefile.obj: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp $(SOURCE_PATH)/qmake/generators/symbian/symbiancommon.obj
+metamakefile.obj: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp
 	$(CXX) $(CXXFLAGS) generators/metamakefile.cpp
 
 xmloutput.obj: $(SOURCE_PATH)/qmake/generators/xmloutput.cpp

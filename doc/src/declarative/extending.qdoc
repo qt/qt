@@ -61,8 +61,11 @@ QML for their own independent use.
 The QML snippet shown above instantiates one \c Person instance and sets
 the \c name and \c shoeSize properties on it.  Everything in QML ultimately comes down
 to either instantiating an object instance, or assigning a property a value.
+
 QML relies heavily on Qt's meta object system and can only instantiate classes
-that derive from QObject.
+that derive from QObject. For visual element types, this will usually mean a subclass
+of QDeclarativeItem; for models used with the view elements, a subclass of QAbstractItemModel;
+and for abitrary objects with properties, a direct subclass of QObject.
 
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must register the C++ types with their corresponding QML names.

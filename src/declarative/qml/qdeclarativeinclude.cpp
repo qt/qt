@@ -140,6 +140,7 @@ void QDeclarativeInclude::finished()
 
         scriptContext->pushScope(m_scope[1]);
         scriptContext->setActivationObject(m_scope[1]);
+        QDeclarativeScriptParser::extractPragmas(code);
 
         m_scriptEngine->evaluate(code, urlString, 1);
 
@@ -230,6 +231,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
             QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
             scriptContext->pushScope(scope);
             scriptContext->setActivationObject(scope);
+            QDeclarativeScriptParser::extractPragmas(code);
 
             engine->evaluate(code, urlString, 1);
 
@@ -256,8 +258,6 @@ QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEn
 {
     if (ctxt->argumentCount() == 0)
         return engine->undefinedValue();
-
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
     QString urlString = ctxt->argument(0).toString();
     QUrl url(ctxt->argument(0).toString());
@@ -291,6 +291,7 @@ QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEn
             QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -4);
             scriptContext->pushScope(scope);
             scriptContext->setActivationObject(scope);
+            QDeclarativeScriptParser::extractPragmas(code);
 
             engine->evaluate(code, urlString, 1);
 

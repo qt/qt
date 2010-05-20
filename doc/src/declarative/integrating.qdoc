@@ -81,7 +81,7 @@ of simple and dynamic elements.
 
 \section2 Adding QML widgets to a QGraphicsScene
 
-If you have an existing UI based on the \l{The Graphics View Framework}{Graphics View Framework},
+If you have an existing UI based on the \l{Graphics View Framework},
 you can integrate QML widgets directly into your QGraphicsScene. Use
 QDeclarativeComponent to create a QGraphicsObject from a QML file, and
 place the graphics object into your scene using \l{QGraphicsScene::addItem()}, or 
@@ -110,7 +110,7 @@ of QML UIs:
 \section2 Loading QGraphicsWidget objects in QML
 
 An alternative approach is to expose your existing QGraphicsWidget objects to 
-QML and construct your scene in QML instead. See the \l {declarative/cppextensions/qgraphicslayouts}{graphics layouts example}
+QML and construct your scene in QML instead. See the \l {declarative-cppextensions-qgraphicslayouts.html}{graphics layouts example}
 which shows how to expose Qt's graphics layout classes to QML in order
 to use QGraphicsWidget with classes like QGraphicsLinearLayout and QGraphicsGridLayout.
 

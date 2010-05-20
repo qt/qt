@@ -73,7 +73,7 @@
         \endlist
     \o \l{Executing SQL Statements}
         \list
-        \o \l{Recommended Use of Data Types in Databases}
+        \o \l{Data Types for Qt-supported Database Systems}
         \endlist
     \o \l{Using the SQL Model Classes}
     \o \l{Presenting Data in a Table View}
@@ -240,8 +240,9 @@
     QVariant::toString() and QVariant::toInt() to convert
     variants to QString and \c int.
 
-    For an overview of the recommended types used with Qt supported
-    Databases, please refer to \l{Recommended Use of Data Types in Databases}{this table}.
+    For an overview of the recommended types for use with Qt-supported
+    Databases, please refer to \l{Data Types for Qt-supported Database
+    Systems} {this table}.
 
     You can iterate back and forth using QSqlQuery::next(),
     QSqlQuery::previous(), QSqlQuery::first(), QSqlQuery::last(), and

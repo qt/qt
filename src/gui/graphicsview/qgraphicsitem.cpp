@@ -50,7 +50,7 @@
     It provides a light-weight foundation for writing your own custom items.
     This includes defining the item's geometry, collision detection, its
     painting implementation and item interaction through its event handlers.
-    QGraphicsItem is part of \l{The Graphics View Framework}
+    QGraphicsItem is part of the \l{Graphics View Framework}
 
     \image graphicsview-items.png
 
@@ -264,7 +264,7 @@
     functionality is completely untouched by Qt itself; it is provided for the
     user's convenience.
 
-    \sa QGraphicsScene, QGraphicsView, {The Graphics View Framework}
+    \sa QGraphicsScene, QGraphicsView, {Graphics View Framework}
 */
 
 /*!
@@ -3656,6 +3656,8 @@ void QGraphicsItem::setPos(const QPointF &pos)
     // Update and repositition.
     if (!(d_ptr->flags & (ItemSendsGeometryChanges | ItemSendsScenePositionChanges))) {
         d_ptr->setPosHelper(pos);
+        if (d_ptr->isWidget)
+            static_cast<QGraphicsWidget *>(this)->d_func()->setGeometryFromSetPos();
         return;
     }
 
@@ -8003,7 +8005,7 @@ void QGraphicsItemPrivate::resetHeight()
 
     \sa QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPathItem,
     QGraphicsPolygonItem, QGraphicsTextItem, QGraphicsLineItem,
-    QGraphicsPixmapItem, {The Graphics View Framework}
+    QGraphicsPixmapItem, {Graphics View Framework}
 */
 
 class QAbstractGraphicsShapeItemPrivate : public QGraphicsItemPrivate
@@ -8142,7 +8144,7 @@ QPainterPath QAbstractGraphicsShapeItem::opaqueArea() const
     setBrush() functions.
 
     \sa QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -8351,7 +8353,7 @@ QVariant QGraphicsPathItem::extension(const QVariant &variant) const
     those instead.
 
     \sa QGraphicsPathItem, QGraphicsEllipseItem, QGraphicsPolygonItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -8595,7 +8597,7 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
     brush, which you can set by calling setPen() and setBrush().
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsPolygonItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -8904,7 +8906,7 @@ QVariant QGraphicsEllipseItem::extension(const QVariant &variant) const
     setPen() and setBrush() functions.
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {The Graphics
+    QGraphicsTextItem, QGraphicsLineItem, QGraphicsPixmapItem, {Graphics
     View Framework}
 */
 
@@ -9136,8 +9138,8 @@ QVariant QGraphicsPolygonItem::extension(const QVariant &variant) const
     function draws the line using the item's associated pen.
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsPixmapItem, {The
-    Graphics View Framework}
+    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsPixmapItem,
+    {Graphics View Framework}
 */
 
 class QGraphicsLineItemPrivate : public QGraphicsItemPrivate
@@ -9406,8 +9408,8 @@ QVariant QGraphicsLineItem::extension(const QVariant &variant) const
     transformation mode for the item.
 
     \sa QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsLineItem, {The
-    Graphics View Framework}
+    QGraphicsTextItem, QGraphicsPolygonItem, QGraphicsLineItem,
+    {Graphics View Framework}
 */
 
 /*!
@@ -9777,7 +9779,7 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
 
     \sa QGraphicsSimpleTextItem, QGraphicsPathItem, QGraphicsRectItem,
         QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem,
-        QGraphicsLineItem, {The Graphics View Framework}
+        QGraphicsLineItem, {Graphics View Framework}
 */
 
 class QGraphicsTextItemPrivate
@@ -10693,9 +10695,9 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
 
     \img graphicsview-simpletextitem.png
 
-    \sa QGraphicsTextItem, QGraphicsPathItem, QGraphicsRectItem, QGraphicsEllipseItem,
-    QGraphicsPixmapItem, QGraphicsPolygonItem, QGraphicsLineItem, {The
-    Graphics View Framework}
+    \sa QGraphicsTextItem, QGraphicsPathItem, QGraphicsRectItem,
+    QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem,
+    QGraphicsLineItem, {Graphics View Framework}
 */
 
 /*!
@@ -10956,7 +10958,7 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     item group. As with addToGroup(), the item's scene-relative
     position and transformation remain intact.
 
-    \sa QGraphicsItem, {The Graphics View Framework}
+    \sa QGraphicsItem, {Graphics View Framework}
 */
 
 class QGraphicsItemGroupPrivate : public QGraphicsItemPrivate

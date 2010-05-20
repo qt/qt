@@ -81,8 +81,12 @@ void QDeclarativeLoaderPrivate::clear()
 
         // We can't delete immediately because our item may have triggered
         // the Loader to load a different item.
-        item->setVisible(false);
-        item->setParentItem(0);
+        if (item->scene()) {
+            item->scene()->removeItem(item);
+        } else {
+            item->setParentItem(0);
+            item->setVisible(false);
+        }
         item->deleteLater();
         item = 0;
     }
@@ -366,6 +370,7 @@ QDeclarativeLoader::Status QDeclarativeLoader::status() const
 
 void QDeclarativeLoader::componentComplete()
 {
+    QDeclarativeItem::componentComplete();
     if (status() == Ready)
         emit loaded();
 }

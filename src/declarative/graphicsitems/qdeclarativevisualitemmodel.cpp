@@ -204,7 +204,7 @@ QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &express
     QDeclarativeContext *ccontext = qmlContext(this);
     QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
     ctxt->setContextObject(d->children.at(index));
-    QDeclarativeExpression e(ctxt, expression, objectContext);
+    QDeclarativeExpression e(ctxt, objectContext, expression);
     QVariant value = e.evaluate();
     delete ctxt;
     return value;
@@ -775,9 +775,6 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
     The delegate provides a template defining each item instantiated by a view.
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
-
-    Here is an example delegate:
-    \snippet doc/src/snippets/declarative/listview/listview.qml 0
 */
 QDeclarativeComponent *QDeclarativeVisualDataModel::delegate() const
 {
@@ -1176,7 +1173,7 @@ QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &express
     if (nobj) {
         QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
         if (item) {
-            QDeclarativeExpression e(qmlContext(item), expression, objectContext);
+            QDeclarativeExpression e(qmlContext(item), objectContext, expression);
             value = e.evaluate();
         }
     } else {
@@ -1185,7 +1182,7 @@ QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &express
         QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
         QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
         ctxt->setContextObject(data);
-        QDeclarativeExpression e(ctxt, expression, objectContext);
+        QDeclarativeExpression e(ctxt, objectContext, expression);
         value = e.evaluate();
         delete data;
         delete ctxt;
@@ -1227,7 +1224,7 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                     if (d->m_listModelInterface)
                         roleName = d->m_listModelInterface->toString(role);
                     else if (d->m_abstractItemModel)
-                        roleName = d->m_abstractItemModel->roleNames().value(role);
+                        roleName = QString::fromUtf8(d->m_abstractItemModel->roleNames().value(role));
                     qmlInfo(this) << "Changing role not present in item: " << roleName;
                 }
             }

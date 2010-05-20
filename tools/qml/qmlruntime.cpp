@@ -350,7 +350,7 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     setupProxy(manager);
     if (cacheSize > 0) {
         QNetworkDiskCache *cache = new QNetworkDiskCache;
-        cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-launcher-network-cache"));
+        cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-viewer-network-cache"));
         cache->setMaximumCacheSize(cacheSize);
         manager->setCache(cache);
     } else {
@@ -388,7 +388,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
       , translator(0)
 {
     QDeclarativeViewer::registerTypes();
-    setWindowTitle(tr("Qt QML Launcher"));
+    setWindowTitle(tr("Qt QML Viewer"));
 
     devicemode = false;
     canvas = 0;
@@ -887,7 +887,7 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
     else
         url = QUrl(file_or_url);
-    setWindowTitle(tr("%1 - Qt QML Launcher").arg(file_or_url));
+    setWindowTitle(tr("%1 - Qt QML Viewer").arg(file_or_url));
 
     if (!m_script.isEmpty())
         tester = new QDeclarativeTester(m_script, m_scriptOptions, canvas);
@@ -895,17 +895,18 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     delete canvas->rootObject();
     canvas->engine()->clearComponentCache();
     QDeclarativeContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("qmlLauncher", this);
+    ctxt->setContextProperty("qmlViewer", this);
 #ifdef Q_OS_SYMBIAN
-    ctxt->setContextProperty("qmlLauncherFolder", "E:\\"); // Documents on your S60 phone
+    ctxt->setContextProperty("qmlViewerFolder", "E:\\"); // Documents on your S60 phone
 #else
-    ctxt->setContextProperty("qmlLauncherFolder", QDir::currentPath());
+    ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
 #endif
 
     ctxt->setContextProperty("runtime", Runtime::instance());
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
+        fi.setFile(fileName);
         if (fi.exists()) {
             if (fi.suffix().toLower() != QLatin1String("qml")) {
                 qWarning() << "qml cannot open non-QML file" << fileName;

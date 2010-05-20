@@ -7,8 +7,7 @@ CONFIG += release
 
 SOURCES += tst_script.cpp
 
-symbian: {
-    DEFINES += SRCDIR=\".\"
+symbian {
     importFiles.sources = data
     importFiles.path =
     DEPLOYMENT = importFiles

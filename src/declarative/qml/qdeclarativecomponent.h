@@ -86,7 +86,7 @@ public:
     bool isLoading() const;
 
     QList<QDeclarativeError> errors() const;
-    Q_INVOKABLE QString errorsString() const;
+    Q_INVOKABLE QString errorString() const;
 
     qreal progress() const;
 

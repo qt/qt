@@ -786,7 +786,7 @@ void QDeclarativeScriptActionPrivate::execute()
 
     const QString &str = scriptStr.script();
     if (!str.isEmpty()) {
-        QDeclarativeExpression expr(scriptStr.context(), str, scriptStr.scopeObject());
+        QDeclarativeExpression expr(scriptStr.context(), scriptStr.scopeObject(), str);
         QDeclarativeData *ddata = QDeclarativeData::get(q);
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
@@ -1947,6 +1947,9 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 
     easing.period is only applicable if type is: Easing.InElastic, Easing.OutElastic,
     Easing.InOutElastic or Easing.OutInElastic.
+
+    See the \l {declarative/animation/easing}{easing} example for a demonstration of
+    the different easing settings.
 */
 QEasingCurve QDeclarativePropertyAnimation::easing() const
 {
@@ -2540,7 +2543,6 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 QDeclarativeAction &yAction = pc->yIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
                 QDeclarativeAction &sAction = pc->scaleIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
                 QDeclarativeAction &rAction = pc->rotationIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
-                bool forward = (direction == QDeclarativeAbstractAnimation::Forward);
                 QDeclarativeItem *target = pc->object();
                 QDeclarativeItem *targetParent = action.reverseEvent ? pc->originalParent() : pc->parent();
 

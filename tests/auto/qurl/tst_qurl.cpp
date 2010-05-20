@@ -1410,7 +1410,7 @@ void tst_QUrl::setUrl()
 void tst_QUrl::i18n_data()
 {
     QTest::addColumn<QString>("input");
-    QTest::addColumn<QByteArray>("punyOutput"); 
+    QTest::addColumn<QByteArray>("punyOutput");
 
     QTest::newRow("øl") << QString::fromLatin1("http://ole:passord@www.øl.no/index.html?ole=æsemann&ilder gud=hei#top")
                      <<          QByteArray("http://ole:passord@www.xn--l-4ga.no/index.html?ole=%C3%A6semann&ilder%20gud=hei#top");
@@ -2165,25 +2165,25 @@ void tst_QUrl::toPercentEncoding_data()
     QTest::addColumn<QByteArray>("includeInEncoding");
 
     QTest::newRow("test_01") << QString::fromLatin1("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
-                          << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~") 
+                          << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
                           << QByteArray("")
                           << QByteArray("");
     QTest::newRow("test_02") << QString::fromLatin1("{\t\n\r^\"abc}")
-                          << QByteArray("%7B%09%0A%0D%5E%22abc%7D") 
+                          << QByteArray("%7B%09%0A%0D%5E%22abc%7D")
                           << QByteArray("")
                           << QByteArray("");
     QTest::newRow("test_03") << QString::fromLatin1("://?#[]@!$&'()*+,;=")
-                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D") 
+                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D")
                           << QByteArray("")
                           << QByteArray("");
     QTest::newRow("test_04") << QString::fromLatin1("://?#[]@!$&'()*+,;=")
-                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40!$&'()*+,;=") 
+                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40!$&'()*+,;=")
                           << QByteArray("!$&'()*+,;=")
                           << QByteArray("");
     QTest::newRow("test_05") << QString::fromLatin1("abcd")
                           << QByteArray("a%62%63d")
                           << QByteArray("")
-                          << QByteArray("bc");                          
+                          << QByteArray("bc");
 }
 
 void tst_QUrl::toPercentEncoding()
@@ -2193,7 +2193,7 @@ void tst_QUrl::toPercentEncoding()
     QFETCH(QByteArray, excludeInEncoding);
     QFETCH(QByteArray, includeInEncoding);
 
-    QByteArray encodedUrl = QUrl::toPercentEncoding(original, excludeInEncoding, includeInEncoding); 
+    QByteArray encodedUrl = QUrl::toPercentEncoding(original, excludeInEncoding, includeInEncoding);
     QCOMPARE(encodedUrl.constData(), encoded.constData());
     QCOMPARE(original, QUrl::fromPercentEncoding(encodedUrl));
 }
@@ -2461,6 +2461,8 @@ void tst_QUrl::isValid()
         QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/", QUrl::StrictMode);
         QVERIFY(!url.isValid());
         // < and > are not allowed in userinfo in strict mode
+        url.setUserName("normal_username");
+        QVERIFY(url.isValid());
     }
     {
         QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/");
@@ -2471,7 +2473,18 @@ void tst_QUrl::isValid()
         QUrl url = QUrl::fromEncoded("http://strange;hostname/here");
         QVERIFY(!url.isValid());
         QCOMPARE(url.path(), QString("/here"));
+        url.setAuthority("foobar@bar");
+        QVERIFY(url.isValid());
     }
+
+    {
+        QUrl url = QUrl::fromEncoded("foo://stuff;1/g");
+        QVERIFY(!url.isValid());
+        QCOMPARE(url.path(), QString("/g"));
+        url.setHost("stuff-1");
+        QVERIFY(url.isValid());
+    }
+
 }
 
 void tst_QUrl::schemeValidator_data()
@@ -3194,6 +3207,32 @@ void tst_QUrl::ace_testsuite_data()
 
     QTest::newRow("separator-3002") << QString::fromUtf8("example\343\200\202com")
                                     << "example.com" << "." << "example.com";
+
+    QString egyptianIDN =
+        QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
+                          "\243\330\252\330\265\330\247\331\204\330\247\330\252.\331\205"
+                          "\330\265\330\261");
+    QTest::newRow("egyptian-tld-ace")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-unicode")
+        << egyptianIDN
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-mix1")
+        << QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
+                             "\243\330\252\330\265\330\247\331\204\330\247\330\252.xn--wgbh1c")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-mix2")
+        << QString::fromUtf8("xn----rmckbbajlc6dj7bxne2c.\331\205\330\265\330\261")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
 }
 
 void tst_QUrl::ace_testsuite()

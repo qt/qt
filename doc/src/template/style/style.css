@@ -456,6 +456,7 @@
     .wrap .content
     {
         padding: 30px;
+		word-wrap:break-word;
     }
 
     .wrap .content li
@@ -1067,6 +1068,7 @@
     .indexboxcont .sectionlist
     {
         display: inline-block;
+		vertical-align:top;
 		width: 32.5%;
         padding: 0;
     }

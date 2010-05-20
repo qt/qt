@@ -238,7 +238,7 @@ void tst_qdeclarativexmllistmodel::roleErrors()
     QCOMPARE(data.value(Qt::UserRole+1), QVariant());
     QCOMPARE(data.value(Qt::UserRole+2), QVariant());
 
-    QEXPECT_FAIL("", "QT-2456", Continue);
+    QEXPECT_FAIL("", "QTBUG-10797", Continue);
     QCOMPARE(data.value(Qt::UserRole+3), QVariant());
 
     delete model;
@@ -268,10 +268,12 @@ void tst_qdeclarativexmllistmodel::xml()
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QSignalSpy spy(model, SIGNAL(statusChanged(QDeclarativeXmlListModel::Status)));
 
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(0.0));
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(1.0));
     QCOMPARE(model->count(), 9);
 
@@ -284,6 +286,7 @@ void tst_qdeclarativexmllistmodel::xml()
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->count(), count);
 
     delete model;
@@ -309,10 +312,12 @@ void tst_qdeclarativexmllistmodel::source()
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QSignalSpy spy(model, SIGNAL(statusChanged(QDeclarativeXmlListModel::Status)));
 
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(0.0));
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(1.0));
     QCOMPARE(model->count(), 9);
 
@@ -320,6 +325,7 @@ void tst_qdeclarativexmllistmodel::source()
     QCOMPARE(model->progress(), qreal(0.0));
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
+    QVERIFY(model->errorString().isEmpty());
 
     QEventLoop loop;
     QTimer timer;
@@ -337,8 +343,11 @@ void tst_qdeclarativexmllistmodel::source()
 
     QCOMPARE(model->status(), status);
     QCOMPARE(model->count(), count);
+
     if (status == QDeclarativeXmlListModel::Ready)
         QCOMPARE(model->progress(), qreal(1.0));
+
+    QCOMPARE(model->errorString().isEmpty(), status == QDeclarativeXmlListModel::Ready);
 
     delete model;
 }

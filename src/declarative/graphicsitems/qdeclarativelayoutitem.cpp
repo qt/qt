@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass LayoutItem QDeclarativeLayoutItem
     \since 4.7
-    \brief The LayoutItem element allows you to place your Fluid UI elements inside a classical Qt layout.
+    \brief The LayoutItem element allows you to place your declarative UI elements inside a classical Qt layout.
 
     LayoutItem is a variant of Item with a couple of additional properties. These properties provide the size hints
     needed for items to work in conjunction with Qt Layouts. The Qt Layout will resize the LayoutItem as appropriate,

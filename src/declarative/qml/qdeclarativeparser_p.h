@@ -307,8 +307,8 @@ namespace QDeclarativeParser
         };
         Type type;
 
-        // ### Temporary
-        QString primitive() const { return value.asScript(); }
+        // ### Temporary (for id only)
+        QString primitive() const { return value.isString() ? value.asString() : value.asScript(); }
 
         // Primitive value
         Variant value;

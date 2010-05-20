@@ -2332,7 +2332,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 2; // number of columns in the result
+    const int NumColumns = 3; // number of columns in the result
 
     if (classMap.isEmpty())
         return;

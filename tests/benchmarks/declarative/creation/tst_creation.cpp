@@ -50,6 +50,11 @@
 #include <QDeclarativeContext>
 #include <private/qobject_p.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_creation : public QObject
 {
     Q_OBJECT
@@ -91,8 +96,8 @@ public:
     TestType(QObject *parent = 0)
     : QObject(parent) {}
 
-    QDeclarativeListProperty<QObject> resources() { 
-        return QDeclarativeListProperty<QObject>(this, 0, resources_append); 
+    QDeclarativeListProperty<QObject> resources() {
+        return QDeclarativeListProperty<QObject>(this, 0, resources_append);
     }
 
     static void resources_append(QDeclarativeListProperty<QObject> *p, QObject *o) {
@@ -100,7 +105,7 @@ public:
     }
 };
 
-tst_creation::tst_creation() 
+tst_creation::tst_creation()
 {
     qmlRegisterType<TestType>("Qt.test", 1, 0, "TestType");
 }

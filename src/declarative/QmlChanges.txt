@@ -6,8 +6,11 @@ Flickable:
    - flickingHorizontally and flickingVertically properties added
    - movingHorizontally and movingVertically properties added
    - flickDirection is renamed flickableDirection
-Component: isReady, isLoading, isError and isNull properties removed, use
-    status property instead
+Component:
+    - isReady, isLoading, isError and isNull properties removed, use
+      status property instead
+    - errorsString() renamed to errorString()
+
 QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property
 "foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"
@@ -18,9 +21,14 @@ C++ API
 QDeclarativeExpression::value() has been renamed to
 QDeclarativeExpression::evaluate()
 
-QML Launcher
+The QDeclarativeExpression constructor has changed from
+    QDeclarativeExpression(context, expression, scope)
+to
+    QDeclarativeExpression(context, scope, expression, parent = 0)
+
+QML Viewer
 ------------
-The standalone executable has been renamed to qml launcher. Runtime warnings
+The standalone qml executable has been renamed back to Qml Viewer. Runtime warnings
 can be now accessed via the menu (Debugging->Show Warnings).
 
 =============================================================================

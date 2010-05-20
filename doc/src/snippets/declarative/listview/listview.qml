@@ -1,49 +1,101 @@
+//![import]
 import Qt 4.7
+//![import]
 
-//! [3]
+Item {
+
+//![classdocs simple]
+ListView {
+    width: 180; height: 200
+
+    model: ContactModel {}
+    delegate: Text {
+        text: name + ": " + number
+    }
+}
+//![classdocs simple]
+
+//![classdocs advanced]
 Rectangle {
-    width: 180; height: 200; color: "white"
+    width: 180; height: 200
 
-    // ContactModel model is defined in dummydata/ContactModel.qml
-    // The launcher automatically loads files in dummydata/* to assist
-    // development without a real data source.
-
-    // Define a delegate component.  A component will be
-    // instantiated for each visible item in the list.
-//! [0]
     Component {
-        id: delegate
+        id: contactDelegate
         Item {
-            id: wrapper
             width: 180; height: 40
             Column {
-                x: 5; y: 5
                 Text { text: '<b>Name:</b> ' + name }
                 Text { text: '<b>Number:</b> ' + number }
             }
         }
     }
-//! [0]
-    // Define a highlight component.  Just one of these will be instantiated
-    // by each ListView and placed behind the current item.
-//! [1]
-    Component {
-        id: highlight
-        Rectangle {
-            color: "lightsteelblue"
-            radius: 5
-        }
-    }
-//! [1]
-    // The actual list
-//! [2]
+
     ListView {
-        width: parent.width; height: parent.height
-        model: ContactModel
-        delegate: delegate
-        highlight: highlight
+        anchors.fill: parent
+        model: ContactModel {}
+        delegate: contactDelegate
+        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
         focus: true
     }
-//! [2]
 }
-//! [3]
+//![classdocs advanced]
+
+//![delayRemove]
+Component {
+    id: delegate
+    Item {
+        ListView.onRemove: SequentialAnimation {
+            PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
+            NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
+            PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
+        }
+    }
+}
+//![delayRemove]
+
+//![highlightFollowsCurrentItem]
+Component {
+    id: highlight
+    Rectangle {
+        width: 180; height: 40
+        color: "lightsteelblue"; radius: 5
+        SpringFollow on y {
+            to: list.currentItem.y
+            spring: 3
+            damping: 0.2
+        }
+    }
+}
+
+ListView {
+    id: list
+    width: 180; height: 200
+    model: ContactModel {}
+    delegate: Text { text: name }
+
+    highlight: highlight
+    highlightFollowsCurrentItem: false
+    focus: true
+}
+//![highlightFollowsCurrentItem]
+
+//![isCurrentItem]
+ListView {
+    width: 180; height: 200
+
+    Component {
+        id: contactsDelegate
+        Text {
+            id: contactInfo
+            text: name + ": " + number
+            color: contactInfo.ListView.isCurrentItem ? "red" : "black"
+        }
+    }
+
+    model: ContactModel {}
+    delegate: contactsDelegate 
+    focus: true
+}
+//![isCurrentItem]
+
+}

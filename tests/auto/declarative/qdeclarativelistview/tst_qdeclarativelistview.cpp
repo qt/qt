@@ -90,6 +90,7 @@ private slots:
     void componentChanges();
     void modelChanges();
     void QTBUG_9791();
+    void manualHighlight();
 
 private:
     template <class T> void items();
@@ -1463,6 +1464,34 @@ void tst_QDeclarativeListView::QTBUG_9791()
     delete canvas;
 }
 
+void tst_QDeclarativeListView::manualHighlight()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+
+    QString filename(SRCDIR "/data/manual-highlight.qml");
+    canvas->setSource(QUrl::fromLocalFile(filename));
+
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *viewport = listview->viewport();
+    QTRY_VERIFY(viewport != 0);
+
+    QTRY_COMPARE(listview->currentIndex(), 0);
+    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 0));
+    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+
+    listview->setCurrentIndex(2);
+
+    QTRY_COMPARE(listview->currentIndex(), 2);
+    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 2));
+    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+}
 
 void tst_QDeclarativeListView::qListModelInterface_items()
 {
@@ -1550,7 +1579,7 @@ T *tst_QDeclarativeListView::findItem(QGraphicsObject *parent, const QString &ob
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
-                QDeclarativeExpression e(qmlContext(item), "index", item);
+                QDeclarativeExpression e(qmlContext(item), item, "index");
                 if (e.evaluate().toInt() == index)
                     return static_cast<T*>(item);
             } else {
