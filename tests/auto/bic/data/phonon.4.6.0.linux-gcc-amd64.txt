@@ -1,0 +1,1980 @@
+Class QSysInfo
+   size=1 align=1
+   base size=0 base align=1
+QSysInfo (0x7f37bb27e230) 0 empty
+
+Class QBool
+   size=1 align=1
+   base size=1 base align=1
+QBool (0x7f37bb27ee70) 0
+
+Class qIsNull(double)::U
+   size=8 align=8
+   base size=8 base align=8
+qIsNull(double)::U (0x7f37bb2a9540) 0
+
+Class qIsNull(float)::U
+   size=4 align=4
+   base size=4 base align=4
+qIsNull(float)::U (0x7f37bb2a97e0) 0
+
+Class QFlag
+   size=4 align=4
+   base size=4 base align=4
+QFlag (0x7f37ba9cb690) 0
+
+Class QIncompatibleFlag
+   size=4 align=4
+   base size=4 base align=4
+QIncompatibleFlag (0x7f37ba9cbe70) 0
+
+Class QBasicAtomicInt
+   size=4 align=4
+   base size=4 base align=4
+QBasicAtomicInt (0x7f37ba9f75b0) 0
+
+Class QAtomicInt
+   size=4 align=4
+   base size=4 base align=4
+QAtomicInt (0x7f37baa51f50) 0
+  QBasicAtomicInt (0x7f37baa67000) 0
+
+Class QSharedData
+   size=4 align=4
+   base size=4 base align=4
+QSharedData (0x7f37baa743f0) 0
+
+Class QLatin1Char
+   size=1 align=1
+   base size=1 base align=1
+QLatin1Char (0x7f37ba8fd310) 0
+
+Class QChar
+   size=2 align=2
+   base size=2 base align=2
+QChar (0x7f37ba8fde70) 0
+
+Vtable for std::exception
+std::exception::_ZTVSt9exception: 5u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTISt9exception)
+16    std::exception::~exception
+24    std::exception::~exception
+32    std::exception::what
+
+Class std::exception
+   size=8 align=8
+   base size=8 base align=8
+std::exception (0x7f37ba978070) 0 nearly-empty
+    vptr=((& std::exception::_ZTVSt9exception) + 16u)
+
+Vtable for std::bad_exception
+std::bad_exception::_ZTVSt13bad_exception: 5u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTISt13bad_exception)
+16    std::bad_exception::~bad_exception
+24    std::bad_exception::~bad_exception
+32    std::bad_exception::what
+
+Class std::bad_exception
+   size=8 align=8
+   base size=8 base align=8
+std::bad_exception (0x7f37ba978620) 0 nearly-empty
+    vptr=((& std::bad_exception::_ZTVSt13bad_exception) + 16u)
+  std::exception (0x7f37ba978690) 0 nearly-empty
+      primary-for std::bad_exception (0x7f37ba978620)
+
+Vtable for std::bad_alloc
+std::bad_alloc::_ZTVSt9bad_alloc: 5u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTISt9bad_alloc)
+16    std::bad_alloc::~bad_alloc
+24    std::bad_alloc::~bad_alloc
+32    std::bad_alloc::what
+
+Class std::bad_alloc
+   size=8 align=8
+   base size=8 base align=8
+std::bad_alloc (0x7f37ba978ee0) 0 nearly-empty
+    vptr=((& std::bad_alloc::_ZTVSt9bad_alloc) + 16u)
+  std::exception (0x7f37ba978f50) 0 nearly-empty
+      primary-for std::bad_alloc (0x7f37ba978ee0)
+
+Class std::nothrow_t
+   size=1 align=1
+   base size=0 base align=1
+std::nothrow_t (0x7f37ba98d700) 0 empty
+
+Class __locale_struct
+   size=232 align=8
+   base size=232 base align=8
+__locale_struct (0x7f37ba98dbd0) 0
+
+Class QListData::Data
+   size=32 align=8
+   base size=32 base align=8
+QListData::Data (0x7f37ba98dcb0) 0
+
+Class QListData
+   size=8 align=8
+   base size=8 base align=8
+QListData (0x7f37ba98dc40) 0
+
+Class QScopedPointerPodDeleter
+   size=1 align=1
+   base size=0 base align=1
+QScopedPointerPodDeleter (0x7f37ba6cb770) 0 empty
+
+Class QInternal
+   size=1 align=1
+   base size=0 base align=1
+QInternal (0x7f37ba512540) 0 empty
+
+Class QGenericArgument
+   size=16 align=8
+   base size=16 base align=8
+QGenericArgument (0x7f37ba512850) 0
+
+Class QGenericReturnArgument
+   size=16 align=8
+   base size=16 base align=8
+QGenericReturnArgument (0x7f37ba52f3f0) 0
+  QGenericArgument (0x7f37ba52f460) 0
+
+Class QMetaObject
+   size=32 align=8
+   base size=32 base align=8
+QMetaObject (0x7f37ba52fcb0) 0
+
+Class QMetaObjectExtraData
+   size=16 align=8
+   base size=16 base align=8
+QMetaObjectExtraData (0x7f37ba558d20) 0
+
+Class QByteArray::Data
+   size=32 align=8
+   base size=32 base align=8
+QByteArray::Data (0x7f37ba56daf0) 0
+
+Class QByteArray
+   size=8 align=8
+   base size=8 base align=8
+QByteArray (0x7f37ba56da80) 0
+
+Class QByteRef
+   size=16 align=8
+   base size=12 base align=8
+QByteRef (0x7f37ba40e380) 0
+
+Class QString::Null
+   size=1 align=1
+   base size=0 base align=1
+QString::Null (0x7f37ba30ed20) 0 empty
+
+Class QString::Data
+   size=32 align=8
+   base size=32 base align=8
+QString::Data (0x7f37ba3275b0) 0
+
+Class QString
+   size=8 align=8
+   base size=8 base align=8
+QString (0x7f37ba489bd0) 0
+
+Class QLatin1String
+   size=8 align=8
+   base size=8 base align=8
+QLatin1String (0x7f37ba1fb9a0) 0
+
+Class QCharRef
+   size=16 align=8
+   base size=12 base align=8
+QCharRef (0x7f37ba0a0000) 0
+
+Class QConstString
+   size=8 align=8
+   base size=8 base align=8
+QConstString (0x7f37b9fd8850) 0
+  QString (0x7f37b9fd88c0) 0
+
+Class QStringRef
+   size=16 align=8
+   base size=16 base align=8
+QStringRef (0x7f37b9ffc2a0) 0
+
+Vtable for QObjectData
+QObjectData::_ZTV11QObjectData: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI11QObjectData)
+16    __cxa_pure_virtual
+24    __cxa_pure_virtual
+
+Class QObjectData
+   size=48 align=8
+   base size=48 base align=8
+QObjectData (0x7f37ba0795b0) 0
+    vptr=((& QObjectData::_ZTV11QObjectData) + 16u)
+
+Vtable for QObject
+QObject::_ZTV7QObject: 14u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI7QObject)
+16    QObject::metaObject
+24    QObject::qt_metacast
+32    QObject::qt_metacall
+40    QObject::~QObject
+48    QObject::~QObject
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+
+Class QObject
+   size=16 align=8
+   base size=16 base align=8
+QObject (0x7f37ba0798c0) 0
+    vptr=((& QObject::_ZTV7QObject) + 16u)
+
+Vtable for QObjectUserData
+QObjectUserData::_ZTV15QObjectUserData: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI15QObjectUserData)
+16    QObjectUserData::~QObjectUserData
+24    QObjectUserData::~QObjectUserData
+
+Class QObjectUserData
+   size=8 align=8
+   base size=8 base align=8
+QObjectUserData (0x7f37b9ef7e70) 0 nearly-empty
+    vptr=((& QObjectUserData::_ZTV15QObjectUserData) + 16u)
+
+Vtable for QIODevice
+QIODevice::_ZTV9QIODevice: 30u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI9QIODevice)
+16    QIODevice::metaObject
+24    QIODevice::qt_metacast
+32    QIODevice::qt_metacall
+40    QIODevice::~QIODevice
+48    QIODevice::~QIODevice
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QIODevice::isSequential
+120   QIODevice::open
+128   QIODevice::close
+136   QIODevice::pos
+144   QIODevice::size
+152   QIODevice::seek
+160   QIODevice::atEnd
+168   QIODevice::reset
+176   QIODevice::bytesAvailable
+184   QIODevice::bytesToWrite
+192   QIODevice::canReadLine
+200   QIODevice::waitForReadyRead
+208   QIODevice::waitForBytesWritten
+216   __cxa_pure_virtual
+224   QIODevice::readLineData
+232   __cxa_pure_virtual
+
+Class QIODevice
+   size=16 align=8
+   base size=16 base align=8
+QIODevice (0x7f37b9f05460) 0
+    vptr=((& QIODevice::_ZTV9QIODevice) + 16u)
+  QObject (0x7f37b9f054d0) 0
+      primary-for QIODevice (0x7f37b9f05460)
+
+Vtable for QDataStream
+QDataStream::_ZTV11QDataStream: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI11QDataStream)
+16    QDataStream::~QDataStream
+24    QDataStream::~QDataStream
+
+Class QDataStream
+   size=40 align=8
+   base size=40 base align=8
+QDataStream (0x7f37b9f6bd90) 0
+    vptr=((& QDataStream::_ZTV11QDataStream) + 16u)
+
+Class QHashData::Node
+   size=16 align=8
+   base size=16 base align=8
+QHashData::Node (0x7f37b9e00e70) 0
+
+Class QHashData
+   size=40 align=8
+   base size=40 base align=8
+QHashData (0x7f37b9e00e00) 0
+
+Class QHashDummyValue
+   size=1 align=1
+   base size=0 base align=1
+QHashDummyValue (0x7f37b9e211c0) 0 empty
+
+Class QMapData::Node
+   size=16 align=8
+   base size=16 base align=8
+QMapData::Node (0x7f37b9d24af0) 0
+
+Class QMapData
+   size=128 align=8
+   base size=128 base align=8
+QMapData (0x7f37b9d24a80) 0
+
+Vtable for QSystemLocale
+QSystemLocale::_ZTV13QSystemLocale: 6u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI13QSystemLocale)
+16    QSystemLocale::~QSystemLocale
+24    QSystemLocale::~QSystemLocale
+32    QSystemLocale::query
+40    QSystemLocale::fallbackLocale
+
+Class QSystemLocale
+   size=8 align=8
+   base size=8 base align=8
+QSystemLocale (0x7f37b9c5e700) 0 nearly-empty
+    vptr=((& QSystemLocale::_ZTV13QSystemLocale) + 16u)
+
+Class QLocale::Data
+   size=4 align=2
+   base size=4 base align=2
+QLocale::Data (0x7f37b9aabe00) 0
+
+Class QLocale
+   size=8 align=8
+   base size=8 base align=8
+QLocale (0x7f37b9c5eb60) 0
+
+Class QTextCodec::ConverterState
+   size=32 align=8
+   base size=32 base align=8
+QTextCodec::ConverterState (0x7f37b9affc40) 0
+
+Vtable for QTextCodec
+QTextCodec::_ZTV10QTextCodec: 9u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI10QTextCodec)
+16    __cxa_pure_virtual
+24    QTextCodec::aliases
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    QTextCodec::~QTextCodec
+64    QTextCodec::~QTextCodec
+
+Class QTextCodec
+   size=8 align=8
+   base size=8 base align=8
+QTextCodec (0x7f37b9af04d0) 0 nearly-empty
+    vptr=((& QTextCodec::_ZTV10QTextCodec) + 16u)
+
+Class QTextEncoder
+   size=40 align=8
+   base size=40 base align=8
+QTextEncoder (0x7f37b9b6c1c0) 0
+
+Class QTextDecoder
+   size=40 align=8
+   base size=40 base align=8
+QTextDecoder (0x7f37b9b73000) 0
+
+Class _IO_marker
+   size=24 align=8
+   base size=24 base align=8
+_IO_marker (0x7f37b9985070) 0
+
+Class _IO_FILE
+   size=216 align=8
+   base size=216 base align=8
+_IO_FILE (0x7f37b99850e0) 0
+
+Vtable for QTextStream
+QTextStream::_ZTV11QTextStream: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI11QTextStream)
+16    QTextStream::~QTextStream
+24    QTextStream::~QTextStream
+
+Class QTextStream
+   size=16 align=8
+   base size=16 base align=8
+QTextStream (0x7f37b99851c0) 0
+    vptr=((& QTextStream::_ZTV11QTextStream) + 16u)
+
+Class QTextStreamManipulator
+   size=40 align=8
+   base size=38 base align=8
+QTextStreamManipulator (0x7f37b9a22e70) 0
+
+Vtable for QTextIStream
+QTextIStream::_ZTV12QTextIStream: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI12QTextIStream)
+16    QTextIStream::~QTextIStream
+24    QTextIStream::~QTextIStream
+
+Class QTextIStream
+   size=16 align=8
+   base size=16 base align=8
+QTextIStream (0x7f37b9a50460) 0
+    vptr=((& QTextIStream::_ZTV12QTextIStream) + 16u)
+  QTextStream (0x7f37b9a504d0) 0
+      primary-for QTextIStream (0x7f37b9a50460)
+
+Vtable for QTextOStream
+QTextOStream::_ZTV12QTextOStream: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI12QTextOStream)
+16    QTextOStream::~QTextOStream
+24    QTextOStream::~QTextOStream
+
+Class QTextOStream
+   size=16 align=8
+   base size=16 base align=8
+QTextOStream (0x7f37b9a66310) 0
+    vptr=((& QTextOStream::_ZTV12QTextOStream) + 16u)
+  QTextStream (0x7f37b9a66380) 0
+      primary-for QTextOStream (0x7f37b9a66310)
+
+Class wait
+   size=4 align=4
+   base size=4 base align=4
+wait (0x7f37b9a781c0) 0
+
+Class timespec
+   size=16 align=8
+   base size=16 base align=8
+timespec (0x7f37b9a784d0) 0
+
+Class timeval
+   size=16 align=8
+   base size=16 base align=8
+timeval (0x7f37b9a78540) 0
+
+Class __pthread_internal_list
+   size=16 align=8
+   base size=16 base align=8
+__pthread_internal_list (0x7f37b9a78690) 0
+
+Class random_data
+   size=48 align=8
+   base size=48 base align=8
+random_data (0x7f37b9a78c40) 0
+
+Class drand48_data
+   size=24 align=8
+   base size=24 base align=8
+drand48_data (0x7f37b9a78cb0) 0
+
+Class QVectorData
+   size=16 align=4
+   base size=16 base align=4
+QVectorData (0x7f37b9a78d20) 0
+
+Class QContiguousCacheData
+   size=24 align=4
+   base size=24 base align=4
+QContiguousCacheData (0x7f37b982ea10) 0
+
+Class QDebug::Stream
+   size=40 align=8
+   base size=34 base align=8
+QDebug::Stream (0x7f37b96af540) 0
+
+Class QDebug
+   size=8 align=8
+   base size=8 base align=8
+QDebug (0x7f37b96af4d0) 0
+
+Class QNoDebug
+   size=1 align=1
+   base size=0 base align=1
+QNoDebug (0x7f37b97614d0) 0 empty
+
+Class QMetaType
+   size=1 align=1
+   base size=0 base align=1
+QMetaType (0x7f37b9771b60) 0 empty
+
+Class QVariant::PrivateShared
+   size=16 align=8
+   base size=12 base align=8
+QVariant::PrivateShared (0x7f37b967b3f0) 0
+
+Class QVariant::Private::Data
+   size=8 align=8
+   base size=8 base align=8
+QVariant::Private::Data (0x7f37b967b700) 0
+
+Class QVariant::Private
+   size=16 align=8
+   base size=12 base align=8
+QVariant::Private (0x7f37b967b4d0) 0
+
+Class QVariant::Handler
+   size=72 align=8
+   base size=72 base align=8
+QVariant::Handler (0x7f37b94863f0) 0
+
+Class QVariant
+   size=16 align=8
+   base size=16 base align=8
+QVariant (0x7f37b964e4d0) 0
+
+Class QVariantComparisonHelper
+   size=8 align=8
+   base size=8 base align=8
+QVariantComparisonHelper (0x7f37b9541690) 0
+
+Class Phonon::ObjectDescriptionData
+   size=16 align=8
+   base size=16 base align=8
+Phonon::ObjectDescriptionData (0x7f37b9568bd0) 0
+  QSharedData (0x7f37b9568c40) 0
+
+Class Phonon::Path
+   size=8 align=8
+   base size=8 base align=8
+Phonon::Path (0x7f37b93c0930) 0
+
+Vtable for Phonon::MediaNode
+Phonon::MediaNode::_ZTVN6Phonon9MediaNodeE: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon9MediaNodeE)
+16    Phonon::MediaNode::~MediaNode
+24    Phonon::MediaNode::~MediaNode
+
+Class Phonon::MediaNode
+   size=16 align=8
+   base size=16 base align=8
+Phonon::MediaNode (0x7f37b93da150) 0
+    vptr=((& Phonon::MediaNode::_ZTVN6Phonon9MediaNodeE) + 16u)
+
+Vtable for Phonon::AbstractAudioOutput
+Phonon::AbstractAudioOutput::_ZTVN6Phonon19AbstractAudioOutputE: 18u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon19AbstractAudioOutputE)
+16    Phonon::AbstractAudioOutput::metaObject
+24    Phonon::AbstractAudioOutput::qt_metacast
+32    Phonon::AbstractAudioOutput::qt_metacall
+40    Phonon::AbstractAudioOutput::~AbstractAudioOutput
+48    Phonon::AbstractAudioOutput::~AbstractAudioOutput
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   (int (*)(...))-0x00000000000000010
+120   (int (*)(...))(& _ZTIN6Phonon19AbstractAudioOutputE)
+128   Phonon::AbstractAudioOutput::_ZThn16_N6Phonon19AbstractAudioOutputD1Ev
+136   Phonon::AbstractAudioOutput::_ZThn16_N6Phonon19AbstractAudioOutputD0Ev
+
+Class Phonon::AbstractAudioOutput
+   size=32 align=8
+   base size=32 base align=8
+Phonon::AbstractAudioOutput (0x7f37b93f0100) 0
+    vptr=((& Phonon::AbstractAudioOutput::_ZTVN6Phonon19AbstractAudioOutputE) + 16u)
+  QObject (0x7f37b93da8c0) 0
+      primary-for Phonon::AbstractAudioOutput (0x7f37b93f0100)
+  Phonon::MediaNode (0x7f37b93da930) 16
+      vptr=((& Phonon::AbstractAudioOutput::_ZTVN6Phonon19AbstractAudioOutputE) + 128u)
+
+Vtable for Phonon::AbstractMediaStream
+Phonon::AbstractMediaStream::_ZTVN6Phonon19AbstractMediaStreamE: 18u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon19AbstractMediaStreamE)
+16    Phonon::AbstractMediaStream::metaObject
+24    Phonon::AbstractMediaStream::qt_metacast
+32    Phonon::AbstractMediaStream::qt_metacall
+40    Phonon::AbstractMediaStream::~AbstractMediaStream
+48    Phonon::AbstractMediaStream::~AbstractMediaStream
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   __cxa_pure_virtual
+120   __cxa_pure_virtual
+128   Phonon::AbstractMediaStream::enoughData
+136   Phonon::AbstractMediaStream::seekStream
+
+Class Phonon::AbstractMediaStream
+   size=24 align=8
+   base size=24 base align=8
+Phonon::AbstractMediaStream (0x7f37b9414540) 0
+    vptr=((& Phonon::AbstractMediaStream::_ZTVN6Phonon19AbstractMediaStreamE) + 16u)
+  QObject (0x7f37b94145b0) 0
+      primary-for Phonon::AbstractMediaStream (0x7f37b9414540)
+
+Vtable for Phonon::AbstractVideoOutput
+Phonon::AbstractVideoOutput::_ZTVN6Phonon19AbstractVideoOutputE: 4u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon19AbstractVideoOutputE)
+16    Phonon::AbstractVideoOutput::~AbstractVideoOutput
+24    Phonon::AbstractVideoOutput::~AbstractVideoOutput
+
+Class Phonon::AbstractVideoOutput
+   size=16 align=8
+   base size=16 base align=8
+Phonon::AbstractVideoOutput (0x7f37b9437b60) 0
+    vptr=((& Phonon::AbstractVideoOutput::_ZTVN6Phonon19AbstractVideoOutputE) + 16u)
+  Phonon::MediaNode (0x7f37b9437bd0) 0
+      primary-for Phonon::AbstractVideoOutput (0x7f37b9437b60)
+
+Vtable for Phonon::AddonInterface
+Phonon::AddonInterface::_ZTVN6Phonon14AddonInterfaceE: 6u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon14AddonInterfaceE)
+16    Phonon::AddonInterface::~AddonInterface
+24    Phonon::AddonInterface::~AddonInterface
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+
+Class Phonon::AddonInterface
+   size=8 align=8
+   base size=8 base align=8
+Phonon::AddonInterface (0x7f37b9442230) 0 nearly-empty
+    vptr=((& Phonon::AddonInterface::_ZTVN6Phonon14AddonInterfaceE) + 16u)
+
+Vtable for Phonon::AudioOutput
+Phonon::AudioOutput::_ZTVN6Phonon11AudioOutputE: 18u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon11AudioOutputE)
+16    Phonon::AudioOutput::metaObject
+24    Phonon::AudioOutput::qt_metacast
+32    Phonon::AudioOutput::qt_metacall
+40    Phonon::AudioOutput::~AudioOutput
+48    Phonon::AudioOutput::~AudioOutput
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   (int (*)(...))-0x00000000000000010
+120   (int (*)(...))(& _ZTIN6Phonon11AudioOutputE)
+128   Phonon::AudioOutput::_ZThn16_N6Phonon11AudioOutputD1Ev
+136   Phonon::AudioOutput::_ZThn16_N6Phonon11AudioOutputD0Ev
+
+Class Phonon::AudioOutput
+   size=32 align=8
+   base size=32 base align=8
+Phonon::AudioOutput (0x7f37b945d620) 0
+    vptr=((& Phonon::AudioOutput::_ZTVN6Phonon11AudioOutputE) + 16u)
+  Phonon::AbstractAudioOutput (0x7f37b9456f00) 0
+      primary-for Phonon::AudioOutput (0x7f37b945d620)
+    QObject (0x7f37b945d690) 0
+        primary-for Phonon::AbstractAudioOutput (0x7f37b9456f00)
+    Phonon::MediaNode (0x7f37b945d700) 16
+        vptr=((& Phonon::AudioOutput::_ZTVN6Phonon11AudioOutputE) + 128u)
+
+Vtable for Phonon::AudioOutputInterface40
+Phonon::AudioOutputInterface40::_ZTVN6Phonon22AudioOutputInterface40E: 8u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon22AudioOutputInterface40E)
+16    Phonon::AudioOutputInterface40::~AudioOutputInterface40
+24    Phonon::AudioOutputInterface40::~AudioOutputInterface40
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+
+Class Phonon::AudioOutputInterface40
+   size=8 align=8
+   base size=8 base align=8
+Phonon::AudioOutputInterface40 (0x7f37b9254b60) 0 nearly-empty
+    vptr=((& Phonon::AudioOutputInterface40::_ZTVN6Phonon22AudioOutputInterface40E) + 16u)
+
+Vtable for Phonon::AudioOutputInterface42
+Phonon::AudioOutputInterface42::_ZTVN6Phonon22AudioOutputInterface42E: 9u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon22AudioOutputInterface42E)
+16    Phonon::AudioOutputInterface42::~AudioOutputInterface42
+24    Phonon::AudioOutputInterface42::~AudioOutputInterface42
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+64    __cxa_pure_virtual
+
+Class Phonon::AudioOutputInterface42
+   size=8 align=8
+   base size=8 base align=8
+Phonon::AudioOutputInterface42 (0x7f37b925e540) 0 nearly-empty
+    vptr=((& Phonon::AudioOutputInterface42::_ZTVN6Phonon22AudioOutputInterface42E) + 16u)
+  Phonon::AudioOutputInterface40 (0x7f37b925e5b0) 0 nearly-empty
+      primary-for Phonon::AudioOutputInterface42 (0x7f37b925e540)
+
+Vtable for Phonon::BackendCapabilities::Notifier
+Phonon::BackendCapabilities::Notifier::_ZTVN6Phonon19BackendCapabilities8NotifierE: 14u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon19BackendCapabilities8NotifierE)
+16    Phonon::BackendCapabilities::Notifier::metaObject
+24    Phonon::BackendCapabilities::Notifier::qt_metacast
+32    Phonon::BackendCapabilities::Notifier::qt_metacall
+40    Phonon::BackendCapabilities::Notifier::~Notifier
+48    Phonon::BackendCapabilities::Notifier::~Notifier
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+
+Class Phonon::BackendCapabilities::Notifier
+   size=16 align=8
+   base size=16 base align=8
+Phonon::BackendCapabilities::Notifier (0x7f37b926f7e0) 0
+    vptr=((& Phonon::BackendCapabilities::Notifier::_ZTVN6Phonon19BackendCapabilities8NotifierE) + 16u)
+  QObject (0x7f37b926f850) 0
+      primary-for Phonon::BackendCapabilities::Notifier (0x7f37b926f7e0)
+
+Vtable for Phonon::BackendInterface
+Phonon::BackendInterface::_ZTVN6Phonon16BackendInterfaceE: 12u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon16BackendInterfaceE)
+16    Phonon::BackendInterface::~BackendInterface
+24    Phonon::BackendInterface::~BackendInterface
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+64    __cxa_pure_virtual
+72    __cxa_pure_virtual
+80    __cxa_pure_virtual
+88    __cxa_pure_virtual
+
+Class Phonon::BackendInterface
+   size=8 align=8
+   base size=8 base align=8
+Phonon::BackendInterface (0x7f37b927f540) 0 nearly-empty
+    vptr=((& Phonon::BackendInterface::_ZTVN6Phonon16BackendInterfaceE) + 16u)
+
+Vtable for Phonon::Effect
+Phonon::Effect::_ZTVN6Phonon6EffectE: 18u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon6EffectE)
+16    Phonon::Effect::metaObject
+24    Phonon::Effect::qt_metacast
+32    Phonon::Effect::qt_metacall
+40    Phonon::Effect::~Effect
+48    Phonon::Effect::~Effect
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   (int (*)(...))-0x00000000000000010
+120   (int (*)(...))(& _ZTIN6Phonon6EffectE)
+128   Phonon::Effect::_ZThn16_N6Phonon6EffectD1Ev
+136   Phonon::Effect::_ZThn16_N6Phonon6EffectD0Ev
+
+Class Phonon::Effect
+   size=32 align=8
+   base size=32 base align=8
+Phonon::Effect (0x7f37b9291c00) 0
+    vptr=((& Phonon::Effect::_ZTVN6Phonon6EffectE) + 16u)
+  QObject (0x7f37b9292930) 0
+      primary-for Phonon::Effect (0x7f37b9291c00)
+  Phonon::MediaNode (0x7f37b92929a0) 16
+      vptr=((& Phonon::Effect::_ZTVN6Phonon6EffectE) + 128u)
+
+Vtable for Phonon::EffectInterface
+Phonon::EffectInterface::_ZTVN6Phonon15EffectInterfaceE: 7u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon15EffectInterfaceE)
+16    Phonon::EffectInterface::~EffectInterface
+24    Phonon::EffectInterface::~EffectInterface
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+
+Class Phonon::EffectInterface
+   size=8 align=8
+   base size=8 base align=8
+Phonon::EffectInterface (0x7f37b92a5e00) 0 nearly-empty
+    vptr=((& Phonon::EffectInterface::_ZTVN6Phonon15EffectInterfaceE) + 16u)
+
+Class Phonon::EffectParameter
+   size=8 align=8
+   base size=8 base align=8
+Phonon::EffectParameter (0x7f37b92bd070) 0
+
+Class QMargins
+   size=16 align=4
+   base size=16 base align=4
+QMargins (0x7f37b92ecc40) 0
+
+Class QSize
+   size=8 align=4
+   base size=8 base align=4
+QSize (0x7f37b9318690) 0
+
+Class QSizeF
+   size=16 align=8
+   base size=16 base align=8
+QSizeF (0x7f37b9164380) 0
+
+Class QPoint
+   size=8 align=4
+   base size=8 base align=4
+QPoint (0x7f37b91ad8c0) 0
+
+Class QPointF
+   size=16 align=8
+   base size=16 base align=8
+QPointF (0x7f37b91e6540) 0
+
+Class QRect
+   size=16 align=4
+   base size=16 base align=4
+QRect (0x7f37b9225540) 0
+
+Class QRectF
+   size=32 align=8
+   base size=32 base align=8
+QRectF (0x7f37b90d2ee0) 0
+
+Vtable for QPaintDevice
+QPaintDevice::_ZTV12QPaintDevice: 7u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI12QPaintDevice)
+16    QPaintDevice::~QPaintDevice
+24    QPaintDevice::~QPaintDevice
+32    QPaintDevice::devType
+40    __cxa_pure_virtual
+48    QPaintDevice::metric
+
+Class QPaintDevice
+   size=16 align=8
+   base size=10 base align=8
+QPaintDevice (0x7f37b8f7dd20) 0
+    vptr=((& QPaintDevice::_ZTV12QPaintDevice) + 16u)
+
+Class QRegExp
+   size=8 align=8
+   base size=8 base align=8
+QRegExp (0x7f37b8fb1620) 0
+
+Class QStringMatcher::Data
+   size=272 align=8
+   base size=272 base align=8
+QStringMatcher::Data (0x7f37b8fe1a10) 0
+
+Class QStringMatcher
+   size=1048 align=8
+   base size=1048 base align=8
+QStringMatcher (0x7f37b8fe13f0) 0
+
+Class QStringList
+   size=8 align=8
+   base size=8 base align=8
+QStringList (0x7f37b9016000) 0
+  QList<QString> (0x7f37b9016070) 0
+
+Class QColor
+   size=16 align=4
+   base size=14 base align=4
+QColor (0x7f37b8e84c40) 0
+
+Class QPolygon
+   size=8 align=8
+   base size=8 base align=8
+QPolygon (0x7f37b8ee5460) 0
+  QVector<QPoint> (0x7f37b8ee54d0) 0
+
+Class QPolygonF
+   size=8 align=8
+   base size=8 base align=8
+QPolygonF (0x7f37b8f289a0) 0
+  QVector<QPointF> (0x7f37b8f28a10) 0
+
+Class QRegion::QRegionData
+   size=32 align=8
+   base size=32 base align=8
+QRegion::QRegionData (0x7f37b8d84380) 0
+
+Class QRegion
+   size=8 align=8
+   base size=8 base align=8
+QRegion (0x7f37b8d64af0) 0
+
+Class QLine
+   size=16 align=4
+   base size=16 base align=4
+QLine (0x7f37b8d96c40) 0
+
+Class QLineF
+   size=32 align=8
+   base size=32 base align=8
+QLineF (0x7f37b8dd4af0) 0
+
+Class QMatrix
+   size=48 align=8
+   base size=48 base align=8
+QMatrix (0x7f37b8e305b0) 0
+
+Class QPainterPath::Element
+   size=24 align=8
+   base size=24 base align=8
+QPainterPath::Element (0x7f37b8c37700) 0
+
+Class QPainterPath
+   size=8 align=8
+   base size=8 base align=8
+QPainterPath (0x7f37b8c37690) 0
+
+Class QPainterPathPrivate
+   size=16 align=8
+   base size=16 base align=8
+QPainterPathPrivate (0x7f37b8c86e00) 0
+
+Class QPainterPathStroker
+   size=8 align=8
+   base size=8 base align=8
+QPainterPathStroker (0x7f37b8c8f930) 0
+
+Class QTransform
+   size=88 align=8
+   base size=88 base align=8
+QTransform (0x7f37b8cfc930) 0
+
+Class QImageTextKeyLang
+   size=16 align=8
+   base size=16 base align=8
+QImageTextKeyLang (0x7f37b8b9df50) 0
+
+Vtable for QImage
+QImage::_ZTV6QImage: 7u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI6QImage)
+16    QImage::~QImage
+24    QImage::~QImage
+32    QImage::devType
+40    QImage::paintEngine
+48    QImage::metric
+
+Class QImage
+   size=24 align=8
+   base size=24 base align=8
+QImage (0x7f37b8bd07e0) 0
+    vptr=((& QImage::_ZTV6QImage) + 16u)
+  QPaintDevice (0x7f37b8bd0850) 0
+      primary-for QImage (0x7f37b8bd07e0)
+
+Vtable for QtSharedPointer::ExternalRefCountData
+QtSharedPointer::ExternalRefCountData::_ZTVN15QtSharedPointer20ExternalRefCountDataE: 5u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN15QtSharedPointer20ExternalRefCountDataE)
+16    QtSharedPointer::ExternalRefCountData::~ExternalRefCountData
+24    QtSharedPointer::ExternalRefCountData::~ExternalRefCountData
+32    QtSharedPointer::ExternalRefCountData::destroy
+
+Class QtSharedPointer::ExternalRefCountData
+   size=16 align=8
+   base size=16 base align=8
+QtSharedPointer::ExternalRefCountData (0x7f37b8a807e0) 0
+    vptr=((& QtSharedPointer::ExternalRefCountData::_ZTVN15QtSharedPointer20ExternalRefCountDataE) + 16u)
+
+Vtable for QtSharedPointer::ExternalRefCountWithDestroyFn
+QtSharedPointer::ExternalRefCountWithDestroyFn::_ZTVN15QtSharedPointer29ExternalRefCountWithDestroyFnE: 5u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN15QtSharedPointer29ExternalRefCountWithDestroyFnE)
+16    QtSharedPointer::ExternalRefCountWithDestroyFn::~ExternalRefCountWithDestroyFn
+24    QtSharedPointer::ExternalRefCountWithDestroyFn::~ExternalRefCountWithDestroyFn
+32    QtSharedPointer::ExternalRefCountWithDestroyFn::destroy
+
+Class QtSharedPointer::ExternalRefCountWithDestroyFn
+   size=24 align=8
+   base size=24 base align=8
+QtSharedPointer::ExternalRefCountWithDestroyFn (0x7f37b8aab0e0) 0
+    vptr=((& QtSharedPointer::ExternalRefCountWithDestroyFn::_ZTVN15QtSharedPointer29ExternalRefCountWithDestroyFnE) + 16u)
+  QtSharedPointer::ExternalRefCountData (0x7f37b8aab150) 0
+      primary-for QtSharedPointer::ExternalRefCountWithDestroyFn (0x7f37b8aab0e0)
+
+Vtable for QPixmap
+QPixmap::_ZTV7QPixmap: 7u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI7QPixmap)
+16    QPixmap::~QPixmap
+24    QPixmap::~QPixmap
+32    QPixmap::devType
+40    QPixmap::paintEngine
+48    QPixmap::metric
+
+Class QPixmap
+   size=24 align=8
+   base size=24 base align=8
+QPixmap (0x7f37b8921d20) 0
+    vptr=((& QPixmap::_ZTV7QPixmap) + 16u)
+  QPaintDevice (0x7f37b8921d90) 0
+      primary-for QPixmap (0x7f37b8921d20)
+
+Class QBrush
+   size=8 align=8
+   base size=8 base align=8
+QBrush (0x7f37b89a3070) 0
+
+Class QBrushData
+   size=112 align=8
+   base size=112 base align=8
+QBrushData (0x7f37b89c1a80) 0
+
+Class QGradient
+   size=64 align=8
+   base size=64 base align=8
+QGradient (0x7f37b89cfc40) 0
+
+Class QLinearGradient
+   size=64 align=8
+   base size=64 base align=8
+QLinearGradient (0x7f37b8810700) 0
+  QGradient (0x7f37b8810770) 0
+
+Class QRadialGradient
+   size=64 align=8
+   base size=64 base align=8
+QRadialGradient (0x7f37b8810bd0) 0
+  QGradient (0x7f37b8810c40) 0
+
+Class QConicalGradient
+   size=64 align=8
+   base size=64 base align=8
+QConicalGradient (0x7f37b88221c0) 0
+  QGradient (0x7f37b8822230) 0
+
+Class QPalette
+   size=16 align=8
+   base size=12 base align=8
+QPalette (0x7f37b8822540) 0
+
+Class QColorGroup
+   size=16 align=8
+   base size=12 base align=8
+QColorGroup (0x7f37b886ee70) 0
+  QPalette (0x7f37b886eee0) 0
+
+Class QFont
+   size=16 align=8
+   base size=12 base align=8
+QFont (0x7f37b88b11c0) 0
+
+Class QFontMetrics
+   size=8 align=8
+   base size=8 base align=8
+QFontMetrics (0x7f37b88f2e70) 0
+
+Class QFontMetricsF
+   size=8 align=8
+   base size=8 base align=8
+QFontMetricsF (0x7f37b8710310) 0
+
+Class QFontInfo
+   size=8 align=8
+   base size=8 base align=8
+QFontInfo (0x7f37b8722230) 0
+
+Class QSizePolicy
+   size=4 align=4
+   base size=4 base align=4
+QSizePolicy (0x7f37b8722d20) 0
+
+Class QCursor
+   size=8 align=8
+   base size=8 base align=8
+QCursor (0x7f37b87dad20) 0
+
+Class QKeySequence
+   size=8 align=8
+   base size=8 base align=8
+QKeySequence (0x7f37b87e1540) 0
+
+Class QWidgetData
+   size=88 align=8
+   base size=88 base align=8
+QWidgetData (0x7f37b8801e70) 0
+
+Vtable for QWidget
+QWidget::_ZTV7QWidget: 63u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI7QWidget)
+16    QWidget::metaObject
+24    QWidget::qt_metacast
+32    QWidget::qt_metacall
+40    QWidget::~QWidget
+48    QWidget::~QWidget
+56    QWidget::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QWidget::devType
+120   QWidget::setVisible
+128   QWidget::sizeHint
+136   QWidget::minimumSizeHint
+144   QWidget::heightForWidth
+152   QWidget::paintEngine
+160   QWidget::mousePressEvent
+168   QWidget::mouseReleaseEvent
+176   QWidget::mouseDoubleClickEvent
+184   QWidget::mouseMoveEvent
+192   QWidget::wheelEvent
+200   QWidget::keyPressEvent
+208   QWidget::keyReleaseEvent
+216   QWidget::focusInEvent
+224   QWidget::focusOutEvent
+232   QWidget::enterEvent
+240   QWidget::leaveEvent
+248   QWidget::paintEvent
+256   QWidget::moveEvent
+264   QWidget::resizeEvent
+272   QWidget::closeEvent
+280   QWidget::contextMenuEvent
+288   QWidget::tabletEvent
+296   QWidget::actionEvent
+304   QWidget::dragEnterEvent
+312   QWidget::dragMoveEvent
+320   QWidget::dragLeaveEvent
+328   QWidget::dropEvent
+336   QWidget::showEvent
+344   QWidget::hideEvent
+352   QWidget::x11Event
+360   QWidget::changeEvent
+368   QWidget::metric
+376   QWidget::inputMethodEvent
+384   QWidget::inputMethodQuery
+392   QWidget::focusNextPrevChild
+400   QWidget::styleChange
+408   QWidget::enabledChange
+416   QWidget::paletteChange
+424   QWidget::fontChange
+432   QWidget::windowActivationChange
+440   QWidget::languageChange
+448   (int (*)(...))-0x00000000000000010
+456   (int (*)(...))(& _ZTI7QWidget)
+464   QWidget::_ZThn16_N7QWidgetD1Ev
+472   QWidget::_ZThn16_N7QWidgetD0Ev
+480   QWidget::_ZThn16_NK7QWidget7devTypeEv
+488   QWidget::_ZThn16_NK7QWidget11paintEngineEv
+496   QWidget::_ZThn16_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class QWidget
+   size=40 align=8
+   base size=40 base align=8
+QWidget (0x7f37b8611f00) 0
+    vptr=((& QWidget::_ZTV7QWidget) + 16u)
+  QObject (0x7f37b8801ee0) 0
+      primary-for QWidget (0x7f37b8611f00)
+  QPaintDevice (0x7f37b8801f50) 16
+      vptr=((& QWidget::_ZTV7QWidget) + 464u)
+
+Vtable for Phonon::EffectWidget
+Phonon::EffectWidget::_ZTVN6Phonon12EffectWidgetE: 63u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon12EffectWidgetE)
+16    Phonon::EffectWidget::metaObject
+24    Phonon::EffectWidget::qt_metacast
+32    Phonon::EffectWidget::qt_metacall
+40    Phonon::EffectWidget::~EffectWidget
+48    Phonon::EffectWidget::~EffectWidget
+56    QWidget::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QWidget::devType
+120   QWidget::setVisible
+128   QWidget::sizeHint
+136   QWidget::minimumSizeHint
+144   QWidget::heightForWidth
+152   QWidget::paintEngine
+160   QWidget::mousePressEvent
+168   QWidget::mouseReleaseEvent
+176   QWidget::mouseDoubleClickEvent
+184   QWidget::mouseMoveEvent
+192   QWidget::wheelEvent
+200   QWidget::keyPressEvent
+208   QWidget::keyReleaseEvent
+216   QWidget::focusInEvent
+224   QWidget::focusOutEvent
+232   QWidget::enterEvent
+240   QWidget::leaveEvent
+248   QWidget::paintEvent
+256   QWidget::moveEvent
+264   QWidget::resizeEvent
+272   QWidget::closeEvent
+280   QWidget::contextMenuEvent
+288   QWidget::tabletEvent
+296   QWidget::actionEvent
+304   QWidget::dragEnterEvent
+312   QWidget::dragMoveEvent
+320   QWidget::dragLeaveEvent
+328   QWidget::dropEvent
+336   QWidget::showEvent
+344   QWidget::hideEvent
+352   QWidget::x11Event
+360   QWidget::changeEvent
+368   QWidget::metric
+376   QWidget::inputMethodEvent
+384   QWidget::inputMethodQuery
+392   QWidget::focusNextPrevChild
+400   QWidget::styleChange
+408   QWidget::enabledChange
+416   QWidget::paletteChange
+424   QWidget::fontChange
+432   QWidget::windowActivationChange
+440   QWidget::languageChange
+448   (int (*)(...))-0x00000000000000010
+456   (int (*)(...))(& _ZTIN6Phonon12EffectWidgetE)
+464   Phonon::EffectWidget::_ZThn16_N6Phonon12EffectWidgetD1Ev
+472   Phonon::EffectWidget::_ZThn16_N6Phonon12EffectWidgetD0Ev
+480   QWidget::_ZThn16_NK7QWidget7devTypeEv
+488   QWidget::_ZThn16_NK7QWidget11paintEngineEv
+496   QWidget::_ZThn16_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class Phonon::EffectWidget
+   size=48 align=8
+   base size=48 base align=8
+Phonon::EffectWidget (0x7f37b8581f50) 0
+    vptr=((& Phonon::EffectWidget::_ZTVN6Phonon12EffectWidgetE) + 16u)
+  QWidget (0x7f37b8583b80) 0
+      primary-for Phonon::EffectWidget (0x7f37b8581f50)
+    QObject (0x7f37b858b000) 0
+        primary-for QWidget (0x7f37b8583b80)
+    QPaintDevice (0x7f37b858b070) 16
+        vptr=((& Phonon::EffectWidget::_ZTVN6Phonon12EffectWidgetE) + 464u)
+
+Vtable for Phonon::MediaController
+Phonon::MediaController::_ZTVN6Phonon15MediaControllerE: 14u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon15MediaControllerE)
+16    Phonon::MediaController::metaObject
+24    Phonon::MediaController::qt_metacast
+32    Phonon::MediaController::qt_metacall
+40    Phonon::MediaController::~MediaController
+48    Phonon::MediaController::~MediaController
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+
+Class Phonon::MediaController
+   size=24 align=8
+   base size=24 base align=8
+Phonon::MediaController (0x7f37b85a0310) 0
+    vptr=((& Phonon::MediaController::_ZTVN6Phonon15MediaControllerE) + 16u)
+  QObject (0x7f37b85a0380) 0
+      primary-for Phonon::MediaController (0x7f37b85a0310)
+
+Class Phonon::MediaSource
+   size=8 align=8
+   base size=8 base align=8
+Phonon::MediaSource (0x7f37b85e1230) 0
+
+Vtable for Phonon::MediaObject
+Phonon::MediaObject::_ZTVN6Phonon11MediaObjectE: 18u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon11MediaObjectE)
+16    Phonon::MediaObject::metaObject
+24    Phonon::MediaObject::qt_metacast
+32    Phonon::MediaObject::qt_metacall
+40    Phonon::MediaObject::~MediaObject
+48    Phonon::MediaObject::~MediaObject
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   (int (*)(...))-0x00000000000000010
+120   (int (*)(...))(& _ZTIN6Phonon11MediaObjectE)
+128   Phonon::MediaObject::_ZThn16_N6Phonon11MediaObjectD1Ev
+136   Phonon::MediaObject::_ZThn16_N6Phonon11MediaObjectD0Ev
+
+Class Phonon::MediaObject
+   size=32 align=8
+   base size=32 base align=8
+Phonon::MediaObject (0x7f37b85df600) 0
+    vptr=((& Phonon::MediaObject::_ZTVN6Phonon11MediaObjectE) + 16u)
+  QObject (0x7f37b85e1d90) 0
+      primary-for Phonon::MediaObject (0x7f37b85df600)
+  Phonon::MediaNode (0x7f37b85e1e00) 16
+      vptr=((& Phonon::MediaObject::_ZTVN6Phonon11MediaObjectE) + 128u)
+
+Vtable for Phonon::MediaObjectInterface
+Phonon::MediaObjectInterface::_ZTVN6Phonon20MediaObjectInterfaceE: 25u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon20MediaObjectInterfaceE)
+16    Phonon::MediaObjectInterface::~MediaObjectInterface
+24    Phonon::MediaObjectInterface::~MediaObjectInterface
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+64    __cxa_pure_virtual
+72    __cxa_pure_virtual
+80    __cxa_pure_virtual
+88    __cxa_pure_virtual
+96    __cxa_pure_virtual
+104   __cxa_pure_virtual
+112   __cxa_pure_virtual
+120   __cxa_pure_virtual
+128   __cxa_pure_virtual
+136   __cxa_pure_virtual
+144   __cxa_pure_virtual
+152   __cxa_pure_virtual
+160   Phonon::MediaObjectInterface::remainingTime
+168   __cxa_pure_virtual
+176   __cxa_pure_virtual
+184   __cxa_pure_virtual
+192   __cxa_pure_virtual
+
+Class Phonon::MediaObjectInterface
+   size=8 align=8
+   base size=8 base align=8
+Phonon::MediaObjectInterface (0x7f37b8419310) 0 nearly-empty
+    vptr=((& Phonon::MediaObjectInterface::_ZTVN6Phonon20MediaObjectInterfaceE) + 16u)
+
+Class QModelIndex
+   size=24 align=8
+   base size=24 base align=8
+QModelIndex (0x7f37b842ab60) 0
+
+Class QPersistentModelIndex
+   size=8 align=8
+   base size=8 base align=8
+QPersistentModelIndex (0x7f37b845a620) 0
+
+Vtable for QAbstractItemModel
+QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI18QAbstractItemModel)
+16    QAbstractItemModel::metaObject
+24    QAbstractItemModel::qt_metacast
+32    QAbstractItemModel::qt_metacall
+40    QAbstractItemModel::~QAbstractItemModel
+48    QAbstractItemModel::~QAbstractItemModel
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   __cxa_pure_virtual
+120   __cxa_pure_virtual
+128   __cxa_pure_virtual
+136   __cxa_pure_virtual
+144   QAbstractItemModel::hasChildren
+152   __cxa_pure_virtual
+160   QAbstractItemModel::setData
+168   QAbstractItemModel::headerData
+176   QAbstractItemModel::setHeaderData
+184   QAbstractItemModel::itemData
+192   QAbstractItemModel::setItemData
+200   QAbstractItemModel::mimeTypes
+208   QAbstractItemModel::mimeData
+216   QAbstractItemModel::dropMimeData
+224   QAbstractItemModel::supportedDropActions
+232   QAbstractItemModel::insertRows
+240   QAbstractItemModel::insertColumns
+248   QAbstractItemModel::removeRows
+256   QAbstractItemModel::removeColumns
+264   QAbstractItemModel::fetchMore
+272   QAbstractItemModel::canFetchMore
+280   QAbstractItemModel::flags
+288   QAbstractItemModel::sort
+296   QAbstractItemModel::buddy
+304   QAbstractItemModel::match
+312   QAbstractItemModel::span
+320   QAbstractItemModel::submit
+328   QAbstractItemModel::revert
+
+Class QAbstractItemModel
+   size=16 align=8
+   base size=16 base align=8
+QAbstractItemModel (0x7f37b8464930) 0
+    vptr=((& QAbstractItemModel::_ZTV18QAbstractItemModel) + 16u)
+  QObject (0x7f37b84649a0) 0
+      primary-for QAbstractItemModel (0x7f37b8464930)
+
+Vtable for QAbstractTableModel
+QAbstractTableModel::_ZTV19QAbstractTableModel: 42u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI19QAbstractTableModel)
+16    QAbstractTableModel::metaObject
+24    QAbstractTableModel::qt_metacast
+32    QAbstractTableModel::qt_metacall
+40    QAbstractTableModel::~QAbstractTableModel
+48    QAbstractTableModel::~QAbstractTableModel
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QAbstractTableModel::index
+120   QAbstractTableModel::parent
+128   __cxa_pure_virtual
+136   __cxa_pure_virtual
+144   QAbstractTableModel::hasChildren
+152   __cxa_pure_virtual
+160   QAbstractItemModel::setData
+168   QAbstractItemModel::headerData
+176   QAbstractItemModel::setHeaderData
+184   QAbstractItemModel::itemData
+192   QAbstractItemModel::setItemData
+200   QAbstractItemModel::mimeTypes
+208   QAbstractItemModel::mimeData
+216   QAbstractTableModel::dropMimeData
+224   QAbstractItemModel::supportedDropActions
+232   QAbstractItemModel::insertRows
+240   QAbstractItemModel::insertColumns
+248   QAbstractItemModel::removeRows
+256   QAbstractItemModel::removeColumns
+264   QAbstractItemModel::fetchMore
+272   QAbstractItemModel::canFetchMore
+280   QAbstractItemModel::flags
+288   QAbstractItemModel::sort
+296   QAbstractItemModel::buddy
+304   QAbstractItemModel::match
+312   QAbstractItemModel::span
+320   QAbstractItemModel::submit
+328   QAbstractItemModel::revert
+
+Class QAbstractTableModel
+   size=16 align=8
+   base size=16 base align=8
+QAbstractTableModel (0x7f37b84bdc40) 0
+    vptr=((& QAbstractTableModel::_ZTV19QAbstractTableModel) + 16u)
+  QAbstractItemModel (0x7f37b84bdcb0) 0
+      primary-for QAbstractTableModel (0x7f37b84bdc40)
+    QObject (0x7f37b84bdd20) 0
+        primary-for QAbstractItemModel (0x7f37b84bdcb0)
+
+Vtable for QAbstractListModel
+QAbstractListModel::_ZTV18QAbstractListModel: 42u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI18QAbstractListModel)
+16    QAbstractListModel::metaObject
+24    QAbstractListModel::qt_metacast
+32    QAbstractListModel::qt_metacall
+40    QAbstractListModel::~QAbstractListModel
+48    QAbstractListModel::~QAbstractListModel
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QAbstractListModel::index
+120   QAbstractListModel::parent
+128   __cxa_pure_virtual
+136   QAbstractListModel::columnCount
+144   QAbstractListModel::hasChildren
+152   __cxa_pure_virtual
+160   QAbstractItemModel::setData
+168   QAbstractItemModel::headerData
+176   QAbstractItemModel::setHeaderData
+184   QAbstractItemModel::itemData
+192   QAbstractItemModel::setItemData
+200   QAbstractItemModel::mimeTypes
+208   QAbstractItemModel::mimeData
+216   QAbstractListModel::dropMimeData
+224   QAbstractItemModel::supportedDropActions
+232   QAbstractItemModel::insertRows
+240   QAbstractItemModel::insertColumns
+248   QAbstractItemModel::removeRows
+256   QAbstractItemModel::removeColumns
+264   QAbstractItemModel::fetchMore
+272   QAbstractItemModel::canFetchMore
+280   QAbstractItemModel::flags
+288   QAbstractItemModel::sort
+296   QAbstractItemModel::buddy
+304   QAbstractItemModel::match
+312   QAbstractItemModel::span
+320   QAbstractItemModel::submit
+328   QAbstractItemModel::revert
+
+Class QAbstractListModel
+   size=16 align=8
+   base size=16 base align=8
+QAbstractListModel (0x7f37b84d91c0) 0
+    vptr=((& QAbstractListModel::_ZTV18QAbstractListModel) + 16u)
+  QAbstractItemModel (0x7f37b84d9230) 0
+      primary-for QAbstractListModel (0x7f37b84d91c0)
+    QObject (0x7f37b84d92a0) 0
+        primary-for QAbstractItemModel (0x7f37b84d9230)
+
+Class Phonon::ObjectDescriptionModelData
+   size=8 align=8
+   base size=8 base align=8
+Phonon::ObjectDescriptionModelData (0x7f37b830c310) 0
+
+Vtable for Phonon::PlatformPlugin
+Phonon::PlatformPlugin::_ZTVN6Phonon14PlatformPluginE: 16u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon14PlatformPluginE)
+16    Phonon::PlatformPlugin::~PlatformPlugin
+24    Phonon::PlatformPlugin::~PlatformPlugin
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+64    __cxa_pure_virtual
+72    __cxa_pure_virtual
+80    __cxa_pure_virtual
+88    __cxa_pure_virtual
+96    __cxa_pure_virtual
+104   __cxa_pure_virtual
+112   __cxa_pure_virtual
+120   Phonon::PlatformPlugin::deviceAccessListFor
+
+Class Phonon::PlatformPlugin
+   size=8 align=8
+   base size=8 base align=8
+Phonon::PlatformPlugin (0x7f37b83762a0) 0 nearly-empty
+    vptr=((& Phonon::PlatformPlugin::_ZTVN6Phonon14PlatformPluginE) + 16u)
+
+Vtable for Phonon::SeekSlider
+Phonon::SeekSlider::_ZTVN6Phonon10SeekSliderE: 63u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon10SeekSliderE)
+16    Phonon::SeekSlider::metaObject
+24    Phonon::SeekSlider::qt_metacast
+32    Phonon::SeekSlider::qt_metacall
+40    Phonon::SeekSlider::~SeekSlider
+48    Phonon::SeekSlider::~SeekSlider
+56    QWidget::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QWidget::devType
+120   QWidget::setVisible
+128   QWidget::sizeHint
+136   QWidget::minimumSizeHint
+144   QWidget::heightForWidth
+152   QWidget::paintEngine
+160   QWidget::mousePressEvent
+168   QWidget::mouseReleaseEvent
+176   QWidget::mouseDoubleClickEvent
+184   QWidget::mouseMoveEvent
+192   QWidget::wheelEvent
+200   QWidget::keyPressEvent
+208   QWidget::keyReleaseEvent
+216   QWidget::focusInEvent
+224   QWidget::focusOutEvent
+232   QWidget::enterEvent
+240   QWidget::leaveEvent
+248   QWidget::paintEvent
+256   QWidget::moveEvent
+264   QWidget::resizeEvent
+272   QWidget::closeEvent
+280   QWidget::contextMenuEvent
+288   QWidget::tabletEvent
+296   QWidget::actionEvent
+304   QWidget::dragEnterEvent
+312   QWidget::dragMoveEvent
+320   QWidget::dragLeaveEvent
+328   QWidget::dropEvent
+336   QWidget::showEvent
+344   QWidget::hideEvent
+352   QWidget::x11Event
+360   QWidget::changeEvent
+368   QWidget::metric
+376   QWidget::inputMethodEvent
+384   QWidget::inputMethodQuery
+392   QWidget::focusNextPrevChild
+400   QWidget::styleChange
+408   QWidget::enabledChange
+416   QWidget::paletteChange
+424   QWidget::fontChange
+432   QWidget::windowActivationChange
+440   QWidget::languageChange
+448   (int (*)(...))-0x00000000000000010
+456   (int (*)(...))(& _ZTIN6Phonon10SeekSliderE)
+464   Phonon::SeekSlider::_ZThn16_N6Phonon10SeekSliderD1Ev
+472   Phonon::SeekSlider::_ZThn16_N6Phonon10SeekSliderD0Ev
+480   QWidget::_ZThn16_NK7QWidget7devTypeEv
+488   QWidget::_ZThn16_NK7QWidget11paintEngineEv
+496   QWidget::_ZThn16_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class Phonon::SeekSlider
+   size=48 align=8
+   base size=48 base align=8
+Phonon::SeekSlider (0x7f37b83ad8c0) 0
+    vptr=((& Phonon::SeekSlider::_ZTVN6Phonon10SeekSliderE) + 16u)
+  QWidget (0x7f37b8388e00) 0
+      primary-for Phonon::SeekSlider (0x7f37b83ad8c0)
+    QObject (0x7f37b83ad930) 0
+        primary-for QWidget (0x7f37b8388e00)
+    QPaintDevice (0x7f37b83ad9a0) 16
+        vptr=((& Phonon::SeekSlider::_ZTVN6Phonon10SeekSliderE) + 464u)
+
+Vtable for Phonon::StreamInterface
+Phonon::StreamInterface::_ZTVN6Phonon15StreamInterfaceE: 8u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon15StreamInterfaceE)
+16    Phonon::StreamInterface::~StreamInterface
+24    Phonon::StreamInterface::~StreamInterface
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+
+Class Phonon::StreamInterface
+   size=16 align=8
+   base size=16 base align=8
+Phonon::StreamInterface (0x7f37b83c9d90) 0
+    vptr=((& Phonon::StreamInterface::_ZTVN6Phonon15StreamInterfaceE) + 16u)
+
+Vtable for Phonon::VideoPlayer
+Phonon::VideoPlayer::_ZTVN6Phonon11VideoPlayerE: 63u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon11VideoPlayerE)
+16    Phonon::VideoPlayer::metaObject
+24    Phonon::VideoPlayer::qt_metacast
+32    Phonon::VideoPlayer::qt_metacall
+40    Phonon::VideoPlayer::~VideoPlayer
+48    Phonon::VideoPlayer::~VideoPlayer
+56    QWidget::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QWidget::devType
+120   QWidget::setVisible
+128   QWidget::sizeHint
+136   QWidget::minimumSizeHint
+144   QWidget::heightForWidth
+152   QWidget::paintEngine
+160   QWidget::mousePressEvent
+168   QWidget::mouseReleaseEvent
+176   QWidget::mouseDoubleClickEvent
+184   QWidget::mouseMoveEvent
+192   QWidget::wheelEvent
+200   QWidget::keyPressEvent
+208   QWidget::keyReleaseEvent
+216   QWidget::focusInEvent
+224   QWidget::focusOutEvent
+232   QWidget::enterEvent
+240   QWidget::leaveEvent
+248   QWidget::paintEvent
+256   QWidget::moveEvent
+264   QWidget::resizeEvent
+272   QWidget::closeEvent
+280   QWidget::contextMenuEvent
+288   QWidget::tabletEvent
+296   QWidget::actionEvent
+304   QWidget::dragEnterEvent
+312   QWidget::dragMoveEvent
+320   QWidget::dragLeaveEvent
+328   QWidget::dropEvent
+336   QWidget::showEvent
+344   QWidget::hideEvent
+352   QWidget::x11Event
+360   QWidget::changeEvent
+368   QWidget::metric
+376   QWidget::inputMethodEvent
+384   QWidget::inputMethodQuery
+392   QWidget::focusNextPrevChild
+400   QWidget::styleChange
+408   QWidget::enabledChange
+416   QWidget::paletteChange
+424   QWidget::fontChange
+432   QWidget::windowActivationChange
+440   QWidget::languageChange
+448   (int (*)(...))-0x00000000000000010
+456   (int (*)(...))(& _ZTIN6Phonon11VideoPlayerE)
+464   Phonon::VideoPlayer::_ZThn16_N6Phonon11VideoPlayerD1Ev
+472   Phonon::VideoPlayer::_ZThn16_N6Phonon11VideoPlayerD0Ev
+480   QWidget::_ZThn16_NK7QWidget7devTypeEv
+488   QWidget::_ZThn16_NK7QWidget11paintEngineEv
+496   QWidget::_ZThn16_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class Phonon::VideoPlayer
+   size=48 align=8
+   base size=48 base align=8
+Phonon::VideoPlayer (0x7f37b83d87e0) 0
+    vptr=((& Phonon::VideoPlayer::_ZTVN6Phonon11VideoPlayerE) + 16u)
+  QWidget (0x7f37b83dd080) 0
+      primary-for Phonon::VideoPlayer (0x7f37b83d87e0)
+    QObject (0x7f37b83d8850) 0
+        primary-for QWidget (0x7f37b83dd080)
+    QPaintDevice (0x7f37b83d88c0) 16
+        vptr=((& Phonon::VideoPlayer::_ZTVN6Phonon11VideoPlayerE) + 464u)
+
+Vtable for Phonon::VideoWidget
+Phonon::VideoWidget::_ZTVN6Phonon11VideoWidgetE: 67u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon11VideoWidgetE)
+16    Phonon::VideoWidget::metaObject
+24    Phonon::VideoWidget::qt_metacast
+32    Phonon::VideoWidget::qt_metacall
+40    Phonon::VideoWidget::~VideoWidget
+48    Phonon::VideoWidget::~VideoWidget
+56    Phonon::VideoWidget::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QWidget::devType
+120   QWidget::setVisible
+128   QWidget::sizeHint
+136   QWidget::minimumSizeHint
+144   QWidget::heightForWidth
+152   QWidget::paintEngine
+160   QWidget::mousePressEvent
+168   QWidget::mouseReleaseEvent
+176   QWidget::mouseDoubleClickEvent
+184   Phonon::VideoWidget::mouseMoveEvent
+192   QWidget::wheelEvent
+200   QWidget::keyPressEvent
+208   QWidget::keyReleaseEvent
+216   QWidget::focusInEvent
+224   QWidget::focusOutEvent
+232   QWidget::enterEvent
+240   QWidget::leaveEvent
+248   QWidget::paintEvent
+256   QWidget::moveEvent
+264   QWidget::resizeEvent
+272   QWidget::closeEvent
+280   QWidget::contextMenuEvent
+288   QWidget::tabletEvent
+296   QWidget::actionEvent
+304   QWidget::dragEnterEvent
+312   QWidget::dragMoveEvent
+320   QWidget::dragLeaveEvent
+328   QWidget::dropEvent
+336   QWidget::showEvent
+344   QWidget::hideEvent
+352   QWidget::x11Event
+360   QWidget::changeEvent
+368   QWidget::metric
+376   QWidget::inputMethodEvent
+384   QWidget::inputMethodQuery
+392   QWidget::focusNextPrevChild
+400   QWidget::styleChange
+408   QWidget::enabledChange
+416   QWidget::paletteChange
+424   QWidget::fontChange
+432   QWidget::windowActivationChange
+440   QWidget::languageChange
+448   (int (*)(...))-0x00000000000000010
+456   (int (*)(...))(& _ZTIN6Phonon11VideoWidgetE)
+464   Phonon::VideoWidget::_ZThn16_N6Phonon11VideoWidgetD1Ev
+472   Phonon::VideoWidget::_ZThn16_N6Phonon11VideoWidgetD0Ev
+480   QWidget::_ZThn16_NK7QWidget7devTypeEv
+488   QWidget::_ZThn16_NK7QWidget11paintEngineEv
+496   QWidget::_ZThn16_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+504   (int (*)(...))-0x00000000000000028
+512   (int (*)(...))(& _ZTIN6Phonon11VideoWidgetE)
+520   Phonon::VideoWidget::_ZThn40_N6Phonon11VideoWidgetD1Ev
+528   Phonon::VideoWidget::_ZThn40_N6Phonon11VideoWidgetD0Ev
+
+Class Phonon::VideoWidget
+   size=56 align=8
+   base size=56 base align=8
+Phonon::VideoWidget (0x7f37b83dd780) 0
+    vptr=((& Phonon::VideoWidget::_ZTVN6Phonon11VideoWidgetE) + 16u)
+  QWidget (0x7f37b83dd800) 0
+      primary-for Phonon::VideoWidget (0x7f37b83dd780)
+    QObject (0x7f37b81f0850) 0
+        primary-for QWidget (0x7f37b83dd800)
+    QPaintDevice (0x7f37b81f08c0) 16
+        vptr=((& Phonon::VideoWidget::_ZTVN6Phonon11VideoWidgetE) + 464u)
+  Phonon::AbstractVideoOutput (0x7f37b81f0930) 40
+      vptr=((& Phonon::VideoWidget::_ZTVN6Phonon11VideoWidgetE) + 520u)
+    Phonon::MediaNode (0x7f37b81f09a0) 40
+        primary-for Phonon::AbstractVideoOutput (0x7f37b81f0930)
+
+Vtable for Phonon::VideoWidgetInterface
+Phonon::VideoWidgetInterface::_ZTVN6Phonon20VideoWidgetInterfaceE: 17u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon20VideoWidgetInterfaceE)
+16    Phonon::VideoWidgetInterface::~VideoWidgetInterface
+24    Phonon::VideoWidgetInterface::~VideoWidgetInterface
+32    __cxa_pure_virtual
+40    __cxa_pure_virtual
+48    __cxa_pure_virtual
+56    __cxa_pure_virtual
+64    __cxa_pure_virtual
+72    __cxa_pure_virtual
+80    __cxa_pure_virtual
+88    __cxa_pure_virtual
+96    __cxa_pure_virtual
+104   __cxa_pure_virtual
+112   __cxa_pure_virtual
+120   __cxa_pure_virtual
+128   __cxa_pure_virtual
+
+Class Phonon::VideoWidgetInterface
+   size=8 align=8
+   base size=8 base align=8
+Phonon::VideoWidgetInterface (0x7f37b8216230) 0 nearly-empty
+    vptr=((& Phonon::VideoWidgetInterface::_ZTVN6Phonon20VideoWidgetInterfaceE) + 16u)
+
+Vtable for Phonon::VolumeFaderEffect
+Phonon::VolumeFaderEffect::_ZTVN6Phonon17VolumeFaderEffectE: 18u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon17VolumeFaderEffectE)
+16    Phonon::VolumeFaderEffect::metaObject
+24    Phonon::VolumeFaderEffect::qt_metacast
+32    Phonon::VolumeFaderEffect::qt_metacall
+40    Phonon::VolumeFaderEffect::~VolumeFaderEffect
+48    Phonon::VolumeFaderEffect::~VolumeFaderEffect
+56    QObject::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   (int (*)(...))-0x00000000000000010
+120   (int (*)(...))(& _ZTIN6Phonon17VolumeFaderEffectE)
+128   Phonon::VolumeFaderEffect::_ZThn16_N6Phonon17VolumeFaderEffectD1Ev
+136   Phonon::VolumeFaderEffect::_ZThn16_N6Phonon17VolumeFaderEffectD0Ev
+
+Class Phonon::VolumeFaderEffect
+   size=32 align=8
+   base size=32 base align=8
+Phonon::VolumeFaderEffect (0x7f37b8225850) 0
+    vptr=((& Phonon::VolumeFaderEffect::_ZTVN6Phonon17VolumeFaderEffectE) + 16u)
+  Phonon::Effect (0x7f37b8223c80) 0
+      primary-for Phonon::VolumeFaderEffect (0x7f37b8225850)
+    QObject (0x7f37b82258c0) 0
+        primary-for Phonon::Effect (0x7f37b8223c80)
+    Phonon::MediaNode (0x7f37b8225930) 16
+        vptr=((& Phonon::VolumeFaderEffect::_ZTVN6Phonon17VolumeFaderEffectE) + 128u)
+
+Vtable for Phonon::VolumeFaderInterface
+Phonon::VolumeFaderInterface::_ZTVN6Phonon20VolumeFaderInterfaceE: 9u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon20VolumeFaderInterfaceE)
+16    Phonon::VolumeFaderInterface::~VolumeFaderInterface
+24    Phonon::VolumeFaderInterface::~VolumeFaderInterface
+32    Phonon::VolumeFaderInterface::volume
+40    Phonon::VolumeFaderInterface::setVolume
+48    Phonon::VolumeFaderInterface::fadeCurve
+56    Phonon::VolumeFaderInterface::setFadeCurve
+64    Phonon::VolumeFaderInterface::fadeTo
+
+Class Phonon::VolumeFaderInterface
+   size=8 align=8
+   base size=8 base align=8
+Phonon::VolumeFaderInterface (0x7f37b823ae70) 0 nearly-empty
+    vptr=((& Phonon::VolumeFaderInterface::_ZTVN6Phonon20VolumeFaderInterfaceE) + 16u)
+
+Vtable for Phonon::VolumeSlider
+Phonon::VolumeSlider::_ZTVN6Phonon12VolumeSliderE: 63u entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTIN6Phonon12VolumeSliderE)
+16    Phonon::VolumeSlider::metaObject
+24    Phonon::VolumeSlider::qt_metacast
+32    Phonon::VolumeSlider::qt_metacall
+40    Phonon::VolumeSlider::~VolumeSlider
+48    Phonon::VolumeSlider::~VolumeSlider
+56    QWidget::event
+64    QObject::eventFilter
+72    QObject::timerEvent
+80    QObject::childEvent
+88    QObject::customEvent
+96    QObject::connectNotify
+104   QObject::disconnectNotify
+112   QWidget::devType
+120   QWidget::setVisible
+128   QWidget::sizeHint
+136   QWidget::minimumSizeHint
+144   QWidget::heightForWidth
+152   QWidget::paintEngine
+160   QWidget::mousePressEvent
+168   QWidget::mouseReleaseEvent
+176   QWidget::mouseDoubleClickEvent
+184   QWidget::mouseMoveEvent
+192   QWidget::wheelEvent
+200   QWidget::keyPressEvent
+208   QWidget::keyReleaseEvent
+216   QWidget::focusInEvent
+224   QWidget::focusOutEvent
+232   QWidget::enterEvent
+240   QWidget::leaveEvent
+248   QWidget::paintEvent
+256   QWidget::moveEvent
+264   QWidget::resizeEvent
+272   QWidget::closeEvent
+280   QWidget::contextMenuEvent
+288   QWidget::tabletEvent
+296   QWidget::actionEvent
+304   QWidget::dragEnterEvent
+312   QWidget::dragMoveEvent
+320   QWidget::dragLeaveEvent
+328   QWidget::dropEvent
+336   QWidget::showEvent
+344   QWidget::hideEvent
+352   QWidget::x11Event
+360   QWidget::changeEvent
+368   QWidget::metric
+376   QWidget::inputMethodEvent
+384   QWidget::inputMethodQuery
+392   QWidget::focusNextPrevChild
+400   QWidget::styleChange
+408   QWidget::enabledChange
+416   QWidget::paletteChange
+424   QWidget::fontChange
+432   QWidget::windowActivationChange
+440   QWidget::languageChange
+448   (int (*)(...))-0x00000000000000010
+456   (int (*)(...))(& _ZTIN6Phonon12VolumeSliderE)
+464   Phonon::VolumeSlider::_ZThn16_N6Phonon12VolumeSliderD1Ev
+472   Phonon::VolumeSlider::_ZThn16_N6Phonon12VolumeSliderD0Ev
+480   QWidget::_ZThn16_NK7QWidget7devTypeEv
+488   QWidget::_ZThn16_NK7QWidget11paintEngineEv
+496   QWidget::_ZThn16_NK7QWidget6metricEN12QPaintDevice17PaintDeviceMetricE
+
+Class Phonon::VolumeSlider
+   size=48 align=8
+   base size=48 base align=8
+Phonon::VolumeSlider (0x7f37b824f930) 0
+    vptr=((& Phonon::VolumeSlider::_ZTVN6Phonon12VolumeSliderE) + 16u)
+  QWidget (0x7f37b8254500) 0
+      primary-for Phonon::VolumeSlider (0x7f37b824f930)
+    QObject (0x7f37b824f9a0) 0
+        primary-for QWidget (0x7f37b8254500)
+    QPaintDevice (0x7f37b824fa10) 16
+        vptr=((& Phonon::VolumeSlider::_ZTVN6Phonon12VolumeSliderE) + 464u)
+
