@@ -70,6 +70,13 @@ symbian {
     }
 }
 
+# Install
+
+sources.files = $$SOURCES $$HEADERS $$RESOURCES app.pro
+sources.path = $$[QT_INSTALL_DEMOS]/spectrum/app
+images.files += images/record.png images/settings.png
+images.path = $$[QT_INSTALL_DEMOS]/spectrum/app/images
+INSTALLS += sources images
 
 # Deployment
 
@@ -111,7 +118,7 @@ symbian {
             # the dynamic library can be located.
             copy_launch_script.target = copy_launch_script
             copy_launch_script.commands = \
-                install -m 0555 spectrum.sh ../bin/spectrum
+                install -m 0555 $$QT_SOURCE_TREE/demos/spectrum/app/spectrum.sh ../bin/spectrum
             QMAKE_EXTRA_TARGETS += copy_launch_script
             POST_TARGETDEPS += copy_launch_script
         }
