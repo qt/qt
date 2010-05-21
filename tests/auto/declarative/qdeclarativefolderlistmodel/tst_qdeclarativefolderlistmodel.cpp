@@ -93,7 +93,6 @@ void tst_qdeclarativefolderlistmodel::basicProperties()
     QAbstractListModel *flm = qobject_cast<QAbstractListModel*>(component.create());
     QVERIFY(flm != 0);
 
-
     flm->setProperty("folder",QUrl::fromLocalFile(SRCDIR "/data"));
     QTRY_COMPARE(flm->property("count").toInt(),2); // wait for refresh
     QCOMPARE(flm->property("folder").toUrl(), QUrl::fromLocalFile(SRCDIR "/data"));
@@ -105,7 +104,10 @@ void tst_qdeclarativefolderlistmodel::basicProperties()
     QCOMPARE(flm->property("showDotAndDotDot").toBool(), false);
     QCOMPARE(flm->property("showOnlyReadable").toBool(), false);
     QCOMPARE(flm->data(flm->index(0),FileNameRole).toString(), QLatin1String("basic.qml"));
-    QCOMPARE(flm->data(flm->index(1),FileNameRole).toString(), QLatin1String("dummy.qml"));
+    QCOMPARE(flm->data(flm->index(1),FileNameRole).toString(), QLatin1String("dummy.qml"));    
+    
+    flm->setProperty("folder",QUrl::fromLocalFile(""));
+    QCOMPARE(flm->property("folder").toUrl(), QUrl::fromLocalFile(""));
 }
 
 QTEST_MAIN(tst_qdeclarativefolderlistmodel)
