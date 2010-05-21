@@ -283,7 +283,7 @@ public:
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
     static QScriptValue isQtObject(QScriptContext*, QScriptEngine*);
-    static QScriptValue vector(QScriptContext*, QScriptEngine*);
+    static QScriptValue vector3d(QScriptContext*, QScriptEngine*);
     static QScriptValue rgba(QScriptContext*, QScriptEngine*);
     static QScriptValue hsla(QScriptContext*, QScriptEngine*);
     static QScriptValue point(QScriptContext*, QScriptEngine*);
