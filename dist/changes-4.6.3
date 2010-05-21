@@ -120,6 +120,11 @@ QtGui
  - qDrawPixmaps()
     * [QTBUG-8455] Fixed qDrawPixmaps() to draw on integer coordinates under Mac OS X.
 
+ - QCommonStyle
+    * [QTBUG-7137] Fixed a bug that led to missing text pixels in QTabBar when using
+      small font sizes.
+
+
 QtDBus
 ------
 
@@ -230,6 +235,12 @@ Qt for Windows
 
  - [QTBUG-6007] On Windows we query if there is a touch screen and do not try
    to enable gestures otherwise.
+ - QLocalSocket
+    * [QTBUG-7815] Pipe handle leak fixed, when closing a QLocalSocket that still has
+      unwritten data.
+    * [QTBUG-9681] Fixed closing state for local sockets with unwritten data.
+    * [QTBUG-8418] Detection of Windows mobile 6.5 fixed.
+
 
 Qt for Mac OS X
 ---------------
@@ -249,7 +260,16 @@ DirectFB
 Qt for Windows CE
 -----------------
 
- -
+- Core changes
+   * [QTBUG-8754] Fixed menu handling on Windows mobile.
+   * [QTBUG-7943] Fixed a crash when receiving a certain type of
+     WM_SETTINGSCHANGE message.
+
+- QWindowsMobileStyle
+   * [QTBUG-8419] Huge performance penalty for QTabWidget fixed for
+     Windows mobile 6.5.
+   * [QTBUG-8757] QTabBar scroll button size has been fixed.
+
 
 Qt for Symbian
 --------------
