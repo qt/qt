@@ -183,6 +183,7 @@ public:
 
     static QUrl fromLocalFile(const QString &localfile);
     QString toLocalFile() const;
+    bool isLocalFile() const;
 
     QString toString(FormattingOptions options = None) const;
 

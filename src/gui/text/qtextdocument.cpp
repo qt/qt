@@ -1970,6 +1970,8 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
             if (fi.exists()) {
                 resourceUrl =
                     QUrl::fromLocalFile(fi.absolutePath() + QDir::separator()).resolved(name);
+            } else if (currentURL.isEmpty()) {
+                resourceUrl.setScheme(QLatin1String("file"));
             }
         }
 
