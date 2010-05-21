@@ -46,6 +46,7 @@
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qstringlist.h>
+#include <QtCore/qcoreapplication.h>
 
 #include <QtCore/qdebug.h>
 
@@ -79,37 +80,25 @@ void qNotificationCallback(WLAN_NOTIFICATION_DATA *data, QNativeWifiEngine *d)
 }
 
 QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
-:   QBearerEngineImpl(parent), handle(0)
+:   QBearerEngineImpl(parent), handle(INVALID_HANDLE_VALUE)
 {
-    DWORD clientVersion;
-
-    DWORD result = local_WlanOpenHandle(1, 0, &clientVersion, &handle);
-    if (result != ERROR_SUCCESS) {
-#ifdef BEARER_MANAGEMENT_DEBUG
-        if (result != ERROR_SERVICE_NOT_ACTIVE)
-            qDebug("%s: WlanOpenHandle failed with error %ld\n", __FUNCTION__, result);
-#endif
-
-        return;
-    }
-
-    result = local_WlanRegisterNotification(handle, WLAN_NOTIFICATION_SOURCE_ALL, true,
-                                            WLAN_NOTIFICATION_CALLBACK(qNotificationCallback),
-                                            this, 0, 0);
-#ifdef BEARER_MANAGEMENT_DEBUG
-    if (result != ERROR_SUCCESS)
-        qDebug("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
-#endif
+    connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(closeHandle()));
 }
 
 QNativeWifiEngine::~QNativeWifiEngine()
 {
-    local_WlanCloseHandle(handle, 0);
+    closeHandle();
 }
 
 void QNativeWifiEngine::scanComplete()
 {
     QMutexLocker locker(&mutex);
+
+    if (!available()) {
+        locker.unlock();
+        emit updateCompleted();
+        return;
+    }
 
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
@@ -249,6 +238,9 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
 {
     QMutexLocker locker(&mutex);
 
+    if (!available())
+        return QString();
+
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
@@ -303,6 +295,9 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
 bool QNativeWifiEngine::hasIdentifier(const QString &id)
 {
     QMutexLocker locker(&mutex);
+
+    if (!available())
+        return false;
 
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
@@ -363,6 +358,12 @@ bool QNativeWifiEngine::hasIdentifier(const QString &id)
 void QNativeWifiEngine::connectToId(const QString &id)
 {
     QMutexLocker locker(&mutex);
+
+    if (!available()) {
+        locker.unlock();
+        emit connectionError(id, InterfaceLookupError);
+        return;
+    }
 
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
@@ -440,6 +441,12 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
 {
     QMutexLocker locker(&mutex);
 
+    if (!available()) {
+        locker.unlock();
+        emit connectionError(id, InterfaceLookupError);
+        return;
+    }
+
     QString interface = getInterfaceFromId(id);
 
     if (interface.isEmpty()) {
@@ -478,6 +485,12 @@ void QNativeWifiEngine::initialize()
 void QNativeWifiEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
+
+    if (!available()) {
+        locker.unlock();
+        emit updateCompleted();
+        return;
+    }
 
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
@@ -553,6 +566,42 @@ QNetworkSessionPrivate *QNativeWifiEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QNativeWifiEngine::defaultConfiguration()
 {
     return QNetworkConfigurationPrivatePointer();
+}
+
+bool QNativeWifiEngine::available()
+{
+    if (handle != INVALID_HANDLE_VALUE)
+        return true;
+
+    DWORD clientVersion;
+
+    DWORD result = local_WlanOpenHandle(1, 0, &clientVersion, &handle);
+    if (result != ERROR_SUCCESS) {
+#ifdef BEARER_MANAGEMENT_DEBUG
+        if (result != ERROR_SERVICE_NOT_ACTIVE)
+            qDebug("%s: WlanOpenHandle failed with error %ld\n", __FUNCTION__, result);
+#endif
+
+        return false;
+    }
+
+    result = local_WlanRegisterNotification(handle, WLAN_NOTIFICATION_SOURCE_ALL, true,
+                                            WLAN_NOTIFICATION_CALLBACK(qNotificationCallback),
+                                            this, 0, 0);
+#ifdef BEARER_MANAGEMENT_DEBUG
+    if (result != ERROR_SUCCESS)
+        qDebug("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
+#endif
+
+    return handle != INVALID_HANDLE_VALUE;
+}
+
+void QNativeWifiEngine::closeHandle()
+{
+    if (handle != INVALID_HANDLE_VALUE) {
+        local_WlanCloseHandle(handle, 0);
+        handle = INVALID_HANDLE_VALUE;
+    }
 }
 
 bool QNativeWifiEngine::requiresPolling() const

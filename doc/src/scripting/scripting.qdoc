@@ -362,7 +362,7 @@
   By default, the script engine does not take ownership of the
   QObject that is passed to QScriptEngine::newQObject(); the object
   is managed according to Qt's object ownership (see
-  \l{Object Trees and Object Ownership}). This mode is appropriate
+  \l{Object Trees & Ownership}). This mode is appropriate
   when, for example, you are wrapping C++ objects that are part of
   your application's core; that is, they should persist regardless of
   what happens in the scripting environment. Another way of stating
@@ -627,9 +627,9 @@
 
   To completely understand how to make C++ objects available to Qt
   Script, some basic knowledge of the Qt meta-object system is very
-  helpful. We recommend that you read the \l{Qt Object Model}. The
-  information in this document and the documents it links to are very
-  useful for understanding how to implement application objects.
+  helpful. We recommend that you read about the Qt \l{Object Model}
+  and \l{The Meta-Object System}, which are useful for understanding
+  how to implement application objects.
 
   However, this knowledge is not essential in the simplest cases.
   To make an object available in QtScript, it must derive from

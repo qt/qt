@@ -1428,7 +1428,7 @@ void QTableWidgetItem::write(QDataStream &out) const
 
     This operator uses QTableWidgetItem::read().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QTableWidgetItem &item)
 {
@@ -1443,7 +1443,7 @@ QDataStream &operator>>(QDataStream &in, QTableWidgetItem &item)
 
     This operator uses QTableWidgetItem::write().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QTableWidgetItem &item)
 {

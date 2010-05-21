@@ -33,7 +33,21 @@ $('#bigA').click(function() {
 		$(this).addClass('active')
 });
 
+$('.feedclose').click(function() {
+	$('.bd').show();
+	$('.hd').show();
+	$('.footer').show();
+	$('#feedbackBox').hide();
+	$('#blurpage').hide();
+});
 
+$('.feedback').click(function() {
+	$('.bd').hide();
+	$('.hd').hide();
+	$('.footer').hide();
+	$('#feedbackBox').show();
+	$('#blurpage').show();
+});
 var lookupCount = 0;
 var articleCount = 0;
 var exampleCount = 0;
@@ -131,6 +145,9 @@ else
 	*/
 // Loads on doc ready
 	$(document).ready(function () {
+	var pageUrl = window.location.href;
+	//alert(pageUrl);
+	$('#pageUrl').attr('foo',pageUrl);
 	var pageTitle = $('title').html();
 		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
           var currentString = $('#pageType').val() ;

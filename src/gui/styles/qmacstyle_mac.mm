@@ -108,15 +108,15 @@ extern QRegion qt_mac_convert_mac_region(RgnHandle); //qregion_mac.cpp
 
 // The following constants are used for adjusting the size
 // of push buttons so that they are drawn inside their bounds.
-static const int PushButtonLeftOffset = 6;
-static const int PushButtonTopOffset = 4;
-static const int PushButtonRightOffset = 12;
-static const int PushButtonBottomOffset = 12;
-static const int MiniButtonH = 26;
-static const int SmallButtonH = 30;
-static const int BevelButtonW = 50;
-static const int BevelButtonH = 22;
-static const int PushButtonContentPadding = 6;
+const int QMacStyle::PushButtonLeftOffset = 6;
+const int QMacStyle::PushButtonTopOffset = 4;
+const int QMacStyle::PushButtonRightOffset = 12;
+const int QMacStyle::PushButtonBottomOffset = 12;
+const int QMacStyle::MiniButtonH = 26;
+const int QMacStyle::SmallButtonH = 30;
+const int QMacStyle::BevelButtonW = 50;
+const int QMacStyle::BevelButtonH = 22;
+const int QMacStyle::PushButtonContentPadding = 6;
 
 // These colors specify the titlebar gradient colors on
 // Leopard. Ideally we should get them from the system.
@@ -131,6 +131,8 @@ static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 // non-unifed tool bar bacground.
 static const QColor mainWindowGradientBegin(240, 240, 240);
 static const QColor mainWindowGradientEnd(200, 200, 200);
+
+static const int DisclosureOffset = 4;
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
 enum {
@@ -1055,10 +1057,10 @@ HIRect QMacStylePrivate::pushButtonContentBounds(const QStyleOptionButton *btn,
     // Adjust the bounds to correct for
     // carbon not calculating the content bounds fully correct
     if (bdi->kind == kThemePushButton || bdi->kind == kThemePushButtonSmall){
-        outerBounds.origin.y += PushButtonTopOffset;
-        outerBounds.size.height -= PushButtonBottomOffset;
+        outerBounds.origin.y += QMacStyle::PushButtonTopOffset;
+        outerBounds.size.height -= QMacStyle::PushButtonBottomOffset;
     } else if (bdi->kind == kThemePushButtonMini) {
-        outerBounds.origin.y += PushButtonTopOffset;
+        outerBounds.origin.y += QMacStyle::PushButtonTopOffset;
     }
 
     HIRect contentBounds;
@@ -1074,7 +1076,7 @@ QSize QMacStylePrivate::pushButtonSizeFromContents(const QStyleOptionButton *btn
 {
     QSize csz(0, 0);
     QSize iconSize = btn->icon.isNull() ? QSize(0, 0)
-                : (btn->iconSize + QSize(PushButtonContentPadding, 0));
+                : (btn->iconSize + QSize(QMacStyle::PushButtonContentPadding, 0));
     QRect textRect = btn->text.isEmpty() ? QRect(0, 0, 1, 1)
                 : btn->fontMetrics.boundingRect(QRect(), Qt::AlignCenter, btn->text);
     csz.setWidth(iconSize.width() + textRect.width()
@@ -1149,12 +1151,12 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
             // Choose the button kind that closest match the button rect, but at the
             // same time displays the button contents without clipping.
             bdi->kind = kThemeBevelButton;
-            if (btn->rect.width() >= BevelButtonW && btn->rect.height() >= BevelButtonH){
+            if (btn->rect.width() >= QMacStyle::BevelButtonW && btn->rect.height() >= QMacStyle::BevelButtonH){
                 if (widget && widget->testAttribute(Qt::WA_MacVariableSize)) {
-                    if (btn->rect.height() <= MiniButtonH){
+                    if (btn->rect.height() <= QMacStyle::MiniButtonH){
                         if (contentFitsInPushButton(btn, bdi, kThemePushButtonMini))
                             bdi->kind = kThemePushButtonMini;
-                    } else if (btn->rect.height() <= SmallButtonH){
+                    } else if (btn->rect.height() <= QMacStyle::SmallButtonH){
                         if (contentFitsInPushButton(btn, bdi, kThemePushButtonSmall))
                             bdi->kind = kThemePushButtonSmall;
                     } else if (contentFitsInPushButton(btn, bdi, kThemePushButton)) {
@@ -3100,7 +3102,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         else
             bi.value = opt->direction == Qt::LeftToRight ? kThemeDisclosureRight : kThemeDisclosureLeft;
         bi.adornment = kThemeAdornmentNone;
-        HIRect hirect = qt_hirectForQRect(opt->rect);
+        HIRect hirect = qt_hirectForQRect(opt->rect.adjusted(DisclosureOffset,0,-DisclosureOffset,0));
         HIThemeDrawButton(&hirect, &bi, cg, kHIThemeOrientationNormal, 0);
         break; }
 
@@ -3470,6 +3472,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         QCommonStyle::drawControl(ce, opt, p, w);
         break;
     case CE_PushButtonBevel:
+        qDebug() << "here";
         if (const QStyleOptionButton *btn = ::qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if (!(btn->state & (State_Raised | State_Sunken | State_On)))
                 break;
@@ -4352,6 +4355,15 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     int controlSize = getControlSize(opt, widget);
 
     switch (sr) {
+    case SE_ItemViewItemText:
+        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+            int fw = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, widget);
+            // We add the focusframeargin between icon and text in commonstyle
+            rect = QCommonStyle::subElementRect(sr, opt, widget);
+            if (vopt->features & QStyleOptionViewItemV2::HasDecoration)
+                rect.adjust(-fw, 0, 0, 0);
+        }
+        break;
     case SE_ToolBoxTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
@@ -4369,9 +4381,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_HeaderLabel:
         if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             rect = QWindowsStyle::subElementRect(sr, opt, widget);
-            if (widget && widget->height() <= qt_mac_aqua_get_metric(kThemeMetricListHeaderHeight)){
-                // We need to allow the text a bit more space when the header is as
-                // small as kThemeMetricListHeaderHeight, otherwise it gets clipped:
+            if (widget && widget->height() <= 22){
+                // We need to allow the text a bit more space when the header is
+                // small, otherwise it gets clipped:
                 rect.setY(0);
                 rect.setHeight(widget->height());
             }
@@ -4398,8 +4410,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         HIRect outRect;
         HIThemeGetButtonShape(&inRect, &bdi, &shape);
         ptrHIShapeGetBounds(shape, &outRect);
-        rect = QRect(int(outRect.origin.x), int(outRect.origin.y),
-                  int(contentRect.origin.x - outRect.origin.x), int(outRect.size.height));
+        rect = QRect(int(outRect.origin.x + DisclosureOffset), int(outRect.origin.y),
+                  int(contentRect.origin.x - outRect.origin.x + DisclosureOffset),
+                  int(outRect.size.height));
         break;
     }
     case SE_TabWidgetLeftCorner:
@@ -5788,6 +5801,13 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = sz.expandedTo(QSize(sz.width(), minimumSize));
         }
         break;
+    case CT_ItemViewItem:
+        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+            sz = QCommonStyle::sizeFromContents(ct, vopt, csz, widget);
+            sz.setHeight(sz.height() + 2);
+        }
+        break;
+
     default:
         sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
     }

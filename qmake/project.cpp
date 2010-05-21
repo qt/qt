@@ -1046,7 +1046,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
     SKIP_WS(d, d_off, s.length());
     QString vals = s.mid(d_off); // vals now contains the space separated list of values
     int rbraces = vals.count('}'), lbraces = vals.count('{');
-    if(scope_blocks.count() > 1 && rbraces - lbraces == 1) {
+    if(scope_blocks.count() > 1 && rbraces - lbraces == 1 && vals.endsWith('}')) {
         debug_msg(1, "Project Parser: %s:%d : Leaving block %d", parser.file.toLatin1().constData(),
                   parser.line_no, scope_blocks.count());
         ScopeBlock sb = scope_blocks.pop();
@@ -1073,7 +1073,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
     }
 
     if(vals.contains('=') && numLines > 1)
-        warn_msg(WarnParser, "Detected possible line continuation: {%s} %s:%d",
+        warn_msg(WarnParser, "Possible accidental line continuation: {%s} at %s:%d",
                  var.toLatin1().constData(), parser.file.toLatin1().constData(), parser.line_no);
 
     QStringList &varlist = place[var]; // varlist is the list in the symbol table
@@ -3099,13 +3099,12 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
             place[var] = QStringList(Option::obj_ext);
         }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
-        if (place[var].isEmpty()) {
-            if (!Option::qmake_abslocation.isNull())
-                place[var] = QStringList(Option::qmake_abslocation);
-            else
-                place[var] = QStringList(Option::fixPathToTargetOS(
-                        QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake", false));
-        }
+        if (place[var].isEmpty())
+            place[var] = QStringList(Option::fixPathToTargetOS(
+                !Option::qmake_abslocation.isEmpty()
+                    ? Option::qmake_abslocation
+                    : QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake",
+                false));
     } else if (var == QLatin1String("EPOCROOT")) {
         if (place[var].isEmpty())
             place[var] = QStringList(epocRoot());

@@ -329,8 +329,8 @@ struct QBrushDataPointerDeleter
 
     \endtable
 
-    For more information about painting in general, see \l{The Paint
-    System} documentation.
+    For more information about painting in general, see the \l{Paint
+    System}.
 
     \sa Qt::BrushStyle, QPainter, QColor
 */
@@ -1013,7 +1013,7 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
     Writes the given \a brush to the given \a stream and returns a
     reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QBrush &b)
@@ -1081,7 +1081,7 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
     Reads the given \a brush from the given \a stream and returns a
     reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QBrush &b)
