@@ -113,6 +113,8 @@ public:
     Status status() const;
     qreal progress() const;
 
+    Q_INVOKABLE QString errorString() const;
+
     virtual void classBegin();
     virtual void componentComplete();
 
