@@ -829,7 +829,6 @@ quint64 QCoreWlanEngine::bytesWritten(const QString &id)
     QMutexLocker locker(&mutex);
     const QString interfaceStr = getInterfaceFromId(id);
     return getBytes(interfaceStr,false);
-    return Q_UINT64_C(0);
 }
 
 quint64 QCoreWlanEngine::bytesReceived(const QString &id)
@@ -837,7 +836,6 @@ quint64 QCoreWlanEngine::bytesReceived(const QString &id)
     QMutexLocker locker(&mutex);
     const QString interfaceStr = getInterfaceFromId(id);
     return getBytes(interfaceStr,true);
-    return Q_UINT64_C(0);
 }
 
 quint64 QCoreWlanEngine::startTime(const QString &id)
