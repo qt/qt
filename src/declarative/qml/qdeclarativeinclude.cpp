@@ -259,8 +259,6 @@ QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEn
     if (ctxt->argumentCount() == 0)
         return engine->undefinedValue();
 
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-
     QString urlString = ctxt->argument(0).toString();
     QUrl url(ctxt->argument(0).toString());
     if (url.isRelative()) {

@@ -2543,7 +2543,6 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 QDeclarativeAction &yAction = pc->yIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
                 QDeclarativeAction &sAction = pc->scaleIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
                 QDeclarativeAction &rAction = pc->rotationIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
-                bool forward = (direction == QDeclarativeAbstractAnimation::Forward);
                 QDeclarativeItem *target = pc->object();
                 QDeclarativeItem *targetParent = action.reverseEvent ? pc->originalParent() : pc->parent();
 

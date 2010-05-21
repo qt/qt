@@ -8,7 +8,8 @@ Item {
     property int activeSuns: 0
 
     //This is a desktop-sized example
-    width: 1024; height: 512
+    width: 800; height: 480
+
     
     //This is the message box that pops up when there's an error
     Rectangle {
@@ -79,7 +80,7 @@ Item {
     Rectangle {
         id: toolbox
 
-        width: 480
+        width: 380
         color: activePalette.window
         anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
 
@@ -132,7 +133,7 @@ Item {
             Text { text: "Arbitrary QML:" }
 
             Rectangle {
-                width: 460; height: 240
+                width: 360; height: 240
 
                 TextEdit {
                     id: qmlText
@@ -140,8 +141,9 @@ Item {
                     readOnly: false
                     focusOnPress: true
                     font.pixelSize: 14
+                    wrapMode: TextEdit.WordWrap
 
-                    text: "import Qt 4.7\nImage {\n    id: smile\n    x: 500 * Math.random()\n    y: 200 * Math.random() \n    source: 'images/face-smile.png'\n\n    NumberAnimation on opacity { \n        to: 0; duration: 1500\n    }\n\n    Component.onCompleted: smile.destroy(1500);\n}"
+                    text: "import Qt 4.7\nImage {\n    id: smile\n    x: 360 * Math.random()\n    y: 180 * Math.random() \n    source: 'images/face-smile.png'\n    NumberAnimation on opacity { \n        to: 0; duration: 1500\n    }\n    Component.onCompleted: smile.destroy(1500);\n}"
                 }
             }
 

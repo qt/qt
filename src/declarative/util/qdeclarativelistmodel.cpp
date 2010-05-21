@@ -162,7 +162,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
                 spacing: 5
                 Text { text: "Attributes:" }
                 Repeater {
-                    dataSource: attributes
+                    model: attributes
                     Component { Text { text: description } }
                 }
             }

@@ -12,7 +12,9 @@ sources.files = \
    samegame \
    snake \
    twitter \
+   rssnews \
    webbrowser
+
 sources.path = $$[QT_INSTALL_DEMOS]/declarative
 INSTALLS += sources
 

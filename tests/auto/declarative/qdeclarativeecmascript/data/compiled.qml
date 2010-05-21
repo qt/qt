@@ -31,6 +31,8 @@ QtObject {
     property string test21: g
     property string test22: h
     property bool test23: i
+    property color test24: j
+    property color test25: k
 
     property real a: 4.5
     property real b: 11.2
@@ -41,4 +43,6 @@ QtObject {
     property variant g: 6.7
     property variant h: "!"
     property variant i: true
+    property string j: "#112233"
+    property string k: "#aa112233"
 }
