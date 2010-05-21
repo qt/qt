@@ -128,7 +128,6 @@ struct XmlQueryJob
     QStringList keyRoleResultsCache;
 };
 
-
 class QDeclarativeXmlQuery : public QThread
 {
     Q_OBJECT
@@ -355,12 +354,16 @@ void QDeclarativeXmlQuery::doSubQueryJob()
         QList<QVariant> resultList;
         if (!queries[i].isEmpty()) {
             subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
-            QXmlResultItems resultItems;
-            subquery.evaluateTo(&resultItems);
-            QXmlItem item(resultItems.next());
-            while (!item.isNull()) {
-                resultList << item.toAtomicValue(); //### we used to trim strings
-                item = resultItems.next();
+            if (subquery.isValid()) {
+                QXmlResultItems resultItems;
+                subquery.evaluateTo(&resultItems);
+                QXmlItem item(resultItems.next());
+                while (!item.isNull()) {
+                    resultList << item.toAtomicValue(); //### we used to trim strings
+                    item = resultItems.next();
+                }
+            } else {
+                qWarning().nospace() << "XmlListModel: invalid query: " << queries[i];
             }
         }
         //### should warn here if things have gone wrong.
