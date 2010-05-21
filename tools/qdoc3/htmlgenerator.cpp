@@ -2479,19 +2479,19 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         out() << "</b></p>\n";
     }
 
-    out() << "<table class=\"generic\">\n";
+    out() << "<div class=\"flowListDiv\">\n";
     for (k = 0; k < numRows; k++) {
         if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd topAlign\">";
+            out() << "<dl class=\"flowList odd\"";
         else
-            out() << "<tr class=\"even topAlign\">";
+            out() << "<dl class=\"flowList even\">";
         //break;
 
 //	out() << "<tr>\n";
         for (i = 0; i < NumColumns; i++) {
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
-                out() << "<td>\n</td>\n"; // check why?
+                out() << "<dd>\n</dd>\n"; // check why?
             }
             else {
                 while ((currentParagraphNo[i] < NumParagraphs) &&
@@ -2506,7 +2506,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     currentParagraphNo[i] = NumParagraphs - 1;
                 }
 #endif
-                out() << "<th  class=\"rightAlign alphaChar\"><p>";
+                out() << "<dt  class=\"alphaChar\"><p>";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
                     if (includeAlphabet) {
@@ -2517,9 +2517,9 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << paragraphName[currentParagraphNo[i]]
                           << "</b>";
                 }
-                out() << "</p></th>\n";
+                out() << "</p></dt>\n";
 
-                out() << "<td><p>";
+                out() << "<dd><p>";
                 if ((currentParagraphNo[i] < NumParagraphs) &&
                     !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     NodeMap::Iterator it;
@@ -2545,15 +2545,15 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                         out() << ")";
                     }
                 }
-                out() << "</p></td>\n";
+                out() << "</p></dd>\n";
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
             }
         }
-        out() << "</tr>\n";
+        out() << "</dl>\n";
     }
-    out() << "</table>\n";
+    out() << "</div>\n";
 }
 
 void HtmlGenerator::generateFunctionIndex(const Node *relative,

@@ -998,17 +998,17 @@
 	
 	.rightAlign
 	{
-	text-align:right;	
+	/*text-align:right;	*/
 	}
 
 	
 	.leftAlign
 	{
-	text-align:left;	
+	/*text-align:left;	*/
 	}
 
 	.topAlign{
-	vertical-align:top
+	/*vertical-align:top*/
 	}
 	
 	.functionIndex a{
@@ -1140,7 +1140,16 @@
 
     /* end of screen media */
 
-	
+.flowList{
+display:inline-block;
+width:260px;
+}	
+.flowList dl{
+padding:0px;
+}
+.wrap .content .flowList p{
+padding:0px;
+}
 }
 /* end of screen media */
 
