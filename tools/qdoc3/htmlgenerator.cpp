@@ -2332,7 +2332,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 3; // number of columns in the result
+    const int NumColumns = 1; // number of columns in the result
 
     if (classMap.isEmpty())
         return;
@@ -2482,7 +2482,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     out() << "<div class=\"flowListDiv\">\n";
     for (k = 0; k < numRows; k++) {
         if (++numTableRows % 2 == 1)
-            out() << "<dl class=\"flowList odd\"";
+            out() << "<dl class=\"flowList odd\">";
         else
             out() << "<dl class=\"flowList even\">";
         //break;
