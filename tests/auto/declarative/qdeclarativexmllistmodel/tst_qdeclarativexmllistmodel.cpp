@@ -224,7 +224,7 @@ void tst_qdeclarativexmllistmodel::roleErrors()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml"));
     QTest::ignoreMessage(QtWarningMsg, (QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml").toString() + ":6:5: QML XmlRole: An XmlRole query must not start with '/'").toUtf8().constData());
-    QTest::ignoreMessage(QtWarningMsg, "XmlListModel: invalid query: \"age/\"");
+    QTest::ignoreMessage(QtWarningMsg, (QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml").toString() + ":9:5: QML XmlRole: invalid query: \"age/\"").toUtf8().constData());
 
     //### make sure we receive all expected warning messages.
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());

@@ -142,6 +142,7 @@ private Q_SLOTS:
     void requestProgress(qint64,qint64);
     void dataCleared();
     void queryCompleted(const QDeclarativeXmlQueryResult &);
+    void queryError(void* object, const QString& error);
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativeXmlListModel)

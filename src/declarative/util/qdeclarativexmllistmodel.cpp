@@ -124,6 +124,7 @@ struct XmlQueryJob
     QString query;
     QString namespaces;
     QStringList roleQueries;
+    QList<void*> roleQueryErrorId; // the ptr to send back if there is an error
     QStringList keyRoleQueries;
     QStringList keyRoleResultsCache;
 };
@@ -167,6 +168,7 @@ public:
                 continue;
             }
             job.roleQueries << roleObjects->at(i)->query();
+            job.roleQueryErrorId << static_cast<void*>(roleObjects->at(i));
             if (roleObjects->at(i)->isKey())
                 job.keyRoleQueries << job.roleQueries.last();
         }
@@ -182,6 +184,7 @@ public:
 
 Q_SIGNALS:
     void queryCompleted(const QDeclarativeXmlQueryResult &);
+    void error(void*, const QString&);
 
 protected:
     void run() {
@@ -363,7 +366,7 @@ void QDeclarativeXmlQuery::doSubQueryJob()
                     item = resultItems.next();
                 }
             } else {
-                qWarning().nospace() << "XmlListModel: invalid query: " << queries[i];
+                emit error(job.roleQueryErrorId.at(i), queries[i]);
             }
         }
         //### should warn here if things have gone wrong.
@@ -565,6 +568,8 @@ QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
 {
     connect(globalXmlQuery(), SIGNAL(queryCompleted(QDeclarativeXmlQueryResult)),
             this, SLOT(queryCompleted(QDeclarativeXmlQueryResult)));
+    connect(globalXmlQuery(), SIGNAL(error(void*,QString)),
+            this, SLOT(queryError(void*,QString)));
 }
 
 QDeclarativeXmlListModel::~QDeclarativeXmlListModel()
@@ -957,6 +962,19 @@ void QDeclarativeXmlListModel::dataCleared()
     r.removed << qMakePair(0, count());
     r.keyRoleResultsCache = d->keyRoleResultsCache;
     queryCompleted(r);
+}
+
+void QDeclarativeXmlListModel::queryError(void* object, const QString& error)
+{
+    // Be extra careful, object may no longer exist, it's just an ID.
+    Q_D(QDeclarativeXmlListModel);
+    for (int i=0; i<d->roleObjects.count(); i++) {
+        if (d->roleObjects.at(i) == static_cast<QDeclarativeXmlListModelRole*>(object)) {
+            qmlInfo(d->roleObjects.at(i)) << QObject::tr("invalid query: \"%1\"").arg(error);
+            return;
+        }
+    }
+    qmlInfo(this) << QObject::tr("invalid query: \"%1\"").arg(error);
 }
 
 void QDeclarativeXmlListModel::queryCompleted(const QDeclarativeXmlQueryResult &result)
