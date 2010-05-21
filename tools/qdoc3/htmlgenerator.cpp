@@ -2482,7 +2482,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     out() << "<div class=\"flowListDiv\">\n";
     for (k = 0; k < numRows; k++) {
         if (++numTableRows % 2 == 1)
-            out() << "<dl class=\"flowList odd\"";
+            out() << "<dl class=\"flowList odd\">";
         else
             out() << "<dl class=\"flowList even\">";
         //break;
