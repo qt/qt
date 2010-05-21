@@ -844,7 +844,7 @@
         background-color: #e6e7e8;
         z-index: 4;
     }
-    #feedcloseX a
+    #feedcloseX 
     {
         display: inline;
         padding: 5px 5px 0 0;
@@ -998,17 +998,17 @@
 	
 	.rightAlign
 	{
-	/*text-align:right;	*/
+	text-align:right;	
 	}
 
 	
 	.leftAlign
 	{
-	/*text-align:left;	*/
+	text-align:left;	
 	}
 
 	.topAlign{
-	/*vertical-align:top*/
+	vertical-align:top
 	}
 	
 	.functionIndex a{
@@ -1150,6 +1150,11 @@ padding:0px;
 .wrap .content .flowList p{
 padding:0px;
 }
+pre.highlightedCode {
+	display: block;
+	overflow:hidden;
+}
+
 }
 /* end of screen media */
 

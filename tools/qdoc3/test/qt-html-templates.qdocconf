@@ -54,8 +54,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
-			  "          <div  id=\"live001\" class=\"live\">\n" \
-			  "          </div>\n" \
 			  "        </div>\n" \
 			  "        <div class=\"box bottombar\" id=\"topics\">\n" \
 			  "          <h2><span></span>\n" \
@@ -67,8 +65,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform-specific info</a></li>\n" \
 			  "            </ul>  \n" \
-			  "          </div>\n" \
-			  "          <div  id=\"live002\" class=\"live\">\n" \
 			  "          </div>\n" \
 			  "        </div>\n" \
 			  "        <div class=\"box\" id=\"examples\">\n" \
@@ -82,8 +78,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeexamples.html\">QML Examples</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeexamples.html#Demos\">QML Demos</a></li>\n" \
 			  "            </ul> \n" \
-			  "          </div>\n" \
-			  "          <div id=\"live003\" class=\"live\">\n" \
 			  "          </div>\n" \
 			  "        </div>\n" \
 			  "      </div>\n" \
@@ -130,7 +124,6 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
 			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
-			  "      <input id=\"pageVal\" name=\"pageVal\" value=\"\$(\'title\').html();\" style=\"display:none;\">\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \

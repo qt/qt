@@ -117,7 +117,14 @@ function processNokiaData(response){
 var blankRE=/^\s*$/;
 function CheckEmptyAndLoadList()
 {
+	var pageUrl = window.location.href;
+	var pageVal = $('title').html();
+	$('#feedUrl').remove();
+	$('#pageVal').remove();
+	$('#feedform').append('<input id="feedUrl" name="feedUrl" value="'+pageUrl+'" style="display:none;">');
+	$('#feedform').append('<input id="pageVal" name="pageVal" value="'+pageVal+'" style="display:none;">');
 	$('.liveResult').remove();
+    $('.defaultLink').css('display','block');
 	var value = document.getElementById('pageType').value; 
 	if((blankRE.test(value)) || (value.length < 3))
 	{
@@ -140,11 +147,9 @@ else
 	*/
 // Loads on doc ready
 	$(document).ready(function () {
-	var pageUrl = window.location.href;
 	//alert(pageUrl);
 	//$('#pageUrl').attr('foo',pageUrl);
 	var pageTitle = $('title').html();
-		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
           var currentString = $('#pageType').val() ;
 		  if(currentString.length < 1){
 			$('.defaultLink').css('display','block');
