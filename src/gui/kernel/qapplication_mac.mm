@@ -2613,12 +2613,20 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
 /*!
     \fn bool QApplication::macEventFilter(EventHandlerCallRef caller, EventRef event)
 
-    \warning This virtual function is only used under Mac OS X when Qt is based on Carbon.
+    \warning This virtual function is only used under Mac OS X, and behaves different
+    depending on if Qt is based on Carbon or Cocoa.
 
-    If you create an application that inherits QApplication and reimplement
+    For the Carbon port, If you create an application that inherits QApplication and reimplement
     this function, you get direct access to all Carbon Events that Qt registers
     for from Mac OS X with this function being called with the \a caller and
     the \a event.
+
+    For the Cocoa port, If you create an application that inherits QApplication and reimplement
+    this function, you get direct access to all Cocoa Events that Qt receives
+    from Mac OS X with this function being called with the \a caller being 0 and
+    the \a event being an NSEvent pointer:
+
+    NSEvent *e = reinterpret_cast<NSEvent *>(event);
 
     Return true if you want to stop the event from being processed.
     Return false for normal event dispatching. The default
@@ -2627,29 +2635,6 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
     \sa macEventFilter(void *nsevent)
 */
 bool QApplication::macEventFilter(EventHandlerCallRef, EventRef)
-{
-    return false;
-}
-
-/*!
-    \fn bool QApplication::macEventFilter(void *nsevent)
-
-    \warning This virtual function is only used under Mac OS X when Qt is based on Cocoa.
-
-    If you create an application that inherits QApplication and reimplement
-    this function, you get direct access to all NSEvents that Qt receives
-    from Cocoa.
-    \a nsevent is of type NSEvent *:
-
-    NSEvent *e = static_cast<NSEvent *>(nsevent);
-
-    Return true if you want to stop the event from being processed.
-    Return false for normal event dispatching. The default
-    implementation returns false.
-
-    \sa macEventFilter(EventHandlerCallRef caller, EventRef event)
-*/
-bool QApplication::macEventFilter(void * /*NSEvent*/)
 {
     return false;
 }
