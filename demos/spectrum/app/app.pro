@@ -111,7 +111,7 @@ symbian {
             # the dynamic library can be located.
             copy_launch_script.target = copy_launch_script
             copy_launch_script.commands = \
-                install -m 0555 spectrum.sh ../bin/spectrum
+                install -m 0555 $$PWD/spectrum.sh ../bin/spectrum
             QMAKE_EXTRA_TARGETS += copy_launch_script
             POST_TARGETDEPS += copy_launch_script
         }
