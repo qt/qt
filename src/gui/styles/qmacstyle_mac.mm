@@ -3361,7 +3361,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         QCommonStyle::drawControl(ce, opt, p, w);
         break;
     case CE_PushButtonBevel:
-        qDebug() << "here";
         if (const QStyleOptionButton *btn = ::qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if (!(btn->state & (State_Raised | State_Sunken | State_On)))
                 break;
