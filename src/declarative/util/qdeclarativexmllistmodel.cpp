@@ -754,13 +754,13 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
         query: "/feed/entry"
         XmlRole { name: "title"; query: "title/string()" }
     }
-    \qml
+    \endqml
 
     This will access the \c title value for the first item in the model:
 
     \qml
         var title = model.get(0).title;
-    \qml
+    \endqml
 */
 QScriptValue QDeclarativeXmlListModel::get(int index) const
 {
