@@ -56,7 +56,7 @@
     number of custom-made 2D graphical items, and a view widget for
     visualizing the items, with support for zooming and rotation. Graphics
     View was introduced in Qt 4.2, replacing its predecessor, QCanvas. For
-    more on Graphics View, see \l{The Graphics View Framework}.
+    more on Graphics View, see \l{Graphics View Framework}.
 
     This document walks through the steps needed, class by class and function
     by function, to port a QCanvas application to Graphics View.

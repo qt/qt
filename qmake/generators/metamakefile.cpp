@@ -476,7 +476,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
             mkfile = new NmakeMakefileGenerator;
     } else if(gen == "MSBUILD") {
         // Visual Studio >= v11.0
-        if(proj->first("TEMPLATE").indexOf(QRegExp("^vc.*")) != -1 || proj->first("TEMPLATE").indexOf(QRegExp("^ce.*")) != -1)
+        if (proj->first("TEMPLATE").startsWith("vc"))
             mkfile = new VcxprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;

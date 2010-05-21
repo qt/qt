@@ -120,6 +120,17 @@ public:
 
     bool event(QEvent *e);
 
+    // Ideally these wouldn't exist, but since they already exist we need some accessors.
+    static const int PushButtonLeftOffset;
+    static const int PushButtonTopOffset;
+    static const int PushButtonRightOffset;
+    static const int PushButtonBottomOffset;
+    static const int MiniButtonH;
+    static const int SmallButtonH;
+    static const int BevelButtonW;
+    static const int BevelButtonH;
+    static const int PushButtonContentPadding;
+
 protected Q_SLOTS:
     QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
                                      const QWidget *widget = 0) const;

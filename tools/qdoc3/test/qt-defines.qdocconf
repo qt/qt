@@ -34,6 +34,7 @@ extraimages.HTML        = qt-logo \
 			  page.png \
 			  page_bg.png \
 			  sprites-combined.png \
+			  spinner.gif \
                           taskmenuextension-example.png \
                           coloreditorfactoryimage.png \
                           dynamiclayouts-example.png \

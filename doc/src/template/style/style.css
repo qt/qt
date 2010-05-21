@@ -456,6 +456,7 @@
     .wrap .content
     {
         padding: 30px;
+		word-wrap:break-word;
     }
 
     .wrap .content li
@@ -997,17 +998,17 @@
 	
 	.rightAlign
 	{
-	text-align:right;	
+	/*text-align:right;	*/
 	}
 
 	
 	.leftAlign
 	{
-	text-align:left;	
+	/*text-align:left;	*/
 	}
 
 	.topAlign{
-	vertical-align:top
+	/*vertical-align:top*/
 	}
 	
 	.functionIndex a{
@@ -1067,6 +1068,7 @@
     .indexboxcont .sectionlist
     {
         display: inline-block;
+		vertical-align:top;
 		width: 32.5%;
         padding: 0;
     }
@@ -1138,7 +1140,16 @@
 
     /* end of screen media */
 
-	
+.flowList{
+display:inline-block;
+width:260px;
+}	
+.flowList dl{
+padding:0px;
+}
+.wrap .content .flowList p{
+padding:0px;
+}
 }
 /* end of screen media */
 

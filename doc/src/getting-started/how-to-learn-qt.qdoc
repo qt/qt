@@ -59,11 +59,11 @@
     If you want to design your user interfaces using a design tool, then
     read at least the first few chapters of the \l{Qt Designer manual}.
 
-    By now you'll have produced some small working applications and have a
-    broad feel for Qt programming. You could start work on your own
-    projects straight away, but we recommend reading a couple of key
-    overviews to deepen your understanding of Qt: \l{Qt Object Model}
-    and \l{Signals and Slots}.
+    By now you'll have produced some small working applications and
+    have a broad feel for Qt programming. You could start work on your
+    own projects straight away, but we recommend reading a couple of
+    key overviews to deepen your understanding of Qt: The Qt \l{Object
+    Model} and \l{Signals and Slots}.
 
     \beginfloatleft
     \inlineimage qtdemo-small.png

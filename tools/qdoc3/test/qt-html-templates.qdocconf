@@ -109,7 +109,7 @@ HTML.postpostheader     = "            </ul>\n" \
 			  "        <div class=\"content\">\n"
 
 HTML.footer             = "        <!-- /div -->\n" \
-			  "        <div class=\"feedback t_button\" onclick=\"\$(\'.bd\').hide();\$(\'.hd\').hide();\$(\'.footer\').hide();\$(\'#feedbackBox\').show();\$(\'#blurpage\').show()\">\n" \
+			  "        <div class=\"feedback t_button\">\n" \
 			  "          [+] Documentation Feedback</div>\n" \
 			  "      </div>\n" \
 			  "    </div>\n" \
@@ -127,14 +127,11 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "        href=\"http://qt.nokia.com/about/privacy-policy\">Privacy Policy</a></p>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"feedbackBox\">\n" \
-			  "      <div id=\"feedcloseX\">\n" \
-			  "        <a href=\"#\" onclick=\"\$(\'.bd\').show();\$(\'.hd\').show();\$(\'.footer\').show();\$(\'#feedbackBox\').hide();\$(\'#blurpage\').hide()\">X</a>\n" \
-			  "      </div>\n" \
-			  "    <form id=\"feedform\" action=\"feedback.php\" method=\"get\">\n" \
+			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
+			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
 			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
-			  "      <input id=\"page\" name=\"pageVal\" value=\"\$(\'title\').html();\" style=\"display:none;\">\n" \
-			  "      <p><input id=\"feedsubmit\" type=\"submit\" onclick=\"\$(\'.bd\').show();\$(\'.hd\').show();\$(\'.footer\').show();\$(\'#feedbackBox\').hide();\$(\'#blurpage\').hide()\"\n" \
-			  "        name=\"feedback\" /></p>\n" \
+			  "      <input id=\"pageVal\" name=\"pageVal\" value=\"\$(\'title\').html();\" style=\"display:none;\">\n" \
+			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"blurpage\">\n" \
