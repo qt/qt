@@ -49,6 +49,27 @@ QtCore
 QtGui
 -----
 
+ - QGraphicsEffect
+    * [QTBUG-5358] Fixed warnings and crash when painting graphics effects outside scene.
+
+ - QGraphicsItem
+    * [QTBUG-9391] Avoid a useless repaint when setting the cache mode to
+      DeviceCoordinateMode while already using that mode.
+    * [QTBUG-8475] Fixed crash and loss of focus when deleting a child of a focus scope.
+
+ - QGraphicsProxyWidget
+    * [QTBUG-5349] Fixed tooltips not being shown for QGraphicsProxyWidget.
+    * [QTBUG-2883] Fixed tooltips appearing at wrong location.
+    * [QTBUG-7296] Fixed painting artifacts on a scaled proxy when the view is scrolled.
+
+ - QGraphicsScene
+    * [QTBUG-7863] Fixed incorrect blending when using QGraphicsItem:DeviceCoordinateCache
+    and when the item is semi-transparent. If the item is transformed, the cache is now
+    always fully repainted to avoid artifacts.
+
+ - QGraphicsView
+    * Item tooltips are not clipped by the view anymore.
+
  - QPainter
 	* [QTBUG-10421] Fixed WebKit-specific justification bug for text containing
        more than one script.
