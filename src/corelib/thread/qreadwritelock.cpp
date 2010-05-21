@@ -252,7 +252,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
 
     while (d->accessCount < 0 || d->waitingWriters) {
         ++d->waitingReaders;
-        bool success = d->readerWait.wait(&d->mutex, timeout < 0 ? ULONG_MAX : timeout);
+        bool success = d->readerWait.wait(&d->mutex, timeout < 0 ? ULONG_MAX : ulong(timeout));
         --d->waitingReaders;
         if (!success)
             return false;
@@ -374,7 +374,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
 
     while (d->accessCount != 0) {
         ++d->waitingWriters;
-        bool success = d->writerWait.wait(&d->mutex, timeout < 0 ? ULONG_MAX : timeout);
+        bool success = d->writerWait.wait(&d->mutex, timeout < 0 ? ULONG_MAX : ulong(timeout));
         --d->waitingWriters;
 
         if (!success)
