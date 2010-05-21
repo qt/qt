@@ -68,6 +68,7 @@
 
 #include "private/qmenu_p.h"
 #include "private/qpushbutton_p.h"
+#include "private/qmacstyle_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -705,10 +706,10 @@ bool QPushButton::hitButton(const QPoint &pos) const
 bool QPushButtonPrivate::hitButton(const QPoint &pos)
 {
     Q_Q(QPushButton);
-    QRect roundedRect(q->rect().left() + QMacStyle::PushButtonLeftOffset,
-                      q->rect().top() + QMacStyle::PushButtonContentPadding,
-                      q->rect().width() - QMacStyle::PushButtonRightOffset,
-                      q->rect().height() - QMacStyle::PushButtonBottomOffset);
+    QRect roundedRect(q->rect().left() + QMacStylePrivate::PushButtonLeftOffset,
+                      q->rect().top() + QMacStylePrivate::PushButtonContentPadding,
+                      q->rect().width() - QMacStylePrivate::PushButtonRightOffset,
+                      q->rect().height() - QMacStylePrivate::PushButtonBottomOffset);
     return roundedRect.contains(pos);
 }
 #endif // Q_WS_MAC

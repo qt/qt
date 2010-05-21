@@ -107,19 +107,7 @@
 // We mean it.
 //
 
-// These colors specify the titlebar gradient colors on
-// Leopard. Ideally we should get them from the system.
-static const QColor titlebarGradientActiveBegin(220, 220, 220);
-static const QColor titlebarGradientActiveEnd(151, 151, 151);
-static const QColor titlebarSeparatorLineActive(111, 111, 111);
-static const QColor titlebarGradientInactiveBegin(241, 241, 241);
-static const QColor titlebarGradientInactiveEnd(207, 207, 207);
-static const QColor titlebarSeparatorLineInactive(131, 131, 131);
-
-// Gradient colors used for the dock widget title bar and
-// non-unifed tool bar bacground.
-static const QColor mainWindowGradientBegin(240, 240, 240);
-static const QColor mainWindowGradientEnd(200, 200, 200);
+QT_BEGIN_NAMESPACE
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
 enum {
@@ -135,12 +123,6 @@ enum {
     kHIThemeFrameTextFieldRoundMini = 1002
 };
 #endif
-
-// Resolve these at run-time, since the functions was moved in Leopard.
-typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
-static PtrHIShapeGetBounds ptrHIShapeGetBounds = 0;
-
-static int closeButtonSize = 12;
 
 /*
     AHIG:
@@ -251,5 +233,7 @@ public:
     QMacStyle *q;
     bool mouseDown;
 };
+
+QT_END_NAMESPACE
 
 #endif // QMACSTYLE_MAC_P_H
