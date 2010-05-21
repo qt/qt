@@ -76,7 +76,7 @@ static const MacSpecialKey entries[NumEntries] = {
     { Qt::Key_Backtab, 0x21E4 },
     { Qt::Key_Backspace, 0x232B },
     { Qt::Key_Return, 0x21B5 },
-    { Qt::Key_Enter, 0x21B5 },
+    { Qt::Key_Enter, 0x2324 },
     { Qt::Key_Delete, 0x2326 },
     { Qt::Key_Home, 0x2196 },
     { Qt::Key_End, 0x2198 },

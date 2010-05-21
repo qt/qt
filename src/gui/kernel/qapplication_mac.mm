@@ -1246,6 +1246,8 @@ void qt_init(QApplicationPrivate *priv, int)
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
     NSApplication *cocoaApp = [QNSApplication sharedApplication];
+    qt_redirectNSApplicationSendEvent();
+
     QMacCocoaAutoReleasePool pool;
     NSObject *oldDelegate = [cocoaApp delegate];
     QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
@@ -2611,25 +2613,26 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
 /*!
     \fn bool QApplication::macEventFilter(EventHandlerCallRef caller, EventRef event)
 
-    \warning This virtual function is only implemented under Mac OS X when against Carbon.
+    \warning This virtual function is only used under Mac OS X, and behaves different
+    depending on if Qt is based on Carbon or Cocoa.
 
-    If you create an application that inherits QApplication and reimplement
+    For the Carbon port, If you create an application that inherits QApplication and reimplement
     this function, you get direct access to all Carbon Events that Qt registers
     for from Mac OS X with this function being called with the \a caller and
     the \a event.
+
+    For the Cocoa port, If you create an application that inherits QApplication and reimplement
+    this function, you get direct access to all Cocoa Events that Qt receives
+    from Mac OS X with this function being called with the \a caller being 0 and
+    the \a event being an NSEvent pointer:
+
+    NSEvent *e = reinterpret_cast<NSEvent *>(event);
 
     Return true if you want to stop the event from being processed.
     Return false for normal event dispatching. The default
     implementation returns false.
 
-    Cocoa uses a different event system which means this function is NOT CALLED
-    when building Qt against Cocoa. If you want similar functionality subclass
-    NSApplication and reimplement the sendEvent: message to handle all the
-    NSEvents. You also will need to to instantiate your custom NSApplication
-    before creating a QApplication. See \l
-    {http://developer.apple.com/documentation/Cocoa/Reference/ApplicationKit/Classes/NSApplication_Class/Reference/Reference.html}{Apple's
-    NSApplication Reference} for more information.
-
+    \sa macEventFilter(void *nsevent)
 */
 bool QApplication::macEventFilter(EventHandlerCallRef, EventRef)
 {
@@ -3110,11 +3113,7 @@ void onApplicationChangedActivation( bool activated )
         }
 
         if (!app->activeWindow()) {
-#if QT_MAC_USE_COCOA
-            OSWindowRef wp    = [NSApp keyWindow];
-#else
-            OSWindowRef wp = ActiveNonFloatingWindow();
-#endif
+            OSWindowRef wp = [NSApp keyWindow];
             if (QWidget *tmp_w = qt_mac_find_window(wp))
                 app->setActiveWindow(tmp_w);
         }

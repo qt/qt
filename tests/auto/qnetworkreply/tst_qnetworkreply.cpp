@@ -1171,6 +1171,12 @@ void tst_QNetworkReply::getErrors_data()
     QTest::addColumn<int>("httpStatusCode");
     QTest::addColumn<bool>("dataIsEmpty");
 
+    // empties
+    QTest::newRow("empty-url") << QString() << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
+    QTest::newRow("empty-scheme-host") << SRCDIR "/rfc3252.txt" << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
+    QTest::newRow("empty-scheme") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri"
+            << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
+
     // file: errors
     QTest::newRow("file-host") << "file://this-host-doesnt-exist.troll.no/foo.txt"
 #if !defined Q_OS_WIN
