@@ -129,6 +129,7 @@ Rectangle {
                 anchors.leftMargin: 54
                 font.pixelSize: 32
                 color: (wrapper.ListView.isCurrentItem && root.keyPressed) ? palette.highlightedText : palette.windowText
+                elide: Text.ElideRight
             }
             MouseArea {
                 id: mouseRegion
