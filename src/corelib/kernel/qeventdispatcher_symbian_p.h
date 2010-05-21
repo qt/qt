@@ -211,6 +211,26 @@ private:
     QMutex m_mutex;
     QWaitCondition m_waitCond;
     bool m_quit;
+
+    // to protect when several
+    // requests like:
+    // requestSocketEvents
+    // cancelSocketEvents
+    // kick in the same time
+    // all will fight for m_mutex
+    //
+    // TODO: fix more elegantely
+    //
+    QMutex m_grabberMutex;
+
+    // this one will tell
+    // if selectthread is
+    // really in select call
+    // and will prevent
+    // writing to pipe that
+    // causes later in locking
+    // of the thread in waitcond
+    QMutex m_selectCallMutex;
 };
 
 class Q_CORE_EXPORT CQtActiveScheduler : public CActiveScheduler
