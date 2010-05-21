@@ -47,6 +47,7 @@
 
 #include <QtCore/qurl.h>
 #include <QtCore/qstringlist.h>
+#include <QtScript/qscriptvalue.h>
 
 #include <private/qlistmodelinterface_p.h>
 
@@ -109,6 +110,8 @@ public:
     QString namespaceDeclarations() const;
     void setNamespaceDeclarations(const QString&);
 
+    Q_INVOKABLE QScriptValue get(int index) const;
+
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
@@ -139,6 +142,7 @@ private Q_SLOTS:
     void requestProgress(qint64,qint64);
     void dataCleared();
     void queryCompleted(const QDeclarativeXmlQueryResult &);
+    void queryError(void* object, const QString& error);
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativeXmlListModel)

@@ -42,7 +42,7 @@
 #include "private/qdeclarativexmllistmodel_p.h"
 
 #include <qdeclarativecontext.h>
-#include <qdeclarativeengine.h>
+#include <qdeclarativeengine_p.h>
 
 #include <QDebug>
 #include <QStringList>
@@ -83,12 +83,14 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
     The name for the role. This name is used to access the model data for this role from Qml.
 
     \qml
-    XmlRole { name: "title"; query: "title/string()" }
+    XmlListModel {
+        id: xmlModel
+        ...
+        XmlRole { name: "title"; query: "title/string()" }
+    }
 
-    ...
-
-    Component {
-        id: myDelegate
+    ListView {
+        model: xmlModel
         Text { text: title }
     }
     \endqml
@@ -122,10 +124,10 @@ struct XmlQueryJob
     QString query;
     QString namespaces;
     QStringList roleQueries;
+    QList<void*> roleQueryErrorId; // the ptr to send back if there is an error
     QStringList keyRoleQueries;
     QStringList keyRoleResultsCache;
 };
-
 
 class QDeclarativeXmlQuery : public QThread
 {
@@ -166,6 +168,7 @@ public:
                 continue;
             }
             job.roleQueries << roleObjects->at(i)->query();
+            job.roleQueryErrorId << static_cast<void*>(roleObjects->at(i));
             if (roleObjects->at(i)->isKey())
                 job.keyRoleQueries << job.roleQueries.last();
         }
@@ -181,6 +184,7 @@ public:
 
 Q_SIGNALS:
     void queryCompleted(const QDeclarativeXmlQueryResult &);
+    void error(void*, const QString&);
 
 protected:
     void run() {
@@ -346,26 +350,24 @@ void QDeclarativeXmlQuery::doSubQueryJob()
     }
     job.keyRoleResultsCache = keyRoleResults;
 
-
     // Get the new values for each role.
     //### we might be able to condense even further (query for everything in one go)
     const QStringList &queries = job.roleQueries;
     for (int i = 0; i < queries.size(); ++i) {
-        if (queries[i].isEmpty()) {
-            QList<QVariant> resultList;
-            for (int j = 0; j < m_size; ++j)
-                resultList << QVariant();
-            m_modelData << resultList;
-            continue;
-        }
-        subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
-        QXmlResultItems resultItems;
-        subquery.evaluateTo(&resultItems);
-        QXmlItem item(resultItems.next());
         QList<QVariant> resultList;
-        while (!item.isNull()) {
-            resultList << item.toAtomicValue(); //### we used to trim strings
-            item = resultItems.next();
+        if (!queries[i].isEmpty()) {
+            subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
+            if (subquery.isValid()) {
+                QXmlResultItems resultItems;
+                subquery.evaluateTo(&resultItems);
+                QXmlItem item(resultItems.next());
+                while (!item.isNull()) {
+                    resultList << item.toAtomicValue(); //### we used to trim strings
+                    item = resultItems.next();
+                }
+            } else {
+                emit error(job.roleQueryErrorId.at(i), queries[i]);
+            }
         }
         //### should warn here if things have gone wrong.
         while (resultList.count() < m_size)
@@ -411,6 +413,16 @@ public:
         : isComponentComplete(true), size(-1), highestRole(Qt::UserRole)
         , reply(0), status(QDeclarativeXmlListModel::Null), progress(0.0)
         , queryId(-1), roleObjects(), redirectCount(0) {}
+
+
+    void notifyQueryStarted(bool remoteSource) {
+        Q_Q(QDeclarativeXmlListModel);
+        progress = remoteSource ? 0.0 : 1.0;
+        status = QDeclarativeXmlListModel::Loading;
+        errorString.clear();
+        emit q->progressChanged(progress);
+        emit q->statusChanged(status);
+    }
 
     bool isComponentComplete;
     QUrl src;
@@ -556,6 +568,8 @@ QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)
 {
     connect(globalXmlQuery(), SIGNAL(queryCompleted(QDeclarativeXmlQueryResult)),
             this, SLOT(queryCompleted(QDeclarativeXmlQueryResult)));
+    connect(globalXmlQuery(), SIGNAL(error(void*,QString)),
+            this, SLOT(queryError(void*,QString)));
 }
 
 QDeclarativeXmlListModel::~QDeclarativeXmlListModel()
@@ -727,6 +741,42 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
 }
 
 /*!
+    \qmlmethod object XmlListModel::get(int index)
+
+    Returns the item at \a index in the model.
+
+    For example, for a model like this:
+
+    \qml
+    XmlListModel {
+        id: model
+        source: "http://mysite.com/feed.xml"
+        query: "/feed/entry"
+        XmlRole { name: "title"; query: "title/string()" }
+    }
+    \qml
+
+    This will access the \c title value for the first item in the model:
+
+    \qml
+        var title = model.get(0).title;
+    \qml
+*/
+QScriptValue QDeclarativeXmlListModel::get(int index) const
+{
+    Q_D(const QDeclarativeXmlListModel);
+
+    QScriptEngine *sengine = QDeclarativeEnginePrivate::getScriptEngine(qmlContext(this)->engine());
+    if (index < 0 || index >= count())
+        return sengine->undefinedValue();
+
+    QScriptValue sv = sengine->newObject();
+    for (int i=0; i<d->roleObjects.count(); i++) 
+        sv.setProperty(d->roleObjects[i]->name(), qScriptValueFromValue(sengine, d->data.value(i).value(index)));
+    return sv;    
+}
+
+/*!
     \qmlproperty enumeration XmlListModel::status
     Specifies the model loading status, which can be one of the following:
 
@@ -824,36 +874,21 @@ void QDeclarativeXmlListModel::reload()
 
     if (!d->xml.isEmpty()) {
         d->queryId = globalXmlQuery()->doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects, d->keyRoleResultsCache);
-        d->progress = 1.0;
-        d->status = Loading;
-        d->errorString.clear();
-        emit progressChanged(d->progress);
-        emit statusChanged(d->status);
-        return;
-    }
+        d->notifyQueryStarted(false);
 
-    if (d->src.isEmpty()) {
+    } else if (d->src.isEmpty()) {
         d->queryId = XMLLISTMODEL_CLEAR_ID;
-        d->progress = 1.0;
-        d->status = Loading;
-        d->errorString.clear();
-        emit progressChanged(d->progress);
-        emit statusChanged(d->status);
+        d->notifyQueryStarted(false);
         QTimer::singleShot(0, this, SLOT(dataCleared()));
-        return;
+
+    } else {
+        d->notifyQueryStarted(true);
+        QNetworkRequest req(d->src);
+        d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
+        QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+        QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                         this, SLOT(requestProgress(qint64,qint64)));
     }
-
-    d->progress = 0.0;
-    d->status = Loading;
-    d->errorString.clear();
-    emit progressChanged(d->progress);
-    emit statusChanged(d->status);
-
-    QNetworkRequest req(d->src);
-    d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
-    QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-    QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                     this, SLOT(requestProgress(qint64,qint64)));
 }
 
 #define XMLLISTMODEL_MAX_REDIRECT 16
@@ -929,6 +964,19 @@ void QDeclarativeXmlListModel::dataCleared()
     queryCompleted(r);
 }
 
+void QDeclarativeXmlListModel::queryError(void* object, const QString& error)
+{
+    // Be extra careful, object may no longer exist, it's just an ID.
+    Q_D(QDeclarativeXmlListModel);
+    for (int i=0; i<d->roleObjects.count(); i++) {
+        if (d->roleObjects.at(i) == static_cast<QDeclarativeXmlListModelRole*>(object)) {
+            qmlInfo(d->roleObjects.at(i)) << QObject::tr("invalid query: \"%1\"").arg(error);
+            return;
+        }
+    }
+    qmlInfo(this) << QObject::tr("invalid query: \"%1\"").arg(error);
+}
+
 void QDeclarativeXmlListModel::queryCompleted(const QDeclarativeXmlQueryResult &result)
 {
     Q_D(QDeclarativeXmlListModel);
@@ -960,7 +1008,6 @@ void QDeclarativeXmlListModel::queryCompleted(const QDeclarativeXmlQueryResult &
         }
 
     } else {
-
         for (int i=0; i<result.removed.count(); i++)
             emit itemsRemoved(result.removed[i].first, result.removed[i].second);
         for (int i=0; i<result.inserted.count(); i++)
