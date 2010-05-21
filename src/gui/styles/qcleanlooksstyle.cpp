@@ -44,7 +44,6 @@
 
 #if !defined(QT_NO_STYLE_CLEANLOOKS) || defined(QT_PLUGIN)
 
-#include <private/qstylehelper_p.h>
 #include "qwindowsstyle_p.h"
 #include <qcombobox.h>
 #include <qpushbutton.h>
@@ -67,6 +66,7 @@
 #include <qtoolbar.h>
 #include <qwizard.h>
 #include <qlibrary.h>
+#include <private/qstylehelper_p.h>
 
 #define CL_MAX(a,b) (a)>(b) ? (a):(b) // ### qMin/qMax does not work for vc6
 #define CL_MIN(a,b) (a)<(b) ? (a):(b) // remove this when it is working

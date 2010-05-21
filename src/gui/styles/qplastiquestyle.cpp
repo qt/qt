@@ -50,7 +50,6 @@ static const int ProgressBarFps = 25;
 static const int blueFrameWidth =  2;  // with of line edit focus frame
 
 #include "qwindowsstyle_p.h"
-#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qabstractitemview.h>
@@ -88,6 +87,7 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qprocess.h>
 #include <qvarlengtharray.h>
 #include <limits.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
