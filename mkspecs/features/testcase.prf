@@ -1,0 +1,51 @@
+!contains(TEMPLATE,subdirs) {
+
+check.files                =
+check.path                 = .
+
+# If the test ends up in a different directory, we should cd to that directory.
+# Note that qmake modifies DESTDIR after this file is processed,
+# therefore, testing DESTDIR for emptiness is not sufficient.
+!isEmpty(DESTDIR):!contains(DESTDIR,^\./?): check.commands = cd $(DESTDIR) &&
+contains(TARGET,.*/.*):   check.commands = cd $(DESTDIR) &&
+
+# Allow for a custom test runner script
+check.commands += $(TESTRUNNER)
+
+macx {
+    app_bundle: check.commands += ./$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
+    else:       check.commands += ./$(QMAKE_TARGET)
+}
+else:unix:      check.commands += ./$(QMAKE_TARGET)
+else:           check.commands += $(DESTDIR_TARGET)
+
+# For Qt/Embedded, run every test app as a QWS server
+embedded:       check.commands += -qws
+
+# Allow for custom arguments to tests
+check.commands += $(TESTARGS)
+QMAKE_EXTRA_TARGETS *= check
+
+!debug_and_release|build_pass {
+    check.depends = first
+} else {
+    check.CONFIG = recursive
+    # In debug and release mode, only run the test once.
+    # Run debug if available, release otherwise.
+    debug_and_release {
+        check.target = dummy_check
+        check.recurse_target = check
+        debug {
+            real_check.depends = debug-check
+            real_check.target = check
+            QMAKE_EXTRA_TARGETS += real_check
+        } else {
+            real_check.depends = release-check
+            real_check.target = check
+            QMAKE_EXTRA_TARGETS += real_check
+        }
+    }
+}
+
+}
+
