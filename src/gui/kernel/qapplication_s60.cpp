@@ -62,6 +62,10 @@
 #include "qpaintengine.h"
 #include "private/qmenubar_p.h"
 #include "private/qsoftkeymanager_p.h"
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+#include "private/qgraphicssystem_runtime_p.h"
+#endif
+
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
@@ -82,6 +86,10 @@
 #include <hal_data.h>
 
 QT_BEGIN_NAMESPACE
+
+// Goom Events through Window Server
+static const int KGoomMemoryLowEvent = 0x10282DBF;
+static const int KGoomMemoryGoodEvent = 0x20026790;
 
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
@@ -408,25 +416,44 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
 void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
 {
     QApplicationPrivate *d = QApplicationPrivate::instance();
+    QPointF screenPos = qwidget->mapToGlobal(QPoint(event->iPosition.iX, event->iPosition.iY));
+    qreal pressure;
+    if(d->pressureSupported
+        && event->Pressure() > 0) //workaround for misconfigured HAL
+        pressure = event->Pressure() / qreal(d->maxTouchPressure);
+    else
+        pressure = qreal(1.0);
+    processTouchEvent(event->PointerNumber(), event->iType, screenPos, pressure);
+}
+#endif
 
+void QSymbianControl::processTouchEvent(int pointerNumber, TPointerEvent::TType type, QPointF screenPos, qreal pressure)
+{
     QRect screenGeometry = qApp->desktop()->screenGeometry(qwidget);
 
-    while (d->appAllTouchPoints.count() <= event->PointerNumber())
-        d->appAllTouchPoints.append(QTouchEvent::TouchPoint(d->appAllTouchPoints.count()));
+    QApplicationPrivate *d = QApplicationPrivate::instance();
+
+    QList<QTouchEvent::TouchPoint> points = d->appAllTouchPoints;
+    while (points.count() <= pointerNumber)
+        points.append(QTouchEvent::TouchPoint(points.count()));
 
     Qt::TouchPointStates allStates = 0;
-    for (int i = 0; i < d->appAllTouchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = d->appAllTouchPoints[i];
+    for (int i = 0; i < points.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = points[i];
 
-        if (touchPoint.id() == event->PointerNumber()) {
+        if (touchPoint.id() == pointerNumber) {
             Qt::TouchPointStates state;
-            switch (event->iType) {
+            switch (type) {
             case TPointerEvent::EButton1Down:
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
             case TPointerEvent::EEnterHighPressure:
+#endif
                 state = Qt::TouchPointPressed;
                 break;
             case TPointerEvent::EButton1Up:
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
             case TPointerEvent::EExitCloseProximity:
+#endif
                 state = Qt::TouchPointReleased;
                 break;
             case TPointerEvent::EDrag:
@@ -437,16 +464,15 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
                 state = Qt::TouchPointStationary;
                 break;
             }
-            if (event->PointerNumber() == 0)
+            if (pointerNumber == 0)
                 state |= Qt::TouchPointPrimary;
             touchPoint.setState(state);
 
-            QPointF screenPos = qwidget->mapToGlobal(QPoint(event->iPosition.iX, event->iPosition.iY));
             touchPoint.setScreenPos(screenPos);
             touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
                                                 screenPos.y() / screenGeometry.height()));
 
-            touchPoint.setPressure(event->Pressure() / qreal(d->maxTouchPressure));
+            touchPoint.setPressure(pressure);
         } else if (touchPoint.state() != Qt::TouchPointReleased) {
             // all other active touch points should be marked as stationary
             touchPoint.setState(Qt::TouchPointStationary);
@@ -458,13 +484,14 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
     if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased) {
         // all touch points released
         d->appAllTouchPoints.clear();
+    } else {
+        d->appAllTouchPoints = points;
     }
 
     QApplicationPrivate::translateRawTouchEvent(qwidget,
                                                 QTouchEvent::TouchScreen,
-                                                d->appAllTouchPoints);
+                                                points);
 }
-#endif
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
@@ -536,6 +563,13 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 #if !defined(QT_NO_CURSOR) && !defined(Q_SYMBIAN_FIXED_POINTER_CURSORS)
     if (S60->brokenPointerCursors)
         qt_symbian_move_cursor_sprite();
+#endif
+
+//Generate single touch event for S60 5.0 (has touchscreen, does not have advanced pointers)
+#ifndef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (S60->hasTouchscreen) {
+        processTouchEvent(0, pEvent.iType, QPointF(globalPos), 1.0);
+    }
 #endif
 
     sendMouseEvent(receiver, type, globalPos, button, modifiers);
@@ -922,7 +956,16 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     const TRect backingStoreRect(TPoint(backingStoreBase.x(), backingStoreBase.y()), controlRect.Size());
 
     if (engine->type() == QPaintEngine::Raster) {
-        QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
+        QS60WindowSurface *s60Surface;
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+            QRuntimeWindowSurface *rtSurface =
+                    static_cast<QRuntimeWindowSurface*>(qwidget->windowSurface());
+            s60Surface = static_cast<QS60WindowSurface *>(rtSurface->m_windowSurface);
+        } else
+#endif
+            s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
+
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
@@ -1805,6 +1848,53 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
 #endif
         break;
+    case KGoomMemoryLowEvent:
+#ifdef QT_DEBUG
+        qDebug() << "QApplicationPrivate::symbianProcessWsEvent - KGoomMemoryLowEvent";
+#endif
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+        if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+            bool switchToSwRendering(false);
+
+            foreach (QWidget *w, QApplication::topLevelWidgets()) {
+                if(w->d_func()->topData()->backingStore) {
+                    switchToSwRendering = true;
+                    break;
+                }
+            }
+
+            if (switchToSwRendering) {
+                QRuntimeGraphicsSystem *gs =
+                   static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
+
+                uint memoryUsage = gs->memoryUsage();
+                uint memoryForFullscreen = ( S60->screenDepth / 8 )
+                                           * S60->screenWidthInPixels
+                                           * S60->screenHeightInPixels;
+
+                S60->memoryLimitForHwRendering = memoryUsage - memoryForFullscreen;
+                gs->setGraphicsSystem(QLatin1String("raster"));
+            }
+        }
+#endif
+        break;
+    case KGoomMemoryGoodEvent:
+#ifdef QT_DEBUG
+        qDebug() << "QApplicationPrivate::symbianProcessWsEvent - KGoomMemoryGoodEvent";
+#endif
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
+#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+        if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+            QRuntimeGraphicsSystem *gs =
+                   static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
+            gs->setGraphicsSystem(QLatin1String("openvg"), S60->memoryLimitForHwRendering);
+            S60->memoryLimitForHwRendering = 0;
+        }
+#endif
+        break;
     default:
         break;
     }
@@ -1983,8 +2073,13 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
 void QApplicationPrivate::initializeMultitouch_sys()
 {
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (HAL::Get(HALData::EPointer3DPressureSupported, pressureSupported) != KErrNone)
+        pressureSupported = 0;
     if (HAL::Get(HALData::EPointer3DMaxPressure, maxTouchPressure) != KErrNone)
         maxTouchPressure = KMaxTInt;
+#else
+    pressureSupported = 0;
+    maxTouchPressure = KMaxTInt;
 #endif
 }
 
