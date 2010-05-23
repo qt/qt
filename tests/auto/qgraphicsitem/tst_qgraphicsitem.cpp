@@ -236,11 +236,12 @@ public:
     QRectF boundingRect() const
     { return br; }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *o, QWidget *)
     {
         hints = painter->renderHints();
         painter->setBrush(brush);
         painter->drawRect(boundingRect());
+        lastExposedRect = o->exposedRect;
         ++repaints;
     }
 
@@ -250,10 +251,19 @@ public:
         return QGraphicsItem::sceneEvent(event);
     }
 
+    void reset()
+    {
+        events.clear();
+        hints = QPainter::RenderHints(0);
+        repaints = 0;
+        lastExposedRect = QRectF();
+    }
+
     QList<QEvent::Type> events;
     QPainter::RenderHints hints;
     int repaints;
     QRectF br;
+    QRectF lastExposedRect;
     QBrush brush;
 };
 
@@ -430,6 +440,7 @@ private slots:
     void scenePosChange();
     void updateMicroFocus();
     void textItem_shortcuts();
+    void scroll();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -10153,6 +10164,78 @@ void tst_QGraphicsItem::textItem_shortcuts()
     b.setShortcut(QKeySequence("CTRL+A"));
     QTest::keyClick(&view, Qt::Key_A, Qt::ControlModifier);
     QTRY_COMPARE(item->textCursor().selectedText(), item->toPlainText());
+}
+
+void tst_QGraphicsItem::scroll()
+{
+    // Create two overlapping rectangles in the scene:
+    // +-------+
+    // |       | <- item1
+    // |   +-------+
+    // |   |       |
+    // +---|       | <- item2
+    //     |       |
+    //     +-------+
+
+    EventTester *item1 = new EventTester;
+    item1->br = QRectF(0, 0, 200, 200);
+    item1->brush = Qt::red;
+    item1->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
+
+    EventTester *item2 = new EventTester;
+    item2->br = QRectF(0, 0, 200, 200);
+    item2->brush = Qt::blue;
+    item2->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
+    item2->setPos(100, 100);
+
+    QGraphicsScene scene(0, 0, 300, 300);
+    scene.addItem(item1);
+    scene.addItem(item2);
+
+    MyGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.repaints > 0);
+
+    view.reset();
+    item1->reset();
+    item2->reset();
+
+    const QRectF item1BoundingRect = item1->boundingRect();
+    const QRectF item2BoundingRect = item2->boundingRect();
+
+    // Scroll item1:
+    // Item1 should get full exposure
+    // Item2 should get exposure for the part that overlaps item1.
+    item1->scroll(0, -10);
+    QTRY_VERIFY(view.repaints > 0);
+    QCOMPARE(item1->lastExposedRect, item1BoundingRect);
+
+    QRectF expectedItem2Expose = item2BoundingRect;
+    // NB! Adjusted by 2 pixels for antialiasing
+    expectedItem2Expose &= item1->mapRectToItem(item2, item1BoundingRect.adjusted(-2, -2, 2, 2));
+    QCOMPARE(item2->lastExposedRect, expectedItem2Expose);
+
+    // Enable ItemCoordinateCache on item1.
+    view.reset();
+    item1->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+    QTRY_VERIFY(view.repaints > 0);
+    view.reset();
+    item1->reset();
+    item2->reset();
+
+    // Scroll item1:
+    // Item1 should only get expose for the newly exposed area (accelerated scroll).
+    // Item2 should get exposure for the part that overlaps item1.
+    item1->scroll(0, -10, QRectF(50, 50, 100, 100));
+    QTRY_VERIFY(view.repaints > 0);
+    QCOMPARE(item1->lastExposedRect, QRectF(50, 140, 100, 10));
+
+    expectedItem2Expose = item2BoundingRect;
+    // NB! Adjusted by 2 pixels for antialiasing
+    expectedItem2Expose &= item1->mapRectToItem(item2, QRectF(50, 50, 100, 100).adjusted(-2, -2, 2, 2));
+    QCOMPARE(item2->lastExposedRect, expectedItem2Expose);
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()

@@ -179,7 +179,8 @@ void QDeclarativeFolderListModel::setFolder(const QUrl &folder)
     if (folder == d->folder)
         return;
     QModelIndex index = d->model.index(folder.toLocalFile());
-    if (index.isValid() && d->model.isDir(index)) {
+    if ((index.isValid() && d->model.isDir(index)) || folder.toLocalFile().isEmpty()) {
+
         d->folder = folder;
         QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
         emit folderChanged();
@@ -188,26 +189,23 @@ void QDeclarativeFolderListModel::setFolder(const QUrl &folder)
 
 QUrl QDeclarativeFolderListModel::parentFolder() const
 {
-    QUrl r;
     QString localFile = d->folder.toLocalFile();
     if (!localFile.isEmpty()) {
         QDir dir(localFile);
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WIN)
         if (dir.isRoot())
             dir.setPath("");
         else
 #endif
             dir.cdUp();
-        r = d->folder;
-        r.setPath(dir.path());
+        localFile = dir.path();
     } else {
         int pos = d->folder.path().lastIndexOf(QLatin1Char('/'));
         if (pos == -1)
             return QUrl();
-        r = d->folder;
-        r.setPath(d->folder.path().left(pos));
+        localFile = d->folder.path().left(pos);
     }
-    return r;
+    return QUrl::fromLocalFile(localFile);
 }
 
 /*!

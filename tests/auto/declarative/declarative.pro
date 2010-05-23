@@ -24,6 +24,7 @@ SUBDIRS += \
            qdeclarativeecmascript \
            qdeclarativeengine \
            qdeclarativeerror \
+           qdeclarativefolderlistmodel \
            qdeclarativefontloader \
            qdeclarativeflickable \
            qdeclarativeflipable \

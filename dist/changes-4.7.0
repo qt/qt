@@ -232,7 +232,6 @@ Qt for Windows
     * Pipe handle leak fixed, when closing a QLocalSocket that still has
       unwritten data. (QTBUG-7815)
     * Fixed closing state for local sockets with unwritten data. (QTBUG-9681)
-    * Detection of Windows mobile 6.5 fixed. (QTBUG-8418)
     * Improved performance of writing to QLocalSocket.
 
 
@@ -260,6 +259,7 @@ Qt for Windows CE
     * Huge performance penalty for QTabWidget fixed for
       Windows mobile 6.5. (QTBUG-8419)
     * QTabBar scroll button size has been fixed. (QTBUG-8757)
+    * Detection of Windows mobile 6.5 fixed. (QTBUG-8418)
 
 
 
