@@ -140,7 +140,9 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeScaleGrid>();
     qmlRegisterType<QValidator>();
     qmlRegisterType<QDeclarativeVisualModel>();
+#ifndef QT_NO_ACTION
     qmlRegisterType<QAction>();
+#endif
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
 #ifndef QT_NO_GRAPHICSEFFECT
