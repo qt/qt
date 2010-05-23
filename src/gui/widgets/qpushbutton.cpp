@@ -60,6 +60,7 @@
 #include "qdialogbuttonbox.h"
 #ifdef Q_WS_MAC
 #include "qmacstyle_mac.h"
+#include "private/qmacstyle_mac_p.h"
 #endif // Q_WS_MAC
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -68,7 +69,6 @@
 
 #include "private/qmenu_p.h"
 #include "private/qpushbutton_p.h"
-#include "private/qmacstyle_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 
