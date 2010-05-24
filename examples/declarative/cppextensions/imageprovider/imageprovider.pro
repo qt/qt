@@ -1,12 +1,10 @@
 TEMPLATE = lib
-TARGET  = imageprovider
-QT += declarative
 CONFIG += qt plugin
+QT += declarative
 
-TARGET = $$qtLibraryTarget($$TARGET)
 DESTDIR = ImageProviderCore
+TARGET  = imageprovider
 
-# Input
 SOURCES += imageprovider.cpp
 
 sources.files = $$SOURCES imageprovider.qml imageprovider.pro
@@ -18,8 +16,9 @@ ImageProviderCore_sources.files = \
     ImageProviderCore/qmldir 
 ImageProviderCore_sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/imageprovider/ImageProviderCore
 
-symbian:{
-    TARGET.EPOCALLOWDLLDATA=1
-}
-
 INSTALLS = sources ImageProviderCore_sources target
+
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.EPOCALLOWDLLDATA = 1
+}
