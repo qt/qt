@@ -1089,6 +1089,23 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
         fetch.line = prop->location.start.line;
         output->bytecode << fetch;
 
+        if (!prop->value->metadata.isEmpty()) {
+            QDeclarativeInstruction meta;
+            meta.type = QDeclarativeInstruction::StoreMetaObject;
+            meta.line = 0;
+            meta.storeMeta.data = output->indexForByteArray(prop->value->metadata);
+            meta.storeMeta.aliasData = output->indexForByteArray(prop->value->synthdata);
+            meta.storeMeta.propertyCache = output->propertyCaches.count();
+            // ### Surely the creation of this property cache could be more efficient
+            QDeclarativePropertyCache *propertyCache =
+                enginePrivate->cache(prop->value->metaObject()->superClass())->copy();
+            propertyCache->append(engine, prop->value->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
+                                  QDeclarativePropertyCache::Data::IsVMEFunction);
+
+            output->propertyCaches << propertyCache;
+            output->bytecode << meta;
+        }
+
         genObjectBody(prop->value);
 
         QDeclarativeInstruction pop;
