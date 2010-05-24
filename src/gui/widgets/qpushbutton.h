@@ -91,6 +91,9 @@ public Q_SLOTS:
 
 protected:
     bool event(QEvent *e);
+#ifdef Q_WS_MAC
+    bool hitButton(const QPoint &pos) const;
+#endif // Q_WS_MAC
     void paintEvent(QPaintEvent *);
     void keyPressEvent(QKeyEvent *);
     void focusInEvent(QFocusEvent *);

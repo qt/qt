@@ -41,8 +41,10 @@
 #include <QtCore/qglobal.h>
 #include "spectrum.h"
 
+QT_BEGIN_NAMESPACE
 class QAudioFormat;
 class QByteArray;
+QT_END_NAMESPACE
 
 /**
  * Generate a sine wave

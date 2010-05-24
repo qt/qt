@@ -92,7 +92,7 @@ typedef QPenPrivate QPenData;
     convenience functions to extract and set the color of the pen's
     brush, respectively. Pens may also be compared and streamed.
 
-    For more information about painting in general, see \l{The Paint
+    For more information about painting in general, see the \l{Paint
     System} documentation.
 
     \tableofcontents
@@ -872,7 +872,7 @@ bool QPen::isDetached()
     Writes the given \a pen to the given \a stream and returns a reference to
     the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QPen &p)
@@ -918,7 +918,7 @@ QDataStream &operator<<(QDataStream &s, const QPen &p)
     Reads a pen from the given \a stream into the given \a pen and
     returns a reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QPen &p)
