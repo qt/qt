@@ -72,6 +72,7 @@ private slots:
     void disabled();
     void dontStart();
     void startup();
+    void groupedPropertyCrash();
 };
 
 void tst_qdeclarativebehaviors::simpleBehavior()
@@ -349,6 +350,15 @@ void tst_qdeclarativebehaviors::startup()
 
         delete rect;
     }
+}
+
+//QTBUG-10799
+void tst_qdeclarativebehaviors::groupedPropertyCrash()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/groupedPropertyCrash.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);  //don't crash
 }
 
 QTEST_MAIN(tst_qdeclarativebehaviors)
