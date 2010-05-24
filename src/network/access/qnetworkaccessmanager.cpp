@@ -153,7 +153,7 @@ static void ensureInitialized()
     queued/pending network requests are automatically transferred to new
     access point.
 
-    Clients wanting to utlize this feature should not require any changes. In fact
+    Clients wanting to utilize this feature should not require any changes. In fact
     it is likely that existing platform specific connection code can simply be
     removed from the application.
 
