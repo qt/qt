@@ -46,6 +46,7 @@
 
 #include "qapplication.h"
 #include "qgraphicssystem_raster_p.h"
+#include "qgraphicssystem_runtime_p.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
@@ -68,6 +69,10 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
     if (system.isEmpty()) {
         system = QLatin1String("openvg");
     }
+#elif defined (QT_GRAPHICSSYSTEM_RUNTIME)
+    if (system.isEmpty()) {
+        system = QLatin1String("runtime");
+    }
 #elif defined (QT_GRAPHICSSYSTEM_RASTER) && !defined(Q_WS_WIN) && !defined(Q_OS_SYMBIAN)
     if (system.isEmpty()) {
         system = QLatin1String("raster");
@@ -76,6 +81,8 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
 
     if (system == QLatin1String("raster"))
         return new QRasterGraphicsSystem;
+    else if (system == QLatin1String("runtime"))
+        return new QRuntimeGraphicsSystem;
     else if (system.isEmpty() || system == QLatin1String("native"))
         return 0;
 
