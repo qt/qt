@@ -75,12 +75,12 @@ the parent later you can safely pass null to this function.
 
 Here is an example. Here is a \c Sprite.qml, which defines a simple QML component:
 
-\quotefile doc/src/snippets/declarative/Sprite.qml
+\snippet doc/src/snippets/declarative/Sprite.qml 0
 
 Our main application file, \c main.qml, imports a \c componentCreation.js JavaScript file
 that will create \c Sprite objects:
 
-\quotefile doc/src/snippets/declarative/createComponent.qml
+\snippet doc/src/snippets/declarative/createComponent.qml 0
 
 Here is \c componentCreation.js. Remember that QML files that might be loaded
 over the network cannot be expected to be ready immediately:
