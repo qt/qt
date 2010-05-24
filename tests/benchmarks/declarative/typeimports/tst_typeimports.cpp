@@ -126,6 +126,9 @@ void tst_typeimports::cpp()
 
 void tst_typeimports::qml()
 {
+    //get rid of initialization effects
+    { QDeclarativeComponent component(&engine, TEST_FILE("qml.qml")); }
+
     QBENCHMARK {
         QDeclarativeComponent component(&engine, TEST_FILE("qml.qml"));
         QVERIFY(component.isReady());
