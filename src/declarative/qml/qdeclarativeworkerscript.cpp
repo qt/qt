@@ -275,20 +275,12 @@ void QDeclarativeWorkerScriptEnginePrivate::processMessage(int id, const QVarian
     }
 }
 
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
-
 void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
 {
     if (url.isRelative())
         return;
 
-    QString fileName = toLocalFileOrQrc(url);
+    QString fileName = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
 
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly)) {

@@ -45,7 +45,7 @@
 #ifndef QT_NO_MOVIE
 
 #include <qdeclarativeinfo.h>
-#include <qdeclarativeengine.h>
+#include <private/qdeclarativeengine_p.h>
 
 #include <QMovie>
 #include <QNetworkRequest>
@@ -180,14 +180,6 @@ int QDeclarativeAnimatedImage::frameCount() const
     return d->_movie->frameCount();
 }
 
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
-
 void QDeclarativeAnimatedImage::setSource(const QUrl &url)
 {
     Q_D(QDeclarativeAnimatedImage);
@@ -209,7 +201,7 @@ void QDeclarativeAnimatedImage::setSource(const QUrl &url)
         d->status = Null;
     } else {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        QString lf = toLocalFileOrQrc(url);
+        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
         if (!lf.isEmpty()) {
             //### should be unified with movieRequestFinished
             d->_movie = new QMovie(lf);

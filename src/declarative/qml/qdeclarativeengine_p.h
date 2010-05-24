@@ -315,6 +315,8 @@ public:
     static QDeclarativeEngine *get(QDeclarativeEnginePrivate *p) { return p->q_func(); }
     QDeclarativeContextData *getContext(QScriptContext *);
 
+    static QString urlToLocalFileOrQrc(const QUrl& url);
+
     static void defineModule();
 };
 
