@@ -43,35 +43,37 @@ import Qt 4.7
 Rectangle {
     id: container
 
-    property string text: "Button"
-    property bool down: false
-    property string mainCol: "lightgray"
-    property string darkCol: "darkgray"
-    property string lightCol: "white"
+    property string text
+    property bool pressed: false
+
+    signal clicked
 
     width: buttonLabel.width + 20; height: buttonLabel.height + 6
-    border { width: 1; color: Qt.darker(mainCol) } 
-    radius: 8;
-    color: mainCol
+    border { width: 1; color: Qt.darker(container.color) } 
+    radius: 8
+    color: "lightgray"
     smooth: true
 
     gradient: Gradient {
         GradientStop {
-            id: topGrad; position: 0.0
-            color: if (container.down) { darkCol } else { lightCol }
+            position: 0.0
+            color: container.pressed ? "darkgray" : "white"
         }
-        GradientStop { position: 1.0; color: mainCol }
+        GradientStop { 
+            position: 1.0
+            color: container.color
+        }
     }
 
-    signal clicked
-
-    MouseArea { id: mr; anchors.fill: parent; onClicked: container.clicked() }
+    MouseArea { 
+        anchors.fill: parent
+        onClicked: container.clicked()
+    }
 
     Text {
         id: buttonLabel
-
         anchors.centerIn: container
-        text: container.text;
+        text: container.text
         font.pixelSize: 14
     }
 }
