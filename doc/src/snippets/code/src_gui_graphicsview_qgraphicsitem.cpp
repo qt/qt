@@ -271,3 +271,9 @@ class QGraphicsPathItem : public QAbstractGraphicsShapeItem
 };
 //! [18]
 
+//! [19]
+QTransform xform = item->deviceTransform(view->viewportTransform());
+QRect deviceRect = xform.mapRect(rect).toAlignedRect();
+view->viewport()->scroll(dx, dy, deviceRect);
+//! [19]
+

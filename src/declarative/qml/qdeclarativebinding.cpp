@@ -191,7 +191,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setUrl(url);
                 data->error.setLine(line);
                 data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
+                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ")
+                    + QLatin1String(QMetaType::typeName(data->property.propertyType()))
+                    + QLatin1String(" ") + data->property.name());
 
             } else if (!scriptValue.isRegExp() && scriptValue.isFunction()) {
 
@@ -353,8 +355,6 @@ void QDeclarativeAbstractBinding::removeFromObject()
     if (m_prevBinding) {
         int index = propertyIndex();
 
-        Q_ASSERT(m_object);
-
         *m_prevBinding = m_nextBinding;
         if (m_nextBinding) m_nextBinding->m_prevBinding = m_prevBinding;
         m_prevBinding = 0;
@@ -363,7 +363,7 @@ void QDeclarativeAbstractBinding::removeFromObject()
         if (index & 0xFF000000) {
             // Value type - we don't remove the proxy from the object.  It will sit their happily
             // doing nothing for ever more.
-        } else {
+        } else if (m_object) {
             QDeclarativeData *data = QDeclarativeData::get(m_object, false);
             if (data) data->clearBindingBit(index);
         }

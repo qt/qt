@@ -66,14 +66,6 @@ static const int maxImageRequestCount = 8;
 
 QT_BEGIN_NAMESPACE
 
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
-
 class QDeclarativeImageReaderEvent : public QEvent
 {
 public:
@@ -269,7 +261,7 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                 }
                 QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
             } else {
-                QString lf = toLocalFileOrQrc(url);
+                QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
                 if (!lf.isEmpty()) {
                     // Image is local - load/decode immediately
                     QImage image;
@@ -613,7 +605,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
 
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (!async) {
-        QString lf = toLocalFileOrQrc(url);
+        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
         if (!lf.isEmpty()) {
             status = QDeclarativePixmapReply::Ready;
             if (!QPixmapCache::find(strKey,pixmap)) {

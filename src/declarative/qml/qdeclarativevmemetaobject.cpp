@@ -381,7 +381,7 @@ QDeclarativeVMEMetaObject::QDeclarativeVMEMetaObject(QObject *obj,
                                                      const QMetaObject *other, 
                                                      const QDeclarativeVMEMetaData *meta,
                                                      QDeclarativeCompiledData *cdata)
-: object(obj), compiledData(cdata), ctxt(QDeclarativeData::get(obj)->outerContext), 
+: object(obj), compiledData(cdata), ctxt(QDeclarativeData::get(obj, true)->outerContext),
   metaData(meta), data(0), methods(0), parent(0)
 {
     compiledData->addref();
