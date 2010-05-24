@@ -118,12 +118,14 @@ embedded {
 } else {
     HEADERS += \
         painting/qgraphicssystem_raster_p.h \
+        painting/qgraphicssystem_runtime_p.h \
         painting/qgraphicssystemfactory_p.h \
         painting/qgraphicssystemplugin_p.h \
         painting/qwindowsurface_raster_p.h \
 
     SOURCES += \
         painting/qgraphicssystem_raster.cpp \
+        painting/qgraphicssystem_runtime.cpp \
         painting/qgraphicssystemfactory.cpp \
         painting/qgraphicssystemplugin.cpp \
         painting/qwindowsurface_raster.cpp \
