@@ -172,16 +172,6 @@ void QDeclarativeInclude::callback(QScriptEngine *engine, QScriptValue &callback
     }
 }
 
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    if (url.scheme() == QLatin1String("qrc")) {
-        if (url.authority().isEmpty())
-            return QLatin1Char(':') + url.path();
-        return QString();
-    }
-    return url.toLocalFile();
-}
-
 QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if (ctxt->argumentCount() == 0)
@@ -200,7 +190,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
         urlString = url.toString();
     }
 
-    QString localFile = toLocalFileOrQrc(url);
+    QString localFile = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
 
     QScriptValue func = ctxt->argument(1);
     if (!func.isFunction())
@@ -269,7 +259,7 @@ QScriptValue QDeclarativeInclude::worker_include(QScriptContext *ctxt, QScriptEn
         urlString = url.toString();
     }
 
-    QString localFile = toLocalFileOrQrc(url);
+    QString localFile = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
 
     QScriptValue func = ctxt->argument(1);
     if (!func.isFunction())

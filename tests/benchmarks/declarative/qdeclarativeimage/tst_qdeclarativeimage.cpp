@@ -80,6 +80,12 @@ void tst_qmlgraphicsimage::qmlgraphicsimage_file()
 {
     int x = 0;
     QUrl url(SRCDIR "/image.png");
+    //get rid of initialization effects
+    {
+        QDeclarativeImage *image = new QDeclarativeImage;
+        QDeclarativeEngine::setContextForObject(image, engine.rootContext());
+        image->setSource(url);
+    }
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;

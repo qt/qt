@@ -1021,6 +1021,17 @@ QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *c
     return contextClass->contextFromValue(scopeNode);
 }
 
+
+QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
+{
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
+        if (url.authority().isEmpty())
+            return QLatin1Char(':') + url.path();
+        return QString();
+    }
+    return url.toLocalFile();
+}
+
 /*!
 \qmlmethod object Qt::createComponent(url)
 
