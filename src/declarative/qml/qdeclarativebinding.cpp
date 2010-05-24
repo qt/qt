@@ -191,7 +191,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setUrl(url);
                 data->error.setLine(line);
                 data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
+                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ")
+                    + QLatin1String(QMetaType::typeName(data->property.propertyType()))
+                    + QLatin1String(" ") + data->property.name());
 
             } else if (!scriptValue.isRegExp() && scriptValue.isFunction()) {
 
