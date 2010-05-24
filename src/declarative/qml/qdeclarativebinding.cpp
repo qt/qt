@@ -355,8 +355,6 @@ void QDeclarativeAbstractBinding::removeFromObject()
     if (m_prevBinding) {
         int index = propertyIndex();
 
-        Q_ASSERT(m_object);
-
         *m_prevBinding = m_nextBinding;
         if (m_nextBinding) m_nextBinding->m_prevBinding = m_prevBinding;
         m_prevBinding = 0;
@@ -365,7 +363,7 @@ void QDeclarativeAbstractBinding::removeFromObject()
         if (index & 0xFF000000) {
             // Value type - we don't remove the proxy from the object.  It will sit their happily
             // doing nothing for ever more.
-        } else {
+        } else if (m_object) {
             QDeclarativeData *data = QDeclarativeData::get(m_object, false);
             if (data) data->clearBindingBit(index);
         }
