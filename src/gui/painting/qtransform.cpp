@@ -148,8 +148,8 @@ QT_BEGIN_NAMESPACE
     coordinate system.  The standard coordinate system of a
     QPaintDevice has its origin located at the top-left position. The
     \e x values increase to the right; \e y values increase
-    downward. For a complete description, see the \l {The Coordinate
-    System}{coordinate system} documentation.
+    downward. For a complete description, see the \l {Coordinate
+    System} {coordinate system} documentation.
 
     QPainter has functions to translate, scale, shear and rotate the
     coordinate system without using a QTransform. For example:
@@ -223,7 +223,7 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/transform/main.cpp 2
     \endtable
 
-    \sa QPainter, {The Coordinate System}, {demos/affine}{Affine
+    \sa QPainter, {Coordinate System}, {demos/affine}{Affine
     Transformations Demo}, {Transformations Example}
 */
 
@@ -1028,7 +1028,7 @@ void QTransform::reset()
     Writes the given \a matrix to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream & operator<<(QDataStream &s, const QTransform &m)
 {
@@ -1052,7 +1052,7 @@ QDataStream & operator<<(QDataStream &s, const QTransform &m)
     Reads the given \a matrix from the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream & operator>>(QDataStream &s, QTransform &t)
 {

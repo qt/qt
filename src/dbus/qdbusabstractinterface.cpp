@@ -42,6 +42,8 @@
 #include "qdbusabstractinterface.h"
 #include "qdbusabstractinterface_p.h"
 
+#include <qthread.h>
+
 #include "qdbusargument.h"
 #include "qdbuspendingcall.h"
 #include "qdbusmessage_p.h"
@@ -440,7 +442,8 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
     msg.setArguments(args);
 
     QDBusMessage reply = d->connection.call(msg, mode);
-    d->lastError = reply;       // will clear if reply isn't an error
+    if (thread() == QThread::currentThread())
+        d->lastError = reply;       // will clear if reply isn't an error
 
     // ensure that there is at least one element
     if (reply.arguments().isEmpty())

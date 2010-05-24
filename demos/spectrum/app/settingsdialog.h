@@ -42,11 +42,13 @@
 #include <QDialog>
 #include <QtMultimedia/QAudioDeviceInfo>
 
+QT_BEGIN_NAMESPACE
 class QComboBox;
 class QCheckBox;
 class QSlider;
 class QSpinBox;
 class QGridLayout;
+QT_END_NAMESPACE
 
 /**
  * Dialog used to control settings such as the audio input / output device

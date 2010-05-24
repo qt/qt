@@ -1921,7 +1921,7 @@ void QStandardItem::write(QDataStream &out) const
 
     This operator uses QStandardItem::read().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QStandardItem &item)
 {
@@ -1937,7 +1937,7 @@ QDataStream &operator>>(QDataStream &in, QStandardItem &item)
 
     This operator uses QStandardItem::write().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
 {

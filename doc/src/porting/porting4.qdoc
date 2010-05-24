@@ -1000,8 +1000,8 @@
     \row \o \c QCanvasView \o Q3CanvasView
     \endtable
 
-    \l{The Graphics View Framework} replaces QCanvas. For more on porting to
-    Graphics View, see \l{Porting to Graphics View}.
+    The \l{Graphics View Framework} replaces QCanvas. For more on
+    porting to Graphics View, see \l{Porting to Graphics View}.
 
     \section1 QColor
 
