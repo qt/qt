@@ -46,18 +46,21 @@
     \ingroup licensing
     \brief Information about the license and features of the Open Source Edition.
 
-    Free (or open source) software is software that comes with a license
+    Free and Open Source Software (FOSS) is software that comes with a license
     that gives users certain rights. In particular the right to use the
     software, to modify it, to obtain its source, and to pass it on (under
     the same terms). Notice that the term "free" is about rights, not
-    money. The Free Software Foundation (creators of the GNU GPL) speaks
+    money. The Free Software Foundation, the creator of the GNU GPL, speaks
     of free in this context as in "free speech", not as in "no cost".
 
     Nokia supports the free software concept by providing the Qt Open Source
     Edition, which is licensed under the \l{GNU General Public License (GPL)}
     (version 3) and the \l{GNU Lesser General Public License (LGPL)} (version 2.1).
     You can use this edition of Qt to create and distribute software with licenses
-    that are compatible to these free software licenses.
+    that are compatible with these free software licenses.
+
+    Additionally, the \l{Qt Examples}{examples} included with Qt are provided under
+    the terms of the \l{BSD License}.
 
     The support of open source with the Open Source Versions of Qt has enabled large
     successful software projects like KDE to thrive, with thousands of developers
@@ -73,8 +76,8 @@
     More information on Free and Open Source software is available online:
 
     \list
-    \o GNU GPL: \l http://www.gnu.org/.
-    \o Open Source licensing: \l http://www.opensource.org/.
+    \o GNU GPL, GNU LGPL: \l http://www.gnu.org/
+    \o Open Source licensing: \l http://www.opensource.org/
     \endlist
 
     See \l{Licensing Information} for a collection of documents about licenses
@@ -85,6 +88,5 @@
     the sales department at http://qt.nokia.com/contact.
 
     If you are in doubt what edition of Qt is right for your project,
-    please contact
-    \l{mailto:qt-info@nokia.com}{qt-info@nokia.com}.
+    please contact \l{mailto:qt-info@nokia.com}{qt-info@nokia.com}.
 */

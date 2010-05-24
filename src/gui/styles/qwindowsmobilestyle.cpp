@@ -80,6 +80,8 @@ extern bool qt_wince_is_smartphone();        //defined in qguifunctions_wince.cp
 extern bool qt_wince_is_windows_mobile_65(); //defined in qguifunctions_wince.cpp
 #endif // Q_WS_WINCE
 
+#include "qstylehelper_p.h"
+
 QT_BEGIN_NAMESPACE
 
 static const int windowsItemFrame        =  1; // menu item frame width

@@ -939,11 +939,11 @@ int QString::toWCharArray(wchar_t *array) const
         const unsigned short *uc = utf16();
         for (int i = 0; i < length(); ++i) {
             uint u = uc[i];
-            if (u >= 0xd800 && u < 0xdc00 && i < length()-1) {
+            if (QChar::isHighSurrogate(u) && i + 1 < length()) {
                 ushort low = uc[i+1];
-                if (low >= 0xdc00 && low < 0xe000) {
+                if (QChar::isLowSurrogate(low)) {
+                    u = QChar::surrogateToUcs4(u, low);
                     ++i;
-                    u = (u - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
                 }
             }
             *a = wchar_t(u);
@@ -6195,8 +6195,10 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     if (simple)
         return;
 
-    QString &s = *data;
-    if (version != UNICODE_DATA_VERSION) {
+    if (version == QChar::Unicode_Unassigned) {
+        version = UNICODE_DATA_VERSION;
+    } else if (version != UNICODE_DATA_VERSION) {
+        QString &s = *data;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {

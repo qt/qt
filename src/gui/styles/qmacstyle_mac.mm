@@ -56,7 +56,6 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
 #include <private/qprintengine_mac_p.h>
-#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcheckbox.h>
@@ -102,6 +101,7 @@
 #include <QtGui/qgraphicsview.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include "qmacstyle_mac_p.h"
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
