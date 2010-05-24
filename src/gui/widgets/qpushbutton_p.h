@@ -69,6 +69,9 @@ public:
 
     inline void init() { resetLayoutItemMargins(); }
     static QPushButtonPrivate* get(QPushButton *b) { return b->d_func(); }
+#ifdef Q_WS_MAC
+    bool hitButton(const QPoint &pos);
+#endif
 #ifndef QT_NO_MENU
     QPoint adjustedMenuPosition();
 #endif

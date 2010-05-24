@@ -1781,7 +1781,7 @@ void HtmlGenerator::generateHeader(const QString& title,
 {
     out() << QString("<?xml version=\"1.0\" encoding=\"%1\"?>\n").arg(outputEncoding);
     out() << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
-    out() << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
     out() << "<head>\n";
     out() << "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
     QString shortVersion;
@@ -2332,7 +2332,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                                         QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-    const int NumColumns = 3; // number of columns in the result
+    const int NumColumns = 1; // number of columns in the result
 
     if (classMap.isEmpty())
         return;
@@ -2479,19 +2479,19 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         out() << "</b></p>\n";
     }
 
-    out() << "<table class=\"generic\">\n";
+    out() << "<div class=\"flowListDiv\">\n";
     for (k = 0; k < numRows; k++) {
         if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd topAlign\">";
+            out() << "<dl class=\"flowList odd\">";
         else
-            out() << "<tr class=\"even topAlign\">";
+            out() << "<dl class=\"flowList even\">";
         //break;
 
 //	out() << "<tr>\n";
         for (i = 0; i < NumColumns; i++) {
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
-                out() << "<td>\n</td>\n"; // check why?
+                out() << "<dd>\n</dd>\n"; // check why?
             }
             else {
                 while ((currentParagraphNo[i] < NumParagraphs) &&
@@ -2506,7 +2506,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     currentParagraphNo[i] = NumParagraphs - 1;
                 }
 #endif
-                out() << "<th  class=\"rightAlign alphaChar\"><p>";
+                out() << "<dt  class=\"alphaChar\"><p>";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
                     if (includeAlphabet) {
@@ -2517,9 +2517,9 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << paragraphName[currentParagraphNo[i]]
                           << "</b>";
                 }
-                out() << "</p></th>\n";
+                out() << "</p></dt>\n";
 
-                out() << "<td><p>";
+                out() << "<dd><p>";
                 if ((currentParagraphNo[i] < NumParagraphs) &&
                     !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     NodeMap::Iterator it;
@@ -2545,15 +2545,15 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                         out() << ")";
                     }
                 }
-                out() << "</p></td>\n";
+                out() << "</p></dd>\n";
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
             }
         }
-        out() << "</tr>\n";
+        out() << "</dl>\n";
     }
-    out() << "</table>\n";
+    out() << "</div>\n";
 }
 
 void HtmlGenerator::generateFunctionIndex(const Node *relative,

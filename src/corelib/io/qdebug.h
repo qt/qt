@@ -254,6 +254,29 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
     return debug.space();
 }
 
+#if defined(FORCE_UREF)
+template <class T>
+inline QDebug &operator<<(QDebug debug, const QFlags<T> &flags)
+#else
+template <class T>
+inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
+#endif
+{
+    debug.nospace() << "QFlags(";
+    bool needSeparator = false;
+    for (uint i = 0; i < sizeof(T) * 8; ++i) {
+        if (flags.testFlag(T(1 << i))) {
+            if (needSeparator)
+                debug.nospace() << '|';
+            else
+                needSeparator = true;
+            debug.nospace() << "0x" << QByteArray::number(T(1 << i), 16).constData();
+        }
+    }
+    debug << ')';
+    return debug.space();
+}
+
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT_INLINE QDebug qDebug() { return QDebug(QtDebugMsg); }
 

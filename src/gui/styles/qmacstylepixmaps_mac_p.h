@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QMACSTYLEPIXMAPS_MAC_P_H
+#define QMACSTYLEPIXMAPS_MAC_P_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -65,3 +68,5 @@ static const char * const qt_mac_toolbar_ext[]={
     "aab###bb###baa",
     "ab###bb###baaa",
     ".###..###.aaaa"};
+
+#endif //  QMACSTYLEPIXMAPS_MAC_P_H

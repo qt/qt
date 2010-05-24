@@ -178,13 +178,17 @@ void tst_Bic::sizesAndVTables_data()
     QSKIP("Test not implemented for this compiler/platform", SkipAll);
 #else
 
-#if defined Q_OS_LINUX && defined Q_WS_X11
+#if defined(FILESUFFIX)
+    // cross-testing
+#elif defined Q_OS_LINUX && defined Q_WS_X11
 # if defined(__powerpc__) && !defined(__powerpc64__)
 #  define FILESUFFIX "linux-gcc-ppc32"
 # elif defined(__amd64__)
 #  define FILESUFFIX "linux-gcc-amd64"
 # elif defined(__i386__)
 #  define FILESUFFIX "linux-gcc-ia32"
+# elif defined(__ARMEL__)
+#  define FILESUFFIX "linux-gcc-armel"
 # endif
 #elif defined Q_OS_MAC && defined(__powerpc__)
 #  define FILESUFFIX "macx-gcc-ppc32"
@@ -233,9 +237,11 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
 #ifdef Q_OS_WIN
     qtDir.replace('\\', '/');
 #endif
-    QString compilerName = "g++";
+    QString compilerName = QString::fromLocal8Bit(qgetenv("CXX"));
+    if (compilerName.isEmpty())
+        compilerName = "g++";
 
-    QStringList args;
+    QStringList args = QString::fromLocal8Bit(qgetenv("CXXFLAGS")).split(' ');
     args << "-c"
          << "-I" + qtDir + "/include"
 #ifdef Q_OS_MAC

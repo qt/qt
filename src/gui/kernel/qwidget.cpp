@@ -670,8 +670,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     (to move the keyboard focus), and passes on most of the other events to
     one of the more specialized handlers above.
 
-    Events and the mechanism used to deliver them are covered in the
-    \l{Events and Event Filters} document.
+    Events and the mechanism used to deliver them are covered in 
+    \l{The Event System}.
 
     \section1 Groups of Functions and Properties
 

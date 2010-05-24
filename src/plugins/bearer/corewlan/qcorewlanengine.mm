@@ -67,6 +67,9 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include "private/qcore_mac_p.h"
 
+#include <net/if.h>
+#include <ifaddrs.h>
+
 @interface QNSListener : NSObject
 {
     NSNotificationCenter *center;
@@ -157,7 +160,7 @@ void QScanThread::quit()
 
 void QScanThread::run()
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    QMacCocoaAutoReleasePool pool;
     QStringList found;
     mutex.lock();
     CWInterface *currentInterface = [CWInterface interfaceWithName:qt_mac_QStringToNSString(interfaceName)];
@@ -167,6 +170,7 @@ void QScanThread::run()
         NSError *err = nil;
         NSDictionary *parametersDict =  [NSDictionary dictionaryWithObjectsAndKeys:
                                    [NSNumber numberWithBool:YES], kCWScanKeyMerge,
+                                   [NSNumber numberWithInt:kCWScanTypeFast], kCWScanKeyScanType,
                                    [NSNumber numberWithInteger:100], kCWScanKeyRestTime, nil];
 
         NSArray* apArray = [currentInterface scanForNetworksWithParameters:parametersDict error:&err];
@@ -204,11 +208,9 @@ void QScanThread::run()
 
                 found.append(foundNetwork(id, networkSsid, state, interfaceName, purpose));
 
-            } //end row
-//            [parametersDict release];
-
-        } //end error
-    } // endwifi power
+            }
+        }
+    }
     // add known configurations that are not around.
     QMapIterator<QString, QMap<QString,QString> > i(userProfiles);
     while (i.hasNext()) {
@@ -248,7 +250,6 @@ void QScanThread::run()
         }
     }
     emit networksChanged();
-    [pool release];
 }
 
 QStringList QScanThread::foundNetwork(const QString &id, const QString &name, const QNetworkConfiguration::StateFlags state, const QString &interfaceName, const QNetworkConfiguration::Purpose purpose)
@@ -426,6 +427,7 @@ QCoreWlanEngine::~QCoreWlanEngine()
 void QCoreWlanEngine::initialize()
 {
     QMutexLocker locker(&mutex);
+    QMacCocoaAutoReleasePool pool;
 
     if([[CWInterface supportedInterfaces] count] > 0 && !listener) {
         listener = [[QNSListener alloc] init];
@@ -659,7 +661,6 @@ bool QCoreWlanEngine::isWifiReady(const QString &wifiDeviceName)
 QNetworkSession::State QCoreWlanEngine::sessionStateForId(const QString &id)
 {
     QMutexLocker locker(&mutex);
-
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
     if (!ptr)
@@ -823,5 +824,90 @@ void QCoreWlanEngine::networksChanged()
 
 }
 
+quint64 QCoreWlanEngine::bytesWritten(const QString &id)
+{
+    QMutexLocker locker(&mutex);
+    const QString interfaceStr = getInterfaceFromId(id);
+    return getBytes(interfaceStr,false);
+}
+
+quint64 QCoreWlanEngine::bytesReceived(const QString &id)
+{
+    QMutexLocker locker(&mutex);
+    const QString interfaceStr = getInterfaceFromId(id);
+    return getBytes(interfaceStr,true);
+}
+
+quint64 QCoreWlanEngine::startTime(const QString &id)
+{
+    QMutexLocker locker(&mutex);
+    QMacCocoaAutoReleasePool pool;
+    quint64 timestamp = 0;
+
+    NSString *filePath = @"/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist";
+    NSDictionary* plistDict = [[[NSDictionary alloc] initWithContentsOfFile:filePath] autorelease];
+    NSString *input = @"KnownNetworks";
+    NSString *timeStampStr = @"_timeStamp";
+
+    NSString *ssidStr = @"SSID_STR";
+
+    for (id key in plistDict) {
+        if ([input isEqualToString:key]) {
+
+            NSDictionary *knownNetworksDict = [plistDict objectForKey:key];
+            for (id networkKey in knownNetworksDict) {
+                bool isFound = false;
+                NSDictionary *itemDict = [knownNetworksDict objectForKey:networkKey];
+                NSInteger dictSize = [itemDict count];
+                id objects[dictSize];
+                id keys[dictSize];
+
+                [itemDict getObjects:objects andKeys:keys];
+                bool ok = false;
+                for(int i = 0; i < dictSize; i++) {
+                    if([ssidStr isEqualToString:keys[i]]) {
+                        const QString ident = QString::number(qHash(QLatin1String("corewlan:") + qt_mac_NSStringToQString(objects[i])));
+                        if(ident == id) {
+                            ok = true;
+                        }
+                    }
+                    if(ok && [timeStampStr isEqualToString:keys[i]]) {
+                        timestamp = (quint64)[objects[i] timeIntervalSince1970];
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(isFound)
+                    break;
+            }
+        }
+    }
+    return timestamp;
+}
+
+quint64 QCoreWlanEngine::getBytes(const QString &interfaceName, bool b)
+{
+    struct ifaddrs *ifAddressList, *ifAddress;
+    struct if_data *if_data;
+
+    quint64 bytes = 0;
+    ifAddressList = nil;
+    if(getifaddrs(&ifAddressList) == 0) {
+        for(ifAddress = ifAddressList; ifAddress; ifAddress = ifAddress->ifa_next) {
+            if(interfaceName == ifAddress->ifa_name) {
+                if_data = (struct if_data*)ifAddress->ifa_data;
+                if(b) {
+                    bytes = if_data->ifi_ibytes;
+                    break;
+                } else {
+                    bytes = if_data->ifi_obytes;
+                    break;
+                }
+            }
+        }
+        freeifaddrs(ifAddressList);
+    }
+    return bytes;
+}
 
 QT_END_NAMESPACE
