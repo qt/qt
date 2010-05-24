@@ -576,10 +576,12 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
     bool needParent = (gobj != 0);
     if(parent){
         ret->setParent(parent);
-        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
-        if(gparent){
-            gobj->setParentItem(gparent);
-            needParent = false;
+        if (gobj) {
+            QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
+            if(gparent){
+                gobj->setParentItem(gparent);
+                needParent = false;
+            }
         }
     }
     if(needParent)

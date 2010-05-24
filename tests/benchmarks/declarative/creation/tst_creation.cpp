@@ -48,6 +48,7 @@
 #include <QGraphicsItem>
 #include <QDeclarativeItem>
 #include <QDeclarativeContext>
+#include <private/qdeclarativetextinput_p.h>
 #include <private/qobject_p.h>
 
 #ifdef Q_OS_SYMBIAN
@@ -108,6 +109,9 @@ public:
 tst_creation::tst_creation()
 {
     qmlRegisterType<TestType>("Qt.test", 1, 0, "TestType");
+
+    //get rid of initialization effects
+    QDeclarativeTextInput te;
 }
 
 inline QUrl TEST_FILE(const QString &filename)

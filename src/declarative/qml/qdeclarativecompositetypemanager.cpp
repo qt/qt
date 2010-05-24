@@ -334,23 +334,11 @@ void QDeclarativeCompositeTypeManager::resourceReplyFinished()
     reply->deleteLater();
 }
 
-// XXX this beyonds in QUrl::toLocalFile()
-// WARNING, there is a copy of this function in qdeclarativeengine.cpp
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
-        if (url.authority().isEmpty())
-            return QLatin1Char(':') + url.path();
-        return QString();
-    }
-    return url.toLocalFile();
-}
-
 void QDeclarativeCompositeTypeManager::loadResource(QDeclarativeCompositeTypeResource *resource)
 {
     QUrl url(resource->url);
 
-    QString lf = toLocalFileOrQrc(url);
+    QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
     if (!lf.isEmpty()) {
 
         QFile file(lf);
@@ -378,7 +366,7 @@ void QDeclarativeCompositeTypeManager::loadSource(QDeclarativeCompositeTypeData 
 {
     QUrl url(unit->imports.baseUrl());
 
-    QString lf = toLocalFileOrQrc(url);
+    QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
     if (!lf.isEmpty()) {
 
         QFile file(lf);
@@ -716,7 +704,7 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
     foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
         if (imp.type == QDeclarativeScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir")));
-            if (toLocalFileOrQrc(importUrl).isEmpty()) {
+            if (QDeclarativeEnginePrivate::urlToLocalFileOrQrc(importUrl).isEmpty()) {
                 // Import requires remote qmldir
                 resourceList.prepend(importUrl);
             }
@@ -726,7 +714,7 @@ void QDeclarativeCompositeTypeManager::compile(QDeclarativeCompositeTypeData *un
     QUrl importUrl;
     if (!unit->imports.baseUrl().scheme().isEmpty())
         importUrl = unit->imports.baseUrl().resolved(QUrl(QLatin1String("qmldir")));
-    if (!importUrl.scheme().isEmpty() && toLocalFileOrQrc(importUrl).isEmpty())
+    if (!importUrl.scheme().isEmpty() && QDeclarativeEnginePrivate::urlToLocalFileOrQrc(importUrl).isEmpty())
         resourceList.prepend(importUrl);
 
     for (int ii = 0; ii < resourceList.count(); ++ii) {
