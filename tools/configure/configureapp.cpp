@@ -1152,7 +1152,8 @@ void Configure::parseCmdLine()
             QString system = configCmdLine.at(i);
             if (system == QLatin1String("raster")
                 || system == QLatin1String("opengl")
-                || system == QLatin1String("openvg"))
+                || system == QLatin1String("openvg")
+                || system == QLatin1String("runtime"))
                 dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
         }
 
@@ -1621,7 +1622,7 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg|runtime]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1724,9 +1725,10 @@ bool Configure::displayHelp()
 #endif
         desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
                                 "Available values for <sys>:");
-        desc("GRAPHICS_SYSTEM", "raster", "", "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "", "  opengl - Using OpenGL acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "openvg", "", "  openvg - Using OpenVG acceleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "raster", "",  "  raster - Software rasterizer", ' ');
+        desc("GRAPHICS_SYSTEM", "opengl", "",  "  opengl - Using OpenGL acceleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!", ' ');
+        desc("GRAPHICS_SYSTEM", "runtime", "", "  runtime - Runtime switching of graphics sytems", ' ');
 
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
@@ -3076,9 +3078,10 @@ void Configure::generateConfigfiles()
         if(dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if(dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
 
-        if (dictionary["GRAPHICS_SYSTEM"] == "openvg") qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
-        if (dictionary["GRAPHICS_SYSTEM"] == "opengl") qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
-        if (dictionary["GRAPHICS_SYSTEM"] == "raster") qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
+        if (dictionary["GRAPHICS_SYSTEM"] == "openvg")  qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
+        if (dictionary["GRAPHICS_SYSTEM"] == "opengl")  qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
+        if (dictionary["GRAPHICS_SYSTEM"] == "raster")  qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
+        if (dictionary["GRAPHICS_SYSTEM"] == "runtime") qconfigList += "QT_GRAPHICSSYSTEM_RUNTIME";
 
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             // These features are not ported to Symbian (yet)

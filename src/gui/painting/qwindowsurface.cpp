@@ -116,8 +116,6 @@ public:
 QWindowSurface::QWindowSurface(QWidget *window)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
-    if (window)
-        window->setWindowSurface(this);
 }
 
 /*!
