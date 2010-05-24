@@ -81,6 +81,7 @@ bool Colors::noRescale = false;
 bool Colors::noAnimations = false;
 bool Colors::noBlending = false;
 bool Colors::noScreenSync = false;
+bool Colors::noBlur = true;
 bool Colors::fullscreen = false;
 bool Colors::usePixmaps = false;
 bool Colors::useLoop = false;
@@ -232,6 +233,8 @@ void Colors::parseArgs(int argc, char *argv[])
             Colors::showFps = true;
         else if (s == "-no-blending")
             Colors::noBlending = true;
+        else if (s == "-use-blur")
+            Colors::noBlur = false;
         else if (s == "-no-sync")
             Colors::noScreenSync = true;
         else if (s.startsWith("-menu"))
@@ -295,6 +298,7 @@ void Colors::setLowSettings()
     Colors::usePixmaps = true;
     Colors::noAnimations = true;
     Colors::noBlending = true;
+    Colors::noBlur = true;
 }
 
 void Colors::detectSystemResources()

@@ -1,11 +1,13 @@
-These pure QML examples demonstrate
-some of what can be easily done using just a few QML files.
+With Qt Declarative, it is easy to implement the UI components that you need
+in exactly the way that you want. These examples demonstrate this by creating
+a selection of user interface components where the look and feel has been
+completely defined in a QML file.
 
 The example launcher provided with Qt can be used to explore each of the
-examples in this directory. They can also be viewed directly with the
+examples in this directory. But most can also be viewed directly with the
 QML viewer utility, without requiring compilation.
 
-Documentation for these examples can be found via the Tutorial and Examples
+Documentation for these examples can be found via the Tutorials and Examples
 link in the main Qt documentation.
 
 

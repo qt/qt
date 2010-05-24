@@ -50,7 +50,6 @@ Item {
 
     width: 440
     height: 480
-    anchors.fill: parent
 
     Image {
         id: boardimage

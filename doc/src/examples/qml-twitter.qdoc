@@ -40,11 +40,11 @@
 ****************************************************************************/
 
 /*!
-    \title Snake
-    \example demos/declarative/snake
+    \title Twitter Mobile
+    \example demos/declarative/twitter
 
-    This demo shows how to write a Snake game in QML, controlled by the
-    keyboard as well as the mouse.
+    This demo shows how to write a mobile Twitter client in QML. Use it to
+    tweet us(@qtbynokia) how much you like our demos!
 
-    \image qml-snake-demo.png
+    \image qml-twitter-demo.png
 */
