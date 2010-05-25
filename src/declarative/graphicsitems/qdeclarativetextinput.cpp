@@ -1121,7 +1121,7 @@ QString QDeclarativeTextInput::displayText() const
 }
 
 /*!
-    \qmlproperty string TextInput::selectByMouse
+    \qmlproperty bool TextInput::selectByMouse
 
     Defaults to false.
 

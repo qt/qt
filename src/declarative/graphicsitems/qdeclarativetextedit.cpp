@@ -782,7 +782,7 @@ void QDeclarativeTextEdit::componentComplete()
 }
 
 /*!
-    \qmlproperty string TextEdit::selectByMouse
+    \qmlproperty bool TextEdit::selectByMouse
 
     Defaults to false.
 
