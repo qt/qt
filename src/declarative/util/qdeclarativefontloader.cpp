@@ -53,6 +53,7 @@
 #include <QFontDatabase>
 
 #include <private/qobject_p.h>
+#include <private/qdeclarativeengine_p.h>
 #include <qdeclarativeinfo.h>
 
 QT_BEGIN_NAMESPACE
@@ -98,15 +99,6 @@ QDeclarativeFontLoader::~QDeclarativeFontLoader()
 {
 }
 
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
-
-
 /*!
     \qmlproperty url FontLoader::source
     The url of the font to load.
@@ -127,7 +119,7 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
     d->status = Loading;
     emit statusChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    QString lf = toLocalFileOrQrc(d->url);
+    QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
     if (!lf.isEmpty()) {
         int id = QFontDatabase::addApplicationFont(lf);
         if (id != -1) {

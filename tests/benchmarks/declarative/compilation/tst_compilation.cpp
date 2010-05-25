@@ -77,6 +77,12 @@ void tst_compilation::boomblock()
     QVERIFY(f.open(QIODevice::ReadOnly));
     QByteArray data = f.readAll();
 
+    //get rid of initialization effects
+    {
+        QDeclarativeComponent c(&engine);
+        c.setData(data, QUrl());
+    }
+
     QBENCHMARK {
         QDeclarativeComponent c(&engine);
         c.setData(data, QUrl());

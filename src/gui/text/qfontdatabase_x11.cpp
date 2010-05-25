@@ -78,6 +78,9 @@ QT_BEGIN_NAMESPACE
 extern double qt_pointSize(double pixelSize, int dpi);
 extern double qt_pixelSize(double pointSize, int dpi);
 
+// from qapplication.cpp
+extern bool qt_is_gui_used;
+
 static inline void capitalize (char *s)
 {
     bool space = true;
@@ -1938,7 +1941,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
 
-            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize) {
+            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize && mainThread && qt_is_gui_used) {
                 QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
                 if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
                     delete fe;
@@ -1950,7 +1953,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 
 
 #endif
-        } else if (mainThread) {
+        } else if (mainThread && qt_is_gui_used) {
             fe = loadXlfd(d->screen, script, req);
         }
         if (!fe) {

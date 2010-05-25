@@ -2681,7 +2681,13 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
     }
 }
 
-/*! \internal */
+/*!
+    \reimp
+
+    Note that unlike QGraphicsItems, QDeclarativeItem::itemChange() is \e not called
+    during initial widget polishing. Items wishing to optimize start-up construction
+    should instead consider using componentComplete().
+*/
 QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {

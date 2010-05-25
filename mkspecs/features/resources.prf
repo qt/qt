@@ -1,3 +1,4 @@
+defined(qtPrepareTool)|load(qt_functions) ### Qt 5: see default_pre.prf
 qtPrepareTool(QMAKE_RCC, rcc)
 
 isEmpty(RCC_DIR):RCC_DIR = .

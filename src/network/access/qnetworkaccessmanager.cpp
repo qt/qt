@@ -595,8 +595,9 @@ QNetworkCookieJar *QNetworkAccessManager::cookieJar() const
 
     \note QNetworkAccessManager takes ownership of the \a cookieJar object.
 
-    QNetworkAccessManager will set the parent of the \a cookieJar
-    passed to itself, so that the cookie jar is deleted when this
+    If \a cookieJar is in the same thread as this QNetworkAccessManager,
+    it will set the parent of the \a cookieJar
+    so that the cookie jar is deleted when this
     object is deleted as well. If you want to share cookie jars
     between different QNetworkAccessManager objects, you may want to
     set the cookie jar's parent to 0 after calling this function.
@@ -621,7 +622,8 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
         if (d->cookieJar && d->cookieJar->parent() == this)
             delete d->cookieJar;
         d->cookieJar = cookieJar;
-        d->cookieJar->setParent(this);
+        if (thread() == cookieJar->thread())
+            d->cookieJar->setParent(this);
     }
 }
 
