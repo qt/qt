@@ -45,5 +45,5 @@
 
     This demo shows how to write a Flickr photo viewer application in QML.
 
-    \image qml-photoviewer-example.png
+    \image qml-photoviewer-demo.png
 */
