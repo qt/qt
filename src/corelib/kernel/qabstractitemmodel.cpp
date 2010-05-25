@@ -2501,6 +2501,8 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 }
 
 /*!
+    \since 4.6
+
     Begins a row move operation.
 
     When reimplementing a subclass, this method simplifies moving
@@ -2526,7 +2528,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
     same, in which case you must ensure that the \a destinationChild is
     not within the range of \a sourceFirst and \a sourceLast.  You
     must also ensure that you do not attempt to move a row to one of
-    its own chilren or ancestors.  This method returns false if either
+    its own children or ancestors.  This method returns false if either
     condition is true, in which case you should abort your move
     operation.
 
@@ -2582,13 +2584,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             Note that other rows may be displaced accordingly.
     \endtable
 
-    \note This function emits the rowsAboutToBeInserted() signal which
-    connected views (or proxies) must handle before the data is inserted.
-    Otherwise, the views may end up in an invalid state.
-
     \sa endMoveRows()
-
-    \since 4.6
 */
 bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationChild)
 {
