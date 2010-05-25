@@ -98,7 +98,7 @@ application or to build completely new applications.  QML is fully \l
 \o \l {qdeclarativemodules.html}{Modules}
 \o \l {qdeclarativefocus.html}{Keyboard Focus}
 \o \l {Extending types from QML}
-\o \l {Dynamic Object Creation}
+\o \l {qdeclarativedynamicobjects.html}{Dynamic Object Creation}
 \o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \endlist
 

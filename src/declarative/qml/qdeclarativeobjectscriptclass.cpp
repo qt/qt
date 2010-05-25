@@ -623,7 +623,7 @@ private:
 
     inline void cleanup();
 
-    void *data[4];
+    char data[4 * sizeof(void *)];
     int type;
 };
 }

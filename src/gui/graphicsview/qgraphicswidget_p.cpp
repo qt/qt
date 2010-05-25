@@ -79,7 +79,8 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
 
     resolveLayoutDirection();
     q->unsetWindowFrameMargins();
-    flags |= QGraphicsItem::ItemUsesExtendedStyleOption | QGraphicsItem::ItemSendsGeometryChanges;
+    flags |= QGraphicsItem::ItemUsesExtendedStyleOption;
+    flags |= QGraphicsItem::ItemSendsGeometryChanges;
     if (windowFlags & Qt::Window)
         flags |= QGraphicsItem::ItemIsPanel;
 }

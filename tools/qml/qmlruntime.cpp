@@ -1214,7 +1214,8 @@ void QDeclarativeViewer::setUseGL(bool useGL)
 #endif
 
         QGLWidget *glWidget = new QGLWidget(format);
-        glWidget->setAutoFillBackground(false);
+        //### potentially faster, but causes junk to appear if top-level is Item, not Rectangle
+        //glWidget->setAutoFillBackground(false);
 
         canvas->setViewport(glWidget);
     }

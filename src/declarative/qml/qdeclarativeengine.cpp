@@ -1049,9 +1049,9 @@ If you are certain the files will be local, you could simplify to:
 
 \snippet doc/src/snippets/declarative/componentCreation.js 2
 
-The methods and properties of the Component element are defined in its own
+The methods and properties of the \l {Component} element are defined in its own
 page, but when using it dynamically only two methods are usually used.
-\c Component.createObject() returns the created object or \c null if there is an error.
+ \l {Component::createObject()}{Component.createObject()} returns the created object or \c null if there is an error.
 If there is an error, \l {Component::errorString()}{Component.errorString()} describes
 the error that occurred. Note that createObject() takes exactly one argument, which is set
 to the parent of the created object. Graphical objects without a parent will not appear

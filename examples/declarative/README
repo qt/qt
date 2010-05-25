@@ -1,5 +1,5 @@
 The Qt Declarative module provides the ability to specify and implement
-your UI declaratively, using the Qt Meta-Object Language(QML). This
+your user interface declaratively, using the Qt Meta-Object Language (QML). This
 language is very expressive and human readable, and can be used by
 designers to actually implement their UI vision. QML UIs can integrate
 with C++ code in many ways, including being loaded as a part of a C++ UI
@@ -9,7 +9,7 @@ The example launcher provided with Qt can be used to explore each of the
 examples in this directory. But most can also be viewed directly with the
 QML viewer utility, without requiring compilation.
 
-Documentation for these examples can be found via the Tutorial and Examples
+Documentation for these examples can be found via the Tutorials and Examples
 link in the main Qt documentation.
 
 

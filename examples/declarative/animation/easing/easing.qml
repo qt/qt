@@ -76,7 +76,7 @@ Rectangle {
         ListElement { name: "Easing.InOutCirc"; type: Easing.InOutCirc; ballColor: "RosyBrown" }
         ListElement { name: "Easing.OutInCirc"; type: Easing.OutInCirc; ballColor: "SandyBrown" }
         ListElement { name: "Easing.InElastic"; type: Easing.InElastic; ballColor: "DarkGoldenRod" }
-        ListElement { name: "Easing.InElastic"; type: Easing.OutElastic; ballColor: "Chocolate" }
+        ListElement { name: "Easing.OutElastic"; type: Easing.OutElastic; ballColor: "Chocolate" }
         ListElement { name: "Easing.InOutElastic"; type: Easing.InOutElastic; ballColor: "SaddleBrown" }
         ListElement { name: "Easing.OutInElastic"; type: Easing.OutInElastic; ballColor: "Brown" }
         ListElement { name: "Easing.InBack"; type: Easing.InBack; ballColor: "Maroon" }
