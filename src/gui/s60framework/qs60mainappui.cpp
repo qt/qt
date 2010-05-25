@@ -64,6 +64,9 @@
 #include <private/qt_s60_p.h>
 #include <qdebug.h>
 
+//Animated wallpapers in Qt applications are not supported.
+const TInt KAknDisableAnimationBackground = 0x02000000;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -115,6 +118,11 @@ void QS60MainAppUi::ConstructL()
     TInt flags = CAknAppUi::EAknEnableSkin
                  | CAknAppUi::ENoScreenFurniture
                  | CAknAppUi::ENonStandardResourceFile;
+    // After 5th Edition S60, native side supports animated wallpapers.
+	// However, there is no support for that feature on Qt side, so indicate to
+	// native UI framework that this application will not support background animations.
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
+        flags |= KAknDisableAnimationBackground;
     BaseConstructL(flags);
 }
 
