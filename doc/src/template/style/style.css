@@ -989,6 +989,7 @@
     border-width: 1px;
     border-style: solid;
     border-color: #E6E6E6;
+	width:100%;
 	}
 	
 	.centerAlign
@@ -1141,11 +1142,24 @@
     /* end of screen media */
 
 .flowList{
-display:inline-block;
-width:260px;
+vertical-align:top;
 }	
+.alphaChar{
+width:100%;
+background-color:#F6F6F6;
+border:1px solid #E6E6E6;
+font-size:12pt;
+padding-left:10px;
+margin-top:10px;
+margin-bottom:10px;
+}
+
 .flowList dl{
-padding:0px;
+}
+.flowList dd{
+display:inline-block;
+margin-left:10px;
+width:250px;
 }
 .wrap .content .flowList p{
 padding:0px;
