@@ -226,6 +226,15 @@ Qt Plugins
  - foo
     * bar
 
+Examples & demos
+----------------
+  - Added exit softkey to Wiggly example
+  - Added close button to Anomaly demo
+  - [QTBUG-10635]: Fixed Anomaly demo controlstrip icon placement for very
+                   small screens
+
+
+
 Third party components
 ----------------------
 
@@ -301,10 +310,77 @@ Qt for Windows CE
 Qt for Symbian
 --------------
 
- - [QT-567] Implementation of QtMultimedia QAudio* APIs
- - [QTBUG-8919] Modified Phonon MMF backend to support video playback on
-   platforms which use graphics surfaces (i.e. platforms using the
-   New Graphics Architecture a.k.a. ScreenPlay)
+ - multimedia
+   * [QT-567] Implementation of QtMultimedia QAudio* APIs
+   * [QTBUG-8919] Modified Phonon MMF backend to support video playback on
+     platforms which use graphics surfaces (i.e. platforms using the
+     New Graphics Architecture a.k.a. ScreenPlay)
+
+ - mkspecs
+   * Changed pkg_prerules to not use default_deployment for vendor ID
+   * Added forwarding headers for qplatformdefs.h in Symbian mkspecs
+   * Added some missing IBY export paths to platform_path.prf
+   * Fixed libstdcpp.dll version autodetection for Symbian
+   * [QTBUG-7836]: Removed unnecessary dependency to moc.exe from Symbian
+     builds.
+   * [QT-1171]: Fixed libstdcpp.dll version autodetection
+   * [QTBUG-8513]: Fixed misc FLM issues
+   * [QT-2909]: Support for adding conditional MMP_RULES
+   * [QT-3253]: Export .flm files always if they are different
+   * [QTBUG-9279]: Made it possible to define more than one language using
+                   pkg_prerules
+   * [QTBUG-6795]: Made sure target path exists in
+                   qmake_extra_pre_targetdep.flm
+   * [QTBUG-7883]: Only use unix-like tools when not building for Symbian
+                   in Windows
+
+ - configure
+   * [QTBUG-7942]: Fix QT_BUILD_KEY for Symbian in Windows builds.
+
+     IMPORTANT NOTE: The build key change causes all Qt for Symbian plugins
+                     made with Qt 4.6.2 or earlier version incompatible with
+                     Qt 4.6.3 and later.
+
+   * [QTBUG-9065]: Support for -qtlibinfix parameter in Symbian
+
+ - qmake
+   * Changed canonical paths to absolute paths in symmake.
+   * Basic deployment support for ROM in Symbian.
+   * Add '.' dir as the first include directory in Symbian
+   * [QT-3017]: Support for conditional subdirs
+   * [QT-3083]: Expanded support for RSS_RULES
+   * [QTBUG-8685]: RVCT 4 support to Symbian builds
+   * [QT-3147]: Changed Symbian pkg files to deploy from under epoc32
+   * [QT-2985]: Fix extensions section in bld.inf when CONFIG contains
+                symbian_test
+
+ - S60installs
+   * Export qtdemoapps.iby to proper location
+   * [QT-3163]: Removed QtDeclarative.dll deployment from qt.iby
+
+ - QProcess
+   * [QTBUG-7735]: Fixed crash at application exit when QProcess was used in
+                   Symbian
+   * [QTBUG-8906]: Removed extra space from the command line passed to
+                   QProcess in Symbian
+
+ - QtGui
+   * QUnixPrintWidget is no longer declared in Symbian
+   * [QTBUG-10207]: Fixed long menu item texts causing crash
+
+ - Examples & demos:
+   * Enabled more examples by default in Symbian builds
+
+ - Documentation
+   * [QTBUG-9277]: Clarified pkg_prerules usage documentation
+
+ - Plugins:
+   * Fixed sqlite3_v9.2.zip to export sqlite3.iby to correct location.
+
+ - General
+   * [QT-3055]: Fixed filename cases to support building Qt for Symbian in
+                Linux
+
 
 ****************************************************************************
 *                          Tools                                           *
@@ -318,6 +394,10 @@ Qt for Symbian
 
  - Linguist
    * baz
+
+ - qmake
+    * Fixed qmake.pro for using with mingw
+
 
 ****************************************************************************
 * Important Behavior Changes *
