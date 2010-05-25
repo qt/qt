@@ -61,8 +61,9 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
-  \since 4.7
+    \since 4.7
     \brief The TextEdit item allows you to add editable formatted text to a scene.
+    \inherits Item
 
     It can display both plain and rich text. For example:
 
