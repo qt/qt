@@ -203,14 +203,12 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
 QDeclarativeObjectScriptClass::Value
 QDeclarativeObjectScriptClass::property(Object *object, const Identifier &name)
 {
-    return property(toQObject(object), name, context());
+    return property(toQObject(object), name);
 }
 
 QDeclarativeObjectScriptClass::Value
-QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name, QScriptContext *context)
+QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
 {
-    Q_ASSERT(context);
-
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     if (name == m_destroyId.identifier)
@@ -222,7 +220,7 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name, QS
     if (lastData && !lastData->isValid()) {
         QString error = QLatin1String("Cannot access non-existent property \"") +
                         toString(name) + QLatin1Char('\"');
-        return Value(scriptEngine, context->throwError(error));
+        return Value(scriptEngine, context()->throwError(error));
     }
 
     Q_ASSERT(obj);

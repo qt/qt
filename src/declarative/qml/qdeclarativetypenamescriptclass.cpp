@@ -147,7 +147,7 @@ QDeclarativeTypeNameScriptClass::property(Object *obj, const Identifier &name)
     if (type) {
         return Value(scriptEngine, newObject(((TypeNameData *)obj)->object, type, ((TypeNameData *)obj)->mode));
     } else if (object) {
-        return ep->objectClass->property(object, name, context());
+        return ep->objectClass->property(object, name);
     } else {
         return Value(scriptEngine, enumValue);
     }

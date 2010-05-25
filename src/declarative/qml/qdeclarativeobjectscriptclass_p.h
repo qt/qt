@@ -113,11 +113,10 @@ public:
                                            QDeclarativeContextData *evalContext,
                                            QueryHints hints = 0);
 
-    Value property(QObject *, const Identifier &, QScriptContext *context);
+    Value property(QObject *, const Identifier &);
 
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QScriptContext *context, QDeclarativeContextData *evalContext = 0);
-
     virtual QStringList propertyNames(Object *);
     virtual bool compare(Object *, Object *);
 
