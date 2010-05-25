@@ -47,11 +47,11 @@
 class MyQmlObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int result READ result WRITE setResult);
-    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged);
-    Q_PROPERTY(MyQmlObject *object READ object WRITE setObject NOTIFY objectChanged);
-    Q_PROPERTY(QDeclarativeListProperty<QObject> data READ data);
-    Q_CLASSINFO("DefaultProperty", "data");
+    Q_PROPERTY(int result READ result WRITE setResult)
+    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(MyQmlObject *object READ object WRITE setObject NOTIFY objectChanged)
+    Q_PROPERTY(QDeclarativeListProperty<QObject> data READ data)
+    Q_CLASSINFO("DefaultProperty", "data")
 public:
     MyQmlObject() : m_result(0), m_value(0), m_object(0) {}
 

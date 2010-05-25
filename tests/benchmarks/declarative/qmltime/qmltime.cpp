@@ -50,7 +50,7 @@
 class Timer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QDeclarativeComponent *component READ component WRITE setComponent);
+    Q_PROPERTY(QDeclarativeComponent *component READ component WRITE setComponent)
 
 public:
     Timer();
