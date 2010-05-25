@@ -64,7 +64,7 @@ public:
     static void ref() { contexts.ref(); }
     static void deref() {
         if (!contexts.deref()) {
-            eglTerminate(QEglContext::display());
+            eglTerminate(QEgl::display());
             displayOpen = 0;
         }
     }
@@ -535,6 +535,7 @@ static _eglDestroyImageKHR qt_eglDestroyImageKHR = 0;
 
 EGLDisplay QEgl::display()
 {
+    static EGLDisplay dpy = EGL_NO_DISPLAY;
     if (!QEglContextTracker::displayOpened()) {
         dpy = eglGetDisplay(nativeDisplay());
         QEglContextTracker::setDisplayOpened();
