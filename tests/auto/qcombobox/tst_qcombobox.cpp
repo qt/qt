@@ -2553,9 +2553,11 @@ void tst_QComboBox::maxVisibleItems()
 
     QAbstractItemView *v = comboBox.view();
     int itemHeight = v->visualRect(v->model()->index(0,0)).height();
-    if (v->style()->styleHint(QStyle::SH_ComboBox_Popup))
+    QListView *lv = qobject_cast<QListView*>(v);
+    if (lv)
+        itemHeight += lv->spacing();
+    if (!v->style()->styleHint(QStyle::SH_ComboBox_Popup))
         QCOMPARE(v->viewport()->height(), itemHeight * comboBox.maxVisibleItems());
-    // QCombobox without a popup does not work, see QTBUG-760
 }
 
 
