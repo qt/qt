@@ -676,12 +676,12 @@ void tst_qdeclarativetextedit::cursorDelegate()
     //Test Delegate gets moved
     for(int i=0; i<= textEditObject->text().length(); i++){
         textEditObject->setCursorPosition(i);
-        QCOMPARE(textEditObject->cursorRect().x(), qRound(delegateObject->x()));
-        QCOMPARE(textEditObject->cursorRect().y(), qRound(delegateObject->y()));
+        QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+        QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
     textEditObject->setCursorPosition(0);
-    QCOMPARE(textEditObject->cursorRect().x(), qRound(delegateObject->x()));
-    QCOMPARE(textEditObject->cursorRect().y(), qRound(delegateObject->y()));
+    QCOMPARE(textEditObject->cursorRectangle().x(), qRound(delegateObject->x()));
+    QCOMPARE(textEditObject->cursorRectangle().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));

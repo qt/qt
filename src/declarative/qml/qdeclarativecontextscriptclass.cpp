@@ -270,7 +270,7 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
 
     if (lastScopeObject) {
 
-        return ep->objectClass->property(lastScopeObject, name);
+        return ep->objectClass->property(lastScopeObject, name, context());
 
     } else if (lastData) {
 

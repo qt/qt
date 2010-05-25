@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,46 +38,34 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef TESTTYPES_H
-#define TESTTYPES_H
+import Qt 4.7
 
-#include <QtCore/qobject.h>
-#include <QtDeclarative/qdeclarative.h>
+//![0]
+Flickable {
+    id: flick
 
-class MyQmlObject : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int result READ result WRITE setResult)
-    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(MyQmlObject *object READ object WRITE setObject NOTIFY objectChanged)
-    Q_PROPERTY(QDeclarativeListProperty<QObject> data READ data)
-    Q_CLASSINFO("DefaultProperty", "data")
-public:
-    MyQmlObject() : m_result(0), m_value(0), m_object(0) {}
+    width: 300; height: 200;
+    contentHeight: edit.height
+    clip: true
 
-    int result() const { return m_result; }
-    void setResult(int r) { m_result = r; }
+    function ensureVisible(r)
+    {
+        if (contentX >= r.x)
+            contentX = r.x;
+        else if (contentX+width <= r.x+r.width)
+            contentX = r.x+r.width-width;
+        if (contentY >= r.y)
+            contentY = r.y;
+        else if (contentY+height <= r.y+r.height)
+            contentY = r.y+r.height-height;
+    }
 
-    int value() const { return m_value; }
-    void setValue(int v) { m_value = v; emit valueChanged(); }
-
-    QDeclarativeListProperty<QObject> data() { return QDeclarativeListProperty<QObject>(this, m_data); }
-
-    MyQmlObject *object() const { return m_object; }
-    void setObject(MyQmlObject *o) { m_object = o; emit objectChanged(); }
-
-signals:
-    void valueChanged();
-    void objectChanged();
-
-private:
-    QList<QObject *> m_data;
-    int m_result;
-    int m_value;
-    MyQmlObject *m_object;
-};
-QML_DECLARE_TYPE(MyQmlObject);
-
-void registerTypes();
-
-#endif // TESTTYPES_H
+    TextEdit {
+        id: edit
+        width: parent.width
+        focus: true
+        wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
+        onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+    }
+}
+//![0]

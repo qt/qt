@@ -113,10 +113,11 @@ public:
                                            QDeclarativeContextData *evalContext,
                                            QueryHints hints = 0);
 
-    Value property(QObject *, const Identifier &);
+    Value property(QObject *, const Identifier &, QScriptContext *context);
 
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QScriptContext *context, QDeclarativeContextData *evalContext = 0);
+
     virtual QStringList propertyNames(Object *);
     virtual bool compare(Object *, Object *);
 
@@ -139,6 +140,7 @@ private:
 
     PersistentIdentifier m_destroyId;
     PersistentIdentifier m_toStringId;
+    PersistentIdentifier m_valueOfId;
     QScriptValue m_destroy;
     QScriptValue m_toString;
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,46 +38,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef TESTTYPES_H
-#define TESTTYPES_H
 
-#include <QtCore/qobject.h>
-#include <QtDeclarative/qdeclarative.h>
+import Qt 4.7
 
-class MyQmlObject : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int result READ result WRITE setResult)
-    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(MyQmlObject *object READ object WRITE setObject NOTIFY objectChanged)
-    Q_PROPERTY(QDeclarativeListProperty<QObject> data READ data)
-    Q_CLASSINFO("DefaultProperty", "data")
-public:
-    MyQmlObject() : m_result(0), m_value(0), m_object(0) {}
+//Emulates the in animation of the menu elements
+SequentialAnimation{
+    id: main;
+    property Item target
+    property int from: 0
+    property int to: 100
+    property int duration: 1000
+    property string properties: "y"
+    PauseAnimation { duration: main.duration*0.20 }
+    NumberAnimation { target: main.target; properties: main.properties; from: main.from; to: main.to + 40; duration: main.duration*0.30 }
+    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 40; to: main.to; duration: main.duration*0.10 }
+    NumberAnimation { target: main.target; properties: main.properties; from: main.to; to: main.to + 20; duration: main.duration*0.10 }
+    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 20; to: main.to; duration: main.duration*0.10 }
+    NumberAnimation { target: main.target; properties: main.properties; from: main.to; to: main.to + 8; duration: main.duration*0.10 }
+    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 8; to: main.to; duration: main.duration*0.10 }
+}
 
-    int result() const { return m_result; }
-    void setResult(int r) { m_result = r; }
-
-    int value() const { return m_value; }
-    void setValue(int v) { m_value = v; emit valueChanged(); }
-
-    QDeclarativeListProperty<QObject> data() { return QDeclarativeListProperty<QObject>(this, m_data); }
-
-    MyQmlObject *object() const { return m_object; }
-    void setObject(MyQmlObject *o) { m_object = o; emit objectChanged(); }
-
-signals:
-    void valueChanged();
-    void objectChanged();
-
-private:
-    QList<QObject *> m_data;
-    int m_result;
-    int m_value;
-    MyQmlObject *m_object;
-};
-QML_DECLARE_TYPE(MyQmlObject);
-
-void registerTypes();
-
-#endif // TESTTYPES_H
