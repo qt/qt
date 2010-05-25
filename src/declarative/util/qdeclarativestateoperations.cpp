@@ -1128,8 +1128,8 @@ void QDeclarativeAnchorChanges::setObject(QDeclarativeItem *target)
     \qml
     AnchorChanges {
         target: myItem
-        left: undefined          //remove myItem's left anchor
-        right: otherItem.right
+        anchors.left: undefined          //remove myItem's left anchor
+        anchors.right: otherItem.right
     }
     \endqml
 */
