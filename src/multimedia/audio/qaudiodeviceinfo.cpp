@@ -43,6 +43,7 @@
 #include <QtMultimedia/qaudioengine.h>
 #include <QtMultimedia/qaudiodeviceinfo.h>
 
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -238,7 +239,66 @@ QAudioFormat QAudioDeviceInfo::preferredFormat() const
 
 QAudioFormat QAudioDeviceInfo::nearestFormat(const QAudioFormat &settings) const
 {
-    return isNull() ? QAudioFormat() : d->info->nearestFormat(settings);
+    if (isFormatSupported(settings))
+        return settings;
+
+    QAudioFormat nearest = settings;
+
+    nearest.setCodec(QLatin1String("audio/pcm"));
+
+    if (nearest.sampleType() == QAudioFormat::Unknown) {
+        QAudioFormat preferred = preferredFormat();
+        nearest.setSampleType(preferred.sampleType());
+    }
+
+    QMap<int,int> testFrequencies;
+    QList<int> frequenciesAvailable = supportedFrequencies();
+    QMap<int,int> testSampleSizes;
+    QList<int> sampleSizesAvailable = supportedSampleSizes();
+
+    // Get sorted sampleSizes (equal to and ascending values only)
+    if (sampleSizesAvailable.contains(settings.sampleSize()))
+        testSampleSizes.insert(0,settings.sampleSize());
+    sampleSizesAvailable.removeAll(settings.sampleSize());
+    foreach (int size, sampleSizesAvailable) {
+        int larger  = (size > settings.sampleSize()) ? size : settings.sampleSize();
+        int smaller = (size > settings.sampleSize()) ? settings.sampleSize() : size;
+        if (size >= settings.sampleSize()) {
+            int diff = larger - smaller;
+            testSampleSizes.insert(diff, size);
+        }
+    }
+
+    // Get sorted frequencies (equal to and ascending values only)
+    if (frequenciesAvailable.contains(settings.frequency()))
+        testFrequencies.insert(0,settings.frequency());
+    frequenciesAvailable.removeAll(settings.frequency());
+    foreach (int frequency, frequenciesAvailable) {
+        int larger  = (frequency > settings.frequency()) ? frequency : settings.frequency();
+        int smaller = (frequency > settings.frequency()) ? settings.frequency() : frequency;
+        if (frequency >= settings.frequency()) {
+            int diff = larger - smaller;
+            testFrequencies.insert(diff, frequency);
+        }
+    }
+
+    // Try to find nearest
+    // Check ascending frequencies, ascending sampleSizes
+    QMapIterator<int, int> sz(testSampleSizes);
+    while (sz.hasNext()) {
+        sz.next();
+        nearest.setSampleSize(sz.value());
+        QMapIterator<int, int> i(testFrequencies);
+        while (i.hasNext()) {
+            i.next();
+            nearest.setFrequency(i.value());
+            if (isFormatSupported(nearest))
+                return nearest;
+        }
+    }
+
+    //Fallback
+    return preferredFormat();
 }
 
 /*!
