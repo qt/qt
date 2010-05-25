@@ -88,6 +88,9 @@ QtGui
  - QGraphicsItem
     * [QTBUG-8112] itemChange() is now called when transformation
       properties change (setRotation, setScale, setTransformOriginPoint).
+    * [QTBUG-9024] Improved performance when calling update() on items that
+      are clipped by an ancestor (QGraphicsItem::ItemClipsChildrenToShape).
+    * [QTBUG-7703], [QTBUG-8378] Fixed scrolling issues
 
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
@@ -96,6 +99,7 @@ QtGui
  - QGraphicsView
     * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
       the mouse.
+    * [QTBUG-10338] Fixed drawing artifacts due to rounding errors.
 
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
