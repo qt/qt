@@ -46,7 +46,7 @@
 #include <QPixmap>
 #include <QScopedPointer>
 
-class QByteArray;
+QT_FORWARD_DECLARE_CLASS(QByteArray)
 
 /**
  * Widget which displays a section of the audio waveform.

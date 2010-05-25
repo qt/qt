@@ -44,7 +44,7 @@
 #include <QWidget>
 #include "frequencyspectrum.h"
 
-class QMouseEvent;
+QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 
 /**
  * Widget which displays a spectrograph showing the frequency spectrum

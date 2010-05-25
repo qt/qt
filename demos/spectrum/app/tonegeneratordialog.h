@@ -45,10 +45,10 @@
 #include <QDialog>
 #include <QtMultimedia/QAudioDeviceInfo>
 
-class QCheckBox;
-class QSlider;
-class QSpinBox;
-class QGridLayout;
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
+QT_FORWARD_DECLARE_CLASS(QSlider)
+QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QGridLayout)
 
 /**
  * Dialog which controls the parameters of the tone generator.

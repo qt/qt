@@ -53,11 +53,12 @@ class Waveform;
 class LevelMeter;
 class SettingsDialog;
 class ToneGeneratorDialog;
-class QAudioFormat;
-class QLabel;
-class QPushButton;
-class QMenu;
-class QAction;
+
+QT_FORWARD_DECLARE_CLASS(QAudioFormat)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QMenu)
+QT_FORWARD_DECLARE_CLASS(QAction)
 
 /**
  * Main application widget, responsible for connecting the various UI

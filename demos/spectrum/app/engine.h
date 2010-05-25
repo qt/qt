@@ -64,10 +64,11 @@
 #include <QDir>
 #endif
 
-class QAudioInput;
-class QAudioOutput;
 class FrequencySpectrum;
-class QFile;
+
+QT_FORWARD_DECLARE_CLASS(QAudioInput)
+QT_FORWARD_DECLARE_CLASS(QAudioOutput)
+QT_FORWARD_DECLARE_CLASS(QFile)
 
 /**
  * This class interfaces with the QtMultimedia audio classes, and also with

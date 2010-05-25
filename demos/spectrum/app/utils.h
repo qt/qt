@@ -44,7 +44,7 @@
 #include <QtCore/qglobal.h>
 #include <QDebug>
 
-class QAudioFormat;
+QT_FORWARD_DECLARE_CLASS(QAudioFormat)
 
 //-----------------------------------------------------------------------------
 // Miscellaneous utility functions
