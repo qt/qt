@@ -123,7 +123,7 @@ def generateLocaleInfo(path):
     result['language_id'] = language_id
     result['country_id'] = country_id
 
-    numberingSystem = None
+    numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
     except:

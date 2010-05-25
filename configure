@@ -2755,6 +2755,17 @@ fi
 
 if [ -z "${CFG_HOST_ARCH}" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE" in
+    GNU:*:*)
+        CFG_HOST_ARCH=`echo ${UNAME_MACHINE} | sed -e 's,[-/].*$,,'`
+        case "$CFG_HOST_ARCH" in
+            i?86)
+                CFG_HOST_ARCH=i386
+                ;;
+        esac
+        if [ "$OPT_VERBOSE" = "yes" ]; then
+            echo "    GNU/Hurd ($CFG_HOST_ARCH)"
+        fi
+        ;;
     IRIX*:*:*)
         CFG_HOST_ARCH=`uname -p`
         if [ "$OPT_VERBOSE" = "yes" ]; then

@@ -87,7 +87,7 @@
     tranformation matrix that you can retrieve using the
     QPainter::worldTransform() function. A matrix transforms a point in the
     plane to another point. For more information about the
-    transformation matrix, see the \l {The Coordinate System} and
+    transformation matrix, see the \l {Coordinate System} and
     QTransform documentation.
 
     \snippet examples/painting/transformations/renderarea.h 0
@@ -374,7 +374,7 @@
 
     All the tranformation operations operate on QPainter's
     tranformation matrix. For more information about the
-    transformation matrix, see the \l {The Coordinate System} and
+    transformation matrix, see the \l {Coordinate System} and
     QTransform documentation.
 
     The Qt reference documentation provides several painting
