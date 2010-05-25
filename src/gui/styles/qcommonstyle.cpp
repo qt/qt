@@ -65,7 +65,6 @@
 #include <qrubberband.h>
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
-#include <private/qstylehelper_p.h>
 #include <qdebug.h>
 #include <qtextformat.h>
 #include <qwizard.h>
@@ -87,6 +86,8 @@
 #elif defined(Q_WS_MAC)
 #   include <private/qt_cocoa_helpers_mac_p.h>
 #endif
+
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 

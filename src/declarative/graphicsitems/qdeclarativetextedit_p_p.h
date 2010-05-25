@@ -73,7 +73,8 @@ public:
       persistentSelection(true), clickCausedFocus(false), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
       cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0),
       wrapMode(QDeclarativeTextEdit::NoWrap),
-      selectByMouse(false)
+      selectByMouse(false),
+      yoff(0)
     {
     }
 
@@ -112,6 +113,7 @@ public:
     QTextControl *control;
     QDeclarativeTextEdit::WrapMode wrapMode;
     bool selectByMouse;
+    int yoff;
 };
 
 QT_END_NAMESPACE

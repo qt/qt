@@ -141,6 +141,32 @@ static void ensureInitialized()
     can be:
     \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 1
 
+    \section1 Network and Roaming support
+
+    With the addition of the \l {Bearer Management} API to Qt 4.7
+    QNetworkAccessManager gained the ability to manage network connections.
+    QNetworkAccessManager can start the network interface if the device is
+    offline and terminates the interface if the current process is the last
+    one to use the uplink. Note that some platform utilize grace periods from
+    when the last application stops using a uplink until the system actually
+    terminates the connectivity link. Roaming is equally transparent. Any
+    queued/pending network requests are automatically transferred to new
+    access point.
+
+    Clients wanting to utilize this feature should not require any changes. In fact
+    it is likely that existing platform specific connection code can simply be
+    removed from the application.
+
+    \note The network and roaming support in QNetworkAccessManager is conditional
+    upon the platform supporting connection management. The
+    \l QNetworkConfigurationManager::NetworkSessionRequired can be used to
+    detect whether QNetworkAccessManager utilizes this feature. Currently only
+    Meego/Harmattan and Symbian platforms provide connection management support.
+
+    \note This feature cannot be used in combination with the Bearer Management
+    API as provided by QtMobility. Applications have to migrate to the Qt version
+    of Bearer Management.
+
     \section1 Symbian Platform Security Requirements
 
     On Symbian, processes which use this class must have the
@@ -595,8 +621,9 @@ QNetworkCookieJar *QNetworkAccessManager::cookieJar() const
 
     \note QNetworkAccessManager takes ownership of the \a cookieJar object.
 
-    QNetworkAccessManager will set the parent of the \a cookieJar
-    passed to itself, so that the cookie jar is deleted when this
+    If \a cookieJar is in the same thread as this QNetworkAccessManager,
+    it will set the parent of the \a cookieJar
+    so that the cookie jar is deleted when this
     object is deleted as well. If you want to share cookie jars
     between different QNetworkAccessManager objects, you may want to
     set the cookie jar's parent to 0 after calling this function.
@@ -621,7 +648,8 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
         if (d->cookieJar && d->cookieJar->parent() == this)
             delete d->cookieJar;
         d->cookieJar = cookieJar;
-        d->cookieJar->setParent(this);
+        if (thread() == cookieJar->thread())
+            d->cookieJar->setParent(this);
     }
 }
 
