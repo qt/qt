@@ -73,9 +73,11 @@ namespace QDeclarativeStringConverters
     QVariant Q_DECLARATIVE_EXPORT variantFromString(const QString &, int preferredType, bool *ok = 0);
 
     QColor Q_DECLARATIVE_EXPORT colorFromString(const QString &, bool *ok = 0);
+#ifndef QT_NO_TEXTDATE
     QDate Q_DECLARATIVE_EXPORT dateFromString(const QString &, bool *ok = 0); 
     QTime Q_DECLARATIVE_EXPORT timeFromString(const QString &, bool *ok = 0);
     QDateTime Q_DECLARATIVE_EXPORT dateTimeFromString(const QString &, bool *ok = 0);
+#endif
     QPointF Q_DECLARATIVE_EXPORT pointFFromString(const QString &, bool *ok = 0);
     QSizeF Q_DECLARATIVE_EXPORT sizeFFromString(const QString &, bool *ok = 0);
     QRectF Q_DECLARATIVE_EXPORT rectFFromString(const QString &, bool *ok = 0);
