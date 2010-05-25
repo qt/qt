@@ -337,7 +337,7 @@ private:
     QComboBox *mCombo;
 };
 
-class QComboBoxPrivate : public QWidgetPrivate
+class Q_AUTOTEST_EXPORT QComboBoxPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QComboBox)
 public:
