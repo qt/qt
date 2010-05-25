@@ -2013,11 +2013,18 @@ void QComboBox::setCurrentIndex(int index)
 void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
 {
     Q_Q(QComboBox);
-    bool indexChanged = (mi != currentIndex);
+
+    QModelIndex normalized;
+    if (mi.column() != modelColumn)
+        normalized = model->index(mi.row(), modelColumn, mi.parent());
+    if (!normalized.isValid())
+        normalized = mi;    // Fallback to passed index.
+
+    bool indexChanged = (normalized != currentIndex);
     if (indexChanged)
-        currentIndex = QPersistentModelIndex(mi);
+        currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
-        QString newText = q->itemText(currentIndex.row());
+        QString newText = q->itemText(normalized.row());
         if (lineEdit->text() != newText)
             lineEdit->setText(newText);
         updateLineEditGeometry();
