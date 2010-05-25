@@ -549,15 +549,19 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     Returns an object instance from this component, or null if object creation fails.
 
     The object will be created in the same context as the one in which the component
-    was created.
+    was created. This function will always return null when called on components
+    which were not created in QML.
 
     Note that if the returned object is to be displayed, its \c parent must be set to
-    an existing item in a scene, or else the object will not be visible.
+    an existing item in a scene, or else the object will not be visible. The parent
+    argument is required to help you avoid this, you must explicitly pass in null if
+    you wish to create an object without setting a parent.
 */
 
 /*!
     \internal
-    A version of create which returns a scriptObject, for use in script
+    A version of create which returns a scriptObject, for use in script.
+    This function will only work on components created in QML.
 
     Sets graphics object parent because forgetting to do this is a frequent
     and serious problem.
@@ -576,10 +580,12 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
     bool needParent = (gobj != 0);
     if(parent){
         ret->setParent(parent);
-        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
-        if(gparent){
-            gobj->setParentItem(gparent);
-            needParent = false;
+        if (gobj) {
+            QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
+            if(gparent){
+                gobj->setParentItem(gparent);
+                needParent = false;
+            }
         }
     }
     if(needParent)

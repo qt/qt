@@ -5643,6 +5643,14 @@ void QGraphicsItem::update(const QRectF &rect)
     viewport, which does not benefit from scroll optimizations), this function
     is equivalent to calling update(\a rect).
 
+    \bold{Note:} Scrolling is only supported when QGraphicsItem::ItemCoordinateCache
+    is enabled; in all other cases calling this function is equivalent to calling
+    update(\a rect). If you for sure know that the item is opaque and not overlapped
+    by other items, you can map the \a rect to viewport coordinates and scroll the
+    viewport.
+
+    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 19
+
     \sa boundingRect()
 */
 void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
@@ -5652,153 +5660,73 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     if (!d->scene)
         return;
-    if (d->cacheMode != NoCache) {
-        QGraphicsItemCache *c;
-        bool scrollCache = qFuzzyIsNull(dx - int(dx)) && qFuzzyIsNull(dy - int(dy))
-                           && (c = (QGraphicsItemCache *)qVariantValue<void *>(d_ptr->extra(QGraphicsItemPrivate::ExtraCacheData)))
-                           && (d->cacheMode == ItemCoordinateCache && !c->fixedSize.isValid());
-        if (scrollCache) {
-            QPixmap pix;
-            if (QPixmapCache::find(c->key, &pix)) {
-                // Adjust with 2 pixel margin. Notice the loss of precision
-                // when converting to QRect.
-                int adjust = 2;
-                QRectF scrollRect = !rect.isNull() ? rect : boundingRect();
-                QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
-                QRect irect = scrollRect.toRect().translated(-br.x(), -br.y());
 
-                pix.scroll(dx, dy, irect);
-
-                QPixmapCache::replace(c->key, pix);
-
-                // Translate the existing expose.
-                foreach (QRectF exposedRect, c->exposed)
-                    c->exposed += exposedRect.translated(dx, dy) & scrollRect;
-
-                // Calculate exposure.
-                QRegion exposed;
-                QRect r = scrollRect.toRect();
-                exposed += r;
-                exposed -= r.translated(dx, dy);
-                foreach (QRect rect, exposed.rects())
-                    update(rect);
-                d->scene->d_func()->markDirty(this);
-            } else {
-                update(rect);
-            }
-        } else {
-            // ### This is very slow, and can be done much better. If the cache is
-            // local and matches the below criteria for rotation and scaling, we
-            // can easily scroll. And if the cache is in device coordinates, we
-            // can scroll both the viewport and the cache.
-            update(rect);
-        }
+    // Accelerated scrolling means moving pixels from one location to another
+    // and only redraw the newly exposed area. The following requirements must
+    // be fulfilled in order to do that:
+    //
+    // 1) Item is opaque.
+    // 2) Item is not overlapped by other items.
+    //
+    // There's (yet) no way to detect whether an item is opaque or not, which means
+    // we cannot do accelerated scrolling unless the cache is enabled. In case of using
+    // DeviceCoordinate cache we also have to take the device transform into account in
+    // order to determine whether we can do accelerated scrolling or not. That's left out
+    // for simplicity here, but it is definitely something we can consider in the future
+    // as a performance improvement.
+    if (d->cacheMode != QGraphicsItem::ItemCoordinateCache
+        || !qFuzzyIsNull(dx - int(dx)) || !qFuzzyIsNull(dy - int(dy))) {
+        update(rect);
         return;
     }
 
-    QRectF scrollRect = !rect.isNull() ? rect : boundingRect();
-    int couldntScroll = d->scene->views().size();
-    foreach (QGraphicsView *view, d->scene->views()) {
-        if (view->viewport()->inherits("QGLWidget")) {
-            // ### Please replace with a widget attribute; any widget that
-            // doesn't support partial updates / doesn't support scrolling
-            // should be skipped in this code. Qt::WA_NoPartialUpdates or so.
-            continue;
-        }
-
-        static const QLineF up(0, 0, 0, -1);
-        static const QLineF down(0, 0, 0, 1);
-        static const QLineF left(0, 0, -1, 0);
-        static const QLineF right(0, 0, 1, 0);
-
-        QTransform deviceTr = deviceTransform(view->viewportTransform());
-        QRect deviceScrollRect = deviceTr.mapRect(scrollRect).toRect();
-        QLineF v1 = deviceTr.map(right);
-        QLineF v2 = deviceTr.map(down);
-        QLineF u1 = v1.unitVector(); u1.translate(-v1.p1());
-        QLineF u2 = v2.unitVector(); u2.translate(-v2.p1());
-        bool noScroll = false;
-
-        // Check if the delta resolves to ints in device space.
-        QPointF deviceDelta = deviceTr.map(QPointF(dx, dy));
-        if ((deviceDelta.x() - int(deviceDelta.x()))
-            || (deviceDelta.y() - int(deviceDelta.y()))) {
-            noScroll = true;
-        } else {
-            // Check if the unit vectors have no fraction in device space.
-            qreal v1l = v1.length();
-            if (v1l - int(v1l)) {
-                noScroll = true;
-            } else {
-                dx *= v1.length();
-            }
-            qreal v2l = v2.length();
-            if (v2l - int(v2l)) {
-                noScroll = true;
-            } else {
-                dy *= v2.length();
-            }
-        }
-
-        if (!noScroll) {
-            if (u1 == right) {
-                if (u2 == up) {
-                    // flipped
-                    dy = -dy;
-                } else if (u2 == down) {
-                    // normal
-                } else {
-                    noScroll = true;
-                }
-            } else if (u1 == left) {
-                if (u2 == up) {
-                    // mirrored & flipped / rotated 180 degrees
-                    dx = -dx;
-                    dy = -dy;
-                } else if (u2 == down) {
-                    // mirrored
-                    dx = -dx;
-                } else {
-                    noScroll = true;
-                }
-            } else if (u1 == up) {
-                if (u2 == left) {
-                    // rotated -90 & mirrored
-                    qreal tmp = dy;
-                    dy = -dx;
-                    dx = -tmp;
-                } else if (u2 == right) {
-                    // rotated -90
-                    qreal tmp = dy;
-                    dy = -dx;
-                    dx = tmp;
-                } else {
-                    noScroll = true;
-                }
-            } else if (u1 == down) {
-                if (u2 == left) {
-                    // rotated 90
-                    qreal tmp = dy;
-                    dy = dx;
-                    dx = -tmp;
-                } else if (u2 == right) {
-                    // rotated 90 & mirrored
-                    qreal tmp = dy;
-                    dy = dx;
-                    dx = tmp;
-                } else {
-                    noScroll = true;
-                }
-            }
-        }
-
-        if (!noScroll) {
-            view->viewport()->scroll(int(dx), int(dy), deviceScrollRect);
-            --couldntScroll;
-        }
-    }
-    if (couldntScroll)
+    QGraphicsItemCache *cache = d->extraItemCache();
+    if (cache->allExposed || cache->fixedSize.isValid()) {
+        // Cache is either invalidated or item is scaled (see QGraphicsItem::setCacheMode).
         update(rect);
+        return;
+    }
+
+    QPixmap cachedPixmap;
+    if (!QPixmapCache::find(cache->key, &cachedPixmap)) {
+        update(rect);
+        return;
+    }
+
+    QRegion exposed;
+    const bool scrollEntirePixmap = rect.isNull();
+    if (scrollEntirePixmap) {
+        // Scroll entire pixmap.
+        cachedPixmap.scroll(dx, dy, cachedPixmap.rect(), &exposed);
+    } else {
+        if (!rect.intersects(cache->boundingRect))
+            return; // Nothing to scroll.
+        // Scroll sub-rect of pixmap. The rect is in item coordinates
+        // so we have to translate it to pixmap coordinates.
+        QRect scrollRect = rect.toAlignedRect();
+        cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
+    }
+
+    QPixmapCache::replace(cache->key, cachedPixmap);
+
+    // Translate the existing expose.
+    for (int i = 0; i < cache->exposed.size(); ++i) {
+        QRectF &e = cache->exposed[i];
+        if (!scrollEntirePixmap && !e.intersects(rect))
+            continue;
+        e.translate(dx, dy);
+    }
+
+    // Append newly exposed areas. Note that the exposed region is currently
+    // in pixmap coordinates, so we have to translate it to item coordinates.
+    exposed.translate(cache->boundingRect.topLeft());
+    const QVector<QRect> exposedRects = exposed.rects();
+    for (int i = 0; i < exposedRects.size(); ++i)
+        cache->exposed += exposedRects.at(i);
+
+    // Trigger update. This will redraw the newly exposed area and make sure
+    // the pixmap is re-blitted in case there are overlapping items.
+    d->scene->d_func()->markDirty(this, rect);
 }
 
 /*!

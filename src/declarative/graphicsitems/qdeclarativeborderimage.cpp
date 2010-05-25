@@ -42,8 +42,8 @@
 #include "private/qdeclarativeborderimage_p.h"
 #include "private/qdeclarativeborderimage_p_p.h"
 
-#include <qdeclarativeengine.h>
 #include <qdeclarativeinfo.h>
+#include <private/qdeclarativeengine_p.h>
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -152,16 +152,6 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     The URL may be absolute, or relative to the URL of the component.
 */
-
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
-
-
 void QDeclarativeBorderImage::setSource(const QUrl &url)
 {
     Q_D(QDeclarativeBorderImage);
@@ -210,7 +200,7 @@ void QDeclarativeBorderImage::load()
         d->status = Loading;
         if (d->url.path().endsWith(QLatin1String("sci"))) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-            QString lf = toLocalFileOrQrc(d->url);
+            QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
             if (!lf.isEmpty()) {
                 QFile file(lf);
                 file.open(QIODevice::ReadOnly);
