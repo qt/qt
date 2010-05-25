@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static int qt_pixmap_serial = 0;
+
 #define READBACK(f)                                         \
     m_graphicsSystem->decreaseMemoryUsage(memoryUsage());   \
     f                                                       \
@@ -89,7 +91,7 @@ private:
 QRuntimePixmapData::QRuntimePixmapData(const QRuntimeGraphicsSystem *gs, PixelType type)
         : QPixmapData(type, RuntimeClass), m_graphicsSystem(gs)
 {
-    setSerialNumber((int)this);
+    setSerialNumber(++qt_pixmap_serial);
 }
 
 QRuntimePixmapData::~QRuntimePixmapData()
