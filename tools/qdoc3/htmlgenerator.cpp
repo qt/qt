@@ -2493,7 +2493,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                 out() << "<dl class=\"flowList odd\">";
             else
                 out() << "<dl class=\"flowList even\">";
-            out() << "<dt class=\"alphaChar\"><p>";
+            out() << "<dt class=\"alphaChar\">";
             if (includeAlphabet) {
                 QChar c = paragraphName[curParNr][0].toLower();
                 out() << QString("<a name=\"%1\"></a>").arg(c);
@@ -2501,13 +2501,13 @@ void HtmlGenerator::generateCompactList(const Node *relative,
             out() << "<b>"
                   << paragraphName[curParNr]
                   << "</b>";
-            out() << "</p></dt>\n";
+            out() << "</dt>\n";
         }
 
         /*
           Output a <dd> for the current offset in the current paragraph.
          */
-        out() << "<dd><p>";
+        out() << "<dd>";
         if ((curParNr < NumParagraphs) &&
             !paragraphName[curParNr].isEmpty()) {
             NodeMap::Iterator it;
@@ -2534,7 +2534,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                 out() << ")";
             }
         }
-        out() << "</p></dd>\n";
+        out() << "</dd>\n";
         curParOffset++;
     }
     out() << "</dl>\n";
