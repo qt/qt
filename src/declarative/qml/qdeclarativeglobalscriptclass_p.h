@@ -73,6 +73,8 @@ public:
     virtual void setProperty(QScriptValue &object, const QScriptString &name,
                              uint id, const QScriptValue &value);
 
+    void explicitSetProperty(const QString &, const QScriptValue &);
+
     const QScriptValue &globalObject() const { return m_globalObject; }
 
     const QSet<QString> &illegalNames() const { return m_illegalNames; }

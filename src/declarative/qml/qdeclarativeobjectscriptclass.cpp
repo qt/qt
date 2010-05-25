@@ -93,7 +93,6 @@ QDeclarativeObjectScriptClass::QDeclarativeObjectScriptClass(QDeclarativeEngine 
     m_destroyId = createPersistentIdentifier(QLatin1String("destroy"));
     m_toString = scriptEngine->newFunction(tostring);
     m_toStringId = createPersistentIdentifier(QLatin1String("toString"));
-    m_valueOfId = createPersistentIdentifier(QLatin1String("valueOf"));
 }
 
 QDeclarativeObjectScriptClass::~QDeclarativeObjectScriptClass()
@@ -158,8 +157,7 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     lastTNData = 0;
 
     if (name == m_destroyId.identifier ||
-        name == m_toStringId.identifier ||
-        name == m_valueOfId.identifier)
+        name == m_toStringId.identifier)
         return QScriptClass::HandlesReadAccess;
 
     if (!obj)
@@ -213,15 +211,11 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
 
     if (name == m_destroyId.identifier)
         return Value(scriptEngine, m_destroy);
-    else if (name == m_toStringId.identifier ||
-             name == m_valueOfId.identifier)
+    else if (name == m_toStringId.identifier)
         return Value(scriptEngine, m_toString);
 
-    if (lastData && !lastData->isValid()) {
-        QString error = QLatin1String("Cannot access non-existent property \"") +
-                        toString(name) + QLatin1Char('\"');
-        return Value(scriptEngine, context()->throwError(error));
-    }
+    if (lastData && !lastData->isValid())
+        return Value();
 
     Q_ASSERT(obj);
 

@@ -997,11 +997,11 @@ void tst_qdeclarativeecmascript::scriptErrors()
     QString url = component.url().toString();
 
     QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
-    QString warning2 = url + ":5: Error: Cannot access non-existent property \"a\"";
+    QString warning2 = url + ":5: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning3 = url.left(url.length() - 3) + "js:4: Error: Invalid write to global property \"a\"";
-    QString warning4 = url + ":10: Error: Cannot access non-existent property \"a\"";
-    QString warning5 = url + ":8: Error: Cannot access non-existent property \"a\"";
-    QString warning6 = url + ":7: Error: Cannot access non-existent property \"undefinedObject\"";
+    QString warning4 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning5 = url + ":8: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning6 = url + ":7: Unable to assign [undefined] to int x";
     QString warning7 = url + ":12: Error: Cannot assign to read-only property \"trueProperty\"";
     QString warning8 = url + ":13: Error: Cannot assign to non-existent property \"fakeProperty\"";
 
@@ -1317,12 +1317,7 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QDeclarativeEngine qmlengine;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(&qmlengine);
     QScriptEngine *engine = &ep->scriptEngine;
-    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(engine);
-    scriptContext->pushScope(ep->globalClass->globalObject());
-    QScriptValue scope = engine->newObject();
-    scope.setProperty("object", ep->objectClass->newQObject(&o));
-    scriptContext->setActivationObject(scope);
-    scriptContext->pushScope(scope);
+    ep->globalClass->explicitSetProperty("object", ep->objectClass->newQObject(&o));
 
     // Non-existent methods
     o.reset();

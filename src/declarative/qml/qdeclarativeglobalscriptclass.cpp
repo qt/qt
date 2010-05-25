@@ -98,9 +98,7 @@ QDeclarativeGlobalScriptClass::property(const QScriptValue &object,
     Q_UNUSED(object);
     Q_UNUSED(name);
     Q_UNUSED(id);
-    QString error = QLatin1String("Cannot access non-existent property \"") + 
-                    name.toString() + QLatin1Char('\"');
-    return engine()->currentContext()->throwError(error);
+    return engine()->undefinedValue();
 }
 
 void QDeclarativeGlobalScriptClass::setProperty(QScriptValue &object, 
@@ -113,6 +111,25 @@ void QDeclarativeGlobalScriptClass::setProperty(QScriptValue &object,
     QString error = QLatin1String("Invalid write to global property \"") + 
                     name.toString() + QLatin1Char('\"');
     engine()->currentContext()->throwError(error);
+}
+
+/* This method is for the use of tst_qdeclarativeecmascript::callQtInvokables() only */
+void QDeclarativeGlobalScriptClass::explicitSetProperty(const QString &name, const QScriptValue &value)
+{
+    QScriptValue globalObject = engine()->globalObject();
+
+    QScriptValue v = engine()->newObject();
+
+    QScriptValueIterator iter(v);
+    while (iter.hasNext()) {
+        iter.next();
+        v.setProperty(iter.scriptName(), iter.value());
+    }
+
+    v.setProperty(name, value);
+    v.setScriptClass(this);
+
+    engine()->setGlobalObject(v);
 }
 
 QT_END_NAMESPACE

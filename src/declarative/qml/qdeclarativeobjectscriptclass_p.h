@@ -139,7 +139,6 @@ private:
 
     PersistentIdentifier m_destroyId;
     PersistentIdentifier m_toStringId;
-    PersistentIdentifier m_valueOfId;
     QScriptValue m_destroy;
     QScriptValue m_toString;
 

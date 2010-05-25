@@ -2,5 +2,5 @@
 
 function test(target)
 {
-    try { var a = target.a; } catch(e) {}
+    var a = target.a;
 }
