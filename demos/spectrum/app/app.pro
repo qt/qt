@@ -57,6 +57,7 @@ symbian {
     symbian {
         # Must explicitly add the .dll suffix to ensure dynamic linkage
         LIBS += -lfftreal.dll
+        QMAKE_LIBDIR += $${fftreal_dir}
     } else {
         macx {
             # Link to fftreal framework
