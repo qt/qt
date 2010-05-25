@@ -2218,15 +2218,17 @@ void QApplication::closeAllWindows()
 {
     bool did_close = true;
     QWidget *w;
-    while((w = activeModalWidget()) && did_close) {
-        if(!w->isVisible())
+    while ((w = activeModalWidget()) && did_close) {
+        if (!w->isVisible() || w->data->is_closing)
             break;
         did_close = w->close();
     }
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; did_close && i < list.size(); ++i) {
         w = list.at(i);
-        if (w->isVisible() && w->windowType() != Qt::Desktop) {
+        if (w->isVisible()
+            && w->windowType() != Qt::Desktop
+            && !w->data->is_closing) {
             did_close = w->close();
             list = QApplication::topLevelWidgets();
             i = -1;

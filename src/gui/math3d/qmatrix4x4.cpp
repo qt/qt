@@ -1878,7 +1878,7 @@ QDebug operator<<(QDebug dbg, const QMatrix4x4 &m)
     Writes the given \a matrix to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QMatrix4x4 &matrix)
@@ -1896,7 +1896,7 @@ QDataStream &operator<<(QDataStream &stream, const QMatrix4x4 &matrix)
     Reads a 4x4 matrix from the given \a stream into the given \a matrix
     and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)

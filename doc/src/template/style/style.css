@@ -456,6 +456,7 @@
     .wrap .content
     {
         padding: 30px;
+		word-wrap:break-word;
     }
 
     .wrap .content li
@@ -843,7 +844,7 @@
         background-color: #e6e7e8;
         z-index: 4;
     }
-    #feedcloseX a
+    #feedcloseX 
     {
         display: inline;
         padding: 5px 5px 0 0;
@@ -1067,6 +1068,7 @@
     .indexboxcont .sectionlist
     {
         display: inline-block;
+		vertical-align:top;
 		width: 32.5%;
         padding: 0;
     }
@@ -1138,7 +1140,21 @@
 
     /* end of screen media */
 
-	
+.flowList{
+display:inline-block;
+width:260px;
+}	
+.flowList dl{
+padding:0px;
+}
+.wrap .content .flowList p{
+padding:0px;
+}
+pre.highlightedCode {
+	display: block;
+	overflow:hidden;
+}
+
 }
 /* end of screen media */
 
