@@ -754,6 +754,7 @@ struct WindowsToISOListElt {
     char iso_name[6];
 };
 
+/* NOTE: This array should be sorted by the first column! */
 static const WindowsToISOListElt windows_to_iso_list[] = {
     { 0x0401, "ar_SA" },
     { 0x0402, "bg\0  " },
