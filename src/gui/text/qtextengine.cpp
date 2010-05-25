@@ -2648,6 +2648,12 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::StrikeOut;
 }
 
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, QFontEngine *fe)
+    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
+      num_chars(0), chars(0), logClusters(0), f(font), fontEngine(fe), glyphs(g)
+{
+}
+
 QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const
 {
     QTextItemInt ti = *this;
