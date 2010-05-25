@@ -306,6 +306,8 @@ QInputContext *QWidget::inputContext()
   This function sets the input context \a context
   on this widget.
 
+  Qt takes ownership of the given input \a context.
+
   \sa inputContext()
 */
 void QWidget::setInputContext(QInputContext *context)
@@ -314,6 +316,8 @@ void QWidget::setInputContext(QInputContext *context)
     if (!testAttribute(Qt::WA_InputMethodEnabled))
         return;
 #ifndef QT_NO_IM
+    if (context == d->ic)
+        return;
     if (d->ic)
         delete d->ic;
     d->ic = context;

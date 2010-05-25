@@ -5212,18 +5212,20 @@ bool QApplication::keypadNavigationEnabled()
     This function replaces the QInputContext instance used by the application
     with \a inputContext.
 
+    Qt takes ownership of the given \a inputContext.
+
     \sa inputContext()
 */
 void QApplication::setInputContext(QInputContext *inputContext)
 {
-    Q_D(QApplication);
-    Q_UNUSED(d);// only static members being used.
+    if (inputContext == QApplicationPrivate::inputContext)
+        return;
     if (!inputContext) {
         qWarning("QApplication::setInputContext: called with 0 input context");
         return;
     }
-    delete d->inputContext;
-    d->inputContext = inputContext;
+    delete QApplicationPrivate::inputContext;
+    QApplicationPrivate::inputContext = inputContext;
 }
 
 /*!
