@@ -42,11 +42,8 @@
 /*!
   \page qdeclarativeexamples.html
   \title QML Examples and Demos
+  \brief Building UI's with QML
   \ingroup all-examples
-
-\previouspage Graphics View Examples
-\contentspage Qt Examples
-\nextpage Painting Examples
 
 \section1 Running the examples
 
