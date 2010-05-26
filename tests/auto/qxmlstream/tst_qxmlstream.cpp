@@ -546,6 +546,7 @@ private slots:
     void writerHangs() const;
     void writerAutoFormattingWithComments() const;
     void writerAutoFormattingWithTabs() const;
+    void writerAutoFormattingWithProcessingInstructions() const;
     void writerAutoEmptyTags() const;
     void writeAttributesWithSpace() const;
     void addExtraNamespaceDeclarations();
@@ -1027,6 +1028,22 @@ void tst_QXmlStream::writerAutoFormattingWithTabs() const
     writer.writeStartElement("B");
     writer.writeEndDocument();
     const char *str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<A>\n\t<B/>\n</A>\n";
+    QCOMPARE(buffer.buffer().data(), str);
+}
+
+void tst_QXmlStream::writerAutoFormattingWithProcessingInstructions() const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+
+    QXmlStreamWriter writer(&buffer);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument();
+    writer.writeProcessingInstruction("B", "C");
+    writer.writeStartElement("A");
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    const char *str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<?B C?>\n<A/>\n";
     QCOMPARE(buffer.buffer().data(), str);
 }
 
