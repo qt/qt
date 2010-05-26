@@ -56,7 +56,7 @@
 #elif defined(Q_OS_WINCE)
 #define LACKEYDIR SRCDIR
 #else
-#define LACKEYDIR SRCDIR "../lackey"
+#define LACKEYDIR "../lackey"
 #endif
 
 Q_DECLARE_METATYPE(QSharedMemory::SharedMemoryError)
@@ -225,11 +225,17 @@ void tst_QSharedMemory::key_data()
 {
     QTest::addColumn<QString>("constructorKey");
     QTest::addColumn<QString>("setKey");
+    QTest::addColumn<QString>("setNativeKey");
 
-    QTest::newRow("null, null") << QString() << QString();
-    QTest::newRow("null, one") << QString() << QString("one");
-    QTest::newRow("one, two") << QString("one") << QString("two");
-    QTest::newRow("invalid") << QString("o/e") << QString("t/o");
+    QTest::newRow("null, null, null") << QString() << QString() << QString();
+    QTest::newRow("one, null, null") << QString("one") << QString() << QString();
+    QTest::newRow("null, one, null") << QString() << QString("one") << QString();
+    QTest::newRow("null, null, one") << QString() << QString() << QString("one");
+    QTest::newRow("one, two, null") << QString("one") << QString("two") << QString();
+    QTest::newRow("one, null, two") << QString("one") << QString() << QString("two");
+    QTest::newRow("null, one, two") << QString() << QString("one") << QString("two");
+    QTest::newRow("one, two, three") << QString("one") << QString("two") << QString("three");
+    QTest::newRow("invalid") << QString("o/e") << QString("t/o") << QString("|x");
 }
 
 /*!
@@ -239,11 +245,17 @@ void tst_QSharedMemory::key()
 {
     QFETCH(QString, constructorKey);
     QFETCH(QString, setKey);
+    QFETCH(QString, setNativeKey);
 
     QSharedMemory sm(constructorKey);
     QCOMPARE(sm.key(), constructorKey);
+    QCOMPARE(sm.nativeKey().isEmpty(), constructorKey.isEmpty());
     sm.setKey(setKey);
     QCOMPARE(sm.key(), setKey);
+    QCOMPARE(sm.nativeKey().isEmpty(), setKey.isEmpty());
+    sm.setNativeKey(setNativeKey);
+    QVERIFY(sm.key().isNull());
+    QCOMPARE(sm.nativeKey(), setNativeKey);
     QCOMPARE(sm.isAttached(), false);
 
     QCOMPARE(sm.error(), QSharedMemory::NoError);
@@ -262,7 +274,7 @@ void tst_QSharedMemory::create_data()
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
     QTest::newRow("null key") << QString() << 1024
-        << false << QSharedMemory::LockError;
+        << false << QSharedMemory::KeyError;
     QTest::newRow("-1 size") << QString("negsize") << -1
         << false << QSharedMemory::InvalidSize;
     QTest::newRow("nor size") << QString("norsize") << 1024
@@ -302,7 +314,7 @@ void tst_QSharedMemory::attach_data()
     QTest::addColumn<bool>("exists");
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
-    QTest::newRow("null key") << QString() << false << QSharedMemory::LockError;
+    QTest::newRow("null key") << QString() << false << QSharedMemory::KeyError;
     QTest::newRow("doesn't exists") << QString("doesntexists") << false << QSharedMemory::NotFound;
     QTest::newRow("already exists") << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
 }
@@ -421,7 +433,7 @@ void tst_QSharedMemory::readOnly()
     QString program = LACKEYDIR "/lackey";
     QStringList arguments;
     rememberKey("readonly_segfault");
-    arguments << LACKEYDIR "/scripts/readonly_segfault.js";
+    arguments << SRCDIR "../lackey/scripts/readonly_segfault.js";
 
     // ### on windows disable the popup somehow
     QProcess p;
@@ -734,7 +746,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 
     rememberKey("market");
 
-    QStringList arguments = QStringList() << LACKEYDIR "/scripts/producer.js";
+    QStringList arguments = QStringList() << SRCDIR "../lackey/scripts/producer.js";
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
     producer.start( LACKEYDIR "/lackey", arguments);
@@ -744,7 +756,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
     for (int i = 0; i < processes; ++i) {
-        QStringList arguments = QStringList() << LACKEYDIR  "/scripts/consumer.js";
+        QStringList arguments = QStringList() << SRCDIR  "../lackey/scripts/consumer.js";
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
 #ifdef Q_OS_WINCE

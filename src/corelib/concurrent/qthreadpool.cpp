@@ -41,6 +41,7 @@
 
 #include "qthreadpool.h"
 #include "qthreadpool_p.h"
+#include "qelapsedtimer.h"
 
 #ifndef QT_NO_THREAD
 
@@ -288,11 +289,21 @@ void QThreadPoolPrivate::reset()
     isExiting = false;
 }
 
-void QThreadPoolPrivate::waitForDone()
+bool QThreadPoolPrivate::waitForDone(int msecs)
 {
     QMutexLocker locker(&mutex);
-    while (!(queue.isEmpty() && activeThreads == 0))
-        noActiveThreads.wait(locker.mutex());
+    if (msecs < 0) {
+        while (!(queue.isEmpty() && activeThreads == 0))
+            noActiveThreads.wait(locker.mutex());
+    } else {
+        QElapsedTimer timer;
+        timer.start();
+        int t;
+        while (!(queue.isEmpty() && activeThreads == 0) && 
+               ((t = msecs - timer.elapsed()) > 0))
+            noActiveThreads.wait(locker.mutex(), t);
+    }
+    return queue.isEmpty() && activeThreads == 0;
 }
 
 /*! \internal
@@ -615,6 +626,23 @@ void QThreadPool::waitForDone()
     Q_D(QThreadPool);
     d->waitForDone();
     d->reset();
+}
+
+/*!
+    \overload waitForDone()
+    \since 4.8
+
+    Waits up to \a msecs milliseconds for all threads to exit and removes all 
+    threads from the thread pool. Returns true if all threads were removed; 
+    otherwise it returns false.
+*/
+bool QThreadPool::waitForDone(int msecs)
+{
+    Q_D(QThreadPool);
+    bool rc = d->waitForDone(msecs);
+    if (rc)
+      d->reset();
+    return rc;
 }
 
 QT_END_NAMESPACE
