@@ -671,6 +671,7 @@ QMakeProject::reset()
     scope_blocks.push(ScopeBlock());
     iterator = 0;
     function = 0;
+    backslashWarned = false;
 }
 
 bool
@@ -2932,6 +2933,11 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QMap<QString, QStringL
                     current.append(str.at(i));
                     break;
                 }
+            }
+            if(!escape && !backslashWarned) {
+                backslashWarned = true;
+                warn_msg(WarnDeprecated, "%s:%d: Unescaped backslashes are deprecated.",
+                         parser.file.toLatin1().constData(), parser.line_no);
             }
             if(escape || !replaced)
                 unicode =0;
