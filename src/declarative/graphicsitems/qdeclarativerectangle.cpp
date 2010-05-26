@@ -114,11 +114,7 @@ void QDeclarativeGradientStop::updateGradient()
     rectangle with a gradient starting with red, blending to yellow at 1/3 of the
     size of the rectangle, and ending with Green:
 
-    \table
-    \row
-    \o \image gradient.png
-    \o \quotefile doc/src/snippets/declarative/gradient.qml
-    \endtable
+    \snippet doc/src/snippets/declarative/gradient.qml code
 
     \sa GradientStop
 */

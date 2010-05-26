@@ -41,6 +41,7 @@
 
 import Qt 4.7
 
+//![code]
 Rectangle {
     width: 100; height: 100
     gradient: Gradient {
@@ -49,3 +50,4 @@ Rectangle {
         GradientStop { position: 1.0; color: "green" }
     }
 }
+//![code]

@@ -295,6 +295,7 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
         ctxt->pushScope(urlContext);
         ctxt->pushScope(activation);
         ctxt->setActivationObject(activation);
+        QDeclarativeScriptParser::extractPragmas(script);
 
         workerEngine->baseUrl = url;
         workerEngine->evaluate(script);
