@@ -64,6 +64,7 @@ private slots:
     void messaging_data();
     void messaging_sendQObjectList();
     void messaging_sendJsObject();
+    void script_with_pragma();
 
 private:
     void waitForEchoMessage(QDeclarativeWorkerScript *worker) {
@@ -82,18 +83,25 @@ private:
 
 void tst_QDeclarativeWorkerScript::source()
 {
-    QUrl source = QUrl::fromLocalFile(SRCDIR "/data/worker.qml");
+    QDeclarativeComponent component(&m_engine, SRCDIR "/data/worker.qml");
+    QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
+    QVERIFY(worker != 0);
+    const QMetaObject *mo = worker->metaObject();
 
-    QDeclarativeComponent component(&m_engine);
-    component.setData("import Qt 4.7\nWorkerScript { source: '" + source.toString().toUtf8() + "'; }", QUrl());
+    QVariant value(100);
+    QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, value)));
+    waitForEchoMessage(worker);
+    QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), value);
 
-    QDeclarativeWorkerScript *item = qobject_cast<QDeclarativeWorkerScript*>(component.create());
-    QVERIFY(item != 0);
-
-    QCOMPARE(item->source(), source);
+    QUrl source = QUrl::fromLocalFile(SRCDIR "/data/script_fixed_return.js");
+    worker->setSource(source);
+    QCOMPARE(worker->source(), source);
+    QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, value)));
+    waitForEchoMessage(worker);
+    QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), qVariantFromValue(QString("Hello_World")));
 
     qApp->processEvents();
-    delete item;
+    delete worker;
 }
 
 void tst_QDeclarativeWorkerScript::messaging()
@@ -176,6 +184,25 @@ void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
     qApp->processEvents();
     delete worker;
 }
+
+void tst_QDeclarativeWorkerScript::script_with_pragma()
+{
+    QVariant value(100);
+
+    QDeclarativeComponent component(&m_engine, SRCDIR "/data/worker_pragma.qml");
+    QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
+    QVERIFY(worker != 0);
+
+    QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, value)));
+    waitForEchoMessage(worker);
+
+    const QMetaObject *mo = worker->metaObject();
+    QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), value);
+
+    qApp->processEvents();
+    delete worker;
+}
+
 
 QTEST_MAIN(tst_QDeclarativeWorkerScript)
 
