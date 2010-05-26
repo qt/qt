@@ -163,7 +163,7 @@ public:
     static QSqlDatabase database(const QString& name, bool open);
     static void addDatabase(const QSqlDatabase &db, const QString & name);
     static void removeDatabase(const QString& name);
-    static void invalidateDb(const QSqlDatabase &db, const QString &name);
+    static void invalidateDb(const QSqlDatabase &db, const QString &name, bool doWarn = true);
     static DriverDict &driverDict();
     static void cleanConnections();
 };
@@ -197,7 +197,7 @@ void QSqlDatabasePrivate::cleanConnections()
 
     QConnectionDict::iterator it = dict->begin();
     while (it != dict->end()) {
-        invalidateDb(it.value(), it.key());
+        invalidateDb(it.value(), it.key(), false);
         ++it;
     }
     dict->clear();
@@ -229,9 +229,9 @@ QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
     return &n;
 }
 
-void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &name)
+void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &name, bool doWarn)
 {
-    if (db.d->ref != 1) {
+    if (db.d->ref != 1 && doWarn) {
         qWarning("QSqlDatabasePrivate::removeDatabase: connection '%s' is still in use, "
                  "all queries will cease to work.", name.toLocal8Bit().constData());
         db.d->disable();
