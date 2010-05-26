@@ -1,4 +1,4 @@
-TARGET  = gesturesqmlplugin
+TARGET  = qmlgesturesplugin
 TARGETPATH = Qt/labs/gestures
 include(../qimportbase.pri)
 
@@ -17,7 +17,7 @@ symbian:{
     load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
-    importFiles.sources = gesturesqmlplugin.dll qmldir
+    importFiles.sources = qmlgesturesplugin.dll qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
     
     DEPLOYMENT = importFiles

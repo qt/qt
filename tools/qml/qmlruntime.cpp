@@ -808,7 +808,9 @@ void QDeclarativeViewer::statusChanged()
         initialSize = canvas->sizeHint();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
             updateSizeHints();
-            resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
+            if (!isFullScreen() && !isMaximized()) {
+                resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
+            }
         }
     }
 }

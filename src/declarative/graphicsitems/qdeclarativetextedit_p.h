@@ -86,6 +86,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
+    Q_PROPERTY(bool showInputPanelOnFocus READ showInputPanelOnFocus WRITE setShowInputPanelOnFocus NOTIFY showInputPanelOnFocusChanged)
     Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection NOTIFY persistentSelectionChanged)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
@@ -118,6 +119,9 @@ public:
                     WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
+
+    Q_INVOKABLE void openSoftwareInputPanel();
+    Q_INVOKABLE void closeSoftwareInputPanel();
 
     QString text() const;
     void setText(const QString &);
@@ -165,6 +169,9 @@ public:
 
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
+
+    bool showInputPanelOnFocus() const;
+    void setShowInputPanelOnFocus(bool showOnFocus);
 
     bool persistentSelection() const;
     void setPersistentSelection(bool on);
@@ -214,6 +221,7 @@ Q_SIGNALS:
     void persistentSelectionChanged(bool isPersistentSelection);
     void textMarginChanged(qreal textMargin);
     void selectByMouseChanged(bool selectByMouse);
+    void showInputPanelOnFocusChanged(bool showOnFocus);
 
 public Q_SLOTS:
     void selectAll();
@@ -235,6 +243,8 @@ protected:
     bool event(QEvent *);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
+    void focusInEvent(QFocusEvent *event);
+    void focusOutEvent(QFocusEvent *event);
 
     // mouse filter?
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

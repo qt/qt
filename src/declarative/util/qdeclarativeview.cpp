@@ -116,7 +116,7 @@ public:
     void frameBreak() { ++breaks; }
 
 private:
-    QTime timer;
+    QElapsedTimer timer;
     int breaks;
 };
 
@@ -152,7 +152,7 @@ public:
     QBasicTimer resizetimer;
 
     QDeclarativeView::ResizeMode resizeMode;
-    QTime frameTimer;
+    QElapsedTimer frameTimer;
 
     void init();
 
