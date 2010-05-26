@@ -102,6 +102,11 @@ void QApplicationPrivate::processUserEvent(QWindowSystemInterface::UserEvent *e)
     case QEvent::KeyRelease:
         QApplicationPrivate::processKeyEvent(static_cast<QWindowSystemInterface::KeyEvent *>(e));
         break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        QApplicationPrivate::processTouchEvent(static_cast<QWindowSystemInterface::TouchEvent *>(e));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -795,6 +800,32 @@ void QApplicationPrivate::processGeometryChange(QWidget *tlw, const QRect &newRe
 void QApplicationPrivate::processCloseEvent(QWidget *tlw)
 {
     tlw->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
+}
+
+void QApplicationPrivate::processTouchEvent(QWindowSystemInterface::TouchEvent *e)
+{
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    Qt::TouchPointStates states;
+
+    int primaryPoint = -1;
+    foreach(struct QWindowSystemInterface::TouchPoint point, e->points) {
+        QTouchEvent::TouchPoint p;
+        p.setId(point.id);
+        p.setPressure(point.pressure);
+        states |= point.state;
+        if (point.isPrimary) {
+            point.state |= Qt::TouchPointPrimary;
+            primaryPoint = point.id;
+        }
+        p.setState(point.state);
+        p.setRect(point.area);
+        p.setScreenPos(point.area.center());
+        p.setNormalizedPos(point.normalPosition);
+
+        touchPoints.append(p);
+    }
+
+    translateRawTouchEvent(e->widget.data(), e->devType, touchPoints);
 }
 
 QT_END_NAMESPACE

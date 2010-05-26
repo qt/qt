@@ -489,6 +489,7 @@ public:
     static void processMouseEvent(QWindowSystemInterface::MouseEvent *e);
     static void processKeyEvent(QWindowSystemInterface::KeyEvent *e);
     static void processWheelEvent(QWindowSystemInterface::WheelEvent *e);
+    static void processTouchEvent(QWindowSystemInterface::TouchEvent *e);
 
     static void processCloseEvent(QWidget *tlw);
     static void processGeometryChange(QWidget *tlw, const QRect &newRect);
