@@ -55,6 +55,7 @@
 
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
+#include "QtCore/qsharedpointer.h"
 #include "QtCore/qcoreevent.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qvector.h"
@@ -153,7 +154,6 @@ public:
 
 #ifdef QT3_SUPPORT
     void sendPendingChildInsertedEvents();
-    void removePendingChildInsertedEvents(QObject *child);
 #endif
 
     static inline Sender *setCurrentSender(QObject *receiver,
@@ -186,7 +186,7 @@ public:
     mutable quint32 connectedSignals[2];
 
 #ifdef QT3_SUPPORT
-    QList<QObject *> pendingChildInsertedEvents;
+    QVector< QWeakPointer<QObject> > pendingChildInsertedEvents;
 #else
     // preserve binary compatibility with code compiled without Qt 3 support
     // keeping the binary layout stable helps the Qt Creator debugger

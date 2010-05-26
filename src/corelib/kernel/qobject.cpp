@@ -195,8 +195,8 @@ void QObjectPrivate::sendPendingChildInsertedEvents()
 {
     Q_Q(QObject);
     for (int i = 0; i < pendingChildInsertedEvents.size(); ++i) {
-        QObject *c = pendingChildInsertedEvents.at(i);
-        if (!c)
+        QObject *c = pendingChildInsertedEvents.at(i).data();
+        if (!c || c->parent() != q)
             continue;
         QChildEvent childEvent(QEvent::ChildInserted, c);
         QCoreApplication::sendEvent(q, &childEvent);
@@ -204,26 +204,6 @@ void QObjectPrivate::sendPendingChildInsertedEvents()
     pendingChildInsertedEvents.clear();
 }
 
-void QObjectPrivate::removePendingChildInsertedEvents(QObject *child)
-{
-    if (!child) {
-        pendingChildInsertedEvents.clear();
-        return;
-    }
-
-    // the QObject destructor calls QObject::removeChild, which calls
-    // QCoreApplication::sendEvent() directly.  this can happen while the event
-    // loop is in the middle of posting events, and when we get here, we may
-    // not have any more posted events for this object.
-
-    // if this is a child remove event and the child insert hasn't
-    // been dispatched yet, kill that insert
-    for (int i = 0; i < pendingChildInsertedEvents.size(); ++i) {
-        QObject *&c = pendingChildInsertedEvents[i];
-        if (c == child)
-            c = 0;
-    }
-}
 #endif
 
 

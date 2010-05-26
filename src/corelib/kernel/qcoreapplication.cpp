@@ -805,11 +805,6 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
     d->checkReceiverThread(receiver);
 #endif
 
-#ifdef QT3_SUPPORT
-    if (event->type() == QEvent::ChildRemoved && !receiver->d_func()->pendingChildInsertedEvents.isEmpty())
-        receiver->d_func()->removePendingChildInsertedEvents(static_cast<QChildEvent *>(event)->child());
-#endif // QT3_SUPPORT
-
     return receiver->isWidgetType() ? false : d->notify_helper(receiver, event);
 }
 
@@ -1475,7 +1470,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
             --pe.receiver->d_func()->postedEvents;
 #ifdef QT3_SUPPORT
             if (pe.event->type() == QEvent::ChildInsertedRequest)
-                pe.receiver->d_func()->removePendingChildInsertedEvents(0);
+                pe.receiver->d_func()->pendingChildInsertedEvents.clear();
 #endif
             pe.event->posted = false;
             events.append(pe.event);
