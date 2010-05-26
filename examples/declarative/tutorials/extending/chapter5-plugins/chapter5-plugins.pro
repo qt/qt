@@ -2,6 +2,10 @@ TEMPLATE = lib
 CONFIG += qt plugin
 QT += declarative
 
+DESTDIR = lib
+OBJECTS_DIR = tmp
+MOC_DIR = tmp
+
 HEADERS += musician.h \
            instrument.h \
            musicplugin.h
@@ -9,10 +13,6 @@ HEADERS += musician.h \
 SOURCES += musician.cpp \
            instrument.cpp \
            musicplugin.cpp
-
-DESTDIR = lib
-OBJECTS_DIR = tmp
-MOC_DIR = tmp
 
 symbian {
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

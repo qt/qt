@@ -91,8 +91,8 @@ private:
 class TestType : public QObject
 {
 Q_OBJECT
-Q_PROPERTY(QDeclarativeListProperty<QObject> resources READ resources);
-Q_CLASSINFO("DefaultProperty", "resources");
+Q_PROPERTY(QDeclarativeListProperty<QObject> resources READ resources)
+Q_CLASSINFO("DefaultProperty", "resources")
 public:
     TestType(QObject *parent = 0)
     : QObject(parent) {}

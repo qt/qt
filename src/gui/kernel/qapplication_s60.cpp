@@ -408,15 +408,22 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
 void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
 {
     QApplicationPrivate *d = QApplicationPrivate::instance();
+    qreal pressure;
+    if(d->pressureSupported
+        && event->Pressure() > 0) //workaround for misconfigured HAL
+        pressure = event->Pressure() / qreal(d->maxTouchPressure);
+    else
+        pressure = qreal(1.0);
 
     QRect screenGeometry = qApp->desktop()->screenGeometry(qwidget);
 
-    while (d->appAllTouchPoints.count() <= event->PointerNumber())
-        d->appAllTouchPoints.append(QTouchEvent::TouchPoint(d->appAllTouchPoints.count()));
+    QList<QTouchEvent::TouchPoint> points = d->appAllTouchPoints;
+    while (points.count() <= event->PointerNumber())
+        points.append(QTouchEvent::TouchPoint(points.count()));
 
     Qt::TouchPointStates allStates = 0;
-    for (int i = 0; i < d->appAllTouchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = d->appAllTouchPoints[i];
+    for (int i = 0; i < points.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = points[i];
 
         if (touchPoint.id() == event->PointerNumber()) {
             Qt::TouchPointStates state;
@@ -446,7 +453,7 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
             touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
                                                 screenPos.y() / screenGeometry.height()));
 
-            touchPoint.setPressure(event->Pressure() / qreal(d->maxTouchPressure));
+            touchPoint.setPressure(pressure);
         } else if (touchPoint.state() != Qt::TouchPointReleased) {
             // all other active touch points should be marked as stationary
             touchPoint.setState(Qt::TouchPointStationary);
@@ -458,11 +465,13 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
     if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased) {
         // all touch points released
         d->appAllTouchPoints.clear();
+    } else {
+        d->appAllTouchPoints = points;
     }
 
     QApplicationPrivate::translateRawTouchEvent(qwidget,
                                                 QTouchEvent::TouchScreen,
-                                                d->appAllTouchPoints);
+                                                points);
 }
 #endif
 
@@ -1983,6 +1992,8 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
 void QApplicationPrivate::initializeMultitouch_sys()
 {
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (HAL::Get(HALData::EPointer3DPressureSupported, pressureSupported) != KErrNone)
+        pressureSupported = 0;
     if (HAL::Get(HALData::EPointer3DMaxPressure, maxTouchPressure) != KErrNone)
         maxTouchPressure = KMaxTInt;
 #endif

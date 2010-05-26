@@ -61,8 +61,9 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
-  \since 4.7
+    \since 4.7
     \brief The TextEdit item allows you to add editable formatted text to a scene.
+    \inherits Item
 
     It can display both plain and rich text. For example:
 
@@ -79,6 +80,14 @@ TextEdit {
     \endqml
 
     \image declarative-textedit.gif
+
+    Note that the TextEdit does not implement scrolling, following the cursor, or other behaviors specific
+    to a look-and-feel. For example, to add flickable scrolling that follows the cursor:
+
+    \snippet snippets/declarative/texteditor.qml 0
+
+    A particular look-and-feel might use smooth scrolling (eg. using SmoothedFollow), might have a visible
+    scrollbar, or a scrollbar that fades in to show location, etc.
 
     \sa Text
 */
@@ -574,7 +583,7 @@ void QDeclarativeTextEdit::setCursorDelegate(QDeclarativeComponent* c)
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
                     this, SLOT(moveCursorDelegate()));
             d->control->setCursorWidth(-1);
-            dirtyCache(cursorRect());
+            dirtyCache(cursorRectangle());
             delete d->cursor;
             d->cursor = 0;
         }
@@ -601,7 +610,7 @@ void QDeclarativeTextEdit::loadCursorDelegate()
         connect(d->control, SIGNAL(cursorPositionChanged()),
                 this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
-        dirtyCache(cursorRect());
+        dirtyCache(cursorRectangle());
         QDeclarative_setParent_noEvent(d->cursor, this);
         d->cursor->setParentItem(this);
         d->cursor->setHeight(QFontMetrics(d->font).height());
@@ -773,7 +782,7 @@ void QDeclarativeTextEdit::componentComplete()
 }
 
 /*!
-    \qmlproperty string TextEdit::selectByMouse
+    \qmlproperty bool TextEdit::selectByMouse
 
     Defaults to false.
 
@@ -854,10 +863,12 @@ Qt::TextInteractionFlags QDeclarativeTextEdit::textInteractionFlags() const
 }
 
 /*!
-    Returns the rectangle where the text cursor is rendered
-    within the text edit.
+    \qmlproperty rectangle TextEdit::cursorRectangle
+
+    The rectangle where the text cursor is rendered
+    within the text edit. Read-only.
 */
-QRect QDeclarativeTextEdit::cursorRect() const
+QRect QDeclarativeTextEdit::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->control->cursorRect().toRect().translated(0,-d->yoff);
@@ -1076,6 +1087,7 @@ void QDeclarativeTextEditPrivate::init()
     QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
+    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
 
     document = control->document();
     document->setDefaultFont(font);
@@ -1170,7 +1182,7 @@ void QDeclarativeTextEdit::updateSize()
             newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
-        setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
+        setImplicitHeight(d->document->isEmpty() ? fm.height() : (int)d->document->size().height());
 
         setContentsSize(QSize(width(), height()));
     } else {
