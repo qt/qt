@@ -141,7 +141,7 @@ of QDeclarativeEngine::offlineStoragePath(), currently as SQLite databases.
 
 The API can be used from JavaScript functions in your QML:
 
-\quotefile declarative/sqllocalstorage/hello.qml
+\snippet declarative/sqllocalstorage/hello.qml 0
 
 The API conforms to the Synchronous API of the HTML5 Web Database API,
 \link http://www.w3.org/TR/2009/WD-webdatabase-20091029/ W3C Working Draft 29 October 2009\endlink.
