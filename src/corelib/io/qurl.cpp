@@ -966,14 +966,14 @@ static void QT_FASTCALL _fragment(const char **ptr, QUrlParseData *parseData)
 }
 
 struct NameprepCaseFoldingEntry {
-    int uc;
+    uint uc;
     ushort mapping[4];
 };
 
-inline bool operator<(int one, const NameprepCaseFoldingEntry &other)
+inline bool operator<(uint one, const NameprepCaseFoldingEntry &other)
 { return one < other.uc; }
 
-inline bool operator<(const NameprepCaseFoldingEntry &one, int other)
+inline bool operator<(const NameprepCaseFoldingEntry &one, uint other)
 { return one.uc < other; }
 
 static const NameprepCaseFoldingEntry NameprepCaseFolding[] = {
@@ -1862,45 +1862,44 @@ static const NameprepCaseFoldingEntry NameprepCaseFolding[] = {
 	{ 0xFF38, { 0xFF58, 0x0000, 0x0000, 0x0000 } },
 	{ 0xFF39, { 0xFF59, 0x0000, 0x0000, 0x0000 } },
 	{ 0xFF3A, { 0xFF5A, 0x0000, 0x0000, 0x0000 } },
-        // #####
-/*	{ 0x10400, { 0x10428, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10401, { 0x10429, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10402, { 0x1042A, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10403, { 0x1042B, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10404, { 0x1042C, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10405, { 0x1042D, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10406, { 0x1042E, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10407, { 0x1042F, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10408, { 0x10430, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10409, { 0x10431, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1040A, { 0x10432, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1040B, { 0x10433, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1040C, { 0x10434, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1040D, { 0x10435, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1040E, { 0x10436, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1040F, { 0x10437, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10410, { 0x10438, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10411, { 0x10439, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10412, { 0x1043A, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10413, { 0x1043B, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10414, { 0x1043C, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10415, { 0x1043D, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10416, { 0x1043E, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10417, { 0x1043F, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10418, { 0x10440, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10419, { 0x10441, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1041A, { 0x10442, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1041B, { 0x10443, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1041C, { 0x10444, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1041D, { 0x10445, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1041E, { 0x10446, 0x0000, 0x0000, 0x0000 } },
-	{ 0x1041F, { 0x10447, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10420, { 0x10448, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10421, { 0x10449, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10422, { 0x1044A, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10423, { 0x1044B, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10424, { 0x1044C, 0x0000, 0x0000, 0x0000 } },
-	{ 0x10425, { 0x1044D, 0x0000, 0x0000, 0x0000 } },*/
+	{ 0x10400, { 0xd801, 0xdc28, 0x0000, 0x0000 } },
+	{ 0x10401, { 0xd801, 0xdc29, 0x0000, 0x0000 } },
+	{ 0x10402, { 0xd801, 0xdc2A, 0x0000, 0x0000 } },
+	{ 0x10403, { 0xd801, 0xdc2B, 0x0000, 0x0000 } },
+	{ 0x10404, { 0xd801, 0xdc2C, 0x0000, 0x0000 } },
+	{ 0x10405, { 0xd801, 0xdc2D, 0x0000, 0x0000 } },
+	{ 0x10406, { 0xd801, 0xdc2E, 0x0000, 0x0000 } },
+	{ 0x10407, { 0xd801, 0xdc2F, 0x0000, 0x0000 } },
+	{ 0x10408, { 0xd801, 0xdc30, 0x0000, 0x0000 } },
+	{ 0x10409, { 0xd801, 0xdc31, 0x0000, 0x0000 } },
+	{ 0x1040A, { 0xd801, 0xdc32, 0x0000, 0x0000 } },
+	{ 0x1040B, { 0xd801, 0xdc33, 0x0000, 0x0000 } },
+	{ 0x1040C, { 0xd801, 0xdc34, 0x0000, 0x0000 } },
+	{ 0x1040D, { 0xd801, 0xdc35, 0x0000, 0x0000 } },
+	{ 0x1040E, { 0xd801, 0xdc36, 0x0000, 0x0000 } },
+	{ 0x1040F, { 0xd801, 0xdc37, 0x0000, 0x0000 } },
+	{ 0x10410, { 0xd801, 0xdc38, 0x0000, 0x0000 } },
+	{ 0x10411, { 0xd801, 0xdc39, 0x0000, 0x0000 } },
+	{ 0x10412, { 0xd801, 0xdc3A, 0x0000, 0x0000 } },
+	{ 0x10413, { 0xd801, 0xdc3B, 0x0000, 0x0000 } },
+	{ 0x10414, { 0xd801, 0xdc3C, 0x0000, 0x0000 } },
+	{ 0x10415, { 0xd801, 0xdc3D, 0x0000, 0x0000 } },
+	{ 0x10416, { 0xd801, 0xdc3E, 0x0000, 0x0000 } },
+	{ 0x10417, { 0xd801, 0xdc3F, 0x0000, 0x0000 } },
+	{ 0x10418, { 0xd801, 0xdc40, 0x0000, 0x0000 } },
+	{ 0x10419, { 0xd801, 0xdc41, 0x0000, 0x0000 } },
+	{ 0x1041A, { 0xd801, 0xdc42, 0x0000, 0x0000 } },
+	{ 0x1041B, { 0xd801, 0xdc43, 0x0000, 0x0000 } },
+	{ 0x1041C, { 0xd801, 0xdc44, 0x0000, 0x0000 } },
+	{ 0x1041D, { 0xd801, 0xdc45, 0x0000, 0x0000 } },
+	{ 0x1041E, { 0xd801, 0xdc46, 0x0000, 0x0000 } },
+	{ 0x1041F, { 0xd801, 0xdc47, 0x0000, 0x0000 } },
+	{ 0x10420, { 0xd801, 0xdc48, 0x0000, 0x0000 } },
+	{ 0x10421, { 0xd801, 0xdc49, 0x0000, 0x0000 } },
+	{ 0x10422, { 0xd801, 0xdc4A, 0x0000, 0x0000 } },
+	{ 0x10423, { 0xd801, 0xdc4B, 0x0000, 0x0000 } },
+	{ 0x10424, { 0xd801, 0xdc4C, 0x0000, 0x0000 } },
+	{ 0x10425, { 0xd801, 0xdc4D, 0x0000, 0x0000 } },
 	{ 0x1D400, { 0x0061, 0x0000, 0x0000, 0x0000 } },
 	{ 0x1D401, { 0x0062, 0x0000, 0x0000, 0x0000 } },
 	{ 0x1D402, { 0x0063, 0x0000, 0x0000, 0x0000 } },
@@ -2355,17 +2354,23 @@ static void mapToLowerCase(QString *str, int from)
 {
     int N = sizeof(NameprepCaseFolding) / sizeof(NameprepCaseFolding[0]);
 
-    QChar *d = 0;
+    ushort *d = 0;
     for (int i = from; i < str->size(); ++i) {
-        int uc = str->at(i).unicode();
+        uint uc = str->at(i).unicode();
         if (uc < 0x80) {
             if (uc <= 'Z' && uc >= 'A') {
-                uc |= 0x20;
                 if (!d)
-                    d = str->data();
-                d[i] = QChar(uc);
+                    d = reinterpret_cast<ushort *>(str->data());
+                d[i] = (uc | 0x20);
             }
         } else {
+            if (QChar(uc).isHighSurrogate() && i < str->size() - 1) {
+                ushort low = str->at(i + 1).unicode();
+                if (QChar(low).isLowSurrogate()) {
+                    uc = QChar::surrogateToUcs4(uc, low);
+                    ++i;
+                }
+            }
             const NameprepCaseFoldingEntry *entry = qBinaryFind(NameprepCaseFolding,
                                                                 NameprepCaseFolding + N,
                                                                 uc);
@@ -2374,23 +2379,26 @@ static void mapToLowerCase(QString *str, int from)
                 while (l < 4 && entry->mapping[l])
                     ++l;
                 if (l > 1) {
-                    str->replace(i, 1, (const QChar *)&entry->mapping[0], l);
+                    if (uc <= 0xffff)
+                        str->replace(i, 1, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
+                    else
+                        str->replace(i-1, 2, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
                     d = 0;
                 } else {
                     if (!d)
-                        d = str->data();
-                    d[i] = QChar(entry->mapping[0]);
+                        d = reinterpret_cast<ushort *>(str->data());
+                    d[i] = entry->mapping[0];
                 }
             }
         }
     }
 }
 
-static bool isMappedToNothing(const QChar &ch)
+static bool isMappedToNothing(uint uc)
 {
-    if (ch.unicode() < 0xad)
+    if (uc < 0xad)
         return false;
-    switch (ch.unicode()) {
+    switch (uc) {
     case 0x00AD: case 0x034F: case 0x1806: case 0x180B: case 0x180C: case 0x180D:
     case 0x200B: case 0x200C: case 0x200D: case 0x2060: case 0xFE00: case 0xFE01:
     case 0xFE02: case 0xFE03: case 0xFE04: case 0xFE05: case 0xFE06: case 0xFE07:
@@ -2409,66 +2417,72 @@ static void stripProhibitedOutput(QString *str, int from)
     const ushort *in = out;
     const ushort *end = (ushort *)str->data() + str->size();
     while (in < end) {
-        ushort uc = *in;
-        if (uc < 0x80 ||
-            !(uc <= 0x009F
-            || uc == 0x00A0
-            || uc == 0x0340
-            || uc == 0x0341
-            || uc == 0x06DD
-            || uc == 0x070F
-            || uc == 0x1680
-            || uc == 0x180E
-            || (uc >= 0x2000 && uc <= 0x200B)
-            || uc == 0x200C
-            || uc == 0x200D
-            || uc == 0x200E
-            || uc == 0x200F
-            || (uc >= 0x2028 && uc <= 0x202F)
-            || uc == 0x205F
-            || (uc >= 0x2060 && uc <= 0x2063)
-            || uc == 0x206A
-            || (uc >= 0x206A && uc <= 0x206F)
-            || (uc >= 0x2FF0 && uc <= 0x2FFB)
-            || uc == 0x3000
-            || (uc >= 0xD800 && uc <= 0xDFFF)
-            || (uc >= 0xE000 && uc <= 0xF8FF)
-            || (uc >= 0xFDD0 && uc <= 0xFDEF)
-            || uc == 0xFEFF
-            || (uc >= 0xFFF9 && uc <= 0xFFFC)
-            || (uc >= 0xFFFA && (uc <= 0xFFFE || uc == 0xFFFF))
-              /* ### Add NAMEPREP support for surrogates
-            || uc == 0xE0001
-            || (uc >= 0x2FFFE && uc <= 0x2FFFF)
-            || (uc >= 0x1D173 && uc <= 0x1D17A)
-            || (uc >= 0x1FFFE && uc <= 0x1FFFF)
-            || (uc >= 0x3FFFE && uc <= 0x3FFFF)
-            || (uc >= 0x4FFFE && uc <= 0x4FFFF)
-            || (uc >= 0x5FFFE && uc <= 0x5FFFF)
-            || (uc >= 0x6FFFE && uc <= 0x6FFFF)
-            || (uc >= 0x7FFFE && uc <= 0x7FFFF)
-            || (uc >= 0x8FFFE && uc <= 0x8FFFF)
-            || (uc >= 0x9FFFE && uc <= 0x9FFFF)
-            || (uc >= 0xAFFFE && uc <= 0xAFFFF)
-            || (uc >= 0xBFFFE && uc <= 0xBFFFF)
-            || (uc >= 0xCFFFE && uc <= 0xCFFFF)
-            || (uc >= 0xDFFFE && uc <= 0xDFFFF)
-            || (uc >= 0xE0020 && uc <= 0xE007F)
-            || (uc >= 0xEFFFE && uc <= 0xEFFFF)
-            || (uc >= 0xF0000 && uc <= 0xFFFFD)
-            || (uc >= 0xFFFFE && uc <= 0xFFFFF)
-            || (uc >= 0x100000 && uc <= 0x10FFFD)
-            || (uc >= 0x10FFFE && uc <= 0x10FFFF)*/))
-            *out++ = *in;
+        uint uc = *in;
+        if (QChar(uc).isHighSurrogate() && in < end - 1) {
+            ushort low = *(in + 1);
+            if (QChar(low).isLowSurrogate()) {
+                ++in;
+                uc = QChar::surrogateToUcs4(uc, low);
+            }
+        }
+        if (uc <= 0xFFFF) {
+            if (uc < 0x80 ||
+                !(uc <= 0x009F
+                || uc == 0x00A0
+                || uc == 0x0340
+                || uc == 0x0341
+                || uc == 0x06DD
+                || uc == 0x070F
+                || uc == 0x1680
+                || uc == 0x180E
+                || (uc >= 0x2000 && uc <= 0x200F)
+                || (uc >= 0x2028 && uc <= 0x202F)
+                || uc == 0x205F
+                || (uc >= 0x2060 && uc <= 0x2063)
+                || (uc >= 0x206A && uc <= 0x206F)
+                || (uc >= 0x2FF0 && uc <= 0x2FFB)
+                || uc == 0x3000
+                || (uc >= 0xD800 && uc <= 0xDFFF)
+                || (uc >= 0xE000 && uc <= 0xF8FF)
+                || (uc >= 0xFDD0 && uc <= 0xFDEF)
+                || uc == 0xFEFF
+                || (uc >= 0xFFF9 && uc <= 0xFFFF))) {
+                *out++ = *in;
+            }
+        } else {
+            if (!((uc >= 0x1D173 && uc <= 0x1D17A)
+                || (uc >= 0x1FFFE && uc <= 0x1FFFF)
+                || (uc >= 0x2FFFE && uc <= 0x2FFFF)
+                || (uc >= 0x3FFFE && uc <= 0x3FFFF)
+                || (uc >= 0x4FFFE && uc <= 0x4FFFF)
+                || (uc >= 0x5FFFE && uc <= 0x5FFFF)
+                || (uc >= 0x6FFFE && uc <= 0x6FFFF)
+                || (uc >= 0x7FFFE && uc <= 0x7FFFF)
+                || (uc >= 0x8FFFE && uc <= 0x8FFFF)
+                || (uc >= 0x9FFFE && uc <= 0x9FFFF)
+                || (uc >= 0xAFFFE && uc <= 0xAFFFF)
+                || (uc >= 0xBFFFE && uc <= 0xBFFFF)
+                || (uc >= 0xCFFFE && uc <= 0xCFFFF)
+                || (uc >= 0xDFFFE && uc <= 0xDFFFF)
+                || uc == 0xE0001
+                || (uc >= 0xE0020 && uc <= 0xE007F)
+                || (uc >= 0xEFFFE && uc <= 0xEFFFF)
+                || (uc >= 0xF0000 && uc <= 0xFFFFD)
+                || (uc >= 0xFFFFE && uc <= 0xFFFFF)
+                || (uc >= 0x100000 && uc <= 0x10FFFD)
+                || (uc >= 0x10FFFE && uc <= 0x10FFFF))) {
+                *out++ = QChar::highSurrogate(uc);
+                *out++ = QChar::lowSurrogate(uc);
+            }
+        }
         ++in;
     }
     if (in != out)
         str->truncate(out - str->utf16());
 }
 
-static bool isBidirectionalRorAL(const QChar &c)
+static bool isBidirectionalRorAL(uint uc)
 {
-    ushort uc = c.unicode();
     if (uc < 0x5b0)
         return false;
     return uc == 0x05BE
@@ -2507,9 +2521,8 @@ static bool isBidirectionalRorAL(const QChar &c)
         || (uc >= 0xFE76 && uc <= 0xFEFC);
 }
 
-static bool isBidirectionalL(const QChar &ch)
+static bool isBidirectionalL(uint uc)
 {
-    ushort uc = ch.unicode();
     if (uc < 0xaa)
         return (uc >= 0x0041 && uc <= 0x005A)
             || (uc >= 0x0061 && uc <= 0x007A);
@@ -2874,8 +2887,7 @@ static bool isBidirectionalL(const QChar &ch)
         return true;
     }
 
-    /* ### Add NAMEPREP support for surrogates
-       || (uc >= 0x10300 && uc <= 0x1031E)
+    if ((uc >= 0x10300 && uc <= 0x1031E)
        || (uc >= 0x10320 && uc <= 0x10323)
        || (uc >= 0x10330 && uc <= 0x1034A)
        || (uc >= 0x10400 && uc <= 0x10425)
@@ -2911,7 +2923,9 @@ static bool isBidirectionalL(const QChar &ch)
        || (uc >= 0x20000 && uc <= 0x2A6D6)
        || (uc >= 0x2F800 && uc <= 0x2FA1D)
        || (uc >= 0xF0000 && uc <= 0xFFFFD)
-       || (uc >= 0x100000 && uc <= 0x10FFFD)*/
+       || (uc >= 0x100000 && uc <= 0x10FFFD)) {
+        return true;
+    }
 
     return false;
 }
@@ -2944,13 +2958,37 @@ void qt_nameprep(QString *source, int from)
         return; // everything was mapped easily (lowercased, actually)
     int firstNonAscii = out - src;
 
+    // Characters unassigned in Unicode 3.2 are not allowed in "stored string" scheme
+    // but allowed in "query" scheme
+    // (Table A.1)
+    const bool isUnassignedAllowed = false; // ###
     // Characters commonly mapped to nothing are simply removed
     // (Table B.1)
     const QChar *in = out;
-    while (in < e) {
-        if (!isMappedToNothing(*in))
-            *out++ = *in;
-        ++in;
+    for ( ; in < e; ++in) {
+        uint uc = in->unicode();
+        if (QChar(uc).isHighSurrogate() && in < e - 1) {
+            ushort low = in[1].unicode();
+            if (QChar(low).isLowSurrogate()) {
+                ++in;
+                uc = QChar::surrogateToUcs4(uc, low);
+            }
+        }
+        if (!isUnassignedAllowed) {
+            QChar::UnicodeVersion version = QChar::unicodeVersion(uc);
+            if (version == QChar::Unicode_Unassigned || version > QChar::Unicode_3_2) {
+                source->resize(from); // not allowed, clear the label
+                return;
+            }
+        }
+        if (!isMappedToNothing(uc)) {
+            if (uc <= 0xFFFF) {
+                *out++ = *in;
+            } else {
+                *out++ = QChar::highSurrogate(uc);
+                *out++ = QChar::lowSurrogate(uc);
+            }
+        }
     }
     if (out != in)
         source->truncate(out - src);
@@ -2961,7 +2999,8 @@ void qt_nameprep(QString *source, int from)
     // Normalize to Unicode 3.2 form KC
     extern void qt_string_normalize(QString *data, QString::NormalizationForm mode,
                                     QChar::UnicodeVersion version, int from);
-    qt_string_normalize(source, QString::NormalizationForm_KC, QChar::Unicode_3_2, firstNonAscii);
+    qt_string_normalize(source, QString::NormalizationForm_KC, QChar::Unicode_3_2,
+                        firstNonAscii > from ? firstNonAscii - 1 : from);
 
     // Strip prohibited output
     stripProhibitedOutput(source, firstNonAscii);
@@ -2972,14 +3011,22 @@ void qt_nameprep(QString *source, int from)
     src = source->data();
     e = src + source->size();
     for (in = src + from; in < e && (!containsLCat || !containsRandALCat); ++in) {
-        if (isBidirectionalL(*in))
+        uint uc = in->unicode();
+        if (QChar(uc).isHighSurrogate() && in < e - 1) {
+            ushort low = in[1].unicode();
+            if (QChar(low).isLowSurrogate()) {
+                ++in;
+                uc = QChar::surrogateToUcs4(uc, low);
+            }
+        }
+        if (isBidirectionalL(uc))
             containsLCat = true;
-        else if (isBidirectionalRorAL(*in))
+        else if (isBidirectionalRorAL(uc))
             containsRandALCat = true;
     }
     if (containsRandALCat) {
-        if (containsLCat || (!isBidirectionalRorAL(src[from])
-                             || !isBidirectionalRorAL(e[-1])))
+        if (containsLCat || (!isBidirectionalRorAL(src[from].unicode())
+                             || !isBidirectionalRorAL(e[-1].unicode())))
             source->resize(from); // not allowed, clear the label
     }
 }
