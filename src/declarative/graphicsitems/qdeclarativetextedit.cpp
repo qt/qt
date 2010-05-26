@@ -940,7 +940,6 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    bool hadFocus = hasFocus();
     if (d->focusOnPress){
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
@@ -950,8 +949,6 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         setFocus(true);
     }
-    if (!hadFocus && hasFocus())
-        d->clickCausedFocus = true;
     if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
         d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
@@ -965,11 +962,6 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    QWidget *widget = event->widget();
-    if (widget && (d->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos()))
-        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
-    d->clickCausedFocus = false;
-
     d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
@@ -1203,6 +1195,129 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;
     document->setDefaultTextOption(opt);
+}
+
+
+/*!
+    \qmlmethod void TextEdit::openSoftwareInputPanel()
+
+    Opens software input panels like virtual keyboards for typing, useful for
+    customizing when you want the input keyboard to be shown and hidden in
+    your application.
+
+    By default input panels are shown when TextEdit element gains focus and hidden
+    when the focus is lost. You can disable the automatic behavior by setting the
+    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
+    and closeSoftwareInputPanel() to implement the behavior you want.
+
+    Only relevant on platforms, which provide virtual keyboards.
+
+    \code
+        import Qt 4.7
+        TextEdit {
+            id: textEdit
+            text: "Hello world!"
+            showInputPanelOnFocus: false
+            MouseArea {
+                anchors.fill: parent
+                onClicked: textEdit.openSoftwareInputPanel()
+            }
+            onFocusChanged: if (!focus) closeSoftwareInputpanel()
+        }
+    \endcode
+*/
+void QDeclarativeTextEdit::openSoftwareInputPanel()
+{
+    QEvent event(QEvent::RequestSoftwareInputPanel);
+    if (qApp) {
+        if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+            if (view->scene() && view->scene() == scene()) {
+                QApplication::sendEvent(view, &event);
+            }
+        }
+    }
+}
+
+/*!
+    \qmlmethod void TextEdit::closeSoftwareInputPanel()
+
+    Closes a software input panel like a virtual keyboard shown on the screen, useful
+    for customizing when you want the input keyboard to be shown and hidden in
+    your application.
+
+    By default input panels are shown when TextEdit element gains focus and hidden
+    when the focus is lost. You can disable the automatic behavior by setting the
+    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
+    and closeSoftwareInputPanel() to implement the behavior you want.
+
+    Only relevant on platforms, which provide virtual keyboards.
+
+    \code
+        import Qt 4.7
+        TextEdit {
+            id: textEdit
+            text: "Hello world!"
+            showInputPanelOnFocus: false
+            MouseArea {
+                anchors.fill: parent
+                onClicked: textEdit.openSoftwareInputPanel()
+            }
+            onFocusChanged: if (!focus) closeSoftwareInputpanel()
+        }
+    \endcode
+*/
+void QDeclarativeTextEdit::closeSoftwareInputPanel()
+{
+    QEvent event(QEvent::CloseSoftwareInputPanel);
+    if (qApp) {
+        if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+            if (view->scene() && view->scene() == scene()) {
+                QApplication::sendEvent(view, &event);
+            }
+        }
+    }
+}
+
+/*!
+    \qmlproperty bool TextEdit::showInputPanelOnFocus
+    Whether input panels are automatically shown when TextEdit element gains
+    focus and hidden when focus is lost. By default this is set to true.
+
+    Only relevant on platforms, which provide virtual keyboards.
+*/
+bool QDeclarativeTextEdit::showInputPanelOnFocus() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->showInputPanelOnFocus;
+}
+
+void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool showOnFocus)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus == showOnFocus)
+        return;
+
+    d->showInputPanelOnFocus = showOnFocus;
+
+    emit showInputPanelOnFocusChanged(d->showInputPanelOnFocus);
+}
+
+void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus && !isReadOnly()) {
+        openSoftwareInputPanel();
+    }
+    QDeclarativePaintedItem::focusInEvent(event);
+}
+
+void QDeclarativeTextEdit::focusOutEvent(QFocusEvent *event)
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus && !isReadOnly()) {
+        closeSoftwareInputPanel();
+    }
+    QDeclarativePaintedItem::focusOutEvent(event);
 }
 
 QT_END_NAMESPACE
