@@ -71,6 +71,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeText : public QDeclarativeItem
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
+    Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
+    Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
 
 public:
     QDeclarativeText(QDeclarativeItem *parent=0);
@@ -98,7 +100,8 @@ public:
     enum WrapMode { NoWrap = QTextOption::NoWrap,
                     WordWrap = QTextOption::WordWrap,
                     WrapAnywhere = QTextOption::WrapAnywhere,
-                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere
+                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
+                    Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
 
     QString text() const;
@@ -137,6 +140,9 @@ public:
 
     int resourcesLoading() const; // mainly for testing
 
+    qreal paintedWidth() const;
+    qreal paintedHeight() const;
+
 Q_SIGNALS:
     void textChanged(const QString &text);
     void linkActivated(const QString &link);
@@ -149,6 +155,7 @@ Q_SIGNALS:
     void wrapModeChanged();
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
+    void paintedSizeChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

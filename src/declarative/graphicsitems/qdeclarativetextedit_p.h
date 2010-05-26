@@ -74,6 +74,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
+    Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
@@ -113,7 +115,8 @@ public:
     enum WrapMode { NoWrap = QTextOption::NoWrap,
                     WordWrap = QTextOption::WordWrap,
                     WrapAnywhere = QTextOption::WrapAnywhere,
-                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere
+                    WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
+                    Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
 
     QString text() const;
@@ -185,8 +188,12 @@ public:
 
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
+    qreal paintedWidth() const;
+    qreal paintedHeight() const;
+
 Q_SIGNALS:
     void textChanged(const QString &);
+    void paintedSizeChanged();
     void cursorPositionChanged();
     void cursorRectangleChanged();
     void selectionStartChanged();

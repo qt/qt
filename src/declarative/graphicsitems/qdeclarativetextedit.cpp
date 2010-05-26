@@ -484,14 +484,13 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     The text will only wrap if an explicit width has been set.
 
     \list
-    \o TextEdit.NoWrap - no wrapping will be performed.
-    \o TextEdit.WordWrap - wrapping is done on word boundaries.
-    \o TextEdit.WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o TextEdit.WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
-       will occur at the appropriate point on the line, even in the middle of a word.
+    \o TextEdit.NoWrap - no wrapping will be performed. If the text contains insufficient newlines, then implicitWidth will exceed a set width.
+    \o TextEdit.WordWrap - wrapping is done on word boundaries only. If a word is too long, implicitWidth will exceed a set width.
+    \o TextEdit.WrapAnywhere - wrapping is done at any point on a line, even if it occurs in the middle of a word.
+    \o TextEdit.Wrap - if possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
-    The default is TextEdit.NoWrap.
+    The default is TextEdit.NoWrap. If you set a width, consider using TextEdit.Wrap.
 */
 QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
 {
@@ -509,6 +508,29 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
     updateSize();
     emit wrapModeChanged();
 }
+
+/*!
+    \qmlproperty real TextEdit::paintedWidth
+
+    Returns the width of the text, including width past the width
+    which is covered due to insufficient wrapping if WrapMode is set.
+*/
+qreal QDeclarativeTextEdit::paintedWidth() const
+{
+    return implicitWidth();
+}
+
+/*!
+    \qmlproperty real TextEdit::paintedHeight
+
+    Returns the height of the text, including height past the height
+    which is covered due to there being more text than fits in the set height.
+*/
+qreal QDeclarativeTextEdit::paintedHeight() const
+{
+    return implicitHeight();
+}
+
 
 /*!
     \qmlproperty bool TextEdit::cursorVisible
@@ -1156,7 +1178,7 @@ void QDeclarativeTextEdit::updateSize()
         int dy = height();
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
-        if (widthValid())
+        if (widthValid() && d->document->textWidth() != width())
             d->document->setTextWidth(width());
         dy -= (int)d->document->size().height();
 
@@ -1172,7 +1194,7 @@ void QDeclarativeTextEdit::updateSize()
 
         //### need to comfirm cost of always setting these
         int newWidth = qCeil(d->document->idealWidth());
-        if (!widthValid())
+        if (!widthValid() && d->document->textWidth() != newWidth)
             d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
         int cursorWidth = 1;
         if(d->cursor)
@@ -1182,9 +1204,12 @@ void QDeclarativeTextEdit::updateSize()
             newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
-        setImplicitHeight(d->document->isEmpty() ? fm.height() : (int)d->document->size().height());
+        qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
+        setImplicitHeight(newHeight);
 
-        setContentsSize(QSize(width(), height()));
+        setContentsSize(QSize(newWidth, newHeight));
+
+        emit paintedSizeChanged();
     } else {
         d->dirty = true;
     }
