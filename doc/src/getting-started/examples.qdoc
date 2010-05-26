@@ -560,7 +560,7 @@
     \page examples-multimedia.html
     \ingroup all-examples
     \title Multimedia Examples
-    \brief Accessing audio support from Qt
+    \brief Audio, video, and Phonon with Qt
 
     \image phonon-examples.png
 
