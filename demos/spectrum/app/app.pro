@@ -45,7 +45,7 @@ RESOURCES = spectrum.qrc
 
 symbian {
     # Platform security capability required to record audio on Symbian
-    TARGET.CAPABILITY += UserEnvironment
+    TARGET.CAPABILITY = UserEnvironment
 
     # Provide unique ID for the generated binary, required by Symbian OS
     TARGET.UID3 = 0xA000E3FA
