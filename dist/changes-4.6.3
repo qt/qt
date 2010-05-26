@@ -301,6 +301,51 @@ Qt for Symbian
  - QtGui
    * QUnixPrintWidget is no longer declared in Symbian.
    * [QTBUG-10207]: Fixed long menu item texts causing crash.
+   * [QTBUG-9910] Fixed incorrect dialog position when native AVKON combined
+     status-and-control pane is in use.
+   * [QTBUG-4875] Made QMessageBox match size with native Symbian messageBox.
+   * [QTBUG-5539] Fixed QMessageBox to stretch to screen width with very small
+     content.
+   * [QTBUG-7828] Fixed Virtual keyboard closing issue with Sym^3.
+   * [QTBUG-9480] Use focus widget palette colors to show T9 suggested or
+     autocompletion words in QCoeFepInputContext.
+   * [QTBUG-10006] Changed default supported text modes to all, instead of just
+     lower and upper cases in QCoeFepInputContext.
+   * [QT-3277] Support text selection in QCoeFepInputContext for Sym^3.
+   * [QT-3008] Fixed crash in QGraphicsScenePrivate::setFocusItemHelper.
+
+ - QS60Style
+    * [QTBUG-10697] Support native-like selection in item views.
+    * [QTBUG-10454] Made styled sliders match in size to native sliders.
+    * [QTBUG-10073] Fixed QMenu with a lot of menu items.
+    * [QTBUG-3102] Fixed QTabWidget icon size issue.
+    * [QTBUG-5001] Show combobox list as a popup instead of dropdown list.
+    * [QTBUG-7258] Fixed calculations of PM_FocusFrameVMargin and
+      PM_FocusFrameHMargin pixel metrics.
+    * [QTBUG-7996] Fixed squeezed scrollbar handle and groove ends.
+    * [QTBUG-8193] Fixed drag-n-drop drop area drawing issue.
+    * [QTBUG-8194] Removed scrollbar context menu support.
+    * [QTBUG-8704] Fixed palette issues when drawing highlighted text.
+    * [QTBUG-9212] Fixed itemview multiselection issues.
+    * [QTBUG-9321] Fixed very large spinboxes drawing issues.
+    * [QTBUG-9837] Fixed text cutting issues with narrow QComboBoxes.
+    * [QTBUG-9844] Fixed QTreeView branch drawing issues in right to left
+      UI layout.
+    * [QTBUG-9927] Fixed transparent list higlight to show up correctly for
+      S60 3rd edition FP1 devices.
+    * [QTBUG-10064] Removed focus frame drawing for context menus and popups.
+    * [QTBUG-10487] Fixed QToolButton to be drawn pressed when context menu
+      for that button is open.
+    * [QTBUG-10549] Fixed style to honor stylesheet when drawing focus frame
+      for QPushButtons.
+    * [QT-3295] Made QMenu to look more native-like.
+    * [QT-3185] Fixed border frames to be drawn transparent for Sym^3 devices.
+    * [QT-3148] Draw application background correctly when animated wallpaper
+      is used in Sym^3 device.
+    * [QT-3137] Launch virtual keyboard with single tap.
+    * [QT-3104] Re-locate QTabWidget's scrollbuttons to either side of widget.
+    * [QT-2179] Fixed QPushButton with text and QPushButton with standard icon
+      to be of same size.
 
  - Examples & demos:
    * Enabled more examples by default in Symbian builds.
