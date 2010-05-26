@@ -338,34 +338,35 @@ void SymbianEngine::updateConfigurationsL()
                 TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
                 if (error == KErrNone) {
                     QNetworkConfigurationPrivatePointer ptr(cpPriv);
-                    toSymbianConfig(ptr)->serviceNetworkPtr = privSNAP;
                     accessPointConfigurations.insert(ptr->id, ptr);
 
                     locker.unlock();
                     emit configurationAdded(ptr);
                     locker.relock();
 
+                    QMutexLocker configLocker(&privSNAP->mutex);
                     privSNAP->serviceNetworkMembers.append(ptr);
                 }
             } else {
                 knownConfigs.removeOne(iface);
                 // Check that IAP can be found from related SNAP's configuration list
                 bool iapFound = false;
+                QMutexLocker snapConfigLocker(&privSNAP->mutex);
                 for (int i = 0; i < privSNAP->serviceNetworkMembers.count(); i++) {
-                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericId == iapId) {
+                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericIdentifier() ==
+                        iapId) {
                         iapFound = true;
                         break;
                     }
                 }
-                if (!iapFound) {
-                    toSymbianConfig(priv)->serviceNetworkPtr = privSNAP;
+                if (!iapFound)
                     privSNAP->serviceNetworkMembers.append(priv);
-                }
             }
             
             CleanupStack::PopAndDestroy(&connectionMethod);
         }
         
+        QMutexLocker snapConfigLocker(&privSNAP->mutex);
         if (privSNAP->serviceNetworkMembers.count() > 1) {
             // Roaming is supported only if SNAP contains more than one IAP
             privSNAP->roamingSupported = true;
@@ -418,9 +419,10 @@ void SymbianEngine::updateConfigurationsL()
         foreach (const QString &iface, snapConfigurations.keys()) {
             QNetworkConfigurationPrivatePointer ptr2 = snapConfigurations.value(iface);
             // => Check if one of the IAPs of the SNAP is active
+            QMutexLocker snapConfigLocker(&ptr2->mutex);
             for (int i = 0; i < ptr2->serviceNetworkMembers.count(); ++i) {
-                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericId ==
-                    toSymbianConfig(ptr)->numericId) {
+                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericIdentifier() ==
+                    toSymbianConfig(ptr)->numericIdentifier()) {
                     ptr2->serviceNetworkMembers.removeAt(i);
                     break;
                 }
@@ -639,12 +641,14 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
     }
 #endif
     
-    if (!ptr || !ptr->isValid) {
-        QString iface = QString::number(qHash(KUserChoiceIAPId));
-        ptr = userChoiceConfigurations.value(iface);
+    if (ptr) {
+        QMutexLocker configLocker(&ptr->mutex);
+        if (ptr->isValid)
+            return ptr;
     }
-    
-    return ptr;
+
+    QString iface = QString::number(qHash(KUserChoiceIAPId));
+    return userChoiceConfigurations.value(iface);
 }
 
 void SymbianEngine::updateActiveAccessPoints()
@@ -681,8 +685,9 @@ void SymbianEngine::updateActiveAccessPoints()
                     online = true;
                     inactiveConfigs.removeOne(ident);
 
-                    QMutexLocker configLocker(&ptr->mutex);
+                    ptr->mutex.lock();
                     toSymbianConfig(ptr)->connectionId = connectionId;
+                    ptr->mutex.unlock();
 
                     // Configuration is Active
                     changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
@@ -736,6 +741,8 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 unavailableConfigs.removeOne(ident);
+
+                QMutexLocker configLocker(&ptr->mutex);
                 if (ptr->state < QNetworkConfiguration::Active) {
                     // Configuration is either Discovered or Active
                     changeConfigurationStateAtMinTo(ptr, QNetworkConfiguration::Discovered);
@@ -772,10 +779,15 @@ void SymbianEngine::updateStatesToSnaps()
         bool discovered = false;
         bool active = false;
         QNetworkConfigurationPrivatePointer ptr = snapConfigurations.value(iface);
+
+        QMutexLocker snapConfigLocker(&ptr->mutex);
+
         // => Check if one of the IAPs of the SNAP is discovered or active
         //    => If one of IAPs is active, also SNAP is active
         //    => If one of IAPs is discovered but none of the IAPs is active, SNAP is discovered
         for (int i=0; i<ptr->serviceNetworkMembers.count(); i++) {
+            QMutexLocker configLocker(&ptr->serviceNetworkMembers[i]->mutex);
+
             if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Active)
                     == QNetworkConfiguration::Active) {
                 active = true;
@@ -991,9 +1003,11 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             QString ident = QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
-                QMutexLocker configLocker(&ptr->mutex);
+                ptr->mutex.lock();
                 toSymbianConfig(ptr)->connectionId = connectionId;
-                emit this->configurationStateChanged(toSymbianConfig(ptr)->numericId, connectionId, QNetworkSession::Connecting);
+                ptr->mutex.unlock();
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Connecting);
             }
         } else if (connectionStatus == KLinkLayerOpen) {
             // Connection has been successfully opened
@@ -1006,13 +1020,17 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             QString ident = QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
-                QMutexLocker configLocker(&ptr->mutex);
+                ptr->mutex.lock();
                 toSymbianConfig(ptr)->connectionId = connectionId;
+                ptr->mutex.unlock();
+
                 // Configuration is Active
                 if (changeConfigurationStateTo(ptr, QNetworkConfiguration::Active)) {
                     updateStatesToSnaps();
                 }
-                emit this->configurationStateChanged(toSymbianConfig(ptr)->numericId, connectionId, QNetworkSession::Connected);
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Connected);
+
                 if (!iOnline) {
                     iOnline = true;
                     emit this->onlineStateChanged(iOnline);
@@ -1022,8 +1040,8 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             TUint connectionId = realEvent->ConnectionId();
             QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);
             if (ptr) {
-                QMutexLocker configLocker(&ptr->mutex);
-                emit this->configurationStateChanged(toSymbianConfig(ptr)->numericId, connectionId, QNetworkSession::Closing);
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Closing);
             }
         } else if (connectionStatus == KLinkLayerClosed ||
                    connectionStatus == KConnectionClosed) {
@@ -1037,8 +1055,8 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
                     updateStatesToSnaps();
                 }
 
-                QMutexLocker configLocker(&ptr->mutex);
-                emit this->configurationStateChanged(toSymbianConfig(ptr)->numericId, connectionId, QNetworkSession::Disconnected);
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Disconnected);
             }
             
             bool online = false;
@@ -1135,10 +1153,9 @@ void SymbianEngine::configurationStateChangeReport(TUint32 accessPointId, QNetwo
                     updateStatesToSnaps();
                 }
 
-                QMutexLocker configLocker(&ptr->mutex);
-                emit this->configurationStateChanged(toSymbianConfig(ptr)->numericId,
-                                                     toSymbianConfig(ptr)->connectionId,
-                                                     QNetworkSession::Disconnected);
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               toSymbianConfig(ptr)->connectionIdentifier(),
+                                               QNetworkSession::Disconnected);
             }
         }
         break;
@@ -1170,8 +1187,7 @@ QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aCon
             accessPointConfigurations.constBegin();
     while (i != accessPointConfigurations.constEnd()) {
         QNetworkConfigurationPrivatePointer ptr = i.value();
-        QMutexLocker configLocker(&ptr->mutex);
-        if (toSymbianConfig(ptr)->connectionId == aConnectionId)
+        if (toSymbianConfig(ptr)->connectionIdentifier() == aConnectionId)
             return ptr;
 
         ++i;
