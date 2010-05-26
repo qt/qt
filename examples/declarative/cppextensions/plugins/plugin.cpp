@@ -148,4 +148,4 @@ public:
 
 #include "plugin.moc"
 
-Q_EXPORT_PLUGIN2(qtimeexampleqmlplugin, QExampleQmlPlugin);
+Q_EXPORT_PLUGIN2(qmlqtimeexampleplugin, QExampleQmlPlugin);

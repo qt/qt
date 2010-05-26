@@ -1,4 +1,4 @@
 WorkerScript.onMessage = function(msg) {
-    WorkerScript.sendMessage(msg)
+    WorkerScript.sendMessage('Hello_World')
 }
 

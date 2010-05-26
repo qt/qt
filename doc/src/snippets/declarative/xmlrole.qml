@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,27 +39,43 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qdeclarativeextensionplugin.h>
-#include <QtDeclarative/qdeclarative.h>
+import Qt 4.7
 
-#include "qdeclarativegesturearea_p.h"
+Rectangle {
+    width: 300; height: 200
 
-QT_BEGIN_NAMESPACE
+//![0]
+XmlListModel {
+    id: model
+//![0]
+    source: "xmlrole.xml"
 
-class GestureAreaQmlPlugin : public QDeclarativeExtensionPlugin
-{
-    Q_OBJECT
-public:
-    virtual void registerTypes(const char *uri)
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.gestures"));
-        qmlRegisterCustomType<QDeclarativeGestureArea>(uri,1,0, "GestureArea", new QDeclarativeGestureAreaParser);
+//![1]
+    // XmlRole queries will be made on <book> elements
+    query: "/catalogue/book"
+
+    // query the book title
+    XmlRole { name: "title"; query: "title/string()" }
+
+    // query the book's year
+    XmlRole { name: "year"; query: "year/number()" }
+
+    // query the book's type (the '@' indicates 'type' is an attribute, not an element)
+    XmlRole { name: "type"; query: "@type/string()" }
+
+    // query the book's first listed author (note in XPath the first index is 1, not 0)
+    XmlRole { name: "first_author"; query: "author[1]/string()" }
+}
+//![1]
+
+ListView {
+    width: 300; height: 200
+    model: model
+    delegate: Column {
+        Text { text: title + " (" + type + ")"; font.bold: true }
+        Text { text: first_author }
+        Text { text: year }
     }
-};
+}
 
-QT_END_NAMESPACE
-
-#include "plugin.moc"
-
-Q_EXPORT_PLUGIN2(qmlgesturesplugin, QT_PREPEND_NAMESPACE(GestureAreaQmlPlugin));
-
+}
