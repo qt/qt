@@ -6,12 +6,12 @@ win32-msvc:QMAKE_CXXFLAGS -= -Zm200
 win32-msvc:QMAKE_CXXFLAGS += -Zm800
 
 wince*: {
-   addFiles.sources = images\*.*
+   addFiles.sources = images\\*.*
    addFiles.path = images
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\".\\\"
 } else:symbian* {
-   addFiles.sources = images\*.*
+   addFiles.sources = images\\*.*
    addFiles.path = images
    DEPLOYMENT += addFiles
    qt_not_deployed {

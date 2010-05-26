@@ -23,7 +23,7 @@ defineTest(addMMPRules) {
                 # No value defined for current condition, so use default
                 varVal = $$eval($${var}.default)
             }
-            !isEmpty(varVal): libBlock += "$$join(varVal,$$escape_expand(\n))"
+            !isEmpty(varVal): libBlock += "$$join(varVal,$$escape_expand(\\n))"
         }
 
         MMP_RULES += $$libBlock
