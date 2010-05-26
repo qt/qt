@@ -44,16 +44,14 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(fridgemagnets);
-    bool smallScreen = false;
-    for (int i=0; i<argc; i++)
-        if (QString(argv[i]) == "-small-screen")
-            smallScreen = true;
 
     QApplication app(argc, argv);
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
 #endif
     DragWidget window;
+
+    bool smallScreen = QApplication::arguments().contains("-small-screen");
     if (smallScreen)
         window.showFullScreen();
     else
