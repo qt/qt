@@ -375,22 +375,23 @@ struct MyPrimitive
     }
 };
 
-Q_DECLARE_TYPEINFO(MyPrimitive, Q_PRIMITIVE_TYPE);
-
 struct MyMovable
     : MyBase
 {
 };
-
-Q_DECLARE_TYPEINFO(MyMovable, Q_MOVABLE_TYPE);
 
 struct MyComplex
     : MyBase
 {
 };
 
+QT_BEGIN_NAMESPACE
+
+Q_DECLARE_TYPEINFO(MyPrimitive, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(MyMovable, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(MyComplex, Q_COMPLEX_TYPE);
 
+QT_END_NAMESPACE
 
 bool QTBUG10978_proceed = true;
 
