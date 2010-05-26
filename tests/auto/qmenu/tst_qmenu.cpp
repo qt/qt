@@ -969,8 +969,6 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     QTRY_VERIFY(sub1.isVisible());
 }
 
-
-
 class MyMenu : public QMenu
 {
     Q_OBJECT

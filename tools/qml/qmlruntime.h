@@ -142,7 +142,6 @@ private slots:
     void pickRecordingFile();
     void setPortrait();
     void setLandscape();
-    void startNetwork();
     void toggleFullScreen();
     void orientationChanged();
 

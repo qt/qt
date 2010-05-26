@@ -271,6 +271,8 @@
     This example displays a set of clocks with different times for different cities.
     Each clock is created by combining \l Image elements with \l Rotation transforms 
     and \l SpringFollow animations.
+
+    \image qml-clocks-example.png
 */
 
 /*!
@@ -280,14 +282,8 @@
     This example presents a flickable set of interactive corkboards. It is created
     through a combination of elements like \l ListModel, \l Repeater and \l TextEdit
     together with rotation and scaling transforms, animation and mouse interaction.
-*/
 
-/*!
-    \title Toys: Dial
-    \example declarative/toys/dial
-
-    This example presents an interactive speedometer-type dial by combining
-    \l Image elements with \l Rotation transforms and \l SpringFollow animations.
+    \image qml-corkboards-example.png
 */
 
 /*!
@@ -297,6 +293,8 @@
     This example presents an interactive drag-and-drop scene. It demonstrates
     how to use QML's \l{Dynamic Object Creation} support to dynamically create and
     destroy objects.
+
+    \image qml-dynamicscene-example.png
 */
 
 /*!
@@ -304,6 +302,8 @@
     \example declarative/toys/tic-tac-toe
 
     This example presents a simple implementation of Tic Tac Toe.
+
+    \image qml-tic-tac-toe-example.png
 */
 
 /*!
@@ -312,6 +312,8 @@
 
     This example shows how to use animation components such as \l SpringFollow,
     \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
+
+    \image qml-tvtennis-example.png
 */
 
 /*!
@@ -329,10 +331,23 @@
 */
 
 /*!
+    \title UI Components: Dial
+    \example declarative/ui-components/dialcontrol
+
+    This example presents an interactive speedometer-type dial by combining
+    \l Image elements with \l Rotation transforms and \l SpringFollow animations.
+
+    \image qml-dialcontrol-example.png
+*/
+
+
+/*!
     \title UI Components: Flipable
     \example declarative/ui-components/flipable
 
     This example shows how to use the Flipable element.
+
+    \image qml-flipable-example.png
 */
 
 /*!
@@ -340,6 +355,8 @@
     \example declarative/ui-components/progressbar
 
     This example shows how to create a progress bar.
+
+    \image qml-progressbar-example.png
 */
 
 /*!
@@ -349,6 +366,8 @@
     This example shows how to create scroll bars for a Flickable element
     using the \l {Flickable::visibleArea.xPosition}{Flickable::visibleArea}
     properties.
+
+    \image qml-scrollbar-example.png
 */
 
 /*!
@@ -356,6 +375,8 @@
     \example declarative/ui-components/searchbox
 
     This example shows how to create a search box.
+
+    \image qml-searchbox-example.png
 */
 
 /*!
@@ -363,6 +384,8 @@
     \example declarative/ui-components/slideswitch
 
     This example shows how to create a slide switch.
+
+    \image qml-slideswitch-example.png
 */
 
 /*!
@@ -370,6 +393,8 @@
     \example declarative/ui-components/spinner
 
     This example shows how to create a spinner-type component.
+
+    \image qml-spinner-example.png
 */
 
 /*!
@@ -377,6 +402,8 @@
     \example declarative/ui-components/tabwidget
 
     This example shows how to create a tab widget.
+
+    \image qml-tabwidget-example.png
 */
 
 /*!

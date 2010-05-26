@@ -499,13 +499,10 @@ void QDeclarativeText::setVAlign(VAlignment align)
     wrap if an explicit width has been set.  wrapMode can be one of:
 
     \list
-    \o Text.NoWrap - no wrapping will be performed.
-    \o Text.WordWrap - wrapping is done on word boundaries. If the text cannot be
-    word-wrapped to the specified width it will be partially drawn outside of the item's bounds.
-    If this is undesirable then enable clipping on the item (Item::clip).
-    \o Text.WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o Text.WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
-       will occur at the appropriate point on the line, even in the middle of a word.
+    \o Text.NoWrap - no wrapping will be performed. If the text contains insufficient newlines, then implicitWidth will exceed a set width.
+    \o Text.WordWrap - wrapping is done on word boundaries only. If a word is too long, implicitWidth will exceed a set width.
+    \o Text.WrapAnywhere - wrapping is done at any point on a line, even if it occurs in the middle of a word.
+    \o Text.Wrap - if possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
     The default is Text.NoWrap.
@@ -715,6 +712,7 @@ void QDeclarativeTextPrivate::updateSize()
         QFontMetrics fm(font);
         if (text.isEmpty()) {
             q->setImplicitHeight(fm.height());
+            emit q->paintedSizeChanged();
             return;
         }
 
@@ -753,10 +751,35 @@ void QDeclarativeTextPrivate::updateSize()
         //### need to comfirm cost of always setting these for richText
         q->setImplicitWidth(richText ? (int)doc->idealWidth() : size.width());
         q->setImplicitHeight(richText ? (int)doc->size().height() : size.height());
+        emit q->paintedSizeChanged();
     } else {
         dirty = true;
     }
 }
+
+/*!
+    \qmlproperty real Text::paintedWidth
+
+    Returns the width of the text, including width past the width
+    which is covered due to insufficient wrapping if WrapMode is set.
+*/
+qreal QDeclarativeText::paintedWidth() const
+{
+    return implicitWidth();
+}
+
+/*!
+    \qmlproperty real Text::paintedHeight
+
+    Returns the height of the text, including height past the height
+    which is covered due to there being more text than fits in the set height.
+*/
+qreal QDeclarativeText::paintedHeight() const
+{
+    return implicitHeight();
+}
+
+
 
 // ### text layout handling should be profiled and optimized as needed
 // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);

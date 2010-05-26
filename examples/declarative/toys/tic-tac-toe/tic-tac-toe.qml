@@ -42,76 +42,80 @@ import Qt 4.7
 import "content"
 import "content/tic-tac-toe.js" as Logic
 
-Item {
+Rectangle {
     id: game
 
-    property bool show: false
+    property bool running: true
     property real difficulty: 1.0   //chance it will actually think
 
-    width: 440
-    height: 480
-    anchors.fill: parent
+    width: display.width; height: display.height + 10
 
     Image {
-        id: boardimage
-        anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+        id: boardImage
         source: "content/pics/board.png"
     }
 
-    Grid {
-        id: board
-        anchors.fill: boardimage
-        columns: 3
+    Text {
+        id: messageDisplay
+        anchors.centerIn: parent
+        color: "blue"
+        style: Text.Outline; styleColor: "white"
+        font.pixelSize: 50; font.bold: true
+        visible: false
 
-        Repeater {
-            model: 9
-            TicTac {
-                width: board.width/3
-                height: board.height/3
-                onClicked: {
-                    if (!endtimer.running) {
-                        if (!Logic.makeMove(index,"X"))
-                            Logic.computerTurn()
+        Timer {
+            running: messageDisplay.visible
+            onTriggered: { 
+                messageDisplay.visible = false;
+                Logic.restartGame();
+            }
+        }
+    }
+
+    Column {
+        id: display
+
+        Grid {
+            id: board
+            width: boardImage.width; height: boardImage.height
+            columns: 3
+
+            Repeater {
+                model: 9
+
+                TicTac {
+                    width: board.width/3
+                    height: board.height/3
+
+                    onClicked: {
+                        if (game.running && Logic.canPlayAtPos(index)) {
+                            if (!Logic.makeMove(index, "X"))
+                                Logic.computerTurn();
+                        }
                     }
                 }
             }
         }
 
-        Timer {
-            id: endtimer
-            interval: 1600
-            onTriggered: { msg.opacity = 0; Logic.restart() }
-        }
-    }
+        Row {
+            spacing: 4
+            anchors.horizontalCenter: parent.horizontalCenter
 
-    Row {
-        spacing: 4
-        anchors { top: board.bottom; horizontalCenter: board.horizontalCenter }
-
-        Button {
-            text: "Hard"
-            onClicked: game.difficulty = 1.0;
-            down: game.difficulty == 1.0
+            Button {
+                text: "Hard"
+                pressed: game.difficulty == 1.0
+                onClicked: { game.difficulty = 1.0 }
+            }
+            Button {
+                text: "Moderate"
+                pressed: game.difficulty == 0.8
+                onClicked: { game.difficulty = 0.8 }
+            }
+            Button {
+                text: "Easy"
+                pressed: game.difficulty == 0.2
+                onClicked: { game.difficulty = 0.2 }
+            }
         }
-        Button {
-            text: "Moderate"
-            onClicked: game.difficulty = 0.8;
-            down: game.difficulty == 0.8
-        }
-        Button {
-            text: "Easy"
-            onClicked: game.difficulty = 0.2;
-            down: game.difficulty == 0.2
-        }
-    }
-
-    Text {
-        id: msg
-
-        anchors.centerIn: parent
-        opacity: 0
-        color: "blue"
-        style: Text.Outline; styleColor: "white"
-        font.pixelSize: 50; font.bold: true
     }
 }

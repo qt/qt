@@ -80,7 +80,11 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
 
 /*!
     \qmlproperty string XmlRole::name
-    The name for the role. This name is used to access the model data for this role from Qml.
+
+    The name for the role. This name is used to access the model data for this role.
+
+    For example, the following model has a role named "title", which can be accessed
+    from the view's delegate:
 
     \qml
     XmlListModel {
@@ -91,19 +95,27 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
 
     ListView {
         model: xmlModel
-        Text { text: title }
+        delegate: Text { text: title }
     }
     \endqml
 */
 
 /*!
     \qmlproperty string XmlRole::query
-    The relative XPath query for this role. The query should not start with a '/' (i.e. it must be
-    relative).
+    The relative XPath expression query for this role. The query must be relative; it cannot start
+    with a '/'.
 
-    \qml
-    XmlRole { name: "title"; query: "title/string()" }
-    \endqml
+    For example, if there is an XML document like this:
+
+    \quotefile doc/src/snippets/declarative/xmlrole.xml
+        
+    Here are some valid XPath expressions for XmlRole queries on this document:
+
+    \snippet doc/src/snippets/declarative/xmlrole.qml 0
+    \dots 4
+    \snippet doc/src/snippets/declarative/xmlrole.qml 1
+
+    See the \l{http://www.w3.org/TR/xpath20/}{W3C XPath 2.0 specification} for more information.
 */
 
 /*!
@@ -521,9 +533,12 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     \endqml
 
     The \l {XmlListModel::query}{query} value of "/rss/channel/item" specifies that the XmlListModel should generate
-    a model item for each \c <item> in the XML document. The XmlRole objects define the
+    a model item for each \c <item> in the XML document. 
+    
+    The XmlRole objects define the
     model item attributes; here, each model item will have \c title and \c pubDate 
     attributes that match the \c title and \c pubDate values of its corresponding \c <item>.
+    (See \l XmlRole::query for more examples of valid XPath expressions for XmlRole.)
 
     The model could be used in a ListView, like this:
 
@@ -559,8 +574,6 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     If multiple key roles are specified, the model only adds and reload items
     with a combined value of all key roles that is not already present in
     the model.
-
-    \sa {declarative/xml/xmldata}{XML data example}
 */
 
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)

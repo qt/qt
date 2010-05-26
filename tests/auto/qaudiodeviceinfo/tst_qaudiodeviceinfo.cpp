@@ -67,7 +67,6 @@ private slots:
     void frequencies();
     void isformat();
     void preferred();
-    void nearest();
 
 private:
     bool              available;
@@ -187,16 +186,6 @@ void tst_QAudioDeviceInfo::preferred()
         QAudioFormat format = device->preferredFormat();
         QVERIFY(format.frequency() == 44100);
         QVERIFY(format.channels() == 2);
-    }
-}
-
-void tst_QAudioDeviceInfo::nearest()
-{
-    if(available) {
-        QAudioFormat format1, format2;
-        format1.setFrequency(8000);
-        format2 = device->nearestFormat(format1);
-        QVERIFY(format2.frequency() == 44100);
     }
 }
 

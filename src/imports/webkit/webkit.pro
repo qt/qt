@@ -1,4 +1,4 @@
-TARGET  = webkitqmlplugin
+TARGET  = qmlwebkitplugin
 TARGETPATH = org/webkit
 include(../qimportbase.pri)
 
@@ -18,7 +18,7 @@ symbian:{
     load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
-    importFiles.sources = webkitqmlplugin.dll qmldir
+    importFiles.sources = qmlwebkitplugin.dll qmldir
     importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
     
     DEPLOYMENT = importFiles

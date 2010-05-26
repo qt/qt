@@ -84,7 +84,10 @@ For example, from your build directory, run:
 \o \l{declarative/imageelements/borderimage}{BorderImage}
 \endlist
 
-\section2 \l{declarative/positioners}{Positioners}
+\section2 Positioners
+\list
+\o \l{declarative/positioners}{Example}
+\endlist
 
 \section2 Key Interaction
 \list
@@ -99,6 +102,7 @@ For example, from your build directory, run:
 
 \section2 UI Components
 \list
+\o \l{declarative/ui-components/dialcontrol}{Dial control}
 \o \l{declarative/ui-components/flipable}{Flipable}
 \o \l{declarative/ui-components/progressbar}{Progress bar}
 \o \l{declarative/ui-components/scrollbar}{Scroll bar}
@@ -112,10 +116,10 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/modelviews/gridview}{GridView}
 \o \l{declarative/modelviews/listview}{ListView}
-\o \l{declarative/modelviews/objectlistmodel}{Object list model}
+\o \l{declarative/modelviews/objectlistmodel}{Object ListModel}
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
-\o \l{declarative/modelviews/stringlistmodel}{String list model}
+\o \l{declarative/modelviews/stringlistmodel}{String ListModel}
 \o \l{declarative/modelviews/webview}{WebView}
 \endlist
 
@@ -124,7 +128,10 @@ For example, from your build directory, run:
 \o \l{declarative/xml/xmlhttprequest}{XmlHttpRequest}
 \endlist
 
-\section2 \l{declarative/i18n}{Internationalization (i18n)}
+\section2 Internationalization (i18n)
+\list
+\o \l{declarative/i18n}{Example}
+\endlist
 
 \section2 Threading
 \list
@@ -132,11 +139,14 @@ For example, from your build directory, run:
 \o \l{declarative/threading/workerscript}{WorkerScript}
 \endlist
 
-\section2 \l{declarative/sqllocalstorage}{SQL Local Storage}
+\section2 SQL Local Storage
+\list
+\o \l{declarative/sqllocalstorage}{Example}
+\endlist
 
 \section2 C++ Extensions
 \list
-\o \l{declarative-cppextensions-reference.html}{Reference examples} (discussed in \l {Extending QML in C++})
+\o \l{declarative-cppextensions-reference.html}{Reference examples}
 \o \l{declarative/cppextensions/plugins}{Plugins}
 \o \l{declarative-cppextensions-qgraphicslayouts.html}{QGraphicsLayouts}
 \o \l{declarative/cppextensions/qwidgets}{QWidgets}
@@ -148,7 +158,6 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/toys/clocks}{Clocks}
 \o \l{declarative/toys/corkboards}{Corkboards}
-\o \l{declarative/toys/dial}{Dial}
 \o \l{declarative/toys/dynamicscene}{Dynamic Scene}
 \o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
 \o \l{declarative/toys/tvtennis}{TV Tennis}

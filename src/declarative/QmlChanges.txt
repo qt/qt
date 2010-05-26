@@ -15,6 +15,7 @@ QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property
 "foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"
 component.createObject has gained a mandatory "parent" argument
+TextEdit and TextInput now have a "selectByMouse" property that defaults to false.
 
 C++ API
 -------
