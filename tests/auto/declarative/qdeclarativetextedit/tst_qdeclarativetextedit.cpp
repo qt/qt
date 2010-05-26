@@ -858,6 +858,7 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     // focus on press, input panel on focus
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
     QApplication::processEvents();
+    QVERIFY(edit.hasFocus());
     QCOMPARE(ic.openInputPanelReceived, true);
     QCOMPARE(ic.closeInputPanelReceived, false);
     ic.openInputPanelReceived = false;
@@ -865,6 +866,14 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     // no events on release
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
     QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+    ic.openInputPanelReceived = false;
+
+    // Even with focus already gained, user needs
+    // to be able to open panel by pressing on the editor
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, true);
     QCOMPARE(ic.closeInputPanelReceived, false);
     ic.openInputPanelReceived = false;
 

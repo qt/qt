@@ -963,6 +963,7 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     if (d->focusOnPress){
+        bool hadFocus = hasFocus();
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope)
@@ -970,6 +971,10 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
             p = p->parentItem();
         }
         setFocus(true);
+        if (hasFocus() == hadFocus && d->showInputPanelOnFocus && !isReadOnly()) {
+            // re-open input panel on press if already focused
+            openSoftwareInputPanel();
+        }
     }
     if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
         d->control->processEvent(event, QPointF(0, -d->yoff));
