@@ -1,5 +1,5 @@
 TEMPLATE = lib
-TARGET  = minehunt
+TARGET  = qmlminehuntplugin
 QT += declarative
 CONFIG += qt plugin
 
@@ -28,11 +28,11 @@ symbian:{
     TARGET.EPOCALLOWDLLDATA = 1
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.CAPABILITY = NetworkServices ReadUserData
-    importFiles.sources = minehunt.dll \
+    importFiles.sources = qmlminehuntplugin.dll \
     MinehuntCore/Explosion.qml \
     MinehuntCore/pics \
     MinehuntCore/qmldir
-    importFiles.path = $$QT_IMPORTS_BASE_DIR/MinehuntCore 
+    importFiles.path = MinehuntCore
     DEPLOYMENT = importFiles
 }
  

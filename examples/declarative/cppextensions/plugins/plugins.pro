@@ -3,7 +3,7 @@ CONFIG += qt plugin
 QT += declarative
 
 DESTDIR = com/nokia/TimeExample
-TARGET = qtimeexampleqmlplugin
+TARGET  = qmlqtimeexampleplugin
 
 SOURCES += plugin.cpp
 
