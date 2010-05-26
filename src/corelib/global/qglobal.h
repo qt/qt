@@ -2041,8 +2041,8 @@ enum { /* TYPEINFO flags */
     Q_DUMMY_TYPE = 0x4
 };
 
-#define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
-template <> \
+#define Q_DECLARE_TYPEINFO_TEMPLATE(TYPE, FLAGS, TEMPLATE_ARG) \
+template <TEMPLATE_ARG> \
 class QTypeInfo<TYPE > \
 { \
 public: \
@@ -2055,6 +2055,10 @@ public: \
     }; \
     static inline const char *name() { return #TYPE; } \
 }
+
+#define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
+Q_DECLARE_TYPEINFO_TEMPLATE(TYPE, FLAGS,  )
+
 
 template <typename T>
 inline void qSwap(T &value1, T &value2)
