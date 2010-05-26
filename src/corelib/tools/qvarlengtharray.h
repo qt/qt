@@ -128,9 +128,9 @@ private:
     friend class QPodList<T, Prealloc>;
     void realloc(int size, int alloc);
 
-    int a;
-    int s;
-    T *ptr;
+    int a;      // capacity
+    int s;      // size
+    T *ptr;     // data
     union {
         // ### Qt 5: Use 'Prealloc * sizeof(T)' as array size
         char array[sizeof(qint64) * (((Prealloc * sizeof(T)) / sizeof(qint64)) + 1)];
@@ -193,8 +193,8 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
     Q_ASSERT(aalloc >= asize);
     T *oldPtr = ptr;
     int osize = s;
-    // s = asize;
 
+    const int copySize = qMin(asize, osize);
     if (aalloc != a) {
         ptr = reinterpret_cast<T *>(qMalloc(aalloc * sizeof(T)));
         Q_CHECK_PTR(ptr);
@@ -205,7 +205,6 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
             if (QTypeInfo<T>::isStatic) {
                 QT_TRY {
                     // copy all the old elements
-                    const int copySize = qMin(asize, osize);
                     while (s < copySize) {
                         new (ptr+s) T(*(oldPtr+s));
                         (oldPtr+s)->~T();
@@ -221,19 +220,19 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
                     QT_RETHROW;
                 }
             } else {
-                qMemCopy(ptr, oldPtr, qMin(asize, osize) * sizeof(T));
+                qMemCopy(ptr, oldPtr, copySize * sizeof(T));
             }
         } else {
             ptr = oldPtr;
             return;
         }
     }
+    s = copySize;
 
     if (QTypeInfo<T>::isComplex) {
+        // destroy remaining old objects
         while (osize > asize)
             (oldPtr+(--osize))->~T();
-        if (!QTypeInfo<T>::isStatic)
-            s = osize;
     }
 
     if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != ptr)
