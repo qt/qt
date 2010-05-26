@@ -210,6 +210,8 @@ void QDBusPendingCallPrivate::setMetaTypes(int count, const int *types)
 
 void QDBusPendingCallPrivate::checkReceivedSignature()
 {
+    // MUST BE CALLED WITH A LOCKED MUTEX!
+
     if (replyMessage.type() == QDBusMessage::InvalidMessage)
         return;                 // not yet finished - no message to
                                 // validate against
@@ -232,6 +234,8 @@ void QDBusPendingCallPrivate::checkReceivedSignature()
 
 void QDBusPendingCallPrivate::waitForFinished()
 {
+    QMutexLocker locker(&mutex);
+
     if (replyMessage.type() != QDBusMessage::InvalidMessage)
         return;                 // already finished
 
@@ -312,7 +316,11 @@ QDBusPendingCall &QDBusPendingCall::operator=(const QDBusPendingCall &other)
 
 bool QDBusPendingCall::isFinished() const
 {
-    return !d || (d->replyMessage.type() != QDBusMessage::InvalidMessage);
+    if (!d)
+        return true; // considered finished
+
+    QMutexLocker locker(&d->mutex);
+    return d->replyMessage.type() != QDBusMessage::InvalidMessage;
 }
 
 void QDBusPendingCall::waitForFinished()
@@ -331,7 +339,10 @@ void QDBusPendingCall::waitForFinished()
 */
 bool QDBusPendingCall::isValid() const
 {
-    return d ? d->replyMessage.type() == QDBusMessage::ReplyMessage : false;
+    if (!d)
+        return false;
+    QMutexLocker locker(&d->mutex);
+    return d->replyMessage.type() == QDBusMessage::ReplyMessage;
 }
 
 /*!
@@ -345,7 +356,10 @@ bool QDBusPendingCall::isValid() const
 */
 bool QDBusPendingCall::isError() const
 {
-    return d ? d->replyMessage.type() == QDBusMessage::ErrorMessage : true;
+    if (!d)
+        return true; // considered finished and an error
+    QMutexLocker locker(&d->mutex);
+    return d->replyMessage.type() == QDBusMessage::ErrorMessage;
 }
 
 /*!
@@ -358,8 +372,10 @@ bool QDBusPendingCall::isError() const
 */
 QDBusError QDBusPendingCall::error() const
 {
-    if (d)
+    if (d) {
+        QMutexLocker locker(&d->mutex);
         return d->replyMessage;
+    }
 
     // not connected, return an error
     QDBusError err = QDBusError(QDBusError::Disconnected,
@@ -380,7 +396,10 @@ QDBusError QDBusPendingCall::error() const
 */
 QDBusMessage QDBusPendingCall::reply() const
 {
-    return d ? d->replyMessage : QDBusMessage::createError(error());
+    if (!d)
+        return QDBusMessage::createError(error());
+    QMutexLocker locker(&d->mutex);
+    return d->replyMessage;
 }
 
 #if 0
@@ -441,9 +460,8 @@ QDBusPendingCall QDBusPendingCall::fromCompletedCall(const QDBusMessage &msg)
     QDBusPendingCallPrivate *d = 0;
     if (msg.type() == QDBusMessage::ErrorMessage ||
         msg.type() == QDBusMessage::ReplyMessage) {
-        d = new QDBusPendingCallPrivate;
+        d = new QDBusPendingCallPrivate(QDBusMessage(), 0);
         d->replyMessage = msg;
-        d->connection = 0;
     }
 
     return QDBusPendingCall(d);
@@ -473,9 +491,10 @@ QDBusPendingCallWatcher::QDBusPendingCallWatcher(const QDBusPendingCall &call, Q
     : QObject(*new QDBusPendingCallWatcherPrivate, parent), QDBusPendingCall(call)
 {
     if (d) {                    // QDBusPendingCall::d
+        QMutexLocker locker(&d->mutex);
         if (!d->watcherHelper) {
             d->watcherHelper = new QDBusPendingCallWatcherHelper;
-            if (isFinished()) {
+            if (d->replyMessage.type() != QDBusMessage::InvalidMessage) {
                 // cause a signal emission anyways
                 QMetaObject::invokeMethod(d->watcherHelper, "finished", Qt::QueuedConnection);
             }

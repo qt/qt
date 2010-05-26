@@ -65,5 +65,5 @@ QT_END_NAMESPACE
 
 #include "particles.moc"
 
-Q_EXPORT_PLUGIN2(particlesqmlmodule, QT_PREPEND_NAMESPACE(QParticlesQmlModule));
+Q_EXPORT_PLUGIN2(qmlparticlesplugin, QT_PREPEND_NAMESPACE(QParticlesQmlModule));
 

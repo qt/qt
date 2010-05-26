@@ -85,7 +85,7 @@ Rectangle {
             text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAnywhere
         }
         Text {
-            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.Wrap
         }
     }
 }

@@ -3,7 +3,7 @@ CONFIG += qt plugin
 QT += declarative
 
 DESTDIR = ImageProviderCore
-TARGET  = imageprovider
+TARGET  = qmlimageproviderplugin
 
 SOURCES += imageprovider.cpp
 
@@ -18,7 +18,12 @@ ImageProviderCore_sources.path = $$[QT_INSTALL_EXAMPLES]/declarative/imageprovid
 
 INSTALLS = sources ImageProviderCore_sources target
 
-symbian {
+symbian:{
+    load(data_caging_paths)
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.EPOCALLOWDLLDATA = 1
+
+    importFiles.sources = qmlimageproviderplugin.dll ImageProviderCore/qmldir
+    importFiles.path = ImageProviderCore
+    DEPLOYMENT = importFiles
 }

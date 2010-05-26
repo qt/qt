@@ -49,6 +49,27 @@ QtCore
 QtGui
 -----
 
+ - QGraphicsEffect
+    * [QTBUG-5358] Fixed warnings and crash when painting graphics effects outside scene.
+
+ - QGraphicsItem
+    * [QTBUG-9391] Avoid a useless repaint when setting the cache mode to
+      DeviceCoordinateMode while already using that mode.
+    * [QTBUG-8475] Fixed crash and loss of focus when deleting a child of a focus scope.
+
+ - QGraphicsProxyWidget
+    * [QTBUG-5349] Fixed tooltips not being shown for QGraphicsProxyWidget.
+    * [QTBUG-2883] Fixed tooltips appearing at wrong location.
+    * [QTBUG-7296] Fixed painting artifacts on a scaled proxy when the view is scrolled.
+
+ - QGraphicsScene
+    * [QTBUG-7863] Fixed incorrect blending when using QGraphicsItem:DeviceCoordinateCache
+    and when the item is semi-transparent. If the item is transformed, the cache is now
+    always fully repainted to avoid artifacts.
+
+ - QGraphicsView
+    * Item tooltips are not clipped by the view anymore.
+
  - QPainter
 	* [QTBUG-10421] Fixed WebKit-specific justification bug for text containing
        more than one script.
@@ -107,7 +128,7 @@ QtGui
     * [QTBUG-8606] Fixed QPixmap::load() to not modify referenced copies.
 
  - QPainter
-    * [QTBUG-8140] Speed up custom bitmap bruses under X11 without Xrender support.
+    * [QTBUG-8140] Speed up custom bitmap brushes under X11 without Xrender support.
     * [QTBUG-8032] Fixed drawing pixmaps onto bitmaps on X11 without Xrender support.
 
  - QImageReader
@@ -119,6 +140,11 @@ QtGui
 
  - qDrawPixmaps()
     * [QTBUG-8455] Fixed qDrawPixmaps() to draw on integer coordinates under Mac OS X.
+
+ - QCommonStyle
+    * [QTBUG-7137] Fixed a bug that led to missing text pixels in QTabBar when using
+      small font sizes.
+
 
 QtDBus
 ------
@@ -230,6 +256,12 @@ Qt for Windows
 
  - [QTBUG-6007] On Windows we query if there is a touch screen and do not try
    to enable gestures otherwise.
+ - QLocalSocket
+    * [QTBUG-7815] Pipe handle leak fixed, when closing a QLocalSocket that still has
+      unwritten data.
+    * [QTBUG-9681] Fixed closing state for local sockets with unwritten data.
+    * [QTBUG-8418] Detection of Windows mobile 6.5 fixed.
+
 
 Qt for Mac OS X
 ---------------
@@ -249,7 +281,16 @@ DirectFB
 Qt for Windows CE
 -----------------
 
- -
+- Core changes
+   * [QTBUG-8754] Fixed menu handling on Windows mobile.
+   * [QTBUG-7943] Fixed a crash when receiving a certain type of
+     WM_SETTINGSCHANGE message.
+
+- QWindowsMobileStyle
+   * [QTBUG-8419] Huge performance penalty for QTabWidget fixed for
+     Windows mobile 6.5.
+   * [QTBUG-8757] QTabBar scroll button size has been fixed.
+
 
 Qt for Symbian
 --------------

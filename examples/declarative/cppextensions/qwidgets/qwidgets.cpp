@@ -94,4 +94,4 @@ public:
 
 #include "qwidgets.moc"
 
-Q_EXPORT_PLUGIN2(qwidgetsplugin, QWidgetsPlugin);
+Q_EXPORT_PLUGIN2(qmlqwidgetsplugin, QWidgetsPlugin);
