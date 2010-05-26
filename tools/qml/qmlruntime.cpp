@@ -92,19 +92,6 @@
 
 #include <qdeclarativetester.h>
 
-#if defined (Q_OS_SYMBIAN)
-#define SYMBIAN_NETWORK_INIT
-#endif
-
-#if defined (SYMBIAN_NETWORK_INIT)
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <QTextCodec>
-#include "sym_iap_util.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class Runtime : public QObject
@@ -522,12 +509,6 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
 
-#if defined(Q_OS_SYMBIAN)
-    QAction *networkAction = new QAction(tr("Start &Network"), parent);
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(startNetwork()));
-    fileMenu->addAction(networkAction);
-#endif
-
 #if !defined(Q_OS_SYMBIAN)
     if (flatmenu) flatmenu->addSeparator();
 
@@ -930,13 +911,6 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     return true;
 }
 
-void QDeclarativeViewer::startNetwork()
-{
-#if defined(SYMBIAN_NETWORK_INIT)
-    qt_SetDefaultIap();
-#endif
-}
-
 void QDeclarativeViewer::setAutoRecord(int from, int to)
 {
     if (from==0) from=1; // ensure resized
@@ -1240,7 +1214,8 @@ void QDeclarativeViewer::setUseGL(bool useGL)
 #endif
 
         QGLWidget *glWidget = new QGLWidget(format);
-        glWidget->setAutoFillBackground(false);
+        //### potentially faster, but causes junk to appear if top-level is Item, not Rectangle
+        //glWidget->setAutoFillBackground(false);
 
         canvas->setViewport(glWidget);
     }

@@ -61,8 +61,9 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
-  \since 4.7
+    \since 4.7
     \brief The TextEdit item allows you to add editable formatted text to a scene.
+    \inherits Item
 
     It can display both plain and rich text. For example:
 
@@ -79,6 +80,14 @@ TextEdit {
     \endqml
 
     \image declarative-textedit.gif
+
+    Note that the TextEdit does not implement scrolling, following the cursor, or other behaviors specific
+    to a look-and-feel. For example, to add flickable scrolling that follows the cursor:
+
+    \snippet snippets/declarative/texteditor.qml 0
+
+    A particular look-and-feel might use smooth scrolling (eg. using SmoothedFollow), might have a visible
+    scrollbar, or a scrollbar that fades in to show location, etc.
 
     \sa Text
 */
@@ -523,7 +532,7 @@ void QDeclarativeTextEdit::setCursorVisible(bool on)
     QFocusEvent focusEvent(on ? QEvent::FocusIn : QEvent::FocusOut);
     if (!on && !d->persistentSelection)
         d->control->setCursorIsFocusIndicator(true);
-    d->control->processEvent(&focusEvent, QPointF(0, 0));
+    d->control->processEvent(&focusEvent, QPointF(0, -d->yoff));
     emit cursorVisibleChanged(d->cursorVisible);
 }
 
@@ -574,7 +583,7 @@ void QDeclarativeTextEdit::setCursorDelegate(QDeclarativeComponent* c)
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
                     this, SLOT(moveCursorDelegate()));
             d->control->setCursorWidth(-1);
-            dirtyCache(cursorRect());
+            dirtyCache(cursorRectangle());
             delete d->cursor;
             d->cursor = 0;
         }
@@ -601,7 +610,7 @@ void QDeclarativeTextEdit::loadCursorDelegate()
         connect(d->control, SIGNAL(cursorPositionChanged()),
                 this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
-        dirtyCache(cursorRect());
+        dirtyCache(cursorRectangle());
         QDeclarative_setParent_noEvent(d->cursor, this);
         d->cursor->setParentItem(this);
         d->cursor->setHeight(QFontMetrics(d->font).height());
@@ -773,7 +782,7 @@ void QDeclarativeTextEdit::componentComplete()
 }
 
 /*!
-    \qmlproperty string TextEdit::selectByMouse
+    \qmlproperty bool TextEdit::selectByMouse
 
     Defaults to false.
 
@@ -854,13 +863,15 @@ Qt::TextInteractionFlags QDeclarativeTextEdit::textInteractionFlags() const
 }
 
 /*!
-    Returns the rectangle where the text cursor is rendered
-    within the text edit.
+    \qmlproperty rectangle TextEdit::cursorRectangle
+
+    The rectangle where the text cursor is rendered
+    within the text edit. Read-only.
 */
-QRect QDeclarativeTextEdit::cursorRect() const
+QRect QDeclarativeTextEdit::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextEdit);
-    return d->control->cursorRect().toRect();
+    return d->control->cursorRect().toRect().translated(0,-d->yoff);
 }
 
 
@@ -872,7 +883,7 @@ bool QDeclarativeTextEdit::event(QEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     if (event->type() == QEvent::ShortcutOverride) {
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
         return event->isAccepted();
     }
     return QDeclarativePaintedItem::event(event);
@@ -887,7 +898,7 @@ void QDeclarativeTextEdit::keyPressEvent(QKeyEvent *event)
     Q_D(QDeclarativeTextEdit);
     keyPressPreHandler(event);
     if (!event->isAccepted())
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyPressEvent(event);
 }
@@ -901,7 +912,7 @@ void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
     Q_D(QDeclarativeTextEdit);
     keyReleasePreHandler(event);
     if (!event->isAccepted())
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
@@ -942,7 +953,7 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (!hadFocus && hasFocus())
         d->clickCausedFocus = true;
     if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mousePressEvent(event);
 }
@@ -959,7 +970,7 @@ void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
     d->clickCausedFocus = false;
 
-    d->control->processEvent(event, QPointF(0, 0));
+    d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
@@ -972,7 +983,7 @@ void QDeclarativeTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event
 {
     Q_D(QDeclarativeTextEdit);
     if (d->selectByMouse) {
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
         if (!event->isAccepted())
             QDeclarativePaintedItem::mouseDoubleClickEvent(event);
     } else {
@@ -988,7 +999,7 @@ void QDeclarativeTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     if (d->selectByMouse) {
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
         if (!event->isAccepted())
             QDeclarativePaintedItem::mouseMoveEvent(event);
         event->setAccepted(true);
@@ -1004,7 +1015,7 @@ Handles the given input method \a event.
 void QDeclarativeTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
+    d->control->processEvent(event, QPointF(0, -d->yoff));
 }
 
 /*!
@@ -1026,13 +1037,20 @@ void QDeclarativeTextEdit::drawContents(QPainter *painter, const QRect &bounds)
     Q_D(QDeclarativeTextEdit);
 
     painter->setRenderHint(QPainter::TextAntialiasing, true);
+    painter->translate(0,d->yoff);
 
-    d->control->drawContents(painter, bounds);
+    d->control->drawContents(painter, bounds.translated(0,-d->yoff));
+
+    painter->translate(0,-d->yoff);
 }
 
-void QDeclarativeTextEdit::updateImgCache(const QRectF &r)
+void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 {
-    dirtyCache(r.toRect());
+    Q_D(const QDeclarativeTextEdit);
+    QRect r = rf.toRect();
+    if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
+        r = r.translated(0,d->yoff);
+    dirtyCache(r);
     emit update();
 }
 
@@ -1069,6 +1087,7 @@ void QDeclarativeTextEditPrivate::init()
     QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
+    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
 
     document = control->document();
     document->setDefaultFont(font);
@@ -1141,18 +1160,20 @@ void QDeclarativeTextEdit::updateSize()
             d->document->setTextWidth(width());
         dy -= (int)d->document->size().height();
 
-        int yoff = 0;
         if (heightValid()) {
             if (d->vAlign == AlignBottom)
-                yoff = dy;
+                d->yoff = dy;
             else if (d->vAlign == AlignVCenter)
-                yoff = dy/2;
+                d->yoff = dy/2;
+        } else {
+            d->yoff = 0;
         }
-        setBaselineOffset(fm.ascent() + yoff + d->textMargin);
+        setBaselineOffset(fm.ascent() + d->yoff + d->textMargin);
 
         //### need to comfirm cost of always setting these
         int newWidth = qCeil(d->document->idealWidth());
-        d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
+        if (!widthValid())
+            d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
         int cursorWidth = 1;
         if(d->cursor)
             cursorWidth = d->cursor->width();
@@ -1161,7 +1182,7 @@ void QDeclarativeTextEdit::updateSize()
             newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
-        setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
+        setImplicitHeight(d->document->isEmpty() ? fm.height() : (int)d->document->size().height());
 
         setContentsSize(QSize(width(), height()));
     } else {

@@ -81,11 +81,11 @@ QString tst_qmlvisual::viewer()
     QString qmlruntime;
 
 #if defined(Q_WS_MAC)
-    qmlruntime = QDir(binaries).absoluteFilePath("qml.app/Contents/MacOS/qml");
+    qmlruntime = QDir(binaries).absoluteFilePath("QMLViewer.app/Contents/MacOS/QMLViewer");
 #elif defined(Q_WS_WIN) || defined(Q_WS_S60)
-    qmlruntime = QDir(binaries).absoluteFilePath("qml.exe");
+    qmlruntime = QDir(binaries).absoluteFilePath("qmlviewer.exe");
 #else
-    qmlruntime = QDir(binaries).absoluteFilePath("qml");
+    qmlruntime = QDir(binaries).absoluteFilePath("qmlviewer");
 #endif
 
     return qmlruntime;

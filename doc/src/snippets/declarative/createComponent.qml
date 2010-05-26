@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+//![0]
 import Qt 4.7
 import "componentCreation.js" as MyModule
 
@@ -48,3 +49,4 @@ Rectangle {
 
     Component.onCompleted: MyModule.createSpriteObjects();
 }
+//![0]
