@@ -194,11 +194,15 @@ QSharedMemory::~QSharedMemory()
 }
 
 /*!
-  Sets a new \a key for this shared memory object.
-  The \a key is first converted to a unicode string accepted by all supported platforms,
-  (see nativeKey()). If \a key and the current key are the same, the function returns
-  without doing anything. If the shared memory object is attached to an underlying
-  shared memory segment, it will \l {detach()} {detach} from it before setting the new key.
+  Sets the platform independent \a key for this shared memory object. If \a key
+  is the same as the current key, the function returns without doing anything.
+
+  You can call key() to retrieve the platform independent key. Internally,
+  QSharedMemory converts this key into a platform specific key. If you instead
+  call nativeKey(), you will get the platform specific, converted key.
+
+  If the shared memory object is attached to an underlying shared memory
+  segment, it will \l {detach()} {detach} from it before setting the new key.
   This function does not do an attach().
 
   \sa key() nativeKey() isAttached()
@@ -217,15 +221,21 @@ void QSharedMemory::setKey(const QString &key)
 }
 
 /*!
-  \since 4.7
-  Sets a new native \a key for this shared memory object.
-  The specified \a key is used as-is, without any conversion. The \a key has to be
-  in a valid format for the current operating system (e.g. under Unix a valid \a key
-  corresponds to a filename). Be aware that the application might not be portable.
-  This function returns without doing anything if the \a key equals the current
-  native key. If the shared memory object is attached to an underlying shared memory
+  \since 4.8
+
+  Sets the native, platform specific, \a key for this shared memory object. If
+  \a key is the same as the current native key, the function returns without
+  doing anything. If all you want is to assign a key to a segment, you should
+  call setKey() instead.
+
+  You can call nativeKey() to retrieve the native key. If a native key has been
+  assigned, calling key() will return a null string.
+
+  If the shared memory object is attached to an underlying shared memory
   segment, it will \l {detach()} {detach} from it before setting the new key.
   This function does not do an attach().
+
+  The application will not be portable if you set a native key.
 
   \sa nativeKey() key() isAttached()
 */
@@ -282,12 +292,13 @@ bool QSharedMemoryPrivate::initKey()
 }
 
 /*!
-  Returns the key assigned with setKey() to this shared memory.
-  The key is the identifier used by Qt applications to identify the shared
-  memory segment. The actual native key used by the operating system is returned
-  by nativeKey(). A null string is returned if the key was specified using setNativeKey().
-  When QSharedMemory is used for interprocess communication, the key is how each
-  process attaches to the shared memory segment through which the IPC occurs.
+  Returns the key assigned with setKey() to this shared memory, or a null key
+  if no key has been assigned, or if the segment is using a nativeKey(). The
+  key is the identifier used by Qt applications to identify the shared memory
+  segment.
+
+  You can find the native, platform specific, key used by the operating system
+  by calling nativeKey().
 
   \sa setKey() setNativeKey()
  */
@@ -298,15 +309,14 @@ QString QSharedMemory::key() const
 }
 
 /*!
-  \since 4.7
-  Returns the native key assigned with setKey() or setNativeKey() to this shared memory.
-  The native key is the identifier used by the operating system to identify the
-  shared memory segment. When using setKey(), the native key is obtained by
-  converting the specified key into a format accepted by all supported platforms.
-  When using setNativeKey(), the native key actually corresponds to the specified key
-  without any conversion. When QSharedMemory is used for interprocess communication,
-  the key is how each process attaches to the shared memory segment through which
-  the IPC occurs.
+  \since 4.8
+
+  Returns the native, platform specific, key for this shared memory object. The
+  native key is the identifier used by the operating system to identify the
+  shared memory segment.
+
+  You can use the native key to access shared memory segments that have not
+  been created by Qt, or to grant shared memory access to non-Qt applications.
 
   \sa setKey() setNativeKey()
 */
