@@ -1003,14 +1003,6 @@ void QDBusConnectionPrivate::setSender(const QDBusConnectionPrivate *s)
 /*!
   \internal
 */
-void QDBusConnectionPrivate::setConnection(const QString &name, QDBusConnectionPrivate *c)
-{
-    _q_manager()->setConnection(name, c);
-}
-
-/*!
-  \internal
-*/
 void QDBusConnectionPrivate::setBusService(const QDBusConnection &connection)
 {
     busService = new QDBusConnectionInterface(connection, this);

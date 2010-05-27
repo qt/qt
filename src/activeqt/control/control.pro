@@ -15,7 +15,7 @@ TARGET   = QAxServer
 }
 
 CONFIG  += qt warn_off staticlib
-QTDIR_build:DESTDIR  = $$QT_BUILD_TREE\lib
+QTDIR_build:DESTDIR  = $$QT_BUILD_TREE\\lib
 
 DEFINES	+= QAX_SERVER
 win32-g++:DEFINES += QT_NEEDS_QMAIN

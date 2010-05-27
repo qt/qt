@@ -1281,7 +1281,7 @@ bool QPixmap::convertFromImage(const QImage &image, ColorMode mode)
     image. Note that writing the stream to a file will not produce a
     valid image file.
 
-    \sa QPixmap::save(), {Format of the QDataStream Operators}
+    \sa QPixmap::save(), {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QPixmap &pixmap)
@@ -1294,7 +1294,7 @@ QDataStream &operator<<(QDataStream &stream, const QPixmap &pixmap)
 
     Reads an image from the given \a stream into the given \a pixmap.
 
-    \sa QPixmap::load(), {Format of the QDataStream Operators}
+    \sa QPixmap::load(), {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)

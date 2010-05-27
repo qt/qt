@@ -304,6 +304,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     } else if(opt == "nodependheuristics") {
                         Option::mkfile::do_dep_heuristics = false;
                     } else if(opt == "E") {
+                        fprintf(stderr, "-E is deprecated. Use -d instead.\n");
                         Option::mkfile::do_preprocess = true;
                     } else if(opt == "cache") {
                         Option::mkfile::cachefile = argv[++x];
@@ -558,7 +559,6 @@ void Option::applyHostMode()
        Option::dir_sep = "/";
        Option::obj_ext = ".o";
    }
-   Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);
 }
 
 bool Option::postProcessProject(QMakeProject *project)

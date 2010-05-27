@@ -54,13 +54,13 @@
     colors, and it is possible to change the font, style, and
     underline of the text.
 
-    The Qt graphics view framework is designed to manage and
-    display custom 2D graphics items. The main classes of the
-    framework are QGraphicsItem, QGraphicsScene and QGraphicsView. The
-    graphics scene manages the items and provides a surface for them.
+    The Qt graphics view framework is designed to manage and display
+    custom 2D graphics items. The main classes of the framework are
+    QGraphicsItem, QGraphicsScene and QGraphicsView. The graphics
+    scene manages the items and provides a surface for them.
     QGraphicsView is a widget that is used to render a scene on the
-    screen. See the \l{The Graphics View Framework}{overview document}
-    for a more detailed description of the framework. 
+    screen. See the \l{Graphics View Framework} for a more detailed
+    description of the framework.
 
     In this example we show how to create such custom graphics
     scenes and items by implementing classes that inherit

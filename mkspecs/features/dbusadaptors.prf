@@ -2,7 +2,7 @@ qtPrepareTool(QMAKE_QDBUSXML2CPP, qdbusxml2cpp)
 
 for(DBUS_ADAPTOR, $$list($$unique(DBUS_ADAPTORS))) {
 
-    !contains(DBUS_ADAPTOR, .*\w\.xml$) {
+    !contains(DBUS_ADAPTOR, .*\\w\\.xml$) {
         warning("Invalid D-BUS adaptor: '$${DBUS_ADAPTOR}', please use 'com.mydomain.myinterface.xml' instead.")
         next()
     }
