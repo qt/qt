@@ -47,6 +47,10 @@ QtCore
 QtGui
 -----
 
+ - QComboBox
+    * [QTBUG-10403] Fixed QComboBox ignoring the item data background role 
+      for some styles.
+
  - QCommonStyle
     * [QTBUG-7137] Fixed a bug that led to missing text pixels in QTabBar when
       using small font sizes.
@@ -217,6 +221,15 @@ Qt for Linux/X11
  - [QTBUG-7063] Changed key bindings (XF86XK_MyComputer, Qt::Key_Launch0,
    Key_Calculator) on X11 back to how it was in Qt 4.5 before MR 1742
    accidentally changed it.
+ - [QTBUG-8666] Fixed a crash when using QIcon::fromTheme with icons declared 
+   static.
+ - QGtkStyle
+   * [QTBUG-9240] Fixed a potensial crash in QGtkStyle when the gtk 
+     theme engine is not unavaliable. 
+   * [QTBUG-8537] Fixed a Glib-GObject-WARNING on application startup with
+     certain versions of GTK+.
+   * [QTBUG-8226] Fixed an atk_object_set_name assertion warning with certain
+     versions of GTK+.
 
 Qt for Windows
 --------------
@@ -228,6 +241,11 @@ Qt for Windows
       still has unwritten data.
     * [QTBUG-9681] Fixed closing state for local sockets with unwritten data.
     * [QTBUG-8418] Detection of Windows Mobile 6.5 fixed.
+
+ - [QTBUG-7662] Fixed an issue with clipped icon text.
+ - [QTBUG-7663] QFileIconProvider now show overlays when fetching native 
+   filesystem icons.
+ - [QTBUG-8324] Fixed a potential crash when fetching native icons.
 
 Qt for Windows CE
 -----------------
@@ -241,6 +259,12 @@ Qt for Windows CE
    * [QTBUG-8419] Huge performance penalty for QTabWidget fixed for
      Windows Mobile 6.5.
    * [QTBUG-8757] QTabBar scroll button size has been fixed.
+
+Qt for Mac
+-----------------
+
+ - [QTBUG-8461] Fixed incorrect text rendering with document mode tabs.
+
 
 Qt for Symbian
 --------------
