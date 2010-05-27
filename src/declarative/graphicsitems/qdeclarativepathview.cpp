@@ -110,6 +110,8 @@ QDeclarativeItem *QDeclarativePathViewPrivate::getItem(int modelIndex)
             att->setOnPath(true);
         }
         item->setParentItem(q);
+        QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
+        itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
     }
     requestedIndex = -1;
     return item;
@@ -121,6 +123,8 @@ void QDeclarativePathViewPrivate::releaseItem(QDeclarativeItem *item)
         return;
     if (QDeclarativePathViewAttached *att = attached(item))
         att->setOnPath(false);
+    QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
+    itemPrivate->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
     model->release(item);
 }
 
@@ -1084,6 +1088,16 @@ bool QDeclarativePathView::sceneEventFilter(QGraphicsItem *i, QEvent *e)
     return QDeclarativeItem::sceneEventFilter(i, e);
 }
 
+bool QDeclarativePathView::event(QEvent *event)
+{
+    if (event->type() == QEvent::User) {
+        refill();
+        return true;
+    }
+
+    return QDeclarativeItem::event(event);
+}
+
 void QDeclarativePathView::componentComplete()
 {
     Q_D(QDeclarativePathView);
@@ -1103,6 +1117,7 @@ void QDeclarativePathView::refill()
     if (!d->isValid() || !isComponentComplete())
         return;
 
+    d->layoutScheduled = false;
     bool currentVisible = false;
 
     // first move existing items and remove items off path

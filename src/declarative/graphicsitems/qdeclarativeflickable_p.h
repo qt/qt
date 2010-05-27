@@ -64,7 +64,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(qreal horizontalVelocity READ horizontalVelocity NOTIFY horizontalVelocityChanged)
     Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
 
-    Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot NOTIFY overShootChanged) // deprecated
     Q_PROPERTY(BoundsBehavior boundsBehavior READ boundsBehavior WRITE setBoundsBehavior NOTIFY boundsBehaviorChanged)
     Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity NOTIFY maximumFlickVelocityChanged)
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
@@ -100,9 +99,6 @@ public:
 
     QDeclarativeListProperty<QObject> flickableData();
     QDeclarativeListProperty<QGraphicsObject> flickableChildren();
-
-    bool overShoot() const;
-    void setOverShoot(bool);
 
     enum BoundsBehavior { StopAtBounds, DragOverBounds, DragAndOvershootBounds };
     BoundsBehavior boundsBehavior() const;
@@ -172,7 +168,6 @@ Q_SIGNALS:
     void pageChanged();
     void flickableDirectionChanged();
     void interactiveChanged();
-    void overShootChanged();
     void boundsBehaviorChanged();
     void maximumFlickVelocityChanged();
     void flickDecelerationChanged();

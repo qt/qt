@@ -92,17 +92,17 @@ static qreal position(QGraphicsObject *item, QDeclarativeAnchorLine::AnchorLine 
 //position when origin is 0,0
 static qreal adjustedPosition(QGraphicsObject *item, QDeclarativeAnchorLine::AnchorLine anchorLine)
 {
-    int ret = 0;
+    qreal ret = 0.0;
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(item);
     switch(anchorLine) {
     case QDeclarativeAnchorLine::Left:
-        ret = 0;
+        ret = 0.0;
         break;
     case QDeclarativeAnchorLine::Right:
         ret = d->width();
         break;
     case QDeclarativeAnchorLine::Top:
-        ret = 0;
+        ret = 0.0;
         break;
     case QDeclarativeAnchorLine::Bottom:
         ret = d->height();
@@ -459,10 +459,10 @@ void QDeclarativeAnchors::resetCenterIn()
 
 bool QDeclarativeAnchorsPrivate::calcStretch(const QDeclarativeAnchorLine &edge1,
                                     const QDeclarativeAnchorLine &edge2,
-                                    int offset1,
-                                    int offset2,
+                                    qreal offset1,
+                                    qreal offset2,
                                     QDeclarativeAnchorLine::AnchorLine line,
-                                    int &stretch)
+                                    qreal &stretch)
 {
     bool edge1IsParent = (edge1.item == item->parentItem());
     bool edge2IsParent = (edge2.item == item->parentItem());
@@ -471,15 +471,15 @@ bool QDeclarativeAnchorsPrivate::calcStretch(const QDeclarativeAnchorLine &edge1
 
     bool invalid = false;
     if ((edge2IsParent && edge1IsParent) || (edge2IsSibling && edge1IsSibling)) {
-        stretch = ((int)position(edge2.item, edge2.anchorLine) + offset2)
-                    - ((int)position(edge1.item, edge1.anchorLine) + offset1);
+        stretch = (position(edge2.item, edge2.anchorLine) + offset2)
+                    - (position(edge1.item, edge1.anchorLine) + offset1);
     } else if (edge2IsParent && edge1IsSibling) {
-        stretch = ((int)position(edge2.item, edge2.anchorLine) + offset2)
-                    - ((int)position(item->parentObject(), line)
-                    + (int)position(edge1.item, edge1.anchorLine) + offset1);
+        stretch = (position(edge2.item, edge2.anchorLine) + offset2)
+                    - (position(item->parentObject(), line)
+                    + position(edge1.item, edge1.anchorLine) + offset1);
     } else if (edge2IsSibling && edge1IsParent) {
-        stretch = ((int)position(item->parentObject(), line) + (int)position(edge2.item, edge2.anchorLine) + offset2)
-                    - ((int)position(edge1.item, edge1.anchorLine) + offset1);
+        stretch = (position(item->parentObject(), line) + position(edge2.item, edge2.anchorLine) + offset2)
+                    - (position(edge1.item, edge1.anchorLine) + offset1);
     } else
         invalid = true;
 
@@ -497,7 +497,7 @@ void QDeclarativeAnchorsPrivate::updateVerticalAnchors()
         if (usedAnchors & QDeclarativeAnchors::TopAnchor) {
             //Handle stretching
             bool invalid = true;
-            int height = 0;
+            qreal height = 0.0;
             if (usedAnchors & QDeclarativeAnchors::BottomAnchor) {
                 invalid = calcStretch(top, bottom, topMargin, -bottomMargin, QDeclarativeAnchorLine::Top, height);
             } else if (usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
@@ -516,7 +516,7 @@ void QDeclarativeAnchorsPrivate::updateVerticalAnchors()
         } else if (usedAnchors & QDeclarativeAnchors::BottomAnchor) {
             //Handle stretching (top + bottom case is handled above)
             if (usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
-                int height = 0;
+                qreal height = 0.0;
                 bool invalid = calcStretch(vCenter, bottom, vCenterOffset, -bottomMargin,
                                               QDeclarativeAnchorLine::Top, height);
                 if (!invalid)
@@ -569,7 +569,7 @@ void QDeclarativeAnchorsPrivate::updateHorizontalAnchors()
         if (usedAnchors & QDeclarativeAnchors::LeftAnchor) {
             //Handle stretching
             bool invalid = true;
-            int width = 0;
+            qreal width = 0.0;
             if (usedAnchors & QDeclarativeAnchors::RightAnchor) {
                 invalid = calcStretch(left, right, leftMargin, -rightMargin, QDeclarativeAnchorLine::Left, width);
             } else if (usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
@@ -588,7 +588,7 @@ void QDeclarativeAnchorsPrivate::updateHorizontalAnchors()
         } else if (usedAnchors & QDeclarativeAnchors::RightAnchor) {
             //Handle stretching (left + right case is handled in updateLeftAnchor)
             if (usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
-                int width = 0;
+                qreal width = 0.0;
                 bool invalid = calcStretch(hCenter, right, hCenterOffset, -rightMargin,
                                               QDeclarativeAnchorLine::Left, width);
                 if (!invalid)

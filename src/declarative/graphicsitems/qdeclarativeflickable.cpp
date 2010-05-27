@@ -1026,24 +1026,6 @@ QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildr
     return QGraphicsItemPrivate::get(d->viewport)->childrenList();
 }
 
-bool QDeclarativeFlickable::overShoot() const
-{
-    Q_D(const QDeclarativeFlickable);
-    return d->boundsBehavior == DragAndOvershootBounds;
-}
-
-void QDeclarativeFlickable::setOverShoot(bool o)
-{
-    Q_D(QDeclarativeFlickable);
-    if ((o && d->boundsBehavior == DragAndOvershootBounds)
-        || (!o && d->boundsBehavior == StopAtBounds))
-        return;
-    qmlInfo(this) << "overshoot is deprecated and will be removed imminently - use boundsBehavior.";
-    d->boundsBehavior = o ? DragAndOvershootBounds : StopAtBounds;
-    emit boundsBehaviorChanged();
-    emit overShootChanged();
-}
-
 /*!
     \qmlproperty enumeration Flickable::boundsBehavior
     This property holds whether the surface may be dragged
@@ -1078,7 +1060,6 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
         return;
     d->boundsBehavior = b;
     emit boundsBehaviorChanged();
-    emit overShootChanged();
 }
 
 /*!

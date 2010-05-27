@@ -45,7 +45,8 @@ Flickable {
     id: flick
 
     width: 300; height: 200;
-    contentHeight: edit.height
+    contentWidth: edit.paintedWidth
+    contentHeight: edit.paintedHeight
     clip: true
 
     function ensureVisible(r)
@@ -62,9 +63,10 @@ Flickable {
 
     TextEdit {
         id: edit
-        width: parent.width
+        width: flick.width
+        height: flick.height
         focus: true
-        wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
+        wrapMode: TextEdit.Wrap
         onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
     }
 }
