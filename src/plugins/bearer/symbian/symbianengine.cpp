@@ -899,15 +899,7 @@ void SymbianEngine::stopCommsDatabaseNotifications()
 
     if (iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = EFalse;
-        if (!IsActive()) {
-            SetActive();
-            // Make sure that notifier recorded events will not be returned
-            // as soon as the client issues the next RequestNotification() request.
-            ipCommsDB->RequestNotification(iStatus);
-            ipCommsDB->CancelRequestNotification();
-        } else {
-            ipCommsDB->CancelRequestNotification();
-        }
+        Cancel();
     }
 }
 
@@ -922,46 +914,44 @@ void SymbianEngine::RunL()
         return;
     }
 
-    if (iStatus != KErrCancel) {
-        RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
+    RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
 
-        switch (event) {
-        case RDbNotifier::EUnlock:   /** All read locks have been removed.  */
-        case RDbNotifier::ECommit:   /** A transaction has been committed.  */ 
-        case RDbNotifier::ERollback: /** A transaction has been rolled back */
-        case RDbNotifier::ERecover:  /** The database has been recovered    */
+    switch (event) {
+    case RDbNotifier::EUnlock:   /** All read locks have been removed.  */
+    case RDbNotifier::ECommit:   /** A transaction has been committed.  */
+    case RDbNotifier::ERollback: /** A transaction has been rolled back */
+    case RDbNotifier::ERecover:  /** The database has been recovered    */
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-            qDebug("QNCM CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
+        qDebug("QNCM CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
 #endif
-            iIgnoringUpdates = true;
-            // Other events than ECommit get lower priority. In practice with those events,
-            // we delay_before_updating methods, whereas
-            // with ECommit we _update_before_delaying the reaction to next event.
-            // Few important notes: 1) listening to only ECommit does not seem to be adequate,
-            // but updates will be missed. Hence other events are reacted upon too.
-            // 2) RDbNotifier records the most significant event, and that will be returned once
-            // we issue new RequestNotification, and hence updates will not be missed even
-            // when we are 'not reacting to them' for few seconds.
-            if (event == RDbNotifier::ECommit) {
-                TRAPD(error, updateConfigurationsL());
-                if (error == KErrNone) {
-                    updateStatesToSnaps();
-                }
-                waitRandomTime();
-            } else {
-                waitRandomTime();
-                TRAPD(error, updateConfigurationsL());
-                if (error == KErrNone) {
-                    updateStatesToSnaps();
-                }   
+        iIgnoringUpdates = true;
+        // Other events than ECommit get lower priority. In practice with those events,
+        // we delay_before_updating methods, whereas
+        // with ECommit we _update_before_delaying the reaction to next event.
+        // Few important notes: 1) listening to only ECommit does not seem to be adequate,
+        // but updates will be missed. Hence other events are reacted upon too.
+        // 2) RDbNotifier records the most significant event, and that will be returned once
+        // we issue new RequestNotification, and hence updates will not be missed even
+        // when we are 'not reacting to them' for few seconds.
+        if (event == RDbNotifier::ECommit) {
+            TRAPD(error, updateConfigurationsL());
+            if (error == KErrNone) {
+                updateStatesToSnaps();
             }
-            iIgnoringUpdates = false; // Wait time done, allow updating again
-            iWaitingCommsDatabaseNotifications = true;
-            break;
-        default:
-            // Do nothing
-            break;
+            waitRandomTime();
+        } else {
+            waitRandomTime();
+            TRAPD(error, updateConfigurationsL());
+            if (error == KErrNone) {
+                updateStatesToSnaps();
+            }
         }
+        iIgnoringUpdates = false; // Wait time done, allow updating again
+        iWaitingCommsDatabaseNotifications = true;
+        break;
+    default:
+        // Do nothing
+        break;
     }
 
     if (iWaitingCommsDatabaseNotifications) {
