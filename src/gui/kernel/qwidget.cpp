@@ -248,9 +248,14 @@ QWidgetPrivate::~QWidgetPrivate()
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
 {
     Q_Q(QWidget);
+
+    QWindowSurface *surface;
     if (QApplicationPrivate::graphicsSystem())
-        return QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
-    return createDefaultWindowSurface_sys();
+        surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
+    else
+        surface = createDefaultWindowSurface_sys();
+
+    return surface;
 }
 
 /*!
