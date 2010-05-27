@@ -3716,7 +3716,8 @@ void QXmlStreamWriter::writeProcessingInstruction(const QString &target, const Q
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!data.contains(QLatin1String("?>")));
-    d->finishStartElement();
+    if (!d->finishStartElement(false) && d->autoFormatting)
+        d->indent(d->tagStack.size());
     d->write("<?");
     d->write(target);
     if (!data.isNull()) {
