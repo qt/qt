@@ -75,7 +75,7 @@ class Q_CORE_EXPORT QCoreApplicationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QCoreApplication)
 
 public:
-    QCoreApplicationPrivate(int &aargc,  char **aargv);
+    QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
     ~QCoreApplicationPrivate();
 
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);
@@ -129,6 +129,10 @@ public:
 
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
+    static int app_compile_version;
+#if defined(QT3_SUPPORT)
+    static bool useQt3Support;
+#endif
 };
 
 QT_END_NAMESPACE

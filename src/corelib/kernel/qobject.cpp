@@ -1969,12 +1969,14 @@ void QObjectPrivate::setParent_helper(QObject *o)
                 QChildEvent e(QEvent::ChildAdded, q);
                 QCoreApplication::sendEvent(parent, &e);
 #ifdef QT3_SUPPORT
-                if (parent->d_func()->pendingChildInsertedEvents.isEmpty()) {
-                    QCoreApplication::postEvent(parent,
-                                                new QEvent(QEvent::ChildInsertedRequest),
-                                                Qt::HighEventPriority);
+                if (QCoreApplicationPrivate::useQt3Support) {
+                    if (parent->d_func()->pendingChildInsertedEvents.isEmpty()) {
+                        QCoreApplication::postEvent(parent,
+                                                    new QEvent(QEvent::ChildInsertedRequest),
+                                                    Qt::HighEventPriority);
+                    }
+                    parent->d_func()->pendingChildInsertedEvents.append(q);
                 }
-                parent->d_func()->pendingChildInsertedEvents.append(q);
 #endif
             }
         }
