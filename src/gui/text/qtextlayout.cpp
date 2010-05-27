@@ -1928,6 +1928,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 found:       
     if (lbh.rightBearing > 0) // If right bearing has not yet been adjusted
         lbh.adjustRightBearing();
+    line.textAdvance = line.textWidth;
     line.textWidth -= qMin(QFixed(), lbh.rightBearing);
 
     if (line.length == 0) {
