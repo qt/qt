@@ -80,6 +80,7 @@ class QMakeProject
 
     bool recursive;
     bool own_prop;
+    bool backslashWarned;
     QString pfile, cfile;
     QMakeProperty *prop;
     void reset();

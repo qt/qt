@@ -57,7 +57,7 @@
 
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 
-static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
+static const char *const catalogFile = SRCDIR "XML-Test-Suite/xmlconf/finalCatalog.xml";
 static const int expectedRunCount = 1646;
 static const int expectedSkipCount = 532;
 
@@ -527,8 +527,7 @@ class tst_QXmlStream: public QObject
 {
     Q_OBJECT
 public:
-    tst_QXmlStream() : m_handler(QUrl::fromLocalFile(QDir::currentPath()  + QLatin1Char('/'))
-                                .resolved(QUrl(QLatin1String(catalogFile))))
+    tst_QXmlStream() : m_handler(QUrl::fromLocalFile(QLatin1String(catalogFile)))
     {
     }
 
@@ -546,6 +545,7 @@ private slots:
     void writerHangs() const;
     void writerAutoFormattingWithComments() const;
     void writerAutoFormattingWithTabs() const;
+    void writerAutoFormattingWithProcessingInstructions() const;
     void writerAutoEmptyTags() const;
     void writeAttributesWithSpace() const;
     void addExtraNamespaceDeclarations();
@@ -805,7 +805,7 @@ void tst_QXmlStream::testReader_data() const
     QTest::addColumn<QString>("xml");
     QTest::addColumn<QString>("ref");
     QDir dir;
-    dir.cd("data/");
+    dir.cd(SRCDIR "data/");
     foreach(QString filename , dir.entryList(QStringList() << "*.xml")) {
         QString reference =  QFileInfo(filename).baseName() + ".ref";
         QTest::newRow(dir.filePath(filename).toLatin1().data()) << dir.filePath(filename) << dir.filePath(reference);
@@ -1030,6 +1030,22 @@ void tst_QXmlStream::writerAutoFormattingWithTabs() const
     QCOMPARE(buffer.buffer().data(), str);
 }
 
+void tst_QXmlStream::writerAutoFormattingWithProcessingInstructions() const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+
+    QXmlStreamWriter writer(&buffer);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument();
+    writer.writeProcessingInstruction("B", "C");
+    writer.writeStartElement("A");
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    const char *str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<?B C?>\n<A/>\n";
+    QCOMPARE(buffer.buffer().data(), str);
+}
+
 /*!
   Task 204822
 */
@@ -1184,7 +1200,7 @@ void tst_QXmlStream::crashInUTF16Codec() const
     QEventLoop eventLoop;
 
     QNetworkAccessManager networkManager;
-    QNetworkRequest request(QUrl::fromLocalFile(QLatin1String("data/051reduced.xml")));
+    QNetworkRequest request(QUrl::fromLocalFile(QLatin1String(SRCDIR "data/051reduced.xml")));
     QNetworkReply *const reply = networkManager.get(request);
     eventLoop.connect(reply, SIGNAL(finished()), SLOT(quit()));
 

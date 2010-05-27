@@ -50,11 +50,14 @@ class Waveform;
 class LevelMeter;
 class SettingsDialog;
 class ToneGeneratorDialog;
+
+QT_BEGIN_NAMESPACE
 class QAudioFormat;
 class QLabel;
 class QPushButton;
 class QMenu;
 class QAction;
+QT_END_NAMESPACE
 
 /**
  * Main application widget, responsible for connecting the various UI

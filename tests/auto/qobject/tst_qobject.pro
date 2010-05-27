@@ -16,6 +16,6 @@ wince*: {
 }
 symbian: { 
     addFiles.sources = signalbug.exe
-    addFiles.path = \sys\bin
+    addFiles.path = \\sys\\bin
     DEPLOYMENT += addFiles
 }

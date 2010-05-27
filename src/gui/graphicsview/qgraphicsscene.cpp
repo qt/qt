@@ -4889,6 +4889,24 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (updateAll)
         return;
 
+    if (removingItemFromScene && !ignoreOpacity && !item->d_ptr->ignoreOpacity) {
+        // If any of the item's ancestors ignore opacity, it means that the opacity
+        // was set to 0 (and the update request has not yet been processed). That
+        // also means that we have to ignore the opacity for the item itself; otherwise
+        // things like: parent->setOpacity(0); scene->removeItem(child) won't work.
+        // Note that we only do this when removing items from the scene. In all other
+        // cases the ignoreOpacity bit propagates properly in processDirtyItems, but
+        // since the item is removed immediately it won't be processed there.
+        QGraphicsItem *p = item->d_ptr->parent;
+        while (p) {
+            if (p->d_ptr->ignoreOpacity) {
+                item->d_ptr->ignoreOpacity = true;
+                break;
+            }
+            p = p->d_ptr->parent;
+        }
+    }
+
     if (item->d_ptr->discardUpdateRequest(/*ignoreVisibleBit=*/force,
                                           /*ignoreDirtyBit=*/removingItemFromScene || invalidateChildren,
                                           /*ignoreOpacity=*/ignoreOpacity)) {
