@@ -139,7 +139,7 @@ public:
     QDateTime lastModified(const QModelIndex &index) const;
 
     QModelIndex mkdir(const QModelIndex &parent, const QString &name);
-    inline bool rmdir(const QModelIndex &index) const;
+    bool rmdir(const QModelIndex &index) const; // ### Qt5: should not be const
     inline QString fileName(const QModelIndex &index) const;
     inline QIcon fileIcon(const QModelIndex &index) const;
     QFile::Permissions permissions(const QModelIndex &index) const;
@@ -163,8 +163,6 @@ private:
     friend class QFileDialogPrivate;
 };
 
-inline bool QFileSystemModel::rmdir(const QModelIndex &aindex) const
-{ QDir dir; return dir.rmdir(filePath(aindex)); }
 inline QString QFileSystemModel::fileName(const QModelIndex &aindex) const
 { return aindex.data(Qt::DisplayRole).toString(); }
 inline QIcon QFileSystemModel::fileIcon(const QModelIndex &aindex) const
