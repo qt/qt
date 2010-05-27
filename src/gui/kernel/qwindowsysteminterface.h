@@ -47,6 +47,7 @@
 #include <QtGui/QWidget>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
+#include <QtGui/QTouchEvent>
 
 QT_BEGIN_HEADER
 
