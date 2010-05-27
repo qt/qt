@@ -885,7 +885,7 @@ void QTextEngine::shapeText(int item) const
     QFixed letterSpacing = font.d->letterSpacing;
     QFixed wordSpacing = font.d->wordSpacing;
 
-    if (letterSpacingIsAbsolute)
+    if (letterSpacingIsAbsolute && letterSpacing.value())
         letterSpacing *= font.d->dpi / qt_defaultDpiY();
 
     if (letterSpacing != 0) {
