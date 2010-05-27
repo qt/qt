@@ -6,7 +6,7 @@ SOURCES += \
     $$PWD/qdeclarativedebugservice.cpp \
     $$PWD/qdeclarativedebugclient.cpp \
     $$PWD/qdeclarativedebug.cpp \
-    $$PWD/qdeclarativedebugtiming.cpp
+    $$PWD/qdeclarativedebugtrace.cpp
 
 HEADERS += \
     $$PWD/qdeclarativedebuggerstatus_p.h \
@@ -14,4 +14,4 @@ HEADERS += \
     $$PWD/qdeclarativedebugservice_p.h \
     $$PWD/qdeclarativedebugclient_p.h \
     $$PWD/qdeclarativedebug_p.h \
-    $$PWD/qdeclarativedebugtiming_p.h
+    $$PWD/qdeclarativedebugtrace_p.h

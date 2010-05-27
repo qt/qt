@@ -53,7 +53,7 @@
 #include "private/qdeclarativebinding_p_p.h"
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
-#include "private/qdeclarativedebugtiming_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
 #include <QStack>
 #include <QStringList>
@@ -696,7 +696,8 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 
     bool isRoot = !ep->inBeginCreate;
     if (isRoot) 
-        QDeclarativeDebugTiming::startRange(QDeclarativeDebugTiming::Creating);
+        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+    QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, cc->url);
 
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
     ctxt->isInternal = true;
@@ -867,7 +868,7 @@ void QDeclarativeComponentPrivate::completeCreate()
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
         complete(ep, &state);
 
-        QDeclarativeDebugTiming::endRange(QDeclarativeDebugTiming::Creating);
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Creating);
     }
 }
 
