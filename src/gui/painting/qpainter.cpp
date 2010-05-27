@@ -7806,10 +7806,11 @@ start_lengthVariant:
         for (int i = 0; i < textLayout.lineCount(); i++) {
             QTextLine line = textLayout.lineAt(i);
 
+            qreal advance = textLayout.engine()->lines[i].textAdvance.toReal();
             if (tf & Qt::AlignRight)
-                xoff = r.width() - line.naturalTextWidth();
+                xoff = r.width() - advance;
             else if (tf & Qt::AlignHCenter)
-                xoff = (r.width() - line.naturalTextWidth())/2;
+                xoff = (r.width() - advance)/2;
 
             line.draw(painter, QPointF(r.x() + xoff + line.x(), r.y() + yoff));
         }
