@@ -439,13 +439,13 @@ namespace {
             m_chars.resize(m_chars.size() + ti.num_chars);
 
             glyph_t *glyphsDestination = m_glyphs.data() + currentItem.glyphOffset;
-            memmove(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
+            qMemCopy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
 
             QFixedPoint *positionsDestination = m_positions.data() + currentItem.positionOffset;
-            memmove(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
+            qMemCopy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
 
             QChar *charsDestination = m_chars.data() + currentItem.charOffset;
-            memmove(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
+            qMemCopy(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
 
             m_items.append(currentItem);
         }                
@@ -647,13 +647,13 @@ void QStaticTextPrivate::init()
     items = new QStaticTextItem[itemCount];
 
     glyphPool = new glyph_t[glyphs.size()];
-    memmove(glyphPool, glyphs.constData(), glyphs.size() * sizeof(glyph_t));
+    qMemCopy(glyphPool, glyphs.constData(), glyphs.size() * sizeof(glyph_t));
 
     positionPool = new QFixedPoint[positions.size()];
-    memmove(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
+    qMemCopy(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
 
     charPool = new QChar[chars.size()];
-    memmove(charPool, chars.constData(), chars.size() * sizeof(QChar));
+    qMemCopy(charPool, chars.constData(), chars.size() * sizeof(QChar));
 
     for (int i=0; i<itemCount; ++i) {
         items[i] = deviceItems.at(i);
