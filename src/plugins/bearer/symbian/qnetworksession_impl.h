@@ -75,7 +75,7 @@ class SymbianEngine;
 
 class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-                                   , public MMobilityProtocolResp
+                                 , public MMobilityProtocolResp
 #endif
 {
     Q_OBJECT

@@ -5,7 +5,7 @@ unix:!mac:LIBS+=-lm
 contains(QT_CONFIG, qt3support): QT += qt3support
 
 wince*: {
-	accessneeded.sources = $$QT_BUILD_TREE\plugins\accessible\*.dll
+	accessneeded.sources = $$QT_BUILD_TREE\\plugins\\accessible\\*.dll
 	accessneeded.path = accessible
 	DEPLOYMENT += accessneeded
 }
