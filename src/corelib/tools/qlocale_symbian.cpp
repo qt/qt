@@ -159,8 +159,9 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangEnglish_Prc,         "en_CN" },  // 159 ### Not supported by CLDR
     { ELangEnglish_Japan,       "en_JP"},   // 160 ### Not supported by CLDR
     { ELangEnglish_Thailand,    "en_TH" },  // 161 ### Not supported by CLDR
-    { ELangMalay_Apac,          "ms" }      // 326
+    { ELangMalay_Apac,          "ms" },     // 326
 #endif
+    { 327/*ELangIndonesian_Apac*/,"id_ID" } // 327 - appeared in Symbian^3
 };
 
 /*!

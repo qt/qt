@@ -666,7 +666,8 @@ void QApplicationPrivate::process_cmdline()
         \o  -geometry \e geometry, sets the client geometry of the first window
             that is shown.
         \o  -fn or \c -font \e font, defines the application font. The font
-            should be specified using an X logical font description.
+            should be specified using an X logical font description. Note that
+            this option is ignored when Qt is built with fontconfig support enabled.
         \o  -bg or \c -background \e color, sets the default background color
             and an application palette (light and dark shades are calculated).
         \o  -fg or \c -foreground \e color, sets the default foreground color.
