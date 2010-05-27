@@ -325,6 +325,7 @@ void QGtkStyle::polish(QApplication *app)
             qt_filedialog_save_filename_hook = &QGtkStylePrivate::saveFilename;
             qt_filedialog_open_filenames_hook = &QGtkStylePrivate::openFilenames;
             qt_filedialog_existing_directory_hook = &QGtkStylePrivate::openDirectory;
+            qApp->installEventFilter(&d->filter);
         }
     }
 }
@@ -345,6 +346,7 @@ void QGtkStyle::unpolish(QApplication *app)
         qt_filedialog_save_filename_hook = 0;
         qt_filedialog_open_filenames_hook = 0;
         qt_filedialog_existing_directory_hook = 0;
+        qApp->removeEventFilter(&d->filter);
     }
 }
 
