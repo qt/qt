@@ -266,7 +266,7 @@ void MainWindow::setupSceneItems()
 {
     if (Colors::showFps){
         this->fpsLabel = new DemoTextItem(QString("FPS: --"), Colors::buttonFont(), Qt::white, -1, this->scene, 0, DemoTextItem::DYNAMIC_TEXT);
-        this->fpsLabel->setZValue(100);
+        this->fpsLabel->setZValue(1000);
         this->fpsLabel->setPos(Colors::stageStartX, 600 - QFontMetricsF(Colors::buttonFont()).height() - 5);
     }
 
@@ -311,15 +311,9 @@ void MainWindow::checkAdapt()
         }
 
         //Note: Because we don't adapt later in the program, if blur makes FPS plummet then we won't catch it
-        if (!Colors::noBlur && MenuManager::instance()->mainSceneBlur && this->mainSceneRoot){
+        if (!Colors::noBlur && MenuManager::instance()->declarativeEngine && this->mainSceneRoot){
             Colors::noBlur = true;
-            this->mainSceneRoot->setGraphicsEffect(0);
-            MenuManager::instance()->mainSceneBlur = 0;
-            if(MenuManager::instance()->qmlRoot){
-                MenuManager::instance()->qmlRoot->setGraphicsEffect(0);
-                MenuManager::instance()->declarativeEngine->rootContext()->setContextProperty("realBlur", 0);
-            }
-            MenuManager::instance()->qmlShadow = 0;
+            MenuManager::instance()->declarativeEngine->rootContext()->setContextProperty("useBlur", false);
             if (Colors::verbose)
                qDebug() << "- benchmark adaption: removed blur (fps < 30)";
         }
