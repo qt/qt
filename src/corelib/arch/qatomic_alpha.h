@@ -367,7 +367,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
-    register void *old, *tmp;
+    register T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "mov   %3,%1\n"   /* tmp=newval;                             */
@@ -385,7 +385,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
-    register void *old, *tmp;
+    register T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "mov   %3,%1\n"   /* tmp=newval;                             */
@@ -404,7 +404,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 {
-    register void *old, *tmp;
+    register T *old, *tmp;
     asm volatile("mb\n"
                  "1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
@@ -423,7 +423,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
 {
-    register void *old, *tmp;
+    register T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "addq  %0,%3,%1\n"/* tmp=old+value;                          */
@@ -441,7 +441,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
 {
-    register void *old, *tmp;
+    register T *old, *tmp;
     asm volatile("1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */
                  "addq  %0,%3,%1\n"/* tmp=old+value;                          */
@@ -460,7 +460,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
 {
-    register void *old, *tmp;
+    register T *old, *tmp;
     asm volatile("mb\n"
                  "1:\n"
                  "ldq_l %0,%2\n"   /* old=*ptr;                               */

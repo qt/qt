@@ -2002,6 +2002,8 @@ void tst_QTextCodec::threadSafety()
     QCOMPARE(res.results(), codecList);
     QCOMPARE(res2.results(), mibList);
 #endif
+    QSKIP("This function is not yet supported with QT_NO_CONCURRENT defined.", SkipAll);
+#endif
 }
 
 void tst_QTextCodec::invalidNames()
@@ -2012,7 +2014,7 @@ void tst_QTextCodec::invalidNames()
     QVERIFY(!QTextCodec::codecForName("\1a\2b\3a\4d\5c\6s\7a\xffr\xec_\x9c_"));
     QVERIFY(!QTextCodec::codecForName("\n"));
     QVERIFY(!QTextCodec::codecForName("don't exist"));
-    QByteArray huge = "azertyuiop^$qsdfghjklm<wxcvbn,;:=1234567890°_";
+    QByteArray huge = "azertyuiop^$qsdfghjklm<wxcvbn,;:=1234567890ï¿½_";
     huge = huge + huge + huge + huge + huge + huge + huge + huge;
     huge = huge + huge + huge + huge + huge + huge + huge + huge;
     huge = huge + huge + huge + huge + huge + huge + huge + huge;
