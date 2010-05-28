@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,22 +39,58 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+#ifndef QDECLARATIVEDEBUGTIMING_P_H
+#define QDECLARATIVEDEBUGTIMING_P_H
 
-//Emulates the in animation of the menu elements
-SequentialAnimation{
-    id: main;
-    property Item target
-    property int from: 0
-    property int to: 100
-    property int duration: 1000
-    property string properties: "y"
-    PauseAnimation { duration: main.duration*0.20 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.from; to: main.to + 40; duration: main.duration*0.30 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 40; to: main.to; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to; to: main.to + 20; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 20; to: main.to; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to; to: main.to + 8; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 8; to: main.to; duration: main.duration*0.10 }
-}
+#include <private/qdeclarativedebugservice_p.h>
+#include <QtCore/qelapsedtimer.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+class QDeclarativeDebugTiming : public QDeclarativeDebugService
+{
+public:
+    enum EventType {
+        FramePaint,
+        Mouse,
+        Key,
+
+        MaximumEventType
+    };
+
+    enum Message {
+        Event,
+        RangeStart,
+        RangeEnd,
+
+        MaximumMessage
+    };
+
+    enum RangeType {
+        Painting,
+        Compiling,
+        Creating,
+
+        MaximumRangeType
+    };
+
+    static void addEvent(EventType);
+    static void startRange(RangeType);
+    static void endRange(RangeType);
+
+    QDeclarativeDebugTiming();
+private:
+    void addEventImpl(EventType);
+    void startRangeImpl(RangeType);
+    void endRangeImpl(RangeType);
+    QElapsedTimer m_timer;
+};
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QDECLARATIVEDEBUGTIMING_P_H
 

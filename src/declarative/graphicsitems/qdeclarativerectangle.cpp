@@ -116,6 +116,10 @@ void QDeclarativeGradientStop::updateGradient()
 
     \snippet doc/src/snippets/declarative/gradient.qml code
 
+    Note that this item is not a visual representation of a gradient. To display a
+    gradient use a visual item (like rectangle) which supports having a gradient set
+    on it for display.
+
     \sa GradientStop
 */
 
