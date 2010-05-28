@@ -2001,7 +2001,7 @@ void tst_QTextCodec::threadSafety()
 
     QCOMPARE(res.results(), codecList);
     QCOMPARE(res2.results(), mibList);
-#endif
+#else
     QSKIP("This function is not yet supported with QT_NO_CONCURRENT defined.", SkipAll);
 #endif
 }
