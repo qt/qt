@@ -198,6 +198,10 @@ public:
     qreal paintedWidth() const;
     qreal paintedHeight() const;
 
+    Q_INVOKABLE QRectF positionToRectangle(int) const;
+    Q_INVOKABLE int positionAt(int x, int y) const;
+    Q_INVOKABLE void moveCursorSelection(int pos);
+
 Q_SIGNALS:
     void textChanged(const QString &);
     void paintedSizeChanged();
@@ -225,6 +229,10 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void selectAll();
+    void selectWord();
+    void cut();
+    void copy();
+    void paste();
 
 private Q_SLOTS:
     void updateImgCache(const QRectF &rect);
