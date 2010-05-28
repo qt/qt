@@ -97,6 +97,7 @@ public:
         q->setFlag(QGraphicsItem::ItemIsFocusScope);
         q->setFiltersChildEvents(true);
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
+        lastPosTime.invalidate();
     }
 
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
@@ -154,7 +155,7 @@ public:
     bool autoHighlight : 1;
     bool highlightUp : 1;
     bool layoutScheduled : 1;
-    QTime lastPosTime;
+    QElapsedTimer lastPosTime;
     QPointF lastPos;
     qreal dragMargin;
     qreal deceleration;

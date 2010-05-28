@@ -1,6 +1,9 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 RC
 
+TextInput and TextEdit: 
+   - showInputPanelOnFocus property added
+   - openSoftwareInputPanel() and closeSoftwareInputPanel() functions added
 Flickable:
    - overShoot is replaced by boundsBehavior enumeration
    - flickingHorizontally and flickingVertically properties added
