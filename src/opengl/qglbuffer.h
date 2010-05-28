@@ -64,8 +64,12 @@ public:
         PixelUnpackBuffer   = 0x88EC  // GL_PIXEL_UNPACK_BUFFER
     };
 
+    QGLBuffer();
     explicit QGLBuffer(QGLBuffer::Type type);
+    QGLBuffer(const QGLBuffer &other);
     ~QGLBuffer();
+
+    QGLBuffer &operator=(const QGLBuffer &other);
 
     enum UsagePattern
     {
@@ -95,6 +99,8 @@ public:
     bool create();
     bool isCreated() const;
 
+    void destroy();
+
     bool bind() const;
     void release() const;
 
@@ -114,9 +120,8 @@ public:
     bool unmap();
 
 private:
-    QScopedPointer<QGLBufferPrivate> d_ptr;
+    QGLBufferPrivate *d_ptr;
 
-    Q_DISABLE_COPY(QGLBuffer)
     Q_DECLARE_PRIVATE(QGLBuffer)
 };
 
