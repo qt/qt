@@ -196,4 +196,6 @@ EXPORTS
 	_ZN13QVGPixmapData19detachImageFromPoolEv @ 195 NONAME
 	_ZTI12QVGImagePool @ 196 NONAME
 	_ZTV12QVGImagePool @ 197 NONAME
+	_ZN25QVGEGLWindowSurfaceDirect6scrollEP7QWidgetRK7QRegionii @ 198 NONAME
+	_ZNK25QVGEGLWindowSurfaceDirect22supportsStaticContentsEv @ 199 NONAME
 

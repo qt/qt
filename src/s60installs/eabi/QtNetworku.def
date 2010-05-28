@@ -993,4 +993,6 @@ EXPORTS
 	_ZN10QSslSocket15setSocketOptionEN15QAbstractSocket12SocketOptionERK8QVariant @ 992 NONAME
 	_ZN15QNetworkRequest20setOriginatingObjectEP7QObject @ 993 NONAME
 	_ZNK15QNetworkRequest17originatingObjectEv @ 994 NONAME
+	_Z19qt_qhostinfo_lookupRK7QStringP7QObjectPKcPbPi @ 995 NONAME
+	_Z24qt_qhostinfo_clear_cachev @ 996 NONAME
 
