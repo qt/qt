@@ -1,3 +1,3 @@
-SOURCES += src\main.cpp
+SOURCES += src\\main.cpp
 
-TRANSLATIONS = ts\project.ts
+TRANSLATIONS = ts\\project.ts

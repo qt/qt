@@ -55,8 +55,11 @@
 #include "FFTRealFixLenParam.h"
 #endif
 
+QT_BEGIN_NAMESPACE
 class QAudioFormat;
 class QThread;
+QT_END_NAMESPACE
+
 class FFTRealWrapper;
 
 class SpectrumAnalyserThreadPrivate;

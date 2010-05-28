@@ -61,6 +61,7 @@ class QDeclarativeDebugServer : public QObject
 public:
     static QDeclarativeDebugServer *instance();
     void listen();
+    void waitForConnection();
     bool hasDebuggingClient() const;
 
 private Q_SLOTS:
@@ -115,6 +116,12 @@ void QDeclarativeDebugServer::listen()
         qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
 }
 
+void QDeclarativeDebugServer::waitForConnection()
+{
+    Q_D(QDeclarativeDebugServer);
+    d->tcpServer->waitForNewConnection(-1);
+}
+
 void QDeclarativeDebugServer::newConnection()
 {
     Q_D(QDeclarativeDebugServer);
@@ -144,6 +151,7 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
     if (!envTested) {
         envTested = true;
         QByteArray env = qgetenv("QML_DEBUG_SERVER_PORT");
+        QByteArray block = qgetenv("QML_DEBUG_SERVER_BLOCK");
 
         bool ok = false;
         int port = env.toInt(&ok);
@@ -151,6 +159,9 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         if (ok && port > 1024) {
             server = new QDeclarativeDebugServer(port);
             server->listen();
+            if (!block.isEmpty()) {
+                server->waitForConnection();
+            }
         }
     }
 

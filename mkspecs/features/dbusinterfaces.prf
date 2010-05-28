@@ -4,7 +4,7 @@ qtPrepareTool(QMAKE_QDBUSXML2CPP, qdbusxml2cpp)
 
 for(DBUS_INTERFACE, $$list($$unique(DBUS_INTERFACES))) {
 
-    !contains(DBUS_INTERFACE, .*\w\.xml$) {
+    !contains(DBUS_INTERFACE, .*\\w\\.xml$) {
         warning("Invalid D-BUS interface : '$${DBUS_INTERFACE}', please use 'com.mydomain.myinterface.xml' instead.")
         next()
     }

@@ -325,7 +325,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     control over size of header items and row and column sizes.
 
     \sa QStyleOption, QStylePainter, {Styles Example},
-        {Implementing Styles and Style Aware Widgets}, QStyledItemDelegate
+        {Styles &amp Style Aware Widgets}, QStyledItemDelegate
 */
 
 /*!

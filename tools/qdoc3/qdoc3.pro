@@ -115,20 +115,7 @@ SOURCES += apigenerator.cpp \
 
 ### Documentation for qdoc3 ###
 
-win32:!win32-g++ {
-    unixstyle = false
-} else :win32-g++:isEmpty(QMAKE_SH) {
-    unixstyle = false
-} else {
-    unixstyle = true
-}
-
-$$unixstyle {
-    QDOC = cd $$PWD/doc && $$[QT_INSTALL_BINS]/qdoc3
-} else {
-    QDOC = cd $$PWD/doc && $$[QT_INSTALL_BINS]/qdoc3.exe
-    QDOC = $$replace(QDOC, "/", "\\")
-}
+qtPrepareTool(QDOC, qdoc3)
 
 docs.commands = $$QDOC qdoc-manual.qdocconf
 

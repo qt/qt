@@ -46,7 +46,8 @@ x11{
 contains( styles, mac ) {
 	HEADERS += \
 		styles/qmacstyle_mac.h \
-		styles/qmacstylepixmaps_mac_p.h
+		styles/qmacstylepixmaps_mac_p.h \
+		styles/qmacstyle_mac_p.h
         OBJECTIVE_SOURCES += styles/qmacstyle_mac.mm
 
 	!contains( styles, windows ) {

@@ -61,9 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-struct Entry;
-struct PosEntry;
-
 namespace fulltextsearch {
 namespace std {
 

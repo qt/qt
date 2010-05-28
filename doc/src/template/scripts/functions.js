@@ -33,15 +33,27 @@ $('#bigA').click(function() {
 		$(this).addClass('active')
 });
 
+$('.feedclose').click(function() {
+	$('.bd').show();
+	$('.hd').show();
+	$('.footer').show();
+	$('#feedbackBox').hide();
+	$('#blurpage').hide();
+});
 
+$('.feedback').click(function() {
+	$('.bd').hide();
+	$('.hd').hide();
+	$('.footer').hide();
+	$('#feedbackBox').show();
+	$('#blurpage').show();
+});
 var lookupCount = 0;
 var articleCount = 0;
 var exampleCount = 0;
 var qturl = ""; // change from "http://doc.qt.nokia.com/4.6/" to 0 so we can have relative links
 
 function processNokiaData(response){
-$('.sidebar .search form input').addClass('loading');
-	// debug $('.content').prepend('<li>handling search results</li>'); // debuging
 	var propertyTags = response.getElementsByTagName('page');
 	
  	for (var i=0; i< propertyTags.length; i++) {
@@ -50,7 +62,6 @@ $('.sidebar .search form input').addClass('loading');
 		
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage'){
 			lookupCount++;
-			//$('.live001').css('display','block');
 
 			
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
@@ -65,7 +76,6 @@ $('.sidebar .search form input').addClass('loading');
 	 
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article'){
 			articleCount++;
-	 		//$('.live002').css('display','block');
 
 				 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
@@ -79,7 +89,6 @@ $('.sidebar .search form input').addClass('loading');
 		}
 		if(propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example'){
 			exampleCount++;
-	 		//$('.live003').css('display','block');
 
 
 			for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++){
@@ -91,10 +100,11 @@ $('.sidebar .search form input').addClass('loading');
 
 	   		}
 		} 
+		if(i==propertyTags.length){$('#pageType').removeClass('loading');}
+
 	}	
 	 
-	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');
-}
+	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');}
     if(articleCount == 0){$('#ul002').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
 	if(exampleCount == 0){$('#ul003').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
 	// reset count variables;
@@ -103,12 +113,18 @@ $('.sidebar .search form input').addClass('loading');
      exampleCount = 0;
 	
 }
-
 //build regular expression object to find empty string or any number of blank
 var blankRE=/^\s*$/;
 function CheckEmptyAndLoadList()
 {
+	var pageUrl = window.location.href;
+	var pageVal = $('title').html();
+	$('#feedUrl').remove();
+	$('#pageVal').remove();
+	$('#feedform').append('<input id="feedUrl" name="feedUrl" value="'+pageUrl+'" style="display:none;">');
+	$('#feedform').append('<input id="pageVal" name="pageVal" value="'+pageVal+'" style="display:none;">');
 	$('.liveResult').remove();
+    $('.defaultLink').css('display','block');
 	var value = document.getElementById('pageType').value; 
 	if((blankRE.test(value)) || (value.length < 3))
 	{
@@ -131,8 +147,9 @@ else
 	*/
 // Loads on doc ready
 	$(document).ready(function () {
+	//alert(pageUrl);
+	//$('#pageUrl').attr('foo',pageUrl);
 	var pageTitle = $('title').html();
-		$('#feedform').append('<input id="page" name="pageVal" value="'+pageTitle+'" style="display:none;">');
           var currentString = $('#pageType').val() ;
 		  if(currentString.length < 1){
 			$('.defaultLink').css('display','block');
@@ -142,6 +159,7 @@ else
         $('#pageType').keyup(function () {
           var searchString = $('#pageType').val() ;
           if ((searchString == null) || (searchString.length < 3)) {
+				$('#pageType').removeClass('loading');
 				 $('.liveResult').remove(); // replaces removeResults();
       	   		CheckEmptyAndLoadList();
 				$('.report').remove();
@@ -150,6 +168,7 @@ else
 		   }
             if (this.timer) clearTimeout(this.timer);
             this.timer = setTimeout(function () {
+				$('#pageType').addClass('loading');
 				// debug$('.content').prepend('<li>new search started </li>');// debug
 				// debug$('.content').prepend('<p class=\"report\">Search string ' +searchString +'</p>'); // debug
 
@@ -162,6 +181,8 @@ else
                 success: function (response, textStatus) {
 
 				$('.liveResult').remove(); // replaces removeResults();
+								$('#pageType').removeClass('loading');
+
                 processNokiaData(response);
 
  }     

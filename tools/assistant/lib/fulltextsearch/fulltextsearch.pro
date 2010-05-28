@@ -46,5 +46,5 @@ win32-msvc.net | win32-msvc2* {
 
 # the following define could be set globally in case we need it elsewhere
 solaris* {
-    DEFINES += Q_SOLARIS_VERSION=$$system(uname -r | sed -e 's/5\.//')
+    DEFINES += Q_SOLARIS_VERSION=$$system(uname -r | sed -e 's/5\\.//')
 }

@@ -285,7 +285,7 @@
     \snippet examples/threads/mandelbrot/mandelbrotwidget.cpp 8
 
     If the pixmap has the right scale factor, we draw the pixmap directly onto
-    the widget. Otherwise, we scale and translate the \l{The Coordinate
+    the widget. Otherwise, we scale and translate the \l{Coordinate
     System}{coordinate system} before we draw the pixmap. By reverse mapping
     the widget's rectangle using the scaled painter matrix, we also make sure
     that only the exposed areas of the pixmap are drawn. The calls to
