@@ -64,10 +64,12 @@
 
 Q_DECLARE_METATYPE(QRect)
 
-
+QT_FORWARD_DECLARE_CLASS(QPrinter)
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#ifndef QT_NO_PRINTER
 
 class tst_QPrinter : public QObject
 {
@@ -217,7 +219,6 @@ tst_QPrinter::tst_QPrinter()
 
 tst_QPrinter::~tst_QPrinter()
 {
-
 }
 
 // initTestCase will be executed once before the first testfunction is executed.
@@ -1056,3 +1057,9 @@ void tst_QPrinter::testPdfTitle()
 
 QTEST_MAIN(tst_QPrinter)
 #include "tst_qprinter.moc"
+
+#else //QT_NO_PRINTER
+
+QTEST_NOOP_MAIN
+
+#endif //QT_NO_PRINTER
