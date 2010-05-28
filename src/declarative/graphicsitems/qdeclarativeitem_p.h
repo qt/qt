@@ -305,12 +305,11 @@ public:
 
     virtual void focusChanged(bool);
 
-    static int consistentTime;
-    static QTime currentTime();
-    static void setConsistentTime(int t);
-    static void start(QTime &);
-    static int elapsed(QTime &);
-    static int restart(QTime &);
+    static qint64 consistentTime;
+    static void setConsistentTime(qint64 t);
+    static void start(QElapsedTimer &);
+    static qint64 elapsed(QElapsedTimer &);
+    static qint64 restart(QElapsedTimer &);
 };
 
 /*
