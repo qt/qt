@@ -547,7 +547,7 @@ void tst_QFileDialog2::task226366_lowerCaseHardDriveWindows()
     QTest::qWait(200);
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
     QTest::qWait(200);
-    QCOMPARE(edit->text(), QString("C:"));
+    QCOMPARE(edit->text(), QString("C:/"));
     QTest::qWait(2000);
     //i clear my previous selection in the completer
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
@@ -555,7 +555,7 @@ void tst_QFileDialog2::task226366_lowerCaseHardDriveWindows()
     QTest::keyClick(edit, (char)(Qt::Key_C | Qt::SHIFT));
     QTest::qWait(200);
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
-    QCOMPARE(edit->text(), QString("C:"));
+    QCOMPARE(edit->text(), QString("C:/"));
 }
 #endif
 
