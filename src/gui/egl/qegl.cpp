@@ -72,12 +72,12 @@ public:
     static bool displayOpened() { return displayOpen; }
 
 private:
-    static QAtomicInt contexts;
-    static QAtomicInt displayOpen;
+    static QBasicAtomicInt contexts;
+    static QBasicAtomicInt displayOpen;
 };
 
-QAtomicInt QEglContextTracker::contexts = 0;
-QAtomicInt QEglContextTracker::displayOpen = 0;
+QBasicAtomicInt QEglContextTracker::contexts = Q_BASIC_ATOMIC_INITIALIZER(0);
+QBasicAtomicInt QEglContextTracker::displayOpen = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 // Current GL and VG contexts.  These are used to determine if
 // we can avoid an eglMakeCurrent() after a call to lazyDoneCurrent().
