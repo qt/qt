@@ -348,6 +348,7 @@ private slots:
     void childrenBoundingRect2();
     void childrenBoundingRect3();
     void childrenBoundingRect4();
+    void childrenBoundingRect5();
     void group();
     void setGroup();
     void setGroup2();
@@ -3367,6 +3368,34 @@ void tst_QGraphicsItem::childrenBoundingRect4()
 
     QCOMPARE(rect->childrenBoundingRect(), rect3->boundingRect());
     QCOMPARE(rect2->childrenBoundingRect(), rect3->boundingRect());
+}
+
+void tst_QGraphicsItem::childrenBoundingRect5()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *parent = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *child = scene.addRect(QRectF(0, 0, 100, 100));
+    child->setParentItem(parent);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWaitForWindowShown(&view);
+
+    // Try to mess up the cached bounding rect.
+    QRectF expectedChildrenBoundingRect = parent->boundingRect();
+    QCOMPARE(parent->childrenBoundingRect(), expectedChildrenBoundingRect);
+
+    // Apply some effects.
+    QGraphicsDropShadowEffect *dropShadow = new QGraphicsDropShadowEffect;
+    dropShadow->setOffset(25, 25);
+    child->setGraphicsEffect(dropShadow);
+    parent->setGraphicsEffect(new QGraphicsOpacityEffect);
+
+    QVERIFY(parent->childrenBoundingRect() != expectedChildrenBoundingRect);
+    expectedChildrenBoundingRect |= dropShadow->boundingRect();
+    QCOMPARE(parent->childrenBoundingRect(), expectedChildrenBoundingRect);
 }
 
 void tst_QGraphicsItem::group()

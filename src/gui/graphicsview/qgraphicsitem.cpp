@@ -1275,14 +1275,14 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
             QTransform matrix = childd->transformToParent();
             if (x)
                 matrix *= *x;
-            *rect |= matrix.mapRect(child->boundingRect());
+            *rect |= matrix.mapRect(child->d_ptr->effectiveBoundingRect());
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(&matrix, rect);
         } else {
             if (x)
-                *rect |= x->mapRect(child->boundingRect());
+                *rect |= x->mapRect(child->d_ptr->effectiveBoundingRect());
             else
-                *rect |= child->boundingRect();
+                *rect |= child->d_ptr->effectiveBoundingRect();
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(x, rect);
         }
