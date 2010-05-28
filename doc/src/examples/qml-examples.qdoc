@@ -117,10 +117,10 @@
     like QGraphicsLayoutItem, QGraphicsLinearLayout and QGraphicsGridLayout into QML.
 */
 /*!
-    \title Layout Item
-    \example declarative/cppextensions/qgraphicslayouts/layoutItem
+    \title LayoutItem
+    \example declarative/cppextensions/qgraphicslayouts/layoutitem
 
-    This example show how to integrate QML into an existing 
+    This example show how to use the LayoutItem element to integrate QML items into an existing 
     \l{Graphics View Framework}{Graphics View}-based application.
 */
 /*!
@@ -132,7 +132,7 @@
 
     \list
     \o \l{declarative/cppextensions/qgraphicslayouts/graphicsLayouts}{Graphics Layouts}
-    \o \l{declarative/cppextensions/qgraphicslayouts/layoutItem}{Layout Item}
+    \o \l{declarative/cppextensions/qgraphicslayouts/layoutitem}{LayoutItem}
     \endlist
 */
 
