@@ -88,7 +88,7 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 QS60WindowSurface::~QS60WindowSurface()
 {
 #if defined(QT_GRAPHICSSYSTEM_RUNTIME) && defined(Q_SYMBIAN_SUPPORTS_SURFACES)
-    if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+    if(QApplicationPrivate::runtime_graphics_system) {
         QRuntimeGraphicsSystem *runtimeGraphicsSystem =
                 static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
         if(runtimeGraphicsSystem->graphicsSystemName() == QLatin1String("openvg")) {

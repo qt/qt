@@ -66,7 +66,6 @@
 #include "private/qgraphicssystem_runtime_p.h"
 #endif
 
-
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
 
@@ -958,7 +957,7 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface;
 #ifdef QT_GRAPHICSSYSTEM_RUNTIME
-        if (QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+        if (QApplicationPrivate::runtime_graphics_system) {
             QRuntimeWindowSurface *rtSurface =
                     static_cast<QRuntimeWindowSurface*>(qwidget->windowSurface());
             s60Surface = static_cast<QS60WindowSurface *>(rtSurface->m_windowSurface);
@@ -1855,7 +1854,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         if (callSymbianEventFilters(symbianEvent))
             return 1;
 #ifdef QT_GRAPHICSSYSTEM_RUNTIME
-        if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+        if(QApplicationPrivate::runtime_graphics_system) {
             bool switchToSwRendering(false);
 
             foreach (QWidget *w, QApplication::topLevelWidgets()) {
@@ -1887,7 +1886,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         if (callSymbianEventFilters(symbianEvent))
             return 1;
 #ifdef QT_GRAPHICSSYSTEM_RUNTIME
-        if(QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
+        if(QApplicationPrivate::runtime_graphics_system) {
             QRuntimeGraphicsSystem *gs =
                    static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
             gs->setGraphicsSystem(QLatin1String("openvg"), S60->memoryLimitForHwRendering);

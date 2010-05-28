@@ -344,6 +344,7 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
 	m_graphicsSystem(0), m_graphicsSystemChangeMemoryLimit(0)
 {
     QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
+    QApplicationPrivate::runtime_graphics_system = true;
 
 #ifdef Q_OS_SYMBIAN
     m_graphicsSystemName = QLatin1String("openvg");
