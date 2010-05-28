@@ -38,22 +38,26 @@
 **
 ****************************************************************************/
 
+#include "gridlayout.h"
+
+#include <qdeclarative.h>
+#include <QDeclarativeView>
+
 #include <QApplication>
-#include <QtDeclarative/qdeclarative.h>
-#include "graphicslayouts_p.h"
-#include <QtDeclarative/QDeclarativeView>
 
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    QDeclarativeView view;
+
     qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
     qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-    qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>("GraphicsLayouts",4,7,"QGraphicsLinearLayoutStretchItem");
-    qmlRegisterType<QGraphicsLinearLayoutObject>("GraphicsLayouts",4,7,"QGraphicsLinearLayout");
-    qmlRegisterType<QGraphicsGridLayoutObject>("GraphicsLayouts",4,7,"QGraphicsGridLayout");
-    view.setSource(QUrl(":graphicslayouts.qml"));
+    qmlRegisterType<QGraphicsGridLayoutObject>("GridLayouts",4,7,"QGraphicsGridLayout");
+
+    QDeclarativeView view;
+    view.setSource(QUrl(":qgraphicsgridlayout.qml"));
     view.show();
+
     return app.exec();
 };
+
 
