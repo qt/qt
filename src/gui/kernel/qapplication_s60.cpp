@@ -1186,7 +1186,7 @@ void QSymbianControl::setFocusSafely(bool focus)
     This function is only available on S60.
 */
 QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv)
-    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
 {
     Q_D(QApplication);
     S60->s60ApplicationFactory = factory;
@@ -1194,7 +1194,7 @@ QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int
 }
 
 QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int _internal)
-    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 {
     Q_D(QApplication);
     S60->s60ApplicationFactory = factory;
