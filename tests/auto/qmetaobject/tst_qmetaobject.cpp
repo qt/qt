@@ -172,6 +172,8 @@ private slots:
     void stdSet();
     void classInfo();
 
+    void metaMethod();
+
 signals:
     void value6Changed();
     void value7Changed(const QString &);
@@ -884,6 +886,55 @@ void tst_QMetaObject::classInfo()
     QCOMPARE(index, 0);
     QVERIFY(index <= b.metaObject()->classInfoOffset());
     QCOMPARE(QLatin1String(b.metaObject()->classInfo(index).value()), QLatin1String("Christopher Pike"));
+}
+
+void tst_QMetaObject::metaMethod()
+{
+    QString str("foo");
+    QString ret("bar");
+    QMetaMethod method;
+    QVERIFY(!method.invoke(this));
+    QVERIFY(!method.invoke(this, Q_ARG(QString, str)));
+    QVERIFY(!method.invoke(this, Q_RETURN_ARG(QString, ret), Q_ARG(QString, str)));
+    QCOMPARE(str, QString("foo"));
+    QCOMPARE(ret, QString("bar"));
+
+
+    QtTestObject obj;
+    QString t1("1"); QString t2("2"); QString t3("3"); QString t4("4"); QString t5("5");
+    QString t6("6"); QString t7("7"); QString t8("8"); QString t9("9"); QString t10("X");
+
+    int index = QtTestObject::staticMetaObject.indexOfMethod("sl5(QString,QString,QString,QString,QString)");
+    QVERIFY(index > 0);
+    method = QtTestObject::staticMetaObject.method(index);
+    //wrong args
+    QVERIFY(!method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4")));
+    //QVERIFY(!method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5"), Q_ARG(QString, "6")));
+    //QVERIFY(!method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(int, 5)));
+    QVERIFY(!method.invoke(&obj, Q_RETURN_ARG(QString, ret), Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5")));
+
+    //wrong object
+    //QVERIFY(!method.invoke(this, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5")));
+    QVERIFY(!method.invoke(0, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5")));
+    QCOMPARE(ret, QString("bar"));
+    QCOMPARE(obj.slotResult, QString());
+
+    QVERIFY(method.invoke(&obj, Q_ARG(QString, "1"), Q_ARG(QString, "2"), Q_ARG(QString, "3"), Q_ARG(QString, "4"), Q_ARG(QString, "5")));
+    QCOMPARE(obj.slotResult, QString("sl5:12345"));
+
+    index = QtTestObject::staticMetaObject.indexOfMethod("sl13(QList<QString>)");
+    QVERIFY(index > 0);
+    QMetaMethod sl13 = QtTestObject::staticMetaObject.method(index);
+    QList<QString> returnValue, argument;
+    argument << QString("one") << QString("two") << QString("three");
+    //wrong object
+    //QVERIFY(!sl13.invoke(this, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
+    QVERIFY(!sl13.invoke(0,  Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, QList<QString>());
+
+    QVERIFY(sl13.invoke(&obj, Q_RETURN_ARG(QList<QString>, returnValue), Q_ARG(QList<QString>, argument)));
+    QCOMPARE(returnValue, argument);
+    QCOMPARE(obj.slotResult, QString("sl13"));
 }
 
 QTEST_MAIN(tst_QMetaObject)
