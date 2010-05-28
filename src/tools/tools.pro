@@ -45,24 +45,24 @@ EXTRA_RELEASE_TARGETS =
         SUB_TEMPLATE = $$list($$fromfile($$subpro, TEMPLATE))
         !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs) | isEqual(subname, src_tools_idc) | isEqual(subname, src_tools_uic3)):!separate_debug_info {
             #debug
-            eval(debug-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS)
-            eval(debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug))
+            debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
+            debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)
             EXTRA_DEBUG_TARGETS += debug-$${subtarget}
             QMAKE_EXTRA_TARGETS += debug-$${subtarget}
             #release
-            eval(release-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS)
-            eval(release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) release))
+            release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
+            release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) release)
             EXTRA_RELEASE_TARGETS += release-$${subtarget}
             QMAKE_EXTRA_TARGETS += release-$${subtarget}
         } else { #do not have a real debug target/release
             #debug
-            eval(debug-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS)
-            eval(debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first))
+            debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
+            debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
             EXTRA_DEBUG_TARGETS += debug-$${subtarget}
             QMAKE_EXTRA_TARGETS += debug-$${subtarget}
             #release
-            eval(release-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS)
-            eval(release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first))
+            release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
+            release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
             EXTRA_RELEASE_TARGETS += release-$${subtarget}
             QMAKE_EXTRA_TARGETS += release-$${subtarget}
         }
