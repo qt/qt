@@ -212,11 +212,11 @@ private: // Data
     TBool              iInitOk;
     TBool              iUpdateGoingOn;
     TBool              iIgnoringUpdates;
-    TUint              iTimeToWait;
-    QEventLoop*        iIgnoreEventLoop;
 
     AccessPointsAvailabilityScanner* ipAccessPointsAvailabilityScanner;
-    
+
+    QNetworkConfigurationPrivatePointer defaultConfig;
+
     friend class QNetworkSessionPrivate;
     friend class AccessPointsAvailabilityScanner;
     friend class QNetworkSessionPrivateImpl;
