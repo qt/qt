@@ -473,7 +473,7 @@ static int qCocoaViewCount = 0;
     }
 
     // Make sure the opengl context is updated on resize.
-    if (qwidgetprivate && qwidgetprivate->isGLWidget) {
+    if (qwidgetprivate && qwidgetprivate->isGLWidget && [self window]) {
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
