@@ -7,6 +7,5 @@
     </qresource>
     <qresource prefix="/qml" lang="qml">
         <file>qmlShell.qml</file>
-        <file>MagicAnim.qml</file>
     </qresource>
 </RCC>

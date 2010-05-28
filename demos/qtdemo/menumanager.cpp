@@ -59,8 +59,6 @@ MenuManager::MenuManager()
     this->tickerInAnim = 0;
     this->upButton = 0;
     this->downButton = 0;
-    this->mainSceneBlur = 0;
-    this->qmlShadow = 0;
     this->helpEngine = 0;
     this->score = new Score();
     this->currentMenu = QLatin1String("[no menu visible]");
@@ -381,8 +379,14 @@ void MenuManager::launchQmlExample(const QString &name)
         }
     }
 
+    QPainter painter(qmlBgImage);
+    this->window->fpsLabel->setOpacity(0);
+    this->window->render(&painter);
+    this->window->fpsLabel->setOpacity(1.0);
+    Qt::ImageConversionFlags convFlags = Qt::AvoidDither | Qt::NoOpaqueDetection;
+    this->declarativeEngine->rootContext()->setContextProperty("bgAppPixmap", QVariant(QPixmap::fromImage(*qmlBgImage, convFlags)));
     qmlRoot->setProperty("show", QVariant(true));
-    qmlRoot->setProperty("source", file.fileName());
+    qmlRoot->setProperty("qmlFile", QUrl::fromLocalFile(file.fileName()));
 }
 
 void MenuManager::exampleFinished()
@@ -400,15 +404,6 @@ void MenuManager::exampleError(QProcess::ProcessError error)
 void MenuManager::init(MainWindow *window)
 {
     this->window = window;
-
-    //Create blur for later use
-    // Note that blur is DISABLED by default because it's too slow, even on Desktop machines
-    if(!Colors::noBlur){
-        this->mainSceneBlur = new QGraphicsBlurEffect(this);
-        this->mainSceneBlur->setEnabled(false);
-        this->mainSceneBlur->setBlurRadius(0);
-        this->window->mainSceneRoot->setGraphicsEffect(mainSceneBlur);
-    }
 
     // Create div:
     this->createTicker();
@@ -439,8 +434,15 @@ void MenuManager::init(MainWindow *window)
 
     // Create QML Loader
     qmlRegisterType<QGraphicsBlurEffect>("Effects", 1, 0, "Blur");
+    qmlRegisterType<QGraphicsDropShadowEffect>("Effects", 1, 0, "DropShadow");
     declarativeEngine = new QDeclarativeEngine(this);
-    MenuManager::instance()->declarativeEngine->rootContext()->setContextProperty("realBlur", this->mainSceneBlur);
+
+    // Note that we paint the background into a static image for a theorized performance improvement when blurring
+    // It has not yet been determined what, if any, speed up this gives (but is left in 'cause the QML expects it now)
+    this->qmlBgImage = new QImage(window->sceneRect().size().toSize(), QImage::Format_ARGB32);
+    this->qmlBgImage->fill(0);
+    declarativeEngine->rootContext()->setContextProperty("useBlur", !Colors::noBlur);
+    declarativeEngine->rootContext()->setContextProperty("bgAppPixmap", QVariant(QPixmap::fromImage(*qmlBgImage)));
     QDeclarativeComponent component(declarativeEngine, QUrl("qrc:qml/qmlShell.qml"), this);
     qmlRoot = 0;
     if(component.isReady())
@@ -450,14 +452,9 @@ void MenuManager::init(MainWindow *window)
     if(qmlRoot){
         qmlRoot->setHeight(this->window->scene->sceneRect().height());
         qmlRoot->setWidth(this->window->scene->sceneRect().width());
-        qmlRoot->setZValue(1000);//Above other items
+        qmlRoot->setZValue(101);//Above other items
         qmlRoot->setCursor(Qt::ArrowCursor);
         window->scene->addItem(qmlRoot);
-        if(!Colors::noBlur){
-            qmlShadow = new QGraphicsDropShadowEffect(this);
-            qmlShadow->setOffset(4);
-            qmlRoot->setGraphicsEffect(qmlShadow);
-        }
 
         //Note that QML adds key handling to the app.
         window->viewport()->setFocusPolicy(Qt::NoFocus);//Correct keyboard focus handling

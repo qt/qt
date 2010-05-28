@@ -270,7 +270,7 @@ void Colors::parseArgs(int argc, char *argv[])
         else if (s.startsWith("-h") || s.startsWith("-help")){
             QMessageBox::warning(0, "Arguments",
                                  QString("Usage: qtdemo [-verbose] [-no-adapt] [-opengl] [-software] [-fullscreen] [-ticker[0|1]] ")
-                                 + "[-animations[0|1]] [-no-blending] [-no-sync] [-use-timer-update[0|1]] [-pause[0|1]]  "
+                                 + "[-animations[0|1]] [-no-blending] [-use-blur] [-no-sync] [-use-timer-update[0|1]] [-pause[0|1]]  "
                                  + "[-use-window-mask] [-no-rescale] "
                                  + "[-use-pixmaps] [-show-fps] [-show-br] [-8bit[0|1]] [-menu<int>] [-use-loop] [-use-balls] "
                                  + "[-animation-speed<float>] [-fps<int>] "

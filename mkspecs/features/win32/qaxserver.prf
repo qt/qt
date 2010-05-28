@@ -19,10 +19,10 @@ equals(ACTIVEQT_IDE, "VisualStudio") {
     ACTIVEQT_IDL = $${QMAKE_IDL}
     ACTIVEQT_TARGET = "$(TargetPath)"
     win32-msvc {
-        ACTIVEQT_NEWLINE = $$escape_expand(\t)
+        ACTIVEQT_NEWLINE = $$escape_expand(\\t)
         ACTIVEQT_OUTPUT = $(IntDir)/$${TARGET}
     } else {
-        ACTIVEQT_NEWLINE = $$escape_expand(\n\t)
+        ACTIVEQT_NEWLINE = $$escape_expand(\\n\\t)
         ACTIVEQT_OUTPUT = $(IntDir)$${TARGET}
     }
     ACTIVEQT_TLBOUT = "$(TargetDir)/$${TARGET}.tlb"
@@ -31,7 +31,7 @@ equals(ACTIVEQT_IDE, "VisualStudio") {
 equals(ACTIVEQT_IDE, "makefile") {
     ACTIVEQT_IDC = -$(IDC)
     ACTIVEQT_IDL = -$(IDL)
-    ACTIVEQT_NEWLINE = $$escape_expand(\n\t)
+    ACTIVEQT_NEWLINE = $$escape_expand(\\n\\t)
     ACTIVEQT_TARGET = $(DESTDIR_TARGET)
     ACTIVEQT_OUTPUT = $(OBJECTS_DIR)/$${TARGET}
     isEmpty(DESTDIR) {

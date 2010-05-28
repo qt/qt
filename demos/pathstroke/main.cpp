@@ -48,10 +48,7 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
 
-    bool smallScreen = false;
-    for (int i=0; i<argc; i++)
-        if (QString(argv[i]) == "-small-screen")
-            smallScreen = true;
+    bool smallScreen = QApplication::arguments().contains("-small-screen");
 
     PathStrokeWidget pathStrokeWidget(smallScreen);
     QStyle *arthurStyle = new ArthurStyle();

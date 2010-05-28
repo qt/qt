@@ -131,6 +131,8 @@ qrc_*.cpp
 *.vcproj
 *vcproj.*.*.user
 *.ncb
+*.vcxproj
+*.vcxproj.filters
 
 # MinGW generated files
 *.Debug

@@ -41,6 +41,7 @@ qhp.Qml.extraFiles            = images/bg_l.png \
 									images/page.png \
 									images/page_bg.png \
 									images/sprites-combined.png \
+									images/spinner.png \
                              	    images/stylesheet-coffee-plastique.png \
                              	    images/taskmenuextension-example.png \
                              	   images/coloreditorfactoryimage.png \

@@ -85,8 +85,7 @@ public:
 
     QDeclarativeEngine* declarativeEngine;
     QDeclarativeItem *qmlRoot;
-    QGraphicsBlurEffect *mainSceneBlur;
-    QGraphicsDropShadowEffect *qmlShadow;
+    QImage *qmlBgImage;
 
 private slots:
     void exampleFinished();

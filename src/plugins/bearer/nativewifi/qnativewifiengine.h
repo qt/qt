@@ -91,12 +91,13 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    inline bool available() const { return handle != 0; }
+    bool available();
 
     bool requiresPolling() const;
 
-public Q_SLOTS:
+private Q_SLOTS:
     void scanComplete();
+    void closeHandle();
 
 private:
     Qt::HANDLE handle;

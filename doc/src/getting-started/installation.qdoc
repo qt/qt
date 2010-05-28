@@ -959,7 +959,7 @@ applications using Qt for Symbian can start right away.}
         \l{http://www.microsoft.com/downloads/details.aspx?FamilyID=0baf2b35-c656-4969-ace8-e4c0c0716adb&amp;DisplayLang=en}{here}.
     \endlist
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -969,7 +969,7 @@ applications using Qt for Symbian can start right away.}
     \brief Setting up the Mac OS X environment for Qt.
     \previouspage General Qt Requirements
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -1108,7 +1108,7 @@ applications using Qt for Symbian can start right away.}
     distributions; try searching for \c gstreamer or \c libgstreamer in your
     distribution's package repository to find suitable packages.
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -1162,7 +1162,7 @@ applications using Qt for Symbian can start right away.}
     information on Windows CE Customization can be found
     \l{Windows CE - Working with Custom SDKs}{here}.
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -1172,7 +1172,7 @@ applications using Qt for Symbian can start right away.}
     \brief Setting up the Embedded Linux environment for Qt.
     \previouspage General Qt Requirements
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 
     \section1 Building Qt for Embedded Linux with uclibc
 
@@ -1272,5 +1272,5 @@ applications using Qt for Symbian can start right away.}
     We recommend you to take a look at \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
     to get more information about how to setup the development environment.
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */

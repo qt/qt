@@ -84,6 +84,7 @@ private slots:
     void jsActivationObject();
     void qobjectAsActivationObject();
     void parentContextCallee_QT2270();
+    void popNativeContextScope();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -537,6 +538,50 @@ void tst_QScriptContext::pushAndPopContext()
         QCOMPARE(eng.currentContext(), ctx5);
         eng.popContext();
     }
+}
+
+void tst_QScriptContext::popNativeContextScope()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QVERIFY(ctx->popScope().isObject()); // the activation object
+
+    QCOMPARE(ctx->scopeChain().size(), 1);
+    QVERIFY(ctx->scopeChain().at(0).strictlyEquals(eng.globalObject()));
+    // This was different in 4.5: scope and activation were decoupled
+    QVERIFY(ctx->activationObject().strictlyEquals(eng.globalObject()));
+
+    QVERIFY(!eng.evaluate("var foo = 123; function bar() {}").isError());
+    QVERIFY(eng.globalObject().property("foo").isNumber());
+    QVERIFY(eng.globalObject().property("bar").isFunction());
+
+    QScriptValue customScope = eng.newObject();
+    ctx->pushScope(customScope);
+    QCOMPARE(ctx->scopeChain().size(), 2);
+    QVERIFY(ctx->scopeChain().at(0).strictlyEquals(customScope));
+    QVERIFY(ctx->scopeChain().at(1).strictlyEquals(eng.globalObject()));
+    QVERIFY(ctx->activationObject().strictlyEquals(eng.globalObject()));
+    ctx->setActivationObject(customScope);
+    QVERIFY(ctx->activationObject().strictlyEquals(customScope));
+    QCOMPARE(ctx->scopeChain().size(), 2);
+    QVERIFY(ctx->scopeChain().at(0).strictlyEquals(customScope));
+    QEXPECT_FAIL("", "QTBUG-11012", Continue);
+    QVERIFY(ctx->scopeChain().at(1).strictlyEquals(eng.globalObject()));
+
+    QVERIFY(!eng.evaluate("baz = 456; var foo = 789; function barbar() {}").isError());
+    QEXPECT_FAIL("", "QTBUG-11012", Continue);
+    QVERIFY(eng.globalObject().property("baz").isNumber());
+    QVERIFY(customScope.property("foo").isNumber());
+    QVERIFY(customScope.property("barbar").isFunction());
+
+    QVERIFY(ctx->popScope().strictlyEquals(customScope));
+    QCOMPARE(ctx->scopeChain().size(), 1);
+    QEXPECT_FAIL("", "QTBUG-11012", Continue);
+    QVERIFY(ctx->scopeChain().at(0).strictlyEquals(eng.globalObject()));
+
+    // Need to push another object, otherwise we crash in popContext() (QTBUG-11012)
+    ctx->pushScope(customScope);
+    eng.popContext();
 }
 
 void tst_QScriptContext::lineNumber()

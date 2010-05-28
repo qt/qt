@@ -666,7 +666,8 @@ void QApplicationPrivate::process_cmdline()
         \o  -geometry \e geometry, sets the client geometry of the first window
             that is shown.
         \o  -fn or \c -font \e font, defines the application font. The font
-            should be specified using an X logical font description.
+            should be specified using an X logical font description. Note that
+            this option is ignored when Qt is built with fontconfig support enabled.
         \o  -bg or \c -background \e color, sets the default background color
             and an application palette (light and dark shades are calculated).
         \o  -fg or \c -foreground \e color, sets the default foreground color.
@@ -2218,15 +2219,17 @@ void QApplication::closeAllWindows()
 {
     bool did_close = true;
     QWidget *w;
-    while((w = activeModalWidget()) && did_close) {
-        if(!w->isVisible())
+    while ((w = activeModalWidget()) && did_close) {
+        if (!w->isVisible() || w->data->is_closing)
             break;
         did_close = w->close();
     }
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; did_close && i < list.size(); ++i) {
         w = list.at(i);
-        if (w->isVisible() && w->windowType() != Qt::Desktop) {
+        if (w->isVisible()
+            && w->windowType() != Qt::Desktop
+            && !w->data->is_closing) {
             did_close = w->close();
             list = QApplication::topLevelWidgets();
             i = -1;
@@ -5268,18 +5271,20 @@ bool QApplication::keypadNavigationEnabled()
     This function replaces the QInputContext instance used by the application
     with \a inputContext.
 
+    Qt takes ownership of the given \a inputContext.
+
     \sa inputContext()
 */
 void QApplication::setInputContext(QInputContext *inputContext)
 {
-    Q_D(QApplication);
-    Q_UNUSED(d);// only static members being used.
+    if (inputContext == QApplicationPrivate::inputContext)
+        return;
     if (!inputContext) {
         qWarning("QApplication::setInputContext: called with 0 input context");
         return;
     }
-    delete d->inputContext;
-    d->inputContext = inputContext;
+    delete QApplicationPrivate::inputContext;
+    QApplicationPrivate::inputContext = inputContext;
 }
 
 /*!
