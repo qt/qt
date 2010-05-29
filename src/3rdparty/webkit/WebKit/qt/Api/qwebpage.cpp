@@ -1294,6 +1294,9 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
 {
     WebCore::Frame *frame = page->focusController()->focusedOrMainFrame();
     WebCore::Editor *editor = frame->editor();
+#if QT_VERSION >= 0x040600
+    QInputMethodEvent::Attribute selection(QInputMethodEvent::Selection, 0, 0, QVariant());
+#endif
 
     if (!editor->canEdit()) {
         ev->ignore();
@@ -1310,6 +1313,7 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         renderTextControl = toRenderTextControl(renderer);
 
     Vector<CompositionUnderline> underlines;
+    bool hasSelection = false;
 
     for (int i = 0; i < ev->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute& a = ev->attributes().at(i);
@@ -1333,10 +1337,8 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         }
 #if QT_VERSION >= 0x040600
         case QInputMethodEvent::Selection: {
-            if (renderTextControl) {
-                renderTextControl->setSelectionStart(qMin(a.start, (a.start + a.length)));
-                renderTextControl->setSelectionEnd(qMax(a.start, (a.start + a.length)));
-            }
+            selection = a;
+            hasSelection = true;
             break;
         }
 #endif
@@ -1345,10 +1347,25 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
 
     if (!ev->commitString().isEmpty())
         editor->confirmComposition(ev->commitString());
-    else if (!ev->preeditString().isEmpty()) {
+    else {
+        // 1. empty preedit with a selection attribute, and start/end of 0 cancels composition
+        // 2. empty preedit with a selection attribute, and start/end of non-0 updates selection of current preedit text
+        // 3. populated preedit with a selection attribute, and start/end of 0 or non-0 updates selection of supplied preedit text
+        // 4. otherwise event is updating supplied pre-edit text
         QString preedit = ev->preeditString();
-        editor->setComposition(preedit, underlines, preedit.length(), 0);
+#if QT_VERSION >= 0x040600
+        if (hasSelection) {
+            QString text = (renderTextControl) ? QString(renderTextControl->text()) : QString();
+            if (preedit.isEmpty() && selection.start + selection.length > 0)
+                preedit = text;
+            editor->setComposition(preedit, underlines,
+                                   (selection.length < 0) ? selection.start + selection.length : selection.start,
+                                   (selection.length < 0) ? selection.start : selection.start + selection.length);
+        } else
+#endif
+            editor->setComposition(preedit, underlines, preedit.length(), 0);
     }
+
     ev->accept();
 }
 
@@ -3329,11 +3346,36 @@ QString QWebPage::userAgentForUrl(const QUrl&) const
 #elif defined Q_WS_X11
         "X11"
 #elif defined Q_OS_SYMBIAN
-        "SymbianOS"
+        "Symbian"
 #else
         "Unknown"
 #endif
     );
+
+#if defined Q_OS_SYMBIAN
+        QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
+        switch (symbianVersion) {
+        case QSysInfo::SV_9_2:
+            firstPartTemp += QString::fromLatin1("OS/9.2");
+            break;
+        case QSysInfo::SV_9_3:
+            firstPartTemp += QString::fromLatin1("OS/9.3");
+            break;                
+        case QSysInfo::SV_9_4:
+            firstPartTemp += QString::fromLatin1("OS/9.4");
+            break;
+        case QSysInfo::SV_SF_2:
+            firstPartTemp += QString::fromLatin1("/2");
+            break;
+        case QSysInfo::SV_SF_3:
+            firstPartTemp += QString::fromLatin1("/3");
+            break;
+        case QSysInfo::SV_SF_4:
+            firstPartTemp += QString::fromLatin1("/4");
+        default:
+            break;
+        }
+#endif
 
         firstPartTemp += QString::fromLatin1("; ");
 
@@ -3458,51 +3500,22 @@ QString QWebPage::userAgentForUrl(const QUrl&) const
         firstPartTemp += QString::fromLatin1("Sun Solaris");
 #elif defined Q_OS_ULTRIX
         firstPartTemp += QString::fromLatin1("DEC Ultrix");
-#elif defined Q_OS_SYMBIAN
-        firstPartTemp += QString::fromLatin1("SymbianOS");
-        QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
-        switch (symbianVersion) {
-        case QSysInfo::SV_9_2:
-            firstPartTemp += QString::fromLatin1("/9.2");
-            break;
-        case QSysInfo::SV_9_3:
-            firstPartTemp += QString::fromLatin1("/9.3");
-            break;
-        case QSysInfo::SV_9_4:
-            firstPartTemp += QString::fromLatin1("/9.4");
-            break;
-        case QSysInfo::SV_SF_2:
-            firstPartTemp += QString::fromLatin1("^2");
-            break;
-        case QSysInfo::SV_SF_3:
-            firstPartTemp += QString::fromLatin1("^3");
-            break;
-        case QSysInfo::SV_SF_4:
-            firstPartTemp += QString::fromLatin1("^4");
-            break;
-        default:
-            firstPartTemp += QString::fromLatin1("/Unknown");
-        }
-
-#if defined Q_WS_S60
+#elif defined Q_WS_S60
         firstPartTemp += QLatin1Char(' ');
-        firstPartTemp += QString::fromLatin1("Series60");
         QSysInfo::S60Version s60Version = QSysInfo::s60Version();
         switch (s60Version) {
         case QSysInfo::SV_S60_3_1:
-            firstPartTemp += QString::fromLatin1("/3.1");
+            firstPartTemp += QString::fromLatin1("Series60/3.1");
             break;
         case QSysInfo::SV_S60_3_2:
-            firstPartTemp += QString::fromLatin1("/3.2");
+            firstPartTemp += QString::fromLatin1("Series60/3.2");
             break;
         case QSysInfo::SV_S60_5_0:
-            firstPartTemp += QString::fromLatin1("/5.0");
+            firstPartTemp += QString::fromLatin1("Series60/5.0");
             break;
         default:
-            firstPartTemp += QString::fromLatin1("/Unknown");
+            break;
         }
-#endif
-
 #elif defined Q_OS_UNIX
         firstPartTemp += QString::fromLatin1("UNIX BSD/SYSV system");
 #elif defined Q_OS_UNIXWARE
@@ -3532,8 +3545,8 @@ QString QWebPage::userAgentForUrl(const QUrl&) const
 
         QString thirdPartTemp;
         thirdPartTemp.reserve(150);
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
-        thirdPartTemp + QLatin1String(" Mobile Safari/");
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+        thirdPartTemp += QLatin1String(" Mobile Safari/");
 #else
         thirdPartTemp += QLatin1String(" Safari/");
 #endif
