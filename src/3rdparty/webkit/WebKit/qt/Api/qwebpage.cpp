@@ -51,6 +51,7 @@
 #include "EditorClientQt.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "TiledBackingStore.h"
 #include "Page.h"
 #include "Pasteboard.h"
 #include "FrameLoader.h"
@@ -1386,7 +1387,42 @@ void QWebPagePrivate::dynamicPropertyChangeEvent(QDynamicPropertyChangeEvent* ev
     } else if (event->propertyName() == "_q_HTMLTokenizerTimeDelay") {
         double timeDelay = q->property("_q_HTMLTokenizerTimeDelay").toDouble();
         q->handle()->page->setCustomHTMLTokenizerTimeDelay(timeDelay);
+    } 
+#if ENABLE(TILED_BACKING_STORE)
+    else if (event->propertyName() == "_q_TiledBackingStoreTileSize") {
+        WebCore::Frame* frame = QWebFramePrivate::core(q->mainFrame());
+        if (!frame->tiledBackingStore())
+            return;
+        QSize tileSize = q->property("_q_TiledBackingStoreTileSize").toSize();
+        frame->tiledBackingStore()->setTileSize(tileSize);
+    } else if (event->propertyName() == "_q_TiledBackingStoreTileCreationDelay") {
+        WebCore::Frame* frame = QWebFramePrivate::core(q->mainFrame());
+        if (!frame->tiledBackingStore())
+            return;
+        int tileCreationDelay = q->property("_q_TiledBackingStoreTileCreationDelay").toInt();
+        frame->tiledBackingStore()->setTileCreationDelay(static_cast<double>(tileCreationDelay) / 1000.);
+    } else if (event->propertyName() == "_q_TiledBackingStoreKeepAreaMultiplier") {
+        WebCore::Frame* frame = QWebFramePrivate::core(q->mainFrame());
+        if (!frame->tiledBackingStore())
+            return;
+        FloatSize keepMultiplier;
+        FloatSize coverMultiplier;
+        frame->tiledBackingStore()->getKeepAndCoverAreaMultipliers(keepMultiplier, coverMultiplier);
+        QSizeF qSize = q->property("_q_TiledBackingStoreKeepAreaMultiplier").toSizeF();
+        keepMultiplier = FloatSize(qSize.width(), qSize.height());
+        frame->tiledBackingStore()->setKeepAndCoverAreaMultipliers(keepMultiplier, coverMultiplier);
+    } else if (event->propertyName() == "_q_TiledBackingStoreCoverAreaMultiplier") {
+        WebCore::Frame* frame = QWebFramePrivate::core(q->mainFrame());
+        if (!frame->tiledBackingStore())
+            return;
+        FloatSize keepMultiplier;
+        FloatSize coverMultiplier;
+        frame->tiledBackingStore()->getKeepAndCoverAreaMultipliers(keepMultiplier, coverMultiplier);
+        QSizeF qSize = q->property("_q_TiledBackingStoreCoverAreaMultiplier").toSizeF();
+        coverMultiplier = FloatSize(qSize.width(), qSize.height());
+        frame->tiledBackingStore()->setKeepAndCoverAreaMultipliers(keepMultiplier, coverMultiplier);
     }
+#endif
 }
 
 void QWebPagePrivate::shortcutOverrideEvent(QKeyEvent* event)
@@ -1709,6 +1745,7 @@ InspectorController* QWebPagePrivate::inspectorController()
     \value Back Navigate back in the history of navigated links.
     \value Forward Navigate forward in the history of navigated links.
     \value Stop Stop loading the current page.
+    \value StopScheduledPageRefresh Stop all pending page refresh/redirect requests.
     \value Reload Reload the current page.
     \value ReloadAndBypassCache Reload the current page, but do not use any local cache. (Added in Qt 4.6)
     \value Cut Cut the content currently selected into the clipboard.
@@ -2114,6 +2151,15 @@ static void openNewWindow(const QUrl& url, WebCore::Frame* frame)
     }
 }
 
+static void collectChildFrames(QWebFrame* frame, QList<QWebFrame*>& list)
+{
+    list << frame->childFrames();
+    QListIterator<QWebFrame*> it(frame->childFrames());
+    while (it.hasNext()) {
+        collectChildFrames(it.next(), list);
+    }
+}
+
 /*!
     This function can be called to trigger the specified \a action.
     It is also called by QtWebKit if the user triggers the action, for example
@@ -2208,6 +2254,16 @@ void QWebPage::triggerAction(WebAction action, bool)
                 d->page->inspectorController()->inspect(d->hitTestResult.d->innerNonSharedNode.get());
             }
 #endif
+            break;
+        }
+        case StopScheduledPageRefresh: {
+            QWebFrame* topFrame = mainFrame();
+            topFrame->d->frame->redirectScheduler()->cancel();
+            QList<QWebFrame*> childFrames;
+            collectChildFrames(topFrame, childFrames);
+            QListIterator<QWebFrame*> it(childFrames);
+            while (it.hasNext())
+                it.next()->d->frame->redirectScheduler()->cancel();
             break;
         }
         default:
