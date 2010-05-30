@@ -120,22 +120,23 @@ void TiledBackingStore::paint(GraphicsContext* context, const IntRect& rect)
             if (currentTile && currentTile->isReadyToPaint())
                 currentTile->paint(context, dirtyRect);
             else {
-                FloatRect tileRect = tileRectForCoordinate(currentCoordinate);
-                FloatRect target = intersection(tileRect, FloatRect(rect));
-                Tile::paintCheckerPattern(context, target);
+                IntRect tileRect = tileRectForCoordinate(currentCoordinate);
+                IntRect target = intersection(tileRect, dirtyRect);
+                if (target.isEmpty())
+                    continue;
+                Tile::paintCheckerPattern(context, FloatRect(target));
             }
         }
     }
     context->restore();
 }
 
-void TiledBackingStore::viewportChanged(const IntRect& contentsViewport)
+void TiledBackingStore::adjustVisibleRect()
 {
-    IntRect viewport = mapFromContents(contentsViewport);
-    if (m_viewport == viewport)
+    IntRect visibleRect = mapFromContents(m_client->tiledBackingStoreVisibleRect());
+    if (m_previousVisibleRect == visibleRect)
         return;
-
-    m_viewport = viewport;
+    m_previousVisibleRect = visibleRect;
 
     startTileCreationTimer();
 }
@@ -177,24 +178,27 @@ void TiledBackingStore::createTiles()
 {
     if (m_contentsFrozen)
         return;
+    
+    IntRect visibleRect = mapFromContents(m_client->tiledBackingStoreVisibleRect());
+    m_previousVisibleRect = visibleRect;
 
-    if (m_viewport.isEmpty())
+    if (visibleRect.isEmpty())
         return;
 
     // Remove tiles that extend outside the current contents rect.
     dropOverhangingTiles();
 
     // FIXME: Make configurable/adapt to memory.
-    IntRect keepRect = m_viewport;
-    keepRect.inflateX(m_viewport.width());
-    keepRect.inflateY(3 * m_viewport.height());
+    IntRect keepRect = visibleRect;
+    keepRect.inflateX(visibleRect.width());
+    keepRect.inflateY(3 * visibleRect.height());
     keepRect.intersect(contentsRect());
     
     dropTilesOutsideRect(keepRect);
     
-    IntRect coverRect = m_viewport;
-    coverRect.inflateX(m_viewport.width() / 2);
-    coverRect.inflateY(2 * m_viewport.height());
+    IntRect coverRect = visibleRect;
+    coverRect.inflateX(visibleRect.width() / 2);
+    coverRect.inflateY(2 * visibleRect.height());
     coverRect.intersect(contentsRect());
     
     // Search for the tile position closest to the viewport center that does not yet contain a tile. 
@@ -211,7 +215,7 @@ void TiledBackingStore::createTiles()
                 continue;
             ++requiredTileCount;
             // Distance is 0 for all currently visible tiles.
-            double distance = tileDistance(m_viewport, currentCoordinate);
+            double distance = tileDistance(visibleRect, currentCoordinate);
             if (distance > shortestDistance)
                 continue;
             if (distance < shortestDistance) {
