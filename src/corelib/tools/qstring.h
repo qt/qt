@@ -198,14 +198,18 @@ public:
     int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(const QLatin1String &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int indexOf(const QStringRef &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(QChar c, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QString &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QLatin1String &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int lastIndexOf(const QStringRef &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     inline QBool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     inline QBool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline QBool contains(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
 #ifndef QT_NO_REGEXP
     int indexOf(const QRegExp &, int from = 0) const;
@@ -241,9 +245,11 @@ public:
     QStringRef midRef(int position, int n = -1) const Q_REQUIRED_RESULT;
 
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool startsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(const QLatin1String &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(const QChar &c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool endsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(const QLatin1String &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(const QChar &c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
@@ -901,6 +907,8 @@ inline QString::const_iterator QString::constEnd() const
 { return reinterpret_cast<const QChar*>(d->data + d->size); }
 inline QBool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
 { return QBool(indexOf(s, 0, cs) != -1); }
+inline QBool QString::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
+{ return QBool(indexOf(s, 0, cs) != -1); }
 inline QBool QString::contains(QChar c, Qt::CaseSensitivity cs) const
 { return QBool(indexOf(c, 0, cs) != -1); }
 
@@ -1122,6 +1130,34 @@ public:
         m_size = other.m_size; return *this;
     }
 
+    int indexOf(const QString &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int indexOf(QChar ch, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int indexOf(QLatin1String str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int indexOf(const QStringRef &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int lastIndexOf(const QString &str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int lastIndexOf(QChar ch, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int lastIndexOf(QLatin1String str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int lastIndexOf(const QStringRef &str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
+    inline QBool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline QBool contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline QBool contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline QBool contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
+    int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
+    bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool startsWith(const QStringRef &c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
+    bool endsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    bool endsWith(const QStringRef &c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
     inline QStringRef &operator=(const QString *string);
 
     inline const QChar *unicode() const {
@@ -1239,6 +1275,16 @@ inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QString &s
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
 inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QStringRef &s2)
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
+
+inline QBool QStringRef::contains(const QString &s, Qt::CaseSensitivity cs) const
+{ return QBool(indexOf(s, 0, cs) != -1); }
+inline QBool QStringRef::contains(QLatin1String s, Qt::CaseSensitivity cs) const
+{ return QBool(indexOf(s, 0, cs) != -1); }
+inline QBool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
+{ return QBool(indexOf(c, 0, cs) != -1); }
+inline QBool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
+{ return QBool(indexOf(s, 0, cs) != -1); }
+
 
 
 QT_END_NAMESPACE
