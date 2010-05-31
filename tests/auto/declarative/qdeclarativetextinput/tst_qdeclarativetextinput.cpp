@@ -322,11 +322,11 @@ void tst_qdeclarativetextinput::selection()
 
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
-        textinputObject->setSelectionEnd(i);
+        textinputObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textinputObject->selectedText());
     }
     for(int i=0; i<= testStr.size(); i++) {
-        textinputObject->setSelectionStart(i);
+        textinputObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textinputObject->selectedText());
     }
 
@@ -336,43 +336,26 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectionEnd() == 0);
     QVERIFY(textinputObject->selectedText().isNull());
 
-    for(int i=0; i< testStr.size(); i++) {
-        textinputObject->setSelectionStart(i);
-        QCOMPARE(textinputObject->selectionEnd(), i);
-        QCOMPARE(testStr.mid(i,0), textinputObject->selectedText());
-        textinputObject->setSelectionEnd(i+1);
-        QCOMPARE(textinputObject->selectionStart(), i);
-        QCOMPARE(testStr.mid(i,1), textinputObject->selectedText());
-    }
-
-    for(int i= testStr.size() - 1; i>0; i--) {
-        textinputObject->setSelectionEnd(i);
-        QCOMPARE(testStr.mid(i,0), textinputObject->selectedText());
-        textinputObject->setSelectionStart(i-1);
-        QCOMPARE(testStr.mid(i-1,1), textinputObject->selectedText());
-    }
-
     //Test Error Ignoring behaviour
     textinputObject->setCursorPosition(0);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionStart(-10);
+    textinputObject->select(-10,0);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionStart(100);
+    textinputObject->select(100,110);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionEnd(-10);
+    textinputObject->select(0,-10);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionEnd(100);
+    textinputObject->select(0,100);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionStart(0);
-    textinputObject->setSelectionEnd(10);
+    textinputObject->select(0,10);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionStart(-10);
+    textinputObject->select(-10,10);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionStart(100);
+    textinputObject->select(100,101);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionEnd(-10);
+    textinputObject->select(0,-10);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionEnd(100);
+    textinputObject->select(0,100);
     QVERIFY(textinputObject->selectedText().size() == 10);
 
     delete textinputObject;
@@ -565,8 +548,7 @@ void tst_qdeclarativetextinput::navigation()
     QVERIFY(input->hasFocus() == true);
     //QT-2944: If text is selected, ensure we deselect upon cursor motion
     input->setCursorPosition(input->text().length());
-    input->setSelectionStart(0);
-    input->setSelectionEnd(input->text().length());
+    input->select(0,input->text().length());
     QVERIFY(input->selectionStart() != input->selectionEnd());
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->selectionStart() == input->selectionEnd());
@@ -603,13 +585,13 @@ void tst_qdeclarativetextinput::cursorDelegate()
     //Test Delegate gets moved
     for(int i=0; i<= textInputObject->text().length(); i++){
         textInputObject->setCursorPosition(i);
-        //+5 is because the TextInput cursorRect is just a 10xHeight area centered on cursor position
-        QCOMPARE(textInputObject->cursorRect().x() + 5, qRound(delegateObject->x()));
-        QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
+        //+5 is because the TextInput cursorRectangle is just a 10xHeight area centered on cursor position
+        QCOMPARE(textInputObject->cursorRectangle().x() + 5, qRound(delegateObject->x()));
+        QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
     textInputObject->setCursorPosition(0);
-    QCOMPARE(textInputObject->cursorRect().x()+5, qRound(delegateObject->x()));
-    QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
+    QCOMPARE(textInputObject->cursorRectangle().x()+5, qRound(delegateObject->x()));
+    QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
     QVERIFY(!textInputObject->findChild<QDeclarativeItem*>("cursorInstance"));
@@ -881,8 +863,7 @@ void tst_qdeclarativetextinput::focusOutClearSelection()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    input.setSelectionStart(2);
-    input.setSelectionEnd(5);
+    input.select(2,5);
     //The selection should work
     QTRY_COMPARE(input.selectedText(), QLatin1String("llo"));
     input2.setFocus(true);

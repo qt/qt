@@ -717,12 +717,9 @@ void QDeclarativeTextEdit::loadCursorDelegate()
     \qmlproperty int TextEdit::selectionStart
 
     The cursor position before the first character in the current selection.
-    Setting this and selectionEnd allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionStart to a value outside of
-    the current text, selectionStart will not be changed.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
     \sa selectionEnd, cursorPosition, selectedText
 */
@@ -732,25 +729,13 @@ int QDeclarativeTextEdit::selectionStart() const
     return d->control->textCursor().selectionStart();
 }
 
-void QDeclarativeTextEdit::setSelectionStart(int s)
-{
-    Q_D(QDeclarativeTextEdit);
-    if(d->lastSelectionStart == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionStart = s;
-    d->updateSelection();// Will emit the relevant signals
-}
-
 /*!
     \qmlproperty int TextEdit::selectionEnd
 
     The cursor position after the last character in the current selection.
-    Setting this and selectionStart allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionEnd to a value outside of
-    the current text, selectionEnd will not be changed.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
     \sa selectionStart, cursorPosition, selectedText
 */
@@ -758,15 +743,6 @@ int QDeclarativeTextEdit::selectionEnd() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->control->textCursor().selectionEnd();
-}
-
-void QDeclarativeTextEdit::setSelectionEnd(int s)
-{
-    Q_D(QDeclarativeTextEdit);
-    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionEnd = s;
-    d->updateSelection();// Will emit the relevant signals
 }
 
 /*!
@@ -1018,6 +994,8 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 }
 
 /*!
+    \qmlmethod void TextEdit::selectAll()
+
     Causes all text to be selected.
 */
 void QDeclarativeTextEdit::selectAll()
@@ -1027,6 +1005,8 @@ void QDeclarativeTextEdit::selectAll()
 }
 
 /*!
+    \qmlmethod void TextEdit::selectWord()
+
     Causes the word closest to the current cursor position to be selected.
 */
 void QDeclarativeTextEdit::selectWord()
@@ -1035,6 +1015,35 @@ void QDeclarativeTextEdit::selectWord()
     QTextCursor c = d->control->textCursor();
     c.select(QTextCursor::WordUnderCursor);
     d->control->setTextCursor(c);
+}
+
+/*!
+    \qmlmethod void TextEdit::select(start,end)
+
+    Causes the text from \a start to \a end to be selected.
+
+    If either start or end is out of range, the selection is not changed.
+
+    After calling this, selectionStart will become the lesser
+    and selectionEnd will become the greater (regardless of the order passed
+    to this method).
+
+    \sa selectionStart, selectionEnd
+*/
+void QDeclarativeTextEdit::select(int start, int end)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (start < 0 || end < 0 || start > d->text.length() || end > d->text.length())
+        return;
+    QTextCursor cursor = d->control->textCursor();
+    cursor.beginEditBlock();
+    cursor.setPosition(start, QTextCursor::MoveAnchor);
+    cursor.setPosition(end, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    d->control->setTextCursor(cursor);
+
+    // QTBUG-11100
+    updateSelectionMarkers();
 }
 
 /*!
@@ -1254,7 +1263,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
     QTextCursor cursor = control->textCursor();
     bool startChange = (lastSelectionStart != cursor.selectionStart());
     bool endChange = (lastSelectionEnd != cursor.selectionEnd());
-    //### Is it worth calculating a more minimal set of movements?
     cursor.beginEditBlock();
     cursor.setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
     cursor.setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
@@ -1264,8 +1272,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
         q->selectionStartChanged();
     if(endChange)
         q->selectionEndChanged();
-    startChange = (lastSelectionStart != control->textCursor().selectionStart());
-    endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
 }
 
 void QDeclarativeTextEdit::updateSelectionMarkers()

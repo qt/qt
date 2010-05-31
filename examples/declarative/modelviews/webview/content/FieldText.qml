@@ -161,8 +161,6 @@ Item {
             color: "black"
             readOnly: false
             focus: true
-            selectionStart: 0
-            selectionEnd: -1
         }
         PropertyChanges {
             target: editRegion
