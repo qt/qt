@@ -96,8 +96,8 @@ Flickable {
         function doZoom(zoom,centerX,centerY)
         {
             if (centerX) {
-                var sc = zoom/contentsScale;
-                scaleAnim.to = zoom;
+                var sc = zoom*contentsScale;
+                scaleAnim.to = sc;
                 flickVX.from = flickable.contentX
                 flickVX.to = Math.max(0,Math.min(centerX-flickable.width/2,webView.width*sc-flickable.width))
                 finalX.value = flickVX.to
