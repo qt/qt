@@ -66,6 +66,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
 
     m_current_textitem = &ti;
     const int margin = glyphMargin();
+    const int paddingDoubled = glyphPadding() * 2;
 
     QHash<glyph_t, Coord> listItemCoordinates;
     int rowHeight = 0;
@@ -114,7 +115,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
     if (listItemCoordinates.isEmpty())
         return;
 
-    rowHeight += margin * 2;
+    rowHeight += margin * 2 + paddingDoubled;
     if (isNull())
         createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, rowHeight);
 
@@ -126,7 +127,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
         if (m_cx + c.w > m_w) {
             // no room on the current line, start new glyph strip
             m_cx = 0;
-            m_cy = m_h;
+            m_cy = m_h + paddingDoubled;
         }
         if (m_cy + c.h > m_h) {
             int new_height;
@@ -153,7 +154,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
         } else {
             // for the Mono case, glyph_width is 8-bit aligned,
             // and therefore so will m_cx
-            m_cx += c.w;
+            m_cx += c.w + paddingDoubled;
         }
         ++iter;
     }
