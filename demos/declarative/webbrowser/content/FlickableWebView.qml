@@ -48,6 +48,7 @@ Flickable {
     property alias progress: webView.progress
     property alias url: webView.url
     property alias back: webView.back
+    property alias stop: webView.stop
     property alias reload: webView.reload
     property alias forward: webView.forward
 
