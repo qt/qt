@@ -1066,9 +1066,14 @@ void QDeclarativeTextEdit::drawContents(QPainter *painter, const QRect &bounds)
 void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 {
     Q_D(const QDeclarativeTextEdit);
-    QRect r = rf.toRect();
-    if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
-        r = r.translated(0,d->yoff);
+    QRect r;
+    if (!rf.isValid()) {
+        r = QRect(0,0,INT_MAX,INT_MAX);
+    } else {
+        r = rf.toRect();
+        if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
+            r = r.translated(0,d->yoff);
+    }
     dirtyCache(r);
     emit update();
 }
