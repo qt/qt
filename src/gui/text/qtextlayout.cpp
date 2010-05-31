@@ -858,7 +858,7 @@ QRectF QTextLayout::boundingRect() const
         const QScriptLine &si = d->lines[i];
         xmin = qMin(xmin, si.x);
         ymin = qMin(ymin, si.y);
-        xmax = qMax(xmax, si.x+qMax(si.width, si.textWidth));
+        xmax = qMax(xmax, si.x+si.textWidth);
         // ### shouldn't the ascent be used in ymin???
         ymax = qMax(ymax, si.y+si.height());
     }
