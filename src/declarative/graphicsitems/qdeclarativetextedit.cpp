@@ -570,7 +570,7 @@ int QDeclarativeTextEdit::positionAt(int x, int y) const
 }
 
 /*!
-    \qmlmethod int TextEdit::moveCursorSeletion(int pos)
+    \qmlmethod int TextEdit::moveCursorSelection(int pos)
 
     Moves the cursor to \a position and updates the selection accordingly.
     (To only move the cursor, set the \l cursorPosition property.)
