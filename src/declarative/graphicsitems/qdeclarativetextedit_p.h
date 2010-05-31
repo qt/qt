@@ -82,8 +82,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
     Q_PROPERTY(QRect cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
     Q_PROPERTY(QDeclarativeComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
-    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
-    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(int selectionStart READ selectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
     Q_PROPERTY(bool showInputPanelOnFocus READ showInputPanelOnFocus WRITE setShowInputPanelOnFocus NOTIFY showInputPanelOnFocusChanged)
@@ -160,10 +160,7 @@ public:
     void setCursorDelegate(QDeclarativeComponent*);
 
     int selectionStart() const;
-    void setSelectionStart(int);
-
     int selectionEnd() const;
-    void setSelectionEnd(int);
 
     QString selectedText() const;
 
@@ -230,6 +227,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void selectAll();
     void selectWord();
+    void select(int start, int end);
     void cut();
     void copy();
     void paste();

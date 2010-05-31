@@ -551,11 +551,11 @@ void tst_qdeclarativetextedit::selection()
 
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
-        textEditObject->setSelectionEnd(i);
+        textEditObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textEditObject->selectedText());
     }
     for(int i=0; i<= testStr.size(); i++) {
-        textEditObject->setSelectionStart(i);
+        textEditObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textEditObject->selectedText());
     }
 
@@ -565,43 +565,26 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectionEnd() == 0);
     QVERIFY(textEditObject->selectedText().isNull());
 
-    for(int i=0; i< testStr.size(); i++) {
-        textEditObject->setSelectionStart(i);
-        QCOMPARE(textEditObject->selectionEnd(), i);
-        QCOMPARE(testStr.mid(i,0), textEditObject->selectedText());
-        textEditObject->setSelectionEnd(i+1);
-        QCOMPARE(textEditObject->selectionStart(), i);
-        QCOMPARE(testStr.mid(i,1), textEditObject->selectedText());
-    }
-
-    for(int i= testStr.size() - 1; i>0; i--) {
-        textEditObject->setSelectionEnd(i);
-        QCOMPARE(testStr.mid(i,0), textEditObject->selectedText());
-        textEditObject->setSelectionStart(i-1);
-        QCOMPARE(testStr.mid(i-1,1), textEditObject->selectedText());
-    }
-
     //Test Error Ignoring behaviour
     textEditObject->setCursorPosition(0);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionStart(-10);
+    textEditObject->select(-10,0);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionStart(100);
+    textEditObject->select(100,101);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionEnd(-10);
+    textEditObject->select(0,-10);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionEnd(100);
+    textEditObject->select(0,100);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionStart(0);
-    textEditObject->setSelectionEnd(10);
+    textEditObject->select(0,10);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionStart(-10);
+    textEditObject->select(-10,0);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionStart(100);
+    textEditObject->select(100,101);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionEnd(-10);
+    textEditObject->select(0,-10);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionEnd(100);
+    textEditObject->select(0,100);
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
