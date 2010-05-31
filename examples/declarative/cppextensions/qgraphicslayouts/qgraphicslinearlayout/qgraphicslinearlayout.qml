@@ -59,9 +59,9 @@ Item {
             in linearlayout.h).
         */
 
-        layout: QGraphicsLinearLayout {
+        layout: GraphicsLinearLayout {
             LayoutItem {
-                QGraphicsLinearLayout.spacing: 50
+                GraphicsLinearLayout.spacing: 50
                 minimumSize: "100x100"
                 maximumSize: "200x200"
                 preferredSize: "100x100"

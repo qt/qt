@@ -46,19 +46,19 @@
 #include <QGraphicsLinearLayout>
 #include <QGraphicsLayoutItem>
 
-class QGraphicsLinearLayoutStretchItemObject : public QObject, public QGraphicsLayoutItem
+class GraphicsLinearLayoutStretchItemObject : public QObject, public QGraphicsLayoutItem
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsLayoutItem)
 public:
-    QGraphicsLinearLayoutStretchItemObject(QObject *parent = 0);
+    GraphicsLinearLayoutStretchItemObject(QObject *parent = 0);
 
     virtual QSizeF sizeHint(Qt::SizeHint, const QSizeF &) const;
 };
 
 
 class LinearLayoutAttached;
-class QGraphicsLinearLayoutObject : public QObject, public QGraphicsLinearLayout
+class GraphicsLinearLayoutObject : public QObject, public QGraphicsLinearLayout
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsLayout QGraphicsLayoutItem)
@@ -69,8 +69,8 @@ class QGraphicsLinearLayoutObject : public QObject, public QGraphicsLinearLayout
     Q_PROPERTY(qreal contentsMargin READ contentsMargin WRITE setContentsMargin)
     Q_CLASSINFO("DefaultProperty", "children")
 public:
-    QGraphicsLinearLayoutObject(QObject * = 0);
-    ~QGraphicsLinearLayoutObject();
+    GraphicsLinearLayoutObject(QObject * = 0);
+    ~GraphicsLinearLayoutObject();
 
     QDeclarativeListProperty<QGraphicsLayoutItem> children() { return QDeclarativeListProperty<QGraphicsLayoutItem>(this, 0, children_append, children_count, children_at, children_clear); }
 
@@ -93,19 +93,19 @@ private:
     void insertLayoutItem(int, QGraphicsLayoutItem *);
 
     static void children_append(QDeclarativeListProperty<QGraphicsLayoutItem> *prop, QGraphicsLayoutItem *item) {
-        static_cast<QGraphicsLinearLayoutObject*>(prop->object)->insertLayoutItem(-1, item);
+        static_cast<GraphicsLinearLayoutObject*>(prop->object)->insertLayoutItem(-1, item);
     }
 
     static void children_clear(QDeclarativeListProperty<QGraphicsLayoutItem> *prop) {
-        static_cast<QGraphicsLinearLayoutObject*>(prop->object)->clearChildren();
+        static_cast<GraphicsLinearLayoutObject*>(prop->object)->clearChildren();
     }
 
     static int children_count(QDeclarativeListProperty<QGraphicsLayoutItem> *prop) {
-        return static_cast<QGraphicsLinearLayoutObject*>(prop->object)->count();
+        return static_cast<GraphicsLinearLayoutObject*>(prop->object)->count();
     }
 
     static QGraphicsLayoutItem *children_at(QDeclarativeListProperty<QGraphicsLayoutItem> *prop, int index) {
-        return static_cast<QGraphicsLinearLayoutObject*>(prop->object)->itemAt(index);
+        return static_cast<GraphicsLinearLayoutObject*>(prop->object)->itemAt(index);
     }
 
     static QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> attachedProperties;
@@ -143,9 +143,9 @@ private:
 
 QML_DECLARE_INTERFACE(QGraphicsLayoutItem)
 QML_DECLARE_INTERFACE(QGraphicsLayout)
-QML_DECLARE_TYPE(QGraphicsLinearLayoutStretchItemObject)
-QML_DECLARE_TYPE(QGraphicsLinearLayoutObject)
-QML_DECLARE_TYPEINFO(QGraphicsLinearLayoutObject, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(GraphicsLinearLayoutStretchItemObject)
+QML_DECLARE_TYPE(GraphicsLinearLayoutObject)
+QML_DECLARE_TYPEINFO(GraphicsLinearLayoutObject, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif
 

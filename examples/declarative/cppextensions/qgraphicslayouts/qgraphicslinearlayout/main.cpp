@@ -51,8 +51,8 @@ int main(int argc, char* argv[])
 
     qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
     qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-    qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>("LinearLayouts",4,7,"QGraphicsLinearLayoutStretchItem");
-    qmlRegisterType<QGraphicsLinearLayoutObject>("LinearLayouts",4,7,"QGraphicsLinearLayout");
+    qmlRegisterType<GraphicsLinearLayoutStretchItemObject>("LinearLayouts", 4, 7, "GraphicsLinearLayoutStretchItem");
+    qmlRegisterType<GraphicsLinearLayoutObject>("LinearLayouts", 4, 7, "GraphicsLinearLayout");
 
     QDeclarativeView view;
     view.setSource(QUrl(":qgraphicslinearlayout.qml"));

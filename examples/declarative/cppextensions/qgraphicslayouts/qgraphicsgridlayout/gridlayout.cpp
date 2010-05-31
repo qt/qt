@@ -58,18 +58,18 @@ void GridLayoutAttached::setAlignment(Qt::Alignment a)
     }
 }
 
-QHash<QGraphicsLayoutItem*, GridLayoutAttached*> QGraphicsGridLayoutObject::attachedProperties;
+QHash<QGraphicsLayoutItem*, GridLayoutAttached*> GraphicsGridLayoutObject::attachedProperties;
 
-QGraphicsGridLayoutObject::QGraphicsGridLayoutObject(QObject *parent)
+GraphicsGridLayoutObject::GraphicsGridLayoutObject(QObject *parent)
 : QObject(parent)
 {
 }
 
-QGraphicsGridLayoutObject::~QGraphicsGridLayoutObject()
+GraphicsGridLayoutObject::~GraphicsGridLayoutObject()
 {
 }
 
-void QGraphicsGridLayoutObject::addWidget(QGraphicsWidget *widget)
+void GraphicsGridLayoutObject::addWidget(QGraphicsWidget *widget)
 {
     //use attached properties
     if (QObject *obj = attachedProperties.value(qobject_cast<QGraphicsLayoutItem*>(widget))) {
@@ -85,7 +85,7 @@ void QGraphicsGridLayoutObject::addWidget(QGraphicsWidget *widget)
     }
 }
 
-void QGraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
+void GraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
 {
     //use attached properties
     if (GridLayoutAttached *obj = attachedProperties.value(item)) {
@@ -134,7 +134,7 @@ void QGraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
     }
 }
 
-void QGraphicsGridLayoutObject::removeAt(int index)
+void GraphicsGridLayoutObject::removeAt(int index)
 {
     QGraphicsLayoutItem *item = itemAt(index);
     if (item) {
@@ -145,21 +145,21 @@ void QGraphicsGridLayoutObject::removeAt(int index)
     QGraphicsGridLayout::removeAt(index);
 }
 
-void QGraphicsGridLayoutObject::clearChildren()
+void GraphicsGridLayoutObject::clearChildren()
 {
     // do not delete the removed items; they will be deleted by the QML engine
     while (count() > 0)
         removeAt(count()-1);
 }
 
-qreal QGraphicsGridLayoutObject::spacing() const
+qreal GraphicsGridLayoutObject::spacing() const
 {
     if (verticalSpacing() == horizontalSpacing())
         return verticalSpacing();
     return -1; 
 }
 
-qreal QGraphicsGridLayoutObject::contentsMargin() const
+qreal GraphicsGridLayoutObject::contentsMargin() const
 {
     qreal a, b, c, d;
     getContentsMargins(&a, &b, &c, &d);
@@ -168,17 +168,17 @@ qreal QGraphicsGridLayoutObject::contentsMargin() const
     return -1;
 }
 
-void QGraphicsGridLayoutObject::setContentsMargin(qreal m)
+void GraphicsGridLayoutObject::setContentsMargin(qreal m)
 {
     setContentsMargins(m, m, m, m);
 }
 
-void QGraphicsGridLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::Alignment alignment)
+void GraphicsGridLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::Alignment alignment)
 {
     QGraphicsGridLayout::setAlignment(item, alignment);
 }
 
-GridLayoutAttached *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
+GridLayoutAttached *GraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
 {
     GridLayoutAttached *rv = new GridLayoutAttached(obj);
     if (qobject_cast<QGraphicsLayoutItem*>(obj))

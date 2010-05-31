@@ -72,12 +72,12 @@ void LinearLayoutAttached::setAlignment(Qt::Alignment a)
     }
 }
 
-QGraphicsLinearLayoutStretchItemObject::QGraphicsLinearLayoutStretchItemObject(QObject *parent)
+GraphicsLinearLayoutStretchItemObject::GraphicsLinearLayoutStretchItemObject(QObject *parent)
     : QObject(parent)
 {
 }
 
-QSizeF QGraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
+QSizeF GraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
     Q_UNUSED(which);
     Q_UNUSED(constraint);
@@ -85,16 +85,16 @@ QSizeF QGraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, cons
 }
 
 
-QGraphicsLinearLayoutObject::QGraphicsLinearLayoutObject(QObject *parent)
+GraphicsLinearLayoutObject::GraphicsLinearLayoutObject(QObject *parent)
 : QObject(parent)
 {
 }
 
-QGraphicsLinearLayoutObject::~QGraphicsLinearLayoutObject()
+GraphicsLinearLayoutObject::~GraphicsLinearLayoutObject()
 {
 }
 
-void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutItem *item)
+void GraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutItem *item)
 {
     insertItem(index, item);
 
@@ -111,7 +111,7 @@ void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutIte
     }
 }
 
-void QGraphicsLinearLayoutObject::removeAt(int index)
+void GraphicsLinearLayoutObject::removeAt(int index)
 {
     QGraphicsLayoutItem *item = itemAt(index);
     if (item) {
@@ -122,14 +122,14 @@ void QGraphicsLinearLayoutObject::removeAt(int index)
     QGraphicsLinearLayout::removeAt(index);
 }
 
-void QGraphicsLinearLayoutObject::clearChildren()
+void GraphicsLinearLayoutObject::clearChildren()
 {
     // do not delete the removed items; they will be deleted by the QML engine
     while (count() > 0)
         removeAt(count()-1);
 }
 
-qreal QGraphicsLinearLayoutObject::contentsMargin() const
+qreal GraphicsLinearLayoutObject::contentsMargin() const
 {
     qreal a, b, c, d;
     getContentsMargins(&a, &b, &c, &d);
@@ -138,17 +138,17 @@ qreal QGraphicsLinearLayoutObject::contentsMargin() const
     return -1;
 }
 
-void QGraphicsLinearLayoutObject::setContentsMargin(qreal m)
+void GraphicsLinearLayoutObject::setContentsMargin(qreal m)
 {
     setContentsMargins(m, m, m, m);
 }
 
-void QGraphicsLinearLayoutObject::updateStretch(QGraphicsLayoutItem *item, int stretch)
+void GraphicsLinearLayoutObject::updateStretch(QGraphicsLayoutItem *item, int stretch)
 {
     QGraphicsLinearLayout::setStretchFactor(item, stretch);
 }
 
-void QGraphicsLinearLayoutObject::updateSpacing(QGraphicsLayoutItem* item, int spacing)
+void GraphicsLinearLayoutObject::updateSpacing(QGraphicsLayoutItem* item, int spacing)
 {
     for (int i=0; i < count(); i++){
         if (itemAt(i) == item) {
@@ -158,13 +158,13 @@ void QGraphicsLinearLayoutObject::updateSpacing(QGraphicsLayoutItem* item, int s
     }
 }
 
-void QGraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::Alignment alignment)
+void GraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::Alignment alignment)
 {
     QGraphicsLinearLayout::setAlignment(item, alignment);
 }
 
-QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> QGraphicsLinearLayoutObject::attachedProperties;
-LinearLayoutAttached *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
+QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> GraphicsLinearLayoutObject::attachedProperties;
+LinearLayoutAttached *GraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
 {
     LinearLayoutAttached *rv = new LinearLayoutAttached(obj);
     if (qobject_cast<QGraphicsLayoutItem*>(obj))

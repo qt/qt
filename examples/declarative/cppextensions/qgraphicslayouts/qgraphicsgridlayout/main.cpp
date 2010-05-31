@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
     qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
     qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-    qmlRegisterType<QGraphicsGridLayoutObject>("GridLayouts",4,7,"QGraphicsGridLayout");
+    qmlRegisterType<GraphicsGridLayoutObject>("GridLayouts", 4, 7, "GraphicsGridLayout");
 
     QDeclarativeView view;
     view.setSource(QUrl(":qgraphicsgridlayout.qml"));

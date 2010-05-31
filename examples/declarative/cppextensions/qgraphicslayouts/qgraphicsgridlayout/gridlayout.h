@@ -47,7 +47,7 @@
 #include <QGraphicsLayoutItem>
 
 class GridLayoutAttached;
-class QGraphicsGridLayoutObject : public QObject, public QGraphicsGridLayout
+class GraphicsGridLayoutObject : public QObject, public QGraphicsGridLayout
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsLayout QGraphicsLayoutItem)
@@ -60,8 +60,8 @@ class QGraphicsGridLayoutObject : public QObject, public QGraphicsGridLayout
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
-    QGraphicsGridLayoutObject(QObject * = 0);
-    ~QGraphicsGridLayoutObject();
+    GraphicsGridLayoutObject(QObject * = 0);
+    ~GraphicsGridLayoutObject();
 
     QDeclarativeListProperty<QGraphicsLayoutItem> children() { return QDeclarativeListProperty<QGraphicsLayoutItem>(this, 0, children_append, children_count, children_at, children_clear); }
 
@@ -84,19 +84,19 @@ private:
     void addLayoutItem(QGraphicsLayoutItem *);
 
     static void children_append(QDeclarativeListProperty<QGraphicsLayoutItem> *prop, QGraphicsLayoutItem *item) {
-        static_cast<QGraphicsGridLayoutObject*>(prop->object)->addLayoutItem(item);
+        static_cast<GraphicsGridLayoutObject*>(prop->object)->addLayoutItem(item);
     }
 
     static void children_clear(QDeclarativeListProperty<QGraphicsLayoutItem> *prop) {
-        static_cast<QGraphicsGridLayoutObject*>(prop->object)->clearChildren();
+        static_cast<GraphicsGridLayoutObject*>(prop->object)->clearChildren();
     }
 
     static int children_count(QDeclarativeListProperty<QGraphicsLayoutItem> *prop) {
-        return static_cast<QGraphicsGridLayoutObject*>(prop->object)->count();
+        return static_cast<GraphicsGridLayoutObject*>(prop->object)->count();
     }
 
     static QGraphicsLayoutItem *children_at(QDeclarativeListProperty<QGraphicsLayoutItem> *prop, int index) {
-        return static_cast<QGraphicsGridLayoutObject*>(prop->object)->itemAt(index);
+        return static_cast<GraphicsGridLayoutObject*>(prop->object)->itemAt(index);
     }
 
     static QHash<QGraphicsLayoutItem*, GridLayoutAttached*> attachedProperties;
@@ -210,8 +210,8 @@ private:
 
 QML_DECLARE_INTERFACE(QGraphicsLayoutItem)
 QML_DECLARE_INTERFACE(QGraphicsLayout)
-QML_DECLARE_TYPE(QGraphicsGridLayoutObject)
-QML_DECLARE_TYPEINFO(QGraphicsGridLayoutObject, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(GraphicsGridLayoutObject)
+QML_DECLARE_TYPEINFO(GraphicsGridLayoutObject, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif
 

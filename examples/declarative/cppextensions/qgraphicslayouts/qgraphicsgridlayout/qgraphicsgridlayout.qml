@@ -58,39 +58,39 @@ Item {
             GridLayoutAttached class (also defined in gridlayout.h).
         */
 
-        layout: QGraphicsGridLayout {
+        layout: GraphicsGridLayout {
             LayoutItem {
-                QGraphicsGridLayout.row: 0
-                QGraphicsGridLayout.column: 0
+                GraphicsGridLayout.row: 0
+                GraphicsGridLayout.column: 0
                 minimumSize: "100x100"
                 maximumSize: "300x300"
                 preferredSize: "200x200"
                 Rectangle { color: "red"; anchors.fill: parent }
             }
             LayoutItem {
-                QGraphicsGridLayout.row: 0
-                QGraphicsGridLayout.column: 1
+                GraphicsGridLayout.row: 0
+                GraphicsGridLayout.column: 1
                 minimumSize: "100x100"
                 maximumSize: "200x200"
                 preferredSize: "200x200"
                 Rectangle { color: "orange"; anchors.fill: parent }
             }
             LayoutItem {
-                QGraphicsGridLayout.row: 1
-                QGraphicsGridLayout.column: 0
-                QGraphicsGridLayout.columnSpan: 2
+                GraphicsGridLayout.row: 1
+                GraphicsGridLayout.column: 0
+                GraphicsGridLayout.columnSpan: 2
                 minimumSize: "100x100"
                 Rectangle { color: "yellow"; anchors.fill: parent }
             }
             LayoutItem {
-                QGraphicsGridLayout.row: 2
-                QGraphicsGridLayout.column: 0
+                GraphicsGridLayout.row: 2
+                GraphicsGridLayout.column: 0
                 preferredSize: "200x200"
                 Rectangle { color: "green"; anchors.fill: parent }
             }
             LayoutItem {
-                QGraphicsGridLayout.row: 2
-                QGraphicsGridLayout.column: 1
+                GraphicsGridLayout.row: 2
+                GraphicsGridLayout.column: 1
                 preferredSize: "200x200"
                 Rectangle { color: "blue"; anchors.fill: parent }
             }
