@@ -54,8 +54,6 @@ QtCore
     * Significantly improved performance of the type() function
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
- - QStateMachine
-    * [QTBUG-8842] Reset history states when (re)starting machine
  - QXmlStreamReader
     * [QTBUG-9196] fixed crash when parsing
  - QTimer
@@ -90,6 +88,9 @@ QtGui
  - QGraphicsItem
     * [QTBUG-8112] itemChange() is now called when transformation
       properties change (setRotation, setScale, setTransformOriginPoint).
+    * [QTBUG-9024] Improved performance when calling update() on items that
+      are clipped by an ancestor (QGraphicsItem::ItemClipsChildrenToShape).
+    * [QTBUG-7703], [QTBUG-8378] Fixed scrolling issues
 
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
@@ -98,6 +99,7 @@ QtGui
  - QGraphicsView
     * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
       the mouse.
+    * [QTBUG-10338] Fixed drawing artifacts due to rounding errors.
 
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
@@ -165,12 +167,6 @@ QtNetwork
  - SSL
   * [QTBUG-2515] Do not make OpenSSL prompt for a password
   * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
-
-QtOpenGL
---------
- - QGLWidget
-  * [QTBUG-7865] Fixed bug where GL widgets were not fully updated on
-    Windows Vista/7 with Aero disabled.
 
 QtScript
 --------
@@ -341,3 +337,10 @@ QtScript: Changes due to updating src/3rdparty/javascriptcore:
    a column number of 1.
  - QScriptValueIterator will include the "length" property when iterating
    over Array objects.
+
+QtCore:
+  - QChar no longer carries the Q_PACKED tag on ARM. This flag was
+    used to allow proper alignment of QChar on 2 bytes on older ARM
+    ABIs, but it also allowed for unaligned access. Qt never generates
+    or uses unaligned access and the new EABI aligns as expected, so
+    the flag was removed.

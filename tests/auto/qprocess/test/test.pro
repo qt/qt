@@ -118,7 +118,7 @@ symbian: {
         testProcessOutput.exe \
         nospace.exe \
         testSpaceInName.exe
-   binDep.path = \sys\bin
+   binDep.path = \\sys\\bin
 
    DEPLOYMENT += binDep
 }

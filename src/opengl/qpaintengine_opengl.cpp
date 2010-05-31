@@ -4999,7 +4999,7 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     {
         QStaticTextItem staticTextItem;
-        staticTextItem.chars = ti.chars;
+        staticTextItem.chars = const_cast<QChar *>(ti.chars);
         staticTextItem.fontEngine = ti.fontEngine;
         staticTextItem.glyphs = glyphs.data();
         staticTextItem.numChars = ti.num_chars;

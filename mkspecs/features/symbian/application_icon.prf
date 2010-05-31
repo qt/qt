@@ -21,11 +21,11 @@ contains( CONFIG, no_icon ) {
         # only uses filename from RSS_RULES.icon_file when referring to icon file name.
         baseTarget = $$basename(TARGET)
         baseTarget = $$replace(baseTarget, /,_)
-        baseTarget = $$replace(baseTarget, \\,_)
+        baseTarget = $$replace(baseTarget, \\\\,_)
         baseTarget = $$replace(baseTarget, " ",_)
         symbian-abld|symbian-sbsv2 {
             baseTarget = $$replace(baseTarget, -,_)
-            baseTarget = $$replace(baseTarget, \.,_)
+            baseTarget = $$replace(baseTarget, \\.,_)
             baseTarget = $$replace(baseTarget, :,_)
         }
 

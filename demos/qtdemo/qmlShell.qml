@@ -42,117 +42,133 @@
 import Qt 4.7
 import Effects 1.0
 
+/* Vars exposed from C++
+   pixmap bgAppPixmap
+   bool useBlur (to turn on, pass -use-blur on the cmd line. Off by default 'cause it's too slow)
+*/
 Item {
     id: main
-    property alias source: loader.source
+    //height and width set by program to fill window
+    //below properties are sometimes set from C++
+    property url qmlFile: ''
     property bool show: false
-    x: 0
-    y: -500 //height and width set by program
-    opacity: 0
-    property QtObject blurEffect: realBlur == null ? dummyBlur : realBlur //Is there a better way to lose those error messages?
-    Loader{//Automatic FocusScope
-        focus: true
-        clip: true
-        id: loader //source set by program
-        anchors.centerIn: parent
-        onStatusChanged: if(status == Loader.Ready) {
+    Image{
+        id: bg
+        opacity: 0
+        anchors.fill: parent
+        z: -1
+        pixmap: bgAppPixmap
+        effect: Blur { id: blurEffect; enabled: useBlur; blurRadius: 8;}
+    }
+
+    Item{ id:embeddedViewer
+        width: parent.width
+        height: parent.height
+        opacity: 0;
+        z: 10
+        Loader{
+            id: loader
+            z: 10
+            focus: true //Automatic FocusScope
+            clip: true
+            source: qmlFile
+            anchors.centerIn: parent
+            onStatusChanged: if(status == Loader.Ready) {
                 if(loader.item.width > 640)
                     loader.item.width = 640;
                 if(loader.item.height > 480)
                     loader.item.height = 480;
-       }
+            }
 
-    }
-    Rectangle{
-        z: -1
-        anchors.fill: loader.status == Loader.Ready ? loader : errorTxt
-        anchors.margins: -10
-        radius: 12
-        smooth: true
-        gradient: Gradient{
-            GradientStop{ position: 0.0; color: "#14FFFFFF" }
-            GradientStop{ position: 1.0; color: "#5AFFFFFF" }
         }
-        MouseArea{
-            anchors.fill: parent
-            onClicked: loader.focus=true;/* and don't propogate to the 'exit' area*/
+        Rectangle{ id: frame
+            z: 9
+            anchors.fill: loader.status == Loader.Ready ? loader : errorTxt
+            anchors.margins: -8
+            radius: 4
+            smooth: true
+            border.color: "#88aaaaaa"
+            gradient: Gradient{
+                GradientStop{ position: 0.0; color: "#14FFFFFF" }
+                GradientStop{ position: 1.0; color: "#5AFFFFFF" }
+            }
+            MouseArea{
+                anchors.fill: parent
+                onClicked: loader.focus=true;/* and don't propogate to the 'exit' area*/
+            }
+
+            Rectangle{ id: innerFrame
+                anchors.margins: 7
+                anchors.bottomMargin: 8
+                anchors.rightMargin: 8
+                color: "black"
+                border.color: "#44000000"
+                anchors.fill:parent
+            }
+
+            effect: DropShadow  {
+                enabled: useBlur;
+                blurRadius: 9;
+                color: "#88000000";
+                xOffset:0
+                yOffset:0
+            }
         }
 
+        Text{
+            id: errorTxt
+            z: 10
+            anchors.centerIn: parent
+            color: 'white'
+            smooth: true
+            visible: loader.status == Loader.Error
+            textFormat: Text.RichText
+            //Note that if loader is Error, it is because the file was found but there was an error creating the component
+            //This means either we have a bug in our demos, or the required modules (which ship with Qt) did not deploy correctly
+            text: "The example has failed to load.<br />If you installed Qt's QML modules this is a bug!<br />"
+                + 'Report it at <a href="http://bugreports.qt.nokia.com">http://bugreports.qt.nokia.com</a>';
+            onLinkActivated: Qt.openUrlExternally(link);
+        }
     }
-
+    Rectangle{ id: blackout //Maybe use a colorize effect instead?
+        z: 8
+        anchors.fill: parent
+        color: "#000000"
+        opacity: 0
+    }
     MouseArea{
-        z: -2
-        hoverEnabled: true //To steal from the buttons
+        z: 8
+        enabled: main.show
+        hoverEnabled: true //To steal focus from the buttons
         anchors.fill: parent
         onClicked: main.show=false;
     }
-
-    Text{
-        id: errorTxt
-        anchors.centerIn: parent
-        color: 'white'
-        smooth: true
-        visible: loader.status == Loader.Error
-        textFormat: Text.RichText //includes link for bugreport
-        //Note that if loader is Error, it is because the file was found but there was an error creating the component
-        //This means either we have a bug in our demos, or the required modules (which ship with Qt) did not deploy correctly
-        text: 'The example has failed to load. This is a bug!<br />'
-            +'Report it at <a href="http://bugreports.qt.nokia.com">http://bugreports.qt.nokia.com</a>';
-        onLinkActivated: Qt.openUrlExternally(link);
-    }
-
 
     states: [
         State {
             name: "show"
             when: show == true
             PropertyChanges {
-                target: main
+                target: embeddedViewer
                 opacity: 1
-                y: 0                
             }
             PropertyChanges {
-                target: blurEffect
-                enabled: true
-                blurRadius: 8
-                blurHints: Blur.AnimationHint | Blur.PerformanceHint
+                target: bg
+                opacity: 1
+            }
+            PropertyChanges {
+                target: blackout
+                opacity: 0.5
             }
         }
     ]
-    MagicAnim{ id: magicAnim; target: main; from: -500; to: 0 }
-    transitions: [
-        Transition { from: ""; to: "show"
+    transitions: [//Should not be too long, because the component has already started running
+        Transition { from: ''; to: "show"; reversible: true
             SequentialAnimation{
-                ScriptAction{ script: magicAnim.start() }
-                NumberAnimation{ properties: "opacity,blurRadius";  easing.type: Easing.OutCubic; duration: 1000}
-                PropertyAnimation{ target: main; property: "y"}
+                PropertyAction { target: bg; property: useBlur?"y":"opacity";}//fade in blurred background only if blurred
+                NumberAnimation{ properties: "opacity"; easing.type: Easing.InQuad; duration: 500}
+                PropertyAction { target: loader; property: "focus"; value: true}//Might be needed to ensure the focus stays with us
             }
-
-        },
-        Transition { from: "show"; to: "" //Addtionally, unload the item
-            SequentialAnimation{
-                NumberAnimation{ properties: "y,opacity,blurRadius";duration: 500 }
-                ScriptAction{ script: loader.source = ''; }
-            }
-            /*Attempt to copy the exeunt animation. Looks bad
-            SequentialAnimation{
-                ParallelAnimation{
-                    NumberAnimation{ properties: "opacity,blurRadius"; easing.type: Easing.InCubic; duration: 1000 }
-                    SequentialAnimation{
-                        NumberAnimation{ target: main; property: 'y'; to: 3.2*height/5; duration: 500}
-                        ParallelAnimation{
-                            NumberAnimation{ target: main; property: 'y'; to: 3.0*height/5; duration: 100}
-                            NumberAnimation{ target: main; property: 'x'; to: 3.0*width/5; duration: 100}
-                        }
-                        NumberAnimation{ target: main; property: 'x'; to: 700; duration: 400}
-                    }
-                }
-                ScriptAction{ script: loader.source = ''; }
-                PropertyAction{ properties: "x,y";}
-            }
-            */
         }
     ]
-    Item{ Blur{id: dummyBlur } }
-
 }

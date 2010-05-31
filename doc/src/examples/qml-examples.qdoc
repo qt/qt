@@ -110,18 +110,27 @@
 */
 
 /*!
-    \title Graphics Layouts
-    \example declarative/cppextensions/qgraphicslayouts/graphicsLayouts
+    \title LayoutItem
+    \example declarative/cppextensions/qgraphicslayouts/layoutitem
 
-    This example show how to integrate Qt \l{Graphics View Framework}{Graphics View} components
-    like QGraphicsLayoutItem, QGraphicsLinearLayout and QGraphicsGridLayout into QML.
+    This example show how to use the LayoutItem element to integrate QML items into an existing 
+    \l{Graphics View Framework}{Graphics View}-based application.
 */
 /*!
-    \title Layout Item
-    \example declarative/cppextensions/qgraphicslayouts/layoutItem
+    \title QGraphicsGridLayout
+    \example declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout
 
-    This example show how to integrate QML into an existing 
-    \l{Graphics View Framework}{Graphics View}-based application.
+    This example shows how to use QGraphicsGridLayout to lay out QML items. This is 
+    useful if you need to integrate Qt \l{Graphics View Framework}{Graphics View} layouts with
+    QML.
+*/
+/*!
+    \title QGraphicsLinearLayout
+    \example declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout
+
+    This example shows how to use QGraphicsLinearLayout to lay out QML items. This is 
+    useful if you need to integrate Qt \l{Graphics View Framework}{Graphics View} layouts with
+    QML.
 */
 /*!
     \page declarative-cppextensions-qgraphicslayouts.html
@@ -131,8 +140,9 @@
     layout components with QML:
 
     \list
-    \o \l{declarative/cppextensions/qgraphicslayouts/graphicsLayouts}{Graphics Layouts}
-    \o \l{declarative/cppextensions/qgraphicslayouts/layoutItem}{Layout Item}
+    \o \l{declarative/cppextensions/qgraphicslayouts/layoutitem}{LayoutItem}
+    \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout}{QGraphicsGridLayout}
+    \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout}{QGraphicsLinearLayout}
     \endlist
 */
 

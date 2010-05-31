@@ -22,16 +22,16 @@ contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb")|contains(Q
 }
 
 defineReplace(processSymbianLibraries) {
-    library = $$replace(1, "\.dll$", ".dso")
+    library = $$replace(1, "\\.dll$", ".dso")
     library = $$replace(library, "^-l", "")
-    isFullName = $$find(library, \.)
+    isFullName = $$find(library, \\.)
     isEmpty(isFullName):library="$${library}.dso"
     linux-gcce {
         newLIB = "-l:$${library}"
     } else {
         newLIB = "$${library}"
     }
-    contains(library, "\.dso$")|contains(library, ".lib$"):PRE_TARGETDEPS += $$library
+    contains(library, "\\.dso$")|contains(library, "\\.lib$"):PRE_TARGETDEPS += $$library
     return($$newLIB)
 }
 
@@ -55,7 +55,7 @@ isEmpty(VERSION) {
 }
 
 # Check for version validity.
-!isEmpty(VERSION):!contains(VERSION, "[0-9]+"):!contains(VERSION, "[0-9]+\.[0-9]+")!contains(VERSION, "[0-9]+(\.[0-9]+){2}") {
+!isEmpty(VERSION):!contains(VERSION, "[0-9]+"):!contains(VERSION, "[0-9]+\\.[0-9]+")!contains(VERSION, "[0-9]+(\\.[0-9]+){2}") {
     error("Invalid VERSION for Symbian: $$VERSION")
 }
 
@@ -86,7 +86,7 @@ isEmpty(TARGET.UID2):TARGET.UID2 = 0x00000000
 
 capability = $$replace(TARGET.CAPABILITY, " ", "+")
 capability = $$join(capability, "+")
-capability = $$replace(capability, "\+-", "-")
+capability = $$replace(capability, "\\+-", "-")
 isEmpty(capability): capability = "None"
 capability = "--capability=$$capability"
 
@@ -214,9 +214,9 @@ symbian_resources_INCLUDES += "-I $$symbian_resources_RCC_DIR"
 
 for(symbian_resource, SYMBIAN_RESOURCES) {
     symbian_resource = $$basename(symbian_resource)
-    symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rsc")
+    symbian_resource_clean = $$replace(symbian_resource, "\\.rss$", ".rsc")
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${symbian_resource_clean}
-    symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rpp")
+    symbian_resource_clean = $$replace(symbian_resource, "\\.rss$", ".rpp")
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${symbian_resource_clean}
 }
 

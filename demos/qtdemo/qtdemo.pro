@@ -75,5 +75,4 @@ sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES qtdemo.pro images xml *.
 sources.path = $$[QT_INSTALL_DEMOS]/qtdemo
 
 OTHER_FILES += \
-    qmlShell.qml \
-    MagicAnim.qml
+    qmlShell.qml

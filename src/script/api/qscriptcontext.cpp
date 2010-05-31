@@ -742,6 +742,7 @@ void QScriptContext::pushScope(const QScriptValue &object)
 */
 QScriptValue QScriptContext::popScope()
 {
+    activationObject(); //ensure the creation of the normal scope for native context
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     JSC::ScopeChainNode *scope = frame->scopeChain();
     Q_ASSERT(scope != 0);

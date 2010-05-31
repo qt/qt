@@ -39,7 +39,7 @@
     h1, h2, h3, h4, h5, h6
     {
         font-size: 100%;
-        font-weight: normal;
+/*        font-weight: normal; */
     }
     q:before, q:after
     {
@@ -456,6 +456,7 @@
     .wrap .content
     {
         padding: 30px;
+		word-wrap:break-word;
     }
 
     .wrap .content li
@@ -843,7 +844,7 @@
         background-color: #e6e7e8;
         z-index: 4;
     }
-    #feedcloseX a
+    #feedcloseX 
     {
         display: inline;
         padding: 5px 5px 0 0;
@@ -948,6 +949,11 @@
         margin-left: 15px;
     }
 
+    .wrap .content .toc .level3
+    {
+        margin-left: 30px;
+    }
+
     .content .toc li
     {
         font: normal 10px/1.2 Verdana;
@@ -988,6 +994,7 @@
     border-width: 1px;
     border-style: solid;
     border-color: #E6E6E6;
+	width:100%;
 	}
 	
 	.centerAlign
@@ -1067,6 +1074,7 @@
     .indexboxcont .sectionlist
     {
         display: inline-block;
+		vertical-align:top;
 		width: 32.5%;
         padding: 0;
     }
@@ -1138,7 +1146,34 @@
 
     /* end of screen media */
 
-	
+.flowList{
+vertical-align:top;
+}	
+.alphaChar{
+width:100%;
+background-color:#F6F6F6;
+border:1px solid #E6E6E6;
+font-size:12pt;
+padding-left:10px;
+margin-top:10px;
+margin-bottom:10px;
+}
+
+.flowList dl{
+}
+.flowList dd{
+display:inline-block;
+margin-left:10px;
+width:250px;
+}
+.wrap .content .flowList p{
+padding:0px;
+}
+pre.highlightedCode {
+	display: block;
+	overflow:hidden;
+}
+
 }
 /* end of screen media */
 

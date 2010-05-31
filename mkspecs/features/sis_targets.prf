@@ -96,7 +96,7 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
         }
     } else {
         sis_destdir = $$DESTDIR
-        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\]$"):sis_destdir = $${sis_destdir}/
+        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
         contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
 
         sis_target.target = sis

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 FVISIBILITY_SUPPORT=no
 COMPILER=$1
@@ -34,7 +34,7 @@ EOF
 
 
 case "$COMPILER" in
-gcc|g++)
+*g++*|*c++*)
     CMDLINE="-fvisibility=hidden"
     RunCompileTest
    ;;

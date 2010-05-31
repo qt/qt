@@ -160,6 +160,7 @@ void QDeclarativeFlickablePrivate::init()
     q->setFiltersChildEvents(true);
     QDeclarativeItemPrivate *viewportPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(viewport));
     viewportPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+    lastPosTime.invalidate();
 }
 
 /*
@@ -656,7 +657,7 @@ void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEven
 void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QDeclarativeFlickable);
-    if (!interactive || lastPosTime.isNull())
+    if (!interactive || !lastPosTime.isValid())
         return;
     bool rejectY = false;
     bool rejectX = false;
@@ -752,7 +753,7 @@ void QDeclarativeFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEv
     stealMouse = false;
     q->setKeepMouseGrab(false);
     pressed = false;
-    if (lastPosTime.isNull())
+    if (!lastPosTime.isValid())
         return;
 
     if (QDeclarativeItemPrivate::elapsed(lastPosTime) > 100) {
@@ -780,7 +781,7 @@ void QDeclarativeFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEv
         fixupX();
     }
 
-    lastPosTime = QTime();
+    lastPosTime.invalidate();
 
     if (!timeline.isActive())
         q->movementEnding();
@@ -1218,8 +1219,8 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         }
 
         return stealThisEvent || d->delayedPressEvent;
-    } else if (!d->lastPosTime.isNull()) {
-        d->lastPosTime = QTime();
+    } else if (d->lastPosTime.isValid()) {
+        d->lastPosTime.invalidate();
     }
     if (mouseEvent.type() == QEvent::GraphicsSceneMouseRelease) {
         d->clearDelayedPress();

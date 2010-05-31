@@ -89,6 +89,13 @@ TextEdit {
     A particular look-and-feel might use smooth scrolling (eg. using SmoothedFollow), might have a visible
     scrollbar, or a scrollbar that fades in to show location, etc.
 
+    Clipboard support is provided by the cut(), copy(), and paste() functions, and the selection can
+    be handled in a traditional "mouse" mechanism by setting selectByMouse, or handled completely
+    from QML by manipulating selectionStart and selectionEnd, or using selectAll() or selectWord().
+
+    You can translate between cursor positions (characters from the start of the document) and pixel
+    points using positionAt() and positionToRectangle().
+
     \sa Text
 */
 
@@ -531,6 +538,70 @@ qreal QDeclarativeTextEdit::paintedHeight() const
     return implicitHeight();
 }
 
+/*!
+    \qmlmethod rectangle TextEdit::positionToRectangle(position)
+
+    Returns the rectangle at the given \a position in the text. The x, y,
+    and height properties correspond to the cursor that would describe
+    that position.
+*/
+QRectF QDeclarativeTextEdit::positionToRectangle(int pos) const
+{
+    Q_D(const QDeclarativeTextEdit);
+    QTextCursor c(d->document);
+    c.setPosition(pos);
+    return d->control->cursorRect(c);
+
+}
+
+/*!
+    \qmlmethod int TextEdit::positionAt(x,y)
+
+    Returns the text position closest to pixel position (\a x,\a y).
+
+    Position 0 is before the first character, position 1 is after the first character
+    but before the second, and so on until position text.length, which is after all characters.
+*/
+int QDeclarativeTextEdit::positionAt(int x, int y) const
+{
+    Q_D(const QDeclarativeTextEdit);
+    int r = d->document->documentLayout()->hitTest(QPoint(x,y-d->yoff), Qt::FuzzyHit);
+    return r;
+}
+
+/*!
+    \qmlmethod int TextEdit::moveCursorSeletion(int pos)
+
+    Moves the cursor to \a position and updates the selection accordingly.
+    (To only move the cursor, set the \l cursorPosition property.)
+
+    When this method is called it additionally sets either the
+    selectionStart or the selectionEnd (whichever was at the previous cursor position)
+    to the specified position. This allows you to easily extend and contract the selected
+    text range.
+
+    For example, take this sequence of calls:
+
+    \code
+        cursorPosition = 5
+        moveCursorSelection(9)
+        moveCursorSelection(7)
+    \endcode
+
+    This moves the cursor to position 5, extend the selection end from 5 to 9
+    and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
+    selected (the 6th and 7th characters).
+*/
+void QDeclarativeTextEdit::moveCursorSelection(int pos)
+{
+    //Note that this is the same as setCursorPosition but with the KeepAnchor flag set
+    Q_D(QDeclarativeTextEdit);
+    QTextCursor cursor = d->control->textCursor();
+    if (cursor.position() == pos)
+        return;
+    cursor.setPosition(pos, QTextCursor::KeepAnchor);
+    d->control->setTextCursor(cursor);
+}
 
 /*!
     \qmlproperty bool TextEdit::cursorVisible
@@ -956,6 +1027,51 @@ void QDeclarativeTextEdit::selectAll()
 }
 
 /*!
+    Causes the word closest to the current cursor position to be selected.
+*/
+void QDeclarativeTextEdit::selectWord()
+{
+    Q_D(QDeclarativeTextEdit);
+    QTextCursor c = d->control->textCursor();
+    c.select(QTextCursor::WordUnderCursor);
+    d->control->setTextCursor(c);
+}
+
+/*!
+    \qmlmethod TextEdit::cut()
+
+    Moves the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextEdit::cut()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->control->cut();
+}
+
+/*!
+    \qmlmethod TextEdit::copy()
+
+    Copies the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextEdit::copy()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->control->copy();
+}
+
+/*!
+    \qmlmethod TextEdit::paste()
+
+    Relaces the currently selected text by the contents of the system clipboard.
+*/
+void QDeclarativeTextEdit::paste()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->control->paste();
+}
+
+
+/*!
 \overload
 Handles the given mouse \a event.
 */
@@ -1335,7 +1451,7 @@ void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool showOnFocus)
 void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus && !isReadOnly()) {
+    if (d->showInputPanelOnFocus && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
         openSoftwareInputPanel();
     }
     QDeclarativePaintedItem::focusInEvent(event);
