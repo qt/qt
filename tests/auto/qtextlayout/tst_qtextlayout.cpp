@@ -111,6 +111,7 @@ private slots:
     void widthOfTabs();
     void columnWrapWithTabs();
     void boundingRectForUnsetLineWidth();
+    void boundingRectForSetLineWidth();
 
     // QTextLine stuff
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
@@ -1317,6 +1318,18 @@ void tst_QTextLayout::boundingRectForUnsetLineWidth()
     layout.endLayout();
 
     QCOMPARE(layout.boundingRect().width(), line.naturalTextWidth());
+}
+
+void tst_QTextLayout::boundingRectForSetLineWidth()
+{
+    QTextLayout layout("FOOBAR");
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(QFIXED_MAX - 1);
+    layout.endLayout();
+
+    QCOMPARE(layout.boundingRect().width(), qreal(QFIXED_MAX - 1));
 }
 
 void tst_QTextLayout::lineWidthFromBOM()
