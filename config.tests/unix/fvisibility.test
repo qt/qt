@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 FVISIBILITY_SUPPORT=no
 COMPILER=$1
