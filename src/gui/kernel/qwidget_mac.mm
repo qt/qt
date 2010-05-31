@@ -223,6 +223,8 @@ static NSDrawer *qt_mac_drawer_for(const QWidget *widget)
     for (NSWindow *window in windows) {
         NSArray *drawers = [window drawers];
         for (NSDrawer *drawer in drawers) {
+            if ([drawer contentView] == widgetView)
+                return drawer;
             NSArray *views = [[drawer contentView] subviews];
             for (NSView *view in views) {
                 if (view == widgetView)
