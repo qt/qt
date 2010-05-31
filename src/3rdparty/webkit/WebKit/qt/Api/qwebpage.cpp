@@ -3293,7 +3293,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     if (view())
         locale = view()->locale();
     QString name = locale.name();
-    name[2] = QLatin1Char('-');
+    name.replace(QLatin1Char('_'), QLatin1Char('-'));
     ua.append(name);
     ua.append(QLatin1String(") "));
 
