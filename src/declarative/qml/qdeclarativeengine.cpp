@@ -284,10 +284,12 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
+#ifndef QT_NO_TEXTDATE
     //date/time formatting
     qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
     qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
     qtObject.setProperty(QLatin1String("formatDateTime"),newFunction(QDeclarativeEnginePrivate::formatDateTime, 2));
+#endif
 
     //misc methods
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
@@ -1219,6 +1221,7 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
 \qmlmethod string Qt::formatDate(datetime date, variant format)
 Returns the string representation of \c date, formatted according to \c format.
 */
+#ifndef QT_NO_TEXTDATE
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
 {
     int argCount = ctxt->argumentCount();
@@ -1356,6 +1359,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
+#endif // QT_NO_TEXTDATE
 
 /*!
 \qmlmethod color Qt::rgba(real red, real green, real blue, real alpha)

@@ -648,6 +648,7 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
 
     \sa acceptableInput, inputMask
 */
+#ifndef QT_NO_VALIDATOR
 QValidator* QDeclarativeTextInput::validator() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -669,6 +670,7 @@ void QDeclarativeTextInput::setValidator(QValidator* v)
 
     emit validatorChanged();
 }
+#endif // QT_NO_VALIDATOR
 
 /*!
     \qmlproperty string TextInput::inputMask
@@ -1282,7 +1284,7 @@ void QDeclarativeTextInput::setShowInputPanelOnFocus(bool showOnFocus)
 void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextInput);
-    if (d->showInputPanelOnFocus && !isReadOnly()) {
+    if (d->showInputPanelOnFocus && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
         openSoftwareInputPanel();
     }
     QDeclarativePaintedItem::focusInEvent(event);

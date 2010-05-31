@@ -318,7 +318,11 @@ void QDeclarativeText::setText(const QString &n)
     if (d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(n);
+#else
+            d->doc->setPlainText(n);
+#endif
         }
     }
 
@@ -605,7 +609,11 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     } else if (!wasRich && d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(d->text);
+#else
+            d->doc->setPlainText(d->text);
+#endif
         }
         d->updateLayout();
         d->markImgDirty();
@@ -991,7 +999,11 @@ void QDeclarativeText::reloadWithResources()
     Q_D(QDeclarativeText);
     if (!d->richText)
         return;
+#ifndef QT_NO_TEXTHTMLPARSER
     d->doc->setHtml(d->text);
+#else
+    d->doc->setPlainText(d->text);
+#endif
     d->updateLayout();
     d->markImgDirty();
 }
@@ -1121,7 +1133,11 @@ void QDeclarativeText::componentComplete()
     if (d->dirty) {
         if (d->richText) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(d->text);
+#else
+            d->doc->setPlainText(d->text);
+#endif
         }
         d->updateLayout();
         d->dirty = false;

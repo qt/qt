@@ -1373,7 +1373,7 @@ SeeAlso: ???
 Feature: DBUS
 Description: Provides classes for D-Bus.
 Section: D-Bus
-Requires: PROPERTIES
+Requires: PROPERTIES DOM
 Name: QtDBus module
 SeeAlso: ???
 

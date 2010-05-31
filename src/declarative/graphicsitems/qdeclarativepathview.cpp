@@ -948,7 +948,7 @@ void QDeclarativePathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QDeclarativePathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativePathView);
-    if (!d->interactive || d->lastPosTime.isNull())
+    if (!d->interactive || !d->lastPosTime.isValid())
         return;
 
     if (!d->stealMouse) {
@@ -982,7 +982,7 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     Q_D(QDeclarativePathView);
     d->stealMouse = false;
     setKeepMouseGrab(false);
-    if (!d->interactive || d->lastPosTime.isNull())
+    if (!d->interactive || !d->lastPosTime.isValid())
         return;
 
     qreal elapsed = qreal(d->lastElapsed + QDeclarativeItemPrivate::elapsed(d->lastPosTime)) / 1000.;
@@ -1017,7 +1017,7 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
         d->fixOffset();
     }
 
-    d->lastPosTime = QTime();
+    d->lastPosTime.invalidate();
     ungrabMouse();
 }
 
@@ -1059,8 +1059,8 @@ bool QDeclarativePathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             grabMouse();
 
         return d->stealMouse;
-    } else if (!d->lastPosTime.isNull()) {
-        d->lastPosTime = QTime();
+    } else if (d->lastPosTime.isValid()) {
+        d->lastPosTime.invalidate();
     }
     return false;
 }

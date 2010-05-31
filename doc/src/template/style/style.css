@@ -39,7 +39,7 @@
     h1, h2, h3, h4, h5, h6
     {
         font-size: 100%;
-        font-weight: normal;
+/*        font-weight: normal; */
     }
     q:before, q:after
     {
@@ -947,6 +947,11 @@
     .wrap .content .toc .level2
     {
         margin-left: 15px;
+    }
+
+    .wrap .content .toc .level3
+    {
+        margin-left: 30px;
     }
 
     .content .toc li
