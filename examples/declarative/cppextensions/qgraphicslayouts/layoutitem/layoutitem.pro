@@ -5,4 +5,4 @@ INCLUDEPATH += .
 QT += declarative
 
 SOURCES += main.cpp
-RESOURCES += layoutItem.qrc
+RESOURCES += layoutitem.qrc
