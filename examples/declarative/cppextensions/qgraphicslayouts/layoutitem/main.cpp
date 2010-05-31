@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -39,21 +39,36 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QtDeclarative/qdeclarative.h>
-#include "graphicslayouts_p.h"
-#include <QtDeclarative/QDeclarativeView>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGraphicsWidget>
+#include <QGraphicsLinearLayout>
+#include <QDeclarativeComponent>
+#include <QDeclarativeEngine>
 
+/* This example demonstrates using a LayoutItem to let QML snippets integrate
+   nicely with existing QGraphicsView applications designed with GraphicsLayouts
+*/
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    QDeclarativeView view;
-    qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
-    qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
-    qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>("GraphicsLayouts",4,7,"QGraphicsLinearLayoutStretchItem");
-    qmlRegisterType<QGraphicsLinearLayoutObject>("GraphicsLayouts",4,7,"QGraphicsLinearLayout");
-    qmlRegisterType<QGraphicsGridLayoutObject>("GraphicsLayouts",4,7,"QGraphicsGridLayout");
-    view.setSource(QUrl(":graphicslayouts.qml"));
+
+    //Set up a graphics scene with a QGraphicsWidget and Layout
+    QGraphicsView view;
+    QGraphicsScene scene;
+    QGraphicsWidget *widget = new QGraphicsWidget();
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout();
+    widget->setLayout(layout);
+    scene.addItem(widget);
+    view.setScene(&scene);
+
+    //Add the QML snippet into the layout
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl(":layoutitem.qml"));
+    QGraphicsLayoutItem* obj = qobject_cast<QGraphicsLayoutItem*>(c.create());
+    layout->addItem(obj);
+
+    widget->setGeometry(QRectF(0,0, 400,400));
     view.show();
     return app.exec();
-};
-
+}

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,37 +38,26 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QGraphicsWidget>
-#include <QGraphicsLinearLayout>
-#include <QDeclarativeComponent>
-#include <QDeclarativeEngine>
+#include "gridlayout.h"
 
-/* This example demonstrates using a LayoutItem to let QML snippets integrate
-   nicely with existing QGraphicsView applications designed with GraphicsLayouts
-*/
+#include <qdeclarative.h>
+#include <QDeclarativeView>
+
+#include <QApplication>
+
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
-    //Set up a graphics scene with a QGraphicsWidget and Layout
-    QGraphicsView view;
-    QGraphicsScene scene;
-    QGraphicsWidget *widget = new QGraphicsWidget();
-    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout();
-    widget->setLayout(layout);
-    scene.addItem(widget);
-    view.setScene(&scene);
+    qmlRegisterInterface<QGraphicsLayoutItem>("QGraphicsLayoutItem");
+    qmlRegisterInterface<QGraphicsLayout>("QGraphicsLayout");
+    qmlRegisterType<GraphicsGridLayoutObject>("GridLayouts", 4, 7, "GraphicsGridLayout");
 
-    //Add the QML snippet into the layout
-    QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl(":layoutItem.qml"));
-    QGraphicsLayoutItem* obj = qobject_cast<QGraphicsLayoutItem*>(c.create());
-    layout->addItem(obj);
-
-    widget->setGeometry(QRectF(0,0, 400,400));
+    QDeclarativeView view;
+    view.setSource(QUrl(":qgraphicsgridlayout.qml"));
     view.show();
+
     return app.exec();
-}
+};
+
+
