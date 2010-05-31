@@ -42,15 +42,11 @@
 /*!
     \page tutorials-addressbook.html
 
-    \startpage {index.html}{Qt Reference Documentation}
-    \contentspage Tutorials
-    \nextpage {tutorials/addressbook/part1}{Chapter 1}
-
     \title Address Book Tutorial
     \brief An introduction to GUI programming, showing how to put together a
     simple yet fully-functioning application.
 
-    This tutorial gives an introduction to GUI programming using the Qt
+    This tutorial is an introduction to GUI programming with the Qt
     cross-platform framework.
 
     \image addressbook-tutorial-screenshot.png
@@ -61,8 +57,8 @@
     Some commonly used features are never used in this tutorial.
     \endomit
 
-    In the process, we will learn about some basic technologies provided by Qt,
-    such as
+    In this tutorial, you will learn about some of the basic
+    components of Qt, including:
 
     \list
     \o Widgets and layout managers
@@ -71,13 +67,9 @@
     \o Input and output devices
     \endlist
 
-    If you are completely new to Qt, please read \l{How to Learn Qt} if you
-    have not already done so.
+    If you are new to Qt, we recommend reading \l{How to Learn Qt} first.
 
-    The tutorial's source code is located in Qt's \c examples/tutorials/addressbook
-    directory.
-
-    Tutorial chapters:
+    Tutorial contents:
 
     \list 1
     \o \l{tutorials/addressbook/part1}{Designing the User Interface}
@@ -89,28 +81,30 @@
     \o \l{tutorials/addressbook/part7}{Additional Features}
     \endlist
 
-    Although this little application does not look much like a fully-fledged
-    modern GUI application, it uses many of the basic techniques that are used
-    in more complex applications. After you have worked through it, we
-    recommend checking out the \l{mainwindows/application}{Application}
-    example, which presents a small GUI application, with menus, toolbars, a
-    status bar, and so on.
+    The tutorial source code is located in \c{examples/tutorials/addressbook}.
+
+    Although this little application does not look much like a
+    fully-fledged modern GUI application, it uses many of the basic
+    elements that are used in more complex applications. After you
+    have worked through this tutorial, we recommend reading the
+    \l{mainwindows/application}{Application} example, which presents a
+    small GUI application, with menus, toolbars, a status bar, and so
+    on.  
 */
 
 /*!
     \page tutorials-addressbook-part1.html
-    \contentspage {Address Book Tutorial}{Contents}
-    \nextpage {tutorials/addressbook/part2}{Chapter 2}
+
     \example tutorials/addressbook/part1
-    \title Address Book 1 - Designing the User Interface
+    \title Part 1 - Designing the User Interface
 
-    The first part of this tutorial covers the design of the basic graphical
-    user interface (GUI) we use for the Address Book application.
+    This first part covers the design of the basic graphical user
+    interface (GUI) for our address book application.
 
-    The first step to creating a GUI program is to design the user interface.
-    In this chapter, our goal is to set up the labels and input fields needed
-    to implement a basic address book application. The figure below is a
-    screenshot of our expected output.
+    The first step in creating a GUI program is to design the user
+    interface.  Here the our goal is to set up the labels and input
+    fields to implement a basic address book. The figure below is a
+    screenshot of the expected output.
 
     \image addressbook-tutorial-part1-screenshot.png
 
@@ -169,14 +163,15 @@
 
     \snippet tutorials/addressbook/part1/addressbook.h class definition
 
-    The class holds declarations of \c nameLine and \c addressText, the
-    private instances of QLineEdit and QTextEdit mentioned earlier.
-    You will see, in the coming chapters, that data stored in \c nameLine and
-    \c addressText is needed for many of the address book's functions.
+    The class holds declarations of \c nameLine and \c addressText,
+    the private instances of QLineEdit and QTextEdit mentioned
+    earlier.  The data stored in \c nameLine and \c addressText will
+    be needed for many of the address book functions.
 
-    We do not need to include declarations of the QLabel objects we will use
-    because we will not need to reference them once they have been created.
-    The way Qt tracks the ownership of objects is explained in the next section.
+    We don't include declarations of the QLabel objects we will use
+    because we will not need to reference them once they have been
+    created.  The way Qt tracks the ownership of objects is explained
+    in the next section.
 
     The Q_OBJECT macro itself implements some of the more advanced features of Qt.
     For now, it is useful to think of the Q_OBJECT macro as a shortcut which allows
@@ -195,15 +190,14 @@
 
     \snippet tutorials/addressbook/part1/addressbook.cpp constructor and input fields
 
-    Within this constructor, we declare and instantiate two local QLabel objects,
-    \c nameLabel and \c addressLabel, as well as instantiate \c nameLine and
-    \c addressText. The
-    \l{QObject::tr()}{tr()} function returns a translated version of the
-    string, if there is one available; otherwise, it returns the string itself.
-    Think of this function as an \c{<insert translation here>} marker to mark
-    QString objects for translation. You will notice, in the coming chapters as
-    well as in the \l{Qt Examples}, that we include it whenever we use a
-    translatable string.
+    In this constructor, the QLabel objects \c nameLabel and \c
+    addressLabel are instantiated, as well as \c nameLine and \c
+    addressText. The \l{QObject::tr()}{tr()} function returns a
+    translated version of the string, if there is one
+    available. Otherwise it returns the string itself. This function
+    marks its QString parameter as one that should be translated into
+    other languages. It should be used wherever a translatable string
+    appears.
 
     When programming with Qt, it is useful to know how layouts work.
     Qt provides three main layout classes: QHBoxLayout, QVBoxLayout
@@ -254,14 +248,12 @@
 
 /*!
     \page tutorials-addressbook-part2.html
-    \previouspage Address Book 1 - Designing the User Interface
-    \contentspage {Address Book Tutorial}{Contents}
-    \nextpage {tutorials/addressbook/part3}{Chapter 3}
-    \example tutorials/addressbook/part2
-    \title Address Book 2 - Adding Addresses
 
-    The next step to creating our basic address book application is to allow
-    a little bit of user interaction.
+    \example tutorials/addressbook/part2
+    \title Part 2 - Adding Addresses
+
+    The next step in creating the address book is to implement some
+    user interactions.
 
     \image addressbook-tutorial-part2-add-contact.png
 
@@ -283,9 +275,9 @@
     However, for an overview of Qt's signals and slots concept, you can refer
     to the \l{Signals and Slots} document.
 
-    Three QPushButton objects: \c addButton, \c submitButton and
-    \c cancelButton, are now included in our private variable declarations,
-    along with \c nameLine and \c addressText from the last chapter.
+    Three QPushButton objects (\c addButton, \c submitButton, and
+    \c cancelButton) are now included in our private variable declarations,
+    along with \c nameLine and \c addressText.
 
     \snippet tutorials/addressbook/part2/addressbook.h pushbutton declaration
 
@@ -407,20 +399,20 @@
 
 /*!
     \page tutorials-addressbook-part3.html
-    \previouspage Address Book 2 - Adding Addresses
-    \contentspage {Address Book Tutorial}{Contents}
-    \nextpage {tutorials/addressbook/part4}{Chapter 4}
+
     \example tutorials/addressbook/part3
-    \title Address Book 3 - Navigating between Entries
+    \title Part 3 - Navigating between Entries
 
-    The address book application is now half complete. We need to add some
-    functions to navigate between contacts. But first, we have to decide
-    what sort of a data structure we would like to use to hold these contacts.
+    The address book is now about half complete. We should add the
+    capability to navigate among the contacts, but first we must
+    decide what sort of a data structure we need for containing these
+    contacts.
 
-    In Chapter 2, we used a QMap of key-value pairs with the contact's name
-    as the \e key, and the contact's address as the \e value. This works well
-    for our case. However, in order to navigate and display each entry, a
-    little bit of enhancement is needed.
+    In the previous section, we used a QMap of key-value pairs with
+    the contact's name as the \e key, and the contact's address as the
+    \e value. This works well for our case. However, in order to
+    navigate and display each entry, a little bit of enhancement is
+    needed.
 
     We enhance the QMap by making it replicate a data structure similar to a
     circularly-linked list, where all elements are connected, including the
@@ -431,9 +423,9 @@
 
     \section1 Defining the AddressBook Class
 
-    In order to add navigation functions to the address book application, we
-    need to add two more slots to our \c AddressBook class: \c next() and
-    \c previous(). These are added to our \c addressbook.h file:
+    To add navigation functions to the address book, we must add two
+    more slots to the \c AddressBook class: \c next() and \c
+    previous() to the \c addressbook.h file:
 
     \snippet tutorials/addressbook/part3/addressbook.h navigation functions
 
@@ -455,8 +447,7 @@
 
     \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
 
-    The image below is our expected graphical user interface. Notice that it
-    is getting closer to our final application.
+    The image below is the expected graphical user interface. 
 
     \image addressbook-tutorial-part3-screenshot.png
 
@@ -525,27 +516,26 @@
 
 /*!
     \page tutorials-addressbook-part4.html
-    \previouspage Address Book 3 - Navigating between Entries
-    \contentspage {Address Book Tutorial}{Contents}
-    \nextpage {tutorials/addressbook/part5}{Chapter 5}
-    \example tutorials/addressbook/part4
-    \title Address Book 4 - Editing and Removing Addresses
 
-    In this chapter, we look at ways to modify the contents of contacts stored
-    in the address book application.
+    \example tutorials/addressbook/part4
+    \title Part 4 - Editing and Removing Addresses
+
+    Now we look at ways to modify the contents of contacts stored in
+    the address book.
 
     \image addressbook-tutorial-screenshot.png
 
-    We now have an address book that not only holds contacts in an organized
-    manner, but also allows navigation. It would be convenient to include
-    edit and remove functions so that a contact's details can be changed
-    when needed. However, this requires a little improvement, in the form of
-    enums. In our previous chapters, we had two modes: \c{AddingMode} and
-    \c{NavigationMode} - but they were not defined as enums. Instead, we
-    enabled and disabled the corresponding buttons manually, resulting in
-    multiple lines of repeated code.
+    We now have an address book that not only holds contacts in an
+    organized manner, but also allows navigation. It would be
+    convenient to include edit and remove functions so that a
+    contact's details can be changed when needed. However, this
+    requires a little improvement, in the form of enums. We defined
+    two modes: \c{AddingMode} and \c{NavigationMode}, but they were
+    not defined as enum values. Instead, we enabled and disabled the
+    corresponding buttons manually, resulting in multiple lines of
+    repeated code.
 
-    In this chapter, we define the \c Mode enum with three different values:
+    Here we define the \c Mode enum with three different values:
 
     \list
         \o \c{NavigationMode},
@@ -579,10 +569,10 @@
 
     \section1 Implementing the AddressBook Class
 
-    We now have to implement the mode-changing features of the address book
-    application. The \c editButton and \c removeButton are instantiated and
-    disabled by default, as the address book starts up with zero contacts in
-    memory.
+    We now implement the mode-changing features of the address
+    book. The \c editButton and \c removeButton are instantiated and
+    disabled by default. The address book starts with zero contacts
+    in memory.
 
     \snippet tutorials/addressbook/part4/addressbook.cpp edit and remove buttons
 
@@ -653,33 +643,31 @@
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 2
 
-    By performing the task of setting the mode and updating the user interface in
-    the same function, we avoid the possibility of the user interface getting "out
-    of sync" with the internal state of the application.
-*/
+    By setting the mode and updating the user interface in the same
+    function, we avoid the possibility of the user interface getting
+    out of sync with the internal state of the application.
+  */
 
 /*!
     \page tutorials-addressbook-part5.html
-    \previouspage Address Book 4 - Editing and Removing Addresses
-    \contentspage {Address Book Tutorial}{Contents}
-    \nextpage {tutorials/addressbook/part6}{Chapter 6}
-    \example tutorials/addressbook/part5
-    \title Address Book 5 - Adding a Find Function
 
-    In this chapter, we look at ways to locate contacts and addresses in
-    the address book application.
+    \example tutorials/addressbook/part5
+    \title Part 5 - Adding a Find Function
+
+    Here we look at ways to locate contacts and addresses in the
+    address book.
 
     \image addressbook-tutorial-part5-screenshot.png
 
-    As we keep adding contacts to our address book application, it becomes
-    tedious to navigate them with the \e Next and \e Previous buttons. In this
-    case, a \e Find function would be more efficient in looking up contacts.
-    The screenshot above shows the \e Find button and its position on the panel
-    of buttons.
+    As we add contacts to our address book, it becomes tedious to
+    navigate the list with the \e Next and \e Previous buttons. A \e
+    Find function would be more efficient.  The screenshot above shows
+    the \e Find button and its position on the panel of buttons.
 
-    When the user clicks on the \e Find button, it is useful to display a
-    dialog that can prompt the user for a contact's name. Qt provides QDialog,
-    which we subclass in this chapter, to implement a \c FindDialog class.
+    When the user clicks on the \e Find button, it is useful to
+    display a dialog that prompts for a contact's name. Qt provides
+    QDialog, which we subclass here to implement a \c FindDialog
+    class.
 
     \section1 Defining the FindDialog Class
 
@@ -806,20 +794,18 @@
 
 /*!
     \page tutorials-addressbook-part6.html
-    \previouspage Address Book 5 - Adding a Find Function
-    \contentspage {Address Book Tutorial}{Contents}
-    \nextpage {tutorials/addressbook/part7}{Chapter 7}
-    \example tutorials/addressbook/part6
-    \title Address Book 6 - Loading and Saving
 
-    This chapter covers the file handling features of Qt that we use to write
-    loading and saving routines for the address book application.
+    \example tutorials/addressbook/part6
+    \title Part 6 - Loading and Saving
+
+    This part covers the Qt file handling features we use to write
+    loading and saving routines for the address book.
 
     \image addressbook-tutorial-part6-screenshot.png
 
-    Although browsing and searching for contacts are useful features, our
-    address book is not ready for use until we can save existing contacts and
-    load them again at a later time.
+    Although browsing and searching the contact list are useful
+    features, our address book is not complete until we can save
+    existing contacts and load them again at a later time.
 
     Qt provides a number of classes for \l{Input/Output and Networking}
     {input and output}, but we have chosen to use two which are simple to use
@@ -930,21 +916,20 @@
 
 /*!
     \page tutorials-addressbook-part7.html
-    \previouspage Address Book 6 - Loading and Saving
-    \contentspage {Address Book Tutorial}{Contents}
-    \example tutorials/addressbook/part7
-    \title Address Book 7 - Additional Features
 
-    This chapter covers some additional features that make the address book
-    application more convenient for everyday use.
+    \example tutorials/addressbook/part7
+    \title Part 7 - Additional Features
+
+    This part covers some additional features that make the address
+    book more convenient for the frequent user.
 
     \image addressbook-tutorial-part7-screenshot.png
 
-    Although our address book application is useful in its own right, it would
-    be useful if we could exchange contact data with other applications.
-    The vCard format is a popular file format that can be used for this purpose.
-    In this chapter, we extend our address book client to allow contacts to
-    be exported to vCard \c{.vcf} files.
+    Although our address book is useful in isolation, it would be
+    better if we could exchange contact data with other applications.
+    The vCard format is a popular file format that can be used for
+    this purpose.  Here we extend our address book client to allow
+    contacts to be exported to vCard \c{.vcf} files.
 
     \section1 Defining the AddressBook Class
 

@@ -150,6 +150,9 @@ public:
     The item includes no scrolling, scaling,
     toolbars, etc., those must be implemented around WebView. See the WebBrowser example
     for a demonstration of this.
+
+    When this item has keyboard focus, all keyboard input will be sent directly to the
+    web page within.
 */
 
 /*!
@@ -701,20 +704,12 @@ void QDeclarativeWebView::hoverMoveEvent (QGraphicsSceneHoverEvent * event)
         QDeclarativeItem::hoverMoveEvent(event);
 }
 
-bool QDeclarativeWebView::sceneEvent(QEvent *event) 
-{ 
-    if (event->type() == QEvent::KeyPress) { 
-        QKeyEvent *k = static_cast<QKeyEvent *>(event); 
-        if (k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) { 
-            if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) { //### Add MetaModifier? 
-                page()->event(event); 
-                if (event->isAccepted()) 
-                    return true; 
-            } 
-        } 
-    } 
+bool QDeclarativeWebView::sceneEvent(QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease)//Key events go to the page
+                return page()->event(event);
     return QDeclarativeItem::sceneEvent(event);
-} 
+}
 
 
 /*!

@@ -9,8 +9,8 @@ DEFINES += QT_NO_CAST_TO_ASCII
 wince*|symbian*: {
    rootFiles.sources = Ash_European.jpg graphicsScene_selection.data
    rootFiles.path = .
-   renderFiles.sources = testData\render\*
-   renderFiles.path = testData\render
+   renderFiles.sources = testData\\render\\*
+   renderFiles.path = testData\\render
    DEPLOYMENT += rootFiles renderFiles
 }
 wince*:{

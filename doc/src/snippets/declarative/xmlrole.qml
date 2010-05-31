@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -41,20 +41,41 @@
 
 import Qt 4.7
 
-//Emulates the in animation of the menu elements
-SequentialAnimation{
-    id: main;
-    property Item target
-    property int from: 0
-    property int to: 100
-    property int duration: 1000
-    property string properties: "y"
-    PauseAnimation { duration: main.duration*0.20 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.from; to: main.to + 40; duration: main.duration*0.30 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 40; to: main.to; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to; to: main.to + 20; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 20; to: main.to; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to; to: main.to + 8; duration: main.duration*0.10 }
-    NumberAnimation { target: main.target; properties: main.properties; from: main.to + 8; to: main.to; duration: main.duration*0.10 }
+Rectangle {
+    width: 300; height: 200
+
+//![0]
+XmlListModel {
+    id: model
+//![0]
+    source: "xmlrole.xml"
+
+//![1]
+    // XmlRole queries will be made on <book> elements
+    query: "/catalogue/book"
+
+    // query the book title
+    XmlRole { name: "title"; query: "title/string()" }
+
+    // query the book's year
+    XmlRole { name: "year"; query: "year/number()" }
+
+    // query the book's type (the '@' indicates 'type' is an attribute, not an element)
+    XmlRole { name: "type"; query: "@type/string()" }
+
+    // query the book's first listed author (note in XPath the first index is 1, not 0)
+    XmlRole { name: "first_author"; query: "author[1]/string()" }
+}
+//![1]
+
+ListView {
+    width: 300; height: 200
+    model: model
+    delegate: Column {
+        Text { text: title + " (" + type + ")"; font.bold: true }
+        Text { text: first_author }
+        Text { text: year }
+    }
 }
 
+}

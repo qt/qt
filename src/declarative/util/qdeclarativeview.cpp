@@ -45,10 +45,10 @@
 #include <qdeclarativeitem.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
-#include <qdeclarativedebug_p.h>
-#include <qdeclarativedebugservice_p.h>
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativeguard_p.h>
+
+#include <private/qdeclarativedebugtiming_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -66,66 +66,64 @@
 #include <QtCore/qabstractanimation.h>
 #include <private/qgraphicsview_p.h>
 #include <private/qdeclarativeitem_p.h>
+#include <private/qabstractanimation_p.h>
 #include <private/qdeclarativeitemchangelistener_p.h>
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
 
-class QDeclarativeViewDebugServer;
-class FrameBreakAnimation : public QAbstractAnimation
+class QDeclarativeScene : public QGraphicsScene
 {
 public:
-    FrameBreakAnimation(QDeclarativeViewDebugServer *s)
-    : QAbstractAnimation((QObject*)s), server(s)
-    {
-        start();
-    }
+    QDeclarativeScene();
 
-    virtual int duration() const { return -1; }
-    virtual void updateCurrentTime(int msecs);
+protected:
+    virtual void keyPressEvent(QKeyEvent *);
+    virtual void keyReleaseEvent(QKeyEvent *);
 
-private:
-    QDeclarativeViewDebugServer *server;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *);
 };
 
-class QDeclarativeViewDebugServer : public QDeclarativeDebugService
+QDeclarativeScene::QDeclarativeScene()
 {
-public:
-    QDeclarativeViewDebugServer(QObject *parent = 0) : QDeclarativeDebugService(QLatin1String("CanvasFrameRate"), parent), breaks(0)
-    {
-        timer.start();
-        new FrameBreakAnimation(this);
-    }
+}
 
-    void addTiming(int pe, int tbf)
-    {
-        if (!isEnabled())
-            return;
-
-        bool isFrameBreak = breaks > 1;
-        breaks = 0;
-        int e = timer.elapsed();
-        QByteArray data;
-        QDataStream ds(&data, QIODevice::WriteOnly);
-        ds << (int)pe << (int)tbf << (int)e
-           << (bool)isFrameBreak;
-        sendMessage(data);
-    }
-
-    void frameBreak() { ++breaks; }
-
-private:
-    QTime timer;
-    int breaks;
-};
-
-Q_GLOBAL_STATIC(QDeclarativeViewDebugServer, qfxViewDebugServer);
-
-void FrameBreakAnimation::updateCurrentTime(int msecs)
+void QDeclarativeScene::keyPressEvent(QKeyEvent *e)
 {
-    Q_UNUSED(msecs);
-    server->frameBreak();
+    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Key);
+
+    QGraphicsScene::keyPressEvent(e);
+}
+
+void QDeclarativeScene::keyReleaseEvent(QKeyEvent *e)
+{
+    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Key);
+
+    QGraphicsScene::keyReleaseEvent(e);
+}
+
+void QDeclarativeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *e)
+{
+    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Mouse);
+
+    QGraphicsScene::mouseMoveEvent(e);
+}
+
+void QDeclarativeScene::mousePressEvent(QGraphicsSceneMouseEvent *e)
+{
+    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Mouse);
+
+    QGraphicsScene::mousePressEvent(e);
+}
+
+void QDeclarativeScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *e)
+{
+    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Mouse);
+
+    QGraphicsScene::mouseReleaseEvent(e);
 }
 
 class QDeclarativeViewPrivate : public QGraphicsViewPrivate, public QDeclarativeItemChangeListener
@@ -152,11 +150,11 @@ public:
     QBasicTimer resizetimer;
 
     QDeclarativeView::ResizeMode resizeMode;
-    QTime frameTimer;
+    QElapsedTimer frameTimer;
 
     void init();
 
-    QGraphicsScene scene;
+    QDeclarativeScene scene;
 };
 
 void QDeclarativeViewPrivate::execute()
@@ -676,12 +674,18 @@ void QDeclarativeView::resizeEvent(QResizeEvent *e)
 void QDeclarativeView::paintEvent(QPaintEvent *event)
 {
     Q_D(QDeclarativeView);
+
+    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::FramePaint);
+    QDeclarativeDebugTiming::startRange(QDeclarativeDebugTiming::Painting);
+
     int time = 0;
-    if (frameRateDebug() || QDeclarativeViewDebugServer::isDebuggingEnabled())
+    if (frameRateDebug()) 
         time = d->frameTimer.restart();
+
     QGraphicsView::paintEvent(event);
-    if (QDeclarativeViewDebugServer::isDebuggingEnabled())
-        qfxViewDebugServer()->addTiming(d->frameTimer.elapsed(), time);
+
+    QDeclarativeDebugTiming::endRange(QDeclarativeDebugTiming::Painting);
+
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
 }

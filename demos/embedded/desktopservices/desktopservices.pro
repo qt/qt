@@ -24,8 +24,8 @@ symbian {
 }
 
 wince*{
-    music.path = "\My Documents\My Music"
-    image.path = "\My Documents\My Pictures"
+    music.path = "\\My Documents\\My Music"
+    image.path = "\\My Documents\\My Pictures"
     DEPLOYMENT += music image
 }
 

@@ -152,8 +152,6 @@ void QDeclarativePaintedItem::setContentsSize(const QSize &size)
     Q_D(QDeclarativePaintedItem);
     if (d->contentsSize == size) return;
     d->contentsSize = size;
-    setImplicitWidth(size.width()*d->contentsScale);
-    setImplicitHeight(size.height()*d->contentsScale);
     clearCache();
     update();
     emit contentsSizeChanged();
@@ -170,8 +168,6 @@ void QDeclarativePaintedItem::setContentsScale(qreal scale)
     Q_D(QDeclarativePaintedItem);
     if (d->contentsScale == scale) return;
     d->contentsScale = scale;
-    setImplicitWidth(d->contentsSize.width()*scale);
-    setImplicitHeight(d->contentsSize.height()*scale);
     clearCache();
     update();
     emit contentsScaleChanged();
@@ -230,6 +226,19 @@ void QDeclarativePaintedItem::setCacheFrozen(bool frozen)
         return;
     d->cachefrozen = frozen;
     // XXX clear cache?
+}
+
+QRectF QDeclarativePaintedItem::boundingRect() const
+{
+    Q_D(const QDeclarativePaintedItem);
+    qreal w = d->mWidth;
+    QSizeF sz = d->contentsSize * d->contentsScale;
+    if (w < sz.width())
+        w = sz.width();
+    qreal h = d->mHeight;
+    if (h < sz.height())
+        h = sz.height();
+    return QRectF(0.0,0.0,w,h);
 }
 
 /*!

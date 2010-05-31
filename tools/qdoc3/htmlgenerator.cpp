@@ -4060,10 +4060,13 @@ int HtmlGenerator::hOffset(const Node *node)
     case Node::Class:
         return 2;
     case Node::Fake:
+        return 1;
+#if 0        
         if (node->doc().briefText().isEmpty())
             return 1;
         else
             return 2;
+#endif        
     case Node::Enum:
     case Node::Typedef:
     case Node::Function:

@@ -61,8 +61,9 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
-  \since 4.7
+    \since 4.7
     \brief The TextEdit item allows you to add editable formatted text to a scene.
+    \inherits Item
 
     It can display both plain and rich text. For example:
 
@@ -483,14 +484,13 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     The text will only wrap if an explicit width has been set.
 
     \list
-    \o TextEdit.NoWrap - no wrapping will be performed.
-    \o TextEdit.WordWrap - wrapping is done on word boundaries.
-    \o TextEdit.WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o TextEdit.WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
-       will occur at the appropriate point on the line, even in the middle of a word.
+    \o TextEdit.NoWrap - no wrapping will be performed. If the text contains insufficient newlines, then implicitWidth will exceed a set width.
+    \o TextEdit.WordWrap - wrapping is done on word boundaries only. If a word is too long, implicitWidth will exceed a set width.
+    \o TextEdit.WrapAnywhere - wrapping is done at any point on a line, even if it occurs in the middle of a word.
+    \o TextEdit.Wrap - if possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
-    The default is TextEdit.NoWrap.
+    The default is TextEdit.NoWrap. If you set a width, consider using TextEdit.Wrap.
 */
 QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
 {
@@ -508,6 +508,29 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
     updateSize();
     emit wrapModeChanged();
 }
+
+/*!
+    \qmlproperty real TextEdit::paintedWidth
+
+    Returns the width of the text, including width past the width
+    which is covered due to insufficient wrapping if WrapMode is set.
+*/
+qreal QDeclarativeTextEdit::paintedWidth() const
+{
+    return implicitWidth();
+}
+
+/*!
+    \qmlproperty real TextEdit::paintedHeight
+
+    Returns the height of the text, including height past the height
+    which is covered due to there being more text than fits in the set height.
+*/
+qreal QDeclarativeTextEdit::paintedHeight() const
+{
+    return implicitHeight();
+}
+
 
 /*!
     \qmlproperty bool TextEdit::cursorVisible
@@ -781,7 +804,7 @@ void QDeclarativeTextEdit::componentComplete()
 }
 
 /*!
-    \qmlproperty string TextEdit::selectByMouse
+    \qmlproperty bool TextEdit::selectByMouse
 
     Defaults to false.
 
@@ -939,8 +962,8 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    bool hadFocus = hasFocus();
     if (d->focusOnPress){
+        bool hadFocus = hasFocus();
         QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
         while(p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope)
@@ -948,9 +971,11 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
             p = p->parentItem();
         }
         setFocus(true);
+        if (hasFocus() == hadFocus && d->showInputPanelOnFocus && !isReadOnly()) {
+            // re-open input panel on press if already focused
+            openSoftwareInputPanel();
+        }
     }
-    if (!hadFocus && hasFocus())
-        d->clickCausedFocus = true;
     if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
         d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
@@ -964,11 +989,6 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    QWidget *widget = event->widget();
-    if (widget && (d->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos()))
-        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
-    d->clickCausedFocus = false;
-
     d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
@@ -1155,7 +1175,7 @@ void QDeclarativeTextEdit::updateSize()
         int dy = height();
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
-        if (widthValid())
+        if (widthValid() && d->document->textWidth() != width())
             d->document->setTextWidth(width());
         dy -= (int)d->document->size().height();
 
@@ -1171,7 +1191,7 @@ void QDeclarativeTextEdit::updateSize()
 
         //### need to comfirm cost of always setting these
         int newWidth = qCeil(d->document->idealWidth());
-        if (!widthValid())
+        if (!widthValid() && d->document->textWidth() != newWidth)
             d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
         int cursorWidth = 1;
         if(d->cursor)
@@ -1181,9 +1201,12 @@ void QDeclarativeTextEdit::updateSize()
             newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
-        setImplicitHeight(d->document->isEmpty() ? fm.height() : (int)d->document->size().height());
+        qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
+        setImplicitHeight(newHeight);
 
-        setContentsSize(QSize(width(), height()));
+        setContentsSize(QSize(newWidth, newHeight));
+
+        emit paintedSizeChanged();
     } else {
         d->dirty = true;
     }
@@ -1202,6 +1225,129 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;
     document->setDefaultTextOption(opt);
+}
+
+
+/*!
+    \qmlmethod void TextEdit::openSoftwareInputPanel()
+
+    Opens software input panels like virtual keyboards for typing, useful for
+    customizing when you want the input keyboard to be shown and hidden in
+    your application.
+
+    By default input panels are shown when TextEdit element gains focus and hidden
+    when the focus is lost. You can disable the automatic behavior by setting the
+    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
+    and closeSoftwareInputPanel() to implement the behavior you want.
+
+    Only relevant on platforms, which provide virtual keyboards.
+
+    \code
+        import Qt 4.7
+        TextEdit {
+            id: textEdit
+            text: "Hello world!"
+            showInputPanelOnFocus: false
+            MouseArea {
+                anchors.fill: parent
+                onClicked: textEdit.openSoftwareInputPanel()
+            }
+            onFocusChanged: if (!focus) closeSoftwareInputpanel()
+        }
+    \endcode
+*/
+void QDeclarativeTextEdit::openSoftwareInputPanel()
+{
+    QEvent event(QEvent::RequestSoftwareInputPanel);
+    if (qApp) {
+        if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+            if (view->scene() && view->scene() == scene()) {
+                QApplication::sendEvent(view, &event);
+            }
+        }
+    }
+}
+
+/*!
+    \qmlmethod void TextEdit::closeSoftwareInputPanel()
+
+    Closes a software input panel like a virtual keyboard shown on the screen, useful
+    for customizing when you want the input keyboard to be shown and hidden in
+    your application.
+
+    By default input panels are shown when TextEdit element gains focus and hidden
+    when the focus is lost. You can disable the automatic behavior by setting the
+    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
+    and closeSoftwareInputPanel() to implement the behavior you want.
+
+    Only relevant on platforms, which provide virtual keyboards.
+
+    \code
+        import Qt 4.7
+        TextEdit {
+            id: textEdit
+            text: "Hello world!"
+            showInputPanelOnFocus: false
+            MouseArea {
+                anchors.fill: parent
+                onClicked: textEdit.openSoftwareInputPanel()
+            }
+            onFocusChanged: if (!focus) closeSoftwareInputpanel()
+        }
+    \endcode
+*/
+void QDeclarativeTextEdit::closeSoftwareInputPanel()
+{
+    QEvent event(QEvent::CloseSoftwareInputPanel);
+    if (qApp) {
+        if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+            if (view->scene() && view->scene() == scene()) {
+                QApplication::sendEvent(view, &event);
+            }
+        }
+    }
+}
+
+/*!
+    \qmlproperty bool TextEdit::showInputPanelOnFocus
+    Whether input panels are automatically shown when TextEdit element gains
+    focus and hidden when focus is lost. By default this is set to true.
+
+    Only relevant on platforms, which provide virtual keyboards.
+*/
+bool QDeclarativeTextEdit::showInputPanelOnFocus() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->showInputPanelOnFocus;
+}
+
+void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool showOnFocus)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus == showOnFocus)
+        return;
+
+    d->showInputPanelOnFocus = showOnFocus;
+
+    emit showInputPanelOnFocusChanged(d->showInputPanelOnFocus);
+}
+
+void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
+        openSoftwareInputPanel();
+    }
+    QDeclarativePaintedItem::focusInEvent(event);
+}
+
+void QDeclarativeTextEdit::focusOutEvent(QFocusEvent *event)
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus && !isReadOnly()) {
+        closeSoftwareInputPanel();
+    }
+    QDeclarativePaintedItem::focusOutEvent(event);
 }
 
 QT_END_NAMESPACE

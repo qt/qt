@@ -7,14 +7,14 @@ MOC_DIR=tmp
 !contains(QT_CONFIG, no-mng):DEFINES += QTEST_HAVE_MNG
 
 wince*: {
-   addFiles.sources = animations\*
+   addFiles.sources = animations\\*
    addFiles.path = animations
    DEPLOYMENT += addFiles
 }
 
 
 symbian*: {
-   addFiles.sources = animations\*
+   addFiles.sources = animations\\*
    addFiles.path = animations
    DEPLOYMENT += addFiles
 
