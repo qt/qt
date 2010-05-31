@@ -239,8 +239,6 @@ static NSDrawer *qt_mac_drawer_for(const QWidget *widget)
 static void qt_mac_destructView(OSViewRef view)
 {
 #ifdef QT_MAC_USE_COCOA
-    if ([[view window] contentView] == view)
-        [[view window] setContentView:0];
     [view removeFromSuperview];
     [view release];
 #else
@@ -2289,23 +2287,28 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     Q_UNUSED(dialog);
 
     data.fstrut_dirty = true; // when we create a toplevel widget, the frame strut should be dirty
-
     OSViewRef nsview = (OSViewRef)data.winid;
+    OSViewRef window_contentview = qt_mac_get_contentview_for(windowRef);
     if (!nsview) {
-        nsview = qt_mac_create_widget(q, this, 0);
+        nsview = qt_mac_create_widget(q, this, window_contentview);
         setWinId(WId(nsview));
+    } else {
+        [window_contentview addSubview:nsview];
     }
-    [windowRef setContentView:nsview];
-    [nsview setHidden:NO];
-    if (q->testAttribute(Qt::WA_DropSiteRegistered))
-        registerDropSite(true);
-    transferChildren();
+    if (nsview) {
+        NSRect bounds = [window_contentview bounds];
+        [nsview setFrame:bounds];
+        [nsview setHidden:NO];
+        if (q->testAttribute(Qt::WA_DropSiteRegistered))
+            registerDropSite(true);
+        transferChildren();
 
-    // Tell Cocoa explicit that we wan't the view to receive key events
-    // (regardless of focus policy) because this is how it works on other
-    // platforms (and in the carbon port):
-    if (!qApp->focusWidget())
-        [windowRef makeFirstResponder:nsview];
+        // Tell Cocoa explicit that we wan't the view to receive key events
+        // (regardless of focus policy) because this is how it works on other
+        // platforms (and in the carbon port):
+        if (!qApp->focusWidget())
+            [windowRef makeFirstResponder:nsview];
+    }
 
     if (topExtra->posFromMove) {
         updateFrameStrut();
