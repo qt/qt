@@ -51,3 +51,4 @@ Item {
 
     Component.onCompleted: console.log("Reddy plays the " + reddy.instrument.type)
 }
+//![0]

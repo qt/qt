@@ -55,3 +55,4 @@ Rectangle {
         text: aMusician.name + " plays the " + aMusician.instrument
     }
 }
+//![0]
