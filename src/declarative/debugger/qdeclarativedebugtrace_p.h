@@ -39,57 +39,63 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativedebugtiming_p.h"
+#ifndef QDECLARATIVEDEBUGTRACE_P_H
+#define QDECLARATIVEDEBUGTRACE_P_H
 
-#include <QtCore/qdatastream.h>
+#include <private/qdeclarativedebugservice_p.h>
+#include <QtCore/qelapsedtimer.h>
 
-Q_GLOBAL_STATIC(QDeclarativeDebugTiming, timerInstance);
+QT_BEGIN_HEADER
 
-QDeclarativeDebugTiming::QDeclarativeDebugTiming()
-: QDeclarativeDebugService(QLatin1String("CanvasFrameRate"))
+QT_BEGIN_NAMESPACE
+
+class QUrl;
+class QDeclarativeDebugTrace : public QDeclarativeDebugService
 {
-    m_timer.start();
-}
+public:
+    enum EventType {
+        FramePaint,
+        Mouse,
+        Key,
 
-void QDeclarativeDebugTiming::addEvent(EventType t)
-{
-    if (QDeclarativeDebugService::isDebuggingEnabled()) 
-        timerInstance()->addEventImpl(t);
-}
+        MaximumEventType
+    };
 
-void QDeclarativeDebugTiming::startRange(RangeType t)
-{
-    if (QDeclarativeDebugService::isDebuggingEnabled()) 
-        timerInstance()->startRangeImpl(t);
-}
+    enum Message {
+        Event,
+        RangeStart,
+        RangeData,
+        RangeEnd,
 
-void QDeclarativeDebugTiming::endRange(RangeType t)
-{
-    if (QDeclarativeDebugService::isDebuggingEnabled()) 
-        timerInstance()->endRangeImpl(t);
-}
+        MaximumMessage
+    };
 
-void QDeclarativeDebugTiming::addEventImpl(EventType event)
-{
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)Event << (int)event;
-    sendMessage(data);
-}
+    enum RangeType {
+        Painting,
+        Compiling,
+        Creating,
 
-void QDeclarativeDebugTiming::startRangeImpl(RangeType range)
-{
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)RangeStart << (int)range;
-    sendMessage(data);
-}
+        MaximumRangeType
+    };
 
-void QDeclarativeDebugTiming::endRangeImpl(RangeType range)
-{
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)RangeEnd << (int)range;
-    sendMessage(data);
-}
+    static void addEvent(EventType);
+
+    static void startRange(RangeType);
+    static void rangeData(RangeType, const QUrl &);
+    static void endRange(RangeType);
+
+    QDeclarativeDebugTrace();
+private:
+    void addEventImpl(EventType);
+    void startRangeImpl(RangeType);
+    void rangeDataImpl(RangeType, const QUrl &);
+    void endRangeImpl(RangeType);
+    QElapsedTimer m_timer;
+};
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QDECLARATIVEDEBUGTRACE_P_H
 

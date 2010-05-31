@@ -50,20 +50,21 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass LayoutItem QDeclarativeLayoutItem
     \since 4.7
-    \brief The LayoutItem element allows you to place your declarative UI elements inside a classical Qt layout.
+    \brief The LayoutItem element allows declarative UI elements to be placed inside Qt's Graphics View layouts.
 
-    LayoutItem is a variant of Item with a couple of additional properties. These properties provide the size hints
-    needed for items to work in conjunction with Qt Layouts. The Qt Layout will resize the LayoutItem as appropriate,
+    LayoutItem is a variant of \l Item with additional size hint properties. These properties provide the size hints
+    necessary for items to work in conjunction with Qt \l{Graphics View Framework}{Graphics View} layout classes
+    such as QGraphicsLinearLayout and QGraphicsGridLayout. The Qt layout mechanisms will resize the LayoutItem as appropriate,
     taking its size hints into account, and you can propagate this to the other elements in your UI via anchors and bindings.
 
-    This is a QGraphicsLayoutItem subclass, and the properties merely expose the QGraphicsLayoutItem functionality to QML.
+    This is a QGraphicsLayoutItem subclass, and its properties merely expose the QGraphicsLayoutItem functionality to QML.
     See the QGraphicsLayoutItem documentation for further details.
 */
 
 /*!
     \internal
     \class QDeclarativeLayoutItem
-    \brief The QDeclarativeLayoutItem class allows you to place your Fluid UI elements inside a classical Qt layout.
+    \brief The QDeclarativeLayoutItem class allows you to place your QML UI elements inside Qt's Graphics View layouts.
 */
 
 

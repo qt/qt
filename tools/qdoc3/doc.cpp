@@ -2746,18 +2746,6 @@ Doc::SectioningUnit Doc::granularity() const
     }
 }
 
-#if notyet // ###
-Doc::SectioningUnit Doc::sectioningUnit() const
-{
-    if (priv == 0 || priv->extra == 0) {
-	return DocPrivateExtra().sectioningUnit;
-    }
-    else {
-	return priv->extra->sectioningUnit;
-    }
-}
-#endif
-
 const QSet<QString> &Doc::parameterNames() const
 {
     return priv == 0 ? *null_Set_QString() : priv->params;

@@ -86,7 +86,7 @@ EXPORTS
 	??0QDeclarativeError@@QAE@XZ @ 85 NONAME ; QDeclarativeError::QDeclarativeError(void)
 	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContext@@ABVQString@@PAVQObject@@AAVQDeclarativeExpressionPrivate@@@Z @ 86 NONAME ABSENT ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, class QString const &, class QObject *, class QDeclarativeExpressionPrivate &)
 	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContext@@PAXPAVQDeclarativeRefCount@@PAVQObject@@ABVQString@@HAAVQDeclarativeExpressionPrivate@@@Z @ 87 NONAME ABSENT ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, void *, class QDeclarativeRefCount *, class QObject *, class QString const &, int, class QDeclarativeExpressionPrivate &)
-	??0QDeclarativeExpression@@QAE@PAVQDeclarativeContext@@ABVQString@@PAVQObject@@@Z @ 88 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, class QString const &, class QObject *)
+	??0QDeclarativeExpression@@QAE@PAVQDeclarativeContext@@ABVQString@@PAVQObject@@@Z @ 88 NONAME ABSENT ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, class QString const &, class QObject *)
 	??0QDeclarativeExpression@@QAE@XZ @ 89 NONAME ; QDeclarativeExpression::QDeclarativeExpression(void)
 	??0QDeclarativeExtensionPlugin@@QAE@PAVQObject@@@Z @ 90 NONAME ; QDeclarativeExtensionPlugin::QDeclarativeExtensionPlugin(class QObject *)
 	??0QDeclarativeFlickable@@IAE@AAVQDeclarativeFlickablePrivate@@PAVQDeclarativeItem@@@Z @ 91 NONAME ; QDeclarativeFlickable::QDeclarativeFlickable(class QDeclarativeFlickablePrivate &, class QDeclarativeItem *)
@@ -861,7 +861,7 @@ EXPORTS
 	?cursorPosition@QDeclarativeTextInput@@QBEHXZ @ 860 NONAME ; int QDeclarativeTextInput::cursorPosition(void) const
 	?cursorPositionChanged@QDeclarativeTextEdit@@IAEXXZ @ 861 NONAME ; void QDeclarativeTextEdit::cursorPositionChanged(void)
 	?cursorPositionChanged@QDeclarativeTextInput@@IAEXXZ @ 862 NONAME ; void QDeclarativeTextInput::cursorPositionChanged(void)
-	?cursorRect@QDeclarativeTextEdit@@QBE?AVQRect@@XZ @ 863 NONAME ; class QRect QDeclarativeTextEdit::cursorRect(void) const
+	?cursorRect@QDeclarativeTextEdit@@QBE?AVQRect@@XZ @ 863 NONAME ABSENT ; class QRect QDeclarativeTextEdit::cursorRect(void) const
 	?cursorRect@QDeclarativeTextInput@@QBE?AVQRect@@XZ @ 864 NONAME ; class QRect QDeclarativeTextInput::cursorRect(void) const
 	?cursorVisibleChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 865 NONAME ; void QDeclarativeTextEdit::cursorVisibleChanged(bool)
 	?cursorVisibleChanged@QDeclarativeTextInput@@IAEX_N@Z @ 866 NONAME ; void QDeclarativeTextInput::cursorVisibleChanged(bool)
@@ -1086,7 +1086,7 @@ EXPORTS
 	?errors@QDeclarativeCustomParser@@QBE?AV?$QList@VQDeclarativeError@@@@XZ @ 1085 NONAME ; class QList<class QDeclarativeError> QDeclarativeCustomParser::errors(void) const
 	?errors@QDeclarativeDomDocument@@QBE?AV?$QList@VQDeclarativeError@@@@XZ @ 1086 NONAME ; class QList<class QDeclarativeError> QDeclarativeDomDocument::errors(void) const
 	?errors@QDeclarativeView@@QBE?AV?$QList@VQDeclarativeError@@@@XZ @ 1087 NONAME ; class QList<class QDeclarativeError> QDeclarativeView::errors(void) const
-	?errorsString@QDeclarativeComponent@@QBE?AVQString@@XZ @ 1088 NONAME ; class QString QDeclarativeComponent::errorsString(void) const
+	?errorsString@QDeclarativeComponent@@QBE?AVQString@@XZ @ 1088 NONAME ABSENT ; class QString QDeclarativeComponent::errorsString(void) const
 	?eval@QDeclarativeBind@@AAEXXZ @ 1089 NONAME ; void QDeclarativeBind::eval(void)
 	?evaluate@QDeclarativeVisualDataModel@@UAE?AVQVariant@@HABVQString@@PAVQObject@@@Z @ 1090 NONAME ; class QVariant QDeclarativeVisualDataModel::evaluate(int, class QString const &, class QObject *)
 	?evaluate@QDeclarativeVisualItemModel@@UAE?AVQVariant@@HABVQString@@PAVQObject@@@Z @ 1091 NONAME ; class QVariant QDeclarativeVisualItemModel::evaluate(int, class QString const &, class QObject *)
@@ -1299,7 +1299,7 @@ EXPORTS
 	?hasStdCppSet@QMetaPropertyBuilder@@QBE_NXZ @ 1298 NONAME ; bool QMetaPropertyBuilder::hasStdCppSet(void) const
 	?header@QDeclarativeListView@@QBEPAVQDeclarativeComponent@@XZ @ 1299 NONAME ; class QDeclarativeComponent * QDeclarativeListView::header(void) const
 	?height@QDeclarativeItem@@QBEMXZ @ 1300 NONAME ; float QDeclarativeItem::height(void) const
-	?height@QDeclarativeParentChange@@QBEMXZ @ 1301 NONAME ; float QDeclarativeParentChange::height(void) const
+	?height@QDeclarativeParentChange@@QBEMXZ @ 1301 NONAME ABSENT ; float QDeclarativeParentChange::height(void) const
 	?heightChange@QDeclarativeFlickable@@IAEXXZ @ 1302 NONAME ABSENT ; void QDeclarativeFlickable::heightChange(void)
 	?heightChanged@QDeclarativeItem@@IAEXXZ @ 1303 NONAME ABSENT ; void QDeclarativeItem::heightChanged(void)
 	?heightIsSet@QDeclarativeParentChange@@QBE_NXZ @ 1304 NONAME ; bool QDeclarativeParentChange::heightIsSet(void) const
@@ -1813,8 +1813,8 @@ EXPORTS
 	?orientation@QDeclarativeListView@@QBE?AW4Orientation@1@XZ @ 1812 NONAME ; enum QDeclarativeListView::Orientation QDeclarativeListView::orientation(void) const
 	?orientationChanged@QDeclarativeListView@@IAEXXZ @ 1813 NONAME ; void QDeclarativeListView::orientationChanged(void)
 	?originalParent@QDeclarativeParentChange@@QBEPAVQDeclarativeItem@@XZ @ 1814 NONAME ; class QDeclarativeItem * QDeclarativeParentChange::originalParent(void) const
-	?overShoot@QDeclarativeFlickable@@QBE_NXZ @ 1815 NONAME ; bool QDeclarativeFlickable::overShoot(void) const
-	?overShootChanged@QDeclarativeFlickable@@IAEXXZ @ 1816 NONAME ; void QDeclarativeFlickable::overShootChanged(void)
+	?overShoot@QDeclarativeFlickable@@QBE_NXZ @ 1815 NONAME ABSENT ; bool QDeclarativeFlickable::overShoot(void) const
+	?overShootChanged@QDeclarativeFlickable@@IAEXXZ @ 1816 NONAME ABSENT ; void QDeclarativeFlickable::overShootChanged(void)
 	?override@QDeclarativeAnchorChanges@@UAE_NPAVQDeclarativeActionEvent@@@Z @ 1817 NONAME ; bool QDeclarativeAnchorChanges::override(class QDeclarativeActionEvent *)
 	?override@QDeclarativeParentChange@@UAE_NPAVQDeclarativeActionEvent@@@Z @ 1818 NONAME ; bool QDeclarativeParentChange::override(class QDeclarativeActionEvent *)
 	?pace@QDeclarativeParticleMotionWander@@QBEMXZ @ 1819 NONAME ABSENT ; float QDeclarativeParticleMotionWander::pace(void) const
@@ -2247,7 +2247,7 @@ EXPORTS
 	?rootIndexChanged@QDeclarativeVisualDataModel@@IAEXXZ @ 2246 NONAME ; void QDeclarativeVisualDataModel::rootIndexChanged(void)
 	?rootObject@QDeclarativeDomDocument@@QBE?AVQDeclarativeDomObject@@XZ @ 2247 NONAME ; class QDeclarativeDomObject QDeclarativeDomDocument::rootObject(void) const
 	?rootObject@QDeclarativeView@@QBEPAVQGraphicsObject@@XZ @ 2248 NONAME ; class QGraphicsObject * QDeclarativeView::rootObject(void) const
-	?rotation@QDeclarativeParentChange@@QBEMXZ @ 2249 NONAME ; float QDeclarativeParentChange::rotation(void) const
+	?rotation@QDeclarativeParentChange@@QBEMXZ @ 2249 NONAME ABSENT ; float QDeclarativeParentChange::rotation(void) const
 	?rotationIsSet@QDeclarativeParentChange@@QBE_NXZ @ 2250 NONAME ; bool QDeclarativeParentChange::rotationIsSet(void) const
 	?rows@QDeclarativeGrid@@QBEHXZ @ 2251 NONAME ; int QDeclarativeGrid::rows(void) const
 	?rowsChanged@QDeclarativeGrid@@IAEXXZ @ 2252 NONAME ; void QDeclarativeGrid::rowsChanged(void)
@@ -2257,7 +2257,7 @@ EXPORTS
 	?saveCurrentValues@QDeclarativeParentChange@@UAEXXZ @ 2256 NONAME ; void QDeclarativeParentChange::saveCurrentValues(void)
 	?saveOriginals@QDeclarativeAnchorChanges@@UAEXXZ @ 2257 NONAME ; void QDeclarativeAnchorChanges::saveOriginals(void)
 	?saveOriginals@QDeclarativeParentChange@@UAEXXZ @ 2258 NONAME ; void QDeclarativeParentChange::saveOriginals(void)
-	?scale@QDeclarativeParentChange@@QBEMXZ @ 2259 NONAME ; float QDeclarativeParentChange::scale(void) const
+	?scale@QDeclarativeParentChange@@QBEMXZ @ 2259 NONAME ABSENT ; float QDeclarativeParentChange::scale(void) const
 	?scaleIsSet@QDeclarativeParentChange@@QBE_NXZ @ 2260 NONAME ; bool QDeclarativeParentChange::scaleIsSet(void) const
 	?sceneEvent@QDeclarativeFocusPanel@@MAE_NPAVQEvent@@@Z @ 2261 NONAME ; bool QDeclarativeFocusPanel::sceneEvent(class QEvent *)
 	?sceneEvent@QDeclarativeItem@@MAE_NPAVQEvent@@@Z @ 2262 NONAME ; bool QDeclarativeItem::sceneEvent(class QEvent *)
@@ -2346,7 +2346,7 @@ EXPORTS
 	?setColumn@QDeclarativeError@@QAEXH@Z @ 2345 NONAME ; void QDeclarativeError::setColumn(int)
 	?setColumnNumber@QDeclarativeDebugFileReference@@QAEXH@Z @ 2346 NONAME ; void QDeclarativeDebugFileReference::setColumnNumber(int)
 	?setColumns@QDeclarativeGrid@@QAEXH@Z @ 2347 NONAME ; void QDeclarativeGrid::setColumns(int)
-	?setConsistentTime@QDeclarativeItemPrivate@@SAXH@Z @ 2348 NONAME ; void QDeclarativeItemPrivate::setConsistentTime(int)
+	?setConsistentTime@QDeclarativeItemPrivate@@SAXH@Z @ 2348 NONAME ABSENT ; void QDeclarativeItemPrivate::setConsistentTime(int)
 	?setContent@QDeclarativeWebView@@QAEXABVQByteArray@@ABVQString@@ABVQUrl@@@Z @ 2349 NONAME ABSENT ; void QDeclarativeWebView::setContent(class QByteArray const &, class QString const &, class QUrl const &)
 	?setContentHeight@QDeclarativeFlickable@@QAEXM@Z @ 2350 NONAME ; void QDeclarativeFlickable::setContentHeight(float)
 	?setContentWidth@QDeclarativeFlickable@@QAEXM@Z @ 2351 NONAME ; void QDeclarativeFlickable::setContentWidth(float)
@@ -2437,7 +2437,7 @@ EXPORTS
 	?setHAlign@QDeclarativeTextInput@@QAEXW4HAlignment@1@@Z @ 2436 NONAME ; void QDeclarativeTextInput::setHAlign(enum QDeclarativeTextInput::HAlignment)
 	?setHeader@QDeclarativeListView@@QAEXPAVQDeclarativeComponent@@@Z @ 2437 NONAME ; void QDeclarativeListView::setHeader(class QDeclarativeComponent *)
 	?setHeight@QDeclarativeItem@@QAEXM@Z @ 2438 NONAME ; void QDeclarativeItem::setHeight(float)
-	?setHeight@QDeclarativeParentChange@@QAEXM@Z @ 2439 NONAME ; void QDeclarativeParentChange::setHeight(float)
+	?setHeight@QDeclarativeParentChange@@QAEXM@Z @ 2439 NONAME ABSENT ; void QDeclarativeParentChange::setHeight(float)
 	?setHighlight@QDeclarativeGridView@@QAEXPAVQDeclarativeComponent@@@Z @ 2440 NONAME ; void QDeclarativeGridView::setHighlight(class QDeclarativeComponent *)
 	?setHighlight@QDeclarativeListView@@QAEXPAVQDeclarativeComponent@@@Z @ 2441 NONAME ; void QDeclarativeListView::setHighlight(class QDeclarativeComponent *)
 	?setHighlightFollowsCurrentItem@QDeclarativeGridView@@QAEX_N@Z @ 2442 NONAME ; void QDeclarativeGridView::setHighlightFollowsCurrentItem(bool)
@@ -2506,7 +2506,7 @@ EXPORTS
 	?setOfflineStoragePath@QDeclarativeEngine@@QAEXABVQString@@@Z @ 2505 NONAME ; void QDeclarativeEngine::setOfflineStoragePath(class QString const &)
 	?setOffset@QDeclarativePathView@@QAEXM@Z @ 2506 NONAME ; void QDeclarativePathView::setOffset(float)
 	?setOrientation@QDeclarativeListView@@QAEXW4Orientation@1@@Z @ 2507 NONAME ; void QDeclarativeListView::setOrientation(enum QDeclarativeListView::Orientation)
-	?setOverShoot@QDeclarativeFlickable@@QAEX_N@Z @ 2508 NONAME ; void QDeclarativeFlickable::setOverShoot(bool)
+	?setOverShoot@QDeclarativeFlickable@@QAEX_N@Z @ 2508 NONAME ABSENT ; void QDeclarativeFlickable::setOverShoot(bool)
 	?setPace@QDeclarativeParticleMotionWander@@QAEXM@Z @ 2509 NONAME ABSENT ; void QDeclarativeParticleMotionWander::setPace(float)
 	?setPage@QDeclarativeWebView@@QAEXPAVQWebPage@@@Z @ 2510 NONAME ABSENT ; void QDeclarativeWebView::setPage(class QWebPage *)
 	?setParameterNames@QMetaMethodBuilder@@QAEXABV?$QList@VQByteArray@@@@@Z @ 2511 NONAME ; void QMetaMethodBuilder::setParameterNames(class QList<class QByteArray> const &)
@@ -2555,10 +2555,10 @@ EXPORTS
 	?setRightMargin@QDeclarativeAnchors@@QAEXM@Z @ 2554 NONAME ; void QDeclarativeAnchors::setRightMargin(float)
 	?setRootIndex@QDeclarativeVisualDataModel@@QAEXABVQModelIndex@@@Z @ 2555 NONAME ABSENT ; void QDeclarativeVisualDataModel::setRootIndex(class QModelIndex const &)
 	?setRootObject@QDeclarativeView@@MAEXPAVQObject@@@Z @ 2556 NONAME ; void QDeclarativeView::setRootObject(class QObject *)
-	?setRotation@QDeclarativeParentChange@@QAEXM@Z @ 2557 NONAME ; void QDeclarativeParentChange::setRotation(float)
+	?setRotation@QDeclarativeParentChange@@QAEXM@Z @ 2557 NONAME ABSENT ; void QDeclarativeParentChange::setRotation(float)
 	?setRows@QDeclarativeGrid@@QAEXH@Z @ 2558 NONAME ; void QDeclarativeGrid::setRows(int)
 	?setRunning@QDeclarativeTimer@@QAEX_N@Z @ 2559 NONAME ; void QDeclarativeTimer::setRunning(bool)
-	?setScale@QDeclarativeParentChange@@QAEXM@Z @ 2560 NONAME ; void QDeclarativeParentChange::setScale(float)
+	?setScale@QDeclarativeParentChange@@QAEXM@Z @ 2560 NONAME ABSENT ; void QDeclarativeParentChange::setScale(float)
 	?setScopeObject@QDeclarativeScriptString@@QAEXPAVQObject@@@Z @ 2561 NONAME ; void QDeclarativeScriptString::setScopeObject(class QObject *)
 	?setScript@QDeclarativeScriptString@@QAEXABVQString@@@Z @ 2562 NONAME ; void QDeclarativeScriptString::setScript(class QString const &)
 	?setScript@QDeclarativeStateChangeScript@@QAEXABVQDeclarativeScriptString@@@Z @ 2563 NONAME ; void QDeclarativeStateChangeScript::setScript(class QDeclarativeScriptString const &)
@@ -2651,7 +2651,7 @@ EXPORTS
 	?setWhen@QDeclarativeBind@@QAEX_N@Z @ 2650 NONAME ; void QDeclarativeBind::setWhen(bool)
 	?setWhen@QDeclarativeState@@QAEXPAVQDeclarativeBinding@@@Z @ 2651 NONAME ; void QDeclarativeState::setWhen(class QDeclarativeBinding *)
 	?setWidth@QDeclarativeItem@@QAEXM@Z @ 2652 NONAME ; void QDeclarativeItem::setWidth(float)
-	?setWidth@QDeclarativeParentChange@@QAEXM@Z @ 2653 NONAME ; void QDeclarativeParentChange::setWidth(float)
+	?setWidth@QDeclarativeParentChange@@QAEXM@Z @ 2653 NONAME ABSENT ; void QDeclarativeParentChange::setWidth(float)
 	?setWidth@QDeclarativePen@@QAEXH@Z @ 2654 NONAME ; void QDeclarativePen::setWidth(int)
 	?setWrap@QDeclarativeText@@QAEX_N@Z @ 2655 NONAME ABSENT ; void QDeclarativeText::setWrap(bool)
 	?setWrap@QDeclarativeTextEdit@@QAEX_N@Z @ 2656 NONAME ABSENT ; void QDeclarativeTextEdit::setWrap(bool)
@@ -2659,14 +2659,14 @@ EXPORTS
 	?setWrapEnabled@QDeclarativeListView@@QAEX_N@Z @ 2658 NONAME ; void QDeclarativeListView::setWrapEnabled(bool)
 	?setWritable@QMetaPropertyBuilder@@QAEX_N@Z @ 2659 NONAME ; void QMetaPropertyBuilder::setWritable(bool)
 	?setX@QDeclarativeCurve@@QAEXM@Z @ 2660 NONAME ; void QDeclarativeCurve::setX(float)
-	?setX@QDeclarativeParentChange@@QAEXM@Z @ 2661 NONAME ; void QDeclarativeParentChange::setX(float)
+	?setX@QDeclarativeParentChange@@QAEXM@Z @ 2661 NONAME ABSENT ; void QDeclarativeParentChange::setX(float)
 	?setXAttractor@QDeclarativeParticleMotionGravity@@QAEXM@Z @ 2662 NONAME ABSENT ; void QDeclarativeParticleMotionGravity::setXAttractor(float)
 	?setXVariance@QDeclarativeParticleMotionWander@@QAEXM@Z @ 2663 NONAME ABSENT ; void QDeclarativeParticleMotionWander::setXVariance(float)
 	?setXmax@QDeclarativeDrag@@QAEXM@Z @ 2664 NONAME ; void QDeclarativeDrag::setXmax(float)
 	?setXmin@QDeclarativeDrag@@QAEXM@Z @ 2665 NONAME ; void QDeclarativeDrag::setXmin(float)
 	?setXml@QDeclarativeXmlListModel@@QAEXABVQString@@@Z @ 2666 NONAME ; void QDeclarativeXmlListModel::setXml(class QString const &)
 	?setY@QDeclarativeCurve@@QAEXM@Z @ 2667 NONAME ; void QDeclarativeCurve::setY(float)
-	?setY@QDeclarativeParentChange@@QAEXM@Z @ 2668 NONAME ; void QDeclarativeParentChange::setY(float)
+	?setY@QDeclarativeParentChange@@QAEXM@Z @ 2668 NONAME ABSENT ; void QDeclarativeParentChange::setY(float)
 	?setYAttractor@QDeclarativeParticleMotionGravity@@QAEXM@Z @ 2669 NONAME ABSENT ; void QDeclarativeParticleMotionGravity::setYAttractor(float)
 	?setYVariance@QDeclarativeParticleMotionWander@@QAEXM@Z @ 2670 NONAME ABSENT ; void QDeclarativeParticleMotionWander::setYVariance(float)
 	?setYmax@QDeclarativeDrag@@QAEXM@Z @ 2671 NONAME ; void QDeclarativeDrag::setYmax(float)
@@ -3298,7 +3298,7 @@ EXPORTS
 	?when@QDeclarativeBind@@QBE_NXZ @ 3297 NONAME ; bool QDeclarativeBind::when(void) const
 	?when@QDeclarativeState@@QBEPAVQDeclarativeBinding@@XZ @ 3298 NONAME ; class QDeclarativeBinding * QDeclarativeState::when(void) const
 	?width@QDeclarativeItem@@QBEMXZ @ 3299 NONAME ; float QDeclarativeItem::width(void) const
-	?width@QDeclarativeParentChange@@QBEMXZ @ 3300 NONAME ; float QDeclarativeParentChange::width(void) const
+	?width@QDeclarativeParentChange@@QBEMXZ @ 3300 NONAME ABSENT ; float QDeclarativeParentChange::width(void) const
 	?width@QDeclarativePen@@QBEHXZ @ 3301 NONAME ; int QDeclarativePen::width(void) const
 	?widthChange@QDeclarativeFlickable@@IAEXXZ @ 3302 NONAME ABSENT ; void QDeclarativeFlickable::widthChange(void)
 	?widthChanged@QDeclarativeItem@@IAEXXZ @ 3303 NONAME ABSENT ; void QDeclarativeItem::widthChanged(void)
@@ -3317,7 +3317,7 @@ EXPORTS
 	?write@QDeclarativeProperty@@SA_NPAVQObject@@ABVQString@@ABVQVariant@@PAVQDeclarativeContext@@@Z @ 3316 NONAME ; bool QDeclarativeProperty::write(class QObject *, class QString const &, class QVariant const &, class QDeclarativeContext *)
 	?write@QDeclarativeProperty@@SA_NPAVQObject@@ABVQString@@ABVQVariant@@PAVQDeclarativeEngine@@@Z @ 3317 NONAME ; bool QDeclarativeProperty::write(class QObject *, class QString const &, class QVariant const &, class QDeclarativeEngine *)
 	?x@QDeclarativeCurve@@QBEMXZ @ 3318 NONAME ; float QDeclarativeCurve::x(void) const
-	?x@QDeclarativeParentChange@@QBEMXZ @ 3319 NONAME ; float QDeclarativeParentChange::x(void) const
+	?x@QDeclarativeParentChange@@QBEMXZ @ 3319 NONAME ABSENT ; float QDeclarativeParentChange::x(void) const
 	?xAttractor@QDeclarativeParticleMotionGravity@@QBEMXZ @ 3320 NONAME ABSENT ; float QDeclarativeParticleMotionGravity::xAttractor(void) const
 	?xIsSet@QDeclarativeParentChange@@QBE_NXZ @ 3321 NONAME ; bool QDeclarativeParentChange::xIsSet(void) const
 	?xToPos@QDeclarativeTextInput@@QAEHH@Z @ 3322 NONAME ABSENT ; int QDeclarativeTextInput::xToPos(int)
@@ -3329,7 +3329,7 @@ EXPORTS
 	?xml@QDeclarativeXmlListModel@@QBE?AVQString@@XZ @ 3328 NONAME ; class QString QDeclarativeXmlListModel::xml(void) const
 	?xvarianceChanged@QDeclarativeParticleMotionWander@@IAEXXZ @ 3329 NONAME ABSENT ; void QDeclarativeParticleMotionWander::xvarianceChanged(void)
 	?y@QDeclarativeCurve@@QBEMXZ @ 3330 NONAME ; float QDeclarativeCurve::y(void) const
-	?y@QDeclarativeParentChange@@QBEMXZ @ 3331 NONAME ; float QDeclarativeParentChange::y(void) const
+	?y@QDeclarativeParentChange@@QBEMXZ @ 3331 NONAME ABSENT ; float QDeclarativeParentChange::y(void) const
 	?yAttractor@QDeclarativeParticleMotionGravity@@QBEMXZ @ 3332 NONAME ABSENT ; float QDeclarativeParticleMotionGravity::yAttractor(void) const
 	?yIsSet@QDeclarativeParentChange@@QBE_NXZ @ 3333 NONAME ; bool QDeclarativeParentChange::yIsSet(void) const
 	?yVariance@QDeclarativeParticleMotionWander@@QBEMXZ @ 3334 NONAME ABSENT ; float QDeclarativeParticleMotionWander::yVariance(void) const
@@ -3500,8 +3500,8 @@ EXPORTS
 	??0QDeclarativeBinding@@QAE@PAXPAVQDeclarativeRefCount@@PAVQObject@@PAVQDeclarativeContextData@@ABVQString@@H2@Z @ 3499 NONAME ; QDeclarativeBinding::QDeclarativeBinding(void *, class QDeclarativeRefCount *, class QObject *, class QDeclarativeContextData *, class QString const &, int, class QObject *)
 	??0QDeclarativeContext@@AAE@PAVQDeclarativeContextData@@@Z @ 3500 NONAME ; QDeclarativeContext::QDeclarativeContext(class QDeclarativeContextData *)
 	??0QDeclarativeCustomParser@@QAE@XZ @ 3501 NONAME ; QDeclarativeCustomParser::QDeclarativeCustomParser(void)
-	??0QDeclarativeExpression@@AAE@PAVQDeclarativeContextData@@ABVQString@@PAVQObject@@@Z @ 3502 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QString const &, class QObject *)
-	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContextData@@ABVQString@@PAVQObject@@AAVQDeclarativeExpressionPrivate@@@Z @ 3503 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QString const &, class QObject *, class QDeclarativeExpressionPrivate &)
+	??0QDeclarativeExpression@@AAE@PAVQDeclarativeContextData@@ABVQString@@PAVQObject@@@Z @ 3502 NONAME ABSENT ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QString const &, class QObject *)
+	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContextData@@ABVQString@@PAVQObject@@AAVQDeclarativeExpressionPrivate@@@Z @ 3503 NONAME ABSENT ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QString const &, class QObject *, class QDeclarativeExpressionPrivate &)
 	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContextData@@PAXPAVQDeclarativeRefCount@@PAVQObject@@ABVQString@@HAAVQDeclarativeExpressionPrivate@@@Z @ 3504 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, void *, class QDeclarativeRefCount *, class QObject *, class QString const &, int, class QDeclarativeExpressionPrivate &)
 	??0QDeclarativeItemPrivate@@QAE@XZ @ 3505 NONAME ; QDeclarativeItemPrivate::QDeclarativeItemPrivate(void)
 	??0QDeclarativeListModel@@AAE@_NPAVQObject@@@Z @ 3506 NONAME ; QDeclarativeListModel::QDeclarativeListModel(bool, class QObject *)
@@ -3567,7 +3567,7 @@ EXPORTS
 	?countChanged@QDeclarativeListModel@@IAEXXZ @ 3566 NONAME ; void QDeclarativeListModel::countChanged(void)
 	?countChanged@QDeclarativePathView@@IAEXXZ @ 3567 NONAME ; void QDeclarativePathView::countChanged(void)
 	?create@QDeclarativeType@@QBEXPAPAVQObject@@PAPAXI@Z @ 3568 NONAME ; void QDeclarativeType::create(class QObject * *, void * *, unsigned int) const
-	?currentTime@QDeclarativeItemPrivate@@SA?AVQTime@@XZ @ 3569 NONAME ; class QTime QDeclarativeItemPrivate::currentTime(void)
+	?currentTime@QDeclarativeItemPrivate@@SA?AVQTime@@XZ @ 3569 NONAME ABSENT ; class QTime QDeclarativeItemPrivate::currentTime(void)
 	?d_func@QDeclarativeFocusPanel@@AAEPAVQDeclarativeItemPrivate@@XZ @ 3570 NONAME ; class QDeclarativeItemPrivate * QDeclarativeFocusPanel::d_func(void)
 	?d_func@QDeclarativeFocusPanel@@ABEPBVQDeclarativeItemPrivate@@XZ @ 3571 NONAME ; class QDeclarativeItemPrivate const * QDeclarativeFocusPanel::d_func(void) const
 	?d_func@QDeclarativeFocusScope@@AAEPAVQDeclarativeItemPrivate@@XZ @ 3572 NONAME ; class QDeclarativeItemPrivate * QDeclarativeFocusScope::d_func(void)
@@ -3588,7 +3588,7 @@ EXPORTS
 	?doPositioning@QDeclarativeRow@@MAEXPAVQSizeF@@@Z @ 3587 NONAME ; void QDeclarativeRow::doPositioning(class QSizeF *)
 	?dragMarginChanged@QDeclarativePathView@@IAEXXZ @ 3588 NONAME ; void QDeclarativePathView::dragMarginChanged(void)
 	?duration@QDeclarativeSmoothedAnimation@@UBEHXZ @ 3589 NONAME ; int QDeclarativeSmoothedAnimation::duration(void) const
-	?elapsed@QDeclarativeItemPrivate@@SAHAAVQTime@@@Z @ 3590 NONAME ; int QDeclarativeItemPrivate::elapsed(class QTime &)
+	?elapsed@QDeclarativeItemPrivate@@SAHAAVQTime@@@Z @ 3590 NONAME ABSENT ; int QDeclarativeItemPrivate::elapsed(class QTime &)
 	?evaluateEnum@QDeclarativeCompiler@@QBEHABVQByteArray@@@Z @ 3591 NONAME ; int QDeclarativeCompiler::evaluateEnum(class QByteArray const &) const
 	?evaluateEnum@QDeclarativeCustomParser@@IBEHABVQByteArray@@@Z @ 3592 NONAME ; int QDeclarativeCustomParser::evaluateEnum(class QByteArray const &) const
 	?event@QDeclarativeGridView@@MAE_NPAVQEvent@@@Z @ 3593 NONAME ; bool QDeclarativeGridView::event(class QEvent *)
@@ -3711,7 +3711,7 @@ EXPORTS
 	?resources_append@QDeclarativeItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQObject@@@@PAVQObject@@@Z @ 3710 NONAME ; void QDeclarativeItemPrivate::resources_append(class QDeclarativeListProperty<class QObject> *, class QObject *)
 	?resources_at@QDeclarativeItemPrivate@@SAPAVQObject@@PAV?$QDeclarativeListProperty@VQObject@@@@H@Z @ 3711 NONAME ; class QObject * QDeclarativeItemPrivate::resources_at(class QDeclarativeListProperty<class QObject> *, int)
 	?resources_count@QDeclarativeItemPrivate@@SAHPAV?$QDeclarativeListProperty@VQObject@@@@@Z @ 3712 NONAME ; int QDeclarativeItemPrivate::resources_count(class QDeclarativeListProperty<class QObject> *)
-	?restart@QDeclarativeItemPrivate@@SAHAAVQTime@@@Z @ 3713 NONAME ; int QDeclarativeItemPrivate::restart(class QTime &)
+	?restart@QDeclarativeItemPrivate@@SAHAAVQTime@@@Z @ 3713 NONAME ABSENT ; int QDeclarativeItemPrivate::restart(class QTime &)
 	?restore@QDeclarativePropertyPrivate@@SA?AVQDeclarativeProperty@@ABVQByteArray@@PAVQObject@@PAVQDeclarativeContextData@@@Z @ 3714 NONAME ; class QDeclarativeProperty QDeclarativePropertyPrivate::restore(class QByteArray const &, class QObject *, class QDeclarativeContextData *)
 	?reversibleChanged@QDeclarativeTransition@@IAEXXZ @ 3715 NONAME ; void QDeclarativeTransition::reversibleChanged(void)
 	?reversingMode@QDeclarativeSmoothedAnimation@@QBE?AW4ReversingMode@1@XZ @ 3716 NONAME ; enum QDeclarativeSmoothedAnimation::ReversingMode QDeclarativeSmoothedAnimation::reversingMode(void) const
@@ -3768,7 +3768,7 @@ EXPORTS
 	?sourceChanged@QDeclarativeXmlListModel@@IAEXXZ @ 3767 NONAME ; void QDeclarativeXmlListModel::sourceChanged(void)
 	?sourceSize@QDeclarativeImageBase@@QBE?AVQSize@@XZ @ 3768 NONAME ; class QSize QDeclarativeImageBase::sourceSize(void) const
 	?sourceSizeChanged@QDeclarativeImageBase@@IAEXXZ @ 3769 NONAME ; void QDeclarativeImageBase::sourceSizeChanged(void)
-	?start@QDeclarativeItemPrivate@@SAXAAVQTime@@@Z @ 3770 NONAME ; void QDeclarativeItemPrivate::start(class QTime &)
+	?start@QDeclarativeItemPrivate@@SAXAAVQTime@@@Z @ 3770 NONAME ABSENT ; void QDeclarativeItemPrivate::start(class QTime &)
 	?startXChanged@QDeclarativePath@@IAEXXZ @ 3771 NONAME ; void QDeclarativePath::startXChanged(void)
 	?startYChanged@QDeclarativePath@@IAEXXZ @ 3772 NONAME ; void QDeclarativePath::startYChanged(void)
 	?states@QDeclarativeItem@@QAE?AV?$QDeclarativeListProperty@VQDeclarativeState@@@@XZ @ 3773 NONAME ABSENT ; class QDeclarativeListProperty<class QDeclarativeState> QDeclarativeItem::states(void)
@@ -3817,7 +3817,7 @@ EXPORTS
 	?staticMetaObject@QDeclarativeWorkerScript@@2UQMetaObject@@B @ 3816 NONAME ; struct QMetaObject const QDeclarativeWorkerScript::staticMetaObject
 	?staticMetaObject@QDeclarativeSmoothedAnimation@@2UQMetaObject@@B @ 3817 NONAME ; struct QMetaObject const QDeclarativeSmoothedAnimation::staticMetaObject
 	?staticMetaObject@QDeclarativeTranslate@@2UQMetaObject@@B @ 3818 NONAME ; struct QMetaObject const QDeclarativeTranslate::staticMetaObject
-	?consistentTime@QDeclarativeItemPrivate@@2HA @ 3819 NONAME ; int QDeclarativeItemPrivate::consistentTime
+	?consistentTime@QDeclarativeItemPrivate@@2HA @ 3819 NONAME ABSENT ; int QDeclarativeItemPrivate::consistentTime
 	??0QDeclarativeAction@@QAE@PAVQObject@@ABVQString@@PAVQDeclarativeContext@@ABVQVariant@@@Z @ 3820 NONAME ; QDeclarativeAction::QDeclarativeAction(class QObject *, class QString const &, class QDeclarativeContext *, class QVariant const &)
 	??0QDeclarativeSmoothedFollow@@QAE@PAVQObject@@@Z @ 3821 NONAME ; QDeclarativeSmoothedFollow::QDeclarativeSmoothedFollow(class QObject *)
 	??1QDeclarativeSmoothedFollow@@UAE@XZ @ 3822 NONAME ; QDeclarativeSmoothedFollow::~QDeclarativeSmoothedFollow(void)
@@ -4020,4 +4020,58 @@ EXPORTS
 	?keyReleasePreHandler@QDeclarativeItem@@IAEXPAVQKeyEvent@@@Z @ 4019 NONAME ; void QDeclarativeItem::keyReleasePreHandler(class QKeyEvent *)
 	?loaded@QDeclarativeLoader@@IAEXXZ @ 4020 NONAME ; void QDeclarativeLoader::loaded(void)
 	?needsCopy@QDeclarativeAnchorChanges@@UAE_NXZ @ 4021 NONAME ; bool QDeclarativeAnchorChanges::needsCopy(void)
+	?closeSoftwareInputPanel@QDeclarativeTextEdit@@QAEXXZ @ 4022 NONAME ; void QDeclarativeTextEdit::closeSoftwareInputPanel(void)
+	?restart@QDeclarativeItemPrivate@@SA_JAAVQElapsedTimer@@@Z @ 4023 NONAME ; long long QDeclarativeItemPrivate::restart(class QElapsedTimer &)
+	?get@QDeclarativeXmlListModel@@QBE?AVQScriptValue@@H@Z @ 4024 NONAME ; class QScriptValue QDeclarativeXmlListModel::get(int) const
+	?setScale@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4025 NONAME ; void QDeclarativeParentChange::setScale(class QDeclarativeScriptString)
+	?showInputPanelOnFocusChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 4026 NONAME ; void QDeclarativeTextEdit::showInputPanelOnFocusChanged(bool)
+	?focusOutEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4027 NONAME ; void QDeclarativeTextInput::focusOutEvent(class QFocusEvent *)
+	?height@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4028 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::height(void) const
+	?showInputPanelOnFocus@QDeclarativeTextEdit@@QBE_NXZ @ 4029 NONAME ; bool QDeclarativeTextEdit::showInputPanelOnFocus(void) const
+	?errorString@QDeclarativeComponent@@QBE?AVQString@@XZ @ 4030 NONAME ; class QString QDeclarativeComponent::errorString(void) const
+	?elapsed@QDeclarativeItemPrivate@@SA_JAAVQElapsedTimer@@@Z @ 4031 NONAME ; long long QDeclarativeItemPrivate::elapsed(class QElapsedTimer &)
+	?focusInEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4032 NONAME ; void QDeclarativeTextInput::focusInEvent(class QFocusEvent *)
+	?setX@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4033 NONAME ; void QDeclarativeParentChange::setX(class QDeclarativeScriptString)
+	?rotation@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4034 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::rotation(void) const
+	?paintedHeight@QDeclarativeTextEdit@@QBEMXZ @ 4035 NONAME ; float QDeclarativeTextEdit::paintedHeight(void) const
+	?paintedWidth@QDeclarativeTextEdit@@QBEMXZ @ 4036 NONAME ; float QDeclarativeTextEdit::paintedWidth(void) const
+	?focusOutEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4037 NONAME ; void QDeclarativeTextEdit::focusOutEvent(class QFocusEvent *)
+	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContextData@@PAVQObject@@ABVQString@@AAVQDeclarativeExpressionPrivate@@@Z @ 4038 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QObject *, class QString const &, class QDeclarativeExpressionPrivate &)
+	??0QDeclarativeExpression@@QAE@PAVQDeclarativeContext@@PAVQObject@@ABVQString@@1@Z @ 4039 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, class QObject *, class QString const &, class QObject *)
+	?queryError@QDeclarativeXmlListModel@@AAEXPAXABVQString@@@Z @ 4040 NONAME ; void QDeclarativeXmlListModel::queryError(void *, class QString const &)
+	?errorString@QDeclarativeXmlListModel@@QBE?AVQString@@XZ @ 4041 NONAME ; class QString QDeclarativeXmlListModel::errorString(void) const
+	?consistentTime@QDeclarativeItemPrivate@@2_JA @ 4042 NONAME ; long long QDeclarativeItemPrivate::consistentTime
+	?scale@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4043 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::scale(void) const
+	?showInputPanelOnFocus@QDeclarativeTextInput@@QBE_NXZ @ 4044 NONAME ; bool QDeclarativeTextInput::showInputPanelOnFocus(void) const
+	?focusInEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4045 NONAME ; void QDeclarativeTextEdit::focusInEvent(class QFocusEvent *)
+	?y@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4046 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::y(void) const
+	?setY@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4047 NONAME ; void QDeclarativeParentChange::setY(class QDeclarativeScriptString)
+	?setShowInputPanelOnFocus@QDeclarativeTextEdit@@QAEX_N@Z @ 4048 NONAME ; void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool)
+	?paintedSizeChanged@QDeclarativeText@@IAEXXZ @ 4049 NONAME ; void QDeclarativeText::paintedSizeChanged(void)
+	?selectByMouseChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 4050 NONAME ; void QDeclarativeTextEdit::selectByMouseChanged(bool)
+	?openSoftwareInputPanel@QDeclarativeTextInput@@QAEXXZ @ 4051 NONAME ; void QDeclarativeTextInput::openSoftwareInputPanel(void)
+	?setShowInputPanelOnFocus@QDeclarativeTextInput@@QAEX_N@Z @ 4052 NONAME ; void QDeclarativeTextInput::setShowInputPanelOnFocus(bool)
+	?boundingRect@QDeclarativePaintedItem@@MBE?AVQRectF@@XZ @ 4053 NONAME ; class QRectF QDeclarativePaintedItem::boundingRect(void) const
+	?closeSoftwareInputPanel@QDeclarativeTextInput@@QAEXXZ @ 4054 NONAME ; void QDeclarativeTextInput::closeSoftwareInputPanel(void)
+	?setWidth@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4055 NONAME ; void QDeclarativeParentChange::setWidth(class QDeclarativeScriptString)
+	?selectByMouse@QDeclarativeTextInput@@QBE_NXZ @ 4056 NONAME ; bool QDeclarativeTextInput::selectByMouse(void) const
+	?setRotation@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4057 NONAME ; void QDeclarativeParentChange::setRotation(class QDeclarativeScriptString)
+	?paintedWidth@QDeclarativeText@@QBEMXZ @ 4058 NONAME ; float QDeclarativeText::paintedWidth(void) const
+	?paintedSizeChanged@QDeclarativeTextEdit@@IAEXXZ @ 4059 NONAME ; void QDeclarativeTextEdit::paintedSizeChanged(void)
+	?setConsistentTime@QDeclarativeItemPrivate@@SAX_J@Z @ 4060 NONAME ; void QDeclarativeItemPrivate::setConsistentTime(long long)
+	??0QDeclarativeExpression@@AAE@PAVQDeclarativeContextData@@PAVQObject@@ABVQString@@@Z @ 4061 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QObject *, class QString const &)
+	?event@QDeclarativePathView@@MAE_NPAVQEvent@@@Z @ 4062 NONAME ; bool QDeclarativePathView::event(class QEvent *)
+	?paintedHeight@QDeclarativeText@@QBEMXZ @ 4063 NONAME ; float QDeclarativeText::paintedHeight(void) const
+	?setSelectByMouse@QDeclarativeTextInput@@QAEX_N@Z @ 4064 NONAME ; void QDeclarativeTextInput::setSelectByMouse(bool)
+	?setSelectByMouse@QDeclarativeTextEdit@@QAEX_N@Z @ 4065 NONAME ; void QDeclarativeTextEdit::setSelectByMouse(bool)
+	?selectByMouse@QDeclarativeTextEdit@@QBE_NXZ @ 4066 NONAME ; bool QDeclarativeTextEdit::selectByMouse(void) const
+	?setHeight@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4067 NONAME ; void QDeclarativeParentChange::setHeight(class QDeclarativeScriptString)
+	?start@QDeclarativeItemPrivate@@SAXAAVQElapsedTimer@@@Z @ 4068 NONAME ; void QDeclarativeItemPrivate::start(class QElapsedTimer &)
+	?showInputPanelOnFocusChanged@QDeclarativeTextInput@@IAEX_N@Z @ 4069 NONAME ; void QDeclarativeTextInput::showInputPanelOnFocusChanged(bool)
+	?x@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4070 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::x(void) const
+	?selectByMouseChanged@QDeclarativeTextInput@@IAEX_N@Z @ 4071 NONAME ; void QDeclarativeTextInput::selectByMouseChanged(bool)
+	?width@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4072 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::width(void) const
+	?openSoftwareInputPanel@QDeclarativeTextEdit@@QAEXXZ @ 4073 NONAME ; void QDeclarativeTextEdit::openSoftwareInputPanel(void)
+	?cursorRectangleChanged@QDeclarativeTextEdit@@IAEXXZ @ 4074 NONAME ; void QDeclarativeTextEdit::cursorRectangleChanged(void)
+	?cursorRectangle@QDeclarativeTextEdit@@QBE?AVQRect@@XZ @ 4075 NONAME ; class QRect QDeclarativeTextEdit::cursorRectangle(void) const
 

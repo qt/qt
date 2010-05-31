@@ -159,7 +159,7 @@ void QBenchmarkTestMethodData::setResult(
     if (QBenchmarkGlobalData::current->iterationCount != -1)
         accepted = true;
 
-    if (QBenchmarkTestMethodData::current->runOnce || !setByMacro) {
+    else if (QBenchmarkTestMethodData::current->runOnce || !setByMacro) {
         iterationCount = 1;
         accepted = true;
     }

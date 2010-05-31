@@ -110,7 +110,7 @@ public:
     };
 
     //Auxilliary functions needed to control the TextInput from QML
-    Q_INVOKABLE int xToPosition(int x);
+    Q_INVOKABLE int positionAt(int x);
     Q_INVOKABLE void moveCursorSelection(int pos);
 
     Q_INVOKABLE void openSoftwareInputPanel();

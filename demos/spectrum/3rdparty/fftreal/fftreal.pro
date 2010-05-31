@@ -30,6 +30,7 @@ DEFINES  += FFTREAL_LIBRARY
 symbian {
     # Provide unique ID for the generated binary, required by Symbian OS
     TARGET.UID3 = 0xA000E3FB
+    TARGET.CAPABILITY = UserEnvironment
 } else {
     macx {
         CONFIG += lib_bundle
