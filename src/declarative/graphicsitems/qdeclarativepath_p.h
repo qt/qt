@@ -175,7 +175,7 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativePathPercent : public QDeclarativePathElement
 {
     Q_OBJECT
-    Q_PROPERTY(qreal value READ value WRITE setValue)
+    Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY changed)
 public:
     QDeclarativePathPercent(QObject *parent=0) : QDeclarativePathElement(parent) {}
 
