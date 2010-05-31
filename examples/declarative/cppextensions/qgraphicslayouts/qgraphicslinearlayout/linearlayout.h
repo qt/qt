@@ -74,10 +74,12 @@ public:
 
     QDeclarativeListProperty<QGraphicsLayoutItem> children() { return QDeclarativeListProperty<QGraphicsLayoutItem>(this, 0, children_append, children_count, children_at, children_clear); }
 
-    static LinearLayoutAttached *qmlAttachedProperties(QObject *);
-
     qreal contentsMargin() const;
     void setContentsMargin(qreal);
+
+    void removeAt(int index);
+
+    static LinearLayoutAttached *qmlAttachedProperties(QObject *);
 
 private slots:
     void updateStretch(QGraphicsLayoutItem*,int);

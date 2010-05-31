@@ -49,46 +49,48 @@ Item {
         size.width: parent.width
         size.height: parent.height
 
+        /*
+            Below we create a grid layout using the GraphicsGridLayout item 
+            (defined by the GraphicsGridLayoutObject class in gridlayout.h). 
+
+            The row, column etc. are set through attached properties on
+            GraphicsGridLayout, using the properties defined in the 
+            GridLayoutAttached class (also defined in gridlayout.h).
+        */
+
         layout: QGraphicsGridLayout {
-            objectName: "layout"
             LayoutItem {
                 QGraphicsGridLayout.row: 0
                 QGraphicsGridLayout.column: 0
-                QGraphicsGridLayout.alignment: Qt.AlignLeft
                 minimumSize: "100x100"
                 maximumSize: "300x300"
-                preferredSize: "100x100"
+                preferredSize: "200x200"
                 Rectangle { color: "red"; anchors.fill: parent }
+            }
+            LayoutItem {
+                QGraphicsGridLayout.row: 0
+                QGraphicsGridLayout.column: 1
+                minimumSize: "100x100"
+                maximumSize: "200x200"
+                preferredSize: "200x200"
+                Rectangle { color: "orange"; anchors.fill: parent }
             }
             LayoutItem {
                 QGraphicsGridLayout.row: 1
                 QGraphicsGridLayout.column: 0
+                QGraphicsGridLayout.columnSpan: 2
                 minimumSize: "100x100"
-                maximumSize: "200x200"
-                preferredSize: "100x100"
-                Rectangle { color: "orange"; anchors.fill: parent }
+                Rectangle { color: "yellow"; anchors.fill: parent }
             }
             LayoutItem {
                 QGraphicsGridLayout.row: 2
                 QGraphicsGridLayout.column: 0
-                minimumSize: "100x100"
-                maximumSize: "300x300"
-                preferredSize: "200x200"
-                Rectangle { color: "yellow"; anchors.fill: parent }
-            }
-            LayoutItem {
-                QGraphicsGridLayout.row: 0
-                QGraphicsGridLayout.column: 1
-                minimumSize: "100x100"
-                maximumSize: "200x200"
                 preferredSize: "200x200"
                 Rectangle { color: "green"; anchors.fill: parent }
             }
             LayoutItem {
-                QGraphicsGridLayout.row: 1
+                QGraphicsGridLayout.row: 2
                 QGraphicsGridLayout.column: 1
-                minimumSize: "100x100"
-                maximumSize: "400x400"
                 preferredSize: "200x200"
                 Rectangle { color: "blue"; anchors.fill: parent }
             }

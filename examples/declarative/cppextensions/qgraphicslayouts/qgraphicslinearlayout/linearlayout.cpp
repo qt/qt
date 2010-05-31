@@ -44,7 +44,7 @@
 #include <QGraphicsLayoutItem>
 
 LinearLayoutAttached::LinearLayoutAttached(QObject *parent)
-: QObject(parent), m_stretch(1), m_alignment(Qt::AlignCenter), m_spacing(0)
+: QObject(parent), m_stretch(1), m_alignment(Qt::AlignTop), m_spacing(0)
 {
 }
 
@@ -98,7 +98,6 @@ void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutIte
 {
     insertItem(index, item);
 
-    //connect attached properties
     if (LinearLayoutAttached *obj = attachedProperties.value(item)) {
         setStretchFactor(item, obj->stretchFactor());
         setAlignment(item, obj->alignment());
@@ -109,12 +108,23 @@ void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutIte
                          this, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));
         QObject::connect(obj, SIGNAL(spacingChanged(QGraphicsLayoutItem*,int)),
                          this, SLOT(updateSpacing(QGraphicsLayoutItem*,int)));
-        //### need to disconnect when widget is removed?
     }
+}
+
+void QGraphicsLinearLayoutObject::removeAt(int index)
+{
+    QGraphicsLayoutItem *item = itemAt(index);
+    if (item) {
+        LinearLayoutAttached *obj = attachedProperties.value(item);
+        obj->disconnect(this);
+        attachedProperties.remove(item);
+    }
+    QGraphicsLinearLayout::removeAt(index);
 }
 
 void QGraphicsLinearLayoutObject::clearChildren()
 {
+    // do not delete the removed items; they will be deleted by the QML engine
     while (count() > 0)
         removeAt(count()-1);
 }
@@ -156,11 +166,9 @@ void QGraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt:
 QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> QGraphicsLinearLayoutObject::attachedProperties;
 LinearLayoutAttached *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
 {
-    // ### This is not allowed - you must attach to any object
-    if (!qobject_cast<QGraphicsLayoutItem*>(obj))
-        return 0;
     LinearLayoutAttached *rv = new LinearLayoutAttached(obj);
-    attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
+    if (qobject_cast<QGraphicsLayoutItem*>(obj))
+        attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
     return rv;
 }
 

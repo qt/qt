@@ -69,6 +69,8 @@ public:
     qreal contentsMargin() const;
     void setContentsMargin(qreal);
 
+    void removeAt(int index);
+
     static GridLayoutAttached *qmlAttachedProperties(QObject *);
 
 private slots:

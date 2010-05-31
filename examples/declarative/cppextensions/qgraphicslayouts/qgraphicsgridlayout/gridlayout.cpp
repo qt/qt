@@ -131,13 +131,23 @@ void QGraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
             setAlignment(item, alignment);
         QObject::connect(obj, SIGNAL(alignmentChanged(QGraphicsLayoutItem*, Qt::Alignment)),
                          this, SLOT(updateAlignment(QGraphicsLayoutItem*, Qt::Alignment)));
-        //### need to disconnect when widget is removed? Re-implement removeAt()?
     }
+}
+
+void QGraphicsGridLayoutObject::removeAt(int index)
+{
+    QGraphicsLayoutItem *item = itemAt(index);
+    if (item) {
+        GridLayoutAttached *obj = attachedProperties.value(item);
+        obj->disconnect(this);
+        attachedProperties.remove(item);
+    }
+    QGraphicsGridLayout::removeAt(index);
 }
 
 void QGraphicsGridLayoutObject::clearChildren()
 {
-    //### do I need to delete the removed items? And/or removed them from attachedProperties?
+    // do not delete the removed items; they will be deleted by the QML engine
     while (count() > 0)
         removeAt(count()-1);
 }
@@ -146,7 +156,7 @@ qreal QGraphicsGridLayoutObject::spacing() const
 {
     if (verticalSpacing() == horizontalSpacing())
         return verticalSpacing();
-    return -1;  //###
+    return -1; 
 }
 
 qreal QGraphicsGridLayoutObject::contentsMargin() const
@@ -170,11 +180,9 @@ void QGraphicsGridLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt::A
 
 GridLayoutAttached *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
 {
-    // ### This is not allowed - you must attach to any object
-    if (!qobject_cast<QGraphicsLayoutItem*>(obj))
-        return 0;
     GridLayoutAttached *rv = new GridLayoutAttached(obj);
-    attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
+    if (qobject_cast<QGraphicsLayoutItem*>(obj))
+        attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
     return rv;
 }
 

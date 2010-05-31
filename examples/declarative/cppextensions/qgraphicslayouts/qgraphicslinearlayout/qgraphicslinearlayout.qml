@@ -49,17 +49,28 @@ Item {
         size.width: parent.width
         size.height: parent.height
 
+        /*
+            Below we create a linear layout using the GraphicsLinearLayout item 
+            (defined by the GraphicsLinearLayoutObject class in linearlayout.h). 
+
+            The first LayoutItem uses 'GraphicsLinearLayout.spacing' to set the
+            item's spacing: this is an attached property, set using the 
+            properties defined in the LinearLayoutAttached class (also defined
+            in linearlayout.h).
+        */
+
         layout: QGraphicsLinearLayout {
             LayoutItem {
+                QGraphicsLinearLayout.spacing: 50
                 minimumSize: "100x100"
-                maximumSize: "300x300"
+                maximumSize: "200x200"
                 preferredSize: "100x100"
                 Rectangle { color: "yellow"; anchors.fill: parent }
             }
             LayoutItem {
                 minimumSize: "100x100"
                 maximumSize: "400x400"
-                preferredSize: "200x200"
+                preferredSize: "300x300"
                 Rectangle { color: "green"; anchors.fill: parent }
             }
         }
