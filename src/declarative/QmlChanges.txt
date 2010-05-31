@@ -14,6 +14,8 @@ Component:
       status property instead
     - errorsString() renamed to errorString()
 
+TextInput xToPosition -> positionAt (to match TextEdit.positionAt)
+
 QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property
 "foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"

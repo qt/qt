@@ -833,7 +833,7 @@ void QDeclarativeTextInput::moveCursor()
 }
 
 /*!
-    \qmlmethod int TextInput::xToPosition(int x)
+    \qmlmethod int TextInput::positionAt(int x)
 
     This function returns the character position at
     x pixels from the left of the textInput. Position 0 is before the
@@ -843,7 +843,7 @@ void QDeclarativeTextInput::moveCursor()
     This means that for all x values before the first character this function returns 0,
     and for all x values after the last character this function returns text.length.
 */
-int QDeclarativeTextInput::xToPosition(int x)
+int QDeclarativeTextInput::positionAt(int x)
 {
     Q_D(const QDeclarativeTextInput);
     return d->control->xToPos(x - d->hscroll);

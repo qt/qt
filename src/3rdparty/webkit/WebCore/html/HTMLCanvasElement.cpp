@@ -143,10 +143,12 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, ExceptionCode& ec)
     if (m_size.isEmpty() || !buffer())
         return String("data:,");
 
-    if (mimeType.isNull() || !MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType))
+    String lowercaseMimeType = mimeType.lower();
+
+    if (mimeType.isNull() || !MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(lowercaseMimeType))
         return buffer()->toDataURL("image/png");
 
-    return buffer()->toDataURL(mimeType);
+    return buffer()->toDataURL(lowercaseMimeType);
 }
 
 CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, CanvasContextAttributes* attrs)

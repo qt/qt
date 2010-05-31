@@ -73,7 +73,7 @@ public:
     };
 #endif
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,
-                   OpenGLClass, OpenVGClass, CustomClass = 1024 };
+                   OpenGLClass, OpenVGClass, RuntimeClass, CustomClass = 1024 };
 
     QPixmapData(PixelType pixelType, int classId);
     virtual ~QPixmapData();
@@ -133,7 +133,10 @@ public:
 
     static QPixmapData *create(int w, int h, PixelType type);
 
+    virtual QPixmapData *runtimeData() const { return 0; }
+
 protected:
+
     void setSerialNumber(int serNo);
     int w;
     int h;

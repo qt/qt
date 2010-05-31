@@ -66,12 +66,17 @@ qint64 QBenchmarkTimeMeasurer::stop()
 
 bool QBenchmarkTimeMeasurer::isMeasurementAccepted(qint64 measurement)
 {
-    return (measurement > 20);
+    return (measurement > 50);
 }
 
 int QBenchmarkTimeMeasurer::adjustIterationCount(int suggestion)
 { 
     return suggestion; 
+}
+
+bool QBenchmarkTimeMeasurer::needsWarmupIteration()
+{
+    return true;
 }
 
 int QBenchmarkTimeMeasurer::adjustMedianCount(int)

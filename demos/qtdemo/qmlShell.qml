@@ -167,6 +167,7 @@ Item {
             SequentialAnimation{
                 PropertyAction { target: bg; property: useBlur?"y":"opacity";}//fade in blurred background only if blurred
                 NumberAnimation{ properties: "opacity"; easing.type: Easing.InQuad; duration: 500}
+                PropertyAction { target: loader; property: "focus"; value: true}//Might be needed to ensure the focus stays with us
             }
         }
     ]

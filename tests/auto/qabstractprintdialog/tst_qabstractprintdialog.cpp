@@ -50,6 +50,8 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+
 class tst_QAbstractPrintDialog : public QObject
 {
 Q_OBJECT
@@ -141,3 +143,9 @@ void tst_QAbstractPrintDialog::setFromTo()
 
 QTEST_MAIN(tst_QAbstractPrintDialog)
 #include "tst_qabstractprintdialog.moc"
+
+#else
+
+QTEST_NOOP_MAIN
+
+#endif
