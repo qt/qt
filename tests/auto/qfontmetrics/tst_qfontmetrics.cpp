@@ -73,7 +73,6 @@ private slots:
     void averageCharWidth();
     void elidedMultiLength();
     void elidedMultiLengthF();
-    void bearingIncludedInBoundingRect();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -249,17 +248,6 @@ void tst_QFontMetrics::elidedMultiLength()
 void tst_QFontMetrics::elidedMultiLengthF()
 {
     elidedMultiLength_helper<QFontMetricsF>();
-}
-
-void tst_QFontMetrics::bearingIncludedInBoundingRect()
-{
-    QFont font;
-    font.setItalic(true);
-    QRect brectItalic = QFontMetrics(font).boundingRect("ITALIC");
-    font.setItalic(false);
-    QRect brectNormal = QFontMetrics(font).boundingRect("ITALIC");
-
-    QVERIFY(brectItalic.width() > brectNormal.width());
 }
 
 QTEST_MAIN(tst_QFontMetrics)
