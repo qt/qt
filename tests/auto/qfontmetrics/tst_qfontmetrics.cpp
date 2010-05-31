@@ -71,6 +71,7 @@ private slots:
     void elidedText();
     void veryNarrowElidedText();
     void averageCharWidth();
+    void bypassShaping();
     void elidedMultiLength();
     void elidedMultiLengthF();
     void bearingIncludedInBoundingRect();
@@ -217,6 +218,20 @@ void tst_QFontMetrics::averageCharWidth()
     QVERIFY(fm.averageCharWidth() != 0);
     QFontMetricsF fmf(f);
     QVERIFY(fmf.averageCharWidth() != 0);
+}
+
+void tst_QFontMetrics::bypassShaping()
+{
+    QFont f;
+    QFontMetrics fm(f);
+    QString text = " A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z";
+    int textWidth = fm.width(text, -1, Qt::TextBypassShaping);
+    QVERIFY(textWidth != 0);
+    int charsWidth = 0;
+    for (int i = 0; i < text.size(); ++i)
+        charsWidth += fm.width(text[i]);
+    // This assertion is needed in QtWebKit's WebCore::Font::offsetForPositionForSimpleText
+    QCOMPARE(textWidth, charsWidth);
 }
 
 template<class FontMetrics> void elidedMultiLength_helper()

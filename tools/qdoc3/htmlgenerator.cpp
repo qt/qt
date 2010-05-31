@@ -1711,62 +1711,49 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
     if (node->type() == Node::Class) {
         const ClassNode* cn = static_cast<const ClassNode*>(node);
         QString name =  node->moduleName();
-        out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+        out() << "              <li><a href=\"modules.html\">Modules</a></li>";
         if (!name.isEmpty()) {
             out() << "              <li>";
             breadcrumb << Atom(Atom::AutoLink,name);
             generateText(breadcrumb, node, marker);
             out() << "</li>\n";
         }
-        breadcrumb.clear();
-        if (!cn->name().isEmpty()) {
-            out() << "              <li>";
-            breadcrumb << Atom(Atom::AutoLink,cn->name());
-            generateText(breadcrumb, 0, marker);
-            out() << "</li>\n";
-        }
+        if (!cn->name().isEmpty())
+            out() << "              <li>" << cn->name() << "</li>\n";
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
-            out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+            out() << "              <li><a href=\"modules.html\">Modules</a></li>";
             QString name =  node->name();
-            if (!name.isEmpty()) {
-                out() << "              <li>";
-                breadcrumb << Atom(Atom::AutoLink,name);
-                generateText(breadcrumb, 0, marker);
-                out() << "</li>\n";
-            }
+            if (!name.isEmpty())
+                out() << "              <li>" << name << "</li>\n";
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
-                out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
+                out() << "              <li>Modules</li>";
             else {
-                out() << "              <li><a href=\"" << fn->name() << "\">" << title
-                      << "</a></li>";
+                out() << "              <li>" << title << "</li>";
             }
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("examples.html")) {
-                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
+                out() << "              <li>Examples</li>";
             }
             else if (fn->name().startsWith("examples-")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li><a href=\"" << fn->name() << "\">" << title
-                      << "</a></li>";
+                out() << "              <li>" << title << "</li>";
             }
             else if (fn->name() == QString("namespaces.html")) {
-                out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+                out() << "              <li>Namespaces</li>";
             }
             else {
-                out() << "              <li><a href=\"" << fn->name() << "\">" << title
-                      << "</a></li>";
+                out() << "              <li>" << title << "</li>";
             }
         }
         else if (node->subType() == Node::QmlClass) {
             out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li><a href=\"" << fn->name() << "\">" << title
-                  << "</a></li>";
+            out() << "              <li>" << title << "</li>";
         }
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
@@ -1775,16 +1762,12 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             QString t = CodeParser::titleFromName(name);
             out() << "              <li><a href=\"" << name << "\">"
                   << t << "</a></li>";
-            out() << "              <li><a href=\"" << sl.at(0)
-                  << "-" << sl.at(sl.size()-1) << ".html\">"
-                  << title << "</a></li>";
+            out() << "              <li>" << title << "</li>";
         }
     }
     else if (node->type() == Node::Namespace) {
-        const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
-        out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
-        out() << "              <li><a href=\"" << fileName(nsn) << "\">" << title
-              << "</a></li>";
+        out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
+        out() << "              <li>" << title << "</li>";
     }
 }
 

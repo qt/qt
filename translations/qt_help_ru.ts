@@ -34,7 +34,7 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
         <source>The collection file &apos;%1&apos; is not set up yet!</source>
-        <translation type="unfinished">Файл набора &apos;%1&apos; ещё не установлен!</translation>
+        <translation>Файл коллекции справки &apos;%1&apos; ещё не установлен!</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -43,9 +43,9 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>Cannot open collection file: %1</source>
-        <translation type="unfinished">Не удалось открыть файл набора: %1</translation>
+        <translation>Не удалось открыть файл коллекции справки: %1</translation>
     </message>
     <message>
         <location line="-40"/>
@@ -55,15 +55,15 @@
     <message>
         <location line="+16"/>
         <source>The collection file &apos;%1&apos; already exists!</source>
-        <translation type="unfinished">Файл набора &apos;%1&apos; уже существует!</translation>
+        <translation>Файл коллекции справки &apos;%1&apos; уже существует!</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+151"/>
         <source>Unknown filter &apos;%1&apos;!</source>
         <translation>Неизвестный фильтр &apos;%1&apos;!</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+103"/>
         <source>Invalid documentation file &apos;%1&apos;!</source>
         <translation>Некорректный файл документации &apos;%1&apos;!</translation>
     </message>
@@ -78,17 +78,17 @@
         <translation>Не удалось открыть базу данных &apos;%1&apos; для оптимизации!</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-439"/>
         <source>Cannot create directory: %1</source>
         <translation>Не удалось создать каталог: %1</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+26"/>
         <source>Cannot copy collection file: %1</source>
-        <translation type="unfinished">Не удалось скопировать файл набора: %1</translation>
+        <translation>Не удалось скопировать файл коллекции справки: %1</translation>
     </message>
     <message>
-        <location line="+174"/>
+        <location line="+172"/>
         <source>Cannot register filter %1!</source>
         <translation>Не удалось зарегистрировать фильтр %1!</translation>
     </message>
@@ -120,23 +120,20 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+525"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+122"/>
+        <source>Cannot open documentation file %1: %2!</source>
+        <translation>Не удалось открыть файл документации %1: %2!</translation>
+    </message>
+    <message>
+        <location line="+404"/>
         <source>The specified namespace does not exist!</source>
         <translation>Указанное пространство имён не существует!</translation>
     </message>
 </context>
 <context>
-    <name>QHelpEngineCorePrivate</name>
-    <message>
-        <location line="-403"/>
-        <source>Cannot open documentation file %1: %2!</source>
-        <translation>Не удалось открыть файл документации %1: %2!</translation>
-    </message>
-</context>
-<context>
     <name>QHelpGenerator</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+157"/>
+        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+158"/>
         <source>Invalid help data!</source>
         <translation>Некорректные данные справки!</translation>
     </message>
@@ -161,7 +158,7 @@
         <translation>Не удалось открыть файл базы данных %1!</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>Cannot register namespace %1!</source>
         <translation>Не удалось зарегистрировать пространство имён %1!</translation>
     </message>
@@ -216,7 +213,7 @@
         <translation>Не удалось открыть файл %1! Пропускаем.</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+133"/>
         <source>The filter %1 is already registered!</source>
         <translation>Фильтр %1 уже зарегистрирован!</translation>
     </message>
@@ -231,7 +228,7 @@
         <translation>Добавление указателей...</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location line="+91"/>
         <source>Insert contents...</source>
         <translation>Добавление оглавления...</translation>
     </message>
@@ -245,11 +242,79 @@
         <source>Cannot register contents!</source>
         <translation>Не удалось зарегистрировать оглавление!</translation>
     </message>
+    <message>
+        <location line="+56"/>
+        <source>File &apos;%1&apos; does not exist.</source>
+        <translation>Файл &apos;%1&apos; не существует.</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>File &apos;%1&apos; cannot be opened.</source>
+        <translation>Невозможно открыть файл &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>File &apos;%1&apos; contains an invalid link to file &apos;%2&apos;</source>
+        <translation>Файл &apos;%1&apos; содержит некорректную ссылку на файл &apos;%2&apos;</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Invalid links in HTML files.</source>
+        <translation>В файлах HTML обнаружены некорректные ссылки.</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpProject</name>
+    <message>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+88"/>
+        <source>Unknown token.</source>
+        <translation>Неизвестный идентификатор.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
+        <translation>Неизвестный идентификатор. Ожидается &quot;QtHelpProject&quot;!</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Error in line %1: %2</source>
+        <translation>Ошибка в строке %1: %2</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Virtual folder has invalid syntax.</source>
+        <translation>Виртуальный каталог имеет некорректный синтаксис.</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Namespace has invalid syntax.</source>
+        <translation>Пространство имён имеет некорректный синтаксис.</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Missing namespace in QtHelpProject.</source>
+        <translation>В QtHelpProject отсутствует пространство имён.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Missing virtual folder in QtHelpProject</source>
+        <translation>В QtHelpProject отсутствует виртуальный каталог</translation>
+    </message>
+    <message>
+        <location line="+89"/>
+        <source>Missing attribute in keyword at line %1.</source>
+        <translation>Отсутствует атрибут у ключевого слова в строке %1.</translation>
+    </message>
+    <message>
+        <location line="+141"/>
+        <source>The input file %1 could not be opened!</source>
+        <translation>Невозможно открыть исходный файл %1!</translation>
+    </message>
 </context>
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+125"/>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+124"/>
         <source>Search for:</source>
         <translation>Искать:</translation>
     </message>
@@ -301,66 +366,19 @@
 </context>
 <context>
     <name>QHelpSearchResultWidget</name>
+    <message numerus="yes">
+        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+174"/>
+        <source>%1 - %2 of %n Hits</source>
+        <translation>
+            <numerusform>%1 - %2 из %n совпадения</numerusform>
+            <numerusform>%1 - %2 из %n совпадений</numerusform>
+            <numerusform>%1 - %2 из %n совпадений</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+235"/>
+        <location line="+61"/>
         <source>0 - 0 of 0 Hits</source>
         <translation>0 - 0 из 0 совпадений</translation>
-    </message>
-</context>
-<context>
-    <name>QHelpSearchResultWidgetPrivate</name>
-    <message>
-        <location line="-61"/>
-        <source>%1 - %2 of %3 Hits</source>
-        <translation>%1 - %2 из %3 совпадений</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
-        <source>Unknown token.</source>
-        <translation>Неизвестный идентификатор.</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
-        <translation>Неизвестный идентификатор. Ожидается &quot;QtHelpProject&quot;!</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Error in line %1: %2</source>
-        <translation>Ошибка в строке %1: %2</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>A virtual folder must not contain a &apos;/&apos; character!</source>
-        <translation>Виртуальный каталог не должен содержать символ &apos;/&apos;!</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>A namespace must not contain a &apos;/&apos; character!</source>
-        <translation>Пространство имён не должно содержать символ &apos;/&apos;!</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Missing namespace in QtHelpProject.</source>
-        <translation>Отсутствует пространство имён в QtHelpProject.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Missing virtual folder in QtHelpProject</source>
-        <translation>Отсутствует виртуальный каталог в QtHelpProject</translation>
-    </message>
-    <message>
-        <location line="+88"/>
-        <source>Missing attribute in keyword at line %1.</source>
-        <translation>Отсутствует атрибут у ключевого слова в строке %1.</translation>
-    </message>
-    <message>
-        <location line="+123"/>
-        <source>The input file %1 could not be opened!</source>
-        <translation>Невозможно открыть исходный файл %1!</translation>
     </message>
 </context>
 </TS>

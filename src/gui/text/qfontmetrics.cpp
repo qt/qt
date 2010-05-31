@@ -526,6 +526,14 @@ int QFontMetrics::rightBearing(QChar ch) const
 */
 int QFontMetrics::width(const QString &text, int len) const
 {
+    return width(text, len, 0);
+}
+
+/*!
+    \internal
+*/
+int QFontMetrics::width(const QString &text, int len, int flags) const
+{
     int pos = text.indexOf(QLatin1Char('\x9c'));
     if (pos != -1) {
         len = (len < 0) ? pos : qMin(pos, len);
@@ -534,6 +542,23 @@ int QFontMetrics::width(const QString &text, int len) const
     }
     if (len == 0)
         return 0;
+
+    if (flags & Qt::TextBypassShaping) {
+        // Skip harfbuzz complex shaping, only use advances
+        int numGlyphs = len;
+        QVarLengthGlyphLayoutArray glyphs(numGlyphs);
+        QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+        if (!engine->stringToCMap(text.data(), len, &glyphs, &numGlyphs, 0)) {
+            glyphs.resize(numGlyphs);
+            if (!engine->stringToCMap(text.data(), len, &glyphs, &numGlyphs, 0))
+                Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
+        }
+
+        QFixed width;
+        for (int i = 0; i < numGlyphs; ++i)
+            width += glyphs.advances_x[i];
+        return qRound(width);
+    }
 
     QStackTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
