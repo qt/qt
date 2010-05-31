@@ -65,8 +65,7 @@ Item {
         onReleased: {
         }
         onDoubleClicked: {
-            textEdit.selectionStart=0;
-            textEdit.selectionEnd=textEdit.text.length;
+            textEdit.selectAll()
         }
         z: textEdit.z + 1
     }
