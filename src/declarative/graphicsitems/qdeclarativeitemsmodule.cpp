@@ -112,9 +112,11 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathPercent>("Qt",4,7,"PathPercent");
     qmlRegisterType<QDeclarativePathQuad>("Qt",4,7,"PathQuad");
     qmlRegisterType<QDeclarativePathView>("Qt",4,7,"PathView");
+#ifndef QT_NO_VALIDATOR
     qmlRegisterType<QIntValidator>("Qt",4,7,"IntValidator");
     qmlRegisterType<QDoubleValidator>("Qt",4,7,"DoubleValidator");
     qmlRegisterType<QRegExpValidator>("Qt",4,7,"RegExpValidator");
+#endif
     qmlRegisterType<QDeclarativeRectangle>("Qt",4,7,"Rectangle");
     qmlRegisterType<QDeclarativeRepeater>("Qt",4,7,"Repeater");
     qmlRegisterType<QGraphicsRotation>("Qt",4,7,"Rotation");
@@ -138,7 +140,9 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathElement>();
     qmlRegisterType<QDeclarativeCurve>();
     qmlRegisterType<QDeclarativeScaleGrid>();
+#ifndef QT_NO_VALIDATOR
     qmlRegisterType<QValidator>();
+#endif
     qmlRegisterType<QDeclarativeVisualModel>();
 #ifndef QT_NO_ACTION
     qmlRegisterType<QAction>();

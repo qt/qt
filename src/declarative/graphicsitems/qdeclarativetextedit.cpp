@@ -127,9 +127,11 @@ QString QDeclarativeTextEdit::text() const
 {
     Q_D(const QDeclarativeTextEdit);
 
+#ifndef QT_NO_TEXTHTMLPARSER
     if (d->richText)
         return d->document->toHtml();
     else
+#endif
         return d->document->toPlainText();
 }
 
@@ -260,7 +262,11 @@ void QDeclarativeTextEdit::setText(const QString &text)
     d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
+#ifndef QT_NO_TEXTHTMLPARSER
         d->control->setHtml(text);
+#else
+        d->control->setPlainText(text);
+#endif
     } else {
         d->control->setPlainText(text);
     }
@@ -325,7 +331,11 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
         d->control->setPlainText(d->text);
         updateSize();
     } else if (!wasRich && d->richText) {
+#ifndef QT_NO_TEXTHTMLPARSER
         d->control->setHtml(d->text);
+#else
+        d->control->setPlainText(d->text);
+#endif
         updateSize();
     }
     d->format = format;
