@@ -496,6 +496,10 @@ public:
 
     static void processUserEvent(QWindowSystemInterface::UserEvent *e);
 
+    static void reportScreenCount(int count);
+    static void reportGeometryChange(int screenIndex);
+    static void reportAvailableGeometryChange(int screenIndex);
+
 #endif
 
 #ifdef Q_WS_QWS

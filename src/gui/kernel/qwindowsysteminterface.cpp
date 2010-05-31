@@ -142,4 +142,19 @@ void QWindowSystemInterface::handleTouchEvent(QWidget *tlw, ulong timestamp, QEv
     QWindowSystemInterfacePrivate::queueUserEvent(e);
 }
 
+void QWindowSystemInterface::handleScreenGeometryChange(int screenIndex)
+{
+    QApplicationPrivate::reportGeometryChange(screenIndex);
+}
+
+void QWindowSystemInterface::handleScreenAvailableGeometryChange(int screenIndex)
+{
+    QApplicationPrivate::reportAvailableGeometryChange(screenIndex);
+}
+
+void QWindowSystemInterface::handleScreenCountChange(int count)
+{
+    QApplicationPrivate::reportScreenCount(count);
+}
+
 QT_END_NAMESPACE

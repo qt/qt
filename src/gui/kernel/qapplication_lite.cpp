@@ -828,4 +828,48 @@ void QApplicationPrivate::processTouchEvent(QWindowSystemInterface::TouchEvent *
     translateRawTouchEvent(e->widget.data(), e->devType, touchPoints);
 }
 
+void QApplicationPrivate::reportScreenCount(int count)
+{
+    // signal anything listening for creation or deletion of screens
+    QDesktopWidget *desktop = QApplication::desktop();
+    if (desktop)
+        emit desktop->screenCountChanged(count);
+}
+
+void QApplicationPrivate::reportGeometryChange(int screenIndex)
+{
+    // signal anything listening for screen geometry changes
+    QDesktopWidget *desktop = QApplication::desktop();
+    if (desktop)
+        emit desktop->resized(screenIndex);
+
+    // make sure maximized and fullscreen windows are updated
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = list.size() - 1; i >= 0; --i) {
+        QWidget *w = list.at(i);
+        if (w->isFullScreen())
+            w->d_func()->setFullScreenSize_helper();
+        else if (w->isMaximized())
+            w->d_func()->setMaxWindowState_helper();
+    }
+}
+
+void QApplicationPrivate::reportAvailableGeometryChange(int screenIndex)
+{
+    // signal anything listening for screen geometry changes
+    QDesktopWidget *desktop = QApplication::desktop();
+    if (desktop)
+        emit desktop->workAreaResized(screenIndex);
+
+    // make sure maximized and fullscreen windows are updated
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = list.size() - 1; i >= 0; --i) {
+        QWidget *w = list.at(i);
+        if (w->isFullScreen())
+            w->d_func()->setFullScreenSize_helper();
+        else if (w->isMaximized())
+            w->d_func()->setMaxWindowState_helper();
+    }
+}
+
 QT_END_NAMESPACE

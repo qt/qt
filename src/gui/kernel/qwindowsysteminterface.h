@@ -97,6 +97,10 @@ public:
     static void handleEnterEvent(QWidget *w);
     static void handleLeaveEvent(QWidget *w);
 
+    // Changes to the screen
+    static void handleScreenGeometryChange(int screenIndex);
+    static void handleScreenAvailableGeometryChange(int screenIndex);
+    static void handleScreenCountChange(int count);
 
     class UserEvent {
     public:
