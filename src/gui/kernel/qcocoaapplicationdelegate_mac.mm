@@ -196,7 +196,6 @@ static void cleanupCocoaApplicationDelegate()
             qAppInstance()->quit();
             startedQuit = false;
         }
-        return NSTerminateNow;
     }
 
     if (qtPrivate->threadData->eventLoops.size() == 0) {
