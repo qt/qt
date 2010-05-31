@@ -96,7 +96,7 @@ class Collection: public QMultiHash<QByteArray, CollectedType *>
 {
 public:
      void add(CollectedType *collectedItem)
-    { insert(collectedItem->name(), collectedItem); }
+    { this->insert(collectedItem->name(), collectedItem); }
 };
 
 typedef Collection<Scope> ScopeCollection;
