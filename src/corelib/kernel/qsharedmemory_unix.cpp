@@ -116,20 +116,21 @@ key_t QSharedMemoryPrivate::handle()
         return unix_key;
 
     // don't allow making handles on empty keys
-    if (nativeKey.isEmpty()) {
+    if (key.isEmpty()) {
         errorString = QSharedMemory::tr("%1: key is empty").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::KeyError;
         return 0;
     }
 
     // ftok requires that an actual file exists somewhere
-    if (!QFile::exists(nativeKey)) {
+    QString fileName = makePlatformSafeKey(key);
+    if (!QFile::exists(fileName)) {
         errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::NotFound;
         return 0;
     }
 
-    unix_key = ftok(QFile::encodeName(nativeKey).constData(), 'Q');
+    unix_key = ftok(QFile::encodeName(fileName).constData(), 'Q');
     if (-1 == unix_key) {
         errorString = QSharedMemory::tr("%1: ftok failed").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::KeyError;
@@ -180,7 +181,7 @@ bool QSharedMemoryPrivate::create(int size)
 {
     // build file if needed
     bool createdFile = false;
-    int built = createUnixKeyFile(nativeKey);
+    int built = createUnixKeyFile(makePlatformSafeKey(key));
     if (built == -1) {
         errorString = QSharedMemory::tr("%1: unable to make key").arg(QLatin1String("QSharedMemory::handle:"));
         error = QSharedMemory::KeyError;
@@ -193,7 +194,7 @@ bool QSharedMemoryPrivate::create(int size)
     // get handle
     if (!handle()) {
         if (createdFile)
-            QFile::remove(nativeKey);
+            QFile::remove(makePlatformSafeKey(key));
         return false;
     }
 
@@ -209,7 +210,7 @@ bool QSharedMemoryPrivate::create(int size)
             setErrorString(function);
         }
         if (createdFile && error != QSharedMemory::AlreadyExists)
-            QFile::remove(nativeKey);
+            QFile::remove(makePlatformSafeKey(key));
         return false;
     }
 
@@ -294,7 +295,7 @@ bool QSharedMemoryPrivate::detach()
         }
 
         // remove file
-        if (!QFile::remove(nativeKey))
+        if (!QFile::remove(makePlatformSafeKey(key)))
             return false;
     }
     return true;

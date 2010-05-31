@@ -225,17 +225,11 @@ void tst_QSharedMemory::key_data()
 {
     QTest::addColumn<QString>("constructorKey");
     QTest::addColumn<QString>("setKey");
-    QTest::addColumn<QString>("setNativeKey");
 
-    QTest::newRow("null, null, null") << QString() << QString() << QString();
-    QTest::newRow("one, null, null") << QString("one") << QString() << QString();
-    QTest::newRow("null, one, null") << QString() << QString("one") << QString();
-    QTest::newRow("null, null, one") << QString() << QString() << QString("one");
-    QTest::newRow("one, two, null") << QString("one") << QString("two") << QString();
-    QTest::newRow("one, null, two") << QString("one") << QString() << QString("two");
-    QTest::newRow("null, one, two") << QString() << QString("one") << QString("two");
-    QTest::newRow("one, two, three") << QString("one") << QString("two") << QString("three");
-    QTest::newRow("invalid") << QString("o/e") << QString("t/o") << QString("|x");
+    QTest::newRow("null, null") << QString() << QString();
+    QTest::newRow("null, one") << QString() << QString("one");
+    QTest::newRow("one, two") << QString("one") << QString("two");
+    QTest::newRow("invalid") << QString("o/e") << QString("t/o");
 }
 
 /*!
@@ -245,17 +239,11 @@ void tst_QSharedMemory::key()
 {
     QFETCH(QString, constructorKey);
     QFETCH(QString, setKey);
-    QFETCH(QString, setNativeKey);
 
     QSharedMemory sm(constructorKey);
     QCOMPARE(sm.key(), constructorKey);
-    QCOMPARE(sm.nativeKey().isEmpty(), constructorKey.isEmpty());
     sm.setKey(setKey);
     QCOMPARE(sm.key(), setKey);
-    QCOMPARE(sm.nativeKey().isEmpty(), setKey.isEmpty());
-    sm.setNativeKey(setNativeKey);
-    QVERIFY(sm.key().isNull());
-    QCOMPARE(sm.nativeKey(), setNativeKey);
     QCOMPARE(sm.isAttached(), false);
 
     QCOMPARE(sm.error(), QSharedMemory::NoError);
@@ -274,7 +262,7 @@ void tst_QSharedMemory::create_data()
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
     QTest::newRow("null key") << QString() << 1024
-        << false << QSharedMemory::KeyError;
+        << false << QSharedMemory::LockError;
     QTest::newRow("-1 size") << QString("negsize") << -1
         << false << QSharedMemory::InvalidSize;
     QTest::newRow("nor size") << QString("norsize") << 1024
@@ -314,7 +302,7 @@ void tst_QSharedMemory::attach_data()
     QTest::addColumn<bool>("exists");
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
-    QTest::newRow("null key") << QString() << false << QSharedMemory::KeyError;
+    QTest::newRow("null key") << QString() << false << QSharedMemory::LockError;
     QTest::newRow("doesn't exists") << QString("doesntexists") << false << QSharedMemory::NotFound;
     QTest::newRow("already exists") << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
 }

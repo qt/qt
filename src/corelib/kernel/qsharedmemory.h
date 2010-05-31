@@ -85,8 +85,6 @@ public:
 
     void setKey(const QString &key);
     QString key() const;
-    void setNativeKey(const QString &key);
-    QString nativeKey() const;
 
     bool create(int size, AccessMode mode = ReadWrite);
     int size() const;
