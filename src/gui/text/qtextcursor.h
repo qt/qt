@@ -132,6 +132,9 @@ public:
     bool visualNavigation() const;
     void setVisualNavigation(bool b);
 
+    void setKeepPositionOnInsert(bool b);
+    bool keepPositionOnInsert() const;
+
     void deleteChar();
     void deletePreviousChar();
 
