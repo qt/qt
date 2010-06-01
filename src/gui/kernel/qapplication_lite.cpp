@@ -86,6 +86,8 @@ static int mousePressX;
 static int mousePressY;
 static int mouse_double_click_distance = 5;
 
+bool QApplicationPrivate::qapp_constructed = false; // QApplication::QApplication completed?
+
 void QApplicationPrivate::processUserEvent(QWindowSystemInterface::UserEvent *e)
 {
     switch(e->type) {
@@ -830,18 +832,24 @@ void QApplicationPrivate::processTouchEvent(QWindowSystemInterface::TouchEvent *
 
 void QApplicationPrivate::reportScreenCount(int count)
 {
+    // This operation only makes sense after the QApplication constructor runs
+    if (!QApplicationPrivate::qapp_constructed)
+        return;
+
     // signal anything listening for creation or deletion of screens
     QDesktopWidget *desktop = QApplication::desktop();
-    if (desktop)
-        emit desktop->screenCountChanged(count);
+    emit desktop->screenCountChanged(count);
 }
 
 void QApplicationPrivate::reportGeometryChange(int screenIndex)
 {
+    // This operation only makes sense after the QApplication constructor runs
+    if (!QApplicationPrivate::qapp_constructed)
+        return;
+
     // signal anything listening for screen geometry changes
     QDesktopWidget *desktop = QApplication::desktop();
-    if (desktop)
-        emit desktop->resized(screenIndex);
+    emit desktop->resized(screenIndex);
 
     // make sure maximized and fullscreen windows are updated
     QWidgetList list = QApplication::topLevelWidgets();
@@ -856,10 +864,13 @@ void QApplicationPrivate::reportGeometryChange(int screenIndex)
 
 void QApplicationPrivate::reportAvailableGeometryChange(int screenIndex)
 {
+    // This operation only makes sense after the QApplication constructor runs
+    if (!QApplicationPrivate::qapp_constructed)
+        return;
+
     // signal anything listening for screen geometry changes
     QDesktopWidget *desktop = QApplication::desktop();
-    if (desktop)
-        emit desktop->workAreaResized(screenIndex);
+    emit desktop->workAreaResized(screenIndex);
 
     // make sure maximized and fullscreen windows are updated
     QWidgetList list = QApplication::topLevelWidgets();

@@ -428,6 +428,7 @@ public:
     static QString graphics_system_name;
 #if defined(Q_WS_LITE)
     static QPlatformIntegration *platform_integration;
+    static bool qapp_constructed;
 #endif
 
 private:
