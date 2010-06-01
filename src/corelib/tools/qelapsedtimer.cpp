@@ -137,7 +137,7 @@ QT_BEGIN_NAMESPACE
     used.
 
     \value SystemTime       The human-readable system time. This clock is not monotonic.
-    \value MonotonicClock   The system's monotonic clock, usually found in Unix systems. This clock is not monotonic and does not overflow.
+    \value MonotonicClock   The system's monotonic clock, usually found in Unix systems. This clock is monotonic and does not overflow.
     \value TickCounter      The system's tick counter, used on Windows and Symbian systems. This clock may overflow.
     \value MachAbsoluteTime The Mach kernel's absolute time (Mac OS X). This clock is monotonic and does not overflow.
 

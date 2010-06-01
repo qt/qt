@@ -255,7 +255,7 @@
         <translation>Пересекающиеся диагонали</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+93"/>
         <source>Style</source>
         <translation>Стиль</translation>
     </message>
@@ -611,28 +611,28 @@
         <translation>Вставить меню</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1213"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1225"/>
         <source>Changed &apos;%1&apos; of &apos;%2&apos;</source>
-        <translation type="unfinished">Изменено &apos;%1&apos; у &apos;%2&apos;</translation>
+        <translation>Изменено &apos;%1&apos; у &apos;%2&apos;</translation>
     </message>
     <message numerus="yes">
         <location line="+3"/>
         <source>Changed &apos;%1&apos; of %n objects</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Изменено &apos;%1&apos; у %n объекта</numerusform>
             <numerusform>Изменено &apos;%1&apos; у %n объектов</numerusform>
             <numerusform>Изменено &apos;%1&apos; у %n объектов</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+84"/>
         <source>Reset &apos;%1&apos; of &apos;%2&apos;</source>
-        <translation type="unfinished">Восстановлено &apos;%1&apos; у &apos;%2&apos;</translation>
+        <translation>Восстановлено &apos;%1&apos; у &apos;%2&apos;</translation>
     </message>
     <message numerus="yes">
         <location line="+3"/>
         <source>Reset &apos;%1&apos; of %n objects</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Восстановлено &apos;%1&apos; у %n объекта</numerusform>
             <numerusform>Восстановлено &apos;%1&apos; у %n объектов</numerusform>
             <numerusform>Восстановлено &apos;%1&apos; у %n объектов</numerusform>
@@ -641,12 +641,12 @@
     <message>
         <location line="+89"/>
         <source>Add dynamic property &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation type="unfinished">Добавлено динамическое свойство &apos;%1&apos; &apos;%2&apos;</translation>
+        <translation>Добавлено динамическое свойство &apos;%1&apos; &apos;%2&apos;</translation>
     </message>
     <message numerus="yes">
         <location line="+3"/>
         <source>Add dynamic property &apos;%1&apos; to %n objects</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Добавлено динамическое свойство &apos;%1&apos; %n объекту</numerusform>
             <numerusform>Добавлено динамическое свойство &apos;%1&apos; %n объектам</numerusform>
             <numerusform>Добавлено динамическое свойство &apos;%1&apos; %n объектам</numerusform>
@@ -655,12 +655,12 @@
     <message>
         <location line="+86"/>
         <source>Remove dynamic property &apos;%1&apos; from &apos;%2&apos;</source>
-        <translation type="unfinished">Удалено динамическое свойство &apos;%1&apos; у &apos;%2&apos;</translation>
+        <translation>Удалено динамическое свойство &apos;%1&apos; у &apos;%2&apos;</translation>
     </message>
     <message numerus="yes">
         <location line="+3"/>
         <source>Remove dynamic property &apos;%1&apos; from %n objects</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Удалено динамическое свойство &apos;%1&apos; у %n объекта</numerusform>
             <numerusform>Удалено динамическое свойство &apos;%1&apos; у %n объектов</numerusform>
             <numerusform>Удалено динамическое свойство &apos;%1&apos; у %n объектов</numerusform>
@@ -742,7 +742,7 @@
 <context>
     <name>Designer</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+449"/>
+        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+446"/>
         <source>Qt Designer</source>
         <translation>Qt Designer</translation>
     </message>
@@ -1074,8 +1074,7 @@
     <message>
         <location filename="../tools/designer/src/lib/shared/formlayoutrowdialog.ui"/>
         <source>Add Form Layout Row</source>
-        <translatorcomment>нелепица какая-то</translatorcomment>
-        <translation type="unfinished">Добавление строки компоновки компоновщика формы</translation>
+        <translation type="unfinished">Добавление строки  компоновщика формы</translation>
     </message>
     <message>
         <location/>
@@ -1111,7 +1110,7 @@
 <context>
     <name>FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1701"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1754"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>Неожиданный элемент &lt;%1&gt;</translation>
     </message>
@@ -1204,7 +1203,7 @@
 <context>
     <name>MainWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+119"/>
+        <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+121"/>
         <source>Main</source>
         <extracomment>Not currently used (main tool bar)</extracomment>
         <translation>Главное</translation>
@@ -1584,7 +1583,7 @@ Script: %3</source>
 <context>
     <name>QDesignerActions</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+128"/>
+        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+130"/>
         <source>Saved %1.</source>
         <translation>Сохранено %1.</translation>
     </message>
@@ -1614,24 +1613,24 @@ Script: %3</source>
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location line="+298"/>
+        <location line="+322"/>
         <source>Clear &amp;Menu</source>
         <translation>Очистить &amp;меню</translation>
     </message>
     <message>
-        <location line="-233"/>
+        <location line="-247"/>
         <source>CTRL+SHIFT+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+127"/>
         <source>CTRL+R</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+18"/>
         <source>CTRL+M</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+31"/>
@@ -1678,7 +1677,7 @@ Script: %3</source>
         <translation>UI файлы Qt Designer (*.%1);;Все файлы (*)</translation>
     </message>
     <message>
-        <location line="-620"/>
+        <location line="-644"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>%1 уже существует.
@@ -1690,7 +1689,7 @@ Do you want to replace it?</source>
         <translation>Дополнительные шрифты...</translation>
     </message>
     <message>
-        <location line="+303"/>
+        <location line="+327"/>
         <source>&amp;Recent Forms</source>
         <translation>&amp;Последние формы</translation>
     </message>
@@ -1753,7 +1752,7 @@ Do you want to update the file location or generate a new form?</source>
         <translation>&amp;Закрыть предпросмотр</translation>
     </message>
     <message>
-        <location line="-905"/>
+        <location line="-929"/>
         <source>&amp;New...</source>
         <translation>&amp;Новый...</translation>
     </message>
@@ -1784,12 +1783,12 @@ Do you want to update the file location or generate a new form?</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+901"/>
+        <location line="+925"/>
         <source>&amp;Close</source>
         <translation>&amp;Закрыть</translation>
     </message>
     <message>
-        <location line="-900"/>
+        <location line="-924"/>
         <source>Save &amp;Image...</source>
         <translation>Сохранить &amp;Изображение...</translation>
     </message>
@@ -1804,12 +1803,12 @@ Do you want to update the file location or generate a new form?</source>
         <translation>Показать &amp;код...</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+78"/>
         <source>ALT+CTRL+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+356"/>
+        <location line="+370"/>
         <location line="+248"/>
         <source>Save Form As</source>
         <translation>Сохранить форму как</translation>
@@ -2059,17 +2058,17 @@ Would you like to retry?</source>
     <message>
         <location line="+5"/>
         <source>A required attribute (&apos;%1&apos;) is missing.</source>
-        <translation type="unfinished">Отсутствует необходимый атрибут (&apos;%1&apos;).</translation>
+        <translation>Отсутствует необходимый атрибут (&apos;%1&apos;).</translation>
     </message>
     <message>
         <location line="+38"/>
         <source>An invalid property specification (&apos;%1&apos;) was encountered. Supported types: %2</source>
-        <translation type="unfinished">Обнаружена неверная спецификация (&apos;%1&apos;) свойства. Поддерживаются типы: %2</translation>
+        <translation>Обнаружена неверная спецификация (&apos;%1&apos;) свойства. Поддерживаются типы: %2</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>&apos;%1&apos; is not a valid string property specification.</source>
-        <translation type="unfinished">&apos;%1&apos; не является корректной спецификацией строкового свойства.</translation>
+        <translation>&apos;%1&apos; не является корректной спецификацией строкового свойства.</translation>
     </message>
     <message>
         <location line="+40"/>
@@ -2090,7 +2089,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerPropertySheet</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+754"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+758"/>
         <source>Dynamic Properties</source>
         <translation>Динамические свойства</translation>
     </message>
@@ -2103,14 +2102,14 @@ Would you like to retry?</source>
         <translation>Компоновка типа &apos;%1&apos; не поддерживается, заменена на компоновку сеткой.</translation>
     </message>
     <message>
-        <location line="+243"/>
+        <location line="+239"/>
         <source>The container extension of the widget &apos;%1&apos; (%2) returned a widget not managed by Designer &apos;%3&apos; (%4) when queried for page #%5.
 Container pages should only be added by specifying them in XML returned by the domXml() method of the custom widget.</source>
         <translation>Контейнерное расширение виджета &apos;%1&apos; (%2) возвратило виджет, который не управляется Qt Designer &apos;%3&apos; (%4), при запросе страницы №%5.
 Страницы контейнера должны быть добавлены указанием их в XML, который возвращается методом domXml() пользовательского виджета.</translation>
     </message>
     <message>
-        <location line="+599"/>
+        <location line="+545"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <extracomment>Parsing clipboard contents</extracomment>
         <translation>Неожиданный элемент &lt;%1&gt;</translation>
@@ -2212,21 +2211,21 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location line="+465"/>
+        <location line="+466"/>
         <source>Save Forms?</source>
         <translation>Сохранить форму?</translation>
     </message>
     <message numerus="yes">
         <location line="+1"/>
         <source>There are %n forms with unsaved changes. Do you want to review these changes before quitting?</source>
-        <translation type="unfinished">
-            <numerusform>Есть %n форма с несохранёнными изменениями. Показать изменения перед выходом?</numerusform>
-            <numerusform>Есть %n формы с несохранёнными изменениями. Показать изменения перед выходом?</numerusform>
-            <numerusform>Есть %n форм с несохранёнными изменениями. Показать изменения перед выходом?</numerusform>
+        <translation>
+            <numerusform>Имеется %n форма с несохранёнными изменениями. Желаете просмотреть изменения перед выходом?</numerusform>
+            <numerusform>Имеется %n формы с несохранёнными изменениями. Желаете просмотреть изменения перед выходом?</numerusform>
+            <numerusform>Имеется %n форм с несохранёнными изменениями. Желаете просмотреть изменения перед выходом?</numerusform>
         </translation>
     </message>
     <message>
-        <location line="-495"/>
+        <location line="-496"/>
         <source>&amp;View</source>
         <translation>&amp;Вид</translation>
     </message>
@@ -2241,9 +2240,9 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation>Панель виджетов</translation>
     </message>
     <message>
-        <location line="+292"/>
+        <location line="+293"/>
         <source>If you do not review your documents, all your changes will be lost.</source>
-        <translation type="unfinished">Если вы не пересмотрите документы, то все ваши изменения будут потеряны.</translation>
+        <translation type="unfinished">Если не просматривать изменения, все изменения будут потеряны.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2258,7 +2257,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location line="+95"/>
         <source>Backup Information</source>
-        <translation type="unfinished">Информация о резервировании</translation>
+        <translation type="unfinished">Информация о резервированых копиях</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2273,7 +2272,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location line="+46"/>
         <source>The file &lt;b&gt;%1&lt;/b&gt; is not a valid Designer UI file.</source>
-        <translation type="unfinished">Файл &lt;b&gt;%1&lt;/b&gt; не является корректным UI файлом Qt Designer.</translation>
+        <translation>Файл &lt;b&gt;%1&lt;/b&gt; не является корректным UI файлом Qt Designer.</translation>
     </message>
 </context>
 <context>
@@ -2322,7 +2321,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location filename="../tools/designer/src/lib/uilib/properties_p.h" line="+132"/>
         <source>The enumeration-value &apos;%1&apos; is invalid. The default value &apos;%2&apos; will be used instead.</source>
-        <translation>Значение &apos;%1&apos; перечисляемого типа некорректно. Будет использовано значение &apos;%2&apos;.</translation>
+        <translation>Значение &apos;%1&apos; перечисляемого типа некорректно. Будет использовано значение по умолчанию &apos;%2&apos;.</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -2466,13 +2465,13 @@ Container pages should only be added by specifying them in XML returned by the d
         <location line="+10"/>
         <location line="+25"/>
         <source>True</source>
-        <translation type="unfinished">Вкл.</translation>
+        <translation>Вкл.</translation>
     </message>
     <message>
         <location line="-25"/>
         <location line="+25"/>
         <source>False</source>
-        <translation type="unfinished">Выкл.</translation>
+        <translation>Выкл.</translation>
     </message>
 </context>
 <context>
@@ -2480,12 +2479,12 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1507"/>
         <source>True</source>
-        <translation type="unfinished">Вкл.</translation>
+        <translation>Вкл.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>False</source>
-        <translation type="unfinished">Выкл.</translation>
+        <translation>Выкл.</translation>
     </message>
 </context>
 <context>
@@ -3503,7 +3502,7 @@ to
 <context>
     <name>QtResourceView</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+566"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+567"/>
         <source>Size: %1 x %2
 %3</source>
         <translation>Размер: %1 x %2
@@ -3528,7 +3527,7 @@ to
 <context>
     <name>QtResourceViewDialog</name>
     <message>
-        <location line="+250"/>
+        <location line="+252"/>
         <source>Select Resource</source>
         <translation>Выбрать ресурс</translation>
     </message>
@@ -3915,6 +3914,26 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location line="+6"/>
+        <source>File</source>
+        <translation type="unfinished">Файл</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit</source>
+        <translation type="unfinished">Правка</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Tools</source>
+        <translation type="unfinished">Инструменты</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Form</source>
+        <translation type="unfinished">Форма</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Toolbars</source>
         <translation>Панели инструментов</translation>
     </message>
@@ -3939,7 +3958,7 @@ Do you want overwrite the template?</source>
     <message>
         <location line="+2"/>
         <source>%1&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation type="unfinished">%1&lt;br/&gt;Copyright (C) 2010 Корпорация Nokia и/или её дочерние подразделения.</translation>
+        <translation>%1&lt;br/&gt;Copyright (C) 2010 Корпорация Nokia и/или её дочерние подразделения.</translation>
     </message>
 </context>
 <context>
@@ -4424,38 +4443,38 @@ Do you want overwrite the template?</source>
         <location filename="../tools/designer/src/components/propertyeditor/designerpropertymanager.cpp" line="+647"/>
         <location line="+6"/>
         <source>AlignLeft</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-5"/>
         <source>AlignHCenter</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>AlignRight</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>AlignJustify</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+9"/>
         <source>AlignTop</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+4"/>
         <source>AlignVCenter</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-3"/>
         <source>AlignBottom</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+565"/>
@@ -4708,9 +4727,14 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FilterWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+185"/>
-        <source>&lt;Filter&gt;</source>
-        <translation>&lt;Фильтр&gt;</translation>
+        <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+163"/>
+        <source>Filter</source>
+        <translation>Фильтр</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Clear text</source>
+        <translation>Очистить текст</translation>
     </message>
 </context>
 <context>
@@ -4737,33 +4761,37 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1267"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1322"/>
         <source>Edit contents</source>
         <translation>Изменить содержимое</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>F2</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+774"/>
+        <location line="+775"/>
         <source>Insert widget &apos;%1&apos;</source>
         <translation>Вставить виджет &apos;%1&apos;</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+65"/>
         <source>Resize</source>
         <translation>Изменение размера</translation>
     </message>
     <message>
-        <location line="+218"/>
-        <location line="+15"/>
+        <location line="+248"/>
         <source>Key Move</source>
         <translation type="unfinished">Перемещение клавишей</translation>
     </message>
+    <message>
+        <location line="+0"/>
+        <source>Key Resize</source>
+        <translation type="unfinished">Изменение размера клавишей</translation>
+    </message>
     <message numerus="yes">
-        <location line="+211"/>
+        <location line="+252"/>
         <source>Paste %n action(s)</source>
         <translation type="unfinished">
             <numerusform>Вставлено %n действие</numerusform>
@@ -4801,7 +4829,7 @@ Do you want overwrite the template?</source>
         <translation>Ошибка вставки</translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+181"/>
         <source>Raise widgets</source>
         <translation>Поднятие виджетов</translation>
     </message>
@@ -4821,7 +4849,7 @@ Do you want overwrite the template?</source>
         <translation>Компоновка</translation>
     </message>
     <message>
-        <location line="+493"/>
+        <location line="+485"/>
         <location line="+55"/>
         <source>Drop widget</source>
         <translation type="unfinished">Вставка виджета</translation>
@@ -4835,7 +4863,7 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FormWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+393"/>
+        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+404"/>
         <source>Delete &apos;%1&apos;</source>
         <translation>Удалить &apos;%1&apos;</translation>
     </message>
@@ -4932,7 +4960,7 @@ Do you want overwrite the template?</source>
     <message>
         <location line="+6"/>
         <source>Lay Out &amp;Horizontally</source>
-        <translation>Скомпоновать по &amp;горизонтальная</translation>
+        <translation>Скомпоновать по &amp;горизонтали</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -5025,7 +5053,7 @@ Do you want overwrite the template?</source>
         <translation>&amp;Настройки формы...</translation>
     </message>
     <message>
-        <location line="+92"/>
+        <location line="+94"/>
         <source>Break Layout</source>
         <translation>Удалить компоновщик</translation>
     </message>
@@ -5441,7 +5469,7 @@ Please select another name.</source>
     <message>
         <location/>
         <source>horizontalSpacer</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -5500,7 +5528,7 @@ Please select another name.</source>
     <message>
         <location line="+244"/>
         <source>Unable to open the form template file &apos;%1&apos;: %2</source>
-        <translation type="unfinished">Невозможно открыть файл шаблона формы &apos;%1&apos;: %2</translation>
+        <translation>Невозможно открыть файл шаблона формы &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <location line="+67"/>
@@ -5869,7 +5897,7 @@ Please select another name.</source>
         <source>The moose in the noose
 ate the goose who was loose.</source>
         <extracomment>Palette editor background</extracomment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -5945,12 +5973,12 @@ ate the goose who was loose.</source>
     <message>
         <location line="+1"/>
         <source>Global include</source>
-        <translation type="unfinished">Глобальное включение</translation>
+        <translation>Глобальное включение</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Usage</source>
-        <translation type="unfinished">Использование</translation>
+        <translation>Использование</translation>
     </message>
 </context>
 <context>
@@ -5984,7 +6012,7 @@ ate the goose who was loose.</source>
 <context>
     <name>qdesigner_internal::PropertyEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+183"/>
+        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+231"/>
         <source>Add Dynamic Property...</source>
         <translation>Добавить динамическое свойство...</translation>
     </message>
@@ -6014,7 +6042,7 @@ ate the goose who was loose.</source>
         <translation type="unfinished">Вид выпадающего списка</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+45"/>
         <source>String...</source>
         <translation>Строка...</translation>
     </message>
@@ -6034,7 +6062,7 @@ ate the goose who was loose.</source>
         <translation>Настроить радактор свойств</translation>
     </message>
     <message>
-        <location line="+533"/>
+        <location line="+539"/>
         <source>Object: %1
 Class: %2</source>
         <translation>Объект: %1
@@ -6372,7 +6400,7 @@ Class: %2</source>
     <message>
         <location line="+1"/>
         <source>CTRL+B</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
@@ -6382,7 +6410,7 @@ Class: %2</source>
     <message>
         <location line="+1"/>
         <source>CTRL+I</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
@@ -6392,7 +6420,7 @@ Class: %2</source>
     <message>
         <location line="+1"/>
         <source>CTRL+U</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+13"/>
@@ -6495,7 +6523,7 @@ Class: %2</source>
     <message>
         <location line="+2"/>
         <source>F4</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>

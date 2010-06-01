@@ -4,7 +4,7 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindow.cpp" line="+202"/>
+        <location filename="../tools/qtconfig/mainwindow.cpp" line="+204"/>
         <source>Desktop Settings (Default)</source>
         <translation>Настройки рабочего стола (по умолчанию)</translation>
     </message>
@@ -21,13 +21,13 @@
     <message>
         <location line="+33"/>
         <location line="+1"/>
-        <location line="+38"/>
+        <location line="+40"/>
         <location line="+1"/>
         <source>Auto (default)</source>
         <translation>Автоматически (по умолчанию)</translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-40"/>
         <source>Choose audio output automatically.</source>
         <translation>Автоматический выбор звукового выхода.</translation>
     </message>
@@ -43,7 +43,7 @@
         <translation>Экспериментальная поддержка aRts в GStreamer.</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <source>Phonon GStreamer backend not available.</source>
         <translation>Модуль поддержки GStreamer недоступен.</translation>
     </message>
@@ -71,8 +71,8 @@
     </message>
     <message>
         <location line="+0"/>
-        <source>Use OpenGL if avaiable</source>
-        <translation>Использовать OpenGL, если доступен</translation>
+        <source>Use OpenGL if available</source>
+        <translation>Использовать OpenGL, если возможно</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -173,12 +173,12 @@
     <message>
         <location/>
         <source>Select GUI &amp;Style:</source>
-        <translation type="unfinished">&amp;Стиль интерфейса:</translation>
+        <translation>&amp;Стиль интерфейса:</translation>
     </message>
     <message>
         <location/>
         <source>Build Palette</source>
-        <translation type="unfinished">Палитра</translation>
+        <translation>Палитра</translation>
     </message>
     <message>
         <location/>
@@ -363,17 +363,17 @@
     <message>
         <location/>
         <source>C&amp;omboBox Effect:</source>
-        <translation type="unfinished">Эффект C&amp;omboBox:</translation>
+        <translation type="unfinished">Эффект &amp;выпадающего списка:</translation>
     </message>
     <message>
         <location/>
         <source>&amp;ToolTip Effect:</source>
-        <translation type="unfinished">Эффект &amp;ToolTip:</translation>
+        <translation type="unfinished">Эффект &amp;подсказки:</translation>
     </message>
     <message>
         <location/>
         <source>Tool&amp;Box Effect:</source>
-        <translation type="unfinished">Эффект Tool&amp;Box:</translation>
+        <translation type="unfinished">Эффект панели &amp;инструментов:</translation>
     </message>
     <message>
         <location/>
@@ -393,7 +393,7 @@
     <message>
         <location/>
         <source>Global Strut</source>
-        <translation type="unfinished">Специальные возможности</translation>
+        <translation type="unfinished">Минимальные размеры</translation>
     </message>
     <message>
         <location/>
@@ -577,7 +577,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+S</translation>
     </message>
     <message>
         <location/>

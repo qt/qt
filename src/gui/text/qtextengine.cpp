@@ -885,7 +885,7 @@ void QTextEngine::shapeText(int item) const
     QFixed letterSpacing = font.d->letterSpacing;
     QFixed wordSpacing = font.d->wordSpacing;
 
-    if (letterSpacingIsAbsolute)
+    if (letterSpacingIsAbsolute && letterSpacing.value())
         letterSpacing *= font.d->dpi / qt_defaultDpiY();
 
     if (letterSpacing != 0) {
@@ -2646,6 +2646,12 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::Overline;
     if (f->d->strikeOut || format.fontStrikeOut())
         flags |= QTextItem::StrikeOut;
+}
+
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, QFontEngine *fe)
+    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
+      num_chars(0), chars(0), logClusters(0), f(font), fontEngine(fe), glyphs(g)
+{
 }
 
 QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const
