@@ -1,8 +1,8 @@
 /****************************************************************************
 **
-** Copyright(C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
-** Contact: Nokia Corporation(qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 
 #include <QtTest/QtTest>
 #include <qstringlist.h>
@@ -167,7 +166,7 @@ static inline double nan()
         return *reinterpret_cast<const double *>(be_nan_bytes);
     return *reinterpret_cast<const double *>(le_nan_bytes);
 }
-#   define NAN(::nan())
+#   define NAN (::nan())
 #endif
 
 tst_QStringRef::tst_QStringRef()
