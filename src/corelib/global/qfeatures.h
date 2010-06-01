@@ -335,11 +335,6 @@
 #define QT_NO_DATESTRING
 #endif
 
-// QtDBus module
-#if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES))
-#define QT_NO_DBUS
-#endif
-
 // QDial
 #if !defined(QT_NO_DIAL) && (defined(QT_NO_SLIDER))
 #define QT_NO_DIAL
@@ -513,6 +508,11 @@
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU
+#endif
+
+// QtDBus module
+#if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_DOM))
+#define QT_NO_DBUS
 #endif
 
 // File Transfer Protocol

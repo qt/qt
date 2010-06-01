@@ -389,9 +389,9 @@ void SymbianEngine::updateConfigurationsL()
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
 
-                locker.unlock();
+                mutex.unlock();
                 emit configurationAdded(ptr);
-                locker.relock();
+                mutex.lock();
             } else {
                 delete cpPriv;
             }
