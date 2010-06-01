@@ -79,7 +79,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedIte
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
     Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength NOTIFY maximumLengthChanged)
+#ifndef QT_NO_VALIDATOR
     Q_PROPERTY(QValidator* validator READ validator WRITE setValidator NOTIFY validatorChanged)
+#endif
     Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask NOTIFY inputMaskChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
@@ -154,9 +156,10 @@ public:
     int maxLength() const;
     void setMaxLength(int ml);
 
+#ifndef QT_NO_VALIDATOR
     QValidator * validator() const;
     void setValidator(QValidator* v);
-
+#endif
     QString inputMask() const;
     void setInputMask(const QString &im);
 
@@ -248,10 +251,12 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeTextInput)
+#ifndef QT_NO_VALIDATOR
 QML_DECLARE_TYPE(QValidator)
 QML_DECLARE_TYPE(QIntValidator)
 QML_DECLARE_TYPE(QDoubleValidator)
 QML_DECLARE_TYPE(QRegExpValidator)
+#endif
 
 QT_END_HEADER
 

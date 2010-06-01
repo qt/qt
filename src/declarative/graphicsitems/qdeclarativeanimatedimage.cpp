@@ -263,7 +263,9 @@ void QDeclarativeAnimatedImage::movieRequestFinished()
 
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
+#ifndef QT_NO_DEBUG_STREAM
         qmlInfo(this) << "Error Reading Animated Image File " << d->url;
+#endif
         delete d->_movie;
         d->_movie = 0;
         return;

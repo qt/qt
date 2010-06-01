@@ -641,6 +641,7 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
 
     \sa acceptableInput, inputMask
 */
+#ifndef QT_NO_VALIDATOR
 QValidator* QDeclarativeTextInput::validator() const
 {
     Q_D(const QDeclarativeTextInput);
@@ -662,6 +663,7 @@ void QDeclarativeTextInput::setValidator(QValidator* v)
 
     emit validatorChanged();
 }
+#endif // QT_NO_VALIDATOR
 
 /*!
     \qmlproperty string TextInput::inputMask
