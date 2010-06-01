@@ -91,6 +91,7 @@
 #include "qcolormap.h"
 #include "qfile.h"
 #include "qlibrary.h"
+#include <qmutex.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -1515,9 +1516,32 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
     return !(a == b);
 }
 
+struct QGLContextGroupList {
+    void append(QGLContextGroup *group) {
+        QMutexLocker locker(&m_mutex);
+        m_list.append(group);
+    }
+
+    void remove(QGLContextGroup *group) {
+        QMutexLocker locker(&m_mutex);
+        m_list.removeOne(group);
+    }
+
+    QList<QGLContextGroup *> m_list;
+    QMutex m_mutex;
+};
+
+Q_GLOBAL_STATIC(QGLContextGroupList, qt_context_groups)
+
 /*****************************************************************************
   QGLContext implementation
  *****************************************************************************/
+
+QGLContextGroup::QGLContextGroup(const QGLContext *context)
+    : m_context(context), m_guards(0), m_refs(1)
+{
+    qt_context_groups()->append(this);
+}
 
 QGLContextGroup::~QGLContextGroup()
 {
@@ -1528,6 +1552,7 @@ QGLContextGroup::~QGLContextGroup()
         guard->m_id = 0;
         guard = guard->m_next;
     }
+    qt_context_groups()->remove(this);
 }
 
 void QGLContextGroup::addGuard(QGLSharedResourceGuard *guard)
@@ -1736,7 +1761,7 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
     QWriteLocker locker(&m_lock);
     if (m_cache.totalCost() + cost > m_cache.maxCost()) {
         // the cache is full - make an attempt to remove something
-        const QList<qint64> keys = m_cache.keys();
+        const QList<QGLTextureCacheKey> keys = m_cache.keys();
         int i = 0;
         while (i < m_cache.count()
                && (m_cache.totalCost() + cost > m_cache.maxCost())) {
@@ -1746,13 +1771,26 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
             ++i;
         }
     }
-    m_cache.insert(key, texture, cost);
+    const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
+    m_cache.insert(cacheKey, texture, cost);
+}
+
+void QGLTextureCache::remove(qint64 key)
+{
+    QWriteLocker locker(&m_lock);
+    QMutexLocker groupLocker(&qt_context_groups()->m_mutex);
+    QList<QGLContextGroup *>::const_iterator it = qt_context_groups()->m_list.constBegin();
+    while (it != qt_context_groups()->m_list.constEnd()) {
+        const QGLTextureCacheKey cacheKey = {key, *it};
+        m_cache.remove(cacheKey);
+        ++it;
+    }
 }
 
 bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 {
     QWriteLocker locker(&m_lock);
-    QList<qint64> keys = m_cache.keys();
+    QList<QGLTextureCacheKey> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         QGLTexture *tex = m_cache.object(keys.at(i));
         if (tex->id == textureId && tex->context == ctx) {
@@ -1767,9 +1805,9 @@ bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 {
     QWriteLocker locker(&m_lock);
-    QList<qint64> keys = m_cache.keys();
+    QList<QGLTextureCacheKey> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
-        const qint64 &key = keys.at(i);
+        const QGLTextureCacheKey &key = keys.at(i);
         if (m_cache.object(key)->context == ctx)
             m_cache.remove(key);
     }
@@ -1782,7 +1820,6 @@ void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
     qt_gl_texture_cache()->remove(cacheKey);
-    Q_ASSERT(qt_gl_texture_cache()->getTexture(cacheKey) == 0);
 }
 
 
@@ -2425,7 +2462,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum target)
 {
     Q_Q(QGLContext);
-    QGLTexture *texture = QGLTextureCache::instance()->getTexture(key);
+    QGLTexture *texture = QGLTextureCache::instance()->getTexture(q, key);
     if (texture && texture->target == target
         && (texture->context == q || QGLContext::areSharing(q, texture->context)))
     {
