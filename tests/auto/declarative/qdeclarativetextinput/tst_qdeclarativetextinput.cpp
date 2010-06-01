@@ -63,6 +63,8 @@ private slots:
     void color();
     void selection();
 
+    void positionAt();
+
     void maxLength();
     void masks();
     void validators();
@@ -359,6 +361,47 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectedText().size() == 10);
 
     delete textinputObject;
+}
+
+void tst_qdeclarativetextinput::positionAt()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textinputObject != 0);
+
+    // Check autoscrolled...
+    QFontMetrics fm(textinputObject->font());
+
+    int pos = textinputObject->positionAt(textinputObject->width()/2);
+    int diff = abs(fm.width(textinputObject->text()) - (fm.width(textinputObject->text().left(pos))+textinputObject->width()/2));
+
+    // some tollerance for different fonts.
+#ifdef Q_OS_LINUX
+    QVERIFY(diff < 2);
+#else
+    QVERIFY(diff < 5);
+#endif
+
+    // Check without autoscroll...
+    QEXPECT_FAIL("", "QTBUG-11127", Abort);
+    textinputObject->setAutoScroll(false);
+    pos = textinputObject->positionAt(textinputObject->width()/2);
+    diff = abs(fm.width(textinputObject->text().left(pos))-textinputObject->width()/2);
+
+    // some tollerance for different fonts.
+#ifdef Q_OS_LINUX
+    QVERIFY(diff < 2);
+#else
+    QVERIFY(diff < 5);
+#endif
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::maxLength()

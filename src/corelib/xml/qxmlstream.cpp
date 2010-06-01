@@ -560,7 +560,7 @@ void QXmlStreamReader::clear()
     chunk of XML can be added with addData(), if the XML is being read
     from a QByteArray, or by waiting for more data to arrive if the
     XML is being read from a QIODevice. Either way, atEnd() will
-    return false once more adata is available.
+    return false once more data is available.
 
     \sa hasError(), error(), device(), QIODevice::atEnd()
  */

@@ -80,13 +80,19 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
     or object) is available as the \c modelData property.  In the case of a Qt model,
-    all roles are available as named properties just like in the view classes. The
-    following example shows how to use the index property inside the instantiated
-    items.
+    all roles are available as named properties just like in the view classes. 
+
+    The following example shows how to use the \c index property inside the instantiated
+    items:
 
     \snippet doc/src/snippets/declarative/repeater-index.qml 0
-
     \image repeater-index.png
+
+    The repeater could also use the \c modelData property to reference the data for a
+    particular index:
+
+    \snippet doc/src/snippets/declarative/repeater-modeldata.qml 0
+    \image repeater-modeldata.png
 
     Items instantiated by the Repeater are inserted, in order, as
     children of the Repeater's parent.  The insertion starts immediately after

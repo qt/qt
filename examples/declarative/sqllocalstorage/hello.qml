@@ -68,4 +68,4 @@ Text {
 
     Component.onCompleted: findGreetings()
 }
-
+//![0]
