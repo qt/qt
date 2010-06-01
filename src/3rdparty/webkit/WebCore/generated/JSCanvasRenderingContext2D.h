@@ -61,6 +61,7 @@ public:
     JSC::JSValue drawImageFromRect(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue setShadow(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue createPattern(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue createImageData(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue putImageData(JSC::ExecState*, const JSC::ArgList&);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
