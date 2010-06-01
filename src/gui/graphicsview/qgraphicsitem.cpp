@@ -5687,17 +5687,19 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     }
 
-    // Find pixmap in cache, then remove to avoid deep copy when modifying.s
+    // Find pixmap in cache.
     QPixmap cachedPixmap;
     if (!QPixmapCache::find(cache->key, &cachedPixmap)) {
         update(rect);
         return;
     }
-    QPixmapCache::remove(cache->key);
 
     QRect scrollRect = (rect.isNull() ? boundingRect() : rect).toAlignedRect();
     if (!scrollRect.intersects(cache->boundingRect))
         return; // Nothing to scroll.
+
+    // Remove from cache to avoid deep copy when modifying.
+    QPixmapCache::remove(cache->key);
 
     QRegion exposed;
     cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
