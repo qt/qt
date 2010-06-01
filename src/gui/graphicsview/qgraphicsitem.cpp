@@ -5695,19 +5695,12 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
     }
     QPixmapCache::remove(cache->key);
 
+    QRect scrollRect = (rect.isNull() ? boundingRect() : rect).toAlignedRect();
+    if (!scrollRect.intersects(cache->boundingRect))
+        return; // Nothing to scroll.
+
     QRegion exposed;
-    const bool scrollEntirePixmap = rect.isNull();
-    if (scrollEntirePixmap) {
-        // Scroll entire pixmap.
-        cachedPixmap.scroll(dx, dy, cachedPixmap.rect(), &exposed);
-    } else {
-        if (!rect.intersects(cache->boundingRect))
-            return; // Nothing to scroll.
-        // Scroll sub-rect of pixmap. The rect is in item coordinates
-        // so we have to translate it to pixmap coordinates.
-        QRect scrollRect = rect.toAlignedRect();
-        cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
-    }
+    cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
 
     // Reinsert into cache.
     cache->key = QPixmapCache::insert(cachedPixmap);
@@ -5715,7 +5708,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
     // Translate the existing expose.
     for (int i = 0; i < cache->exposed.size(); ++i) {
         QRectF &e = cache->exposed[i];
-        if (!scrollEntirePixmap && !e.intersects(rect))
+        if (!rect.isNull() && !e.intersects(rect))
             continue;
         e.translate(dx, dy);
     }
