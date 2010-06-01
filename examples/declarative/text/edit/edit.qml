@@ -157,14 +157,16 @@ Rectangle {
                         if (editor.state == "selection" && drag != "") {
                             if (drag == "start") {
                                 var pos = edit.positionAt(mouse.x+x+startHandle.width/2,mouse.y+y);
-                                if (edit.selectionEnd < pos)
-                                    edit.selectionEnd = pos;
-                                edit.selectionStart = pos;
+                                var e = edit.selectionEnd;
+                                if (e < pos)
+                                    e = pos;
+                                edit.select(pos,e);
                             } else if (drag == "end") {
                                 var pos = edit.positionAt(mouse.x+x-endHandle.width/2,mouse.y+y);
-                                if (edit.selectionStart > pos)
-                                    edit.selectionStart = pos;
-                                edit.selectionEnd = pos;
+                                var s = edit.selectionStart;
+                                if (s > pos)
+                                    s = pos;
+                                edit.select(s,pos);
                             }
                         }
                     }
@@ -226,7 +228,7 @@ Rectangle {
                     height: 16
                     Text { anchors.centerIn: parent; text: "Deselect" }
                     MouseArea { anchors.fill: parent;
-                        onClicked: { edit.cursorPosition = edit.selectionEnd; edit.selectionStart = edit.selectionEnd; editor.state = "" } }
+                        onClicked: { edit.cursorPosition = edit.selectionEnd; edit.select(edit.cursorPosition,edit.cursorPosition); editor.state = "" } }
                 }
             }
         }
