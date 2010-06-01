@@ -272,6 +272,8 @@ bool QImageData::checkForAlphaPixels() const
 
     switch (format) {
 
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
     case QImage::Format_Indexed8:
         has_alpha_pixels = has_alpha_clut;
         break;
