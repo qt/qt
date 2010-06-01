@@ -46,6 +46,7 @@
 #include <qdeclarativeinfo.h>
 
 #include <QValidator>
+#include <QTextCursor>
 #include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
@@ -429,10 +430,12 @@ void QDeclarativeTextInput::setCursorPosition(int cp)
   Returns a Rect which encompasses the cursor, but which may be larger than is
   required. Ignores custom cursor delegates.
 */
-QRect QDeclarativeTextInput::cursorRect() const
+QRect QDeclarativeTextInput::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->cursorRect();
+    QRect r = d->control->cursorRect();
+    r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    return r;
 }
 
 /*!
@@ -454,15 +457,6 @@ int QDeclarativeTextInput::selectionStart() const
     return d->lastSelectionStart;
 }
 
-void QDeclarativeTextInput::setSelectionStart(int s)
-{
-    Q_D(QDeclarativeTextInput);
-    if(d->lastSelectionStart == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionStart = s;
-    d->control->setSelection(s, d->lastSelectionEnd - s);
-}
-
 /*!
     \qmlproperty int TextInput::selectionEnd
 
@@ -482,13 +476,12 @@ int QDeclarativeTextInput::selectionEnd() const
     return d->lastSelectionEnd;
 }
 
-void QDeclarativeTextInput::setSelectionEnd(int s)
+void QDeclarativeTextInput::select(int start, int end)
 {
     Q_D(QDeclarativeTextInput);
-    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
+    if (start < 0 || end < 0 || start > d->control->text().length() || end > d->control->text().length())
         return;
-    d->lastSelectionEnd = s;
-    d->control->setSelection(d->lastSelectionStart, s - d->lastSelectionStart);
+    d->control->setSelection(start, end-start);
 }
 
 /*!
@@ -835,6 +828,19 @@ void QDeclarativeTextInput::moveCursor()
 }
 
 /*!
+    \qmlmethod rect TextInput::positionToRectangle(int x)
+*/
+QRectF QDeclarativeTextInput::positionToRectangle(int x) const
+{
+    Q_D(const QDeclarativeTextInput);
+    QFontMetrics fm = QFontMetrics(d->font);
+    return QRectF(d->control->cursorToX(x)-d->hscroll,
+        0.0,
+        d->control->cursorWidth(),
+        cursorRectangle().height());
+}
+
+/*!
     \qmlmethod int TextInput::positionAt(int x)
 
     This function returns the character position at
@@ -845,10 +851,10 @@ void QDeclarativeTextInput::moveCursor()
     This means that for all x values before the first character this function returns 0,
     and for all x values after the last character this function returns text.length.
 */
-int QDeclarativeTextInput::positionAt(int x)
+int QDeclarativeTextInput::positionAt(int x) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x - d->hscroll);
+    return d->control->xToPos(x + d->hscroll);
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
@@ -1021,7 +1027,6 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
         d->hscroll -= minLB;
         offset = QPoint(d->hscroll, 0);
     }
-
     d->control->draw(p, offset, r, flags);
 
     p->restore();
@@ -1059,12 +1064,27 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     }
 }
 
+/*!
+    \qmlmethod void TextInput::selectAll()
+
+    Causes all text to be selected.
+*/
 void QDeclarativeTextInput::selectAll()
 {
     Q_D(QDeclarativeTextInput);
     d->control->setSelection(0, d->control->text().length());
 }
 
+/*!
+    \qmlmethod void TextInput::selectWord()
+
+    Causes the word closest to the current cursor position to be selected.
+*/
+void QDeclarativeTextInput::selectWord()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->selectWordAtPos(d->control->cursor());
+}
 
 /*!
     \qmlproperty bool TextInput::smooth

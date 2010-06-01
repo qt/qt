@@ -41,19 +41,20 @@
 
 import Qt 4.7
 
-Item {
-    property alias image: icon.source
-    property variant action
+//![0]
+Rectangle {
+    width: 100; height: 100
+    color: "yellow"
 
-    width: 40; height: parent.height
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 10
+        clip: true
 
-    Image {
-        id: icon; anchors.centerIn: parent
-        opacity: if(action != undefined) {action.enabled ? 1.0 : 0.4} else 0
-    }
-
-    MouseArea {
-        anchors { fill: parent; topMargin: -10; bottomMargin: -10 }
-        onClicked: action.trigger()
+        Rectangle {
+            anchors.fill: parent
+            border.width: 1
+        }
     }
 }
+//![0]

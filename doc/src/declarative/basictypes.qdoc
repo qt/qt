@@ -46,9 +46,9 @@
   QML has a set of primitive types, as listed below, that are used throughout
   the \l {QML Elements}.
 
-  The simpler types in this list can also be used for defining a new
-  \c property in a component. See \l{Extending types from QML} for the
-  list of types that can be used for custom properties.
+  Some of these types can also be used for defining 
+  \c property values in QML. See \l{Extending types from QML} for the
+  list of types that can be used for \c property values.
 
   \annotatedlist qmlbasictypes
 */
@@ -171,6 +171,13 @@
   Rectangle { color: "#800000FF" }
   \endqml
 
+  Or with the \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()},
+  \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()} functions:
+
+  \qml
+  Rectangle { color: Qt.rgba(255, 0, 0, 1) }
+  \endqml
+
   \sa {QML Basic Types}
 */
 
@@ -184,8 +191,16 @@
 
   Example:
   \qml
-  Widget { pos: "0,20" }
+  MyItem { position: "0,20" }
   \endqml
+
+  Or with the \l{Qt::point()}{Qt.point()} function:
+
+  \qml
+  MyItem { position: Qt.point(0, 20) }
+  \endqml
+
+  A point object has \c x and \c y attributes that contain the \c x and \c y values.
 
   \sa {QML Basic Types}
 */
@@ -200,8 +215,16 @@
 
   Example:
   \qml
-  Widget { size: "150x50" }
+  LayoutItem { preferredSize: "150x50" }
   \endqml
+
+  Or with the \l{Qt::size()}{Qt.size()} function:
+
+  \qml
+  MyItem { position: Qt.size(150, 50) }
+  \endqml
+
+  A size object has \c width and \c height attributes that contain the \c width and \c height values.
 
   \sa {QML Basic Types}
 */
@@ -216,8 +239,17 @@
 
   Example:
   \qml
-  Widget { geometry: "50,50,100x100" }
+  MyItem { geometry: "50,50,100x100" }
   \endqml
+
+  Or with the \l{Qt::rect()}{Qt.rect()} function:
+
+  \qml
+  MyItem { position: Qt.rect(50, 50, 100, 100) }
+  \endqml
+
+  A rect object has \c x, \c, y, \c width and \c height attributes that contain the 
+  \c x, \c y, \c width and \c height values.
 
   \sa {QML Basic Types}
 */
@@ -232,8 +264,11 @@
 
   Example:
   \qml
-  DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
+  MyDatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
   \endqml
+
+  To read a date value returned from a C++ extension class, use 
+  \l{Qt::formatDate()}{Qt.formatDate()} and \l{Qt::formatDateTime()}{Qt.formatDateTime()}.
 
   \sa {QML Basic Types}
 */
@@ -248,8 +283,11 @@
 
   Example:
   \qml
-  TimePicker { time: "14:22:15" }
+  MyTimePicker { time: "14:22:15" }
   \endqml
+
+  To read a time value returned from a C++ extension class, use 
+  \l{Qt::formatTime()}{Qt.formatTime()} and \l{Qt::formatDateTime()}{Qt.formatDateTime()}.
 
   \sa {QML Basic Types}
  */
@@ -297,9 +335,9 @@
   Actions are used like this:
 
   \qml
-  MouseArea { onClicked: MyItem.myaction.trigger() }
-  State { name: "enabled"; when: MyItem.myaction.enabled == true }
-  Text { text: MyItem.someaction.text }
+  MouseArea { onClicked: myaction.trigger() }
+  State { name: "enabled"; when: myaction.enabled == true }
+  Text { text: someaction.text }
   \endqml
 
   \sa {QML Basic Types}
@@ -327,7 +365,7 @@
     ]
   }
   \endqml
-  \c Child1, \c Child2 and \c Child3 will all be added to the children list
+  \c child1, \c child2 and \c child3 will all be added to the children list
   in the order in which they appear.
 
   \sa {QML Basic Types}
@@ -345,7 +383,7 @@
   Rotation { angle: 60; axis: "0,1,0" }
   \endqml
 
-  or with the \c{Qt.vector3d()} helper function:
+  or with the \c{Qt.vector3d()} function:
 
   \qml
   Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
@@ -356,6 +394,9 @@
   \qml
   Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
   \endqml
+
+  A vector3d object has \c x, \c, y, and \c z attributes that contain the 
+  \c x, \c y, \c z values.
 
   \sa {QML Basic Types}
 */
