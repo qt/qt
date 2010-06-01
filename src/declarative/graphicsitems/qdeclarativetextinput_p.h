@@ -72,10 +72,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedIte
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
-    Q_PROPERTY(QRect cursorRect READ cursorRect NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QRect cursorRectangle READ cursorRectangle NOTIFY cursorPositionChanged)
     Q_PROPERTY(QDeclarativeComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
-    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
-    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(int selectionStart READ selectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
     Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength NOTIFY maximumLengthChanged)
@@ -112,7 +112,8 @@ public:
     };
 
     //Auxilliary functions needed to control the TextInput from QML
-    Q_INVOKABLE int positionAt(int x);
+    Q_INVOKABLE int positionAt(int x) const;
+    Q_INVOKABLE QRectF positionToRectangle(int x) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
 
     Q_INVOKABLE void openSoftwareInputPanel();
@@ -145,13 +146,10 @@ public:
     int cursorPosition() const;
     void setCursorPosition(int cp);
 
-    QRect cursorRect() const;
+    QRect cursorRectangle() const;
 
     int selectionStart() const;
-    void setSelectionStart(int);
-
     int selectionEnd() const;
-    void setSelectionEnd(int);
 
     QString selectedText() const;
 
@@ -234,6 +232,8 @@ protected:
 
 public Q_SLOTS:
     void selectAll();
+    void selectWord();
+    void select(int start, int end);
 
 private Q_SLOTS:
     void updateSize(bool needsRedraw = true);

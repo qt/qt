@@ -92,7 +92,7 @@
     Together, the wait conditions, the mutex, and the \c numUsedBytes
     counter ensure that the producer is never more than \c BufferSize
     bytes ahead of the consumer, and that the consumer never reads
-    data that the consumer hasn't generated yet.
+    data that the producer hasn't generated yet.
 
     \section1 Producer Class
 
