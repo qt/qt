@@ -6,7 +6,7 @@ Rectangle {
     color: "yellow"
 
     Rectangle {
-        anchor.fill: parent
+        anchors.fill: parent
         anchors.margins: 10
         clip: true
 
