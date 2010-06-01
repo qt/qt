@@ -780,6 +780,9 @@ void QApplicationPrivate::construct(
 
     qt_is_gui_used = (qt_appType != QApplication::Tty);
     process_cmdline();
+    // the environment variable has the lowest precedence of runtime graphicssystem switches
+    if (graphics_system_name.isEmpty())
+        graphics_system_name = QString::fromLocal8Bit(qgetenv("QT_GRAPHICSSYSTEM"));
     // Must be called before initialize()
     qt_init(this, qt_appType
 #ifdef Q_WS_X11
@@ -1560,10 +1563,18 @@ QStyle* QApplication::setStyle(const QString& style)
     on-screen widgets and QPixmaps. The available systems are \c{"native"},
     \c{"raster"} and \c{"opengl"}.
 
-    This function call overrides both the application commandline
-    \c{-graphicssystem} switch and the configure \c{-graphicssystem} switch.
+    There are several ways to set the graphics backend, in order of decreasing
+    precedence:
+    \list
+        \o the application commandline \c{-graphicssystem} switch
+        \o QApplication::setGraphicsSystem()
+        \o the QT_GRAPHICSSYSTEM environment variable
+        \o the Qt configure \c{-graphicssystem} switch
+    \endlist
+    If the highest precedence switch sets an invalid name, the error will be
+    ignored and the default backend will be used.
 
-    \warning This function must be called before the QApplication constructor
+    \warning This function is only effective before the QApplication constructor
     is called.
 
     \note The \c{"opengl"} option is currently experimental.
