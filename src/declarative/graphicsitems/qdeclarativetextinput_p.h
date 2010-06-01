@@ -88,7 +88,6 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedIte
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
     Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode NOTIFY echoModeChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
-    Q_PROPERTY(bool showInputPanelOnFocus READ showInputPanelOnFocus WRITE setShowInputPanelOnFocus NOTIFY showInputPanelOnFocusChanged)
     Q_PROPERTY(QString passwordCharacter READ passwordCharacter WRITE setPasswordCharacter NOTIFY passwordCharacterChanged)
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
@@ -177,9 +176,6 @@ public:
     bool focusOnPress() const;
     void setFocusOnPress(bool);
 
-    bool showInputPanelOnFocus() const;
-    void setShowInputPanelOnFocus(bool showOnFocus);
-
     bool autoScroll() const;
     void setAutoScroll(bool);
 
@@ -216,7 +212,6 @@ Q_SIGNALS:
     void focusOnPressChanged(bool focusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
-    void showInputPanelOnFocusChanged(bool showOnFocus);
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
