@@ -132,6 +132,9 @@ public:
     bool visualNavigation() const;
     void setVisualNavigation(bool b);
 
+    void setVerticalMovementX(int x);
+    int verticalMovementX() const;
+
     void setKeepPositionOnInsert(bool b);
     bool keepPositionOnInsert() const;
 

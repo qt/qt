@@ -1277,6 +1277,41 @@ void QTextCursor::setVisualNavigation(bool b)
         d->visualNavigation = b;
 }
 
+
+/*!
+  \since 4.7
+
+  Sets the visual x position for vertical cursor movements.
+
+  The vertical movement x position is cleared automatically when the cursor moves horizontally, and kept
+  unchanged when the cursor moves vertically. The mechanism allows the cursor to move up and down on a
+  visually straight line with proportional fonts, and to gently "jump" over short lines.
+
+  A value of -1 indicates no predefined x position. It will then be set automatically the next time the
+  cursor moves up or down.
+
+  \sa verticalMovementX()
+  */
+void QTextCursor::setVerticalMovementX(int x)
+{
+    if (d)
+        d->x = x;
+}
+
+/*! \since 4.7
+
+  Returns the visual x position for vertical cursor movements.
+
+  A value of -1 indicates no predefined x position. It will then be set automatically the next time the
+  cursor moves up or down.
+
+  \sa setVerticalMovementX()
+  */
+int QTextCursor::verticalMovementX() const
+{
+    return d ? d->x : -1;
+}
+
 /*!
   \since 4.7
 
