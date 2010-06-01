@@ -5937,6 +5937,23 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
     if (!d->engine || str.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
+    if (tf & Qt::TextBypassShaping) {
+        // Skip harfbuzz complex shaping, shape using glyph advances only
+        int len = str.length();
+        int numGlyphs = len;
+        QVarLengthGlyphLayoutArray glyphs(len);
+        QFontEngine *fontEngine = d->state->font.d->engineForScript(QUnicodeTables::Common);
+        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0)) {
+            glyphs.resize(numGlyphs);
+            if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))
+                Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
+        }
+
+        QTextItemInt gf(glyphs, &d->state->font, fontEngine);
+        drawTextItem(p, gf);
+        return;
+    }
+
     QStackTextEngine engine(str, d->state->font);
     engine.option.setTextDirection(d->state->layoutDirection);
     if (tf & (Qt::TextForceLeftToRight|Qt::TextForceRightToLeft)) {

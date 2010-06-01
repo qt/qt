@@ -52,12 +52,16 @@ QtCore
 
  - QMetaType
     * Significantly improved performance of the type() function
+    * [QTBUG-8235] Support QEasingCurve as a built in metatype.
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
  - QXmlStreamReader
     * [QTBUG-9196] fixed crash when parsing
  - QTimer
     * singleShot with 0 timeout will now avoid allocating objects
+ - QAbstractAnimation
+    * [QTBUG-10654] Avoids animation with loopCount == 0 to change state
+      to running and stopped.
 
 QtGui
 -----
@@ -95,6 +99,8 @@ QtGui
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
       the item has focus and something else has the same shortcut sequence.
+    * [QTBUG-10574] Fixed crash when flag "QGraphicsItem::ItemIgnoresTransformations"
+      is set.
 
  - QGraphicsView
     * [QTBUG-7438] Fixed viewport cursor getting reset when releasing

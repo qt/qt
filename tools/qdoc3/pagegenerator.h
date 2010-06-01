@@ -80,10 +80,17 @@ class PageGenerator : public Generator
 
     QString naturalLanguage;
     QString outputEncoding;
-    QTextCodec *outputCodec;
+    QTextCodec* outputCodec;
+    bool parseArg(const QString& src,
+                  const QString& tag,
+                  int* pos,
+                  int n,
+                  QStringRef* contents,
+                  QStringRef* par1 = 0,
+                  bool debug = false);
 
  private:
-    QStack<QTextStream *> outStreamStack;
+    QStack<QTextStream*> outStreamStack;
 };
 
 QT_END_NAMESPACE
