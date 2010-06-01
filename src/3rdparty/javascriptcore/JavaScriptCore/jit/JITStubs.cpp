@@ -1094,6 +1094,10 @@ RVCT()
 #define DEFINE_STUB_FUNCTION(rtype, op) rtype JIT_STUB cti_##op(STUB_ARGS_DECLARATION)
 #endif
 
+#if COMPILER(GCC)
+#pragma GCC visibility push(hidden)
+#endif
+
 DEFINE_STUB_FUNCTION(EncodedJSValue, op_convert_this)
 {
     STUB_INIT_STACK_FRAME(stackFrame);
@@ -3204,6 +3208,10 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, to_object)
     CallFrame* callFrame = stackFrame.callFrame;
     return JSValue::encode(stackFrame.args[0].jsValue().toObject(callFrame));
 }
+
+#if COMPILER(GCC)
+#pragma GCC visibility pop
+#endif
 
 } // namespace JSC
 
