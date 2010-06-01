@@ -112,7 +112,8 @@ public:
     int anchor;
     int adjusted_anchor;
     int currentCharFormat;
-    bool visualNavigation;
+    uint visualNavigation : 1;
+    uint keepPositionOnInsert : 1;
 };
 
 QT_END_NAMESPACE

@@ -226,9 +226,9 @@ void tst_QTextCursor::navigation1()
     cursor.movePosition(QTextCursor::End);
     cursor.insertBlock();
     {
-	int oldPos = cursor.position();
-	cursor.movePosition(QTextCursor::End);
-	QVERIFY(cursor.position() == oldPos);
+        int oldPos = cursor.position();
+        cursor.movePosition(QTextCursor::End);
+        QVERIFY(cursor.position() == oldPos);
     }
     QVERIFY(cursor.atBlockStart());
     QVERIFY(cursor.position() == 9);
@@ -1699,8 +1699,10 @@ void tst_QTextCursor::adjustCursorsOnInsert()
     QCOMPARE(selection.position(), posAfter+1);
     doc->undo();
 
+    selection.setKeepPositionOnInsert(true);
     cursor.setPosition(posAfter);
     cursor.insertText(QLatin1String("x"));
+    selection.setKeepPositionOnInsert(false);
     QCOMPARE(selection.anchor(), posBefore);
     QCOMPARE(selection.position(), posAfter);
     doc->undo();
