@@ -160,6 +160,8 @@ void QDeclarativeGradient::doUpdate()
     You can also create rounded rectangles using the \l radius property.
 
     \qml
+    import Qt 4.7
+
     Rectangle {
         width: 100
         height: 100
@@ -206,7 +208,7 @@ void QDeclarativeRectangle::doUpdate()
     border smoothness. Also, the border is rendered evenly on either side of the 
     rectangle's boundaries, and the spare pixel is rendered to the right and below the
     rectangle (as documented for QRect rendering). This can cause unintended effects if 
-    \c border.width is 1 and the rectangle is \l{clip}{clipped} by a parent item:
+    \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
    
     \table
     \row

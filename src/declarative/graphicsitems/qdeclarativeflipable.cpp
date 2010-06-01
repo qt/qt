@@ -74,7 +74,7 @@ public:
     \inherits Item
 
     Flipable is an item that can be visibly "flipped" between its front and
-    back sides. It is used together with Rotation and State/Transition to
+    back sides. It is used together with \l Rotation and \l {State}/\l {Transition} to
     produce a flipping effect.
 
     Here is a Flipable that flips whenever it is clicked:
@@ -83,10 +83,12 @@ public:
 
     \image flipable.gif
 
-    The Rotation element is used to specify the angle and axis of the flip,
-    and the State defines the changes in angle which produce the flipping
-    effect. Finally, the Transition creates the animation that changes the
+    The \l Rotation element is used to specify the angle and axis of the flip,
+    and the \l State defines the changes in angle which produce the flipping
+    effect. Finally, the \l Transition creates the animation that changes the
     angle over one second.
+    
+    \sa {declarative/ui-components/flipable}{Flipable example}
 */
 
 /*!

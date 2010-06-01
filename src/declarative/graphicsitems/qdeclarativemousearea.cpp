@@ -172,17 +172,21 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     A MouseArea is typically used in conjunction with a visible item,
     where the MouseArea effectively 'proxies' mouse handling for that
-    item. For example, we can put a MouseArea in a Rectangle that changes
-    the Rectangle color to red when clicked:
-    \snippet doc/src/snippets/declarative/mouseregion.qml 0
+    item. For example, we can put a MouseArea in a \l Rectangle that changes
+    the \l Rectangle color to red when clicked:
+
+    \snippet doc/src/snippets/declarative/mousearea.qml import
+    \codeline
+    \snippet doc/src/snippets/declarative/mousearea.qml intro
 
     Many MouseArea signals pass a \l {MouseEvent}{mouse} parameter that contains
     additional information about the mouse event, such as the position, button,
     and any key modifiers.
 
-    Below we have the previous
-    example extended so as to give a different color when you right click.
-    \snippet doc/src/snippets/declarative/mouseregion.qml 1
+    Here is an extension of the previous example that produces a different
+    color when the area is right clicked:
+
+    \snippet doc/src/snippets/declarative/mousearea.qml intro-extended
 
     For basic key handling, see the \l {Keys}{Keys attached property}.
 
@@ -238,7 +242,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     releasing is also considered a click).
 
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
@@ -262,7 +266,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     This handler is called when there is a release.
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
@@ -282,7 +286,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     This handler is called when there is a double-click (a press followed by a release followed by a press).
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
@@ -328,10 +332,10 @@ QDeclarativeMouseArea::~QDeclarativeMouseArea()
     while a button is pressed, and will remain valid as long as the button is held
     even if the mouse is moved outside the area.
 
-    If hoverEnabled is true then these properties will be valid:
+    If hoverEnabled is true then these properties will be valid when:
     \list
-        \i when no button is pressed, but the mouse is within the MouseArea (containsMouse is true).
-        \i if a button is pressed and held, even if it has since moved out of the area.
+        \i no button is pressed, but the mouse is within the MouseArea (containsMouse is true).
+        \i a button is pressed and held, even if it has since moved out of the area.
     \endlist
 
     The coordinates are relative to the MouseArea.
@@ -378,18 +382,7 @@ void QDeclarativeMouseArea::setEnabled(bool a)
     \endlist
 
     The code below displays "right" when the right mouse buttons is pressed:
-    \code
-    Text {
-        text: mr.pressedButtons & Qt.RightButton ? "right" : ""
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        MouseArea {
-            id: mr
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            anchors.fill: parent
-        }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/mousearea.qml mousebuttons
 
     \sa acceptedButtons
 */
@@ -705,7 +698,7 @@ void QDeclarativeMouseArea::setHovered(bool h)
     MouseArea { acceptedButtons: Qt.LeftButton | Qt.RightButton }
     \endcode
 
-    The default is to accept the Left button.
+    The default value is \c Qt.LeftButton.
 */
 Qt::MouseButtons QDeclarativeMouseArea::acceptedButtons() const
 {
@@ -765,17 +758,19 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \qmlproperty real MouseArea::drag.minimumY
     \qmlproperty real MouseArea::drag.maximumY
 
-    drag provides a convenient way to make an item draggable.
+    \c drag provides a convenient way to make an item draggable.
 
     \list
-    \i \c target specifies the item to drag.
-    \i \c active specifies if the target item is being currently dragged.
-    \i \c axis specifies whether dragging can be done horizontally (Drag.XAxis), vertically (Drag.YAxis), or both (Drag.XandYAxis)
-    \i the minimum and maximum properties limit how far the target can be dragged along the corresponding axes.
+    \i \c drag.target specifies the item to drag.
+    \i \c drag.active specifies if the target item is currently being dragged.
+    \i \c drag.axis specifies whether dragging can be done horizontally (\c Drag.XAxis), vertically (\c Drag.YAxis), or both (\c Drag.XandYAxis)
+    \i \c drag.minimum and \c drag.maximum limit how far the target can be dragged along the corresponding axes.
     \endlist
 
-    The following example uses drag to reduce the opacity of an image as it moves to the right:
-    \snippet doc/src/snippets/declarative/drag.qml 0
+    The following example displays an image that can be dragged along the X-axis. The opacity
+    of the image is reduced when it is dragged to the right.
+
+    \snippet doc/src/snippets/declarative/mousearea.qml drag
 */
 
 QT_END_NAMESPACE

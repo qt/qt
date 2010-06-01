@@ -119,6 +119,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     A Text item can display both plain and rich text. For example:
 
     \qml
+    import Qt 4.7
+
     Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
     \endqml
