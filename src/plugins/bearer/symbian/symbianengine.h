@@ -87,7 +87,23 @@ public:
 
     QString bearerName() const;
 
-    QNetworkConfigurationPrivatePointer serviceNetworkPtr;
+    inline TUint32 numericIdentifier() const
+    {
+        QMutexLocker locker(&mutex);
+        return numericId;
+    }
+
+    inline TUint connectionIdentifier() const
+    {
+        QMutexLocker locker(&mutex);
+        return connectionId;
+    }
+
+    inline QString configMappingName() const
+    {
+        QMutexLocker locker(&mutex);
+        return mappingName;
+    }
 
     QString mappingName;
 
@@ -196,11 +212,11 @@ private: // Data
     TBool              iInitOk;
     TBool              iUpdateGoingOn;
     TBool              iIgnoringUpdates;
-    TUint              iTimeToWait;
-    QEventLoop*        iIgnoreEventLoop;
 
     AccessPointsAvailabilityScanner* ipAccessPointsAvailabilityScanner;
-    
+
+    QNetworkConfigurationPrivatePointer defaultConfig;
+
     friend class QNetworkSessionPrivate;
     friend class AccessPointsAvailabilityScanner;
     friend class QNetworkSessionPrivateImpl;

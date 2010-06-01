@@ -67,7 +67,7 @@
     available through the edit menu. The user can also select a command
     from the undo view.
 
-    We use the \l{The Graphics View Framework}{graphics view
+    We use the \l{Graphics View Framework}{graphics view
     framework} to implement the diagram. We only treat the related
     code briefly as the framework has examples of its own (e.g., the
     \l{Diagram Scene Example}).

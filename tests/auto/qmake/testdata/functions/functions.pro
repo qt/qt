@@ -53,7 +53,7 @@ include( infiletest.pro, "", true )
 
 #replace
 VERSION=1.0.0
-VERSION_replaced=$$replace(VERSION,\.,_)
+VERSION_replaced=$$replace(VERSION,\\.,_)
 !isEqual(VERSION_replaced, 1_0_0) {
    message( "FAILED: replace function: $$VERSION_replaced" )
 }

@@ -475,7 +475,7 @@ void tst_QAccessibility::eventTest()
     QVERIFY_EVENT(button, 0, QAccessible::ObjectShow);
     button->setFocus(Qt::MouseFocusReason);
     QTestAccessibility::clearEvents();
-    QTest::mouseClick(button, Qt::LeftButton, 0, QPoint(button->width()-7,button->height()-5));
+    QTest::mouseClick(button, Qt::LeftButton, 0);
     QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
     QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
 

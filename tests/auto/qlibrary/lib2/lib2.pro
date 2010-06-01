@@ -38,9 +38,9 @@ symbian-abld: {
     TARGET.CAPABILITY=ALL -TCB
     FIXEDROOT = $$replace(EPOCROOT,/,\\)
 	QMAKE_POST_LINK = \
-    copy /Y $${FIXEDROOT}epoc32\release\\$(PLATFORM)\\$(CFG)\mylib.dll  $${FIXEDROOT}epoc32\release\\$(PLATFORM)\\$(CFG)\mylib.dl2 && \
-    copy /Y $${FIXEDROOT}epoc32\release\\$(PLATFORM)\\$(CFG)\mylib.dll  $${FIXEDROOT}epoc32\release\\$(PLATFORM)\\$(CFG)\system.trolltech.test.mylib.dll && \
-    IF NOT "$(PLATFORM)==WINSCW" copy /Y $${FIXEDROOT}epoc32\release\\$(PLATFORM)\\$(CFG)\mylib.dll  ..\tst\mylib.dl2
+    copy /Y $${FIXEDROOT}epoc32\\release\\$(PLATFORM)\\$(CFG)\\mylib.dll  $${FIXEDROOT}epoc32\\release\\$(PLATFORM)\\$(CFG)\\mylib.dl2 && \
+    copy /Y $${FIXEDROOT}epoc32\\release\\$(PLATFORM)\\$(CFG)\\mylib.dll  $${FIXEDROOT}epoc32\\release\\$(PLATFORM)\\$(CFG)\\system.trolltech.test.mylib.dll && \
+    IF NOT "$(PLATFORM)==WINSCW" copy /Y $${FIXEDROOT}epoc32\\release\\$(PLATFORM)\\$(CFG)\\mylib.dll  ..\\tst\\mylib.dl2
 }
 
 symbian-sbsv2: {

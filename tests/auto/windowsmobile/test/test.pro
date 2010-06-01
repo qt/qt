@@ -11,7 +11,7 @@ wincewm*: {
    addFiles.sources = $$OUT_PWD/../testQMenuBar/*.exe
                 
 
-   addFiles.path = "\Program Files\tst_windowsmobile"
+   addFiles.path = "\\Program Files\\tst_windowsmobile"
    DEPLOYMENT += addFiles
 }
 

@@ -86,14 +86,14 @@ defineReplace(imageCollectionCmd) {
     for(image, $$list($$split(1))) {
            EMBEDDED_IMAGES += $$image
            count(EMBEDDED_IMAGES, 5) {
-                isEmpty(RET): RET += echo $$EMBEDDED_IMAGES > images.tmp $$escape_expand(\n\t)
-                else:         RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\n\t)
+                isEmpty(RET): RET += echo $$EMBEDDED_IMAGES > images.tmp $$escape_expand(\\n\\t)
+                else:         RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\\n\\t)
                 unset(EMBEDDED_IMAGES)
            }
     }
-    !isEmpty(EMBEDDED_IMAGES):RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\n\t)
+    !isEmpty(EMBEDDED_IMAGES):RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\\n\\t)
     !isEmpty(RET) {
-        RET += $$QMAKE_UIC3 -embed $$TARGET -f images.tmp -o $$2 $$escape_expand(\n\t)
+        RET += $$QMAKE_UIC3 -embed $$TARGET -f images.tmp -o $$2 $$escape_expand(\\n\\t)
         return($$RET)
     }
     return($$QMAKE_UIC3 -embed $$TARGET $$1 -o $$2)

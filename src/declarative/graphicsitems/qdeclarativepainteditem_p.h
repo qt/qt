@@ -93,6 +93,7 @@ protected:
                                 const QVariant &value);
 
     void setCacheFrozen(bool);
+    QRectF boundingRect() const;
 
 Q_SIGNALS:
     void fillColorChanged();

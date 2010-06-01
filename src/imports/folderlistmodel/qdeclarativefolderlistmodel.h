@@ -47,6 +47,8 @@
 #include <QUrl>
 #include <QAbstractListModel>
 
+#ifndef QT_NO_DIRMODEL
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -151,5 +153,7 @@ QML_DECLARE_TYPE(QDeclarativeFolderListModel)
 //![qml decl]
 
 QT_END_HEADER
+
+#endif // QT_NO_DIRMODEL
 
 #endif // QDECLARATIVEFOLDERLISTMODEL_H

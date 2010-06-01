@@ -685,11 +685,7 @@ public:
     struct Data {
         quint16 index;
         quint16 numberOptions;
-    }
-#if (defined(__arm__) || defined(__ARMEL__))
-        Q_PACKED
-#endif
-        ;
+    };
 private:
     friend struct QLocalePrivate;
     // ### We now use this field to pack an index into locale_data and NumberOptions.

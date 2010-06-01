@@ -972,7 +972,7 @@ MakefileGenerator::writePrlFile(QTextStream &t)
             libs << "QMAKE_LIBS_PRIVATE";
         t << "QMAKE_PRL_LIBS = ";
         for(QStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
-            t << project->values((*it)).join(" ") << " ";
+            t << project->values((*it)).join(" ").replace('\\', "\\\\") << " ";
         t << endl;
     }
 }

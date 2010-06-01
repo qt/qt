@@ -93,73 +93,75 @@ struct symbianToISO {
 
 
 /*
-  Mapping from Symbian to ISO locale
+  Mapping from Symbian to ISO locale.
+  NOTE: This array should be sorted by the first column!
 */
 static const symbianToISO symbian_to_iso_list[] = {
-    { ELangEnglish,             "en_GB" },
-    { ELangFrench,              "fr_FR" },
-    { ELangGerman,              "de_DE" },
-    { ELangSpanish,             "es_ES" },
-    { ELangItalian,             "it_IT" },
-    { ELangSwedish,             "sv_SE" },
-    { ELangDanish,              "da_DK" },
-    { ELangNorwegian,           "no_NO" },
-    { ELangNorwegianNynorsk,    "nn_NO" },
-    { ELangFinnish,             "fi_FI" },
-    { ELangAmerican,            "en_US" },
-    { ELangPortuguese,          "pt_PT" },
-    { ELangTurkish,             "tr_TR" },
-    { ELangIcelandic,           "is_IS" },
-    { ELangRussian,             "ru_RU" },
-    { ELangHungarian,           "hu_HU" },
-    { ELangDutch,               "nl_NL" },
-    { ELangBelgianFlemish,      "nl_BE" },
-    { ELangCzech,               "cs_CZ" },
-    { ELangSlovak,              "sk_SK" },
-    { ELangPolish,              "pl_PL" },
-    { ELangSlovenian,           "sl_SI" },
-    { ELangTaiwanChinese,       "zh_TW" },
-    { ELangHongKongChinese,     "zh_HK" },
-    { ELangPrcChinese,          "zh_CN" },
-    { ELangJapanese,            "ja_JP" },
-    { ELangThai,                "th_TH" },
-    { ELangArabic,              "ar_AE" },
-    { ELangTagalog,             "tl_PH" },
-    { ELangBulgarian,           "bg_BG" },
-    { ELangCatalan,             "ca_ES" },
-    { ELangCroatian,            "hr_HR" },
-    { ELangEstonian,            "et_EE" },
-    { ELangFarsi,               "fa_IR" },
-    { ELangCanadianFrench,      "fr_CA" },
-    { ELangGreek,               "el_GR" },
-    { ELangHebrew,              "he_IL" },
-    { ELangHindi,               "hi_IN" },
-    { ELangIndonesian,          "id_ID" },
-    { ELangLatvian,             "lv_LV" },
-    { ELangLithuanian,          "lt_LT" },
-    { ELangMalay,               "ms_MY" },
-    { ELangBrazilianPortuguese, "pt_BR" },
-    { ELangRomanian,            "ro_RO" },
-    { ELangSerbian,             "sr_RS" },
-    { ELangLatinAmericanSpanish,"es_419" },
-    { ELangUkrainian,           "uk_UA" },
-    { ELangUrdu,                "ur_PK" }, // India/Pakistan
-    { ELangVietnamese,          "vi_VN" },
-    { ELangKorean,              "ko_KO" },
+    { ELangEnglish,             "en_GB" },  // 1
+    { ELangFrench,              "fr_FR" },  // 2
+    { ELangGerman,              "de_DE" },  // 3
+    { ELangSpanish,             "es_ES" },  // 4
+    { ELangItalian,             "it_IT" },  // 5
+    { ELangSwedish,             "sv_SE" },  // 6
+    { ELangDanish,              "da_DK" },  // 7
+    { ELangNorwegian,           "no_NO" },  // 8
+    { ELangFinnish,             "fi_FI" },  // 9
+    { ELangAmerican,            "en_US" },  // 10
+    { ELangPortuguese,          "pt_PT" },  // 13
+    { ELangTurkish,             "tr_TR" },  // 14
+    { ELangIcelandic,           "is_IS" },  // 15
+    { ELangRussian,             "ru_RU" },  // 16
+    { ELangHungarian,           "hu_HU" },  // 17
+    { ELangDutch,               "nl_NL" },  // 18
+    { ELangBelgianFlemish,      "nl_BE" },  // 19
+    { ELangCzech,               "cs_CZ" },  // 25
+    { ELangSlovak,              "sk_SK" },  // 26
+    { ELangPolish,              "pl_PL" },  // 27
+    { ELangSlovenian,           "sl_SI" },  // 28
+    { ELangTaiwanChinese,       "zh_TW" },  // 29
+    { ELangHongKongChinese,     "zh_HK" },  // 30
+    { ELangPrcChinese,          "zh_CN" },  // 31
+    { ELangJapanese,            "ja_JP" },  // 32
+    { ELangThai,                "th_TH" },  // 33
+    { ELangArabic,              "ar_AE" },  // 37
+    { ELangTagalog,             "tl_PH" },  // 39
+    { ELangBulgarian,           "bg_BG" },  // 42
+    { ELangCatalan,             "ca_ES" },  // 44
+    { ELangCroatian,            "hr_HR" },  // 45
+    { ELangEstonian,            "et_EE" },  // 49
+    { ELangFarsi,               "fa_IR" },  // 50
+    { ELangCanadianFrench,      "fr_CA" },  // 51
+    { ELangGreek,               "el_GR" },  // 54
+    { ELangHebrew,              "he_IL" },  // 57
+    { ELangHindi,               "hi_IN" },  // 58
+    { ELangIndonesian,          "id_ID" },  // 59
+    { ELangKorean,              "ko_KO" },  // 65
+    { ELangLatvian,             "lv_LV" },  // 67
+    { ELangLithuanian,          "lt_LT" },  // 68
+    { ELangMalay,               "ms_MY" },  // 70
+    { ELangNorwegianNynorsk,    "nn_NO" },  // 75
+    { ELangBrazilianPortuguese, "pt_BR" },  // 76
+    { ELangRomanian,            "ro_RO" },  // 78
+    { ELangSerbian,             "sr_RS" },  // 79
+    { ELangLatinAmericanSpanish,"es_419" }, // 83
+    { ELangUkrainian,           "uk_UA" },  // 93
+    { ELangUrdu,                "ur_PK" },  // 94 - India/Pakistan
+    { ELangVietnamese,          "vi_VN" },  // 96
 #ifdef __E32LANG_H__
 // 5.0
-    { ELangBasque,              "eu_ES" },
-    { ELangGalician,            "gl_ES" },
+    { ELangBasque,              "eu_ES" },  // 102
+    { ELangGalician,            "gl_ES" },  // 103
 #endif
 #if !defined(__SERIES60_31__)
-    { ELangEnglish_Apac,        "en" },
-    { ELangEnglish_Taiwan,      "en_TW" },
-    { ELangEnglish_HongKong,    "en_HK" },
-    { ELangEnglish_Prc,         "en_CN" },
-    { ELangEnglish_Japan,       "en_JP"},
-    { ELangEnglish_Thailand,    "en_TH" },
-    { ELangMalay_Apac,          "ms" }
+    { ELangEnglish_Apac,        "en" },     // 129
+    { ELangEnglish_Taiwan,      "en_TW" },  // 157 ### Not supported by CLDR
+    { ELangEnglish_HongKong,    "en_HK" },  // 158
+    { ELangEnglish_Prc,         "en_CN" },  // 159 ### Not supported by CLDR
+    { ELangEnglish_Japan,       "en_JP"},   // 160 ### Not supported by CLDR
+    { ELangEnglish_Thailand,    "en_TH" },  // 161 ### Not supported by CLDR
+    { ELangMalay_Apac,          "ms" },     // 326
 #endif
+    { 327/*ELangIndonesian_Apac*/,"id_ID" } // 327 - appeared in Symbian^3
 };
 
 /*!

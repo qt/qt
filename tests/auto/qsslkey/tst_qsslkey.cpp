@@ -50,7 +50,7 @@
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 // Current path (C:\private\<UID>) contains only ascii chars
-#define SRCDIR QDir::currentPath().toAscii()
+#define SRCDIR "."
 #endif
 
 class tst_QSslKey : public QObject
@@ -167,9 +167,9 @@ void tst_QSslKey::emptyConstructor()
     QCOMPARE(key, key2);
 }
 
-Q_DECLARE_METATYPE(QSsl::KeyAlgorithm);
-Q_DECLARE_METATYPE(QSsl::KeyType);
-Q_DECLARE_METATYPE(QSsl::EncodingFormat);
+Q_DECLARE_METATYPE(QSsl::KeyAlgorithm)
+Q_DECLARE_METATYPE(QSsl::KeyType)
+Q_DECLARE_METATYPE(QSsl::EncodingFormat)
 
 void tst_QSslKey::createPlainTestRows()
 {

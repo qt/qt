@@ -86,8 +86,8 @@ public:
     virtual int metric(QPaintDevice::PaintDeviceMetric m) const { return QDirectFBPaintDevice::metric(m); }
 
     inline QImage::Format pixelFormat() const { return imageFormat; }
-    static bool hasAlphaChannel(const QImage &img);
     inline bool hasAlphaChannel() const { return alpha; }
+    static bool hasAlphaChannel(const QImage &img, Qt::ImageConversionFlags flags = Qt::AutoColor);
 private:
 #ifdef QT_DIRECTFB_IMAGEPROVIDER
     bool fromDataBufferDescription(const DFBDataBufferDescription &dataBuffer);

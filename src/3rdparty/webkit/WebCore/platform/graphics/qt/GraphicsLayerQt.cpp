@@ -1191,9 +1191,9 @@ public:
             transformMatrix.blend(m_sourceMatrix, progress);
         }
 
+        m_layer.data()->m_layer->setTransform(transformMatrix);
+        // We force the actual opacity change, otherwise it would be ignored because of the animation.
         m_layer.data()->setBaseTransform(transformMatrix);
-        if (m_fillsForwards)
-            m_layer.data()->m_layer->setTransform(m_layer.data()->m_baseTransform);
     }
 
     virtual void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
@@ -1231,18 +1231,19 @@ public:
         if (m_fillsForwards)
             setCurrentTime(1);
     }
+
     virtual void applyFrame(const qreal& fromValue, const qreal& toValue, qreal progress)
     {
         qreal opacity = qBound(qreal(0), fromValue + (toValue-fromValue)*progress, qreal(1));
 
         // FIXME: this is a hack, due to a probable QGraphicsScene bug.
         // Without this the opacity change doesn't always have immediate effect.
-        if (!m_layer.data()->opacity() && opacity)
+        if (m_layer.data()->scene() && !m_layer.data()->opacity() && opacity)
             m_layer.data()->scene()->update();
 
+        m_layer.data()->m_layer->setOpacity(opacity);
+        // We force the actual opacity change, otherwise it would be ignored because of the animation.
         m_layer.data()->setOpacity(opacity);
-        if (m_fillsForwards)
-            m_layer.data()->m_layer->setOpacity(opacity);
     }
 
     virtual void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)

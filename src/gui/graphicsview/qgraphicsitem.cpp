@@ -1275,14 +1275,14 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
             QTransform matrix = childd->transformToParent();
             if (x)
                 matrix *= *x;
-            *rect |= matrix.mapRect(child->boundingRect());
+            *rect |= matrix.mapRect(child->d_ptr->effectiveBoundingRect());
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(&matrix, rect);
         } else {
             if (x)
-                *rect |= x->mapRect(child->boundingRect());
+                *rect |= x->mapRect(child->d_ptr->effectiveBoundingRect());
             else
-                *rect |= child->boundingRect();
+                *rect |= child->d_ptr->effectiveBoundingRect();
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(x, rect);
         }
@@ -5687,32 +5687,28 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     }
 
+    // Find pixmap in cache, then remove to avoid deep copy when modifying.s
     QPixmap cachedPixmap;
     if (!QPixmapCache::find(cache->key, &cachedPixmap)) {
         update(rect);
         return;
     }
+    QPixmapCache::remove(cache->key);
+
+    QRect scrollRect = (rect.isNull() ? boundingRect() : rect).toAlignedRect();
+    if (!scrollRect.intersects(cache->boundingRect))
+        return; // Nothing to scroll.
 
     QRegion exposed;
-    const bool scrollEntirePixmap = rect.isNull();
-    if (scrollEntirePixmap) {
-        // Scroll entire pixmap.
-        cachedPixmap.scroll(dx, dy, cachedPixmap.rect(), &exposed);
-    } else {
-        if (!rect.intersects(cache->boundingRect))
-            return; // Nothing to scroll.
-        // Scroll sub-rect of pixmap. The rect is in item coordinates
-        // so we have to translate it to pixmap coordinates.
-        QRect scrollRect = rect.toAlignedRect();
-        cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
-    }
+    cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
 
-    QPixmapCache::replace(cache->key, cachedPixmap);
+    // Reinsert into cache.
+    cache->key = QPixmapCache::insert(cachedPixmap);
 
     // Translate the existing expose.
     for (int i = 0; i < cache->exposed.size(); ++i) {
         QRectF &e = cache->exposed[i];
-        if (!scrollEntirePixmap && !e.intersects(rect))
+        if (!rect.isNull() && !e.intersects(rect))
             continue;
         e.translate(dx, dy);
     }

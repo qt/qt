@@ -178,7 +178,7 @@ The \c createBlock() function creates a block from the \c Block.qml file
 and moves the new block to its position on the game canvas. This involves several steps:
 
 \list
-\o \l {Qt.createComponent(url file)}{Qt.createComponent()} is called to generate an element from \c Block.qml.
+\o \l {Qt::createComponent()}{Qt.createComponent()} is called to generate an element from \c Block.qml.
    If the component is ready, we can call \c createObject() to create an instance of the \c Block item.
 \o If \c createObject() returned null (i.e. if there was an error while
    loading the object), print the error information.
@@ -468,6 +468,6 @@ By following this tutorial you've seen how you can write a fully functional appl
 \endlist
 
 There is so much more to learn about QML that we haven't been able to cover in this tutorial. Check out all the
-demos and examples and the \l {Declarative UI Using QML}{documentation} to find out all the things you can do with QML!
+demos and examples and the \l {Qt Quick}{documentation} to see all the things you can do with QML!
 
 */

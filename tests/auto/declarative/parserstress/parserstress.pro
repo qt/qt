@@ -6,7 +6,7 @@ SOURCES += tst_parserstress.cpp
 
 symbian: {
     DEFINES += SRCDIR=\".\"
-    importFiles.sources = ..\..\qscriptjstestsuite\tests
+    importFiles.sources = ..\\..\\qscriptjstestsuite\\tests
     importFiles.path = 
     DEPLOYMENT = importFiles
 } else {

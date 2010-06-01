@@ -169,6 +169,8 @@ public:
         AlignLeft,
         AlignRight,
 
+        StopScheduledPageRefresh,
+
         WebActionCount
     };
 

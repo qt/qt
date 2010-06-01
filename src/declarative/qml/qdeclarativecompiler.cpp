@@ -240,6 +240,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: color expected"));
             }
             break;
+#ifndef QT_NO_TEXTDATE
         case QVariant::Date:
             {
             bool ok;
@@ -261,6 +262,7 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             if (!ok) COMPILE_EXCEPTION(v, tr("Invalid property assignment: datetime expected"));
             }
             break;
+#endif // QT_NO_TEXTDATE
         case QVariant::Point:
         case QVariant::PointF:
             {
@@ -414,6 +416,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.storeColor.value = c.rgba();
             }
             break;
+#ifndef QT_NO_TEXTDATE
         case QVariant::Date:
             {
             QDate d = QDeclarativeStringConverters::dateFromString(string);
@@ -447,6 +450,7 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.storeDateTime.valueIndex = index;
             }
             break;
+#endif // QT_NO_TEXTDATE
         case QVariant::Point:
         case QVariant::PointF:
             {

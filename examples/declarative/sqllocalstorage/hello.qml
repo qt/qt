@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
 Text {
@@ -68,4 +68,4 @@ Text {
 
     Component.onCompleted: findGreetings()
 }
-
+//![0]

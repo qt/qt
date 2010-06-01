@@ -42,6 +42,7 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
+#include <QtCore/qatomic.h>
 #include <QtCore/qdebug.h>
 
 #include "qegl_p.h"
@@ -49,6 +50,34 @@
 
 
 QT_BEGIN_NAMESPACE
+
+
+/*
+    QEglContextTracker is used to track the EGL contexts that we
+    create internally in Qt, so that we can call eglTerminate() to
+    free additional EGL resources when the last context is destroyed.
+*/
+
+class QEglContextTracker
+{
+public:
+    static void ref() { contexts.ref(); }
+    static void deref() {
+        if (!contexts.deref()) {
+            eglTerminate(QEgl::display());
+            displayOpen = 0;
+        }
+    }
+    static void setDisplayOpened() { displayOpen = 1; }
+    static bool displayOpened() { return displayOpen; }
+
+private:
+    static QBasicAtomicInt contexts;
+    static QBasicAtomicInt displayOpen;
+};
+
+QBasicAtomicInt QEglContextTracker::contexts = Q_BASIC_ATOMIC_INITIALIZER(0);
+QBasicAtomicInt QEglContextTracker::displayOpen = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 // Current GL and VG contexts.  These are used to determine if
 // we can avoid an eglMakeCurrent() after a call to lazyDoneCurrent().
@@ -66,6 +95,7 @@ QEglContext::QEglContext()
     , ownsContext(true)
     , sharing(false)
 {
+    QEglContextTracker::ref();
 }
 
 QEglContext::~QEglContext()
@@ -76,6 +106,7 @@ QEglContext::~QEglContext()
         currentGLContext = 0;
     if (currentVGContext == this)
         currentVGContext = 0;
+    QEglContextTracker::deref();
 }
 
 bool QEglContext::isValid() const
@@ -505,11 +536,9 @@ static _eglDestroyImageKHR qt_eglDestroyImageKHR = 0;
 EGLDisplay QEgl::display()
 {
     static EGLDisplay dpy = EGL_NO_DISPLAY;
-    static bool openedDisplay = false;
-
-    if (!openedDisplay) {
+    if (!QEglContextTracker::displayOpened()) {
         dpy = eglGetDisplay(nativeDisplay());
-        openedDisplay = true;
+        QEglContextTracker::setDisplayOpened();
         if (dpy == EGL_NO_DISPLAY) {
             qWarning("QEgl::display(): Falling back to EGL_DEFAULT_DISPLAY");
             dpy = eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));

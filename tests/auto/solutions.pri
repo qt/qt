@@ -7,10 +7,10 @@
 SOLUTIONBASEDIR = $$(SOLUTIONBASEDIR)
 
 # strip the trailing "..."
-# SOLUTIONBASEDIR ~= s/\.\.\.$//
+# SOLUTIONBASEDIR ~= s/\\.\\.\\.$//
 
 # replace \ with /
-# win32:SOLUTIONBASEDIR ~= s.\\./.g
+# win32:SOLUTIONBASEDIR ~= s.\\\\./.g
 
 isEmpty(SOLUTIONBASEDIR):DEFINES += QT_NO_SOLUTIONS
 

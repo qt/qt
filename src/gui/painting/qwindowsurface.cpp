@@ -43,6 +43,7 @@
 #include <qwidget.h>
 #include <private/qwidget_p.h>
 #include <private/qbackingstore_p.h>
+#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -116,8 +117,10 @@ public:
 QWindowSurface::QWindowSurface(QWidget *window)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
-    if (window)
-        window->setWindowSurface(this);
+    if (!QApplicationPrivate::runtime_graphics_system) {
+        if(window)
+            window->setWindowSurface(this);
+    }
 }
 
 /*!

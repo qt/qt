@@ -152,6 +152,9 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
     case LAUNCH:
         this->launchExample(this->currentInfo);
         break;
+    case LAUNCH_QML:
+        this->launchQmlExample(this->currentInfo);
+        break;
     case DOCUMENTATION:
         this->showDocInAssistant(this->currentInfo);
         break;
@@ -169,6 +172,8 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
         this->score->queueMovie(this->currentInfo + " -out");
         this->score->queueMovie(this->currentInfo + " -buttons -out", Score::NEW_ANIMATION_ONLY);
         this->score->queueMovie("back -out", Score::ONLY_IF_VISIBLE);
+        if(qmlRoot)
+            qmlRoot->setProperty("show", QVariant(false));
         // book-keeping:
         this->currentMenuCode = ROOT;
         this->currentMenu = menuName + " -menu1";
@@ -191,6 +196,8 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
         this->score->queueMovie(this->currentMenu + " -out", Score::FROM_START, Score::LOCK_ITEMS);
         this->score->queueMovie(this->currentMenuButtons + " -out", Score::FROM_START, Score::LOCK_ITEMS);
         this->score->queueMovie(this->currentInfo + " -out");
+        if(qmlRoot)
+            qmlRoot->setProperty("show", QVariant(false));
         // book-keeping:
         this->currentMenuCode = MENU1;
         this->currentCategory = menuName;
@@ -208,6 +215,8 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
         // out:
         this->score->queueMovie(this->currentInfo + " -out", Score::NEW_ANIMATION_ONLY);
         this->score->queueMovie(this->currentInfo + " -buttons -out", Score::NEW_ANIMATION_ONLY);
+        if(qmlRoot)
+            qmlRoot->setProperty("show", QVariant(false));
         // book-keeping:
         this->currentMenuCode = MENU2;
         this->currentInfo = menuName;
@@ -242,6 +251,8 @@ void MenuManager::itemSelected(int userCode, const QString &menuName)
             // out:
             this->score->queueMovie(this->currentInfo + " -out", Score::NEW_ANIMATION_ONLY);
             this->score->queueMovie(this->currentInfo + " -buttons -out", Score::NEW_ANIMATION_ONLY);
+            if(qmlRoot)
+                qmlRoot->setProperty("show", QVariant(false));
             // book-keeping:
             this->currentMenuCode = MENU1;
             this->currentMenuButtons = this->currentCategory + " -buttons";
@@ -343,6 +354,47 @@ void MenuManager::launchExample(const QString &name)
 #endif
 }
 
+void MenuManager::launchQmlExample(const QString &name)
+{
+    if(!qmlRoot){
+        exampleError(QProcess::UnknownError);
+        return;
+    }
+    //resolveQmlFilename - refactor to separate fn?
+    QString dirName = this->info[name]["dirname"];
+    QString category = this->info[name]["category"];
+    QString fileName = this->info[name]["filename"];
+    QDir dir;
+    if (category == "demos")
+        dir = QDir(QLibraryInfo::location(QLibraryInfo::DemosPath));
+    else
+        dir = QDir(QLibraryInfo::location(QLibraryInfo::ExamplesPath));
+    QFile file(dir.path() + "/" + dirName + "/" + fileName + "/" + fileName.split('/').last() + ".qml");
+    if(!file.exists()){
+        //try main.qml as well
+        file.setFileName(dir.path() + "/" + dirName + "/" + fileName + "/" + "main.qml");
+        if(!file.exists()){
+            exampleError(QProcess::UnknownError);
+            return;
+        }
+    }
+    if(!Colors::noBlur){
+        QImage qmlBgImage(this->window->rect().size(), QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&qmlBgImage);
+        if(Colors::showFps)
+            this->window->fpsLabel->setOpacity(0);
+        this->window->render(&painter);
+        if(Colors::showFps)
+            this->window->fpsLabel->setOpacity(1.0);
+        Qt::ImageConversionFlags convFlags = Qt::AvoidDither | Qt::NoOpaqueDetection;
+        this->declarativeEngine->rootContext()->setContextProperty("bgAppPixmap", QVariant(QPixmap::fromImage(qmlBgImage, convFlags)));
+    }
+
+    qmlRoot->setProperty("qmlFile", QVariant(""));//unload component
+    qmlRoot->setProperty("show", QVariant(true));
+    qmlRoot->setProperty("qmlFile", QUrl::fromLocalFile(file.fileName()));
+}
+
 void MenuManager::exampleFinished()
 {
 }
@@ -385,6 +437,40 @@ void MenuManager::init(MainWindow *window)
 
         level2MenuNode = level2MenuNode.nextSibling();
     }
+
+    // Create QML Loader
+    qmlRegisterType<QGraphicsBlurEffect>("Effects", 1, 0, "Blur");
+    qmlRegisterType<QGraphicsDropShadowEffect>("Effects", 1, 0, "DropShadow");
+    declarativeEngine = new QDeclarativeEngine(this);
+
+    // Note that we paint the background into a static image for a theorized performance improvement when blurring
+    // It has not yet been determined what, if any, speed up this gives (but is left in 'cause the QML expects it now)
+    declarativeEngine->rootContext()->setContextProperty("useBlur", !Colors::noBlur);
+    QImage qmlBgImage(this->window->rect().size(), QImage::Format_ARGB32_Premultiplied);
+    qmlBgImage.fill(0);
+    this->declarativeEngine->rootContext()->setContextProperty("bgAppPixmap", QVariant(QPixmap::fromImage(qmlBgImage)));
+
+    QDeclarativeComponent component(declarativeEngine, QUrl("qrc:qml/qmlShell.qml"), this);
+    qmlRoot = 0;
+    if(component.isReady())
+        qmlRoot = qobject_cast<QDeclarativeItem*>(component.create());
+    else
+        qDebug() << component.status() << component.errorString();
+    if(qmlRoot){
+        qmlRoot->setHeight(this->window->scene->sceneRect().height());
+        qmlRoot->setWidth(this->window->scene->sceneRect().width());
+        qmlRoot->setZValue(101);//Above other items
+        qmlRoot->setCursor(Qt::ArrowCursor);
+        window->scene->addItem(qmlRoot);
+
+        //Note that QML adds key handling to the app.
+        window->viewport()->setFocusPolicy(Qt::NoFocus);//Correct keyboard focus handling
+        window->setFocusPolicy(Qt::StrongFocus);
+        window->scene->setStickyFocus(true);
+        window->setFocus();
+    }else{
+        qDebug() << "Error intializing QML subsystem, Declarative examples will not work";
+    }
 }
 
 void MenuManager::readInfoAboutExample(const QDomElement &example)
@@ -392,13 +478,14 @@ void MenuManager::readInfoAboutExample(const QDomElement &example)
     QString name = example.attribute("name");
     if (this->info.contains(name))
         qWarning() << "__WARNING: MenuManager::readInfoAboutExample: Demo/example with name"
-                    << name << "appears twize in the xml-file!__";
+                    << name << "appears twice in the xml-file!__";
 
     this->info[name]["filename"] = example.attribute("filename");
     this->info[name]["category"] = example.parentNode().toElement().tagName();
     this->info[name]["dirname"] = example.parentNode().toElement().attribute("dirname");
     this->info[name]["changedirectory"] = example.attribute("changedirectory");
     this->info[name]["image"] = example.attribute("image");
+    this->info[name]["qml"] = example.attribute("qml");
 }
 
 QString MenuManager::resolveDataDir(const QString &name)
@@ -454,7 +541,7 @@ QString MenuManager::resolveDocUrl(const QString &name)
     QString fileName = this->info[name]["filename"];
 
     if (category == "demos")
-        return this->helpRootUrl + "demos-" + fileName + ".html";
+        return this->helpRootUrl + "demos-" + fileName.replace("/", "-") + ".html";
     else
         return this->helpRootUrl + dirName.replace("/", "-") + "-" + fileName + ".html";
 }
@@ -474,6 +561,9 @@ QByteArray MenuManager::getImage(const QString &name)
     QString imageName = this->info[name]["image"];
     QString category = this->info[name]["category"];
     QString fileName = this->info[name]["filename"];
+    bool qml = (this->info[name]["qml"] == QLatin1String("true"));
+    if(qml)
+        fileName = QLatin1String("qml-") + fileName.split('/').last();
 
     if (imageName.isEmpty()){
         if (category == "demos")
@@ -493,7 +583,7 @@ void MenuManager::createRootMenu(const QDomElement &el)
 {
     QString name = el.attribute("name");
     createMenu(el, MENU1);
-    createInfo(new MenuContentItem(el, this->window->scene, 0), name + " -info");
+    createInfo(new MenuContentItem(el, this->window->scene, this->window->mainSceneRoot), name + " -info");
 
     Movie *menuButtonsIn = this->score->insertMovie(name + " -buttons");
     Movie *menuButtonsOut = this->score->insertMovie(name + " -buttons -out");
@@ -505,19 +595,21 @@ void MenuManager::createSubMenu(const QDomElement &el)
 {
     QString name = el.attribute("name");
     createMenu(el, MENU2);
-    createInfo(new MenuContentItem(el, this->window->scene, 0), name + " -info");
+    createInfo(new MenuContentItem(el, this->window->scene, this->window->mainSceneRoot), name + " -info");
 }
 
 void MenuManager::createLeafMenu(const QDomElement &el)
 {
     QString name = el.attribute("name");
-    createInfo(new ExampleContent(name, this->window->scene, 0), name);
+    createInfo(new ExampleContent(name, this->window->scene, this->window->mainSceneRoot), name);
 
     Movie *infoButtonsIn = this->score->insertMovie(name + " -buttons");
     Movie *infoButtonsOut = this->score->insertMovie(name + " -buttons -out");
     createLowRightLeafButton("Documentation", 600, DOCUMENTATION, infoButtonsIn, infoButtonsOut, 0);
     if (el.attribute("executable") != "false")
         createLowRightLeafButton("Launch", 405, LAUNCH, infoButtonsIn, infoButtonsOut, 0);
+    else if(el.attribute("qml") == "true")
+        createLowRightLeafButton("Display", 405, LAUNCH_QML, infoButtonsIn, infoButtonsOut, 0);
 }
 
 void MenuManager::createMenu(const QDomElement &category, BUTTON_TYPE type)
@@ -546,7 +638,7 @@ void MenuManager::createMenu(const QDomElement &category, BUTTON_TYPE type)
 
             // create normal menu button
             QString label = currentNode.toElement().attribute("name");
-            item = new TextButton(label, TextButton::LEFT, type, this->window->scene, 0);
+            item = new TextButton(label, TextButton::LEFT, type, this->window->scene, this->window->mainSceneRoot);
             currentNode = currentNode.nextSibling();
 
 #ifndef QT_OPENGL_SUPPORT
@@ -646,7 +738,7 @@ void MenuManager::createMenu(const QDomElement &category, BUTTON_TYPE type)
 void MenuManager::createLowLeftButton(const QString &label, BUTTON_TYPE type,
     Movie *movieIn, Movie *movieOut, Movie *movieShake, const QString &menuString)
 {
-    TextButton *button = new TextButton(label, TextButton::RIGHT, type, this->window->scene, 0, TextButton::PANEL);
+    TextButton *button = new TextButton(label, TextButton::RIGHT, type, this->window->scene, this->window->mainSceneRoot, TextButton::PANEL);
     if (!menuString.isNull())
         button->setMenuString(menuString);
     button->setRecursiveVisible(false);
@@ -688,7 +780,7 @@ void MenuManager::createLowLeftButton(const QString &label, BUTTON_TYPE type,
 
 void MenuManager::createLowRightButton(const QString &label, BUTTON_TYPE type, Movie *movieIn, Movie *movieOut, Movie * /*movieShake*/)
 {
-    TextButton *item = new TextButton(label, TextButton::RIGHT, type, this->window->scene, 0, TextButton::PANEL);
+    TextButton *item = new TextButton(label, TextButton::RIGHT, type, this->window->scene, this->window->mainSceneRoot, TextButton::PANEL);
     item->setRecursiveVisible(false);
     item->setZValue(10);
 
@@ -715,7 +807,7 @@ void MenuManager::createLowRightButton(const QString &label, BUTTON_TYPE type, M
 
 void MenuManager::createLowRightLeafButton(const QString &label, int xOffset, BUTTON_TYPE type, Movie *movieIn, Movie *movieOut, Movie * /*movieShake*/)
 {
-    TextButton *item = new TextButton(label, TextButton::RIGHT, type, this->window->scene, 0, TextButton::PANEL);
+    TextButton *item = new TextButton(label, TextButton::RIGHT, type, this->window->scene, this->window->mainSceneRoot, TextButton::PANEL);
     item->setRecursiveVisible(false);
     item->setZValue(10);
 
@@ -831,12 +923,12 @@ void MenuManager::createUpnDownButtons()
     float xOffset = 15.0f;
     float yOffset = 450.0f;
 
-    this->upButton = new TextButton("", TextButton::LEFT, MenuManager::UP, this->window->scene, 0, TextButton::UP);
+    this->upButton = new TextButton("", TextButton::LEFT, MenuManager::UP, this->window->scene, this->window->mainSceneRoot, TextButton::UP);
     this->upButton->prepare();
     this->upButton->setPos(xOffset, yOffset);
     this->upButton->setState(TextButton::DISABLED);
 
-    this->downButton = new TextButton("", TextButton::LEFT, MenuManager::DOWN, this->window->scene, 0, TextButton::DOWN);
+    this->downButton = new TextButton("", TextButton::LEFT, MenuManager::DOWN, this->window->scene, this->window->mainSceneRoot, TextButton::DOWN);
     this->downButton->prepare();
     this->downButton->setPos(xOffset + 10 + this->downButton->sceneBoundingRect().width(), yOffset);
 
