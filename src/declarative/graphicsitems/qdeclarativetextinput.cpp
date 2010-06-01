@@ -852,7 +852,7 @@ QRectF QDeclarativeTextInput::positionToRectangle(int x) const
 int QDeclarativeTextInput::positionAt(int x) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x - d->hscroll);
+    return d->control->xToPos(x + d->hscroll);
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
