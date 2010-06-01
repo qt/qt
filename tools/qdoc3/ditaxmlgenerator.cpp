@@ -40,13 +40,13 @@
 ****************************************************************************/
 
 /*
-  htmlgenerator.cpp
+  ditaxmlgenerator.cpp
 */
 
 #include "codemarker.h"
 #include "codeparser.h"
 #include "helpprojectwriter.h"
-#include "htmlgenerator.h"
+#include "ditaxmlgenerator.h"
 #include "node.h"
 #include "separator.h"
 #include "tree.h"
@@ -60,9 +60,9 @@
 QT_BEGIN_NAMESPACE
 
 #define COMMAND_VERSION                 Doc::alias("version")
-int HtmlGenerator::id = 0;
+int DitaXmlGenerator::id = 0;
 
-QString HtmlGenerator::sinceTitles[] =
+QString DitaXmlGenerator::sinceTitles[] =
     {
         "    New Namespaces",
         "    New Classes",
@@ -83,110 +83,6 @@ QString HtmlGenerator::sinceTitles[] =
 
 static bool showBrokenLinks = false;
 
-static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
-static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
-static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
-static QRegExp unknownTag("</?@[^>]*>");
-
-bool parseArg(const QString &src,
-              const QString &tag,
-              int *pos,
-              int n,
-              QStringRef *contents,
-              QStringRef *par1 = 0,
-              bool debug = false)
-{
-#define SKIP_CHAR(c) \
-    if (debug) \
-        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
-    if (i >= n || src[i] != c) { \
-        if (debug) \
-            qDebug() << " char '" << c << "' not found"; \
-        return false; \
-    } \
-    ++i;
-
-
-#define SKIP_SPACE \
-    while (i < n && src[i] == ' ') \
-        ++i;
-
-    int i = *pos;
-    int j = i;
-
-    // assume "<@" has been parsed outside
-    //SKIP_CHAR('<');
-    //SKIP_CHAR('@');
-
-    if (tag != QStringRef(&src, i, tag.length())) {
-        if (0 && debug)
-            qDebug() << "tag " << tag << " not found at " << i;
-        return false;
-    }
-
-    if (debug)
-        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
-
-    // skip tag
-    i += tag.length();
-
-    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-    if (par1) {
-        SKIP_SPACE;
-        // read parameter name
-        j = i;
-        while (i < n && src[i].isLetter())
-            ++i;
-        if (src[i] == '=') {
-            if (debug)
-                qDebug() << "read parameter" << QString(src.data() + j, i - j);
-            SKIP_CHAR('=');
-            SKIP_CHAR('"');
-            // skip parameter name
-            j = i;
-            while (i < n && src[i] != '"')
-                ++i;
-            *par1 = QStringRef(&src, j, i - j);
-            SKIP_CHAR('"');
-            SKIP_SPACE;
-        } else {
-            if (debug)
-                qDebug() << "no optional parameter found";
-        }
-    }
-    SKIP_SPACE;
-    SKIP_CHAR('>');
-
-    // find contents up to closing "</@tag>
-    j = i;
-    for (; true; ++i) {
-        if (i + 4 + tag.length() > n)
-            return false;
-        if (src[i] != '<')
-            continue;
-        if (src[i + 1] != '/')
-            continue;
-        if (src[i + 2] != '@')
-            continue;
-        if (tag != QStringRef(&src, i + 3, tag.length()))
-            continue;
-        if (src[i + 3 + tag.length()] != '>')
-            continue;
-        break;
-    }
-
-    *contents = QStringRef(&src, j, i - j);
-
-    i += tag.length() + 4;
-
-    *pos = i;
-    if (debug)
-        qDebug() << " tag " << tag << " found: pos now: " << i;
-    return true;
-#undef SKIP_CHAR
-}
-
 static void addLink(const QString &linkTarget,
                     const QStringRef &nestedStuff,
                     QString *res)
@@ -204,7 +100,7 @@ static void addLink(const QString &linkTarget,
 }
 
 
-HtmlGenerator::HtmlGenerator()
+DitaXmlGenerator::DitaXmlGenerator()
     : helpProjectWriter(0),
       inLink(false),
       inContents(false),
@@ -220,13 +116,13 @@ HtmlGenerator::HtmlGenerator()
 {
 }
 
-HtmlGenerator::~HtmlGenerator()
+DitaXmlGenerator::~DitaXmlGenerator()
 {
     if (helpProjectWriter)
         delete helpProjectWriter;
 }
 
-void HtmlGenerator::initializeGenerator(const Config &config)
+void DitaXmlGenerator::initializeGenerator(const Config &config)
 {
     static const struct {
         const char *key;
@@ -254,24 +150,24 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         i++;
     }
 
-    style = config.getString(HtmlGenerator::format() +
+    style = config.getString(DitaXmlGenerator::format() +
                              Config::dot +
-                             HTMLGENERATOR_STYLE);
-    postHeader = config.getString(HtmlGenerator::format() +
+                             DITAXMLGENERATOR_STYLE);
+    postHeader = config.getString(DitaXmlGenerator::format() +
                                   Config::dot +
-                                  HTMLGENERATOR_POSTHEADER);
-    postPostHeader = config.getString(HtmlGenerator::format() +
+                                  DITAXMLGENERATOR_POSTHEADER);
+    postPostHeader = config.getString(DitaXmlGenerator::format() +
                                       Config::dot +
-                                      HTMLGENERATOR_POSTPOSTHEADER);
-    footer = config.getString(HtmlGenerator::format() +
+                                      DITAXMLGENERATOR_POSTPOSTHEADER);
+    footer = config.getString(DitaXmlGenerator::format() +
                               Config::dot +
-                              HTMLGENERATOR_FOOTER);
-    address = config.getString(HtmlGenerator::format() +
+                              DITAXMLGENERATOR_FOOTER);
+    address = config.getString(DitaXmlGenerator::format() +
                                Config::dot +
-                               HTMLGENERATOR_ADDRESS);
-    pleaseGenerateMacRef = config.getBool(HtmlGenerator::format() +
+                               DITAXMLGENERATOR_ADDRESS);
+    pleaseGenerateMacRef = config.getBool(DitaXmlGenerator::format() +
                                           Config::dot +
-                                          HTMLGENERATOR_GENERATEMACREFS);
+                                          DITAXMLGENERATOR_GENERATEMACREFS);
 
     project = config.getString(CONFIG_PROJECT);
     offlineDocs = !config.getBool(CONFIG_ONLINE);
@@ -315,12 +211,12 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     slow = config.getBool(CONFIG_SLOW);
 
-    stylesheets = config.getStringList(HtmlGenerator::format() +
+    stylesheets = config.getStringList(DitaXmlGenerator::format() +
                                        Config::dot +
-                                       HTMLGENERATOR_STYLESHEETS);
-    customHeadElements = config.getStringList(HtmlGenerator::format() +
+                                       DITAXMLGENERATOR_STYLESHEETS);
+    customHeadElements = config.getStringList(DitaXmlGenerator::format() +
                                               Config::dot +
-                                              HTMLGENERATOR_CUSTOMHEADELEMENTS);
+                                              DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
     codeIndent = config.getInt(CONFIG_CODEINDENT);
 
     helpProjectWriter = new HelpProjectWriter(config,
@@ -328,14 +224,14 @@ void HtmlGenerator::initializeGenerator(const Config &config)
                                               ".qhp");
 }
 
-void HtmlGenerator::terminateGenerator()
+void DitaXmlGenerator::terminateGenerator()
 {
     Generator::terminateGenerator();
 }
 
-QString HtmlGenerator::format()
+QString DitaXmlGenerator::format()
 {
-    return "HTML";
+    return "DITAXML";
 }
 
 /*!
@@ -343,7 +239,7 @@ QString HtmlGenerator::format()
   \note The html file generation is done in the base class,
   PageGenerator::generateTree().
  */
-void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
+void DitaXmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 {
 #if 0    
     // Copy the stylesheets from the directory containing the qdocconf file.
@@ -421,7 +317,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     helpProjectWriter->generate(myTree);
 }
 
-void HtmlGenerator::startText(const Node * /* relative */,
+void DitaXmlGenerator::startText(const Node * /* relative */,
                               CodeMarker * /* marker */)
 {
     inLink = false;
@@ -437,7 +333,7 @@ void HtmlGenerator::startText(const Node * /* relative */,
 /*!
   Generate html from an instance of Atom.
  */
-int HtmlGenerator::generateAtom(const Atom *atom,
+int DitaXmlGenerator::generateAtom(const Atom *atom,
                                 const Node *relative,
                                 CodeMarker *marker)
 {
@@ -1202,7 +1098,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<a name=\"" << Doc::canonicalTitle(atom->string()) << "\"></a>";
         break;
     case Atom::UnhandledFormat:
-        out() << "<b class=\"redFont\">&lt;Missing HTML&gt;</b>";
+        out() << "<b class=\"redFont\">&lt;Missing DITAXML&gt;</b>";
         break;
     case Atom::UnknownCommand:
         out() << "<b class=\"redFont\"><code>\\" << protectEnc(atom->string())
@@ -1223,7 +1119,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
 /*!
   Generate a reference page for a C++ class.
  */
-void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
+void DitaXmlGenerator::generateClassLikeNode(const InnerNode *inner,
                                           CodeMarker *marker)
 {
     QList<Section> sections;
@@ -1476,7 +1372,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
   Generate the html page for a qdoc file that doesn't map
   to an underlying c++ file.
  */
-void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
+void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 {
     SubTitleSize subTitleSize = LargeSubTitle;
     DcfSection fakeSection;
@@ -1695,7 +1591,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 /*!
   Returns "html" for this subclass of Generator.
  */
-QString HtmlGenerator::fileExtension(const Node * /* node */) const
+QString DitaXmlGenerator::fileExtension(const Node * /* node */) const
 {
     return "html";
 }
@@ -1703,7 +1599,7 @@ QString HtmlGenerator::fileExtension(const Node * /* node */) const
 /*!
   Output breadcrumb list in the html file.
  */
-void HtmlGenerator::generateBreadCrumbs(const QString& title,
+void DitaXmlGenerator::generateBreadCrumbs(const QString& title,
                                         const Node *node,
                                         CodeMarker *marker)
 {
@@ -1711,49 +1607,62 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
     if (node->type() == Node::Class) {
         const ClassNode* cn = static_cast<const ClassNode*>(node);
         QString name =  node->moduleName();
-        out() << "              <li><a href=\"modules.html\">Modules</a></li>";
+        out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
         if (!name.isEmpty()) {
             out() << "              <li>";
             breadcrumb << Atom(Atom::AutoLink,name);
             generateText(breadcrumb, node, marker);
             out() << "</li>\n";
         }
-        if (!cn->name().isEmpty())
-            out() << "              <li>" << cn->name() << "</li>\n";
+        breadcrumb.clear();
+        if (!cn->name().isEmpty()) {
+            out() << "              <li>";
+            breadcrumb << Atom(Atom::AutoLink,cn->name());
+            generateText(breadcrumb, 0, marker);
+            out() << "</li>\n";
+        }
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
         if (node->subType() == Node::Module) {
-            out() << "              <li><a href=\"modules.html\">Modules</a></li>";
+            out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
             QString name =  node->name();
-            if (!name.isEmpty())
-                out() << "              <li>" << name << "</li>\n";
+            if (!name.isEmpty()) {
+                out() << "              <li>";
+                breadcrumb << Atom(Atom::AutoLink,name);
+                generateText(breadcrumb, 0, marker);
+                out() << "</li>\n";
+            }
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
-                out() << "              <li>Modules</li>";
+                out() << "              <li><a href=\"modules.html\">All Modules</a></li>";
             else {
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
             }
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("examples.html")) {
-                out() << "              <li>Examples</li>";
+                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
             }
             else if (fn->name().startsWith("examples-")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
             }
             else if (fn->name() == QString("namespaces.html")) {
-                out() << "              <li>Namespaces</li>";
+                out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
             }
             else {
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                      << "</a></li>";
             }
         }
         else if (node->subType() == Node::QmlClass) {
             out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li>" << title << "</li>";
+            out() << "              <li><a href=\"" << fn->name() << "\">" << title
+                  << "</a></li>";
         }
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
@@ -1762,16 +1671,20 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             QString t = CodeParser::titleFromName(name);
             out() << "              <li><a href=\"" << name << "\">"
                   << t << "</a></li>";
-            out() << "              <li>" << title << "</li>";
+            out() << "              <li><a href=\"" << sl.at(0)
+                  << "-" << sl.at(sl.size()-1) << ".html\">"
+                  << title << "</a></li>";
         }
     }
     else if (node->type() == Node::Namespace) {
-        out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
-        out() << "              <li>" << title << "</li>";
+        const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
+        out() << "              <li><a href=\"namespaces.html\">All Namespaces</a></li>";
+        out() << "              <li><a href=\"" << fileName(nsn) << "\">" << title
+              << "</a></li>";
     }
 }
 
-void HtmlGenerator::generateHeader(const QString& title,
+void DitaXmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
                                    CodeMarker *marker)
 {
@@ -1837,7 +1750,7 @@ void HtmlGenerator::generateHeader(const QString& title,
 #endif    
 }
 
-void HtmlGenerator::generateTitle(const QString& title,
+void DitaXmlGenerator::generateTitle(const QString& title,
                                   const Text &subTitle,
                                   SubTitleSize subTitleSize,
                                   const Node *relative,
@@ -1856,7 +1769,7 @@ void HtmlGenerator::generateTitle(const QString& title,
     }
 }
 
-void HtmlGenerator::generateFooter(const Node *node)
+void DitaXmlGenerator::generateFooter(const Node *node)
 {
     if (node && !node->links().empty())
         out() << "<p>\n" << navigationLinks << "</p>\n";
@@ -1868,7 +1781,7 @@ void HtmlGenerator::generateFooter(const Node *node)
           out() <<   "</html>\n";
 }
 
-void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
+void DitaXmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
                                   const Node *relative)
 {
     Text brief = node->doc().briefText();
@@ -1883,7 +1796,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
     }
 }
 
-void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
+void DitaXmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
         out() << "<pre class=\"highlightedCode\">"
@@ -1897,7 +1810,7 @@ void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 /*!
   Generates a table of contents begining at \a node.
  */
-void HtmlGenerator::generateTableOfContents(const Node *node,
+void DitaXmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
                                             Doc::SectioningUnit sectioningUnit,
                                             int numColumns,
@@ -1983,7 +1896,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
   Revised for the new doc format.
   Generates a table of contents begining at \a node.
  */
-void HtmlGenerator::generateTableOfContents(const Node *node,
+void DitaXmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
                                             QList<Section>* sections)
 {
@@ -2095,7 +2008,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
 }
 
 #if 0
-void HtmlGenerator::generateNavigationBar(const NavigationBar& bar,
+void DitaXmlGenerator::generateNavigationBar(const NavigationBar& bar,
                                            const Node *node,
                                            CodeMarker *marker)
 {
@@ -2125,7 +2038,7 @@ void HtmlGenerator::generateNavigationBar(const NavigationBar& bar,
 }
 #endif
 
-QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
+QString DitaXmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
                                                    CodeMarker *marker)
 {
     QList<Section> sections;
@@ -2154,7 +2067,7 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
     return fileName;
 }
 
-QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
+QString DitaXmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
                                                    CodeMarker *marker,
                                                    CodeMarker::Status status)
 {
@@ -2227,7 +2140,7 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
     return fileName;
 }
 
-void HtmlGenerator::generateClassHierarchy(const Node *relative,
+void DitaXmlGenerator::generateClassHierarchy(const Node *relative,
                                            CodeMarker *marker,
                                            const QMap<QString,const Node*> &classMap)
 {
@@ -2273,7 +2186,7 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative,
     }
 }
 
-void HtmlGenerator::generateAnnotatedList(const Node *relative,
+void DitaXmlGenerator::generateAnnotatedList(const Node *relative,
                                           CodeMarker *marker,
                                           const NodeMap &nodeMap)
 {
@@ -2321,7 +2234,7 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
   normally you let it figure it out itself by looking at
   the name of the first and last classes in \a classMap.
  */
-void HtmlGenerator::generateCompactList(const Node *relative,
+void DitaXmlGenerator::generateCompactList(const Node *relative,
                                         CodeMarker *marker,
                                         const NodeMap &classMap,
                                         bool includeAlphabet,
@@ -2524,7 +2437,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     out() << "</div>\n";
 }
 
-void HtmlGenerator::generateFunctionIndex(const Node *relative,
+void DitaXmlGenerator::generateFunctionIndex(const Node *relative,
                                           CodeMarker *marker)
 {
     out() << "<p  class=\"centerAlign functionIndex\"><b>";
@@ -2574,7 +2487,7 @@ void HtmlGenerator::generateFunctionIndex(const Node *relative,
 #endif
 }
 
-void HtmlGenerator::generateLegaleseList(const Node *relative,
+void DitaXmlGenerator::generateLegaleseList(const Node *relative,
                                          CodeMarker *marker)
 {
     QMap<Text, const Node *>::ConstIterator it = legaleseTexts.begin();
@@ -2593,7 +2506,7 @@ void HtmlGenerator::generateLegaleseList(const Node *relative,
     }
 }
 
-/*void HtmlGenerator::generateSynopsis(const Node *node,
+/*void DitaXmlGenerator::generateSynopsis(const Node *node,
                                      const Node *relative,
                                      CodeMarker *marker,
                                      CodeMarker::SynopsisStyle style)
@@ -2632,7 +2545,7 @@ void HtmlGenerator::generateLegaleseList(const Node *relative,
 }*/
 
 #ifdef QDOC_QML
-void HtmlGenerator::generateQmlItem(const Node *node,
+void DitaXmlGenerator::generateQmlItem(const Node *node,
                                     const Node *relative,
                                     CodeMarker *marker,
                                     bool summary)
@@ -2664,7 +2577,7 @@ void HtmlGenerator::generateQmlItem(const Node *node,
 }
 #endif
 
-void HtmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* marker */)
+void DitaXmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* marker */)
 {
     QMap<const FakeNode *, QMap<QString, FakeNode *> > fakeNodeMap;
     QMap<QString, const FakeNode *> groupTitlesMap;
@@ -2779,7 +2692,7 @@ void HtmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* m
 }
 
 #ifdef QDOC_NAME_ALIGNMENT
-void HtmlGenerator::generateSection(const NodeList& nl,
+void DitaXmlGenerator::generateSection(const NodeList& nl,
                                     const Node *relative,
                                     CodeMarker *marker,
                                     CodeMarker::SynopsisStyle style)
@@ -2840,7 +2753,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
     }
 }
 
-void HtmlGenerator::generateSectionList(const Section& section,
+void DitaXmlGenerator::generateSectionList(const Section& section,
                                         const Node *relative,
                                         CodeMarker *marker,
                                         CodeMarker::SynopsisStyle style)
@@ -2907,7 +2820,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
     }
 }
 
-void HtmlGenerator::generateSectionInheritedList(const Section& section,
+void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
                                                  const Node *relative,
                                                  CodeMarker *marker,
                                                  bool nameAlignment)
@@ -2926,14 +2839,14 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
             out() << section.pluralMember;
         }
         out() << " inherited from <a href=\"" << fileName((*p).first)
-              << "#" << HtmlGenerator::cleanRef(section.name.toLower()) << "\">"
+              << "#" << DitaXmlGenerator::cleanRef(section.name.toLower()) << "\">"
               << protectEnc(marker->plainFullName((*p).first, relative))
               << "</a></li>\n";
         ++p;
     }
 }
 
-void HtmlGenerator::generateSynopsis(const Node *node,
+void DitaXmlGenerator::generateSynopsis(const Node *node,
                                      const Node *relative,
                                      CodeMarker *marker,
                                      CodeMarker::SynopsisStyle style,
@@ -2973,7 +2886,7 @@ void HtmlGenerator::generateSynopsis(const Node *node,
     out() << highlightedCode(marked, marker, relative, style, nameAlignment);
 }
 
-QString HtmlGenerator::highlightedCode(const QString& markedCode,
+QString DitaXmlGenerator::highlightedCode(const QString& markedCode,
                                        CodeMarker *marker,
                                        const Node *relative,
                                        CodeMarker::SynopsisStyle ,
@@ -3144,7 +3057,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
 }
 
 #else
-void HtmlGenerator::generateSectionList(const Section& section,
+void DitaXmlGenerator::generateSectionList(const Section& section,
                                         const Node *relative,
                                         CodeMarker *marker,
                                         CodeMarker::SynopsisStyle style)
@@ -3200,7 +3113,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
     }
 }
 
-void HtmlGenerator::generateSectionInheritedList(const Section& section,
+void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
                                                  const Node *relative,
                                                  CodeMarker *marker)
 {
@@ -3214,14 +3127,14 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
             out() << section.pluralMember;
         }
         out() << " inherited from <a href=\"" << fileName((*p).first)
-              << "#" << HtmlGenerator::cleanRef(section.name.toLower()) << "\">"
+              << "#" << DitaXmlGenerator::cleanRef(section.name.toLower()) << "\">"
               << protectEnc(marker->plainFullName((*p).first, relative))
               << "</a></li>\n";
         ++p;
     }
 }
 
-void HtmlGenerator::generateSynopsis(const Node *node,
+void DitaXmlGenerator::generateSynopsis(const Node *node,
                                      const Node *relative,
                                      CodeMarker *marker,
                                      CodeMarker::SynopsisStyle style)
@@ -3257,7 +3170,7 @@ void HtmlGenerator::generateSynopsis(const Node *node,
     out() << highlightedCode(marked, marker, relative);
 }
 
-QString HtmlGenerator::highlightedCode(const QString& markedCode,
+QString DitaXmlGenerator::highlightedCode(const QString& markedCode,
                                        CodeMarker *marker,
                                        const Node *relative)
 {
@@ -3418,7 +3331,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
 }
 #endif
 
-void HtmlGenerator::generateLink(const Atom* atom,
+void DitaXmlGenerator::generateLink(const Atom* atom,
                                  const Node* /* relative */,
                                  CodeMarker* marker)
 {
@@ -3453,7 +3366,7 @@ void HtmlGenerator::generateLink(const Atom* atom,
     }
 }
 
-QString HtmlGenerator::cleanRef(const QString& ref)
+QString DitaXmlGenerator::cleanRef(const QString& ref)
 {
     QString clean;
 
@@ -3506,9 +3419,9 @@ QString HtmlGenerator::cleanRef(const QString& ref)
     return clean;
 }
 
-QString HtmlGenerator::registerRef(const QString& ref)
+QString DitaXmlGenerator::registerRef(const QString& ref)
 {
-    QString clean = HtmlGenerator::cleanRef(ref);
+    QString clean = DitaXmlGenerator::cleanRef(ref);
 
     for (;;) {
         QString& prevRef = refMap[clean.toLower()];
@@ -3523,12 +3436,12 @@ QString HtmlGenerator::registerRef(const QString& ref)
     return clean;
 }
 
-QString HtmlGenerator::protectEnc(const QString &string)
+QString DitaXmlGenerator::protectEnc(const QString &string)
 {
     return protect(string, outputEncoding);
 }
 
-QString HtmlGenerator::protect(const QString &string, const QString &outputEncoding)
+QString DitaXmlGenerator::protect(const QString &string, const QString &outputEncoding)
 {
 #define APPEND(x) \
     if (html.isEmpty()) { \
@@ -3571,7 +3484,7 @@ QString HtmlGenerator::protect(const QString &string, const QString &outputEncod
 #undef APPEND
 }
 
-QString HtmlGenerator::fileBase(const Node *node)
+QString DitaXmlGenerator::fileBase(const Node *node)
 {
     QString result;
 
@@ -3593,7 +3506,7 @@ QString HtmlGenerator::fileBase(const Node *node)
 }
 
 #if 0
-QString HtmlGenerator::fileBase(const Node *node,
+QString DitaXmlGenerator::fileBase(const Node *node,
                                 const SectionIterator& section)
 {
     QStringList::ConstIterator s = section.sectionNumber().end();
@@ -3615,7 +3528,7 @@ QString HtmlGenerator::fileBase(const Node *node,
 }
 #endif
 
-QString HtmlGenerator::fileName(const Node *node)
+QString DitaXmlGenerator::fileName(const Node *node)
 {
     if (node->type() == Node::Fake) {
         if (static_cast<const FakeNode *>(node)->subType() == Node::ExternalPage)
@@ -3626,7 +3539,7 @@ QString HtmlGenerator::fileName(const Node *node)
     return PageGenerator::fileName(node);
 }
 
-QString HtmlGenerator::refForNode(const Node *node)
+QString DitaXmlGenerator::refForNode(const Node *node)
 {
     const FunctionNode *func;
     const TypedefNode *typedeffe;
@@ -3686,7 +3599,7 @@ QString HtmlGenerator::refForNode(const Node *node)
     return registerRef(ref);
 }
 
-QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
+QString DitaXmlGenerator::linkForNode(const Node *node, const Node *relative)
 {
     QString link;
     QString fn;
@@ -3721,7 +3634,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     return link;
 }
 
-QString HtmlGenerator::refForAtom(Atom *atom, const Node * /* node */)
+QString DitaXmlGenerator::refForAtom(Atom *atom, const Node * /* node */)
 {
     if (atom->type() == Atom::SectionLeft) {
         return Doc::canonicalTitle(Text::sectionHeading(atom).toString());
@@ -3734,7 +3647,7 @@ QString HtmlGenerator::refForAtom(Atom *atom, const Node * /* node */)
     }
 }
 
-void HtmlGenerator::generateFullName(const Node *apparentNode,
+void DitaXmlGenerator::generateFullName(const Node *apparentNode,
                                      const Node *relative,
                                      CodeMarker *marker,
                                      const Node *actualNode)
@@ -3759,7 +3672,7 @@ void HtmlGenerator::generateFullName(const Node *apparentNode,
     out() << "</a>";
 }
 
-void HtmlGenerator::generateDetailedMember(const Node *node,
+void DitaXmlGenerator::generateDetailedMember(const Node *node,
                                            const InnerNode *relative,
                                            CodeMarker *marker)
 {
@@ -3832,7 +3745,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
     generateAlsoList(node, marker);
 }
 
-void HtmlGenerator::findAllClasses(const InnerNode *node)
+void DitaXmlGenerator::findAllClasses(const InnerNode *node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
@@ -3883,7 +3796,7 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
   For generating the "New Classes... in 4.6" section on the
   What's New in 4.6" page.
  */
-void HtmlGenerator::findAllSince(const InnerNode *node)
+void DitaXmlGenerator::findAllSince(const InnerNode *node)
 {
     NodeList::const_iterator child = node->childNodes().constBegin();
     while (child != node->childNodes().constEnd()) {
@@ -3950,7 +3863,7 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
     version = version.left(patchIndex);
 #endif
 
-void HtmlGenerator::findAllFunctions(const InnerNode *node)
+void DitaXmlGenerator::findAllFunctions(const InnerNode *node)
 {
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
@@ -3971,7 +3884,7 @@ void HtmlGenerator::findAllFunctions(const InnerNode *node)
     }
 }
 
-void HtmlGenerator::findAllLegaleseTexts(const InnerNode *node)
+void DitaXmlGenerator::findAllLegaleseTexts(const InnerNode *node)
 {
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
@@ -3985,7 +3898,7 @@ void HtmlGenerator::findAllLegaleseTexts(const InnerNode *node)
     }
 }
 
-void HtmlGenerator::findAllNamespaces(const InnerNode *node)
+void DitaXmlGenerator::findAllNamespaces(const InnerNode *node)
 {
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
@@ -4018,7 +3931,7 @@ void HtmlGenerator::findAllNamespaces(const InnerNode *node)
   This function finds all the qml element nodes and
   stores them in a map for later use.
  */
-void HtmlGenerator::findAllQmlClasses(const InnerNode *node)
+void DitaXmlGenerator::findAllQmlClasses(const InnerNode *node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
@@ -4036,7 +3949,7 @@ void HtmlGenerator::findAllQmlClasses(const InnerNode *node)
 }
 #endif
 
-int HtmlGenerator::hOffset(const Node *node)
+int DitaXmlGenerator::hOffset(const Node *node)
 {
     switch (node->type()) {
     case Node::Namespace:
@@ -4059,7 +3972,7 @@ int HtmlGenerator::hOffset(const Node *node)
     }
 }
 
-bool HtmlGenerator::isThreeColumnEnumValueTable(const Atom *atom)
+bool DitaXmlGenerator::isThreeColumnEnumValueTable(const Atom *atom)
 {
     while (atom != 0 && !(atom->type() == Atom::ListRight && atom->string() == ATOM_LIST_VALUE)) {
         if (atom->type() == Atom::ListItemLeft && !matchAhead(atom, Atom::ListItemRight))
@@ -4069,7 +3982,7 @@ bool HtmlGenerator::isThreeColumnEnumValueTable(const Atom *atom)
     return false;
 }
 
-const Node *HtmlGenerator::findNodeForTarget(const QString &target,
+const Node *DitaXmlGenerator::findNodeForTarget(const QString &target,
                                              const Node *relative,
                                              CodeMarker *marker,
                                              const Atom *atom)
@@ -4098,7 +4011,7 @@ const Node *HtmlGenerator::findNodeForTarget(const QString &target,
     return node;
 }
 
-const QPair<QString,QString> HtmlGenerator::anchorForNode(const Node *node)
+const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node *node)
 {
     QPair<QString,QString> anchorPair;
 
@@ -4111,7 +4024,7 @@ const QPair<QString,QString> HtmlGenerator::anchorForNode(const Node *node)
     return anchorPair;
 }
 
-QString HtmlGenerator::getLink(const Atom *atom,
+QString DitaXmlGenerator::getLink(const Atom *atom,
                                const Node *relative,
                                CodeMarker *marker,
                                const Node** node)
@@ -4223,7 +4136,7 @@ QString HtmlGenerator::getLink(const Atom *atom,
     return link;
 }
 
-void HtmlGenerator::generateDcf(const QString &fileBase,
+void DitaXmlGenerator::generateDcf(const QString &fileBase,
                                 const QString &startPage,
                                 const QString &title,
                                 DcfSection &dcfRoot)
@@ -4233,14 +4146,14 @@ void HtmlGenerator::generateDcf(const QString &fileBase,
     generateDcfSections(dcfRoot, outputDir() + "/" + fileBase + ".dcf", fileBase + "/reference");
 }
 
-void HtmlGenerator::generateIndex(const QString &fileBase,
+void DitaXmlGenerator::generateIndex(const QString &fileBase,
                                   const QString &url,
                                   const QString &title)
 {
     myTree->generateIndex(outputDir() + "/" + fileBase + ".index", url, title);
 }
 
-void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
+void DitaXmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
 {
     Text text;
 
@@ -4293,7 +4206,7 @@ void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
 /*
   No longer valid.
  */
-void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
+void DitaXmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
 {
     if (!pleaseGenerateMacRef || marker == 0)
         return;
@@ -4304,7 +4217,7 @@ void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
 }
 #endif
 
-void HtmlGenerator::beginLink(const QString &link,
+void DitaXmlGenerator::beginLink(const QString &link,
                               const Node *node,
                               const Node *relative,
                               CodeMarker *marker)
@@ -4336,7 +4249,7 @@ void HtmlGenerator::beginLink(const QString &link,
     inLink = true;
 }
 
-void HtmlGenerator::endLink()
+void DitaXmlGenerator::endLink()
 {
     if (inLink) {
         if (link.isEmpty()) {
@@ -4362,7 +4275,7 @@ void HtmlGenerator::endLink()
 
   Currently handles only the QML property group.
  */
-void HtmlGenerator::generateQmlSummary(const Section& section,
+void DitaXmlGenerator::generateQmlSummary(const Section& section,
                                        const Node *relative,
                                        CodeMarker *marker)
 {
@@ -4403,7 +4316,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
   Outputs the html detailed documentation for a section
   on a QML element reference page.
  */
-void HtmlGenerator::generateDetailedQmlMember(const Node *node,
+void DitaXmlGenerator::generateDetailedQmlMember(const Node *node,
                                               const InnerNode *relative,
                                               CodeMarker *marker)
 {
@@ -4489,7 +4402,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
   Output the "Inherits" line for the QML element,
   if there should be one.
  */
-void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
+void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* cn,
                                         CodeMarker* marker)
 {
     if (cn && !cn->links().empty()) {
@@ -4519,7 +4432,7 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
   Output the "Inherit by" list for the QML element,
   if it is inherited by any other elements.
  */
-void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
+void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
                                            CodeMarker* marker)
 {
     if (cn) {
@@ -4542,7 +4455,7 @@ void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
   If there is no class node, or if the class node status
   is set to Node::Internal, do nothing. 
  */
-void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
+void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
                                             CodeMarker* marker)
 {
     const ClassNode* cn = qcn->classNode();
@@ -4572,7 +4485,7 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
   If there is no QML element, or if the class node status
   is set to Node::Internal, do nothing. 
  */
-void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
+void DitaXmlGenerator::generateInstantiatedBy(const ClassNode* cn,
                                            CodeMarker* marker)
 {
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
@@ -4601,7 +4514,7 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
   Generate the <page> element for the given \a node using the \a writer.
   Return true if a <page> element was written; otherwise return false.
  */
-bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
+bool DitaXmlGenerator::generatePageElement(QXmlStreamWriter& writer,
                                         const Node* node,
                                         CodeMarker* marker) const
 {
@@ -4686,7 +4599,7 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
   Traverse the tree recursively and generate the <keyword>
   elements.
  */
-void HtmlGenerator::generatePageElements(QXmlStreamWriter& writer, const Node* node, CodeMarker* marker) const
+void DitaXmlGenerator::generatePageElements(QXmlStreamWriter& writer, const Node* node, CodeMarker* marker) const
 {
     if (generatePageElement(writer, node, marker)) {
 
@@ -4703,7 +4616,7 @@ void HtmlGenerator::generatePageElements(QXmlStreamWriter& writer, const Node* n
 /*!
   Outputs the file containing the index used for searching the html docs.
  */
-void HtmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marker) const
+void DitaXmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marker) const
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))

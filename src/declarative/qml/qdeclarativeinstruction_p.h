@@ -158,7 +158,7 @@ public:
         // 
         // Deferred creation
         //
-        Defer,                    /* defer */
+        Defer                    /* defer */
     };
     QDeclarativeInstruction()
         : line(0) {}
