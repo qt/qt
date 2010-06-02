@@ -479,6 +479,7 @@ void QDeclarativeText::setHAlign(HAlignment align)
         return;
 
     d->hAlign = align;
+    update();
     emit horizontalAlignmentChanged(align);
 }
 
@@ -495,6 +496,7 @@ void QDeclarativeText::setVAlign(VAlignment align)
         return;
 
     d->vAlign = align;
+    update();
     emit verticalAlignmentChanged(align);
 }
 
