@@ -812,9 +812,6 @@ void QApplicationPrivate::construct(
     if (qt_is_gui_used)
         qt_guiPlatformPlugin();
 #endif
-#ifdef Q_WS_LITE
-    QApplicationPrivate::qapp_constructed = true;
-#endif
 }
 
 #if defined(Q_WS_X11)
