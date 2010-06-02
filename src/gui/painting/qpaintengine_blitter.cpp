@@ -117,12 +117,12 @@ public:
         updateStateBits(&drawPixmapMask, STATE_XFORM_SCALE, true);
         updateStateBits(&drawPixmapMask, STATE_XFORM_COMPLEX, false);
 
-        updateStateBits(&drawPixmapMask, STATE_BRUSH_PATTERN, false);
+        updateStateBits(&drawPixmapMask, STATE_BRUSH_PATTERN, true);
         updateStateBits(&drawPixmapMask, STATE_BRUSH_ALPHA, false);
 
-        updateStateBits(&drawPixmapMask, STATE_PEN_ENABLED, false);
+        updateStateBits(&drawPixmapMask, STATE_PEN_ENABLED, true);
 
-        updateStateBits(&drawPixmapMask, STATE_ANTIALIASING, false);
+        updateStateBits(&drawPixmapMask, STATE_ANTIALIASING, true);
         updateStateBits(&drawPixmapMask, STATE_ALPHA, false);
         updateStateBits(&drawPixmapMask, STATE_BLENDING_COMPLEX, false);
 
