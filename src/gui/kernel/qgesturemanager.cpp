@@ -66,6 +66,8 @@
 # define DEBUG qDebug
 #endif
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 QGestureManager::QGestureManager(QObject *parent)
@@ -690,5 +692,7 @@ void QGestureManager::recycle(QGesture *gesture)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #include "moc_qgesturemanager_p.cpp"

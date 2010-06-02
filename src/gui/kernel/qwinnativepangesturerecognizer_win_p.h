@@ -54,6 +54,7 @@
 //
 
 #include <QGestureRecognizer>
+
 #include <objbase.h>
 
 class IInkRectangle;
@@ -87,6 +88,8 @@ DECLARE_INTERFACE_(IInkTablets, IDispatch)
 	STDMETHOD(IsPacketPropertySupported)(THIS_ BSTR packetPropertyName, VARIANT_BOOL *Supported) PURE;
 };
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_NATIVE_GESTURES)
@@ -104,5 +107,7 @@ public:
 #endif // QT_NO_NATIVE_GESTURES
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #endif // QWINNATIVEPANGESTURERECOGNIZER_WIN_P_H
