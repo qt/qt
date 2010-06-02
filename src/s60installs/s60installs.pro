@@ -11,21 +11,24 @@ symbian: {
 
     isEmpty(QT_LIBINFIX) {
         TARGET.UID3 = 0x2001E61C
-
-        # sqlite3 is expected to be already found on phone if infixed configuration is built.
-        BLD_INF_RULES.prj_exports += \
-            "sqlite3.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis" \
-            "sqlite3_selfsigned.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3_selfsigned.sis"
-        symbian-abld|symbian-sbsv2 {
-            sqlitedeployment = \
-                "; Deploy sqlite onto phone that does not have it already" \
-                "@\"$${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis\", (0x2002af5f)"
-        } else {
-            sqlitedeployment = \
-                "; Deploy sqlite onto phone that does not have it already" \
-                "@\"$${PWD}/sqlite3.sis\", (0x2002af5f)"
+        
+        # Sqlite3 is expected to be already found on phone if infixed configuration is built.
+        # It is also expected that devices newer than those based on S60 5.0 all have sqlite3.dll.
+        contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {            
+            BLD_INF_RULES.prj_exports += \
+                "sqlite3.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis" \
+                "sqlite3_selfsigned.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3_selfsigned.sis"
+            symbian-abld|symbian-sbsv2 {
+                sqlitedeployment = \
+                    "; Deploy sqlite onto phone that does not have it already" \
+                    "@\"$${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis\", (0x2002af5f)"
+            } else {
+                sqlitedeployment = \
+                    "; Deploy sqlite onto phone that does not have it already" \
+                    "@\"$${PWD}/sqlite3.sis\", (0x2002af5f)"
+            }
+            qtlibraries.pkg_postrules += sqlitedeployment
         }
-        qtlibraries.pkg_postrules += sqlitedeployment
     } else {
         # Always use experimental UID for infixed configuration to avoid UID clash
         TARGET.UID3 = 0xE001E61C
@@ -81,12 +84,16 @@ symbian: {
 
     qtlibraries.pkg_prerules = vendorinfo
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
-    qtlibraries.pkg_prerules += "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
-    contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-        qtlibraries.pkg_prerules += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
-    }
-    contains(CONFIG, stl) {
-        qtlibraries.pkg_prerules += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
+    
+    # It is expected that Symbian^3 and newer phones will have sufficiently new OpenC already installed
+    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {                
+        qtlibraries.pkg_prerules += "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
+        contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
+            qtlibraries.pkg_prerules += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
+        }
+        contains(CONFIG, stl) {
+            qtlibraries.pkg_prerules += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
+        }
     }
     qtlibraries.pkg_prerules += "(0x2002af5f), 0, 5, 0, {\"sqlite3\"}"
 
@@ -149,6 +156,12 @@ symbian: {
     contains(QT_CONFIG, openvg) {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtOpenVG$${QT_LIBINFIX}.dll
         graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
+        # OpenVG requires Symbian^3 or later
+        pkg_platform_dependencies -= \
+            "[0x101F7961],0,0,0,{\"S60ProductID\"}" \
+            "[0x102032BE],0,0,0,{\"S60ProductID\"}" \
+            "[0x102752AE],0,0,0,{\"S60ProductID\"}" \
+            "[0x1028315F],0,0,0,{\"S60ProductID\"}"
     }
 
     contains(QT_CONFIG, multimedia){
