@@ -891,6 +891,22 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
         QDeclarativePaintedItem::keyPressEvent(ev);
 }
 
+/*!
+\overload
+Handles the given mouse \a event.
+*/
+void QDeclarativeTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse) {
+        int cursor = d->xToPos(event->pos().x());
+        d->control->selectWordAtPos(cursor);
+        event->setAccepted(true);
+    } else {
+        QDeclarativePaintedItem::mouseDoubleClickEvent(event);
+    }
+}
+
 void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
@@ -949,10 +965,9 @@ bool QDeclarativeTextInput::event(QEvent* ev)
         case QEvent::GraphicsSceneMousePress:
         case QEvent::GraphicsSceneMouseMove:
         case QEvent::GraphicsSceneMouseRelease:
+        case QEvent::GraphicsSceneMouseDoubleClick:
             break;
         default:
-            if (ev->type() == QEvent::GraphicsSceneMouseDoubleClick && !d->selectByMouse)
-                break;
             handled = d->control->processEvent(ev);
             if (ev->type() == QEvent::InputMethod)
                 updateSize();
