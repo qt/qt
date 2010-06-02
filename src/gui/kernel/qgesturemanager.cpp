@@ -684,6 +684,7 @@ void QGestureManager::recycle(QGesture *gesture)
     if (recognizer) {
         gesture->setGestureCancelPolicy(QGesture::CancelNone);
         recognizer->reset(gesture);
+        m_activeGestures.remove(gesture);
     } else {
         cleanupGesturesForRemovedRecognizer(gesture);
     }
