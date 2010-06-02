@@ -52,6 +52,7 @@ class QUrl;
 
 class HelpViewer;
 class OpenPagesModel;
+class OpenPagesSwitcher;
 class OpenPagesWidget;
 
 class OpenPagesManager : public QObject
@@ -76,8 +77,11 @@ public slots:
     HelpViewer *createNewPageFromSearch(const QUrl &url);
     HelpViewer *createPage();
     void closeCurrentPage();
+
     void nextPage();
+    void nextPageWithSwitcher();
     void previousPage();
+    void previousPageWithSwitcher();
 
 private slots:
     void setCurrentPage(const QModelIndex &index);
@@ -87,13 +91,18 @@ private slots:
 private:
     OpenPagesManager(QObject *parent, bool defaultCollection,
         const QUrl &cmdLineUrl);
+    ~OpenPagesManager();
+
     void setupInitialPages(bool defaultCollection, const QUrl &cmdLineUrl);
     void closeOrReloadPages(const QString &nameSpace, bool tryReload);
-    void selectCurrentPage();
     void removePage(int index);
+
     void nextOrPreviousPage(int offset);
+    void showSwitcherOrSelectPage() const;
+
     OpenPagesModel *m_model;
     OpenPagesWidget *m_openPagesWidget;
+    OpenPagesSwitcher *m_openPagesSwitcher;
 
     static OpenPagesManager *m_instance;
 };

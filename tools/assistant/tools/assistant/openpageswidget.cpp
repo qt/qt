@@ -41,6 +41,7 @@
 
 #include "openpageswidget.h"
 
+#include "centralwidget.h"
 #include "openpagesmodel.h"
 #include "tracer.h"
 
@@ -90,15 +91,16 @@ void OpenPagesDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
     }
 }
 
+// -- OpenPagesWidget
 
 OpenPagesWidget::OpenPagesWidget(OpenPagesModel *model)
+    : m_allowContextMenu(true)
 {
     TRACE_OBJ
     setModel(model);
     setIndentation(0);
     setItemDelegate((m_delegate = new OpenPagesDelegate(this)));
 
-    setFrameStyle(QFrame::NoFrame);
     setTextElideMode(Qt::ElideMiddle);
     setAttribute(Qt::WA_MacShowFocusRect, false);
 
@@ -129,11 +131,27 @@ OpenPagesWidget::~OpenPagesWidget()
     TRACE_OBJ
 }
 
+void OpenPagesWidget::selectCurrentPage()
+{
+    TRACE_OBJ
+    QItemSelectionModel * const selModel = selectionModel();
+    selModel->clearSelection();
+    selModel->select(model()->index(CentralWidget::instance()->currentIndex(), 0),
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    scrollTo(currentIndex());
+}
+
+void OpenPagesWidget::allowContextMenu(bool ok)
+{
+    TRACE_OBJ
+    m_allowContextMenu = ok;
+}
+
 void OpenPagesWidget::contextMenuRequested(QPoint pos)
 {
     TRACE_OBJ
     QModelIndex index = indexAt(pos);
-    if (!index.isValid())
+    if (!index.isValid() || !m_allowContextMenu)
         return;
 
     if (index.column() == 1)

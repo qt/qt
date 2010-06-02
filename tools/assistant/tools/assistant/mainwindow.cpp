@@ -79,6 +79,7 @@
 #include <QtGui/QMenuBar>
 #include <QtGui/QMessageBox>
 #include <QtGui/QProgressBar>
+#include <QtGui/QShortcut>
 #include <QtGui/QStatusBar>
 #include <QtGui/QToolBar>
 #include <QtGui/QToolButton>
@@ -515,6 +516,18 @@ void MainWindow::setupActions()
     tmp = menu->addAction(tr("Previous Page"), openPages, SLOT(previousPage()));
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
+
+#ifdef Q_WS_MAC
+    QShortcut *sct = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Tab), this);
+    connect(sct, SIGNAL(activated()), openPages, SLOT(nextPageWithSwitcher()));
+    sct = new QShortcut(QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Tab), this);
+    connect(sct, SIGNAL(activated()), openPages, SLOT(previousPageWithSwitcher()));
+#else
+    QShortcut *sct = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Tab), this);
+    connect(sct, SIGNAL(activated()), openPages, SLOT(nextPageWithSwitcher()));
+    sct = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Tab), this);
+    connect(sct, SIGNAL(activated()), openPages, SLOT(previousPageWithSwitcher()));
+#endif
 
     BookmarkManager::instance()->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
 
