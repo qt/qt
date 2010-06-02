@@ -25,6 +25,14 @@
     } else {
         goToLatLng(new google.maps.LatLng(window.qml.lat,window.qml.lng));
     }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+        window.qml.lat = initialLocation.lat;
+        window.qml.lng = initialLocation.lng;
+        goToLatLng(initialLocation);
+      });
+    }
   }
   function goToAddress() {
       if (geocoder) {

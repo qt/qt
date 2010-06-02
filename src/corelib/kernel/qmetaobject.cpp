@@ -1454,6 +1454,11 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     If the "compute" slot does not take exactly one QString, one int
     and one double in the specified order, the call will fail.
 
+    \warning this method will not test the validity of the arguments: \a object
+    must be an instance of the class of the QMetaObject of which this QMetaMethod
+    has been constructed with.  The arguments must have the same type as the ones
+    expected by the method, else, the behaviour is undefined.
+
     \sa Q_ARG(), Q_RETURN_ARG(), qRegisterMetaType(), QMetaObject::invokeMethod()
 */
 bool QMetaMethod::invoke(QObject *object,
@@ -1472,6 +1477,8 @@ bool QMetaMethod::invoke(QObject *object,
 {
     if (!object || !mobj)
         return false;
+
+    Q_ASSERT(mobj->cast(object));
 
     // check return type
     if (returnValue.data()) {

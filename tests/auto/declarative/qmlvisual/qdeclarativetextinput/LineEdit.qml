@@ -50,16 +50,15 @@ Item {
         }
         onPressed: {
             textInp.focus = true;
-            textInp.cursorPosition = textInp.xToPosition(translateX(mouse.x));
+            textInp.cursorPosition = textInp.positionAt(translateX(mouse.x));
         }
         onPositionChanged: {
-            textInp.moveCursorSelection(textInp.xToPosition(translateX(mouse.x)));
+            textInp.moveCursorSelection(textInp.positionAt(translateX(mouse.x)));
         }
         onReleased: {
         }
         onDoubleClicked: {
-            textInp.selectionStart=0;
-            textInp.selectionEnd=textInp.text.length;
+            textInp.selectAll()
         }
         z: textInp.z + 1
     }

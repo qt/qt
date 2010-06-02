@@ -1466,13 +1466,15 @@ void QDeclarativeListView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
     }
     d->clear();
+    QDeclarativeVisualModel *oldModel = d->model;
+    d->model = 0;
     d->setPosition(0);
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
     QDeclarativeVisualModel *vim = 0;
     if (object && (vim = qobject_cast<QDeclarativeVisualModel *>(object))) {
         if (d->ownModel) {
-            delete d->model;
+            delete oldModel;
             d->ownModel = false;
         }
         d->model = vim;
@@ -1480,6 +1482,8 @@ void QDeclarativeListView::setModel(const QVariant &model)
         if (!d->ownModel) {
             d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
+        } else {
+            d->model = oldModel;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
             dataModel->setModel(model);

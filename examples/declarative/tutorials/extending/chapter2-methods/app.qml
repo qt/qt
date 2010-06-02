@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Music 1.0
 import Qt 4.7
 
@@ -57,3 +57,4 @@ Rectangle {
         onClicked: aMusician.perform()
     }
 }
+//![0]

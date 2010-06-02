@@ -15,7 +15,7 @@ INSTALLS += target sources
 
 wince*: {
      addFiles.sources = frank.xbel jennifer.xbel
-     addFiles.path = \My Documents
+     addFiles.path = "\\My Documents"
      DEPLOYMENT += addFiles
 }
 

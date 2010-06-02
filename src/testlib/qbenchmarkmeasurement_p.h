@@ -84,6 +84,7 @@ public:
     bool isMeasurementAccepted(qint64 measurement);
     int adjustIterationCount(int sugestion);
     int adjustMedianCount(int suggestion);
+    bool needsWarmupIteration();
     QTest::QBenchmarkMetric metricType();
 private:
     QTime time;

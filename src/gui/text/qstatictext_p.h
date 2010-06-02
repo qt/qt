@@ -88,9 +88,18 @@ public:
         userData = newUserData;
     }
 
-    QFixedPoint *glyphPositions;                 // 8 bytes per glyph
-    glyph_t *glyphs;                             // 4 bytes per glyph
-    const QChar *chars;                          // 2 bytes per glyph
+    union {
+        QFixedPoint *glyphPositions;             // 8 bytes per glyph
+        int positionOffset;
+    };
+    union {
+        glyph_t *glyphs;                         // 4 bytes per glyph
+        int glyphOffset;
+    };
+    union {
+        QChar *chars;                            // 2 bytes per glyph
+        int charOffset;
+    };
                                                  // =================
                                                  // 14 bytes per glyph
 
@@ -134,14 +143,16 @@ public:
     QTransform matrix;                   // 80 bytes per text
     QStaticTextItem *items;              // 4 bytes per text
     int itemCount;                       // 4 bytes per text
+
     glyph_t *glyphPool;                  // 4 bytes per text
     QFixedPoint *positionPool;           // 4 bytes per text
+    QChar *charPool;                     // 4 bytes per text
 
     unsigned char needsRelayout : 1;
     unsigned char useBackendOptimizations : 1; // 1 byte per text
     unsigned char textFormat              : 2;
                                          // ================
-                                         // 163 bytes per text
+                                         // 167 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };

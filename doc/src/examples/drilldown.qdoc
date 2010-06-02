@@ -292,7 +292,7 @@
     \codeline
     \snippet examples/sql/drilldown/view.h 1
 
-    The QGraphicsView class is part of the \l {The Graphics View
+    The QGraphicsView class is part of the \l {Graphics View
     Framework} which we will use to display the images of Nokia's
     Qt offices. To be able to respond to user interaction;
     i.e., showing the
@@ -388,8 +388,8 @@
     reason we must create a custom item class is that we want to catch
     the item's hover events, animating the item when the mouse cursor
     is hovering over the image (by default, no items accept hover
-    events). Please see the \l{The Graphics View Framework}
-    documentation and the \l{Graphics View Examples} for more details.
+    events). Please see the \l{Graphics View Framework} documentation
+    and the \l{Graphics View Examples} for more details.
 
     \snippet examples/sql/drilldown/view.cpp 5
 
@@ -399,7 +399,7 @@
     function calls the private \c showInformation() function to pop up
     the associated information window.
 
-    \l {The Graphics View Framework} provides the qgraphicsitem_cast()
+    The \l {Graphics View Framework} provides the qgraphicsitem_cast()
     function to determine whether the given QGraphicsItem instance is
     of a given type. Note that if the event is not related to any of
     our image items, we pass it on to the base class implementation.
@@ -456,7 +456,7 @@
     borders.
 
     Finally, we store the location ID that this particular record is
-    associated with as well as a z-value. In the \l {The Graphics View
+    associated with as well as a z-value. In the \l {Graphics View
     Framework}, an item's z-value determines its position in the item
     stack. An item of high Z-value will be drawn on top of an item
     with a lower z-value if they share the same parent item. We also
@@ -477,7 +477,7 @@
     there is no current mouse grabber item. They are sent when the
     mouse cursor enters an item, when it moves around inside the item,
     and when the cursor leaves an item. As we mentioned earlier, none
-    of the \l {The Graphics View Framework}'s items accept hover
+    of the \l {Graphics View Framework}'s items accept hover
     event's by default.
 
     The QTimeLine class provides a timeline for controlling

@@ -57,6 +57,8 @@
 #include <qshareddata.h>
 #include <qpointer.h>
 #include <qlist.h>
+#include <qmutex.h>
+#include <qwaitcondition.h>
 
 #include "qdbusmessage.h"
 #include "qdbus_symbols_p.h"
@@ -73,24 +75,35 @@ class QDBusConnectionPrivate;
 class QDBusPendingCallPrivate: public QSharedData
 {
 public:
-    QDBusMessage sentMessage;
-    QDBusMessage replyMessage;
-//    QDBusMessage pendingReplyMessage; // used in the local loop
-    QDBusPendingCallWatcherHelper *watcherHelper;
-    DBusPendingCall *pending;
-    QDBusConnectionPrivate *connection;
+    // {
+    //     set only during construction:
+    const QDBusMessage sentMessage;
+    QDBusConnectionPrivate * const connection;
 
-    QString expectedReplySignature;
-    int expectedReplyCount;
-
-    // for the callback
+    // for the callback mechanism (see setReplyCallback and QDBusConnectionPrivate::sendWithReplyAsync)
     QPointer<QObject> receiver;
     QList<int> metaTypes;
     int methodIdx;
 
     bool autoDelete;
+    // }
 
-    QDBusPendingCallPrivate() : watcherHelper(0), pending(0), autoDelete(false)
+    mutable QMutex mutex;
+    QWaitCondition waitForFinishedCondition;
+
+    // {
+    //    protected by the mutex above:
+    QDBusPendingCallWatcherHelper *watcherHelper;
+    QDBusMessage replyMessage;
+    DBusPendingCall *pending;
+    volatile bool waitingForFinished;
+
+    QString expectedReplySignature;
+    int expectedReplyCount;
+    // }
+
+    QDBusPendingCallPrivate(const QDBusMessage &sent, QDBusConnectionPrivate *connection)
+        : sentMessage(sent), connection(connection), autoDelete(false), watcherHelper(0), pending(0), waitingForFinished(false)
     { }
     ~QDBusPendingCallPrivate();
     bool setReplyCallback(QObject *target, const char *member);

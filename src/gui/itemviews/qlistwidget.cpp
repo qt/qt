@@ -791,7 +791,7 @@ QListWidgetItem &QListWidgetItem::operator=(const QListWidgetItem &other)
 
     This operator uses QListWidgetItem::write().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QListWidgetItem &item)
 {
@@ -806,7 +806,7 @@ QDataStream &operator<<(QDataStream &out, const QListWidgetItem &item)
 
     This operator uses QListWidgetItem::read().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 {

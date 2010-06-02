@@ -1401,7 +1401,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
         {
             QStaticTextItem staticTextItem;
-            staticTextItem.chars = ti.chars;
+            staticTextItem.chars = const_cast<QChar *>(ti.chars);
             staticTextItem.fontEngine = ti.fontEngine;
             staticTextItem.glyphs = glyphs.data();
             staticTextItem.numChars = ti.num_chars;

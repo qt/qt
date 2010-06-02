@@ -867,6 +867,9 @@ qreal QDeclarativePathPercent::value() const
 
 void QDeclarativePathPercent::setValue(qreal value)
 {
-    _value = value;
+    if (_value != value) {
+        _value = value;
+        emit changed();
+    }
 }
 QT_END_NAMESPACE

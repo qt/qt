@@ -92,19 +92,6 @@
 
 #include <qdeclarativetester.h>
 
-#if defined (Q_OS_SYMBIAN)
-#define SYMBIAN_NETWORK_INIT
-#endif
-
-#if defined (SYMBIAN_NETWORK_INIT)
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <QTextCodec>
-#include "sym_iap_util.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class Runtime : public QObject
@@ -522,12 +509,6 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
 
-#if defined(Q_OS_SYMBIAN)
-    QAction *networkAction = new QAction(tr("Start &Network"), parent);
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(startNetwork()));
-    fileMenu->addAction(networkAction);
-#endif
-
 #if !defined(Q_OS_SYMBIAN)
     if (flatmenu) flatmenu->addSeparator();
 
@@ -827,7 +808,9 @@ void QDeclarativeViewer::statusChanged()
         initialSize = canvas->sizeHint();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
             updateSizeHints();
-            resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
+            if (!isFullScreen() && !isMaximized()) {
+                resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
+            }
         }
     }
 }
@@ -928,13 +911,6 @@ bool QDeclarativeViewer::open(const QString& file_or_url)
     canvas->setSource(url);
 
     return true;
-}
-
-void QDeclarativeViewer::startNetwork()
-{
-#if defined(SYMBIAN_NETWORK_INIT)
-    qt_SetDefaultIap();
-#endif
 }
 
 void QDeclarativeViewer::setAutoRecord(int from, int to)

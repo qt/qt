@@ -27,7 +27,7 @@ Item {
     TextEdit {
         width: 150
         height: 100
-        wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
+        wrapMode: TextEdit.Wrap
         text: "This is a test that text edit wraps correctly. thisisaverylongstringwithnospaces"
         y:300
     }

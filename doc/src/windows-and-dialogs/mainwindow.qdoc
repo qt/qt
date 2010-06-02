@@ -49,7 +49,6 @@
     \title Window and Dialog Widgets
     \brief Windows and Dialogs in Qt.
     \ingroup qt-gui-concepts
-    \ingroup frameworks-technologies
 
     A \l{Widgets Tutorial}{widget} that is not embedded in a parent widget is called a window.
     Usually, windows have a frame and a title bar, although it is also possible to create
@@ -81,7 +80,7 @@
 
     \section1 Main Windows and Dialogs
 
-    \l{The Application Main Window} provides the framework for building the
+    The \l{Application Main Window} provides the framework for building the
     application's main user interface, and are created by subclassing QMainWindow.
     QMainWindow has its own layout to which you can add a \l{QMenuBar}{menu bar},
     \l{QToolBar}{tool bars}, \l{QDockWidget}{dockable widgets} and a

@@ -131,7 +131,7 @@ public:
     bool checkVValid() const;
     bool checkHAnchorValid(QDeclarativeAnchorLine anchor) const;
     bool checkVAnchorValid(QDeclarativeAnchorLine anchor) const;
-    bool calcStretch(const QDeclarativeAnchorLine &edge1, const QDeclarativeAnchorLine &edge2, int offset1, int offset2, QDeclarativeAnchorLine::AnchorLine line, int &stretch);
+    bool calcStretch(const QDeclarativeAnchorLine &edge1, const QDeclarativeAnchorLine &edge2, qreal offset1, qreal offset2, QDeclarativeAnchorLine::AnchorLine line, qreal &stretch);
 
     void updateHorizontalAnchors();
     void updateVerticalAnchors();

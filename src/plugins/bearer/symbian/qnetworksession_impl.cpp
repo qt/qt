@@ -122,19 +122,10 @@ void QNetworkSessionPrivateImpl::configurationRemoved(QNetworkConfigurationPriva
     if (!publicConfig.isValid())
         return;
 
-    SymbianNetworkConfigurationPrivate *symbianConfig = toSymbianConfig(config);
-    
-    symbianConfig->mutex.lock();
-    TUint32 configNumericId = symbianConfig->numericId;
-    symbianConfig->mutex.unlock();
+    TUint32 publicNumericId =
+        toSymbianConfig(privateConfiguration(publicConfig))->numericIdentifier();
 
-    symbianConfig = toSymbianConfig(privateConfiguration(publicConfig));
-
-    symbianConfig->mutex.lock();
-    TUint32 publicNumericId = symbianConfig->numericId;
-    symbianConfig->mutex.unlock();
-
-    if (configNumericId == publicNumericId) {
+    if (toSymbianConfig(config)->numericIdentifier() == publicNumericId) {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
         qDebug() << "QNS this : " << QString::number((uint)this) << " - "
                  << "configurationRemoved IAP: " << QString::number(publicNumericId) << " : going to State: Invalid";
@@ -380,13 +371,11 @@ void QNetworkSessionPrivateImpl::open()
                     SymbianNetworkConfigurationPrivate *symbianConfig =
                         toSymbianConfig(privateConfiguration(publicConfig));
 
-                    QMutexLocker configLocker(&symbianConfig->mutex);
-
-                    if (connInfo().iIapId == symbianConfig->numericId) {
+                    if (connInfo().iIapId == symbianConfig->numericIdentifier()) {
                         if (iConnection.Attach(connInfo, RConnection::EAttachTypeNormal) == KErrNone) {
                             activeConfig = publicConfig;
 #ifndef QT_NO_NETWORKINTERFACE
-                            activeInterface = interface(symbianConfig->numericId);
+                            activeInterface = interface(symbianConfig->numericIdentifier());
 #endif
                             connected = ETrue;
                             startTime = QDateTime::currentDateTime();
@@ -416,9 +405,7 @@ void QNetworkSessionPrivateImpl::open()
             TConnPrefList pref;
             TExtendedConnPref prefs;
 
-            symbianConfig->mutex.lock();
-            prefs.SetIapId(symbianConfig->numericId);
-            symbianConfig->mutex.unlock();
+            prefs.SetIapId(symbianConfig->numericIdentifier());
             if (iConnectInBackground) {
                 prefs.SetNoteBehaviour( TExtendedConnPref::ENoteBehaviourConnSilent );
             }
@@ -427,9 +414,7 @@ void QNetworkSessionPrivateImpl::open()
             TCommDbConnPref pref;
             pref.SetDialogPreference(ECommDbDialogPrefDoNotPrompt);
 
-            symbianConfig->mutex.lock();
-            pref.SetIapId(symbianConfig->numericId);
-            symbianConfig->mutex.unlock();
+            pref.SetIapId(symbianConfig->numericIdentifier());
 #endif
             iConnection.Start(pref, iStatus);
             if (!IsActive()) {
@@ -444,17 +429,13 @@ void QNetworkSessionPrivateImpl::open()
 #ifdef OCC_FUNCTIONALITY_AVAILABLE
         TConnPrefList snapPref;
         TExtendedConnPref prefs;
-        symbianConfig->mutex.lock();
-        prefs.SetSnapId(symbianConfig->numericId);
-        symbianConfig->mutex.unlock();
+        prefs.SetSnapId(symbianConfig->numericIdentifier());
         if (iConnectInBackground) {
             prefs.SetNoteBehaviour( TExtendedConnPref::ENoteBehaviourConnSilent );
         }
         snapPref.AppendL(&prefs);
 #else
-        symbianConfig->mutex.lock();
-        TConnSnapPref snapPref(symbianConfig->numericId);
-        symbianConfig->mutex.unlock();
+        TConnSnapPref snapPref(symbianConfig->numericIdentifier());
 #endif
         iConnection.Start(snapPref, iStatus);
         if (!IsActive()) {
@@ -592,10 +573,8 @@ void QNetworkSessionPrivateImpl::stop()
                 SymbianNetworkConfigurationPrivate *symbianConfig =
                     toSymbianConfig(privateConfiguration(publicConfig));
 
-                QMutexLocker configLocker(&symbianConfig->mutex);
-
                 // See if connection Id matches with our Id. If so, stop() it.
-                if (symbianConfig->connectionId == connectionId) {
+                if (symbianConfig->connectionIdentifier() == connectionId) {
                     ret = iConnectionMonitor.SetBoolAttribute(connectionId,
                                                               0, // subConnectionId don't care
                                                               KConnectionStop,
@@ -715,12 +694,8 @@ void QNetworkSessionPrivateImpl::PreferredCarrierAvailable(TAccessPointInfo aOld
             SymbianNetworkConfigurationPrivate *symbianConfig =
                 toSymbianConfig(privateConfiguration(configs[i]));
 
-            QMutexLocker configLocker(&symbianConfig->mutex);
-
-            if (symbianConfig->numericId == aNewAPInfo.AccessPoint()) {
-                configLocker.unlock();
+            if (symbianConfig->numericIdentifier() == aNewAPInfo.AccessPoint())
                 emit preferredConfigurationChanged(configs[i], aIsSeamless);
-            }
         }
     } else {
         migrate();
@@ -854,9 +829,7 @@ quint64 QNetworkSessionPrivateImpl::transferredData(TUint dataType) const
                         SymbianNetworkConfigurationPrivate *symbianConfig =
                             toSymbianConfig(privateConfiguration(configs[i]));
 
-                        QMutexLocker configLocker(&symbianConfig->mutex);
-
-                        if (symbianConfig->numericId == apId) {
+                        if (symbianConfig->numericIdentifier() == apId) {
                             configFound = true;
                             break;
                         }
@@ -865,10 +838,8 @@ quint64 QNetworkSessionPrivateImpl::transferredData(TUint dataType) const
                     SymbianNetworkConfigurationPrivate *symbianConfig =
                         toSymbianConfig(privateConfiguration(config));
 
-                    symbianConfig->mutex.lock();
-                    if (symbianConfig->numericId == apId)
+                    if (symbianConfig->numericIdentifier() == apId)
                         configFound = true;
-                    symbianConfig->mutex.unlock();
                 }
                 if (configFound) {
                     TUint tData;
@@ -908,8 +879,7 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
             SymbianNetworkConfigurationPrivate *childConfig =
                 toSymbianConfig(privateConfiguration(children[i]));
 
-            QMutexLocker childLocker(&childConfig->mutex);
-            if (childConfig->numericId == iapId)
+            if (childConfig->numericIdentifier() == iapId)
                 return children[i];
         }
 
@@ -928,15 +898,11 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
         SymbianNetworkConfigurationPrivate *symbianConfig =
             toSymbianConfig(privateConfiguration(pt));
         if (symbianConfig) {
-            QMutexLocker configLocker(&symbianConfig->mutex);
-
             for (int i=0; i < children.count(); i++) {
                 SymbianNetworkConfigurationPrivate *childConfig =
                     toSymbianConfig(privateConfiguration(children[i]));
 
-                QMutexLocker childLocker(&childConfig->mutex);
-
-                if (childConfig->mappingName == symbianConfig->mappingName) {
+                if (childConfig->configMappingName() == symbianConfig->configMappingName()) {
                     return children[i];
                 }
             }
@@ -1034,15 +1000,13 @@ void QNetworkSessionPrivateImpl::RunL()
             SymbianNetworkConfigurationPrivate *symbianConfig =
                 toSymbianConfig(privateConfiguration(activeConfig));
 
-            symbianConfig->mutex.lock();
 #ifndef QT_NO_NETWORKINTERFACE
-            activeInterface = interface(symbianConfig->numericId);
+            activeInterface = interface(symbianConfig->numericIdentifier());
 #endif
             if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
                 serviceConfig = QNetworkConfigurationManager()
-                    .configurationFromIdentifier(symbianConfig->id);
+                    .configurationFromIdentifier(activeConfig.identifier());
             }
-            symbianConfig->mutex.unlock();
 
             startTime = QDateTime::currentDateTime();
 
@@ -1105,13 +1069,11 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         newState == QNetworkSession::Connected) {
         activeConfig = activeConfiguration(accessPointId);
 
+#ifndef QT_NO_NETWORKINTERFACE
         SymbianNetworkConfigurationPrivate *symbianConfig =
             toSymbianConfig(privateConfiguration(activeConfig));
 
-#ifndef QT_NO_NETWORKINTERFACE
-        symbianConfig->mutex.lock();
-        activeInterface = interface(symbianConfig->numericId);
-        symbianConfig->mutex.unlock();
+        activeInterface = interface(symbianConfig->numericIdentifier());
 #endif
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -1187,10 +1149,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
             SymbianNetworkConfigurationPrivate *symbianConfig =
                 toSymbianConfig(privateConfiguration(publicConfig));
 
-            QMutexLocker configLocker(&symbianConfig->mutex);
-            if (symbianConfig->numericId == accessPointId) {
-                configLocker.unlock();
-
+            if (symbianConfig->numericIdentifier() == accessPointId) {
                 state = newState;
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
                 qDebug() << "QNS this : " << QString::number((uint)this) << " - " << "===> EMIT State changed B to: " << state;
@@ -1202,10 +1161,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
             SymbianNetworkConfigurationPrivate *symbianConfig =
                 toSymbianConfig(privateConfiguration(activeConfig));
 
-            QMutexLocker configLocker(&symbianConfig->mutex);
-            if (symbianConfig->numericId == accessPointId) {
-                configLocker.unlock();
-
+            if (symbianConfig->numericIdentifier() == accessPointId) {
                 state = newState;
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
                 qDebug() << "QNS this : " << QString::number((uint)this) << " - " << "===> EMIT State changed C to: " << state;
@@ -1219,9 +1175,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
                 SymbianNetworkConfigurationPrivate *symbianConfig =
                     toSymbianConfig(privateConfiguration(subConfigurations[i]));
 
-                QMutexLocker configLocker(&symbianConfig->mutex);
-
-                if (symbianConfig->numericId == accessPointId) {
+                if (symbianConfig->numericIdentifier() == accessPointId) {
                     if (newState != QNetworkSession::Disconnected) {
                         state = newState;
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
@@ -1233,8 +1187,6 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
                         QNetworkConfiguration config = bestConfigFromSNAP(publicConfig);
                         if ((config.state() == QNetworkConfiguration::Defined) ||
                             (config.state() == QNetworkConfiguration::Discovered)) {
-
-                            configLocker.unlock();
 
                             state = newState;
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
@@ -1271,9 +1223,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         SymbianNetworkConfigurationPrivate *symbianConfig =
             toSymbianConfig(privateConfiguration(publicConfig));
 
-        symbianConfig->mutex.lock();
-        iDeprecatedConnectionId = symbianConfig->connectionId;
-        symbianConfig->mutex.unlock();
+        iDeprecatedConnectionId = symbianConfig->connectionIdentifier();
     }
 
     return retVal;
@@ -1369,7 +1319,11 @@ void QNetworkSessionPrivateImpl::handleSymbianConnectionStatusChange(TInt aConne
             qDebug() << "QNS this : " << QString::number((uint)this) << " - " << "reporting disconnection to manager.";
 #endif
             if (publicConfig.isValid()) {
-                engine->configurationStateChangeReport(toSymbianConfig(privateConfiguration(publicConfig))->numericId, QNetworkSession::Disconnected);
+                SymbianNetworkConfigurationPrivate *symbianConfig =
+                    toSymbianConfig(privateConfiguration(publicConfig));
+
+                engine->configurationStateChangeReport(symbianConfig->numericIdentifier(),
+                                                       QNetworkSession::Disconnected);
             }
             break;
         // Unhandled state

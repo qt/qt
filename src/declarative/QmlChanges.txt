@@ -1,6 +1,9 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 RC
 
+TextInput and TextEdit: 
+   - showInputPanelOnFocus property added
+   - openSoftwareInputPanel() and closeSoftwareInputPanel() functions added
 Flickable:
    - overShoot is replaced by boundsBehavior enumeration
    - flickingHorizontally and flickingVertically properties added
@@ -11,10 +14,13 @@ Component:
       status property instead
     - errorsString() renamed to errorString()
 
+TextInput xToPosition -> positionAt (to match TextEdit.positionAt)
+
 QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property
 "foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"
 component.createObject has gained a mandatory "parent" argument
+TextEdit and TextInput now have a "selectByMouse" property that defaults to false.
 
 C++ API
 -------

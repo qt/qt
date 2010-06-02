@@ -14,13 +14,13 @@ win32:count($$list($$INCLUDEPATH), 40, >) {
 
     WIN_INCLUDETEMP=$$INCLUDETEMP
 
-    EOC = $$escape_expand(\n\t)
+    EOC = $$escape_expand(\\n\\t)
 
     if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
         # the VCPROJ generator will replace the \r\h with the coded \r\n: &#x0d;&#x0a;
         # No other generator understands the \h
-        if(win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\r\h)
-        else: EOC = $$escape_expand(\\)$$escape_expand(\n\t)
+        if(win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\\r\\h)
+        else: EOC = $$escape_expand(\\\\\\n\\t)
     }
 
     unset(INCFILELIST)

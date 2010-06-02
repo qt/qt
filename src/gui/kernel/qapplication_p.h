@@ -412,6 +412,7 @@ public:
     static QPalette *set_pal;
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
+    static bool runtime_graphics_system;
 
 private:
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!
@@ -579,7 +580,8 @@ public:
     void _q_readRX71MultiTouchEvents();
 #endif
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
+    int pressureSupported;
     int maxTouchPressure;
     QList<QTouchEvent::TouchPoint> appAllTouchPoints;
 #endif

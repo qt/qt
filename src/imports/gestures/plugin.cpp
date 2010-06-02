@@ -61,5 +61,5 @@ QT_END_NAMESPACE
 
 #include "plugin.moc"
 
-Q_EXPORT_PLUGIN2(gesturesqmlplugin, QT_PREPEND_NAMESPACE(GestureAreaQmlPlugin));
+Q_EXPORT_PLUGIN2(qmlgesturesplugin, QT_PREPEND_NAMESPACE(GestureAreaQmlPlugin));
 

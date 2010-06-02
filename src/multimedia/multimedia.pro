@@ -13,7 +13,4 @@ include(video/video.pri)
 
 symbian: {
     TARGET.UID3 = 0x2001E627
-    contains(CONFIG, def_files) {
-        DEF_FILE=../../s60installs
-    }
 }

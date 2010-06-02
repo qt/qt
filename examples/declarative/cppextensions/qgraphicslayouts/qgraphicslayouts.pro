@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    graphicsLayouts \
-    layoutItem
+    layoutitem \
+    qgraphicsgridlayout \
+    qgraphicslinearlayout
