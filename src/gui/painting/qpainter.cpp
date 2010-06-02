@@ -72,6 +72,7 @@
 #include <private/qmath_p.h>
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -6245,10 +6246,9 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 {
     const qreal radiusBase = qMax(qreal(1), maxRadius);
 
-    QString key = QLatin1String("WaveUnderline-");
-    key += pen.color().name();
-    key += QLatin1Char('-');
-    key += QString::number(radiusBase);
+    QString key = QLatin1Literal("WaveUnderline-")
+                  % pen.color().name()
+                  % HexString<qreal>(radiusBase);
 
     QPixmap pixmap;
     if (QPixmapCache::find(key, pixmap))
