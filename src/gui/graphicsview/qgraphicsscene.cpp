@@ -699,6 +699,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
 
+#ifndef QT_NO_GESTURES
     QHash<QGesture *, QGraphicsObject *>::iterator it;
     for (it = gestureTargets.begin(); it != gestureTargets.end();) {
         if (it.value() == item)
@@ -706,6 +707,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         else
             ++it;
     }
+
     QGraphicsObject *dummy = static_cast<QGraphicsObject *>(item);
     cachedTargetItems.removeOne(dummy);
     cachedItemGestures.remove(dummy);
@@ -713,6 +715,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
         ungrabGesture(item, gesture);
+#endif // QT_NO_GESTURES
 }
 
 /*!
@@ -1180,11 +1183,13 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
     if (QGraphicsObject *object = item->toGraphicsObject()) {
+#ifndef QT_NO_GESTURES
         QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
         if (gestureManager) {
             if (gestureManager->filterEvent(object, event))
                 return true;
         }
+#endif // QT_NO_GESTURES
     }
 
     if (filterEvent(item, event))
@@ -2602,8 +2607,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->enableTouchEventsOnViews();
     }
 
+#ifndef QT_NO_GESTURES
     foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
         d->grabGesture(item, gesture);
+#endif
 
     // Update selection lists
     if (item->isSelected())
@@ -3525,10 +3532,12 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::TouchEnd:
         d->touchEventHandler(static_cast<QTouchEvent *>(event));
         break;
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
     case QEvent::GestureOverride:
         d->gestureEventHandler(static_cast<QGestureEvent *>(event));
         break;
+#endif // QT_NO_GESTURES
     default:
         return QObject::event(event);
     }
@@ -5637,8 +5646,10 @@ bool QGraphicsScene::sendEvent(QGraphicsItem *item, QEvent *event)
 void QGraphicsScenePrivate::addView(QGraphicsView *view)
 {
     views << view;
+#ifndef QT_NO_GESTURES
     foreach (Qt::GestureType gesture, grabbedGestures.keys())
         view->viewport()->grabGesture(gesture);
+#endif
 }
 
 void QGraphicsScenePrivate::removeView(QGraphicsView *view)
@@ -5968,6 +5979,7 @@ void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
     dispatchHoverEvent(&hoverEvent);
 }
 
+#ifndef QT_NO_GESTURES
 void QGraphicsScenePrivate::gestureTargetsAtHotSpots(const QSet<QGesture *> &gestures,
                                               Qt::GestureFlag flag,
                                               QHash<QGraphicsObject *, QSet<QGesture *> > *targets,
@@ -6356,6 +6368,7 @@ void QGraphicsScenePrivate::ungrabGesture(QGraphicsItem *item, Qt::GestureType g
             view->viewport()->ungrabGesture(gesture);
     }
 }
+#endif // QT_NO_GESTURES
 
 QT_END_NAMESPACE
 

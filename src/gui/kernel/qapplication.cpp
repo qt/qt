@@ -187,8 +187,10 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     directPainters = 0;
 #endif
 
+#ifndef QT_NO_GESTURES
     gestureManager = 0;
     gestureWidget = 0;
+#endif // QT_NO_GESTURES
 
 #if defined(Q_WS_X11) || defined(Q_WS_WIN)
     move_cursor = 0;
@@ -3718,6 +3720,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
     }
 
+#ifndef QT_NO_GESTURES
     // walk through parents and check for gestures
     if (d->gestureManager) {
         switch (e->type()) {
@@ -3762,7 +3765,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
         }
     }
-
+#endif // QT_NO_GESTURES
 
     // User input and window activation makes tooltips sleep
     switch (e->type()) {
@@ -4267,6 +4270,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = d->notify_helper(receiver, e);
         break;
 
+#ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
     {
         // only propagate the first gesture event (after the GID_BEGIN)
@@ -4345,6 +4349,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
     }
+#endif // QT_NO_GESTURES
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -5777,6 +5782,7 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
     QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
 }
 
+#ifndef QT_NO_GESTURES
 QGestureManager* QGestureManager::instance()
 {
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
@@ -5784,6 +5790,7 @@ QGestureManager* QGestureManager::instance()
         qAppPriv->gestureManager = new QGestureManager(qApp);
     return qAppPriv->gestureManager;
 }
+#endif // QT_NO_GESTURES
 
 // These pixmaps approximate the images in the Windows User Interface Guidelines.
 

@@ -485,7 +485,9 @@ private:
     friend class QGraphicsSceneBspTreeIndexPrivate;
     friend class QGraphicsItemEffectSourcePrivate;
     friend class QGraphicsTransformPrivate;
+#ifndef QT_NO_GESTURES
     friend class QGestureManager;
+#endif
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
     friend bool qt_closestItemFirst(const QGraphicsItem *, const QGraphicsItem *);
@@ -572,8 +574,10 @@ public:
     using QObject::children;
 #endif
 
+#ifndef QT_NO_GESTURES
     void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
     void ungrabGesture(Qt::GestureType type);
+#endif
 
 protected Q_SLOTS:
     void updateMicroFocus();
