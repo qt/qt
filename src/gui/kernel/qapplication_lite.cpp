@@ -804,28 +804,7 @@ void QApplicationPrivate::processCloseEvent(QWidget *tlw)
 
 void QApplicationPrivate::processTouchEvent(QWindowSystemInterface::TouchEvent *e)
 {
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    Qt::TouchPointStates states;
-
-    int primaryPoint = -1;
-    foreach(struct QWindowSystemInterface::TouchPoint point, e->points) {
-        QTouchEvent::TouchPoint p;
-        p.setId(point.id);
-        p.setPressure(point.pressure);
-        states |= point.state;
-        if (point.isPrimary) {
-            point.state |= Qt::TouchPointPrimary;
-            primaryPoint = point.id;
-        }
-        p.setState(point.state);
-        p.setRect(point.area);
-        p.setScreenPos(point.area.center());
-        p.setNormalizedPos(point.normalPosition);
-
-        touchPoints.append(p);
-    }
-
-    translateRawTouchEvent(e->widget.data(), e->devType, touchPoints);
+    translateRawTouchEvent(e->widget.data(), e->devType, e->points);
 }
 
 void QApplicationPrivate::reportScreenCount(int count)

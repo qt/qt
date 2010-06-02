@@ -134,11 +134,37 @@ void QWindowSystemInterfacePrivate::queueUserEvent(QWindowSystemInterface::UserE
         dispatcher->wakeUp();
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWidget *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, QList<struct TouchPoint> points)
+void QWindowSystemInterface::handleTouchEvent(QWidget *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points)
 {
     if (!points.size()) // Touch events must have at least one point
         return;
-    TouchEvent *e = new TouchEvent(tlw, timestamp, type, devType, points);
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    Qt::TouchPointStates states;
+    QTouchEvent::TouchPoint p;
+
+    int primaryPoint = -1;
+    QList<struct TouchPoint>::const_iterator point = points.constBegin();
+    QList<struct TouchPoint>::const_iterator end = points.constEnd();
+    while (point != end) {
+        p.setId(point->id);
+        p.setPressure(point->pressure);
+        states |= point->state;
+        Qt::TouchPointStates state = point->state;
+        if (point->isPrimary) {
+            state |= Qt::TouchPointPrimary;
+            primaryPoint = point->id;
+        }
+        p.setState(state);
+        p.setRect(point->area);
+        p.setScreenPos(point->area.center());
+        p.setNormalizedPos(point->normalPosition);
+
+        touchPoints.append(p);
+        ++point;
+    }
+
+    TouchEvent *e = new TouchEvent(tlw, timestamp, type, devType, touchPoints);
     QWindowSystemInterfacePrivate::queueUserEvent(e);
 }
 

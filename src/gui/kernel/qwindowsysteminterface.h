@@ -85,11 +85,11 @@ public:
         Qt::TouchPointStates state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
     };
 
-    static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, QList<struct TouchPoint> points) {
+    static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points) {
         handleTouchEvent(w, eventTime.elapsed(), type, devType, points);
     }
 
-    static void handleTouchEvent(QWidget *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, QList<struct TouchPoint> points);
+    static void handleTouchEvent(QWidget *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
 
     // delivered directly by the plugin via spontaneous events
     static void handleGeometryChange(QWidget *w, const QRect &newRect);
@@ -143,10 +143,10 @@ public:
 
     class TouchEvent : public UserEvent {
     public:
-        TouchEvent(QWidget *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, QList<struct TouchPoint> p)
+        TouchEvent(QWidget *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p)
             :UserEvent(w, time, t) { devType = d; points = p; }
         QTouchEvent::DeviceType devType;
-        QList<struct TouchPoint> points;
+        QList<QTouchEvent::TouchPoint> points;
     };
 
 private:
