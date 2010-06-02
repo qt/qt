@@ -1278,14 +1278,30 @@ static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
     return data.get();
 }
 
+PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<ImageData> imageData, ExceptionCode& ec) const
+{
+    if (!imageData) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+
+    IntSize size(imageData->width(), imageData->height());
+    return createEmptyImageData(size);
+}
+
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionCode& ec) const
 {
     ec = 0;
+    if (!sw || !sh) {
+        ec = INDEX_SIZE_ERR;
+        return 0;
+    }
     if (!isfinite(sw) || !isfinite(sh)) {
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    FloatSize unscaledSize(sw, sh);
+
+    FloatSize unscaledSize(fabs(sw), fabs(sh));
     IntSize scaledSize = canvas()->convertLogicalToDevice(unscaledSize);
     if (scaledSize.width() < 1)
         scaledSize.setWidth(1);
@@ -1301,7 +1317,15 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy,
         ec = SECURITY_ERR;
         return 0;
     }
-    
+    if (!sw || !sh) {
+        ec = INDEX_SIZE_ERR;
+        return 0;
+    }
+    if (!isfinite(sx) || !isfinite(sy) || !isfinite(sw) || !isfinite(sh)) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+
     FloatRect unscaledRect(sx, sy, sw, sh);
     IntRect scaledRect = canvas()->convertLogicalToDevice(unscaledRect);
     if (scaledRect.width() < 1)
@@ -1332,7 +1356,7 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy,
     }
     if (!isfinite(dx) || !isfinite(dy) || !isfinite(dirtyX) || 
         !isfinite(dirtyY) || !isfinite(dirtyWidth) || !isfinite(dirtyHeight)) {
-        ec = INDEX_SIZE_ERR;
+        ec = NOT_SUPPORTED_ERR;
         return;
     }
 
