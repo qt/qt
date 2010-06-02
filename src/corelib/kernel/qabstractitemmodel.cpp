@@ -532,7 +532,7 @@ bool QAbstractItemModelPrivate::variantLessThan(const QVariant &v1, const QVaria
     case 1: //floating point
         return v1.toReal() < v2.toReal();
     default:
-        return v1.toString() < v2.toString();
+        return v1.toString().localeAwareCompare(v2.toString()) < 0;
     }
 }
 
