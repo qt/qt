@@ -51,7 +51,6 @@
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QUrl>
 
-#include <QtGui/QComboBox>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QMouseEvent>
 
@@ -108,6 +107,12 @@ struct ExtensionMap {
     { "about:blank", 0 },
     { 0, 0 }
 };
+
+HelpViewer::~HelpViewer()
+{
+    TRACE_OBJ
+    delete d;
+}
 
 bool HelpViewer::isLocalUrl(const QUrl &url)
 {
@@ -206,32 +211,6 @@ bool HelpViewer::handleForwardBackwardMouseButtons(QMouseEvent *event)
     }
 
     return false;
-}
-
-bool HelpViewer::openPagesListRequested(const QMouseEvent *event) const
-{
-    return event->buttons() == Qt::RightButton
-        && event->modifiers() == Qt::ControlModifier;
-}
-
-bool HelpViewer::openPagesListRequested(const QContextMenuEvent *event) const
-{
-    return event->reason() == QContextMenuEvent::Mouse
-        && event->modifiers() == Qt::ControlModifier;
-}
-
-void HelpViewer::showOpenPagesList(const QPoint &pos)
-{
-    QComboBox * const openPagesBox = d->openPagesBox(this);
-    openPagesBox->move(pos);
-    openPagesBox->setCurrentIndex(CentralWidget::instance()->currentIndex());
-    openPagesBox->showPopup();
-}
-
-HelpViewer::~HelpViewer()
-{
-    TRACE_OBJ
-    delete d;
 }
 
 QT_END_NAMESPACE
