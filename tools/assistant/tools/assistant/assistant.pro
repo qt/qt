@@ -47,7 +47,8 @@ HEADERS += aboutdialog.h \
     openpagesmodel.h \
     globalactions.h \
     openpageswidget.h \
-    openpagesmanager.h
+    openpagesmanager.h \
+    openpagesswitcher.h
 win32:HEADERS += remotecontrol_win.h
 
 SOURCES += aboutdialog.cpp \
@@ -78,7 +79,8 @@ SOURCES += aboutdialog.cpp \
     openpagesmodel.cpp \
     globalactions.cpp \
     openpageswidget.cpp \
-    openpagesmanager.cpp
+    openpagesmanager.cpp \
+    openpagesswitcher.cpp
 contains(QT_CONFIG, webkit) {
     SOURCES += helpviewer_qwv.cpp
 } else {

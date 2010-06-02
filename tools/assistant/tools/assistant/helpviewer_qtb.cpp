@@ -298,10 +298,6 @@ void HelpViewer::mousePressEvent(QMouseEvent *e)
     if (handleForwardBackwardMouseButtons(e))
         return;
 #endif
-    if (openPagesListRequested(e)) {
-        showOpenPagesList(e->pos());
-        return;
-    }
 
     QTextBrowser::mousePressEvent(e);
 }
@@ -345,9 +341,6 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 void HelpViewer::contextMenuEvent(QContextMenuEvent *event)
 {
     TRACE_OBJ
-
-    if (openPagesListRequested(event))
-        return;
 
     QMenu menu(QString(), 0);
     QUrl link;
