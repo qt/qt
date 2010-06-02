@@ -181,11 +181,13 @@ HelpViewer *OpenPagesManager::createPage(const QUrl &url, bool fromSearch)
 
 HelpViewer *OpenPagesManager::createNewPageFromSearch(const QUrl &url)
 {
+    TRACE_OBJ
     return createPage(url, true);
 }
 
 void OpenPagesManager::closePage(const QModelIndex &index)
 {
+    TRACE_OBJ
     if (index.isValid())
         removePage(index.row());
 }
@@ -282,23 +284,27 @@ void OpenPagesManager::closePagesExcept(const QModelIndex &index)
 
 QAbstractItemView *OpenPagesManager::openPagesWidget() const
 {
+    TRACE_OBJ
     return m_openPagesWidget;
 }
 
 void OpenPagesManager::nextPage()
 {
+    TRACE_OBJ
     nextOrPreviousPage(1);
 }
 
 void OpenPagesManager::previousPage()
 {
+    TRACE_OBJ
     nextOrPreviousPage(-1);
 }
 
 void OpenPagesManager::nextOrPreviousPage(int offset)
 {
+    TRACE_OBJ
     setCurrentPage((CentralWidget::instance()->currentIndex() + offset
-                    + m_model->rowCount()) % m_model->rowCount());
+        + m_model->rowCount()) % m_model->rowCount());
 }
 
 OpenPagesManager *OpenPagesManager::m_instance = 0;

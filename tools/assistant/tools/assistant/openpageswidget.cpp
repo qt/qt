@@ -42,6 +42,7 @@
 #include "openpageswidget.h"
 
 #include "openpagesmodel.h"
+#include "tracer.h"
 
 #include <QtGui/QApplication>
 #include <QtGui/QHeaderView>
@@ -57,13 +58,15 @@
 QT_BEGIN_NAMESPACE
 
 OpenPagesDelegate::OpenPagesDelegate(QObject *parent)
-     : QStyledItemDelegate(parent)
+    : QStyledItemDelegate(parent)
 {
+    TRACE_OBJ
 }
 
 void OpenPagesDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
            const QModelIndex &index) const
 {
+    TRACE_OBJ
     if (option.state & QStyle::State_MouseOver) {
         if ((QApplication::mouseButtons() & Qt::LeftButton) == 0)
             pressedIndex = QModelIndex();
@@ -90,6 +93,7 @@ void OpenPagesDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
 OpenPagesWidget::OpenPagesWidget(OpenPagesModel *model)
 {
+    TRACE_OBJ
     setModel(model);
     setIndentation(0);
     setItemDelegate((m_delegate = new OpenPagesDelegate(this)));
@@ -122,10 +126,12 @@ OpenPagesWidget::OpenPagesWidget(OpenPagesModel *model)
 
 OpenPagesWidget::~OpenPagesWidget()
 {
+    TRACE_OBJ
 }
 
 void OpenPagesWidget::contextMenuRequested(QPoint pos)
 {
+    TRACE_OBJ
     QModelIndex index = indexAt(pos);
     if (!index.isValid())
         return;
@@ -152,6 +158,7 @@ void OpenPagesWidget::contextMenuRequested(QPoint pos)
 
 void OpenPagesWidget::handlePressed(const QModelIndex &index)
 {
+    TRACE_OBJ
     if (index.column() == 0)
         emit setCurrentPage(index);
 
@@ -161,7 +168,8 @@ void OpenPagesWidget::handlePressed(const QModelIndex &index)
 
 void OpenPagesWidget::handleClicked(const QModelIndex &index)
 {
-    // implemented here to handle the funky close button and to  work around a
+    TRACE_OBJ
+    // implemented here to handle the funky close button and to work around a
     // bug in item views where the delegate wouldn't get the QStyle::State_MouseOver
     if (index.column() == 1) {
         if (model()->rowCount() > 1)
@@ -177,6 +185,7 @@ void OpenPagesWidget::handleClicked(const QModelIndex &index)
 
 bool OpenPagesWidget::eventFilter(QObject *obj, QEvent *event)
 {
+    TRACE_OBJ
     if (obj == this && event->type() == QEvent::KeyPress) {
         if (currentIndex().isValid()) {
             QKeyEvent *ke = static_cast<QKeyEvent*>(event);
