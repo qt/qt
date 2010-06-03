@@ -39,11 +39,17 @@
 **
 ****************************************************************************/
 
+//! [import]
 import Qt 4.7
+//! [import]
 
-Rectangle { width: 200; height: 100
+Rectangle {
+    width: childrenRect.width
+    height: childrenRect.height
+
 Row {
-//! [0]
+
+//! [intro]
 Rectangle { 
     width: 100; height: 100
     color: "green"
@@ -53,8 +59,9 @@ Rectangle {
         onClicked: { parent.color = 'red' }
     }
 }
-//! [0]
-//! [1]
+//! [intro]
+
+//! [intro-extended]
 Rectangle {
     width: 100; height: 100
     color: "green"
@@ -70,6 +77,43 @@ Rectangle {
         }
     }
 }
-//! [1]
+//! [intro-extended]
+
+//! [drag]
+Rectangle {
+    id: container
+    width: 600; height: 200
+
+    Image {
+        id: pic
+        source: "pics/qt.png"
+        opacity: (600.0 - pic.x) / 600
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: pic
+            drag.axis: Drag.XAxis
+            drag.minimumX: 0
+            drag.maximumX: container.width - pic.width
+        }
+    }
 }
+//! [drag]
+
+//! [mousebuttons]
+Text {
+    text: mouseArea.pressedButtons & Qt.RightButton ? "right" : ""
+    horizontalAlignment: Text.AlignHCenter
+    verticalAlignment: Text.AlignVCenter
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+    }
+}
+//! [mousebuttons]
+
+}
+
 }

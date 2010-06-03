@@ -557,6 +557,8 @@ void QDeclarativeAbstractAnimation::timelineComplete()
         NumberAnimation { ... duration: 200 }
     }
     \endcode
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -627,6 +629,8 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
     When used in a transition, ColorAnimation will by default animate
     all properties of type color that are changing. If a property or properties
     are explicitly set for the animation, then those will be used instead.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -1082,11 +1086,13 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
-    Animate a set of properties over 200ms, from their values in the start state to
+    For example, to animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
     NumberAnimation { properties: "x,y,scale"; duration: 200 }
     \endcode
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1156,6 +1162,8 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
     \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1224,7 +1232,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
     When used in a transition RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing
-    your own properties via \c properties or \c property.
+    your own properties via \l {PropertyAnimation::properties}{properties} or 
+    \l {PropertyAnimation::property}{property}.
 
     In the following example we use RotationAnimation to animate the rotation
     between states via the shortest path.
@@ -1238,6 +1247,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
         RotationAnimation { direction: RotationAnimation.Shortest }
     }
     \endqml
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1446,7 +1457,7 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
     }
     \endcode
 
-    \sa ParallelAnimation
+    \sa ParallelAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSequentialAnimation::QDeclarativeSequentialAnimation(QObject *parent) :
@@ -1508,7 +1519,7 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
     }
     \endcode
 
-    \sa SequentialAnimation
+    \sa SequentialAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -1657,6 +1668,8 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Depending on how the animation is used, the set of properties normally used will be
     different. For more information see the individual property documentation, as well
     as the \l{QML Animation} introduction.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativePropertyAnimation::QDeclarativePropertyAnimation(QObject *parent)
@@ -2319,6 +2332,8 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
 
     When used in a transition, ParentAnimation will by default animate
     all ParentChanges.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
