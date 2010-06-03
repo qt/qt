@@ -161,6 +161,51 @@ static inline bool hasBackingStoreSupport()
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
+
+QRefCountedWidgetBackingStore::QRefCountedWidgetBackingStore()
+    :   m_ptr(0)
+    ,   m_count(0)
+{
+
+}
+
+QRefCountedWidgetBackingStore::~QRefCountedWidgetBackingStore()
+{
+    delete m_ptr;
+}
+
+void QRefCountedWidgetBackingStore::create(QWidget *widget)
+{
+    destroy();
+    m_ptr = new QWidgetBackingStore(widget);
+    m_count = 0;
+}
+
+void QRefCountedWidgetBackingStore::destroy()
+{
+    delete m_ptr;
+    m_ptr = 0;
+    m_count = 0;
+}
+
+void QRefCountedWidgetBackingStore::ref()
+{
+    Q_ASSERT(m_ptr);
+    ++m_count;
+}
+
+void QRefCountedWidgetBackingStore::deref()
+{
+    if (m_count) {
+        Q_ASSERT(m_ptr);
+        if (0 == --m_count) {
+            delete m_ptr;
+            m_ptr = 0;
+        }
+    }
+}
+
+
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
       , extra(0)
@@ -1324,11 +1369,9 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     // a real toplevel window needs a backing store
     if (isWindow() && windowType() != Qt::Desktop) {
-        delete d->topData()->backingStore;
-        // QWidgetBackingStore will check this variable, hence it must be 0
-        d->topData()->backingStore = 0;
+        d->topData()->backingStore.destroy();
         if (hasBackingStoreSupport())
-            d->topData()->backingStore = new QWidgetBackingStore(this);
+            d->topData()->backingStore.create(this);
     }
 
     d->setModal_sys();
@@ -1451,8 +1494,7 @@ QWidget::~QWidget()
         // the backing store will delete its window surface, which may or may
         // not have a reference to this widget that will be used later to
         // notify the window it no longer has a surface.
-        delete d->extra->topextra->backingStore;
-        d->extra->topextra->backingStore = 0;
+        d->extra->topextra->backingStore.destroy();
     }
 #endif
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
@@ -1540,7 +1582,6 @@ void QWidgetPrivate::createTLExtra()
         QTLWExtra* x = extra->topextra = new QTLWExtra;
         x->icon = 0;
         x->iconPixmap = 0;
-        x->backingStore = 0;
         x->windowSurface = 0;
         x->sharedPainter = 0;
         x->incw = x->inch = 0;
@@ -1619,7 +1660,7 @@ void QWidgetPrivate::deleteExtra()
 #endif
         if (extra->topextra) {
             deleteTLSysExtra();
-            delete extra->topextra->backingStore;
+            extra->topextra->backingStore.destroy();
             delete extra->topextra->icon;
             delete extra->topextra->iconPixmap;
 #if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)

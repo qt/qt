@@ -392,7 +392,7 @@ void QWSManagerPrivate::dirtyRegion(int decorationRegion,
                                     const QRegion &clip)
 {
     QTLWExtra *topextra = managed->d_func()->extra->topextra;
-    QWidgetBackingStore *bs = topextra->backingStore;
+    QWidgetBackingStore *bs = topextra->backingStore.data();
     const bool pendingUpdateRequest = bs->isDirty();
 
     if (decorationRegion == QDecoration::All) {
