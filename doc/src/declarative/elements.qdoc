@@ -59,8 +59,8 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l State
 \o \l PropertyChanges
 \o \l StateGroup
+\o \l StateChangeScript
 \o \l ParentChange (Item-specific)
-\o \l StateChangeScript (Item-specific)
 \o \l AnchorChanges (Item-specific)
 \endlist
 
