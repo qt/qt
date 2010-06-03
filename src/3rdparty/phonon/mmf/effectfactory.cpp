@@ -183,8 +183,9 @@ EffectFactory::EffectData EffectFactory::getData()
          /* defaultValue */       QVariant(bool(true)));
     data.m_parameters.append(param);
 
-    if (data.m_supported = BackendNode::getParameters
-            (stream.data(), data.m_parameters)) {
+    data.m_supported = BackendNode::getParameters(stream.data(),
+                                                  data.m_parameters);
+    if (data.m_supported) {
         const QString description = QCoreApplication::translate
             ("Phonon::MMF::EffectFactory", BackendNode::description());
         data.m_descriptions.insert("name", description);
