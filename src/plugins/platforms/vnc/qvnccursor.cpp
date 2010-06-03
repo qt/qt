@@ -64,14 +64,14 @@ void QVNCCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
     if (useVncCursor) {
         server->setDirtyCursor();
     } else {
-        screen->setDirty(QRect(0,0,1,1));
+        setDirty();
     }
 }
 
 void QVNCCursor::setCursorMode(bool vnc)
 {
     if (vnc) {
-        screen->setDirty(dirtyRect());
+        setDirty();
         server->setDirtyCursor();
     } else {
         server->setDirtyCursor();

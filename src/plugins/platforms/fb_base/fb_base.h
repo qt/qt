@@ -29,6 +29,10 @@ public:
     virtual void pointerEvent(const QMouseEvent & event);
     virtual void changeCursor(QCursor * widgetCursor, QWidget * widget);
 
+    virtual void setDirty() { dirty = true; screen->setDirty(QRect()); }
+    virtual bool isDirty() { return dirty; }
+    virtual bool isOnScreen() { return onScreen; }
+
 protected:
     QGraphicsSystemCursorImage * graphic;
 
@@ -39,6 +43,8 @@ private:
     QRect currentRect;      // next place to draw the cursor
     QRect prevRect;         // last place the cursor was drawn
     QRect getCurrentRect();
+    bool dirty;
+    bool onScreen;
 };
 
 class QFbWindow;

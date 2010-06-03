@@ -26,25 +26,29 @@ void QGraphicsSystemSoftwareCursor::pointerEvent(const QMouseEvent & e)
 {
     Q_UNUSED(e);
     currentRect = getCurrentRect();
-    screen->setDirty(currentRect);
+    setDirty();
 }
 
 QRect QGraphicsSystemSoftwareCursor::drawCursor(QPainter & painter)
 {
+    dirty = false;
     if (currentRect.isNull())
+        return QRect();
+
+    if (!currentRect.intersects(screen->geometry()))
         return QRect();
 
     prevRect = currentRect;
     painter.drawImage(prevRect, *graphic->image());
+    onScreen = true;
     return prevRect;
 }
 
 QRect QGraphicsSystemSoftwareCursor::dirtyRect()
 {
-    if (!prevRect.isNull()) {
-        QRect rect = prevRect;
-        prevRect = QRect();
-        return rect;
+    if (onScreen) {
+        onScreen = false;
+        return prevRect;
     }
     return QRect();
 }
@@ -78,7 +82,7 @@ void QGraphicsSystemSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget
         setCursor(shape);
     }
     currentRect = getCurrentRect();
-    screen->setDirty(currentRect);
+    setDirty();
 }
 
 QFbScreen::QFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), compositePainter(0), isUpToDate(false)
@@ -126,8 +130,6 @@ QFbScreen::~QFbScreen()
 
 void QFbScreen::setDirty(const QRect &rect)
 {
-
-//    qDebug() << "QFbScreen::setDirty" << rect;
     repaintRegion += rect;
     if (!redrawTimer.isActive()) {
         redrawTimer.start();
@@ -165,9 +167,9 @@ void QFbScreen::generateRects()
 QRegion QFbScreen::doRedraw()
 {
     QRegion touchedRegion;
-    if (cursor)
+    if (cursor && cursor->isDirty() && cursor->isOnScreen())
         repaintRegion += cursor->dirtyRect();
-    if (repaintRegion.isEmpty())
+    if (repaintRegion.isEmpty() && !cursor->isDirty())
         return touchedRegion;
 
     QVector<QRect> rects = repaintRegion.rects();
@@ -223,7 +225,7 @@ QRegion QFbScreen::doRedraw()
     }
 
     QRect cursorRect;
-    if (cursor) {
+    if (cursor && cursor->isDirty()) {
         cursorRect = cursor->drawCursor(*compositePainter);
         touchedRegion += cursorRect;
     }
