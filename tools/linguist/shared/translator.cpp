@@ -689,7 +689,7 @@ void Translator::normalizeTranslations(ConversionData &cd)
         cd.appendError(QLatin1String(
             "Removed plural forms as the target language has less "
             "forms.\nIf this sounds wrong, possibly the target language is "
-            "not set or recognized.\n"));
+            "not set or recognized."));
 }
 
 QString Translator::guessLanguageCodeFromFileName(const QString &filename)

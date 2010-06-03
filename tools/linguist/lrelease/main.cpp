@@ -108,7 +108,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
     ConversionData cd;
     bool ok = tor.load(tsFileName, cd, QLatin1String("auto"));
     if (!ok) {
-        std::cerr << "lrelease error: " << qPrintable(cd.error()) << std::endl;
+        std::cerr << "lrelease error: " << qPrintable(cd.error());
     } else {
         if (!cd.errors().isEmpty())
             printOut(cd.error());
@@ -143,7 +143,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
 
     if (!ok) {
         std::cerr << "lrelease error: cannot save '" << qPrintable(qmFileName)
-                  << "': " << qPrintable(cd.error()) << std::endl;
+                  << "': " << qPrintable(cd.error());
     } else if (!cd.errors().isEmpty()) {
         printOut(cd.error());
     }
