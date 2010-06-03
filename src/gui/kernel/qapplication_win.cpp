@@ -1527,7 +1527,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
     case WM_SETTINGCHANGE:
 #ifdef Q_WS_WINCE
         // CE SIP hide/show
-        if (wParam == SPI_SETSIPINFO) {
+        if (qt_desktopWidget && wParam == SPI_SETSIPINFO) {
             QResizeEvent re(QSize(0, 0), QSize(0, 0)); // Calculated by QDesktopWidget
             QApplication::sendEvent(qt_desktopWidget, &re);
             break;
