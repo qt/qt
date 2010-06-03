@@ -107,7 +107,23 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
 int qFindStringBoyerMoore(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
-
+static inline int qt_last_index_of(const QChar *haystack, int haystackLen, const QChar &needle,
+                                   int from, Qt::CaseSensitivity cs);
+static inline int qt_string_count(const QChar *haystack, int haystackLen,
+                                  const QChar *needle, int needleLen,
+                                  Qt::CaseSensitivity cs);
+static inline int qt_string_count(const QChar *haystack, int haystackLen,
+                                  const QChar &needle, Qt::CaseSensitivity cs);
+static inline int qt_find_latin1_string(const QChar *hay, int size, const QLatin1String &needle,
+                                        int from, Qt::CaseSensitivity cs);
+static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
+                                  const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
+static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
+                                  const QLatin1String &needle, Qt::CaseSensitivity cs);
+static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
+                                const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
+static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
+                                const QLatin1String &needle, Qt::CaseSensitivity cs);
 
 // Unicode case-insensitive comparison
 static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const ushort *be)
@@ -2446,14 +2462,10 @@ int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 
   \sa lastIndexOf(), contains(), count()
 */
+
 int QString::indexOf(const QLatin1String &str, int from, Qt::CaseSensitivity cs) const
 {
-    int len = qstrlen(str.latin1());
-    QVarLengthArray<ushort> s(len);
-    for (int i = 0; i < len; ++i)
-        s[i] = str.latin1()[i];
-
-    return qFindString(unicode(), length(), from, (const QChar *)s.data(), len, cs);
+    return qt_find_latin1_string(unicode(), size(), str, from, cs);
 }
 
 int qFindString(
@@ -2543,6 +2555,23 @@ int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
     return findChar(unicode(), length(), ch, from, cs);
 }
 
+/*!
+    \since 4.8
+
+    \overload indexOf()
+
+    Returns the index position of the first occurrence of the string
+    reference \a str in this string, searching forward from index
+    position \a from. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+*/
+int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
+{
+    return qFindString(unicode(), length(), from, str.unicode(), str.length(), cs);
+}
+
 static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *needle, int sl, Qt::CaseSensitivity cs)
 {
     /*
@@ -2622,12 +2651,13 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
     if (from > delta)
         from = delta;
 
-
     return lastIndexOfHelper(d->data, from, str.d->data, str.d->size, cs);
 }
 
 /*!
   \since 4.5
+  \overload lastIndexOf()
+
   Returns the index position of the last occurrence of the string \a
   str in this string, searching backward from index position \a
   from. If \a from is -1 (default), the search starts at the last
@@ -2675,26 +2705,43 @@ int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity
 */
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
-    ushort c = ch.unicode();
-    if (from < 0)
-        from += d->size;
-    if (from < 0 || from >= d->size)
-        return -1;
-    if (from >= 0) {
-        const ushort *n = d->data + from;
-        const ushort *b = d->data;
-        if (cs == Qt::CaseSensitive) {
-            for (; n >= b; --n)
-                if (*n == c)
-                    return n - b;
-        } else {
-            c = foldCase(c);
-            for (; n >= b; --n)
-                if (foldCase(*n) == c)
-                    return n - b;
-        }
+    return qt_last_index_of(unicode(), size(), ch, from, cs);
     }
+
+/*!
+  \since 4.8
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string
+  reference \a str in this string, searching backward from index
+  position \a from. If \a from is -1 (default), the search starts at
+  the last character; if \a from is -2, at the next to last character
+  and so on. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa indexOf(), contains(), count()
+*/
+int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
+{
+    const int sl = str.size();
+    if (sl == 1)
+        return lastIndexOf(str.at(0), from, cs);
+
+    const int l = d->size;
+    if (from < 0)
+        from += l;
+    int delta = l - sl;
+    if (from == l && sl == 0)
+        return from;
+    if (from < 0 || from >= l || delta < 0)
     return -1;
+    if (from > delta)
+        from = delta;
+
+    return lastIndexOfHelper(d->data, from, reinterpret_cast<const ushort*>(str.unicode()),
+                             str.size(), cs);
 }
 
 #ifndef QT_NO_REGEXP
@@ -2869,19 +2916,10 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
 
     \sa contains(), indexOf()
 */
+
 int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 {
-    int num = 0;
-    int i = -1;
-    if (d->size > 500 && str.d->size > 5) {
-        QStringMatcher matcher(str, cs);
-        while ((i = matcher.indexIn(*this, i + 1)) != -1)
-            ++num;
-    } else {
-        while ((i = indexOf(str, i + 1, cs)) != -1)
-            ++num;
-    }
-    return num;
+    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
 }
 
 /*!
@@ -2889,24 +2927,28 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 
   Returns the number of occurrences of character \a ch in the string.
 */
+
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 {
-    ushort c = ch.unicode();
-    int num = 0;
-    const ushort *i = d->data + d->size;
-    const ushort *b = d->data;
-    if (cs == Qt::CaseSensitive) {
-        while (i != b)
-            if (*--i == c)
-                ++num;
-    } else {
-        c = foldCase(c);
-        while (i != b)
-            if (foldCase(*(--i)) == c)
-                ++num;
+    return qt_string_count(unicode(), size(), ch, cs);
     }
-    return num;
+
+/*!
+    \since 4.8
+    \overload count()
+    Returns the number of (potentially overlapping) occurrences of the
+    string reference \a str in this string.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa contains(), indexOf()
+*/
+int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
+{
+    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
 }
+
 
 /*! \fn bool QString::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
@@ -2928,6 +2970,18 @@ int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 
     Returns true if this string contains an occurrence of the
     character \a ch; otherwise returns false.
+*/
+
+/*! \fn bool QString::contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 4.8
+
+    Returns true if this string contains an occurrence of the string
+    reference \a str; otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), count()
 */
 
 /*! \fn bool QString::contains(const QRegExp &rx) const
@@ -3331,22 +3385,8 @@ QString QString::mid(int position, int n) const
 */
 bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
 {
-    if (d == &shared_null)
-        return (s.d == &shared_null);
-    if (d->size == 0)
-        return s.d->size == 0;
-    if (s.d->size > d->size)
-        return false;
-    if (cs == Qt::CaseSensitive) {
-        return qMemEquals(d->data, s.d->data, s.d->size);
-    } else {
-        uint last = 0;
-        uint olast = 0;
-        for (int i = 0; i < s.d->size; ++i)
-            if (foldCase(d->data[i], last) != foldCase(s.d->data[i], olast))
-                return false;
-    }
-    return true;
+    return qt_starts_with(isNull() ? 0 : unicode(), size(),
+                          s.isNull() ? 0 : s.unicode(), s.size(), cs);
 }
 
 /*!
@@ -3354,24 +3394,7 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
  */
 bool QString::startsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
 {
-    if (d == &shared_null)
-        return (s.latin1() == 0);
-    if (d->size == 0)
-        return !s.latin1() || *s.latin1() == 0;
-    int slen = qstrlen(s.latin1());
-    if (slen > d->size)
-        return false;
-    const uchar *latin = (const uchar *)s.latin1();
-    if (cs == Qt::CaseSensitive) {
-        for (int i = 0; i < slen; ++i)
-            if (d->data[i] != latin[i])
-                return false;
-    } else {
-        for (int i = 0; i < slen; ++i)
-            if (foldCase(d->data[i]) != foldCase((ushort)latin[i]))
-                return false;
-    }
-    return true;
+    return qt_starts_with(isNull() ? 0 : unicode(), size(), s, cs);
 }
 
 /*!
@@ -3389,6 +3412,23 @@ bool QString::startsWith(const QChar &c, Qt::CaseSensitivity cs) const
 }
 
 /*!
+    \since 4.8
+    \overload
+    Returns true if the string starts with the string reference \a s;
+    otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa endsWith()
+*/
+bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
+{
+    return qt_starts_with(isNull() ? 0 : unicode(), size(),
+                          s.isNull() ? 0 : s.unicode(), s.size(), cs);
+}
+
+/*!
     Returns true if the string ends with \a s; otherwise returns
     false.
 
@@ -3401,49 +3441,34 @@ bool QString::startsWith(const QChar &c, Qt::CaseSensitivity cs) const
 */
 bool QString::endsWith(const QString& s, Qt::CaseSensitivity cs) const
 {
-    if (d == &shared_null)
-        return (s.d == &shared_null);
-    if (d->size == 0)
-        return s.d->size == 0;
-    int pos = d->size - s.d->size;
-    if (pos < 0)
-        return false;
-    if (cs == Qt::CaseSensitive) {
-        return qMemEquals(d->data + pos, s.d->data, s.d->size);
-    } else {
-        uint last = 0;
-        uint olast = 0;
-        for (int i = 0; i < s.length(); i++)
-            if (foldCase(d->data[pos+i], last) != foldCase(s.d->data[i], olast))
-                return false;
+    return qt_ends_with(isNull() ? 0 : unicode(), size(),
+                        s.isNull() ? 0 : s.unicode(), s.size(), cs);
     }
-    return true;
+
+/*!
+    \since 4.8
+    \overload endsWith()
+    Returns true if the string ends with the string reference \a s;
+    otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa startsWith()
+*/
+bool QString::endsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
+{
+    return qt_ends_with(isNull() ? 0 : unicode(), size(),
+                        s.isNull() ? 0 : s.unicode(), s.size(), cs);
 }
+
 
 /*!
     \overload endsWith()
 */
 bool QString::endsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
 {
-    if (d == &shared_null)
-        return (s.latin1() == 0);
-    if (d->size == 0)
-        return !s.latin1() || *s.latin1() == 0;
-    int slen = qstrlen(s.latin1());
-    int pos = d->size - slen;
-    const uchar *latin = (const uchar *)s.latin1();
-    if (pos < 0)
-        return false;
-    if (cs == Qt::CaseSensitive) {
-        for (int i = 0; i < slen; i++)
-            if (d->data[pos+i] != latin[i])
-                return false;
-    } else {
-        for (int i = 0; i < slen; i++)
-            if (foldCase(d->data[pos+i]) != foldCase((ushort)latin[i]))
-                return false;
-    }
-    return true;
+    return qt_ends_with(isNull() ? 0 : unicode(), size(), s, cs);
 }
 
 /*!
@@ -7613,6 +7638,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
     Use the startsWith(QString, Qt::CaseSensitive) overload instead.
 */
 
+
 /*!
     \fn bool QString::endsWith(const QString &s, bool cs) const
 
@@ -8316,6 +8342,609 @@ QStringRef QString::midRef(int position, int n) const
     if (n + position > d->size)
         n = d->size - position;
     return QStringRef(this, position, n);
+}
+
+/*!
+  \since 4.8
+
+  Returns the index position of the first occurrence of the string \a
+  str in this string reference, searching forward from index position
+  \a from. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  If \a from is -1, the search starts at the last character; if it is
+  -2, at the next to last character and so on.
+
+  \sa QString::indexOf(), lastIndexOf(), contains(), count()
+*/
+int QStringRef::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
+{
+    return qFindString(unicode(), length(), from, str.unicode(), str.length(), cs);
+}
+
+/*!
+    \since 4.8
+    \overload indexOf()
+
+    Returns the index position of the first occurrence of the
+    character \a ch in the string reference, searching forward from
+    index position \a from. Returns -1 if \a ch could not be found.
+
+    \sa QString::indexOf(), lastIndexOf(), contains(), count()
+*/
+int QStringRef::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
+{
+    return findChar(unicode(), length(), ch, from, cs);
+}
+
+/*!
+  \since 4.8
+
+  Returns the index position of the first occurrence of the string \a
+  str in this string reference, searching forward from index position
+  \a from. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  If \a from is -1, the search starts at the last character; if it is
+  -2, at the next to last character and so on.
+
+  \sa QString::indexOf(), lastIndexOf(), contains(), count()
+*/
+int QStringRef::indexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
+{
+    return qt_find_latin1_string(unicode(), size(), str, from, cs);
+}
+
+/*!
+    \since 4.8
+
+    \overload indexOf()
+
+    Returns the index position of the first occurrence of the string
+    reference \a str in this string reference, searching forward from
+    index position \a from. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa QString::indexOf(), lastIndexOf(), contains(), count()
+*/
+int QStringRef::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
+{
+    return qFindString(unicode(), size(), from, str.unicode(), str.size(), cs);
+}
+
+/*!
+  \since 4.8
+
+  Returns the index position of the last occurrence of the string \a
+  str in this string reference, searching backward from index position
+  \a from. If \a from is -1 (default), the search starts at the last
+  character; if \a from is -2, at the next to last character and so
+  on. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa QString::lastIndexOf(), indexOf(), contains(), count()
+*/
+int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
+{
+    const int sl = str.size();
+    if (sl == 1)
+        return lastIndexOf(str.at(0), from, cs);
+
+    const int l = size();;
+    if (from < 0)
+        from += l;
+    int delta = l - sl;
+    if (from == l && sl == 0)
+        return from;
+    if (from < 0 || from >= l || delta < 0)
+        return -1;
+    if (from > delta)
+        from = delta;
+
+    return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from,
+                             reinterpret_cast<const ushort*>(str.unicode()), str.size(), cs);
+}
+
+/*!
+  \since 4.8
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the character
+  \a ch, searching backward from position \a from.
+
+  \sa QString::lastIndexOf(), indexOf(), contains(), count()
+*/
+int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
+{
+    return qt_last_index_of(unicode(), size(), ch, from, cs);
+}
+
+/*!
+  \since 4.8
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string \a
+  str in this string reference, searching backward from index position
+  \a from. If \a from is -1 (default), the search starts at the last
+  character; if \a from is -2, at the next to last character and so
+  on. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa QString::lastIndexOf(), indexOf(), contains(), count()
+*/
+int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
+{
+    const int sl = qstrlen(str.latin1());
+    if (sl == 1)
+        return lastIndexOf(QLatin1Char(str.latin1()[0]), from, cs);
+
+    const int l = size();
+    if (from < 0)
+        from += l;
+    int delta = l - sl;
+    if (from == l && sl == 0)
+        return from;
+    if (from < 0 || from >= l || delta < 0)
+        return -1;
+    if (from > delta)
+        from = delta;
+
+    QVarLengthArray<ushort> s(sl);
+    for (int i = 0; i < sl; ++i)
+        s[i] = str.latin1()[i];
+
+    return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from, s.data(), sl, cs);
+}
+
+/*!
+  \since 4.8
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string
+  reference \a str in this string reference, searching backward from
+  index position \a from. If \a from is -1 (default), the search
+  starts at the last character; if \a from is -2, at the next to last
+  character and so on. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa QString::lastIndexOf(), indexOf(), contains(), count()
+*/
+int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
+{
+    const int sl = str.size();
+    if (sl == 1)
+        return lastIndexOf(str.at(0), from, cs);
+
+    const int l = size();
+    if (from < 0)
+        from += l;
+    int delta = l - sl;
+    if (from == l && sl == 0)
+        return from;
+    if (from < 0 || from >= l || delta < 0)
+        return -1;
+    if (from > delta)
+        from = delta;
+
+    return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from,
+                             reinterpret_cast<const ushort*>(str.unicode()),
+                             str.size(), cs);
+}
+
+/*!
+    \since 4.8
+    Returns the number of (potentially overlapping) occurrences of
+    the string \a str in this string reference.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::count(), contains(), indexOf()
+*/
+int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
+{
+    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+}
+
+/*!
+    \since 4.8
+    \overload count()
+
+    Returns the number of occurrences of the character \a ch in the
+    string reference.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::count(), contains(), indexOf()
+*/
+int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
+{
+    return qt_string_count(unicode(), size(), ch, cs);
+}
+
+/*!
+    \since 4.8
+    \overload count()
+
+    Returns the number of (potentially overlapping) occurrences of the
+    string reference \a str in this string reference.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::count(), contains(), indexOf()
+*/
+int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
+{
+    return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+}
+
+/*!
+    \since 4.8
+
+    Returns true if the string reference starts with \a str; otherwise
+    returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::startsWith(), endsWith()
+*/
+bool QStringRef::startsWith(const QString &str, Qt::CaseSensitivity cs) const
+{
+    return qt_starts_with(isNull() ? 0 : unicode(), size(),
+                          str.isNull() ? 0 : str.unicode(), str.size(), cs);
+}
+
+/*!
+    \since 4.8
+    \overload startsWith()
+    \sa QString::startsWith(), endsWith()
+*/
+bool QStringRef::startsWith(QLatin1String str, Qt::CaseSensitivity cs) const
+{
+    return qt_starts_with(isNull() ? 0 : unicode(), size(), str, cs);
+}
+
+/*!
+    \since 4.8
+    \overload startsWith()
+    \sa QString::startsWith(), endsWith()
+*/
+bool QStringRef::startsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
+{
+    return qt_starts_with(isNull() ? 0 : unicode(), size(),
+                          str.isNull() ? 0 : str.unicode(), str.size(), cs);
+}
+
+/*!
+    \since 4.8
+    \overload startsWith()
+
+    Returns true if the string reference starts with \a ch; otherwise
+    returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa QString::startsWith(), endsWith()
+*/
+bool QStringRef::startsWith(QChar ch, Qt::CaseSensitivity cs) const
+{
+    if (!isEmpty()) {
+        const ushort *data = reinterpret_cast<const ushort*>(unicode());
+        return (cs == Qt::CaseSensitive
+                ? data[0] == ch
+                : foldCase(data[0]) == foldCase(ch.unicode()));
+    } else {
+        return false;
+    }
+}
+
+/*!
+    \since 4.8
+    Returns true if the string reference ends with \a str; otherwise
+    returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa QString::endsWith(), startsWith()
+*/
+bool QStringRef::endsWith(const QString &str, Qt::CaseSensitivity cs) const
+{
+    return qt_ends_with(isNull() ? 0 : unicode(), size(),
+                        str.isNull() ? 0 : str.unicode(), str.size(), cs);
+}
+
+/*!
+    \since 4.8
+    \overload endsWith()
+
+    Returns true if the string reference ends with \a ch; otherwise
+    returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa QString::endsWith(), endsWith()
+*/
+bool QStringRef::endsWith(QChar ch, Qt::CaseSensitivity cs) const
+{
+    if (!isEmpty()) {
+        const ushort *data = reinterpret_cast<const ushort*>(unicode());
+        const int size = length();
+        return (cs == Qt::CaseSensitive
+                ? data[size - 1] == ch
+                : foldCase(data[size - 1]) == foldCase(ch.unicode()));
+    } else {
+        return false;
+    }
+}
+
+/*!
+    \since 4.8
+    \overload endsWith()
+    \sa QString::endsWith(), endsWith()
+*/
+bool QStringRef::endsWith(QLatin1String str, Qt::CaseSensitivity cs) const
+{
+    return qt_ends_with(isNull() ? 0 : unicode(), size(), str, cs);
+}
+
+/*!
+    \since 4.8
+    \overload endsWith()
+    \sa QString::endsWith(), endsWith()
+*/
+bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
+{
+    return qt_ends_with(isNull() ? 0 : unicode(), size(),
+                        str.isNull() ? 0 : str.unicode(), str.size(), cs);
+}
+
+
+/*! \fn bool QStringRef::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+
+    \since 4.8
+    Returns true if this string reference contains an occurrence of
+    the string \a str; otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), count()
+*/
+
+/*! \fn bool QStringRef::contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+
+    \overload contains()
+    \since 4.8
+
+    Returns true if this string contains an occurrence of the
+    character \a ch; otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+*/
+
+/*! \fn bool QStringRef::contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \overload contains()
+    \since 4.8
+
+    Returns true if this string reference contains an occurrence of
+    the string reference \a str; otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), count()
+*/
+
+/*! \fn bool QStringRef::contains(QLatin1String str, Qt::CaseSensitivity cs) const
+    \since 4,8
+    \overload contains()
+
+    Returns true if this string reference contains an occurrence of
+    the string \a str; otherwise returns false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa indexOf(), count()
+*/
+
+static inline int qt_last_index_of(const QChar *haystack, int haystackLen, const QChar &needle,
+                                   int from, Qt::CaseSensitivity cs)
+{
+    ushort c = needle.unicode();
+    if (from < 0)
+        from += haystackLen;
+    if (from < 0 || from >= haystackLen)
+        return -1;
+    if (from >= 0) {
+        const ushort *b = reinterpret_cast<const ushort*>(haystack);
+        const ushort *n = b + from;
+        if (cs == Qt::CaseSensitive) {
+            for (; n >= b; --n)
+                if (*n == c)
+                    return n - b;
+        } else {
+            c = foldCase(c);
+            for (; n >= b; --n)
+                if (foldCase(*n) == c)
+                    return n - b;
+        }
+    }
+    return -1;
+
+
+}
+
+static inline int qt_string_count(const QChar *haystack, int haystackLen,
+                                  const QChar *needle, int needleLen,
+                                  Qt::CaseSensitivity cs)
+{
+    int num = 0;
+    int i = -1;
+    if (haystackLen > 500 && needleLen > 5) {
+        QStringMatcher matcher(needle, needleLen, cs);
+        while ((i = matcher.indexIn(haystack, haystackLen, i + 1)) != -1)
+            ++num;
+    } else {
+        while ((i = qFindString(haystack, haystackLen, i + 1, needle, needleLen, cs)) != -1)
+            ++num;
+    }
+    return num;
+}
+
+static inline int qt_string_count(const QChar *unicode, int size, const QChar &ch,
+                                  Qt::CaseSensitivity cs)
+{
+    ushort c = ch.unicode();
+    int num = 0;
+    const ushort *b = reinterpret_cast<const ushort*>(unicode);
+    const ushort *i = b + size;
+    if (cs == Qt::CaseSensitive) {
+        while (i != b)
+            if (*--i == c)
+                ++num;
+    } else {
+        c = foldCase(c);
+        while (i != b)
+            if (foldCase(*(--i)) == c)
+                ++num;
+    }
+    return num;
+}
+
+static inline int qt_find_latin1_string(const QChar *haystack, int size,
+                                        const QLatin1String &needle,
+                                        int from, Qt::CaseSensitivity cs)
+{
+    const char *latin1 = needle.latin1();
+    int len = qstrlen(latin1);
+    QVarLengthArray<ushort> s(len);
+    for (int i = 0; i < len; ++i)
+        s[i] = latin1[i];
+
+    return qFindString(haystack, size, from,
+                       reinterpret_cast<const QChar*>(s.constData()), len, cs);
+}
+
+static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
+                                  const QChar *needle, int needleLen, Qt::CaseSensitivity cs)
+{
+    if (!haystack)
+        return !needle;
+    if (haystackLen == 0)
+        return needleLen == 0;
+    if (needleLen > haystackLen)
+        return false;
+
+    const ushort *h = reinterpret_cast<const ushort*>(haystack);
+    const ushort *n = reinterpret_cast<const ushort*>(needle);
+
+    if (cs == Qt::CaseSensitive) {
+        return qMemEquals(h, n, needleLen);
+    } else {
+        uint last = 0;
+        uint olast = 0;
+        for (int i = 0; i < needleLen; ++i)
+            if (foldCase(h[i], last) != foldCase(n[i], olast))
+                return false;
+    }
+    return true;
+}
+
+static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
+                                  const QLatin1String &needle, Qt::CaseSensitivity cs)
+{
+    if (!haystack)
+        return !needle.latin1();
+    if (haystackLen == 0)
+        return !needle.latin1() || *needle.latin1() == 0;
+    const int slen = qstrlen(needle.latin1());
+    if (slen > haystackLen)
+        return false;
+    const ushort *data = reinterpret_cast<const ushort*>(haystack);
+    const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
+    if (cs == Qt::CaseSensitive) {
+        for (int i = 0; i < slen; ++i)
+            if (data[i] != latin[i])
+                return false;
+    } else {
+        for (int i = 0; i < slen; ++i)
+            if (foldCase(data[i]) != foldCase((ushort)latin[i]))
+                return false;
+    }
+    return true;
+}
+
+static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
+                                const QChar *needle, int needleLen, Qt::CaseSensitivity cs)
+{
+    if (!haystack)
+        return !needle;
+    if (haystackLen == 0)
+        return needleLen == 0;
+    const int pos = haystackLen - needleLen;
+    if (pos < 0)
+        return false;
+
+    const ushort *h = reinterpret_cast<const ushort*>(haystack);
+    const ushort *n = reinterpret_cast<const ushort*>(needle);
+
+    if (cs == Qt::CaseSensitive) {
+        return qMemEquals(h + pos, n, needleLen);
+    } else {
+        uint last = 0;
+        uint olast = 0;
+        for (int i = 0; i < needleLen; i++)
+            if (foldCase(h[pos+i], last) != foldCase(n[i], olast))
+                return false;
+    }
+    return true;
+}
+
+
+static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
+                                const QLatin1String &needle, Qt::CaseSensitivity cs)
+{
+    if (!haystack)
+        return !needle.latin1();
+    if (haystackLen == 0)
+        return !needle.latin1() || *needle.latin1() == 0;
+    const int slen = qstrlen(needle.latin1());
+    int pos = haystackLen - slen;
+    if (pos < 0)
+        return false;
+    const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
+    const ushort *data = reinterpret_cast<const ushort*>(haystack);
+    if (cs == Qt::CaseSensitive) {
+        for (int i = 0; i < slen; i++)
+            if (data[pos+i] != latin[i])
+                return false;
+    } else {
+        for (int i = 0; i < slen; i++)
+            if (foldCase(data[pos+i]) != foldCase((ushort)latin[i]))
+                return false;
+    }
+    return true;
 }
 
 QT_END_NAMESPACE

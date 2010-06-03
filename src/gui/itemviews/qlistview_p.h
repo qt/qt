@@ -237,6 +237,7 @@ public:
     // WARNING: Plenty of duplicated code from QAbstractItemView{,Private}.
     QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
     void dragMoveEvent(QDragMoveEvent *e);
+    bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
 #endif
 
 private:
@@ -364,6 +365,7 @@ public:
 
 #ifndef QT_NO_DRAGANDDROP
     virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+    bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
 #endif
 
     inline void setGridSize(const QSize &size) { grid = size; }
