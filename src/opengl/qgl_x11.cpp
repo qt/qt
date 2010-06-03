@@ -1765,6 +1765,9 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
     glXBindTexImageEXT(x11Info.display(), (GLXPixmap)pixmapData->gl_surface, GLX_FRONT_LEFT_EXT, 0);
 
     glBindTexture(GL_TEXTURE_2D, textureId);
+    GLuint filtering = (options & QGLContext::LinearFilteringBindOption) ? GL_LINEAR : GL_NEAREST;
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering);
 
     if (!((hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted)))
         options &= ~QGLContext::InvertedYBindOption;
