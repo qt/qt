@@ -446,7 +446,7 @@ public:
         InBounce = QEasingCurve::InBounce, OutBounce = QEasingCurve::OutBounce,
         InOutBounce = QEasingCurve::InOutBounce, OutInBounce = QEasingCurve::OutInBounce,
         InCurve = QEasingCurve::InCurve, OutCurve = QEasingCurve::OutCurve,
-        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve,
+        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve
     };
 
     QDeclarativeEasingValueType(QObject *parent = 0);

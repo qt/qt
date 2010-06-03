@@ -7093,7 +7093,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 QString &QString::setRawData(const QChar *unicode, int size)
 {
-    if (d->ref != 1 || d->alloc) {
+    if (d->ref != 1 || (d->data == d->array && d->alloc)) {
         *this = fromRawData(unicode, size);
     } else {
 #ifdef QT3_SUPPORT

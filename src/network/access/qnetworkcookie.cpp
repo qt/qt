@@ -991,6 +991,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     }
 
                     QString normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
+                    if (normalizedDomain.isEmpty() && !rawDomain.isEmpty())
+                        return result;
                     cookie.setDomain(maybeLeadingDot + normalizedDomain);
                 } else if (field.first == "max-age") {
                     bool ok = false;
