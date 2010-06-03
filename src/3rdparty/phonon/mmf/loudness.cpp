@@ -49,6 +49,7 @@ const char* Loudness::description()
 bool Loudness::getParameters(CMdaAudioOutputStream *stream,
     QList<EffectParameter> &parameters)
 {
+    Q_UNUSED(parameters)
     QScopedPointer<CLoudness> effect;
     TRAPD(err, effect.reset(CLoudness::NewL(*stream)));
     return (KErrNone == err);

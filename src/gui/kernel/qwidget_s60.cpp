@@ -433,6 +433,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         // Request mouse move events.
         drawableWindow->PointerFilter(EPointerFilterEnterExit
             | EPointerFilterMove | EPointerFilterDrag, 0);
+        drawableWindow->EnableVisibilityChangeEvents();
 
         if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
             activateSymbianWindow(control.data());
@@ -908,14 +909,12 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 
 void QWidgetPrivate::createTLSysExtra()
 {
-    extra->topextra->backingStore = 0;
     extra->topextra->inExpose = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
 {
-    delete extra->topextra->backingStore;
-    extra->topextra->backingStore = 0;
+    extra->topextra->backingStore.destroy();
 }
 
 void QWidgetPrivate::createSysExtra()
