@@ -7509,6 +7509,10 @@ then
 fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#ifndef QT_BOOTSTRAPPED
+
+EOF
     for cfg in $QCONFIG_FLAGS; do
         cfgd=`echo $cfg | sed 's/=.*$//'` # trim pushed 'Foo=Bar' defines
         cfg=`echo $cfg | sed 's/=/ /'`    # turn first '=' into a space
@@ -7541,6 +7545,10 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 EOF
         fi
     done
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#endif // QT_BOOTSTRAPPED
+
+EOF
 fi
 
 if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then

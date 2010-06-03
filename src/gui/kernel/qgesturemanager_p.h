@@ -58,6 +58,8 @@
 #include "private/qwidget_p.h"
 #include "qgesturerecognizer.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 class QBasicTimer;
@@ -142,5 +144,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #endif // QGESTUREMANAGER_P_H

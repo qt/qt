@@ -53,7 +53,9 @@ public:
     virtual void registerTypes(const char *uri)
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.gestures"));
+#ifndef QT_NO_GESTURES
         qmlRegisterCustomType<QDeclarativeGestureArea>(uri,1,0, "GestureArea", new QDeclarativeGestureAreaParser);
+#endif
     }
 };
 
@@ -62,4 +64,3 @@ QT_END_NAMESPACE
 #include "plugin.moc"
 
 Q_EXPORT_PLUGIN2(qmlgesturesplugin, QT_PREPEND_NAMESPACE(GestureAreaQmlPlugin));
-

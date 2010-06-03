@@ -50,6 +50,8 @@
 #include "private/qapplication_p.h"
 #include "private/qwidget_p.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_NATIVE_GESTURES)
@@ -127,3 +129,5 @@ void QWinNativePanGestureRecognizer::reset(QGesture *state)
 #endif // QT_NO_NATIVE_GESTURES
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
