@@ -1333,7 +1333,7 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextInput);
     if (d->showInputPanelOnFocus) {
-        if (d->focusOnPress && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
+        if (d->focusOnPress && !isReadOnly()) {
             openSoftwareInputPanel();
         }
     }
