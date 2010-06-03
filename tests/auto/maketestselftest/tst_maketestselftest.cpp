@@ -494,16 +494,15 @@ void tst_MakeTestSelfTest::make_check()
     QVERIFY(make.waitForFinished(1000 * 60 * 10));
     QCOMPARE(make.exitStatus(), QProcess::NormalExit);
 
-    int fail = 0;
     int pass = 0;
     QList<QByteArray> out = make.readAllStandardOutput().split('\n');
+    QStringList fails;
     foreach (QByteArray line, out) {
         while (line.endsWith("\r")) {
             line.chop(1);
         }
         if (line.startsWith("CHECKTEST FAIL")) {
-            QWARN(line.constData());
-            ++fail;
+            fails << QString::fromLocal8Bit(line);
         }
         if (line.startsWith("CHECKTEST PASS")) {
             ++pass;
@@ -513,7 +512,10 @@ void tst_MakeTestSelfTest::make_check()
     // We can't check that the exit code of make is 0, because some tests
     // may have failed to compile, but that doesn't mean `make check' is broken.
     // We do assume there are at least this many unbroken tests, though.
-    QCOMPARE(fail, 0);
+    QVERIFY2(fails.count() == 0,
+        qPrintable(QString("`make check' doesn't work for %1 tests:\n%2")
+            .arg(fails.count()).arg(fails.join("\n")))
+    );
     QVERIFY(pass > 50);
 }
 

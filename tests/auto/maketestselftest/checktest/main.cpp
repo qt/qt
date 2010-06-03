@@ -68,8 +68,19 @@ int main(int argc, char** argv)
     args.removeFirst(); // ourself
 
     QString args_quoted = QString("'%1'").arg(args.join("','"));
+
+#ifdef Q_WS_QWS
+    {
+        // for QWS we expect tests to be run as the QWS server
+        QString qws = args.takeLast();
+        if (qws != "-qws") {
+            fail(QString("Expected test to be run with `-qws', but it wasn't; args: %1").arg(args_quoted));
+        }
+    }
+#endif
+
     if (args.count() != 1) {
-        fail(QString("Expected exactly one argument, got: %1").arg(args_quoted));
+        fail(QString("These arguments are not what I expected: %1").arg(args_quoted));
     }
 
     QString test = args.at(0);
