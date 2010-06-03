@@ -106,7 +106,7 @@ static void recordMessage(
         fileName, lineNo, QStringList(),
         TranslatorMessage::Unfinished, plural);
     msg.setExtraComment(extracomment.simplified());
-    tor->replace(msg);
+    tor->extend(msg);
 }
 
 
