@@ -80,17 +80,22 @@ public:
     the text every 500 milliseconds:
 
     \qml
-    Timer {
-        interval: 500; running: true; repeat: true
-        onTriggered: time.text = Date().toString()
-    }
-    Text {
-        id: time
+    import Qt 4.7
+
+    Item {
+        Timer {
+            interval: 500; running: true; repeat: true
+            onTriggered: time.text = Date().toString()
+        }
+
+        Text {
+            id: time
+        }
     }
     \endqml
 
-    QDeclarativeTimer is synchronized with the animation timer.  Since the animation
-    timer is usually set to 60fps, the resolution of QDeclarativeTimer will be
+    The Timer element is synchronized with the animation timer.  Since the animation
+    timer is usually set to 60fps, the resolution of Timer will be
     at best 16ms.
 
     If the Timer is running and one of its properties is changed, the
@@ -98,8 +103,6 @@ public:
     1000ms has its \e repeat property changed 500ms after starting, the
     elapsed time will be reset to 0, and the Timer will be triggered
     1000ms later.
-
-    \sa {QtDeclarative}
 */
 
 QDeclarativeTimer::QDeclarativeTimer(QObject *parent)

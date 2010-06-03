@@ -904,28 +904,43 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \inherits Flickable
     \brief The GridView item provides a grid view of items provided by a model.
 
-    The model is typically provided by a QAbstractListModel "C++ model object",
-    but can also be created directly in QML.
+    A GridView displays data from models created from built-in QML elements like ListModel
+    and XmlListModel, or custom model classes defined in C++ that inherit from
+    QAbstractListModel.
 
-    The items are laid out top to bottom (vertically) or left to right (horizontally)
-    and may be flicked to scroll.
+    A GridView has a \l model, which defines the data to be displayed, and
+    a \l delegate, which defines how the data should be displayed. Items in a 
+    GridView are laid out horizontally or vertically. Grid views are inherently flickable
+    as GridView inherits from \l Flickable.
 
-    The below example creates a very simple grid, using a QML model.
+    For example, if there is a simple list model defined in a file \c ContactModel.qml like this:
 
-    \image gridview.png
+    \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \snippet doc/src/snippets/declarative/gridview/gridview.qml 3
+    Another component can display this model data in a GridView, like this:
 
-    The model is defined as a ListModel using QML:
-    \quotefile doc/src/snippets/declarative/gridview/dummydata/ContactModel.qml
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml import
+    \codeline
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
+    \image gridview-simple.png
 
-    In this case ListModel is a handy way for us to test our UI.  In practice
-    the model would be implemented in C++, or perhaps via a SQL data source.
+    Here, the GridView creates a \c ContactModel component for its model, and a \l Column element
+    (containing \l Image and \ Text elements) for its delegate. The view will create a new delegate 
+    for each item in the model. Notice the delegate is able to access the model's \c name and 
+    \c portrait data directly.
+
+    An improved grid view is shown below. The delegate is visually improved and is moved 
+    into a separate \c contactDelegate component. Also, the currently selected item is highlighted
+    with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
+    to enable keyboard navigation for the grid view.
+    
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs advanced
+    \image gridview-highlight.png
 
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
-    \bold Note that views do not enable \e clip automatically.  If the view
+    \note Views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
@@ -971,19 +986,7 @@ QDeclarativeGridView::~QDeclarativeGridView()
     The example below ensures that the animation completes before
     the item is removed from the grid.
 
-    \code
-    Component {
-        id: myDelegate
-        Item {
-            id: wrapper
-            GridView.onRemove: SequentialAnimation {
-                PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: true }
-                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
-                PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: false }
-            }
-        }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml delayRemove
 */
 
 /*!
@@ -1001,10 +1004,10 @@ QDeclarativeGridView::~QDeclarativeGridView()
   \qmlproperty model GridView::model
   This property holds the model providing data for the grid.
 
-  The model provides a set of data that is used to create the items
-  for the view.  For large or dynamic datasets the model is usually
-  provided by a C++ model object.  The C++ model object must be a \l
-  {QAbstractItemModel} subclass, a VisualModel, or a simple list.
+    The model provides the set of data that is used to create the items
+    in the view. Models can be created directly in QML using \l ListModel, \l XmlListModel
+    or \l VisualItemModel, or provided by C++ model classes. If a C++ model class is
+    used, it must be a subclass of \l QAbstractItemModel or a simple list.
 
   \sa {qmlmodels}{Data Models}
 */
@@ -1079,11 +1082,11 @@ void QDeclarativeGridView::setModel(const QVariant &model)
     that is not needed for the normal display of the delegate in a \l Loader which
     can load additional elements when needed.
 
-    Note that the GridView will layout the items based on the size of the root item
+    The GridView will layout the items based on the size of the root item
     in the delegate.
 
-    Here is an example delegate:
-    \snippet doc/src/snippets/declarative/gridview/gridview.qml 0
+    \note Delegates are instantiated as needed and may be destroyed at any time.
+    State should \e never be stored in a delegate.
 */
 QDeclarativeComponent *QDeclarativeGridView::delegate() const
 {
@@ -1157,8 +1160,7 @@ QDeclarativeItem *QDeclarativeGridView::currentItem()
 /*!
   \qmlproperty Item GridView::highlightItem
 
-  \c highlightItem holds the highlight item, which was created
-  from the \l highlight component.
+  This holds the highlight item created from the \l highlight component.
 
   The highlightItem is managed by the view unless
   \l highlightFollowsCurrentItem is set to false.
@@ -1189,12 +1191,9 @@ int QDeclarativeGridView::count() const
   \qmlproperty Component GridView::highlight
   This property holds the component to use as the highlight.
 
-  An instance of the highlight component will be created for each view.
-  The geometry of the resultant component instance will be managed by the view
+  An instance of the highlight component is created for each view.
+  The geometry of the resulting component instance will be managed by the view
   so as to stay with the current item, unless the highlightFollowsCurrentItem property is false.
-
-  The below example demonstrates how to make a simple highlight:
-  \snippet doc/src/snippets/declarative/gridview/gridview.qml 1
 
   \sa highlightItem, highlightFollowsCurrentItem
 */
@@ -1218,21 +1217,14 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
   \qmlproperty bool GridView::highlightFollowsCurrentItem
   This property sets whether the highlight is managed by the view.
 
-  If highlightFollowsCurrentItem is true, the highlight will be moved smoothly
-  to follow the current item.  If highlightFollowsCurrentItem is false, the
-  highlight will not be moved by the view, and must be implemented
-  by the highlight component, for example:
+    If this property is true, the highlight is moved smoothly
+    to follow the current item.  Otherwise, the
+    highlight is not moved by the view, and any movement must be implemented
+    by the highlight.  
+    
+    Here is a highlight with its motion defined by a \l {SpringFollow} item:
 
-  \code
-  Component {
-      id: myHighlight
-      Rectangle {
-          id: wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60
-          SpringFollow on y { source: wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
-          SpringFollow on x { source: wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
-      }
-  }
-  \endcode
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml highlightFollowsCurrentItem
 */
 bool QDeclarativeGridView::highlightFollowsCurrentItem() const
 {
@@ -1290,32 +1282,30 @@ void QDeclarativeGridView::setHighlightMoveDuration(int duration)
     \qmlproperty real GridView::preferredHighlightEnd
     \qmlproperty enumeration GridView::highlightRangeMode
 
-    These properties set the preferred range of the highlight (current item)
-    within the view.
+    These properties define the preferred range of the highlight (for the current item)
+    within the view. The \c preferredHighlightBegin value must be less than the
+    \c preferredHighlightEnd value. 
 
-    Note that this is the correct way to influence where the
-    current item ends up when the view scrolls. For example, if you want the
-    currently selected item to be in the middle of the list, then set the
-    highlight range to be where the middle item would go. Then, when the view scrolls,
-    the currently selected item will be the item at that spot. This also applies to
-    when the currently selected item changes - it will scroll to within the preferred
-    highlight range. Furthermore, the behaviour of the current item index will occur
-    whether or not a highlight exists.
+    These properties affect the position of the current item when the view is scrolled.
+    For example, if the currently selected item should stay in the middle of the
+    view when it is scrolled, set the \c preferredHighlightBegin and 
+    \c preferredHighlightEnd values to the top and bottom coordinates of where the middle 
+    item would be. If the \c currentItem is changed programmatically, the view will
+    automatically scroll so that the current item is in the middle of the view.
+    Furthermore, the behavior of the current item index will occur whether or not a
+    highlight exists.
 
-    If highlightRangeMode is set to \e GridView.ApplyRange the view will
-    attempt to maintain the highlight within the range, however
-    the highlight can move outside of the range at the ends of the list
-    or due to a mouse interaction.
+    Valid values for \c highlightRangeMode are:
 
-    If highlightRangeMode is set to \e GridView.StrictlyEnforceRange the highlight will never
-    move outside of the range.  This means that the current item will change
-    if a keyboard or mouse action would cause the highlight to move
-    outside of the range.
-
-    The default value is \e GridView.NoHighlightRange.
-
-    Note that a valid range requires preferredHighlightEnd to be greater
-    than or equal to preferredHighlightBegin.
+    \list
+    \o GridView.ApplyRange - the view attempts to maintain the highlight within the range.
+       However, the highlight can move outside of the range at the ends of the view or due
+       to mouse interaction.
+    \o GridView.StrictlyEnforceRange - the highlight never moves outside of the range.
+       The current item changes if a keyboard or mouse action would cause the highlight to move
+       outside of the range.
+    \o GridView.NoHighlightRange - this is the default value.
+    \endlist
 */
 qreal QDeclarativeGridView::preferredHighlightBegin() const
 {
@@ -1370,10 +1360,12 @@ void QDeclarativeGridView::setHighlightRangeMode(HighlightRangeMode mode)
   \qmlproperty enumeration GridView::flow
   This property holds the flow of the grid.
 
-  Possible values are \c GridView.LeftToRight (default) and \c GridView.TopToBottom.
+    Possible values:
 
-  If \a flow is \c GridView.LeftToRight, the view will scroll vertically.
-  If \a flow is \c GridView.TopToBottom, the view will scroll horizontally.
+    \list
+    \o GridView.LeftToRight (default) - Items are laid out from left to right, and the view scrolls vertically
+    \o GridView.TopToBottom - Items are laid out from top to bottom, and the view scrolls horizontally
+    \endlist
 */
 QDeclarativeGridView::Flow QDeclarativeGridView::flow() const
 {
@@ -1405,8 +1397,9 @@ void QDeclarativeGridView::setFlow(Flow flow)
   \qmlproperty bool GridView::keyNavigationWraps
   This property holds whether the grid wraps key navigation
 
-  If this property is true then key presses to move off of one end of the grid will cause the
-  selection to jump to the other side.
+    If this is true, key navigation that would move the current item selection
+    past one end of the view instead wraps around and moves the selection to
+    the other end of the view.
 */
 bool QDeclarativeGridView::isWrapEnabled() const
 {
@@ -1463,7 +1456,7 @@ void QDeclarativeGridView::setCacheBuffer(int buffer)
   \qmlproperty int GridView::cellWidth
   \qmlproperty int GridView::cellHeight
 
-  These properties holds the width and height of each cell in the grid
+  These properties holds the width and height of each cell in the grid.
 
   The default cell size is 100x100.
 */
@@ -1503,14 +1496,14 @@ void QDeclarativeGridView::setCellHeight(int cellHeight)
 /*!
     \qmlproperty enumeration GridView::snapMode
 
-    This property determines where the view will settle following a drag or flick.
-    The allowed values are:
+    This property determines how the view scrolling will settle following a drag or flick.
+    The possible values are:
 
     \list
-    \o GridView.NoSnap (default) - the view will stop anywhere within the visible area.
-    \o GridView.SnapToRow - the view will settle with a row (or column for TopToBottom flow)
+    \o GridView.NoSnap (default) - the view stops anywhere within the visible area.
+    \o GridView.SnapToRow - the view settles with a row (or column for \c GridView.TopToBottom flow)
     aligned with the start of the view.
-    \o GridView.SnapOneRow - the view will settle no more than one row (or column for TopToBottom flow)
+    \o GridView.SnapOneRow - the view will settle no more than one row (or column for \c GridView.TopToBottom flow)
     away from the first visible row at the time the mouse button is released.
     This mode is particularly useful for moving one page at a time.
     \endlist
@@ -1789,22 +1782,22 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     \a mode:
 
     \list
-    \o Beginning - position item at the top (or left for TopToBottom flow) of the view.
-    \o Center- position item in the center of the view.
-    \o End - position item at bottom (or right for horizontal orientation) of the view.
-    \o Visible - if any part of the item is visible then take no action, otherwise
+    \o GridView.Beginning - position item at the top (or left for \c GridView.TopToBottom flow) of the view.
+    \o GridView.Center - position item in the center of the view.
+    \o GridView.End - position item at bottom (or right for horizontal orientation) of the view.
+    \o GridView.Visible - if any part of the item is visible then take no action, otherwise
     bring the item into view.
-    \o Contain - ensure the entire item is visible.  If the item is larger than
-    the view the item is positioned at the top (or left for TopToBottom flow) of the view.
+    \o GridView.Contain - ensure the entire item is visible.  If the item is larger than
+    the view the item is positioned at the top (or left for \c GridView.TopToBottom flow) of the view.
     \endlist
 
     If positioning the view at the index would cause empty space to be displayed at
     the beginning or end of the view, the view will be positioned at the boundary.
 
-    It is not recommended to use contentX or contentY to position the view
+    It is not recommended to use \l {Flickable::}{contentX} or \l {Flickable::}{contentY} to position the view
     at a particular index.  This is unreliable since removing items from the start
     of the view does not cause all other items to be repositioned.
-    The correct way to bring an item into view is with positionViewAtIndex.
+    The correct way to bring an item into view is with \c positionViewAtIndex.
 */
 void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 {
