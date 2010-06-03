@@ -425,6 +425,9 @@ value will not be accessible from script.
 \l {Extending QML - Signal Support Example} shows the complete code used to
 implement the onPartyStarted signal property.
 
+If you want to use signals from items not created in QML, you can access their
+signals with the \l {Connections} element.
+
 \section1 Property Value Sources
 
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
