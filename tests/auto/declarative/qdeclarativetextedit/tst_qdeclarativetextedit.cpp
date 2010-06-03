@@ -956,12 +956,6 @@ void tst_qdeclarativetextedit::openInputPanelOnFocus()
     edit.setFocusOnPress(true);
     QCOMPARE(focusOnPressSpy.count(),2);
 
-    // active window focus reason should not cause input panel to open
-    QGraphicsObject * editObject = qobject_cast<QGraphicsObject*>(&edit);
-    editObject->setFocus(Qt::ActiveWindowFocusReason);
-    QCOMPARE(ic.openInputPanelReceived, false);
-    QCOMPARE(ic.closeInputPanelReceived, false);
-
     // and input panel should not open if focus has already been set
     edit.setFocus(true);
     QCOMPARE(ic.openInputPanelReceived, false);
