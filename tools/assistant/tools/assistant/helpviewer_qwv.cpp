@@ -243,7 +243,8 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
 // -- HelpViewer
 
 HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
-    : QWebView(parent), d(new HelpViewerPrivate)
+    : QWebView(parent)
+    , d(new HelpViewerPrivate)
 {
     TRACE_OBJ
     setAcceptDrops(false);
@@ -432,11 +433,6 @@ void HelpViewer::mousePressEvent(QMouseEvent *event)
         return;
 #endif
 
-    if (openPagesListRequested(event)) {
-        showOpenPagesList(event->pos());
-        return;
-    }
-
     if (HelpPage *currentPage = static_cast<HelpPage*> (page())) {
         currentPage->m_pressedButtons = event->buttons();
         currentPage->m_keyboardModifiers = event->modifiers();
@@ -481,8 +477,7 @@ bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
 void HelpViewer::contextMenuEvent(QContextMenuEvent *event)
 {
     TRACE_OBJ
-    if (!openPagesListRequested(event))
-        QWebView::contextMenuEvent(event);
+    QWebView::contextMenuEvent(event);
 }
 
 QT_END_NAMESPACE

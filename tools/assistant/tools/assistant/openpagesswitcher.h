@@ -39,54 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef OPENPAGESWIDGET_H
-#define OPENPAGESWIDGET_H
+#ifndef OPENPAGESSWITCHER_H
+#define OPENPAGESSWITCHER_H
 
-#include <QtGui/QStyledItemDelegate>
-#include <QtGui/QTreeView>
+#include <QtGui/QFrame>
 
 QT_BEGIN_NAMESPACE
 
 class OpenPagesModel;
+class OpenPagesWidget;
+class QModelIndex;
 
-class OpenPagesDelegate : public QStyledItemDelegate
+class OpenPagesSwitcher : public QFrame
 {
     Q_OBJECT
+
 public:
-    explicit OpenPagesDelegate(QObject *parent = 0);
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-        const QModelIndex &index) const;
+    OpenPagesSwitcher(OpenPagesModel *model);
+    ~OpenPagesSwitcher();
 
-    mutable QModelIndex pressedIndex;
-};
+    void gotoNextPage();
+    void gotoPreviousPage();
 
-class OpenPagesWidget : public QTreeView
-{
-    Q_OBJECT
-public:
-    OpenPagesWidget(OpenPagesModel *model);
-    ~OpenPagesWidget();
-
+    void selectAndHide();
     void selectCurrentPage();
-    void allowContextMenu(bool ok);
+
+    void setVisible(bool visible);
+    void focusInEvent(QFocusEvent *event);
+    bool eventFilter(QObject *object, QEvent *event);
 
 signals:
-    void setCurrentPage(const QModelIndex &index);
     void closePage(const QModelIndex &index);
-    void closePagesExcept(const QModelIndex &index);
-
-private slots:
-    void contextMenuRequested(QPoint pos);
-    void handlePressed(const QModelIndex &index);
-    void handleClicked(const QModelIndex &index);
+    void setCurrentPage(const QModelIndex &index);
 
 private:
-    bool eventFilter(QObject *obj, QEvent *event);
+    void selectPageUpDown(int summand);
 
-    bool m_allowContextMenu;
-    OpenPagesDelegate *m_delegate;
+private:
+    OpenPagesModel *m_openPagesModel;
+    OpenPagesWidget *m_openPagesWidget;
 };
 
 QT_END_NAMESPACE
 
-#endif // OPENPAGESWIDGET_H
+#endif  // OPENPAGESSWITCHER_H

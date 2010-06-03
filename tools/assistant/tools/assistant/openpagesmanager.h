@@ -41,27 +41,28 @@
 
 #ifndef OPENPAGESMANAGER_H
 #define OPENPAGESMANAGER_H
- 
+
 #include <QtCore/QObject>
- 
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractItemView;
 class QModelIndex;
 class QUrl;
- 
+
 class HelpViewer;
 class OpenPagesModel;
+class OpenPagesSwitcher;
 class OpenPagesWidget;
- 
+
 class OpenPagesManager : public QObject
- {
+{
     Q_OBJECT
- public:
+public:
     static OpenPagesManager *createInstance(QObject *parent,
-               bool defaultCollection, const QUrl &cmdLineUrl);
+        bool defaultCollection, const QUrl &cmdLineUrl);
     static OpenPagesManager *instance();
- 
+
     bool pagesOpenForNamespace(const QString &nameSpace) const;
     void closePages(const QString &nameSpace);
     void reloadPages(const QString &nameSpace);
@@ -71,13 +72,16 @@ class OpenPagesManager : public QObject
     int pageCount() const;
     void setCurrentPage(int index);
 
- public slots:
+public slots:
     HelpViewer *createPage(const QUrl &url, bool fromSearch = false);
     HelpViewer *createNewPageFromSearch(const QUrl &url);
     HelpViewer *createPage();
     void closeCurrentPage();
+
     void nextPage();
+    void nextPageWithSwitcher();
     void previousPage();
+    void previousPageWithSwitcher();
 
 private slots:
     void setCurrentPage(const QModelIndex &index);
@@ -86,19 +90,23 @@ private slots:
 
 private:
     OpenPagesManager(QObject *parent, bool defaultCollection,
-                     const QUrl &cmdLineUrl);
+        const QUrl &cmdLineUrl);
+    ~OpenPagesManager();
+
     void setupInitialPages(bool defaultCollection, const QUrl &cmdLineUrl);
     void closeOrReloadPages(const QString &nameSpace, bool tryReload);
-    void selectCurrentPage();
     void removePage(int index);
-    void nextOrPreviousPage(int offset);
- 
-     OpenPagesModel *m_model;
-     OpenPagesWidget *m_openPagesWidget;
 
-     static OpenPagesManager *m_instance;
- };
- 
+    void nextOrPreviousPage(int offset);
+    void showSwitcherOrSelectPage() const;
+
+    OpenPagesModel *m_model;
+    OpenPagesWidget *m_openPagesWidget;
+    OpenPagesSwitcher *m_openPagesSwitcher;
+
+    static OpenPagesManager *m_instance;
+};
+
 QT_END_NAMESPACE
- 
+
 #endif // OPENPAGESMANAGER_H
