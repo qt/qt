@@ -884,7 +884,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     QWidgetPrivate *pd = pw->d_func();
     QRect clipR(pd->clipRect());
 #ifdef Q_WS_QWS
-    QWidgetBackingStore *wbs = x->backingStore;
+    QWidgetBackingStore *wbs = x->backingStore.data();
     QWSWindowSurface *surface = static_cast<QWSWindowSurface*>(wbs->windowSurface);
     clipR = clipR.intersected(surface->clipRegion().translated(-toplevelOffset).boundingRect());
 #endif
