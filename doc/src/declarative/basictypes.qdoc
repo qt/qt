@@ -185,22 +185,21 @@
   \qmlbasictype point
   \ingroup qmlbasictypes
 
-  \brief A point is specified as "x,y".
+  \brief A point type has x and y attributes.
 
-  A point is specified as "x,y".
+  A \c point type has \c x and \c y attributes.
 
-  Example:
-  \qml
-  MyItem { position: "0,20" }
-  \endqml
-
-  Or with the \l{Qt::point()}{Qt.point()} function:
+  To create a \c point value, specify it as a "x,y" string:
 
   \qml
-  MyItem { position: Qt.point(0, 20) }
+  CustomObject { myPointProperty: "0,20" }
   \endqml
 
-  A point object has \c x and \c y attributes that contain the \c x and \c y values.
+  Or use the \l{Qt::point()}{Qt.point()} function:
+
+  \qml
+  CustomObject { myPointProperty: Qt.point(0, 20) }
+  \endqml
 
   \sa {QML Basic Types}
 */
@@ -208,23 +207,31 @@
 /*!
   \qmlbasictype size
   \ingroup qmlbasictypes
+  
+  \brief A size type has width and height attributes
 
-  \brief A size is specified as "width x height".
+  A \c size type has \c width and \c height attributes.
 
-  A size is specified as "width x height".
+  For example, to read the \l {Image::sourceSize} \c size property:
 
-  Example:
+  \qml
+  Column {
+    Image { id: image; source: "logo.png" }
+    Text { text: image.sourceSize.width + "," + image.sourceSize.height }
+  }
+  \endqml
+
+  To create a \c size value, specify it as a "width x height" string:
+
   \qml
   LayoutItem { preferredSize: "150x50" }
   \endqml
 
-  Or with the \l{Qt::size()}{Qt.size()} function:
+  Or use the \l{Qt::size()}{Qt.size()} function:
 
   \qml
-  MyItem { position: Qt.size(150, 50) }
+  LayoutItem { preferredSize: Qt.size(150, 50) }
   \endqml
-
-  A size object has \c width and \c height attributes that contain the \c width and \c height values.
 
   \sa {QML Basic Types}
 */
@@ -233,23 +240,31 @@
   \qmlbasictype rect
   \ingroup qmlbasictypes
 
-  \brief A rect is specified as "x, y, width x height".
+  \brief A rect type has x, y, width and height attributes.
 
-  A rect is specified as "x, y, width x height".
+  A \c rect type has \c x, \c y, \c width and \c height attributes.
 
-  Example:
+  For example, to read the \l {Item::childrenRect.x}{Item::childrenRect} \c rect property:
   \qml
-  MyItem { geometry: "50,50,100x100" }
+  Rectangle { 
+    width: childrenRect.width
+    height: childrenRect.height
+
+    Rectangle { width: 100; height: 100 }
+  }
   \endqml
 
-  Or with the \l{Qt::rect()}{Qt.rect()} function:
+  To create a \c rect value, specify it as a "x, y, width x height" string:
 
   \qml
-  MyItem { position: Qt.rect(50, 50, 100, 100) }
+  CustomObject { myRectProperty: "50,50,100x100" }
   \endqml
 
-  A rect object has \c x, \c, y, \c width and \c height attributes that contain the 
-  \c x, \c y, \c width and \c height values.
+  Or use the \l{Qt::rect()}{Qt.rect()} function:
+
+  \qml
+  CustomObject { myRectProperty: Qt.rect(50, 50, 100, 100) }
+  \endqml
 
   \sa {QML Basic Types}
 */
@@ -260,7 +275,7 @@
 
   \brief A date is specified as "YYYY-MM-DD".
 
-  A date is specified as "YYYY-MM-DD".
+  To create a \c date value, specify it as a "YYYY-MM-DD" string:
 
   Example:
   \qml
@@ -375,15 +390,17 @@
   \qmlbasictype vector3d
   \ingroup qmlbasictypes
 
-  \brief A vector3d is specified as "x,y,z".
+  \brief A vector3d type has x, y, and z attributes.
 
-  A vector3d is specified as "x,y,z".
+  A \c vector3d type has \c x, \c y, and \c z attributes.
+
+  To create a \c vector3d value, specify it as a "x,y,z" string:
 
   \qml
   Rotation { angle: 60; axis: "0,1,0" }
   \endqml
 
-  or with the \c{Qt.vector3d()} function:
+  or with the \l{Qt::vector3d()}{Qt.vector3d()} function:
 
   \qml
   Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
@@ -394,9 +411,6 @@
   \qml
   Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
   \endqml
-
-  A vector3d object has \c x, \c, y, and \c z attributes that contain the 
-  \c x, \c y, \c z values.
 
   \sa {QML Basic Types}
 */
