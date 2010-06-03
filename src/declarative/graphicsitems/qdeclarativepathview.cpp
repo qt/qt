@@ -895,6 +895,7 @@ void QDeclarativePathView::setPathItemCount(int i)
     if (i < 1)
         i = 1;
     d->pathItems = i;
+    d->updateMappedRange();
     if (d->isValid() && isComponentComplete()) {
         d->regenerate();
     }
