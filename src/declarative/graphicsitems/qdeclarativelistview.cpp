@@ -427,6 +427,8 @@ public:
                 scheduleLayout();
             }
         }
+        if (currentItem && currentItem->item == item)
+            updateHighlight();
         if (trackedItem && trackedItem->item == item)
             q->trackedPositionChanged();
     }
@@ -1103,7 +1105,9 @@ void QDeclarativeListViewPrivate::updateHeader()
 
 void QDeclarativeListViewPrivate::fixupPosition()
 {
-    moveReason = Other;
+    if ((haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange)
+        || snapMode != QDeclarativeListView::NoSnap)
+        moveReason = Other;
     if (orient == QDeclarativeListView::Vertical)
         fixupY();
     else
