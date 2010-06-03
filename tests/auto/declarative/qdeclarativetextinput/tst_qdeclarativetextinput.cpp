@@ -902,12 +902,6 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     input.setFocusOnPress(true);
     QCOMPARE(focusOnPressSpy.count(),2);
 
-    // active window focus reason should not cause input panel to open
-    QGraphicsObject * inputObject = qobject_cast<QGraphicsObject*>(&input);
-    inputObject->setFocus(Qt::ActiveWindowFocusReason);
-    QCOMPARE(ic.openInputPanelReceived, false);
-    QCOMPARE(ic.closeInputPanelReceived, false);
-
     // and input panel should not open if focus has already been set
     input.setFocus(true);
     QCOMPARE(ic.openInputPanelReceived, false);
