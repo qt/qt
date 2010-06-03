@@ -94,6 +94,7 @@ private slots:
     void task260134_layoutChangedWithAllSelected();
     void QTBUG5671_layoutChangedWithAllSelected();
     void QTBUG2804_layoutChangedTreeSelection();
+    void deselectRemovedMiddleRange();
 
 private:
     QAbstractItemModel *model;
@@ -2351,6 +2352,53 @@ void tst_QItemSelectionModel::QTBUG2804_layoutChangedTreeSelection()
     model.sort(0); //this will provoke a relayout
 
     QCOMPARE(selModel.selectedIndexes().count(), 4);
+}
+
+class RemovalObserver : public QObject
+{
+    Q_OBJECT
+    QItemSelectionModel *m_itemSelectionModel;
+public:
+    RemovalObserver(QItemSelectionModel *selectionModel)
+      : m_itemSelectionModel(selectionModel)
+    {
+        connect(m_itemSelectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(selectionChanged(QItemSelection, QItemSelection)));
+    }
+
+public slots:
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+    {
+        foreach(const QModelIndex &index, deselected.indexes()) {
+            QVERIFY(!m_itemSelectionModel->selection().contains(index));
+        }
+        QVERIFY(m_itemSelectionModel->selection().size() == 2);
+    }
+
+};
+
+void tst_QItemSelectionModel::deselectRemovedMiddleRange()
+{
+    QStandardItemModel model(8, 0);
+
+    for (int row = 0; row < 8; ++row) {
+        static const int column = 0;
+        QStandardItem *item = new QStandardItem(QString::number(row));
+        model.setItem(row, column, item);
+    }
+
+    QItemSelectionModel selModel(&model);
+
+    selModel.select(QItemSelection(model.index(3, 0), model.index(6, 0)), QItemSelectionModel::Select);
+
+    QVERIFY(selModel.selection().size() == 1);
+
+    RemovalObserver ro(&selModel);
+
+    QSignalSpy spy(&selModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)));
+    bool ok = model.removeRows(4, 2);
+
+    QVERIFY(ok);
+    QVERIFY(spy.size() == 1);
 }
 
 
