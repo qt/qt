@@ -75,6 +75,7 @@ SUBDIRS=\
    qstringbuilder4 \
    qstringlist \
    qstringmatcher \
+   qstringref \
    qtconcurrentfilter \
    qtconcurrentiteratekernel \
    qtconcurrentmap \
