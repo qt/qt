@@ -1056,6 +1056,7 @@ void QDeclarativeTextEdit::select(int start, int end)
     updateSelectionMarkers();
 }
 
+#ifndef QT_NO_CLIPBOARD
 /*!
     \qmlmethod TextEdit::cut()
 
@@ -1088,7 +1089,7 @@ void QDeclarativeTextEdit::paste()
     Q_D(QDeclarativeTextEdit);
     d->control->paste();
 }
-
+#endif // QT_NO_CLIPBOARD
 
 /*!
 \overload
