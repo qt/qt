@@ -491,7 +491,9 @@ public:
     bool setMinimumSize_helper(int &minw, int &minh);
     bool setMaximumSize_helper(int &maxw, int &maxh);
     void setConstraints_sys();
+    bool pointInsideRectAndMask(const QPoint &) const;
     QWidget *childAt_helper(const QPoint &, bool) const;
+    QWidget *childAtRecursiveHelper(const QPoint &p, bool, bool includeFrame = false) const;
     void updateGeometry_helper(bool forceUpdate);
 
     void getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const;
@@ -901,6 +903,13 @@ inline void QWidgetPrivate::setSharedPainter(QPainter *painter)
     Q_Q(QWidget);
     QTLWExtra *x = q->window()->d_func()->topData();
     x->sharedPainter = painter;
+}
+
+inline bool QWidgetPrivate::pointInsideRectAndMask(const QPoint &p) const
+{
+    Q_Q(const QWidget);
+    return q->rect().contains(p) && (!extra || !extra->hasMask || q->testAttribute(Qt::WA_MouseNoMask)
+                                     || extra->mask.contains(p));
 }
 
 inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
