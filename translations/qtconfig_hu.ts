@@ -71,8 +71,12 @@
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Use OpenGL if avaiable</source>
+        <translation type="obsolete">Használja az OpenGL-t ha elérhető</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Use OpenGL if available</source>
         <translation>Használja az OpenGL-t ha elérhető</translation>
     </message>
     <message>
@@ -204,17 +208,17 @@
     <message>
         <location/>
         <source>Build Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Paletta felépítése</translation>
     </message>
     <message>
         <location/>
         <source>&amp;3-D Effects:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;3-D effektek:</translation>
     </message>
     <message>
         <location/>
         <source>Window Back&amp;ground:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ablak &amp;háttér:</translation>
     </message>
     <message>
         <location/>
@@ -224,37 +228,37 @@
     <message>
         <location/>
         <source>Please use the KDE Control Center to set the palette.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kérem, használja a KDE vezérlőközpontot a paletta beállításához.</translation>
     </message>
     <message>
         <location/>
         <source>Fonts</source>
-        <translation type="unfinished"></translation>
+        <translation>Betűtípusok</translation>
     </message>
     <message>
         <location/>
         <source>Default Font</source>
-        <translation type="unfinished"></translation>
+        <translation>Alapértelmezett betűtípus</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Style:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Stílus:</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Point Size:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Pontméret:</translation>
     </message>
     <message>
         <location/>
         <source>F&amp;amily:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Család:</translation>
     </message>
     <message>
         <location/>
         <source>Sample Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Példa szöveg</translation>
     </message>
     <message>
         <location/>
@@ -264,7 +268,7 @@
     <message>
         <location/>
         <source>S&amp;elect or Enter a Family:</source>
-        <translation type="unfinished"></translation>
+        <translation>Válassza ki, vagy írja b&amp;íe a betűcsaládot:</translation>
     </message>
     <message>
         <location/>
@@ -274,17 +278,17 @@
     <message>
         <location/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Fel</translation>
     </message>
     <message>
         <location/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Le</translation>
     </message>
     <message>
         <location/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Törlés</translation>
     </message>
     <message>
         <location/>
@@ -294,12 +298,13 @@
     <message>
         <location/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Hozzáadás</translation>
     </message>
     <message>
         <location/>
         <source>Interface</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Interfész</translation>
     </message>
     <message>
         <location/>
@@ -309,82 +314,83 @@
     <message>
         <location/>
         <source> ms</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Double Click Interval:</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">&amp;Dupla kattintás sebessége:</translation>
     </message>
     <message>
         <location/>
         <source>No blinking</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs villogás</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Cursor Flash Time:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kurzor villogás sebessége:</translation>
     </message>
     <message>
         <location/>
         <source> lines</source>
-        <translation type="unfinished"></translation>
+        <translation> sor</translation>
     </message>
     <message>
         <location/>
         <source>Wheel &amp;Scroll Lines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Görgetett &amp;sorok száma:</translation>
     </message>
     <message>
         <location/>
         <source>Resolve symlinks in URLs</source>
-        <translation type="unfinished"></translation>
+        <translation>Szimbolikus linkek feloldása az URL-ekben</translation>
     </message>
     <message>
         <location/>
         <source>GUI Effects</source>
-        <translation type="unfinished"></translation>
+        <translation>GUI effektek</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Engedélyezés</translation>
     </message>
     <message>
         <location/>
         <source>Alt+E</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Menu Effect:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Menü effekt:</translation>
     </message>
     <message>
         <location/>
         <source>C&amp;omboBox Effect:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Legördülő lista effekt:</translation>
     </message>
     <message>
         <location/>
         <source>&amp;ToolTip Effect:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ToolTip effekt:</translation>
     </message>
     <message>
         <location/>
         <source>Tool&amp;Box Effect:</source>
-        <translation type="unfinished"></translation>
+        <translation>Eszköz&amp;tár effekt:</translation>
     </message>
     <message>
         <location/>
         <source>Disable</source>
-        <translation type="unfinished"></translation>
+        <translation>Letiltás</translation>
     </message>
     <message>
         <location/>
         <source>Animate</source>
-        <translation type="unfinished"></translation>
+        <translation>Animáció</translation>
     </message>
     <message>
         <location/>
@@ -399,22 +405,23 @@
     <message>
         <location/>
         <source>Minimum &amp;Width:</source>
-        <translation type="unfinished"></translation>
+        <translation>Minimum s&amp;zélesség:</translation>
     </message>
     <message>
         <location/>
         <source>Minimum Hei&amp;ght:</source>
-        <translation type="unfinished"></translation>
+        <translation>Minimum &amp;magasság:</translation>
     </message>
     <message>
         <location/>
         <source> pixels</source>
-        <translation type="unfinished"></translation>
+        <translation> pixel</translation>
     </message>
     <message>
         <location/>
         <source>Enhanced support for languages written right-to-left</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Javított támogatás balról jobbra író nyelvekhez</translation>
     </message>
     <message>
         <location/>
@@ -439,62 +446,62 @@
     <message>
         <location/>
         <source>Root</source>
-        <translation type="unfinished"></translation>
+        <translation>Root</translation>
     </message>
     <message>
         <location/>
         <source>Default Input Method:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alapértelmezett beviteli mód:</translation>
     </message>
     <message>
         <location/>
         <source>Printer</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomtató</translation>
     </message>
     <message>
         <location/>
         <source>Enable Font embedding</source>
-        <translation type="unfinished"></translation>
+        <translation>Font beágyazás engedélyezése</translation>
     </message>
     <message>
         <location/>
         <source>Font Paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Fontok útvonalai</translation>
     </message>
     <message>
         <location/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>Tallózás...</translation>
     </message>
     <message>
         <location/>
         <source>Press the &lt;b&gt;Browse&lt;/b&gt; button or enter a directory and press Enter to add them to the list.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nyomja meg a &lt;b&gt;Tallózás&lt;b&gt; gombot, vagy írja be a mappa elérési útját, majd nyomja meg az Enter-t a listához adáshoz.</translation>
     </message>
     <message>
         <location/>
         <source>Phonon</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>About Phonon</source>
-        <translation type="unfinished"></translation>
+        <translation>A Phonon névjegye</translation>
     </message>
     <message>
         <location/>
         <source>Current Version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Jelenlegi verzió:</translation>
     </message>
     <message>
         <location/>
         <source>Not available</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem érhető el</translation>
     </message>
     <message>
         <location/>
         <source>Website:</source>
-        <translation type="unfinished"></translation>
+        <translation>Weboldal:</translation>
     </message>
     <message>
         <location/>
@@ -503,12 +510,12 @@
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>About GStreamer</source>
-        <translation type="unfinished"></translation>
+        <translation>A GStreamer névjegye</translation>
     </message>
     <message>
         <location/>
@@ -517,22 +524,23 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>GStreamer backend settings</source>
-        <translation type="unfinished"></translation>
+        <translation>A GStreamer backend beállításai</translation>
     </message>
     <message>
         <location/>
         <source>Preferred audio sink:</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Preferált hangrendszer:</translation>
     </message>
     <message>
         <location/>
         <source>Preferred render method:</source>
-        <translation type="unfinished"></translation>
+        <translation>Preferált renderelési mód:</translation>
     </message>
     <message>
         <location/>
@@ -541,7 +549,11 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Note: changes to these settings may prevent applications from starting up correctly.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Figyelem: ezen beállítások megváltoztatása egyes alkalmazások indulásában gondokat okozhat.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location/>
@@ -614,22 +626,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Select &amp;Palette:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Előnézet &amp;választása:</translation>
     </message>
     <message>
         <location/>
         <source>Active Palette</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Aktív elemek</translation>
     </message>
     <message>
         <location/>
         <source>Inactive Palette</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Inaktív elemek</translation>
     </message>
     <message>
         <location/>
         <source>Disabled Palette</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Letiltott elemek</translation>
     </message>
     <message>
         <location/>
@@ -664,7 +676,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ablak</translation>
     </message>
     <message>
         <location/>
@@ -689,32 +701,32 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>BrightText</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>ButtonText</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Highlight</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>HighlightedText</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Select Color:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Szín választás:</translation>
     </message>
     <message>
         <location/>
         <source>Choose a color</source>
-        <translation type="unfinished"></translation>
+        <translation>Válasszon színt</translation>
     </message>
     <message>
         <location/>
@@ -724,7 +736,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>3-D shadow &amp;effects</source>
-        <translation type="unfinished"></translation>
+        <translation>3D árnyék &amp;effektek</translation>
     </message>
     <message>
         <location/>

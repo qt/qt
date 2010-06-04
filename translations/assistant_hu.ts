@@ -165,7 +165,7 @@ Oka:
         <translation>Könyvjelzők kezelése...</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Add Bookmark...</source>
         <translation>Könyvjelző hozzáadása...</translation>
     </message>
@@ -251,7 +251,7 @@ Oka:
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+117"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+121"/>
         <source>Add new page</source>
         <translation>Új fül hozzáadása</translation>
     </message>
@@ -272,7 +272,7 @@ Oka:
         <translation>ismeretlen</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+101"/>
         <source>Add New Page</source>
         <translation>Új fül hozzáadása</translation>
     </message>
@@ -363,7 +363,7 @@ Oka:
 <context>
     <name>ContentWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+171"/>
+        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+173"/>
         <source>Open Link</source>
         <translation>Link megnyitása</translation>
     </message>
@@ -448,7 +448,7 @@ Oka:
         <translation type="obsolete">OK</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+56"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+58"/>
         <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
         <translation></translation>
     </message>
@@ -598,19 +598,19 @@ Oka:
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+123"/>
-        <location line="+366"/>
+        <location line="+369"/>
         <source>Index</source>
         <translation>Index</translation>
     </message>
     <message>
-        <location line="-360"/>
-        <location line="+358"/>
+        <location line="-363"/>
+        <location line="+361"/>
         <source>Contents</source>
         <translation>Tartalom</translation>
     </message>
     <message>
-        <location line="-351"/>
-        <location line="+355"/>
+        <location line="-354"/>
+        <location line="+358"/>
         <source>Bookmarks</source>
         <translation>Könyvjelzők</translation>
     </message>
@@ -620,8 +620,8 @@ Oka:
         <translation>Keresés</translation>
     </message>
     <message>
-        <location line="-335"/>
-        <location line="+672"/>
+        <location line="-338"/>
+        <location line="+680"/>
         <location line="+284"/>
         <source>Qt Assistant</source>
         <translation>Qt Asszisztens</translation>
@@ -631,7 +631,7 @@ Oka:
         <translation type="obsolete">Szűrő kikapcsolása</translation>
     </message>
     <message>
-        <location line="-702"/>
+        <location line="-705"/>
         <source>Page Set&amp;up...</source>
         <translation>&amp;Oldalbeállítás...</translation>
     </message>
@@ -646,17 +646,17 @@ Oka:
         <translation>&amp;Nyomtatás...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-10"/>
         <source>New &amp;Tab</source>
         <translation>Új &amp;fül</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+17"/>
         <source>&amp;Close Tab</source>
         <translation>Fül be&amp;zárása</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>&amp;Quit</source>
         <translation>&amp;Kilépés</translation>
     </message>
@@ -776,7 +776,7 @@ Oka:
         <translation></translation>
     </message>
     <message>
-        <location line="+591"/>
+        <location line="+596"/>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>A(z) &apos;%1&apos; fájl regisztrálása sikertelen: %2</translation>
     </message>
@@ -785,12 +785,12 @@ Oka:
         <translation type="obsolete">Könyvjelző hozzáadása...</translation>
     </message>
     <message>
-        <location line="-584"/>
+        <location line="-589"/>
         <source>About...</source>
         <translation>Névjegy...</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+21"/>
         <source>Navigation Toolbar</source>
         <translation>Navigációs eszköztár</translation>
     </message>
@@ -835,12 +835,12 @@ Oka:
         <translation>Keresési index frissítése</translation>
     </message>
     <message>
-        <location line="-661"/>
+        <location line="-669"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Qt dokumentáció keresése...</translation>
     </message>
     <message>
-        <location line="+219"/>
+        <location line="+227"/>
         <source>&amp;Window</source>
         <translation>&amp;Ablak</translation>
     </message>
@@ -860,12 +860,12 @@ Oka:
         <translation>Nagyítás</translation>
     </message>
     <message>
-        <location line="-161"/>
+        <location line="-169"/>
         <source>&amp;File</source>
         <translation>&amp;Fájl</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+32"/>
         <source>&amp;Edit</source>
         <translation>S&amp;zerkesztés</translation>
     </message>

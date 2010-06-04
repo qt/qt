@@ -45,7 +45,7 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>Cannot open collection file: %1</source>
         <translation>Nem lehet megnyitni a gyűjtemény fájlt: %1</translation>
     </message>
@@ -60,7 +60,7 @@
         <translation>A(z) &apos;%1&apos; gyűjtemény fájl már létezik!</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+151"/>
         <source>Unknown filter &apos;%1&apos;!</source>
         <translation>Ismeretlen szűrő: &apos;%1&apos;!</translation>
     </message>
@@ -80,12 +80,12 @@
         <translation>Nem lehet optimalizálásra megnyitni a(z) &apos;%1&apos; adatbázist!</translation>
     </message>
     <message>
-        <location line="-436"/>
+        <location line="-439"/>
         <source>Cannot create directory: %1</source>
         <translation>A könyvtár létrehozása sikertelen: %1</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+26"/>
         <source>Cannot copy collection file: %1</source>
         <translation>A gyűjtemény fájl másolása sikertelen: %1</translation>
     </message>
@@ -167,7 +167,7 @@
         <translation>A(z) %1 adatbázis fájl megnyitása sikertelen!</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>Cannot register namespace %1!</source>
         <translation>Nem lehet regisztrálni a(z) %1 névteret!</translation>
     </message>
@@ -275,7 +275,7 @@
 <context>
     <name>QHelpProject</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+86"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+88"/>
         <source>Unknown token.</source>
         <translation>Ismeretlen token.</translation>
     </message>
@@ -290,17 +290,25 @@
         <translation>Hiba a(z) %1. sorban: %2</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>A virtual folder must not contain a &apos;/&apos; character!</source>
-        <translation>A virtuális mappa neve nem tartalmazhat &apos;/&apos; karaktert!</translation>
+        <translation type="obsolete">A virtuális mappa neve nem tartalmazhat &apos;/&apos; karaktert!</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>A namespace must not contain a &apos;/&apos; character!</source>
-        <translation>A névtér neve nem tartalmazhat &apos;/&apos; karaktert!</translation>
+        <translation type="obsolete">A névtér neve nem tartalmazhat &apos;/&apos; karaktert!</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+14"/>
+        <source>Virtual folder has invalid syntax.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Namespace has invalid syntax.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Missing namespace in QtHelpProject.</source>
         <translation>Hiányzó névtér a QtHelpProject-ben.</translation>
     </message>
@@ -315,7 +323,7 @@
         <translation>Hiányzó attirbútum a kulcsszóban a(z) %1 sorban.</translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+141"/>
         <source>The input file %1 could not be opened!</source>
         <translation>A(z) %1 bemeneti fájl megnyitása sikertelen!</translation>
     </message>
@@ -379,7 +387,7 @@
         <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+174"/>
         <source>%1 - %2 of %n Hits</source>
         <translation>
-            <numerusform>%1 - %2. a(z) %3 találatból</numerusform>
+            <numerusform>%1 - %2. a(z) %n találatból</numerusform>
         </translation>
     </message>
     <message>

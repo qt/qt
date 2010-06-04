@@ -461,7 +461,7 @@ Az egyes számú általános forma lesz alkalmazva.</translation>
         <translation></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+646"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+668"/>
         <location line="+15"/>
         <source>&amp;Save</source>
         <translation>Menté&amp;s</translation>
@@ -803,7 +803,7 @@ Az egyes számú általános forma lesz alkalmazva.</translation>
         <translation type="obsolete">Az alkalmazások számára használható Qt üzenetfájl létrehozása a jelenlegi fájlból. A fájlnév a jelenlegi ts fájl nevéből lesz megállapítva.</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2013"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2035"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
@@ -916,12 +916,12 @@ Kihagyja ennek a fájlnak a betöltését?</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
-        <location line="+1165"/>
+        <location line="+1187"/>
         <source>Release</source>
         <translation>Kiadás</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1164"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1186"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Qt üzenetfájlok a kiadott alkalmazásokhoz (*.qm)
@@ -988,7 +988,7 @@ Minden fájl (*)</translation>
         <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
-        <location line="+516"/>
+        <location line="+538"/>
         <location line="+1"/>
         <location line="+274"/>
         <location line="+40"/>
@@ -997,7 +997,7 @@ Minden fájl (*)</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1198"/>
+        <location line="-1220"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>A szöveg nem található: &apos;%1&apos;.</translation>
@@ -1133,7 +1133,7 @@ Minden fájl (*)</translation>
         <translation>Nincs több lefordítandó kifejezés.</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+198"/>
         <source>&amp;Window</source>
         <translation>&amp;Ablak</translation>
     </message>
@@ -1856,7 +1856,7 @@ Sor: %2</translation>
         <translation>Lefordított Qt fordítások</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1280"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1302"/>
         <source>Translation files (%1);;</source>
         <translation>Fordítási fájlok (%1);;</translation>
     </message>
@@ -1885,9 +1885,14 @@ Sor: %2</translation>
         <translation type="obsolete">Java forrásfájlok</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+658"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+817"/>
         <source>GNU Gettext localization files</source>
         <translation>GNU Gettext lokalizációs fájlok</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>GNU Gettext localization template files</source>
+        <translation>GNU Gettext lokalizációs sablonfájlok</translation>
     </message>
     <message>
         <source>Qt Script source files</source>
@@ -1917,7 +1922,7 @@ Sor: %2</translation>
         <translation type="obsolete">Qt Jambi űrlapfájlok</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+827"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+829"/>
         <source>XLIFF localization files</source>
         <translation>XLIFF lokalizációs fájlok</translation>
     </message>

@@ -255,7 +255,7 @@
         <translation>Keresztátlós</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+93"/>
         <source>Style</source>
         <translation>Stílus</translation>
     </message>
@@ -734,7 +734,7 @@
 <context>
     <name>Designer</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+449"/>
+        <location filename="../tools/designer/src/components/formeditor/qdesigner_resource.cpp" line="+446"/>
         <source>Qt Designer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -870,7 +870,7 @@
     <message>
         <location/>
         <source>Style</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Stílus</translation>
     </message>
     <message>
         <location/>
@@ -1194,7 +1194,7 @@
 <context>
     <name>MainWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+119"/>
+        <location filename="../tools/designer/src/designer/mainwindow.cpp" line="+121"/>
         <source>Main</source>
         <extracomment>Not currently used (main tool bar)</extracomment>
         <translation type="unfinished"></translation>
@@ -1270,12 +1270,12 @@
     <message>
         <location line="+23"/>
         <source>A temporary form file could not be created in %1.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Az ideiglenes űrlap fájl nem hozható létre a(z) %1 helyen.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>The temporary form file %1 could not be written.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">A(z) %1 ideiglenes űrlap fájl nem írható.</translation>
     </message>
 </context>
 <context>
@@ -1350,7 +1350,7 @@
     <message>
         <location/>
         <source>Style</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Stílus</translation>
     </message>
     <message>
         <location/>
@@ -1571,7 +1571,7 @@ Script: %3</source>
 <context>
     <name>QDesignerActions</name>
     <message>
-        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+128"/>
+        <location filename="../tools/designer/src/designer/qdesigner_actions.cpp" line="+130"/>
         <source>Saved %1.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1618,12 +1618,12 @@ Do you want to replace it?</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+901"/>
+        <location line="+925"/>
         <source>&amp;Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-900"/>
+        <location line="-924"/>
         <source>Save &amp;Image...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1663,7 +1663,7 @@ Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+72"/>
         <source>ALT+CTRL+S</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1673,7 +1673,7 @@ Do you want to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+127"/>
         <source>CTRL+R</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2071,7 +2071,7 @@ Would you like to retry?</source>
 <context>
     <name>QDesignerPropertySheet</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+755"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+758"/>
         <source>Dynamic Properties</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2084,13 +2084,13 @@ Would you like to retry?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+243"/>
+        <location line="+239"/>
         <source>The container extension of the widget &apos;%1&apos; (%2) returned a widget not managed by Designer &apos;%3&apos; (%4) when queried for page #%5.
 Container pages should only be added by specifying them in XML returned by the domXml() method of the custom widget.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+599"/>
+        <location line="+545"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <extracomment>Parsing clipboard contents</extracomment>
         <translation type="unfinished"></translation>
@@ -2207,7 +2207,7 @@ Container pages should only be added by specifying them in XML returned by the d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+288"/>
+        <location line="+289"/>
         <source>Save Forms?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2520,7 +2520,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <message>
         <location line="+2"/>
         <source>Cross</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kereszt</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -3475,7 +3475,7 @@ to
 <context>
     <name>QtResourceView</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+566"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceview.cpp" line="+567"/>
         <source>Size: %1 x %2
 %3</source>
         <translation type="unfinished"></translation>
@@ -3874,7 +3874,7 @@ Do you want overwrite the template?</source>
     <message>
         <location line="+7"/>
         <source>Style</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Stílus</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -3883,6 +3883,26 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location line="+6"/>
+        <source>File</source>
+        <translation type="unfinished">Fájl</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit</source>
+        <translation type="unfinished">Szerkesztés</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Toolbars</source>
         <translation type="unfinished">Eszköztárak</translation>
     </message>
@@ -4442,12 +4462,12 @@ Do you want overwrite the template?</source>
     <message>
         <location line="+566"/>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vízszintes</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Vertical</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Függőleges</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -4671,8 +4691,13 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FilterWidget</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+185"/>
-        <source>&lt;Filter&gt;</source>
+        <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+163"/>
+        <source>Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Clear text</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4798,9 +4823,9 @@ Do you want overwrite the template?</source>
 <context>
     <name>qdesigner_internal::FormWindowBase</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+393"/>
+        <location filename="../tools/designer/src/lib/shared/formwindowbase.cpp" line="+404"/>
         <source>Delete &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&apos;%1&apos; törlése</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -4988,7 +5013,7 @@ Do you want overwrite the template?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+92"/>
+        <location line="+94"/>
         <source>Break Layout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5280,7 +5305,7 @@ Do you want overwrite the template?</source>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/listwidget_taskmenu.cpp" line="+67"/>
         <source>Edit Items...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Elem szerkesztése...</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -5542,7 +5567,7 @@ Please select another name.</source>
     <message>
         <location line="+438"/>
         <source>&amp;Find in Text...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Keresés a szövegben...</translation>
     </message>
 </context>
 <context>
@@ -5780,7 +5805,7 @@ Please select another name.</source>
     <message>
         <location line="+14"/>
         <source>%1 - Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 - Hiba</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5944,7 +5969,7 @@ ate the goose who was loose.</source>
 <context>
     <name>qdesigner_internal::PropertyEditor</name>
     <message>
-        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+183"/>
+        <location filename="../tools/designer/src/components/propertyeditor/propertyeditor.cpp" line="+231"/>
         <source>Add Dynamic Property...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5974,7 +5999,7 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+45"/>
         <source>String...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5994,7 +6019,7 @@ ate the goose who was loose.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+533"/>
+        <location line="+539"/>
         <source>Object: %1
 Class: %2</source>
         <translation type="unfinished"></translation>
@@ -6033,7 +6058,7 @@ Class: %2</source>
     <message>
         <location line="+17"/>
         <source>%1 - Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 - Hiba</translation>
     </message>
 </context>
 <context>
@@ -6614,7 +6639,7 @@ Class: %2</source>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/tablewidget_taskmenu.cpp" line="+64"/>
         <source>Edit Items...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Elem szerkesztése...</translation>
     </message>
 </context>
 <context>
@@ -6845,7 +6870,7 @@ Class: %2</source>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/treewidget_taskmenu.cpp" line="+63"/>
         <source>Edit Items...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Elem szerkesztése...</translation>
     </message>
 </context>
 <context>

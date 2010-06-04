@@ -15,7 +15,7 @@
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2266"/>
+        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2313"/>
         <source>Close Tab</source>
         <translation>Fül bezárása</translation>
     </message>
@@ -23,7 +23,7 @@
 <context>
     <name>FakeReply</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2200"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2278"/>
         <source>Fake error !</source>
         <translation>Teszt hiba !</translation>
     </message>
@@ -31,6 +31,44 @@
         <location line="+3"/>
         <source>Invalid URL</source>
         <translation>Érvénytelen URL</translation>
+    </message>
+</context>
+<context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2346"/>
+        <source>Services</source>
+        <translation>Szolgáltatások</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide %1</source>
+        <translation>%1 elrejtése</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide Others</source>
+        <translation>Minden más elrejtése</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>Mindet mutat</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Preferences...</source>
+        <translation>Beállítások...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quit %1</source>
+        <translation>Kilépés: %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About %1</source>
+        <translation>%1 névjegye</translation>
     </message>
 </context>
 <context>
@@ -80,25 +118,32 @@
 <context>
     <name>Phonon::AudioOutput</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+385"/>
+        <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+444"/>
+        <location line="+34"/>
         <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
         <translation>&lt;html&gt;A hangeszköz &lt;b&gt;%1&lt;/b&gt; most nem használható.&lt;br/&gt;Visszaállítás erre: &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="-21"/>
         <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
         <translation>&lt;html&gt;Visszaállás a(z)&lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;hangeszközre, mert az újra elérhető, és jobban preferált.&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+3"/>
+        <location line="+14"/>
         <source>Revert back to device &apos;%1&apos;</source>
         <translation>Visszaállás a(z) &apos;%1&apos; eszközre</translation>
+    </message>
+    <message>
+        <location line="-3"/>
+        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which has higher preference or is specifically configured for this stream.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;Visszaállás a(z)&lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;hangeszközre, mert az jobban preferált, vagy kimondottan ehhez a folyamhoz van konfigurálva.&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
     <name>Phonon::Gstreamer::Backend</name>
     <message>
-        <location filename="../src/3rdparty/phonon/gstreamer/backend.cpp" line="+182"/>
+        <location filename="../src/3rdparty/phonon/gstreamer/backend.cpp" line="+188"/>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
           Some video features have been disabled.</source>
         <translation>Figyelmeztetés: Úgy tűnik, a gstreamer0.10-plugins-good nincs telepítve.
@@ -125,7 +170,7 @@ Kérem, ellenőrizze, hogy a libgstreamer-plugins-base
 telepített-e, és a gstreamer beállításai megfelelők-e.</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/phonon/gstreamer/mediaobject.cpp" line="+90"/>
+        <location filename="../src/3rdparty/phonon/gstreamer/mediaobject.cpp" line="+93"/>
         <source>Cannot start playback. 
 
 Check your GStreamer installation and make sure you 
@@ -135,29 +180,41 @@ have libgstreamer-plugins-base installed.</source>
 Ellenőrizze le a GStreamer-t és győzödjön meg róla, hogy telepłtette-e a libgstreamer-plugins-base csomagot.</translation>
     </message>
     <message>
-        <location line="+113"/>
+        <location line="+129"/>
+        <source>Missing codec helper script assistant.</source>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Hiányzó kodek-súgó script.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Plugin codec installation failed for codec: %0</source>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Plugin kodek telepítése sikertelen ehhez a kodekhez: %0</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
         <translation>Hiányzik egy kodek a lejátszáshoz. Kérem telepítse a következő kodek(eket): %0</translation>
     </message>
     <message>
-        <location line="+702"/>
-        <location line="+8"/>
-        <location line="+15"/>
-        <location line="+26"/>
+        <location line="+730"/>
         <location line="+6"/>
-        <location line="+19"/>
-        <location line="+339"/>
+        <location line="+13"/>
+        <location line="+24"/>
+        <location line="+6"/>
+        <location line="+18"/>
+        <location line="+434"/>
         <location line="+24"/>
         <source>Could not open media source.</source>
         <translation>A médiaforrás megnyitása sikertelen.</translation>
     </message>
     <message>
-        <location line="-424"/>
+        <location line="-514"/>
         <source>Invalid source type.</source>
         <translation>Érvénytelen forrás.</translation>
     </message>
     <message>
-        <location line="+398"/>
+        <location line="+488"/>
         <source>Could not locate media source.</source>
         <translation>A médiaforrás nem található.</translation>
     </message>
@@ -185,7 +242,7 @@ Ellenőrizze le a GStreamer-t és győzödjön meg róla, hogy telepłtette-e a 
         <translation>Audio kimenet</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/utils.cpp" line="+87"/>
+        <location filename="../src/3rdparty/phonon/mmf/utils.cpp" line="+89"/>
         <source>No error</source>
         <translation>Nincs hiba</translation>
     </message>
@@ -360,9 +417,37 @@ Ellenőrizze le a GStreamer-t és győzödjön meg róla, hogy telepłtette-e a 
         <translation>A hangerő beállítása sikertelen</translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+45"/>
+        <source>Loading clip failed</source>
+        <translation>A klip betöltése sikertelen</translation>
+    </message>
+    <message>
+        <location line="+24"/>
         <source>Playback complete</source>
         <translation>A lejátszás befejeződött</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AbstractVideoPlayer</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/abstractvideoplayer.cpp" line="+108"/>
+        <source>Pause failed</source>
+        <translation>A megállítás sikertelen</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Seek failed</source>
+        <translation>A tekerés sikertelen</translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>Getting position failed</source>
+        <translation>A pozíció lekérése sikertelen</translation>
+    </message>
+    <message>
+        <location line="+66"/>
+        <source>Opening clip failed</source>
+        <translation>A klip megnyitása sikertelen</translation>
     </message>
 </context>
 <context>
@@ -381,9 +466,20 @@ Ellenőrizze le a GStreamer-t és győzödjön meg róla, hogy telepłtette-e a 
         <translation>A pozíció megállapítása sikertelen</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>Opening clip failed</source>
-        <translation>A klip megnyitása sikertelen</translation>
+        <translation type="obsolete">A klip megnyitása sikertelen</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::DsaVideoPlayer</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/videoplayer_dsa.cpp" line="+238"/>
+        <location line="+15"/>
+        <location line="+8"/>
+        <location line="+22"/>
+        <location line="+22"/>
+        <source>Video display error</source>
+        <translation>Videó megjelenítési hiba</translation>
     </message>
 </context>
 <context>
@@ -460,7 +556,7 @@ Ellenőrizze le a GStreamer-t és győzödjön meg róla, hogy telepłtette-e a 
 <context>
     <name>Phonon::MMF::MediaObject</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/mediaobject.cpp" line="+270"/>
+        <location filename="../src/3rdparty/phonon/mmf/mediaobject.cpp" line="+276"/>
         <source>Error opening source: type not supported</source>
         <translation>Hiba a forrás megnyitásakor: a típus nem támogatott</translation>
     </message>
@@ -479,40 +575,39 @@ Ellenőrizze le a GStreamer-t és győzödjön meg róla, hogy telepłtette-e a 
     </message>
 </context>
 <context>
-    <name>Phonon::MMF::VideoPlayer</name>
+    <name>Phonon::MMF::SurfaceVideoPlayer</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/mmf_videoplayer.cpp" line="+125"/>
-        <source>Pause failed</source>
-        <translation>A megállítás sikertelen</translation>
-    </message>
-    <message>
+        <location filename="../src/3rdparty/phonon/mmf/videoplayer_surface.cpp" line="+126"/>
         <location line="+16"/>
-        <source>Seek failed</source>
-        <translation>A tekerés sikertelen</translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>Getting position failed</source>
-        <translation>A pozíció megállapłtása sikertelen</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Opening clip failed</source>
-        <translation>A klip megnyitása sikertelen</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Buffering clip failed</source>
-        <translation>A klip pufferelése sikertelen</translation>
-    </message>
-    <message>
-        <location line="+174"/>
-        <location line="+12"/>
-        <location line="+176"/>
-        <location line="+15"/>
-        <location line="+6"/>
         <source>Video display error</source>
         <translation>Videó megjelenítési hiba</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::VideoPlayer</name>
+    <message>
+        <source>Pause failed</source>
+        <translation type="obsolete">A megállítás sikertelen</translation>
+    </message>
+    <message>
+        <source>Seek failed</source>
+        <translation type="obsolete">A tekerés sikertelen</translation>
+    </message>
+    <message>
+        <source>Getting position failed</source>
+        <translation type="obsolete">A pozíció megállapłtása sikertelen</translation>
+    </message>
+    <message>
+        <source>Opening clip failed</source>
+        <translation type="obsolete">A klip megnyitása sikertelen</translation>
+    </message>
+    <message>
+        <source>Buffering clip failed</source>
+        <translation type="obsolete">A klip pufferelése sikertelen</translation>
+    </message>
+    <message>
+        <source>Video display error</source>
+        <translation type="obsolete">Videó megjelenítési hiba</translation>
     </message>
 </context>
 <context>
@@ -1223,14 +1318,14 @@ erre:
 <context>
     <name>QAbstractSocket</name>
     <message>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+539"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+549"/>
         <location line="+809"/>
-        <location line="+208"/>
+        <location line="+220"/>
         <source>Operation on socket is not supported</source>
         <translation>A művelet nem támogatott socketeken</translation>
     </message>
     <message>
-        <location line="-650"/>
+        <location line="-662"/>
         <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+629"/>
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+661"/>
         <location line="+26"/>
@@ -1250,8 +1345,8 @@ erre:
         <translation>A kapcsolat várakozási ideje lejárt</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+598"/>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+661"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+625"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+673"/>
         <source>Socket operation timed out</source>
         <translation>Socket művelet időtúllépés</translation>
     </message>
@@ -1269,7 +1364,7 @@ erre:
 <context>
     <name>QAbstractSpinBox</name>
     <message>
-        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1260"/>
+        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1263"/>
         <source>&amp;Step up</source>
         <translation>Lépés &amp;felfelé</translation>
     </message>
@@ -1349,7 +1444,7 @@ erre:
         <translation>Hiba: inkompatíbilis Qt függvénykönyvtár</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2309"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="-13"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -1404,7 +1499,7 @@ erre:
 <context>
     <name>QColorDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1355"/>
+        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1378"/>
         <source>Hu&amp;e:</source>
         <translation>Á&amp;rnyalat:</translation>
     </message>
@@ -1478,7 +1573,7 @@ erre:
 <context>
     <name>QComboBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+1771"/>
+        <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+1772"/>
         <location line="+65"/>
         <source>Open</source>
         <translation>Megnyitás</translation>
@@ -1637,7 +1732,7 @@ erre:
 <context>
     <name>QDeclarativeAbstractAnimation</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+163"/>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+166"/>
         <source>Cannot animate non-existent property &quot;%1&quot;</source>
         <translation>Nem lehet animálni a hiányzó &quot;%1&quot; tulajdonság nélkül</translation>
     </message>
@@ -1646,23 +1741,36 @@ erre:
         <source>Cannot animate read-only property &quot;%1&quot;</source>
         <translation>Nem lehet animálni a csak olvasható &quot;%1&quot; tulajdonsággal</translation>
     </message>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeutilmodule.cpp" line="+122"/>
+        <source>Animation is an abstract class</source>
+        <translation>Az Animation absztrakt osztály</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnchorAnimation</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+2553"/>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QDeclarativeAnchors</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativeanchors.cpp" line="+177"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeanchors.cpp" line="+180"/>
         <source>Possible anchor loop detected on fill.</source>
         <translation>Lehetséges horgony hurok észlelhető egy festésen.</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+29"/>
         <source>Possible anchor loop detected on centerIn.</source>
         <translation>Lehetséges horgony hurok észlelhető a középvonalon.</translation>
     </message>
     <message>
-        <location line="+163"/>
+        <location line="+201"/>
         <location line="+34"/>
-        <location line="+607"/>
+        <location line="+610"/>
         <location line="+37"/>
         <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
         <translation>Nem lehet egy olyan elemhez horgonyozni, mely nem szülő vagy gyermek.</translation>
@@ -1716,9 +1824,17 @@ erre:
     </message>
 </context>
 <context>
+    <name>QDeclarativeAnimatedImage</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeitemsmodule.cpp" line="+86"/>
+        <source>Qt was built without support for QMovie</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeBehavior</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativebehavior.cpp" line="+124"/>
+        <location filename="../src/declarative/util/qdeclarativebehavior.cpp" line="+127"/>
         <source>Cannot change the animation assigned to a Behavior.</source>
         <translation>Nem lehet egy Behavior elemhez rendelt animációt módosítani.</translation>
     </message>
@@ -1726,23 +1842,33 @@ erre:
 <context>
     <name>QDeclarativeBinding</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativebinding.cpp" line="+195"/>
+        <location filename="../src/declarative/qml/qdeclarativebinding.cpp" line="+238"/>
         <source>Binding loop detected for property &quot;%1&quot;</source>
         <translation>Kötési hurok észlelhető a(z) &quot;%1&quot; tulajdonságon</translation>
     </message>
 </context>
 <context>
+    <name>QDeclarativeCompiledBindings</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativecompiledbindings.cpp" line="+372"/>
+        <source>Binding loop detected for property &quot;%1&quot;</source>
+        <translation type="unfinished">Kötési hurok észlelhető a(z) &quot;%1&quot; tulajdonságon</translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeCompiler</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativecompiler.cpp" line="+213"/>
-        <location line="+1786"/>
-        <location line="+124"/>
-        <location line="+427"/>
+        <location filename="../src/declarative/qml/qdeclarativecompiler.cpp" line="+186"/>
+        <location line="+1596"/>
+        <location line="+186"/>
+        <location line="+81"/>
+        <location line="+75"/>
+        <location line="+487"/>
         <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: &quot;%1&quot; egy csak olvasható tulajdonság</translation>
     </message>
     <message>
-        <location line="-2328"/>
+        <location line="-2416"/>
         <source>Invalid property assignment: unknown enumeration</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: ismeretlen felsorolás</translation>
     </message>
@@ -1757,32 +1883,32 @@ erre:
         <translation>Érvénytelen tulajdonság-hozzárendelés: URL szükséges</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+10"/>
         <source>Invalid property assignment: unsigned int expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: előjel nélküli egész érték szükséges</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>Invalid property assignment: int expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: egész érték szükséges</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+4"/>
         <source>Invalid property assignment: float expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: lebegőpontos érték szükséges</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+3"/>
         <source>Invalid property assignment: double expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: duplapontos érték szükséges</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Invalid property assignment: color expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: szín szükséges</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Invalid property assignment: date expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: dátum szükséges</translation>
     </message>
@@ -1797,7 +1923,7 @@ erre:
         <translation>Érvénytelen tulajdonság-hozzárendelés: datetime érték szükséges</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+9"/>
         <source>Invalid property assignment: point expected</source>
         <translation>Érvénytelen tulajdonság-hozzárendelés: pont szükséges</translation>
     </message>
@@ -1827,30 +1953,49 @@ erre:
         <translation>Érvénytelen tulajdonság-hozzárendelés: nem támogatott típus: &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+801"/>
+        <location line="+277"/>
+        <source>Element is not creatable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+618"/>
         <source>Component elements may not contain properties other than id</source>
         <translation>A Component elemek nem tartalmazhatnak az id-n kívűl más tulajdonságot</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Component elements may not contain script blocks</source>
-        <translation>A Component elemek nem tartalmazhatnak parancsblokkokat</translation>
+        <translation type="obsolete">A Component elemek nem tartalmazhatnak parancsblokkokat</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Invalid component id specification</source>
         <translation>Érvénytelen komponens azonosító megadás</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+579"/>
+        <location line="+478"/>
         <source>id is not unique</source>
         <translation>Az azonosító nem egyedi</translation>
     </message>
     <message>
-        <location line="-569"/>
+        <location line="-468"/>
         <source>Invalid component body specification</source>
         <translation>Érvénytelen komponens-törzs megadás</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Component objects cannot declare new properties.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Component objects cannot declare new signals.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Component objects cannot declare new functions.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1858,37 +2003,32 @@ erre:
         <translation>Nem lehet üres komponenst megadni</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Invalid Script block.  Specify either the source property or inline script</source>
-        <translation>Érvénytelen Script blokk. Adja meg a source tulajdonságot vagy ágyazzon be parancsokat</translation>
+        <translation type="obsolete">Érvénytelen Script blokk. Adja meg a source tulajdonságot vagy ágyazzon be parancsokat</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Invalid Script source value</source>
-        <translation>Érvénytelen Script source érték</translation>
+        <translation type="obsolete">Érvénytelen Script source érték</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>Properties cannot be set on Script block</source>
-        <translation>A tulajdonságok nem módosíthatók Script blokkból</translation>
+        <translation type="obsolete">A tulajdonságok nem módosíthatók Script blokkból</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Invalid Script block</source>
-        <translation>Érvénytelen Script blokk</translation>
+        <translation type="obsolete">Érvénytelen Script blokk</translation>
     </message>
     <message>
-        <location line="+144"/>
         <source>Incorrectly specified signal</source>
-        <translation>Hibásan megadott jelzés (signal)</translation>
+        <translation type="obsolete">Hibásan megadott jelzés (signal)</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+105"/>
         <source>Empty signal assignment</source>
         <translation>Üres jelzés (signal) hozzárendelés</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+38"/>
         <source>Empty property assignment</source>
         <translation>Üres tulajdonság hozzárendelés</translation>
     </message>
@@ -1899,29 +2039,29 @@ erre:
     </message>
     <message>
         <location line="+15"/>
-        <location line="+104"/>
+        <location line="+102"/>
         <source>Non-existent attached object</source>
         <translation>Nem létező csatolt objektum</translation>
     </message>
     <message>
-        <location line="-100"/>
-        <location line="+103"/>
+        <location line="-98"/>
+        <location line="+101"/>
         <source>Invalid attached object assignment</source>
         <translation>Érvénytelen objektumcsatolás</translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-48"/>
         <source>Cannot assign to non-existent default property</source>
         <translation>Nem lehet hozzárendelni egy nem létező alapértelmezett tulajdonságot</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+339"/>
+        <location line="+352"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
         <translation>Nem lehet hozzárendelni a nem létező &quot;%1&quot; tulajdonságot</translation>
     </message>
     <message>
-        <location line="-308"/>
+        <location line="-322"/>
         <source>Invalid use of namespace</source>
         <translation>Érvénytelen névtérhasználat</translation>
     </message>
@@ -1931,35 +2071,52 @@ erre:
         <translation>Ez nem egy csatolt tulajdonságnév</translation>
     </message>
     <message>
-        <location line="+169"/>
+        <location line="+182"/>
         <source>Invalid use of id property</source>
         <translation>Az id tulajdonság érvénytelen használata</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&quot;%1&quot; is not a valid object id</source>
-        <translation>&quot;%1&quot; nem érvényes objektumazonosító</translation>
+        <translation type="obsolete">&quot;%1&quot; nem érvényes objektumazonosító</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>id conflicts with type name</source>
-        <translation>Az id ütközik a típus nevével</translation>
+        <translation type="obsolete">Az id ütközik a típus nevével</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>id conflicts with namespace prefix</source>
-        <translation>Az id ütközik a névtér előtaggal</translation>
+        <translation type="obsolete">Az id ütközik a névtér előtaggal</translation>
     </message>
     <message>
-        <location line="+78"/>
         <source>Invalid value in grouped property</source>
-        <translation>Érvénytelen érték a csoportos tulajdonságon</translation>
+        <translation type="obsolete">Érvénytelen érték a csoportos tulajdonságon</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+8"/>
+        <location line="-357"/>
+        <source>Incorrectly specified signal assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Cannot assign a value to a signal (expecting a script to be run)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+434"/>
+        <location line="+2"/>
+        <source>Property has already been assigned a value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+7"/>
         <source>Invalid grouped property access</source>
         <translation>Érvénytelen csoportos tulajdonság-hozzáférés</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot assign a value directly to a grouped property</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+16"/>
@@ -1967,7 +2124,7 @@ erre:
         <translation>Tulajdonság érvénytelen használata</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Property assignment expected</source>
         <translation>Tulajdonság hozzárendelés szükséges</translation>
     </message>
@@ -1977,7 +2134,7 @@ erre:
         <translation>Egyetlen tulajdonság hozzárendelése szükséges</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+5"/>
         <source>Unexpected object assignment</source>
         <translation>Váratlan objektum-hozzárendelés</translation>
     </message>
@@ -2007,13 +2164,18 @@ erre:
         <translation>Érvénytelen tulajdonság-hozzárendelés: script szükséges</translation>
     </message>
     <message>
-        <location line="+129"/>
+        <location line="+105"/>
         <source>Cannot assign object to property</source>
         <translatorcomment>CHECKIT</translatorcomment>
         <translation type="unfinished">Nem lehet objektumot rendelni tulajdonsághoz</translation>
     </message>
     <message>
-        <location line="+97"/>
+        <location line="+50"/>
+        <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+117"/>
         <source>Duplicate default property</source>
         <translatorcomment>CHECKIT</translatorcomment>
         <translation type="unfinished">Dupla alapértelmezett tulajdonság</translation>
@@ -2025,10 +2187,20 @@ erre:
         <translation type="unfinished">Dupla tulajdonságnév</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
+        <source>Property names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Duplicate signal name</source>
         <translatorcomment>CHECKIT</translatorcomment>
         <translation type="unfinished">Dupla jelzés név</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Signal names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
@@ -2037,22 +2209,57 @@ erre:
         <translation type="unfinished">Dupla metódus név</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+2"/>
+        <source>Method names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Property value set multiple times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Invalid property nesting</source>
         <translation>Érvénytelen tulajdonság illesztés</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+53"/>
         <source>Cannot override FINAL property</source>
         <translation>Nem lehet FINAL tulajdonságot felülbírálni</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+24"/>
         <source>Invalid property type</source>
         <translation>Érvénytelen tulajdonság típus</translation>
     </message>
     <message>
-        <location line="+174"/>
+        <location line="+159"/>
+        <source>Invalid empty ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>IDs cannot start with an uppercase letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>IDs must start with a letter or underscore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>IDs must contain only letters, numbers, and underscores</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>ID illegally masks global JavaScript property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
         <location line="+9"/>
         <source>No property alias location</source>
         <translation type="unfinished"></translation>
@@ -2075,30 +2282,41 @@ erre:
     </message>
 </context>
 <context>
+    <name>QDeclarativeComponent</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativecomponent.cpp" line="+459"/>
+        <source>Invalid empty URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativecompositetypemanager.cpp" line="+415"/>
-        <location line="+220"/>
+        <location filename="../src/declarative/qml/qdeclarativecompositetypemanager.cpp" line="+475"/>
+        <location line="+266"/>
         <source>Resource %1 unavailable</source>
         <translation>A(z) %1 erőforrás nem érhető el</translation>
     </message>
     <message>
-        <location line="-141"/>
-        <source>Import %1 unavailable</source>
-        <translation>A(z) %1 import nem érhető el</translation>
+        <location line="-120"/>
+        <source>%1 %2</source>
+        <translation type="unfinished">%1% {1 %2?}</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <source>Import %1 unavailable</source>
+        <translation type="obsolete">A(z) %1 import nem érhető el</translation>
+    </message>
+    <message>
+        <location line="-2"/>
         <source>Namespace %1 cannot be used as a type</source>
         <translation>A(z) %1 névtér nem használható típusként</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>%1 is not a type</source>
-        <translation>%1 nem típus</translation>
+        <translation type="obsolete">%1 nem típus</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+49"/>
         <source>Type %1 unavailable</source>
         <translation>A(z) %1 típus nem érhető el</translation>
     </message>
@@ -2106,14 +2324,13 @@ erre:
 <context>
     <name>QDeclarativeConnections</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeconnections.cpp" line="+172"/>
-        <location line="+54"/>
-        <location line="+7"/>
+        <location filename="../src/declarative/util/qdeclarativeconnections.cpp" line="+209"/>
+        <location line="+60"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
         <translation>Nem lehet hozzárendelni a nem létező &quot;%1&quot; tulajdonsághoz</translation>
     </message>
     <message>
-        <location line="-51"/>
+        <location line="-50"/>
         <source>Connections: nested objects not allowed</source>
         <translation>Kapcsolatok: az illesztett objektumok nem engedélyezettek</translation>
     </message>
@@ -2136,7 +2353,7 @@ erre:
         <translation>Az executeSql a transaction()-on kívülről lett meghívva</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+58"/>
         <source>Read-only Transaction</source>
         <translation>Csak olvasható tranzakció</translation>
     </message>
@@ -2165,7 +2382,7 @@ erre:
 <context>
     <name>QDeclarativeFlipable</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativeflipable.cpp" line="+149"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeflipable.cpp" line="+127"/>
         <source>front is a write-once property</source>
         <translation>a front csak egyszer írható tulajdonság</translation>
     </message>
@@ -2176,82 +2393,184 @@ erre:
     </message>
 </context>
 <context>
+    <name>QDeclarativeImportDatabase</name>
+    <message>
+        <location filename="../src/declarative/qml/qdeclarativeimport.cpp" line="+294"/>
+        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <location line="+55"/>
+        <source>module &quot;%1&quot; version %2.%3 is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-53"/>
+        <source>module &quot;%1&quot; is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+19"/>
+        <source>&quot;%1&quot;: no such directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>import &quot;%1&quot; has no qmldir and no namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>- %1 is not a namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>- nested namespaces not allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <location line="+4"/>
+        <source>local directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>is ambiguous. Found in %1 and in %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>is instantiated recursively</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>is not a type</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeInfo</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativeinfo.cpp" line="+112"/>
-        <location line="+3"/>
         <source>unknown location</source>
-        <translation>ismeretlen hely</translation>
+        <translation type="obsolete">ismeretlen hely</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeyNavigationAttached</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeitemsmodule.cpp" line="+70"/>
+        <source>KeyNavigation is only available via attached properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeysAttached</name>
+    <message>
+        <location line="+1"/>
+        <source>Keys is only available via attached properties</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeListModel</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativelistmodel.cpp" line="+484"/>
+        <location filename="../src/declarative/util/qdeclarativelistmodel.cpp" line="+399"/>
         <source>remove: index %1 out of range</source>
         <translation>remove: a(z) %1 index túl nagy</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+33"/>
         <source>insert: value is not an object</source>
         <translation>insert: az érték nem objektum</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+5"/>
         <source>insert: index %1 out of range</source>
         <translation>insert: a(z) %1 index túl nagy</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>move: out of range</source>
         <translation>move: határokon kívül</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+40"/>
         <source>append: value is not an object</source>
         <translation>append: az érték nem objektum</translation>
     </message>
     <message>
-        <location line="+39"/>
-        <source>get: index %1 out of range</source>
-        <translation>get: a(z) %1 index túl nagy</translation>
+        <location line="+132"/>
+        <location line="+15"/>
+        <source>ListElement: cannot contain nested elements</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <source>get: index %1 out of range</source>
+        <translation type="obsolete">get: a(z) %1 index túl nagy</translation>
+    </message>
+    <message>
+        <location line="-92"/>
         <source>set: value is not an object</source>
         <translation>set: az érték nem objektum</translation>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+39"/>
+        <location line="+34"/>
         <source>set: index %1 out of range</source>
         <translation>set: a(z) %1 index túl nagy</translation>
     </message>
     <message>
-        <location line="+38"/>
         <source>ListElement: cannot use default property</source>
-        <translation>ListElement: nem lehet az alapértelmezett tulajdonságot használni</translation>
+        <translation type="obsolete">ListElement: nem lehet az alapértelmezett tulajdonságot használni</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+58"/>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
         <translation>ListElement: nem lehet a lefoglalt &quot;id&quot; tulajdonságot használni</translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+49"/>
         <source>ListElement: cannot use script for property value</source>
         <translation>ListElement: nem lehet scriptet használni tulajdonság értéknek</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+29"/>
         <source>ListModel: undefined property &apos;%1&apos;</source>
         <translation>ListModel: nem definiált tulajdonság: &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
+    <name>QDeclarativeLoader</name>
+    <message>
+        <location filename="../src/declarative/graphicsitems/qdeclarativeloader.cpp" line="+313"/>
+        <source>Loader does not support loading non-visual elements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QDeclarativeParentAnimation</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+2352"/>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="-169"/>
         <source>Unable to preserve appearance under complex transform</source>
         <translation>Nem lehet a kinézetet megőrizni a komplex transzformáció alatt</translation>
     </message>
@@ -2270,15 +2589,15 @@ erre:
 <context>
     <name>QDeclarativeParentChange</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativestateoperations.cpp" line="+93"/>
+        <location filename="../src/declarative/util/qdeclarativestateoperations.cpp" line="+95"/>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nem lehet a kinézetet megőrizni a komplex transzformáció alatt</translation>
     </message>
     <message>
         <location line="+10"/>
         <location line="+7"/>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nem lehet a kinézetet megőrizni a nem-uniform skálázás alatt</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -2289,7 +2608,7 @@ erre:
 <context>
     <name>QDeclarativeParser</name>
     <message>
-        <location filename="../src/declarative/qml/parser/qdeclarativejslexer.cpp" line="+556"/>
+        <location filename="../src/declarative/qml/parser/qdeclarativejslexer.cpp" line="+579"/>
         <source>Illegal character</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2304,17 +2623,19 @@ erre:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="-77"/>
+        <location line="+123"/>
+        <location line="+54"/>
         <source>Illegal unicode escape sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="-28"/>
         <source>Unclosed comment at end of file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+102"/>
         <source>Illegal syntax for exponential number</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2324,17 +2645,28 @@ erre:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+338"/>
         <source>Unterminated regular expression literal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+15"/>
         <source>Invalid regular expression flag &apos;%0&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/declarative/qml/parser/qdeclarativejsparser.cpp" line="+1781"/>
+        <location line="+16"/>
+        <location line="+22"/>
+        <source>Unterminated regular expression backslash sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Unterminated regular expression class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/declarative/qml/parser/qdeclarativejsparser.cpp" line="+1828"/>
         <location line="+67"/>
         <source>Syntax error</source>
         <translation type="unfinished"></translation>
@@ -2351,18 +2683,35 @@ erre:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativescriptparser.cpp" line="+267"/>
+        <location filename="../src/declarative/qml/qdeclarativescriptparser.cpp" line="+271"/>
         <source>Expected type name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
-        <source>Invalid use of Script block</source>
+        <location line="-11"/>
+        <location line="+431"/>
+        <location line="+59"/>
+        <source>Property value set multiple times</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+151"/>
+        <location line="-343"/>
         <source>Invalid import qualifier ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Script import qualifiers must be unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Script import requires a qualifier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2371,7 +2720,7 @@ erre:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+59"/>
         <source>Expected parameter type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2396,28 +2745,47 @@ erre:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+194"/>
+        <location line="+215"/>
         <source>JavaScript declaration outside Script element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Variable declarations not allow in inline Script blocks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePauseAnimation</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="-1969"/>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="-1977"/>
         <source>Cannot set a duration of &lt; 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePixmapCache</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativepixmapcache.cpp" line="+190"/>
+        <source>Error decoding: %1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <source>Failed to get image from provider: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <location line="+345"/>
+        <source>Cannot open: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>Unknown Error loading %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyAnimation</name>
     <message>
-        <location line="+1246"/>
+        <location filename="../src/declarative/util/qdeclarativeanimation.cpp" line="+1102"/>
         <source>Cannot set a duration of &lt; 0</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2425,7 +2793,12 @@ erre:
 <context>
     <name>QDeclarativePropertyChanges</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativepropertychanges.cpp" line="+380"/>
+        <location filename="../src/declarative/util/qdeclarativepropertychanges.cpp" line="+267"/>
+        <source>PropertyChanges does not support creating state-specific objects.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+157"/>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2438,13 +2811,13 @@ erre:
 <context>
     <name>QDeclarativeTextInput</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativetextinput.cpp" line="+594"/>
-        <location line="+9"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativetextinput.cpp" line="+793"/>
+        <location line="+8"/>
         <source>Could not load cursor delegate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+11"/>
         <source>Could not instantiate cursor delegate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2452,12 +2825,12 @@ erre:
 <context>
     <name>QDeclarativeVME</name>
     <message>
-        <location filename="../src/declarative/qml/qdeclarativevme.cpp" line="+195"/>
+        <location filename="../src/declarative/qml/qdeclarativevme.cpp" line="+194"/>
         <source>Unable to create object of type %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+306"/>
+        <location line="+390"/>
         <source>Cannot assign value %1 to property %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2477,9 +2850,9 @@ erre:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+146"/>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nem lehet objektumot listához rendelni</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -2500,15 +2873,24 @@ erre:
 <context>
     <name>QDeclarativeVisualDataModel</name>
     <message>
-        <location filename="../src/declarative/graphicsitems/qdeclarativevisualitemmodel.cpp" line="+1010"/>
+        <location filename="../src/declarative/graphicsitems/qdeclarativevisualitemmodel.cpp" line="+1088"/>
         <source>Delegate component must be Item type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModel</name>
+    <message>
+        <location filename="../src/declarative/util/qdeclarativeutilmodule.cpp" line="-12"/>
+        <location line="+2"/>
+        <source>Qt was built without support for xmlpatterns</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModelRole</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativexmllistmodel_p.h" line="+150"/>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel_p.h" line="+174"/>
         <source>An XmlRole query must not start with &apos;/&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2516,7 +2898,7 @@ erre:
 <context>
     <name>QDeclarativeXmlRoleList</name>
     <message>
-        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="+615"/>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="+712"/>
         <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2542,12 +2924,12 @@ erre:
 <context>
     <name>QDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qdialog.cpp" line="+652"/>
+        <location filename="../src/gui/dialogs/qdialog.cpp" line="+645"/>
         <source>What&apos;s This?</source>
         <translation>Mi ez?</translation>
     </message>
     <message>
-        <location line="-135"/>
+        <location line="-122"/>
         <source>Done</source>
         <translation>Kész</translation>
     </message>
@@ -2555,9 +2937,9 @@ erre:
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1876"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1920"/>
         <location line="+464"/>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+648"/>
+        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+649"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -2769,7 +3151,7 @@ erre:
 <context>
     <name>QFile</name>
     <message>
-        <location filename="../src/corelib/io/qfile.cpp" line="+698"/>
+        <location filename="../src/corelib/io/qfile.cpp" line="+703"/>
         <location line="+155"/>
         <source>Destination file exists</source>
         <translation>A célfájl már létezik</translation>
@@ -2808,8 +3190,8 @@ erre:
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+557"/>
-        <location line="+471"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+558"/>
+        <location line="+481"/>
         <source>All Files (*)</source>
         <translation>Minden fájl (*)</translation>
     </message>
@@ -2832,12 +3214,12 @@ erre:
         <translation>Menté&amp;s</translation>
     </message>
     <message>
-        <location line="-756"/>
+        <location line="-766"/>
         <source>Open</source>
         <translation>Megnyitás</translation>
     </message>
     <message>
-        <location line="+1527"/>
+        <location line="+1537"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>%1 már létezik.
@@ -2858,7 +3240,7 @@ Ellenőrizze, hogy jól adta-e meg a fájl nevét.</translation>
         <translation>Számítógép</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-1516"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-1526"/>
         <source>&amp;Rename</source>
         <translation>Át&amp;nevezés</translation>
     </message>
@@ -2904,7 +3286,7 @@ Ellenőrizze, hogy jól adta-e meg a fájl nevét.</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+6"/>
-        <location line="+669"/>
+        <location line="+679"/>
         <source>Directory:</source>
         <translation>Könyvtár:</translation>
     </message>
@@ -2954,12 +3336,12 @@ Biztosan törölni akarja?</translation>
         <translation>Minden fájl (*.*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2559"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2569"/>
         <source>Save As</source>
         <translation>Mentés másként</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+462"/>
+        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+464"/>
         <source>Drive</source>
         <translation>Meghajtó</translation>
     </message>
@@ -3015,17 +3397,17 @@ Biztosan törölni akarja?</translation>
         <translation>Előre</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+1982"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+1992"/>
         <source>New Folder</source>
         <translation>Új könyvtár</translation>
     </message>
     <message>
-        <location line="-1975"/>
+        <location line="-1985"/>
         <source>&amp;New Folder</source>
         <translation>Ú&amp;j könyvtár</translation>
     </message>
     <message>
-        <location line="+677"/>
+        <location line="+687"/>
         <location line="+43"/>
         <source>&amp;Choose</source>
         <translation>&amp;Kiválasztás</translation>
@@ -3036,8 +3418,8 @@ Biztosan törölni akarja?</translation>
         <translation>Törlés</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-713"/>
-        <location line="+673"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-723"/>
+        <location line="+683"/>
         <source>File &amp;name:</source>
         <translation>Fájl &amp;neve:</translation>
     </message>
@@ -3052,6 +3434,36 @@ Biztosan törölni akarja?</translation>
         <location filename="../src/gui/dialogs/qfiledialog_embedded.ui"/>
         <source>Create New Folder</source>
         <translation>Új könyvtár létrehozása</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Go back</source>
+        <translation>Vissza</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Go forward</source>
+        <translation>Előre</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Go to the parent directory</source>
+        <translation>Szülő mappába</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Create a New Folder</source>
+        <translation>Új mappa létrehozása</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Change to list view mode</source>
+        <translation>Váltás lista nézetre</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Change to detail view mode</source>
+        <translation>Váltás részletes lista nézetre</translation>
     </message>
 </context>
 <context>
@@ -3105,7 +3517,7 @@ Biztosan törölni akarja?</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="-176"/>
-        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+476"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+482"/>
         <source>%1 TB</source>
         <translation>%1 TB</translation>
     </message>
@@ -3363,7 +3775,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QFontDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+776"/>
+        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+768"/>
         <source>&amp;Font</source>
         <translation>&amp;Betűtípus</translation>
     </message>
@@ -3403,8 +3815,7 @@ Biztosan törölni akarja?</translation>
         <translation>Í&amp;rásmód</translation>
     </message>
     <message>
-        <location line="-609"/>
-        <location line="+257"/>
+        <location line="-596"/>
         <source>Select Font</source>
         <translation>Betűtípus kiválasztása</translation>
     </message>
@@ -3456,7 +3867,7 @@ Biztosan törölni akarja?</translation>
         <translation>Ismeretlen hiba</translation>
     </message>
     <message>
-        <location line="+891"/>
+        <location line="+897"/>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+77"/>
         <source>Connecting to host failed:
 %1</source>
@@ -3558,21 +3969,19 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QGstreamerPlayerSession</name>
     <message>
-        <location filename="../src/plugins/mediaservices/gstreamer/mediaplayer/qgstreamerplayersession.cpp" line="+272"/>
-        <location line="+16"/>
         <source>Unable to play %1</source>
-        <translation>Nem lehet lejátszani: %1</translation>
+        <translation type="obsolete">Nem lehet lejátszani: %1</translation>
     </message>
 </context>
 <context>
     <name>QHostInfo</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_p.h" line="+101"/>
+        <location filename="../src/network/kernel/qhostinfo_p.h" line="+103"/>
         <source>Unknown error</source>
         <translation>Ismeretlen hiba</translation>
     </message>
     <message>
-        <location filename="../src/network/kernel/qhostinfo.cpp" line="+168"/>
+        <location filename="../src/network/kernel/qhostinfo.cpp" line="+171"/>
         <source>No host name given</source>
         <translation>Nem adott meg gépnevet</translation>
     </message>
@@ -3580,9 +3989,9 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QHostInfoAgent</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+259"/>
+        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+260"/>
         <location line="+32"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+216"/>
+        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+215"/>
         <location line="+27"/>
         <source>Host not found</source>
         <translation>A kiszolgáló nem található</translation>
@@ -3933,7 +4342,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QIODevice</name>
     <message>
-        <location filename="../src/corelib/global/qglobal.cpp" line="+2094"/>
+        <location filename="../src/corelib/global/qglobal.cpp" line="+2120"/>
         <source>Permission denied</source>
         <translation>Hozzáférés megtagadva</translation>
     </message>
@@ -3953,7 +4362,7 @@ Biztosan törölni akarja?</translation>
         <translation>Nincs több hely az eszközön</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1565"/>
+        <location filename="../src/corelib/io/qiodevice.cpp" line="+1598"/>
         <source>Unknown error</source>
         <translation>Ismeretlen hiba</translation>
     </message>
@@ -3961,7 +4370,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QInputContext</name>
     <message>
-        <location filename="../src/gui/inputmethod/qinputcontextfactory.cpp" line="+256"/>
+        <location filename="../src/gui/inputmethod/qinputcontextfactory.cpp" line="+301"/>
         <source>XIM</source>
         <translation>XIM</translation>
     </message>
@@ -4029,7 +4438,7 @@ Biztosan törölni akarja?</translation>
         <translation>Nem sikerült unmap-olni a(z) &apos;%1&apos;-t: %2</translation>
     </message>
     <message>
-        <location line="+361"/>
+        <location line="+375"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
         <translation>A(z) &apos;%1&apos; plugin inkompatíbilis Qt függvénykönyvtárat használ. (%2.%3.%4) [%5]</translation>
     </message>
@@ -4044,7 +4453,8 @@ Biztosan törölni akarja?</translation>
         <translation>Ismeretlen hiba</translation>
     </message>
     <message>
-        <location line="-402"/>
+        <location line="-540"/>
+        <location line="+138"/>
         <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+343"/>
         <source>The shared library was not found.</source>
         <translation>Az osztott függvénykönyvtár nem található.</translation>
@@ -4081,7 +4491,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QLineEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2064"/>
+        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2076"/>
         <source>&amp;Undo</source>
         <translation>&amp;Visszavonás</translation>
     </message>
@@ -4157,7 +4567,7 @@ Biztosan törölni akarja?</translation>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
-        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+80"/>
+        <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+79"/>
         <location line="+59"/>
         <source>%1: Invalid name</source>
         <translation>%1: Érvénytelen név</translation>
@@ -4214,7 +4624,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1270"/>
+        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1287"/>
         <source>Unable to open database &apos;</source>
         <translation>Az adatbázis nem nyitható meg: &apos;</translation>
     </message>
@@ -4404,34 +4814,27 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QMediaPlayer</name>
     <message>
-        <location filename="../src/multimedia/playback/qmediaplayer.cpp" line="+471"/>
         <source>The QMediaPlayer object does not have a valid service</source>
-        <translation>A QMediaPlayer objektumnak nincs érvényes szolgáltatása</translation>
+        <translation type="obsolete">A QMediaPlayer objektumnak nincs érvényes szolgáltatása</translation>
     </message>
 </context>
 <context>
     <name>QMediaPlaylist</name>
     <message>
-        <location filename="../src/multimedia/base/qmediaplaylist.cpp" line="+455"/>
-        <location line="+46"/>
         <source>Could not add items to read only playlist.</source>
-        <translation>Csak olvasható lejátszólistához nem lehet elemeket hozzáadni.</translation>
+        <translation type="obsolete">Csak olvasható lejátszólistához nem lehet elemeket hozzáadni.</translation>
     </message>
     <message>
-        <location line="-27"/>
-        <location line="+46"/>
         <source>Playlist format is not supported</source>
-        <translation>A lejátszólista formátuma nem támogatott</translation>
+        <translation type="obsolete">A lejátszólista formátuma nem támogatott</translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>The file could not be accessed.</source>
-        <translation>A fájl nem elérhető.</translation>
+        <translation type="obsolete">A fájl nem elérhető.</translation>
     </message>
     <message>
-        <location line="+35"/>
         <source>Playlist format is not supported.</source>
-        <translation>A lejátszólista formátuma nem támogatott.</translation>
+        <translation type="obsolete">A lejátszólista formátuma nem támogatott.</translation>
     </message>
 </context>
 <context>
@@ -4507,7 +4910,7 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">Kilépés: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+436"/>
+        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+456"/>
         <source>Actions</source>
         <translation>Műveletek</translation>
     </message>
@@ -4552,17 +4955,17 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">&lt;h3&gt;A Qt névjegye&lt;/h3&gt;%1&lt;p&gt;A Qt egy C++ eszközkészlet a kereszt-platformos alkalmazásfejlesztéshez.&lt;/p&gt;&lt;p&gt;A Qt egy-forrású hordozhatóságot biztosít az MS&amp;nbsp;Windows, a Mac&amp;nbsp;OS&amp;nbsp;X, a Linux, és az összes nagyobb kereskedelmi Unix változat között. A Qt mobileszközökhöz is elérhető, pl. Qtopia Core.&lt;/p&gt;&lt;p&gt;A Qt a Trolltech terméke. További információk: &lt;a href=&quot;http://www.trolltech.com/qt/&quot;&gt;www.trolltech.com/qt/&lt;/a&gt; .&lt;/p&gt;</translation>
     </message>
     <message>
-        <location line="-1614"/>
+        <location line="-1641"/>
         <source>Show Details...</source>
         <translation>Részletek megjelenítése...</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>Hide Details...</source>
         <translation>Részletek elrejtése...</translation>
     </message>
     <message>
-        <location line="+1577"/>
+        <location line="+1605"/>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Qt névjegye&lt;/h3&gt;&lt;p&gt;Ez a program a Qt %1 verzióját használja.&lt;/p&gt;</translation>
     </message>
@@ -4854,7 +5257,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QNetworkAccessHttpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+645"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+652"/>
         <source>No suitable proxy found</source>
         <translation>Nincs megfelelő proxy</translation>
     </message>
@@ -4862,7 +5265,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QNetworkAccessManager</name>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+862"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+942"/>
         <source>Network access is disabled.</source>
         <translation>A hozzáférés a hálózathoz le van tiltva.</translation>
     </message>
@@ -4870,17 +5273,23 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QNetworkReply</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+101"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+100"/>
         <source>Error downloading %1 - server replied: %2</source>
         <translation>Hiba %1 letöltésekor - a szerver válasza: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="-780"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="-860"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>Ismeretlen protokoll: &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+486"/>
+        <location line="+192"/>
+        <source>Network session error.</source>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Hálozati munkamenet hiba.</translation>
+    </message>
+    <message>
+        <location line="+352"/>
         <source>Temporary network failure.</source>
         <translation>Ideiglenes hálózati hiba.</translation>
     </message>
@@ -4888,7 +5297,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+110"/>
+        <location line="+120"/>
         <location line="+28"/>
         <source>Operation canceled</source>
         <translation>A művelet megszakítva</translation>
@@ -4897,7 +5306,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QNetworkSession</name>
     <message>
-        <location filename="../src/network/bearer/qnetworksession.cpp" line="+441"/>
+        <location filename="../src/network/bearer/qnetworksession.cpp" line="+449"/>
         <source>Invalid configuration.</source>
         <translation>Érvénytelen konfiguráció.</translation>
     </message>
@@ -4905,7 +5314,7 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QNetworkSessionPrivateImpl</name>
     <message>
-        <location filename="../src/plugins/bearer/icd/qnetworksession_impl.cpp" line="+1085"/>
+        <location filename="../src/plugins/bearer/icd/qnetworksession_impl.cpp" line="+1005"/>
         <source>Roaming error</source>
         <translation>Roaming hiba</translation>
     </message>
@@ -4920,8 +5329,8 @@ Biztosan törölni akarja?</translation>
         <translation>Azonosítatlan hiba</translation>
     </message>
     <message>
-        <location filename="../src/plugins/bearer/qnetworksession_impl.cpp" line="+249"/>
-        <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+216"/>
+        <location filename="../src/plugins/bearer/qnetworksession_impl.cpp" line="+272"/>
+        <location filename="../src/plugins/bearer/symbian/qnetworksession_impl.cpp" line="+271"/>
         <source>Unknown session error.</source>
         <translation>Ismeretlen hiba a munkamenetben.</translation>
     </message>
@@ -5027,12 +5436,12 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1791"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1888"/>
         <source>Unable to connect</source>
         <translation>Nem sikerült kapcsolódni</translation>
     </message>
     <message>
-        <location line="+233"/>
+        <location line="+269"/>
         <source>Unable to disable autocommit</source>
         <translation>Az automatikus véglegesítés nem tiltható le</translation>
     </message>
@@ -5052,7 +5461,7 @@ Biztosan törölni akarja?</translation>
         <translation>Az automatikus véglegesítés nem engedélyezhető</translation>
     </message>
     <message>
-        <location line="-276"/>
+        <location line="-312"/>
         <source>Unable to connect - Driver doesn&apos;t support all functionality required</source>
         <translation>Nem sikerült kapcsolódni - A driver nem támogat minden szükséges szolgáltatást</translation>
     </message>
@@ -5060,19 +5469,19 @@ Biztosan törölni akarja?</translation>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-935"/>
+        <location line="-941"/>
         <location line="+351"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: Nem lehet a &apos;SQL_CURSOR_STATIC&apos; attribútumot beállítani a parancson. Ellenőrizze az ODBC driver beállítását</translation>
     </message>
     <message>
         <location line="-334"/>
-        <location line="+626"/>
+        <location line="+627"/>
         <source>Unable to execute statement</source>
         <translation>A parancs nem hajtható végre</translation>
     </message>
     <message>
-        <location line="-545"/>
+        <location line="-546"/>
         <source>Unable to fetch next</source>
         <translation>A következő nem olvasható ki</translation>
     </message>
@@ -5082,12 +5491,12 @@ Biztosan törölni akarja?</translation>
         <translation>A parancs előkészítése nem lehetséges</translation>
     </message>
     <message>
-        <location line="+266"/>
+        <location line="+267"/>
         <source>Unable to bind variable</source>
         <translation>A változó nem rögzíthető</translation>
     </message>
     <message>
-        <location line="-559"/>
+        <location line="-560"/>
         <source>Unable to fetch</source>
         <translation>Az eredmény nem elérhető</translation>
     </message>
@@ -5104,7 +5513,7 @@ Biztosan törölni akarja?</translation>
     <message>
         <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+189"/>
         <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+31"/>
-        <location line="+574"/>
+        <location line="+578"/>
         <source>Unable to fetch last</source>
         <translation>Az utolsó eredmény nem érhető el</translation>
     </message>
@@ -5156,16 +5565,28 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">Kilépés</translation>
     </message>
     <message>
-        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="-190"/>
+        <location filename="../src/declarative/util/qdeclarativexmllistmodel.cpp" line="-241"/>
         <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
         <translatorcomment>CHECKIT: role == ?</translatorcomment>
         <translation>A(z) &quot;%1&quot; neve ütközik egy, már létező szabály nevével, így le lesz tiltva.</translation>
+    </message>
+    <message>
+        <location line="+515"/>
+        <location line="+4"/>
+        <source>invalid query: &quot;%1&quot;</source>
+        <translation>érvénytelen lekérdezés: &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location filename="../src/3rdparty/phonon/phonon/pulsesupport.cpp" line="+162"/>
+        <location line="+11"/>
+        <source>PulseAudio Sound Server</source>
+        <translation></translation>
     </message>
 </context>
 <context>
     <name>QPPDOptionsModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1195"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1238"/>
         <source>Name</source>
         <translation>Név</translation>
     </message>
@@ -6202,7 +6623,7 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">Fekvő</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+329"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+333"/>
         <source>A0 (841 x 1189 mm)</source>
         <translation>A0 (841 x 1189 mm)</translation>
     </message>
@@ -6352,7 +6773,12 @@ Biztosan törölni akarja?</translation>
         <translation>US Common #10 Envelope (105 x 241 mm)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+265"/>
+        <location line="+20"/>
+        <source>Print current page</source>
+        <translation>Jelenlegi oldal nyomtatása</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+271"/>
         <source>The &apos;From&apos; value cannot be greater than the &apos;To&apos; value.</source>
         <translation>Az első oldal száma nem lehet nagyobb, mint az utolsó oldalé.</translation>
     </message>
@@ -6378,7 +6804,7 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">Papírforrás:</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+112"/>
+        <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+113"/>
         <location line="+13"/>
         <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="-2"/>
         <source>Print</source>
@@ -6393,7 +6819,7 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">Nyomtató</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-359"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-392"/>
         <source>Print To File ...</source>
         <translation>Nyomtatás fájlba...</translation>
     </message>
@@ -6426,7 +6852,7 @@ Biztosan törölni akarja?</translation>
         <translation type="obsolete">Nyomtatás fájlba</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+19"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-1"/>
         <source>Print range</source>
         <translation>Nyomtatási tartomány</translation>
     </message>
@@ -6490,7 +6916,7 @@ Do you want to overwrite it?</source>
 Felülírja?</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-227"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-231"/>
         <source>File exists</source>
         <translation>A fájl létezik</translation>
     </message>
@@ -6500,7 +6926,7 @@ Felülírja?</translation>
         <translation>&lt;qt&gt;Felülírja?&lt;/qt&gt;</translation>
     </message>
     <message>
-        <location line="+227"/>
+        <location line="+231"/>
         <source>Print selection</source>
         <translation>Kijelölés nyomtatása</translation>
     </message>
@@ -6667,7 +7093,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Egyéni</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-523"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-530"/>
         <location line="+68"/>
         <source>&amp;Options &gt;&gt;</source>
         <translation>&amp;Opciók &gt;&gt;</translation>
@@ -6683,7 +7109,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>&amp;Opciók &lt;&lt;</translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+260"/>
         <source>Print to File (PDF)</source>
         <translation>Nyomtatás fájlba (PDF)</translation>
     </message>
@@ -6717,7 +7143,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>%1%</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+84"/>
         <source>Print Preview</source>
         <translation>Nyomtatási kép</translation>
     </message>
@@ -6942,6 +7368,11 @@ Válasszon másik fájlnevet.</translation>
         <source>Short side</source>
         <translation>Rövidebb oldal</translation>
     </message>
+    <message>
+        <location/>
+        <source>Current Page</source>
+        <translation>Jelenlegi oldal</translation>
+    </message>
 </context>
 <context>
     <name>QPrintWidget</name>
@@ -6994,7 +7425,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QProcess</name>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+856"/>
+        <location filename="../src/corelib/io/qprocess.cpp" line="+866"/>
         <location line="+52"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="+573"/>
         <location line="+50"/>
@@ -7187,7 +7618,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QSQLiteDriver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+538"/>
+        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+539"/>
         <source>Error opening database</source>
         <translation>Adatbázis megnyitási hiba</translation>
     </message>
@@ -7219,8 +7650,8 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QSQLiteResult</name>
     <message>
-        <location line="-395"/>
-        <location line="+62"/>
+        <location line="-396"/>
+        <location line="+63"/>
         <location line="+8"/>
         <source>Unable to fetch row</source>
         <translation>A sor nem olvasható ki</translation>
@@ -7246,7 +7677,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>A paraméterek száma nem megfelelő</translation>
     </message>
     <message>
-        <location line="-200"/>
+        <location line="-201"/>
         <source>No query</source>
         <translation>Üres lekérdezés</translation>
     </message>
@@ -7276,7 +7707,8 @@ Válasszon másik fájlnevet.</translation>
     <message>
         <location line="+2"/>
         <source>Single-shot</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -7793,8 +8225,9 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QShortcut</name>
     <message>
-        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+393"/>
+        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+396"/>
         <source>Space</source>
+        <extracomment>This and all following &quot;incomprehensible&quot; strings in QShortcut context are key names. Please use the localized names appearing on actual keyboards or whatever is commonly used.</extracomment>
         <translation>Szóköz</translation>
     </message>
     <message>
@@ -8673,6 +9106,156 @@ Válasszon másik fájlnevet.</translation>
         <translation>Csere</translation>
     </message>
     <message>
+        <location line="+4"/>
+        <source>Kanji</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Muhenkan</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Henkan</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Romaji</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hiragana</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Katakana</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hiragana Katakana</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Zenkaku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hankaku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Zenkaku Hankaku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Touroku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Massyo</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Kana Lock</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Kana Shift</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Eisu Shift</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Eisu toggle</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Code input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Multiple Candidate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Previous Candidate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Hangul</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Start</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul End</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Hanja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Jamo</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Romaja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Jeonja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Banja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul PreHanja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul PostHanja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hangul Special</source>
+        <translation></translation>
+    </message>
+    <message>
         <location line="+602"/>
         <location line="+135"/>
         <source>Ctrl</source>
@@ -8707,7 +9290,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>F%1</translation>
     </message>
     <message>
-        <location line="-898"/>
+        <location line="-934"/>
         <source>Home Page</source>
         <translation>Kezdőoldal</translation>
     </message>
@@ -8845,7 +9428,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Mégsem</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+312"/>
+        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+321"/>
         <source>Exit</source>
         <translation>Kilépés</translation>
     </message>
@@ -8923,7 +9506,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QSslSocket</name>
     <message>
-        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+546"/>
+        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+550"/>
         <source>Unable to write data: %1</source>
         <translation>Az adat nem írható: %1</translation>
     </message>
@@ -8943,7 +9526,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>SSL kézfogás hiba: %1</translation>
     </message>
     <message>
-        <location line="-521"/>
+        <location line="-524"/>
         <source>Error creating SSL context (%1)</source>
         <translation>Az SSL kontextus létrehozása sikertelen (%1)</translation>
     </message>
@@ -8953,7 +9536,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Érvénytelen vagy üres a titkosítók listája (%1)</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+45"/>
         <source>Private key does not certify public key, %1</source>
         <translation>A privát és a publikus kulcs nem illik össze: %1</translation>
     </message>
@@ -8968,7 +9551,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Hiba az SSL munkamenet létrehozásakor: %1</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-64"/>
         <source>Cannot provide a certificate with no key, %1</source>
         <translation>Kulcs nélkül nem állítható ki tanusítvány, %1</translation>
     </message>
@@ -8978,7 +9561,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Hiba a helyi tanúsítvány betöltése közben, %1</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+15"/>
         <source>Error loading private key, %1</source>
         <translation>Hiba a titkos kulcs betöltése közben, %1</translation>
     </message>
@@ -9191,7 +9774,7 @@ Válasszon másik fájlnevet.</translation>
         <translation type="obsolete">Socket művelet nem támogatott</translation>
     </message>
     <message>
-        <location filename="../src/network/socket/qtcpserver.cpp" line="+282"/>
+        <location filename="../src/network/socket/qtcpserver.cpp" line="+292"/>
         <source>Operation on socket is not supported</source>
         <translation>A művelet nem támogatott socketeken</translation>
     </message>
@@ -9199,7 +9782,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2029"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2046"/>
         <source>&amp;Undo</source>
         <translation>&amp;Visszavonás</translation>
     </message>
@@ -9257,7 +9840,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QUdpSocket</name>
     <message>
-        <location filename="../src/network/socket/qudpsocket.cpp" line="+179"/>
+        <location filename="../src/network/socket/qudpsocket.cpp" line="+189"/>
         <source>This platform does not support IPv6</source>
         <translation>A platform nem támogatja az IPv6-ot</translation>
     </message>
@@ -9357,7 +9940,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QWebFrame</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+712"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+753"/>
         <source>Request cancelled</source>
         <translation>A kérés megszakítva</translation>
     </message>
@@ -9394,12 +9977,17 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QWebPage</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+416"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+347"/>
+        <source>Redirection limit reached</source>
+        <translation>Átirányítási korlát elérve</translation>
+    </message>
+    <message>
+        <location line="+121"/>
         <source>Bad HTTP request</source>
         <translation>Hibás HTTP kérés</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+42"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+44"/>
         <source>Submit</source>
         <comment>default label for Submit buttons in forms on web pages</comment>
         <translation>Küldés</translation>
@@ -9657,7 +10245,13 @@ Válasszon másik fájlnevet.</translation>
         <translation>Jobbról balra</translation>
     </message>
     <message>
-        <location line="+105"/>
+        <location line="+100"/>
+        <source>Missing Plug-in</source>
+        <comment>Label text to be used when a plug-in is missing</comment>
+        <translation>Egy plug-in hiányzik</translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Loading...</source>
         <comment>Media controller status message when the media is loading</comment>
         <translation>Betöltés...</translation>
@@ -9903,7 +10497,7 @@ Válasszon másik fájlnevet.</translation>
         <translation type="obsolete">Jobbról balra</translation>
     </message>
     <message>
-        <location line="-210"/>
+        <location line="-225"/>
         <source>Inspect</source>
         <comment>Inspect Element context menu item</comment>
         <translation>Elemzés</translation>
@@ -9927,7 +10521,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Keresési előzmények ürítése</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+90"/>
         <source>Unknown</source>
         <comment>Unknown filesize FTP directory listing item</comment>
         <translation>Ismeretlen</translation>
@@ -9939,7 +10533,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>%1 (%2x%3 képpont)</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+167"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+253"/>
         <source>Web Inspector - %2</source>
         <translation>Web elemző - %2</translation>
     </message>
@@ -10017,22 +10611,22 @@ Válasszon másik fájlnevet.</translation>
         <translation>Görgetés le</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1833"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+2033"/>
         <source>JavaScript Alert - %1</source>
         <translation>JavaScript figyelmeztetés - %1</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>JavaScript Confirm - %1</source>
         <translation>JavaScript megerősítés - %1</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>JavaScript Prompt - %1</source>
         <translation>JavaScript Prompt kérdés - %1</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+26"/>
         <source>JavaScript Problem - %1</source>
         <translation>JavaScript probléma - %1</translation>
     </message>
@@ -10042,7 +10636,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Az ezen a lapon levő parancsfájl hibásnak tűnik. Leállítja a parancsfájl futását?</translation>
     </message>
     <message>
-        <location line="+381"/>
+        <location line="+395"/>
         <source>Move the cursor to the next character</source>
         <translation>Tegye a kurzort a következő karakterhez</translation>
     </message>
@@ -10263,7 +10857,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5774"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5802"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -10271,7 +10865,7 @@ Válasszon másik fájlnevet.</translation>
 <context>
     <name>QWizard</name>
     <message>
-        <location filename="../src/gui/dialogs/qwizard.cpp" line="+649"/>
+        <location filename="../src/gui/dialogs/qwizard.cpp" line="+689"/>
         <source>Go Back</source>
         <translation>Visszalépés</translation>
     </message>
@@ -12169,7 +12763,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>Gyermek elem hiányzik abból a hatókörből, lehetséges gyermek elemek: %1.</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+143"/>
         <source>Document is not a XML schema.</source>
         <translation>A dokumentum nem egy XML séma.</translation>
     </message>
@@ -12195,7 +12789,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>%1 importált séma cél-névtere különbözik az importáló sémában definiált %2 cél-névtértől.</translation>
     </message>
     <message>
-        <location line="+237"/>
+        <location line="+243"/>
         <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3.</source>
         <translation>%1 elemnek nem lehet ugyanaz a %2 attribútum értéke, mint %3 cél-névtérnek.</translation>
     </message>
@@ -12205,7 +12799,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>%2 attribútum nélküli %1 elem nem engedélyezett cél-névtér nélküli séma belsejében.</translation>
     </message>
     <message>
-        <location line="+833"/>
+        <location line="+851"/>
         <location line="+158"/>
         <source>%1 element is not allowed inside %2 element if %3 attribute is present.</source>
         <translation>%1 elem nem megengedett %2 elemen belül, ha %3 attribútum meg van adva.</translation>
@@ -12416,13 +13010,13 @@ Válasszon másik fájlnevet.</translation>
     </message>
     <message>
         <location line="+28"/>
-        <location line="+408"/>
+        <location line="+415"/>
         <location line="+30"/>
         <source>Type %1 of %2 element cannot be resolved.</source>
         <translation>%2 elem %1 típusa nem oldható fel.</translation>
     </message>
     <message>
-        <location line="-416"/>
+        <location line="-423"/>
         <source>Base type %1 of complex type cannot be resolved.</source>
         <translation>Komplex típus %1 őstípusa nem oldható fel.</translation>
     </message>
@@ -12432,7 +13026,7 @@ Válasszon másik fájlnevet.</translation>
         <translation>%1-nek nem lehet %2-t tartalmazó komplex őstípusa.</translation>
     </message>
     <message>
-        <location line="+279"/>
+        <location line="+286"/>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
         <translation>%1 komplex típus tartalom modellje %2 elemet tartalmaz, ezáltal kiterjesztéssel nem származtatható nem üres típusból.</translation>
     </message>

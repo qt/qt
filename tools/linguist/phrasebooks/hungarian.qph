@@ -741,4 +741,12 @@
     <source>Enabled</source>
     <target>Engedélyezve</target>
 </phrase>
+<phrase>
+    <source>Up</source>
+    <target>Fel</target>
+</phrase>
+<phrase>
+    <source>Down</source>
+    <target>Le</target>
+</phrase>
 </QPH>
