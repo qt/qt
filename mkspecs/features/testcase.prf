@@ -18,9 +18,9 @@ win32:debug_and_release {
     # subdirectory. However, since make's working directory is already outside of the
     # debug/release subdirectory, this first ../ should be ignored when deciding if
     # we have to change directory before running the test.
-    MUNGED_TARGET=$$replace(MUNGED_TARGET,^\.\./,)
+    MUNGED_TARGET=$$replace(MUNGED_TARGET,^\\.\\./,)
 }
-!isEmpty(MUNGED_DESTDIR):!contains(MUNGED_DESTDIR,^\./?):check.commands = cd $(DESTDIR) &&
+!isEmpty(MUNGED_DESTDIR):!contains(MUNGED_DESTDIR,^\\./?):check.commands = cd $(DESTDIR) &&
 contains(MUNGED_TARGET,.*/.*):check.commands = cd $(DESTDIR) &&
 
 # Allow for a custom test runner script
