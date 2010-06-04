@@ -1,3 +1,82 @@
+2010-06-03  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix NPAPI support on Mac OS X/Cocoa-32
+
+        qt_mac_window_for() returns a NSWindow on Cocoa, so we were
+        passing in a NSWindow instead of a WindowRef as part of the
+        NP_CGContext.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38762
+
+        * WebCore.gypi: Reflect rename
+        * WebCore.pro: Reflect rename
+        * plugins/mac/PluginViewMac.cpp: Renamed to PluginViewMac.mm
+        and fix bug by getting the Carbon windowRef from the NSWindow.
+        * wscript: Reflect rename
+
+2010-06-02  Nico Weber  <thakis@chromium.org>
+
+        Reviewed by Simon Fraser.
+
+        Scroll events are sent twice per keypress for ports that don't have a platformWidget scrollbar
+        https://bugs.webkit.org/show_bug.cgi?id=39918
+
+        This was regressed by http://trac.webkit.org/changeset/58615 . Fix this by slightly tweaking
+        that patch.
+
+        Test: editing/input/page-up-down-scrolls.html
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::scrollPositionChanged):
+        * page/FrameView.h:
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::valueChanged):
+        * platform/ScrollView.h:
+        (WebCore::ScrollView::repaintFixedElementsAfterScrolling):
+
+2010-06-02  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix make install on Symbian for headers in package builds when INSTALL_HEADERS is not defined
+
+        First we wrote inst_headers.output with $$[QT_INSTALL_HEADERS] and then
+        overwrote it with the $$INSTALL_HEADERS variant without checking if the
+        variable was set.
+
+        Fixed and cleaned up the logic of falling back to $$[QT_INSTALL_HEADERS].
+
+        * WebCore.pro:
+
+2010-06-01  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer: warnings when reloading page
+        https://bugs.webkit.org/show_bug.cgi?id=39694
+
+        Made sure recaching and masks aren't attempted on zero-size layers.
+
+        No new tests. Old tests (e.g. LayoutTests/compositing/masks) show the problem.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::MaskEffectQt::draw):
+        (WebCore::GraphicsLayerQtImpl::recache):
+
+2010-05-10  Rodrigo Belem  <rodrigo.belem@openbossa.org>
+
+        Reviewed by Kenneth Christiansen , Simon Hausmann and Gustavo Noronha.
+
+        [Qt, Gtk] Allows build-webkit script to receive an install prefix as parameter
+        https://bugs.webkit.org/show_bug.cgi?id=26224
+
+        This patch adds the ability, in the QtWebkit build system, to change
+        the installation path.
+
+        * WebCore.pro:
+
 2010-06-01  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Laszlo Gombos.
