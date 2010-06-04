@@ -66,7 +66,7 @@ FocusScope {
         font.italic: true
     }
 
-    MouseArea { anchors.fill: parent; onClicked: focusScope.focus = true }
+    MouseArea { anchors.fill: parent; onClicked: { focusScope.focus = true; textInput.openSoftwareInputPanel(); } }
 
     TextInput {
         id: textInput
@@ -82,7 +82,7 @@ FocusScope {
 
         MouseArea { 
             anchors.fill: parent
-            onClicked: { textInput.text = ''; focusScope.focus = true }
+            onClicked: { textInput.text = ''; focusScope.focus = true; textInput.openSoftwareInputPanel(); }
         }
     }
 
