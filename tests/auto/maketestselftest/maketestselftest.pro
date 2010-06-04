@@ -1,9 +1,6 @@
-load(qttest_p4)
-
-SOURCES += tst_maketestselftest.cpp
-QT = core
-
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+TEMPLATE = subdirs
+SUBDIRS = checktest test
+test.depends = checktest
 
 requires(!cross_compile)
 
