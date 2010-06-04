@@ -458,6 +458,9 @@ void tst_MakeTestSelfTest::make_check()
     QString checktest(SRCDIR "/checktest/checktest");
 
 #ifdef Q_OS_WIN32
+    if (qgetenv("RUN_SLOW_TESTS").isEmpty()) {
+        QSKIP("This test is too slow to run by default on Windows. Set RUN_SLOW_TESTS=1 to run it.", SkipAll);
+    }
     checktest.replace("/", "\\");
     checktest += ".exe";
 #endif
