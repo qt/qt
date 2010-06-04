@@ -241,11 +241,13 @@ void QDeclarativeParticleMotionGravity::setAcceleration(qreal accel)
 
 void QDeclarativeParticleMotionGravity::advance(QDeclarativeParticle &p, int interval)
 {
-    qreal xdiff = p.x - _xAttr;
-    qreal ydiff = p.y - _yAttr;
+    qreal xdiff = _xAttr - p.x;
+    qreal ydiff = _yAttr - p.y;
+    qreal absXdiff = qAbs(xdiff);
+    qreal absYdiff = qAbs(ydiff);
 
-    qreal xcomp = xdiff / (xdiff + ydiff);
-    qreal ycomp = ydiff / (xdiff + ydiff);
+    qreal xcomp = xdiff / (absXdiff + absYdiff);
+    qreal ycomp = ydiff / (absXdiff + absYdiff);
 
     p.x_velocity += xcomp * _accel * interval;
     p.y_velocity += ycomp * _accel * interval;
