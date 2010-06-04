@@ -53,6 +53,8 @@
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qvariant.h>
 
+#include <iostream>
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -2214,13 +2216,13 @@ case 66: {
     if ((name == QLatin1String("qsTranslate")) || (name == QLatin1String("QT_TRANSLATE_NOOP"))) {
         QVariantList args = sym(2).toList();
         if (args.size() < 2) {
-            qWarning("%s:%d: %s() requires at least two arguments",
-                     qPrintable(fileName), identLineNo, qPrintable(name));
+            std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
+                      << qPrintable(name) << "() requires at least two arguments.\n";
         } else {
             if ((args.at(0).type() != QVariant::String)
                 || (args.at(1).type() != QVariant::String)) {
-                qWarning("%s:%d: %s(): both arguments must be literal strings",
-                         qPrintable(fileName), identLineNo, qPrintable(name));
+                std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
+                          << qPrintable(name) << "(): both arguments must be literal strings.\n";
             } else {
                 QString context = args.at(0).toString();
                 QString text = args.at(1).toString();
@@ -2234,12 +2236,12 @@ case 66: {
     } else if ((name == QLatin1String("qsTr")) || (name == QLatin1String("QT_TR_NOOP"))) {
         QVariantList args = sym(2).toList();
         if (args.size() < 1) {
-            qWarning("%s:%d: %s() requires at least one argument",
-                     qPrintable(fileName), identLineNo, qPrintable(name));
+            std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
+                      << qPrintable(name) << "() requires at least one argument.\n";
         } else {
             if (args.at(0).type() != QVariant::String) {
-                qWarning("%s:%d: %s(): text to translate must be a literal string",
-                         qPrintable(fileName), identLineNo, qPrintable(name));
+                std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
+                          << qPrintable(name) << "(): text to translate must be a literal string.\n";
             } else {
                 QString context = QFileInfo(fileName).baseName();
                 QString text = args.at(0).toString();
@@ -2377,8 +2379,8 @@ bool loadQScript(Translator &translator, const QString &filename, ConversionData
     lexer.setCode(code, /*lineNumber=*/1);
     QScriptParser parser;
     if (!parser.parse(&lexer, filename, &translator)) {
-        qWarning("%s:%d: %s", qPrintable(filename), parser.errorLineNumber(),
-                 qPrintable(parser.errorMessage()));
+        std::cerr << qPrintable(filename) << ':' << parser.errorLineNumber() << ": "
+                  << qPrintable(parser.errorMessage()) << std::endl;
         return false;
     }
 
