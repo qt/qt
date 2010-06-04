@@ -60,6 +60,7 @@
 #include "QtCore/qpointer.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qplugin.h"
+#include "QtCore/qsharedpointer.h"
 
 #ifndef QT_NO_LIBRARY
 
@@ -90,6 +91,7 @@ public:
 
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString());
 
+    QWeakPointer<QObject> inst;
     QtPluginInstanceFunction instance;
     uint qt_version;
     QString lastModified;

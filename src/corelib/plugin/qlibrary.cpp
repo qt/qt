@@ -426,10 +426,14 @@ struct LibraryData {
     LibraryData() : settings(0) { }
     ~LibraryData() {
         delete settings;
+        foreach(QLibraryPrivate *lib, loadedLibs) {
+            lib->unload();
+        }
     }
 
     QSettings *settings;
     LibraryMap libraryMap;
+    QSet<QLibraryPrivate*> loadedLibs;
 };
 
 Q_GLOBAL_STATIC(LibraryData, libraryData)
@@ -481,7 +485,18 @@ bool QLibraryPrivate::load()
         return true;
     if (fileName.isEmpty())
         return false;
-    return load_sys();
+
+    bool ret = load_sys();
+    if (ret) {
+        //when loading a library we add a reference to it so that the QLibraryPrivate won't get deleted
+        //this allows to unload the library at a later time
+        if (LibraryData *lib = libraryData()) {
+            lib->loadedLibs += this;
+            libraryRefCount.ref();
+        }
+    }
+
+    return ret;
 }
 
 bool QLibraryPrivate::unload()
@@ -489,10 +504,16 @@ bool QLibraryPrivate::unload()
     if (!pHnd)
         return false;
     if (!libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
-        if (instance)
-            delete instance();
+        delete inst.data();
         if  (unload_sys()) {
-            instance = 0;
+            if (qt_debug_component())
+                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName;
+            //when the library is unloaded, we release the reference on it so that 'this'
+            //can get deleted
+            if (LibraryData *lib = libraryData()) {
+                if (lib->loadedLibs.remove(this))
+                    libraryRefCount.deref();
+            }
             pHnd = 0;
         }
     }
@@ -1126,7 +1147,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
 */
 void *QLibrary::resolve(const char *symbol)
 {
-    if (!load())
+    if (!isLoaded() && !load())
         return 0;
     return d->resolve(symbol);
 }

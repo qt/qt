@@ -123,8 +123,6 @@ static void resolveAygLibs()
     if (!aygResolved) {
         aygResolved = true;
         QLibrary ayglib(QLatin1String("aygshell"));
-        if (!ayglib.load())
-            return;
         ptrAygInitDialog = (AygInitDialog) ayglib.resolve("SHInitDialog");
         ptrAygFullScreen = (AygFullScreen) ayglib.resolve("SHFullScreen");
         ptrAygSHSipInfo  = (AygSHSipInfo)  ayglib.resolve("SHSipInfo");
