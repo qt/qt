@@ -461,7 +461,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         continue;
                     int idx = hdr.indexOf(':');
                     if (idx < 0) {
-                        cd.appendError(QString::fromLatin1("Unexpected PO header format '%1'\n")
+                        cd.appendError(QString::fromLatin1("Unexpected PO header format '%1'")
                             .arg(QString::fromLatin1(hdr)));
                         error = true;
                         break;
@@ -482,7 +482,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                     } else if (hdrName == "Content-Type") {
                         if (cd.m_codecForSource.isEmpty()) {
                             if (!hdrValue.startsWith("text/plain; charset=")) {
-                                cd.appendError(QString::fromLatin1("Unexpected Content-Type header '%1'\n")
+                                cd.appendError(QString::fromLatin1("Unexpected Content-Type header '%1'")
                                     .arg(QString::fromLatin1(hdrValue)));
                                 error = true;
                                 // This will avoid a flood of conversion errors.
@@ -491,7 +491,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                                 QByteArray cod = hdrValue.mid(20);
                                 QTextCodec *cdc = QTextCodec::codecForName(cod);
                                 if (!cdc) {
-                                    cd.appendError(QString::fromLatin1("Unsupported codec '%1'\n")
+                                    cd.appendError(QString::fromLatin1("Unsupported codec '%1'")
                                             .arg(QString::fromLatin1(cod)));
                                     error = true;
                                     // This will avoid a flood of conversion errors.
@@ -503,7 +503,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         }
                     } else if (hdrName == "Content-Transfer-Encoding") {
                         if (hdrValue != "8bit") {
-                            cd.appendError(QString::fromLatin1("Unexpected Content-Transfer-Encoding '%1'\n")
+                            cd.appendError(QString::fromLatin1("Unexpected Content-Transfer-Encoding '%1'")
                                 .arg(QString::fromLatin1(hdrValue)));
                             return false;
                         }
@@ -644,7 +644,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         if (qtContexts)
                             splitContext(&item.oldTscomment, &item.context);
                     } else {
-                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'\n"))
+                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                             .arg(l + 1).arg(codec->toUnicode(lines[l])));
                         error = true;
                     }
@@ -661,13 +661,13 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                     } else if (line.startsWith("#~ msgctxt ")) {
                         item.tscomment = slurpEscapedString(lines, l, 11, "#~ ", cd);
                     } else {
-                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'\n"))
+                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                             .arg(l + 1).arg(codec->toUnicode(lines[l])));
                         error = true;
                     }
                     break;
                 default:
-                    cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'\n"))
+                    cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                         .arg(l + 1).arg(codec->toUnicode(lines[l])));
                     error = true;
                     break;
@@ -685,7 +685,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                 item.extra[QLatin1String("po-msgid_plural")] = codec->toUnicode(extra);
             item.isPlural = true;
         } else {
-            cd.appendError(QString(QLatin1String("PO-format error in line %1: '%2'\n"))
+            cd.appendError(QString(QLatin1String("PO-format error in line %1: '%2'"))
                 .arg(l + 1).arg(codec->toUnicode(lines[l])));
             error = true;
         }

@@ -92,7 +92,7 @@ public:
     bool sortContexts() const { return m_sortContexts; }
 
     void appendError(const QString &error) { m_errors.append(error); }
-    QString error() const { return  m_errors.join(QLatin1String("\n")); }
+    QString error() const { return m_errors.isEmpty() ? QString() : m_errors.join(QLatin1String("\n")) + QLatin1Char('\n'); }
     QStringList errors() const { return  m_errors; }
     void clearErrors() { m_errors.clear(); }
 
