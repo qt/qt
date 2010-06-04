@@ -1427,12 +1427,14 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
+#ifndef QT_NO_GESTURES
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
         QGestureManager *manager = QGestureManager::instance();
         foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
             manager->cleanupCachedGestures(o, type);
     }
+#endif
 
     clearFocus();
 
@@ -7571,6 +7573,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     QGraphicsItem::d_ptr->isObject = true;
 }
 
+#ifndef QT_NO_GESTURES
 /*!
     Subscribes the graphics object to the given \a gesture with specific \a flags.
 
@@ -7594,6 +7597,8 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
     if (QGraphicsItem::d_ptr->gestureContext.remove(gesture) && QGraphicsItem::d_ptr->scene)
         QGraphicsItem::d_ptr->scene->d_func()->ungrabGesture(this, gesture);
 }
+#endif // QT_NO_GESTURES
+
 /*!
     Updates the item's micro focus. This is slot for convenience.
 

@@ -85,6 +85,9 @@
 // Freetype Font Engine
 //#define QT_NO_FREETYPE
 
+// Gesture
+//#define QT_NO_GESTURES
+
 // QGroupBox
 //#define QT_NO_GROUPBOX
 

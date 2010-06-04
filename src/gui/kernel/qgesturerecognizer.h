@@ -45,6 +45,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -94,5 +96,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QGestureRecognizer::Result)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_GESTURES
 
 #endif // QGESTURERECOGNIZER_H
