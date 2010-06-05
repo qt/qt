@@ -1405,17 +1405,7 @@ void QTextEngine::itemize() const
     bool ignore = ignoreBidi;
 #endif
 
-    bool rtl = false;
-    switch (option.textDirection()) {
-    case Qt::LeftToRight:
-        break;
-    case Qt::RightToLeft:
-        rtl = true;
-        break;
-    case Qt::LayoutDirectionAuto:
-        rtl = layoutData->string.isRightToLeft();
-        break;
-    }
+    bool rtl = isRightToLeft();
 
     if (!ignore && !rtl) {
         ignore = true;
@@ -1527,6 +1517,23 @@ void QTextEngine::itemize() const
     addRequiredBoundaries();
     resolveAdditionalFormats();
 }
+
+bool QTextEngine::isRightToLeft() const
+{
+    switch (option.textDirection()) {
+    case Qt::LeftToRight:
+        return false;
+    case Qt::RightToLeft:
+        return true;
+    default:
+        break;
+    }
+    // this places the cursor in the right position depending on the keyboard layout
+    if (layoutData->string.isEmpty())
+        return QApplication::keyboardInputDirection() == Qt::RightToLeft;
+    return layoutData->string.isRightToLeft();
+}
+
 
 int QTextEngine::findItem(int strPos) const
 {
@@ -2524,7 +2531,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 
     QList<QTextOption::Tab> tabArray = option.tabs();
     if (!tabArray.isEmpty()) {
-        if (option.textDirection() == Qt::RightToLeft) { // rebase the tabArray positions.
+        if (isRightToLeft()) { // rebase the tabArray positions.
             QList<QTextOption::Tab> newTabs;
             QList<QTextOption::Tab>::Iterator iter = tabArray.begin();
             while(iter != tabArray.end()) {
