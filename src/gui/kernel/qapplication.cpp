@@ -3544,7 +3544,7 @@ int QApplication::startDragDistance()
 
 void QApplication::setLayoutDirection(Qt::LayoutDirection direction)
 {
-    if (layout_direction == direction)
+    if (layout_direction == direction || direction == Qt::LayoutDirectionAuto)
         return;
 
     layout_direction = direction;
