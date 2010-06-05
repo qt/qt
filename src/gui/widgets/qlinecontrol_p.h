@@ -273,8 +273,11 @@ public:
     void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
 
     Qt::LayoutDirection layoutDirection() const {
-        if (m_layoutDirection == Qt::LayoutDirectionAuto)
+        if (m_layoutDirection == Qt::LayoutDirectionAuto) {
+            if (m_text.isEmpty())
+                return QApplication::keyboardInputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+        }
         return m_layoutDirection;
     }
     void setLayoutDirection(Qt::LayoutDirection direction)
