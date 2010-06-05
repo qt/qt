@@ -1404,7 +1404,20 @@ void QTextEngine::itemize() const
 #else
     bool ignore = ignoreBidi;
 #endif
-    if (!ignore && option.textDirection() == Qt::LeftToRight) {
+
+    bool rtl = false;
+    switch (option.textDirection()) {
+    case Qt::LeftToRight:
+        break;
+    case Qt::RightToLeft:
+        rtl = true;
+        break;
+    case Qt::LayoutDirectionAuto:
+        rtl = layoutData->string.isRightToLeft();
+        break;
+    }
+
+    if (!ignore && !rtl) {
         ignore = true;
         const QChar *start = layoutData->string.unicode();
         const QChar * const end = start + length;
@@ -1420,7 +1433,7 @@ void QTextEngine::itemize() const
     QVarLengthArray<QScriptAnalysis, 4096> scriptAnalysis(length);
     QScriptAnalysis *analysis = scriptAnalysis.data();
 
-    QBidiControl control(option.textDirection() == Qt::RightToLeft);
+    QBidiControl control(rtl);
 
     if (ignore) {
         memset(analysis, 0, length*sizeof(QScriptAnalysis));
