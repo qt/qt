@@ -401,6 +401,148 @@ bool QGLFormat::hasOpenGLOverlays()
     return trans_colors.size() > 0;
 }
 
+static bool buildSpec(int* spec, const QGLFormat& f, QPaintDevice* paintDevice,
+                      int bufDepth, bool onlyFBConfig = false)
+{
+    int i = 0;
+    spec[i++] = GLX_LEVEL;
+    spec[i++] = f.plane();
+    const QX11Info *xinfo = qt_x11Info(paintDevice);
+    bool useFBConfig = onlyFBConfig;
+
+#if defined(GLX_VERSION_1_3) && !defined(QT_NO_XRENDER) && !defined(Q_OS_HPUX)
+    /*
+      HPUX defines GLX_VERSION_1_3 but does not implement the corresponding functions.
+      Specifically glXChooseFBConfig and glXGetVisualFromFBConfig are not implemented.
+     */
+    QWidget* widget = 0;
+    if (paintDevice->devType() == QInternal::Widget)
+        widget = static_cast<QWidget*>(paintDevice);
+
+    // Only use glXChooseFBConfig for widgets if we're trying to get an ARGB visual
+    if (widget && widget->testAttribute(Qt::WA_TranslucentBackground) && X11->use_xrender)
+        useFBConfig = true;
+#endif
+
+#if defined(GLX_VERSION_1_1) && defined(GLX_EXT_visual_info)
+    static bool useTranspExt = false;
+    static bool useTranspExtChecked = false;
+    if (f.plane() && !useTranspExtChecked && paintDevice) {
+        QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+        useTranspExt = extensions.match("GLX_EXT_visual_info");
+        //# (A bit simplistic; that could theoretically be a substring)
+        if (useTranspExt) {
+            QByteArray cstr(glXGetClientString(xinfo->display(), GLX_VENDOR));
+            useTranspExt = !cstr.contains("Xi Graphics"); // bug workaround
+            if (useTranspExt) {
+                // bug workaround - some systems (eg. FireGL) refuses to return an overlay
+                // visual if the GLX_TRANSPARENT_TYPE_EXT attribute is specified, even if
+                // the implementation supports transparent overlays
+                int tmpSpec[] = { GLX_LEVEL, f.plane(), GLX_TRANSPARENT_TYPE_EXT,
+                                  f.rgba() ? GLX_TRANSPARENT_RGB_EXT : GLX_TRANSPARENT_INDEX_EXT,
+                                  XNone };
+                XVisualInfo * vinf = glXChooseVisual(xinfo->display(), xinfo->screen(), tmpSpec);
+                if (!vinf) {
+                    useTranspExt = false;
+                }
+            }
+        }
+
+        useTranspExtChecked = true;
+    }
+    if (f.plane() && useTranspExt && !useFBConfig) {
+        // Required to avoid non-transparent overlay visual(!) on some systems
+        spec[i++] = GLX_TRANSPARENT_TYPE_EXT;
+        spec[i++] = f.rgba() ? GLX_TRANSPARENT_RGB_EXT : GLX_TRANSPARENT_INDEX_EXT;
+    }
+#endif
+
+#if defined(GLX_VERSION_1_3)  && !defined(Q_OS_HPUX)
+    // GLX_RENDER_TYPE is only in glx >=1.3
+    if (useFBConfig) {
+        spec[i++] = GLX_RENDER_TYPE;
+        spec[i++] = f.rgba() ? GLX_RGBA_BIT : GLX_COLOR_INDEX_BIT;
+    }
+#endif
+
+    if (f.doubleBuffer())
+        spec[i++] = GLX_DOUBLEBUFFER;
+        if (useFBConfig)
+            spec[i++] = True;
+    if (f.depth()) {
+        spec[i++] = GLX_DEPTH_SIZE;
+        spec[i++] = f.depthBufferSize() == -1 ? 1 : f.depthBufferSize();
+    }
+    if (f.stereo()) {
+        spec[i++] = GLX_STEREO;
+        if (useFBConfig)
+            spec[i++] = True;
+    }
+    if (f.stencil()) {
+        spec[i++] = GLX_STENCIL_SIZE;
+        spec[i++] = f.stencilBufferSize() == -1 ? 1 : f.stencilBufferSize();
+    }
+    if (f.rgba()) {
+        if (!useFBConfig)
+            spec[i++] = GLX_RGBA;
+        spec[i++] = GLX_RED_SIZE;
+        spec[i++] = f.redBufferSize() == -1 ? 1 : f.redBufferSize();
+        spec[i++] = GLX_GREEN_SIZE;
+        spec[i++] = f.greenBufferSize() == -1 ? 1 : f.greenBufferSize();
+        spec[i++] = GLX_BLUE_SIZE;
+        spec[i++] = f.blueBufferSize() == -1 ? 1 : f.blueBufferSize();
+        if (f.alpha()) {
+            spec[i++] = GLX_ALPHA_SIZE;
+            spec[i++] = f.alphaBufferSize() == -1 ? 1 : f.alphaBufferSize();
+        }
+        if (f.accum()) {
+            spec[i++] = GLX_ACCUM_RED_SIZE;
+            spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
+            spec[i++] = GLX_ACCUM_GREEN_SIZE;
+            spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
+            spec[i++] = GLX_ACCUM_BLUE_SIZE;
+            spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
+            if (f.alpha()) {
+                spec[i++] = GLX_ACCUM_ALPHA_SIZE;
+                spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
+            }
+        }
+    } else {
+        spec[i++] = GLX_BUFFER_SIZE;
+        spec[i++] = bufDepth;
+    }
+
+    if (f.sampleBuffers()) {
+        spec[i++] = GLX_SAMPLE_BUFFERS_ARB;
+        spec[i++] = 1;
+        spec[i++] = GLX_SAMPLES_ARB;
+        spec[i++] = f.samples() == -1 ? 4 : f.samples();
+    }
+
+#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
+    if (useFBConfig) {
+        spec[i++] = GLX_DRAWABLE_TYPE;
+        switch(paintDevice->devType()) {
+        case QInternal::Pixmap:
+            spec[i++] = GLX_PIXMAP_BIT;
+            break;
+        case QInternal::Pbuffer:
+            spec[i++] = GLX_PBUFFER_BIT;
+            break;
+        default:
+            qWarning("QGLContext: Unknown paint device type %d", paintDevice->devType());
+            // Fall-through & assume it's a window
+        case QInternal::Widget:
+            spec[i++] = GLX_WINDOW_BIT;
+            break;
+        };
+    }
+#endif
+
+    spec[i] = XNone;
+    return useFBConfig;
+}
+
 /*****************************************************************************
   QGLContext UNIX/GLX-specific code
  *****************************************************************************/
@@ -606,143 +748,8 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
 {
     Q_D(QGLContext);
     int spec[45];
-    int i = 0;
-    spec[i++] = GLX_LEVEL;
-    spec[i++] = f.plane();
     const QX11Info *xinfo = qt_x11Info(d->paintDevice);
-    bool useFBConfig = false;
-
-#if defined(GLX_VERSION_1_3) && !defined(QT_NO_XRENDER) && !defined(Q_OS_HPUX)
-    /*
-      HPUX defines GLX_VERSION_1_3 but does not implement the corresponding functions.
-      Specifically glXChooseFBConfig and glXGetVisualFromFBConfig are not implemented.
-     */
-    QWidget* widget = 0;
-    if (d->paintDevice->devType() == QInternal::Widget)
-        widget = static_cast<QWidget*>(d->paintDevice);
-
-    // Only use glXChooseFBConfig for widgets if we're trying to get an ARGB visual
-    if (widget && widget->testAttribute(Qt::WA_TranslucentBackground) && X11->use_xrender)
-        useFBConfig = true;
-#endif
-
-#if defined(GLX_VERSION_1_1) && defined(GLX_EXT_visual_info)
-    static bool useTranspExt = false;
-    static bool useTranspExtChecked = false;
-    if (f.plane() && !useTranspExtChecked && d->paintDevice) {
-        QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
-        useTranspExt = extensions.match("GLX_EXT_visual_info");
-        //# (A bit simplistic; that could theoretically be a substring)
-        if (useTranspExt) {
-            QByteArray cstr(glXGetClientString(xinfo->display(), GLX_VENDOR));
-            useTranspExt = !cstr.contains("Xi Graphics"); // bug workaround
-            if (useTranspExt) {
-                // bug workaround - some systems (eg. FireGL) refuses to return an overlay
-                // visual if the GLX_TRANSPARENT_TYPE_EXT attribute is specified, even if
-                // the implementation supports transparent overlays
-                int tmpSpec[] = { GLX_LEVEL, f.plane(), GLX_TRANSPARENT_TYPE_EXT,
-                                  f.rgba() ? GLX_TRANSPARENT_RGB_EXT : GLX_TRANSPARENT_INDEX_EXT,
-                                  XNone };
-                XVisualInfo * vinf = glXChooseVisual(xinfo->display(), xinfo->screen(), tmpSpec);
-                if (!vinf) {
-                    useTranspExt = false;
-                }
-            }
-        }
-
-        useTranspExtChecked = true;
-    }
-    if (f.plane() && useTranspExt && !useFBConfig) {
-        // Required to avoid non-transparent overlay visual(!) on some systems
-        spec[i++] = GLX_TRANSPARENT_TYPE_EXT;
-        spec[i++] = f.rgba() ? GLX_TRANSPARENT_RGB_EXT : GLX_TRANSPARENT_INDEX_EXT;
-    }
-#endif
-
-#if defined(GLX_VERSION_1_3)  && !defined(Q_OS_HPUX)
-    // GLX_RENDER_TYPE is only in glx >=1.3
-    if (useFBConfig) {
-        spec[i++] = GLX_RENDER_TYPE;
-        spec[i++] = f.rgba() ? GLX_RGBA_BIT : GLX_COLOR_INDEX_BIT;
-    }
-#endif
-
-    if (f.doubleBuffer())
-        spec[i++] = GLX_DOUBLEBUFFER;
-        if (useFBConfig)
-            spec[i++] = True;
-    if (f.depth()) {
-        spec[i++] = GLX_DEPTH_SIZE;
-        spec[i++] = f.depthBufferSize() == -1 ? 1 : f.depthBufferSize();
-    }
-    if (f.stereo()) {
-        spec[i++] = GLX_STEREO;
-        if (useFBConfig)
-            spec[i++] = True;
-    }
-    if (f.stencil()) {
-        spec[i++] = GLX_STENCIL_SIZE;
-        spec[i++] = f.stencilBufferSize() == -1 ? 1 : f.stencilBufferSize();
-    }
-    if (f.rgba()) {
-        if (!useFBConfig)
-            spec[i++] = GLX_RGBA;
-        spec[i++] = GLX_RED_SIZE;
-        spec[i++] = f.redBufferSize() == -1 ? 1 : f.redBufferSize();
-        spec[i++] = GLX_GREEN_SIZE;
-        spec[i++] = f.greenBufferSize() == -1 ? 1 : f.greenBufferSize();
-        spec[i++] = GLX_BLUE_SIZE;
-        spec[i++] = f.blueBufferSize() == -1 ? 1 : f.blueBufferSize();
-        if (f.alpha()) {
-            spec[i++] = GLX_ALPHA_SIZE;
-            spec[i++] = f.alphaBufferSize() == -1 ? 1 : f.alphaBufferSize();
-        }
-        if (f.accum()) {
-            spec[i++] = GLX_ACCUM_RED_SIZE;
-            spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
-            spec[i++] = GLX_ACCUM_GREEN_SIZE;
-            spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
-            spec[i++] = GLX_ACCUM_BLUE_SIZE;
-            spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
-            if (f.alpha()) {
-                spec[i++] = GLX_ACCUM_ALPHA_SIZE;
-                spec[i++] = f.accumBufferSize() == -1 ? 1 : f.accumBufferSize();
-            }
-        }
-    } else {
-        spec[i++] = GLX_BUFFER_SIZE;
-        spec[i++] = bufDepth;
-    }
-
-    if (f.sampleBuffers()) {
-        spec[i++] = GLX_SAMPLE_BUFFERS_ARB;
-        spec[i++] = 1;
-        spec[i++] = GLX_SAMPLES_ARB;
-        spec[i++] = f.samples() == -1 ? 4 : f.samples();
-    }
-
-#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
-    if (useFBConfig) {
-        spec[i++] = GLX_DRAWABLE_TYPE;
-        switch(d->paintDevice->devType()) {
-        case QInternal::Pixmap:
-            spec[i++] = GLX_PIXMAP_BIT;
-            break;
-        case QInternal::Pbuffer:
-            spec[i++] = GLX_PBUFFER_BIT;
-            break;
-        default:
-            qWarning("QGLContext: Unknown paint device type %d", d->paintDevice->devType());
-            // Fall-through & assume it's a window
-        case QInternal::Widget:
-            spec[i++] = GLX_WINDOW_BIT;
-            break;
-        };
-    }
-#endif
-
-    spec[i] = XNone;
-
+    bool useFBConfig = buildSpec(spec, f, d->paintDevice, bufDepth, false);
 
     XVisualInfo* chosenVisualInfo = 0;
 
@@ -755,7 +762,7 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
         if (!configs)
             break; // fallback to trying glXChooseVisual
 
-        for (i = 0; i < configCount; ++i) {
+        for (int i = 0; i < configCount; ++i) {
             XVisualInfo* vi;
             vi = glXGetVisualFromFBConfig(xinfo->display(), configs[i]);
             if (!vi)
