@@ -78,6 +78,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/wintab \
                           $QTDIR/src/3rdparty/zlib \
                           $QTDIR/doc/src/snippets \
+                          $QTDIR/doc/src/ja_JP \
                           $QTDIR/src/3rdparty/phonon/gstreamer \
                           $QTDIR/src/3rdparty/phonon/ds9 \
                           $QTDIR/src/3rdparty/phonon/qt7 \

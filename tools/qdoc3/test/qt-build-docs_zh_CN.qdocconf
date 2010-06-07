@@ -80,6 +80,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/wintab \
                           $QT_SOURCE_TREE/src/3rdparty/zlib \
                           $QT_SOURCE_TREE/doc/src/snippets \
+                          $QT_SOURCE_TREE/doc/src/ja_JP \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/ds9 \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/qt7 \
