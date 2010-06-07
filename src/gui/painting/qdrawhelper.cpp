@@ -675,7 +675,7 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, i
 
 
 template<TextureBlendType blendType>
-static inline void fetchTransformedBilinear_pixelBounds(int max, int l1, int l2, int &v1, int &v2)
+Q_STATIC_TEMPLATE_FUNCTION inline void fetchTransformedBilinear_pixelBounds(int max, int l1, int l2, int &v1, int &v2)
 {
     if (blendType == BlendTransformedBilinearTiled) {
         v1 %= max;
