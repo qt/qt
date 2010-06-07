@@ -393,7 +393,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 /*!
     \fn Tab::Tab(qreal pos, TabType tabType, QChar delim = QChar())
     Creates a tab with the given position, tab type, and (for DelimiterTab) delimiter
-    \since 4.6
+    \since 4.7
 */
 
 /*!
