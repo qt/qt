@@ -235,11 +235,11 @@ void tst_QGlyphs::textLayoutGlyphIndexes()
 
 void tst_QGlyphs::drawExistingGlyphs()
 {
-    QImage textLayoutDraw(1000, 1000, QImage::Format_ARGB32);
-    QImage drawGlyphs(1000, 1000, QImage::Format_ARGB32);
+    QPixmap textLayoutDraw(1000, 1000);
+    QPixmap drawGlyphs(1000, 1000);
 
-    textLayoutDraw.fill(0xffffffff);
-    drawGlyphs.fill(0xffffffff);
+    textLayoutDraw.fill(Qt::white);
+    drawGlyphs.fill(Qt::white);
 
     QString s;
     s.append(QLatin1Char('A'));
@@ -286,10 +286,10 @@ void tst_QGlyphs::drawNonExistentGlyphs()
     glyphs.setPositions(glyphPositions);
     glyphs.setFont(m_testFont);
 
-    QImage image(1000, 1000, QImage::Format_ARGB32);
-    image.fill(0);
+    QPixmap image(1000, 1000);
+    image.fill(Qt::white);
 
-    QImage imageBefore = image;
+    QPixmap imageBefore = image;
     {
         QPainter p(&image);
         p.drawGlyphs(QPointF(50, 50), glyphs);
@@ -312,11 +312,11 @@ void tst_QGlyphs::drawMultiScriptText1()
     textLayout.createLine();
     textLayout.endLayout();
 
-    QImage textLayoutDraw(1000, 1000, QImage::Format_ARGB32);
-    textLayoutDraw.fill(0xffffffff);
+    QPixmap textLayoutDraw(1000, 1000);
+    textLayoutDraw.fill(Qt::white);
 
-    QImage drawGlyphs(1000, 1000, QImage::Format_ARGB32);
-    drawGlyphs.fill(0xffffffff);
+    QPixmap drawGlyphs(1000, 1000);
+    drawGlyphs.fill(Qt::white);
 
     QList<QGlyphs> glyphsList = textLayout.glyphs();
     QCOMPARE(glyphsList.size(), 1);
@@ -356,11 +356,11 @@ void tst_QGlyphs::drawMultiScriptText2()
     textLayout.createLine();
     textLayout.endLayout();
 
-    QImage textLayoutDraw(1000, 1000, QImage::Format_ARGB32);
-    textLayoutDraw.fill(0xffffffff);
+    QPixmap textLayoutDraw(1000, 1000);
+    textLayoutDraw.fill(Qt::white);
 
-    QImage drawGlyphs(1000, 1000, QImage::Format_ARGB32);
-    drawGlyphs.fill(0xffffffff);
+    QPixmap drawGlyphs(1000, 1000);
+    drawGlyphs.fill(Qt::white);
 
     QList<QGlyphs> glyphsList = textLayout.glyphs();
     QCOMPARE(glyphsList.size(), 2);
