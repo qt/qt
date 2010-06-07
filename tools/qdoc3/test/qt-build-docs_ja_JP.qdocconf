@@ -1,16 +1,16 @@
 include(compat.qdocconf)
 include(macros.qdocconf)
 include(qt-cpp-ignore.qdocconf)
-include(qt-html-templates_zh_CN.qdocconf)
+include(qt-html-templates_ja_JP.qdocconf)
 include(qt-defines.qdocconf)
 
 project                 = Qt
-description             = Qt Reference Documentation
-url                     = http://qt.nokia.com/doc/zh_CN/4.7
+description             = Qt リファレンスドキュメント
+url                     = http://qt.nokia.com/doc/ja_JP/4.7
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
-naturallanguage         = zh-Hans
+naturallanguage         = ja
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
@@ -19,47 +19,48 @@ qhp.projects            = Qt
 qhp.Qt.file                = qt.qhp
 qhp.Qt.namespace           = com.trolltech.qt.470
 qhp.Qt.virtualFolder       = qdoc
-qhp.Qt.title               = 教程
-qhp.Qt.indexTitle          = 教程
+qhp.Qt.title               = Qt
+qhp.Qt.indexTitle          = Qt
 qhp.Qt.selectors           = fake:example
 
-qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc zh_CN
+qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc ja_JP
 qhp.Qt.customFilters.Qt.name = Qt 4.7.0
 qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = index.html \
-									images/bg_l.png \
-                             	    images/bg_l_blank.png \
-                             	    images/bg_r.png \
-									images/box_bg.png \
-									images/breadcrumb.png \
-									images/bullet_gt.png \
-                             	    images/bullet_dn.png \
-									images/bullet_sq.png \
-                             	    images/bullet_up.png \
-                             	    images/feedbackground.png \									
-                             	    images/horBar.png \									
-									images/page.png \
-									images/page_bg.png \
-									images/sprites-combined.png \
-									images/arrow-down.png \
-									images/spinner.gif \
-                             	    images/stylesheet-coffee-plastique.png \
-                             	    images/taskmenuextension-example.png \
-                             	   images/coloreditorfactoryimage.png \
-                             	   images/dynamiclayouts-example.png \
-									scripts/functions.js \
-									scripts/jquery.js \
-                             	    style/style_ie6.css \
-									style/style_ie7.css \
-									style/style_ie8.css \
-									style/style.css
+			    images/bg_l.png \
+			    images/bg_l_blank.png \
+			    images/bg_r.png \
+			    images/box_bg.png \
+			    images/breadcrumb.png \
+			    images/bullet_gt.png \
+			    images/bullet_dn.png \
+			    images/bullet_sq.png \
+			    images/bullet_up.png \
+			    images/feedbackground.png \
+			    images/horBar.png \
+			    images/page.png \
+			    images/page_bg.png \
+			    images/sprites-combined.png \
+			    images/arrow-down.png \
+			    images/spinner.gif \
+			    images/stylesheet-coffee-plastique.png \
+			    images/taskmenuextension-example.png \
+			    images/coloreditorfactoryimage.png \
+			    images/dynamiclayouts-example.png \
+			    scripts/functions.js \
+			    scripts/jquery.js \
+			    style/OfflineStyle.css \
+			    style/style_ie6.css \
+			    style/style_ie7.css \
+			    style/style_ie8.css \
+			    style/style.css
 
 language                = Cpp
 
-sourcedirs              = $QT_SOURCE_TREE/doc/src/zh_CN
+sourcedirs              = $QT_SOURCE_TREE/doc/src/ja_JP
 
 excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/des \
@@ -80,7 +81,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/wintab \
                           $QT_SOURCE_TREE/src/3rdparty/zlib \
                           $QT_SOURCE_TREE/doc/src/snippets \
-                          $QT_SOURCE_TREE/doc/src/ja_JP \
+                          $QT_SOURCE_TREE/doc/src/zh_CN \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/ds9 \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/qt7 \
@@ -92,16 +93,18 @@ examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
 examples.imageextensions = "*.png"
 
 exampledirs             = $QT_SOURCE_TREE/doc/src \
+                          $QT_SOURCE_TREE/examples/ja_JP \
                           $QT_SOURCE_TREE/examples \
                           $QT_SOURCE_TREE/examples/tutorials \
                           $QT_SOURCE_TREE \
                           $QT_SOURCE_TREE/qmake/examples \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
-imagedirs               = $QT_SOURCE_TREE/doc/src/images \
+imagedirs               = $QT_SOURCE_TREE/doc/src/ja_JP/images \
+                          $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples \
 			  $QT_SOURCE_TREE/doc/src/template/images
-outputdir               = $QT_BUILD_TREE/doc/html_zh_CN
-tagfile                 = $QT_BUILD_TREE/doc/html_zh_CN/qt.tags
-base                    = file:$QT_BUILD_TREE/doc/html_zh_CN
+outputdir               = $QT_BUILD_TREE/doc/html_ja_JP
+tagfile                 = $QT_BUILD_TREE/doc/html_ja_JP/qt.tags
+base                    = file:$QT_BUILD_TREE/doc/html_ja_JP
 
 HTML.generatemacrefs    = "true"
