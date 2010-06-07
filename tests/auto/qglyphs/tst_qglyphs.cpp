@@ -119,31 +119,6 @@ static QGlyphs make_dummy_indexes()
     return glyphs;
 }
 
-static QGlyphs make_dummy_indexes2()
-{
-    QGlyphs glyphs;
-
-    QVector<quint32> glyphIndexes;
-    QVector<QPointF> positions;
-    QFont font;
-    font.setPointSize(26);
-
-    glyphIndexes.append(4);
-    glyphIndexes.append(5);
-    glyphIndexes.append(6);
-
-    positions.append(QPointF(7, 8));
-    positions.append(QPointF(9, 10));
-    positions.append(QPointF(11, 12));
-
-    glyphs.setFont(font);
-    glyphs.setGlyphIndexes(glyphIndexes);
-    glyphs.setPositions(positions);
-
-    return glyphs;
-}
-
-
 void tst_QGlyphs::copyConstructor()
 {
     QGlyphs glyphs;
