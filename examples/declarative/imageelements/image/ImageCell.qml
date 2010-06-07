@@ -37,24 +37,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
 
-Rectangle {
-    id: page
-    width: 500; height: 250
-    color: "#edecec"
+Item {
+    property alias mode: image.fillMode
+    property alias caption: captionItem.text
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: page.focus = false;
+    width: parent.cellWidth; height: parent.cellHeight
+
+    Image {
+        id: image
+        width: parent.width; height: parent.height - captionItem.height
+        source: "face-smile.png"
+        clip: true      // only makes a difference if mode is PreserveAspectCrop
+        smooth: true
     }
-    Column {
-        anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-        spacing: 10
 
-        SearchBox { id: search1; KeyNavigation.tab: search2; KeyNavigation.backtab: search3; focus: true }
-        SearchBox { id: search2; KeyNavigation.tab: search3; KeyNavigation.backtab: search1 }
-        SearchBox { id: search3; KeyNavigation.tab: search1; KeyNavigation.backtab: search2 }
+    Text { 
+        id: captionItem
+        anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom
     }
 }

@@ -41,20 +41,26 @@
 import Qt 4.7
 
 Rectangle {
-    id: page
-    width: 500; height: 250
-    color: "#edecec"
+    width: 490
+    height: 285
 
-    MouseArea {
+    Grid {
+        property int cellWidth: (width - (spacing * (columns - 1))) / columns
+        property int cellHeight: (height - (spacing * (rows - 1))) / rows
+
         anchors.fill: parent
-        onClicked: page.focus = false;
-    }
-    Column {
-        anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-        spacing: 10
+        anchors.margins: 30
 
-        SearchBox { id: search1; KeyNavigation.tab: search2; KeyNavigation.backtab: search3; focus: true }
-        SearchBox { id: search2; KeyNavigation.tab: search3; KeyNavigation.backtab: search1 }
-        SearchBox { id: search3; KeyNavigation.tab: search1; KeyNavigation.backtab: search2 }
+        columns: 3
+        rows: 2
+        spacing: 30
+
+        ImageCell { mode: Image.Stretch; caption: "Stretch" }
+        ImageCell { mode: Image.PreserveAspectFit; caption: "PreserveAspectFit" }
+        ImageCell { mode: Image.PreserveAspectCrop; caption: "PreserveAspectCrop" }
+
+        ImageCell { mode: Image.Tile; caption: "Tile" }
+        ImageCell { mode: Image.TileHorizontally; caption: "TileHorizontally" }
+        ImageCell { mode: Image.TileVertically; caption: "TileVertically" }
     }
 }

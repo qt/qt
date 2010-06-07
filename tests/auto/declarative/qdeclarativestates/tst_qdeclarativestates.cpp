@@ -112,6 +112,7 @@ private slots:
     void whenOrdering();
     void urlResolution();
     void unnamedWhen();
+    void returnToBase();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -1084,6 +1085,26 @@ void tst_qdeclarativestates::unnamedWhen()
     QCOMPARE(rectPrivate->state(), QLatin1String(""));
     QCOMPARE(rect->property("stateString").toString(), QLatin1String(""));
 }
+
+void tst_qdeclarativestates::returnToBase()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/returnToBase.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QCOMPARE(rectPrivate->state(), QLatin1String(""));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String(""));
+    rect->setProperty("triggerState", true);
+    QCOMPARE(rectPrivate->state(), QLatin1String("anonymousState1"));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String("inState"));
+    rect->setProperty("triggerState", false);
+    QCOMPARE(rectPrivate->state(), QLatin1String(""));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String("originalState"));
+}
+
 
 QTEST_MAIN(tst_qdeclarativestates)
 

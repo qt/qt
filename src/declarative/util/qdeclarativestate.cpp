@@ -187,6 +187,13 @@ void QDeclarativeState::setName(const QString &n)
 {
     Q_D(QDeclarativeState);
     d->name = n;
+    d->named = true;
+}
+
+bool QDeclarativeState::isNamed() const
+{
+    Q_D(const QDeclarativeState);
+    return d->named;
 }
 
 bool QDeclarativeState::isWhenKnown() const

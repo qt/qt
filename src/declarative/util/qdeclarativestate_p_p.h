@@ -101,12 +101,13 @@ class QDeclarativeStatePrivate : public QObjectPrivate
 
 public:
     QDeclarativeStatePrivate()
-    : when(0), inState(false), group(0) {}
+    : when(0), named(false), inState(false), group(0) {}
 
     typedef QList<QDeclarativeSimpleAction> SimpleActionList;
 
     QString name;
     QDeclarativeBinding *when;
+    bool named;
 
     struct OperationGuard : public QDeclarativeGuard<QDeclarativeStateOperation>
     {
