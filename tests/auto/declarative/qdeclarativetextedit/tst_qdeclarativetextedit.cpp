@@ -956,7 +956,12 @@ void tst_qdeclarativetextedit::openInputPanelOnFocus()
     edit.setFocusOnPress(true);
     QCOMPARE(focusOnPressSpy.count(),2);
 
-    // and input panel should not open if focus has already been set
+    edit.setFocus(true);
+    QCOMPARE(ic.openInputPanelReceived, true);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+    ic.openInputPanelReceived = false;
+
+    // input panel should not open if focus has already been set
     edit.setFocus(true);
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, false);

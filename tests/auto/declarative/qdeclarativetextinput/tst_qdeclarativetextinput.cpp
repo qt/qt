@@ -902,7 +902,12 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     input.setFocusOnPress(true);
     QCOMPARE(focusOnPressSpy.count(),2);
 
-    // and input panel should not open if focus has already been set
+    input.setFocus(true);
+    QCOMPARE(ic.openInputPanelReceived, true);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+    ic.openInputPanelReceived = false;
+
+    // input panel should not open if focus has already been set
     input.setFocus(true);
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, false);
