@@ -1,3 +1,71 @@
+2010-06-07  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix text selection drawing.
+        https://bugs.webkit.org/show_bug.cgi?id=40221
+
+        The regression was introduced in r60169.
+
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::drawTextCommon):
+
+2010-06-04  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix compilation with QT_NO_FEATURE
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        The #ifdef QT_NO_GRAPHICSEFFECT was in the wrong place, would have
+        made AC not work at all.
+
+        No new tests.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-05-24  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix compilation with QT_NO_TEMPORARYFILE
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * platform/qt/FileSystemQt.cpp:
+        (WebCore::openTemporaryFile):
+
+2010-05-21  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with QT_NO_GRAPHICSEFFECT
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-05-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with QT_NO_BEARERMANAGEMENT
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * platform/network/NetworkStateNotifier.h:
+        * platform/network/qt/NetworkStateNotifierQt.cpp:
+
+2010-05-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with QT_NO_LINEEDIT
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::~RenderThemeQt):
+        (WebCore::RenderThemeQt::findFrameLineWidth):
+
 2010-06-04  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Tor Arne Vestbø.
