@@ -1451,11 +1451,6 @@ static inline int rand8()
     return int(256. * (qrand() / (RAND_MAX + 1.0)));
 }
 
-static inline bool compare(int a, int b, int tolerance)
-{
-    return qAbs(a - b) <= tolerance;
-}
-
 // compares img.scale against the bilinear filtering used by QPainter
 void tst_QImage::smoothScale3()
 {
@@ -1483,6 +1478,7 @@ void tst_QImage::smoothScale3()
         p.scale(scales[i], scales[i]);
         p.drawImage(0, 0, img);
         p.end();
+        int err = 0;
 
         for (int y = 0; y < a.height(); ++y) {
             for (int x = 0; x < a.width(); ++x) {
@@ -1490,11 +1486,15 @@ void tst_QImage::smoothScale3()
                 QRgb cb = b.pixel(x, y);
 
                 // tolerate a little bit of rounding errors
-                QVERIFY(compare(qRed(ca), qRed(cb), 16));
-                QVERIFY(compare(qGreen(ca), qGreen(cb), 16));
-                QVERIFY(compare(qBlue(ca), qBlue(cb), 16));
+                bool r = true;
+                r &= qAbs(qRed(ca) - qRed(cb)) <= 18;
+                r &= qAbs(qGreen(ca) - qGreen(cb)) <= 18;
+                r &= qAbs(qBlue(ca) - qBlue(cb)) <= 18;
+                if (!r)
+                    err++;
             }
         }
+        QCOMPARE(err, 0);
     }
 }
 
