@@ -77,6 +77,6 @@ Item {
 
     MouseArea {
         anchors { fill: parent; leftMargin: -20; topMargin: -20; rightMargin: -20; bottomMargin: -20 }
-        onClicked: textInput.forceFocus()
+        onClicked: { textInput.forceFocus(); textInput.openSoftwareInputPanel(); }
     }
 }
