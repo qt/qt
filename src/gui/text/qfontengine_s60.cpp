@@ -50,19 +50,71 @@
 #include <e32std.h>
 #include <eikenv.h>
 #include <gdi.h>
+#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
+#include <graphics/gdi/gdiplatapi.h>
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API
 
 QT_BEGIN_NAMESPACE
 
-QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* fontOwner, COpenFont *font)
-    : m_font(font)
-    , m_cmap(0)
+#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
+QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont)
+    : m_cFont(cFont)
     , m_symbolCMap(false)
-    , m_fontOwner(fontOwner)
+{
+    Q_UNUSED(openFont)
+}
+
+QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
+{
+    QS60Data::screenDevice()->ReleaseFont(m_cFont);
+}
+
+QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
+{
+    RFontTable fontTable;
+    if (fontTable.Open(*m_cFont, tag) != KErrNone)
+        return QByteArray();
+    const QByteArray byteArray(reinterpret_cast<const char *>
+            (fontTable.TableContent()),fontTable.TableLength());
+    fontTable.Close();
+    return byteArray;
+}
+
+bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+{
+    RFontTable fontTable;
+    if (fontTable.Open(*m_cFont, tag) != KErrNone)
+        return false;
+
+    bool result = true;
+    const TInt tableByteLength = fontTable.TableLength();
+
+    if (*length > 0 && *length < tableByteLength) {
+        result = false; // Caller did not allocate enough memory
+    } else {
+        *length = tableByteLength;
+        if (buffer)
+            qMemCopy(buffer, fontTable.TableContent(), tableByteLength);
+    }
+
+    fontTable.Close();
+    return result;
+}
+
+#else // Q_SYMBIAN_HAS_FONTTABLE_API
+QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont)
+    : m_cFont(cFont)
+    , m_symbolCMap(false)
+    , m_openFont(openFont)
 {
     TAny *trueTypeExtension = NULL;
-    m_font->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
+    m_openFont->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
     m_trueTypeExtension = static_cast<MOpenFontTrueTypeExtension*>(trueTypeExtension);
     Q_ASSERT(m_trueTypeExtension);
+}
+
+QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
+{
 }
 
 QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
@@ -100,22 +152,24 @@ bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *len
     m_trueTypeExtension->ReleaseTrueTypeTable(table);
     return result;
 }
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API
 
-const unsigned char *QSymbianTypeFaceExtras::cmap() const
+const uchar *QSymbianTypeFaceExtras::cmap() const
 {
-    if (!m_cmap) {
-        m_cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
+    if (m_cmapTable.isNull()) {
+        const QByteArray cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
         int size = 0;
-        m_cmap = QFontEngineS60::getCMap(reinterpret_cast<const uchar *>(m_cmapTable.constData()), m_cmapTable.size(), &m_symbolCMap, &size);
+        const uchar *cmap = QFontEngine::getCMap(reinterpret_cast<const uchar *>
+                (cmapTable.constData()), cmapTable.size(), &m_symbolCMap, &size);
+        m_cmapTable = QByteArray(reinterpret_cast<const char *>(cmap), size);
     }
-    return m_cmap;
+    return reinterpret_cast<const uchar *>(m_cmapTable.constData());
 }
 
 CFont *QSymbianTypeFaceExtras::fontOwner() const
 {
-    return m_fontOwner;
+    return m_cFont;
 }
-
 
 // duplicated from qfontengine_xyz.cpp
 static inline unsigned int getChar(const QChar *str, int &i, const int len)

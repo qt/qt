@@ -7584,6 +7584,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     scene.addItem(rect);
     rect->setPos(200, 200);
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     rect->startTrack = false;
     view.show();
     QTest::qWaitForWindowShown(&view);

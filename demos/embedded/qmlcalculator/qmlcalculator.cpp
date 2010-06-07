@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,40 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+#include <QtCore/QFileInfo>
+#include <QtGui/QApplication>
+#include <QtDeclarative/QDeclarativeView>
 
-Rectangle { width: 200; height: 100
-Row {
-//! [0]
-Rectangle { 
-    width: 100; height: 100
-    color: "green"
+#if defined(Q_OS_SYMBIAN)
+#include <eikenv.h>
+#include <eikappui.h>
+#include <aknenv.h>
+#include <aknappui.h>
+#endif // Q_OS_SYMBIAN
 
-    MouseArea { 
-        anchors.fill: parent
-        onClicked: { parent.color = 'red' }
-    }
-}
-//! [0]
-//! [1]
-Rectangle {
-    width: 100; height: 100
-    color: "green"
+int main(int argc, char *argv[])
+{
+    QApplication application(argc, argv);
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: {
-            if (mouse.button == Qt.RightButton)
-                parent.color = 'blue';
-            else
-                parent.color = 'red';
-        }
-    }
-}
-//! [1]
-}
+    const QString mainQmlApp = QLatin1String("calculator.qml");
+    QDeclarativeView view;
+    view.setSource(QUrl(mainQmlApp));
+    view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
+
+#if defined(QT_KEYPAD_NAVIGATION)
+    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+#endif // QT_KEYPAD_NAVIGATION
+
+#if defined(Q_OS_SYMBIAN)
+    CAknAppUi* appUi = dynamic_cast<CAknAppUi*> (CEikonEnv::Static()->AppUi());
+    TRAPD(error,
+        if (appUi)
+            appUi->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait)
+    )
+    view.showFullScreen();
+#else // Q_OS_SYMBIAN
+    view.show();
+#endif // Q_OS_SYMBIAN
+
+    return application.exec();
 }

@@ -685,7 +685,9 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
+#ifndef QT_NO_GESTURES
     QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
+#endif
 
     // Bit fields.
     uint high_attributes[4]; // the low ones are in QWidget::widget_attributes
@@ -714,8 +716,9 @@ public:
     void updateX11AcceptFocus();
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
+#ifndef QT_NO_GESTURES
     uint nativeGesturePanEnabled : 1;
-
+#endif
     bool shouldShowMaximizeButton();
     void winUpdateIsOpaque();
     void reparentChildren();

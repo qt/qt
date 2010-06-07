@@ -119,6 +119,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     A Text item can display both plain and rich text. For example:
 
     \qml
+    import Qt 4.7
+
     Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
     \endqml
@@ -318,7 +320,11 @@ void QDeclarativeText::setText(const QString &n)
     if (d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(n);
+#else
+            d->doc->setPlainText(n);
+#endif
         }
     }
 
@@ -473,6 +479,7 @@ void QDeclarativeText::setHAlign(HAlignment align)
         return;
 
     d->hAlign = align;
+    update();
     emit horizontalAlignmentChanged(align);
 }
 
@@ -489,6 +496,7 @@ void QDeclarativeText::setVAlign(VAlignment align)
         return;
 
     d->vAlign = align;
+    update();
     emit verticalAlignmentChanged(align);
 }
 
@@ -605,7 +613,11 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     } else if (!wasRich && d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(d->text);
+#else
+            d->doc->setPlainText(d->text);
+#endif
         }
         d->updateLayout();
         d->markImgDirty();
@@ -991,7 +1003,11 @@ void QDeclarativeText::reloadWithResources()
     Q_D(QDeclarativeText);
     if (!d->richText)
         return;
+#ifndef QT_NO_TEXTHTMLPARSER
     d->doc->setHtml(d->text);
+#else
+    d->doc->setPlainText(d->text);
+#endif
     d->updateLayout();
     d->markImgDirty();
 }
@@ -1121,7 +1137,11 @@ void QDeclarativeText::componentComplete()
     if (d->dirty) {
         if (d->richText) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(d->text);
+#else
+            d->doc->setPlainText(d->text);
+#endif
         }
         d->updateLayout();
         d->dirty = false;

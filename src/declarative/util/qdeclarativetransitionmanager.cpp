@@ -233,6 +233,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
             action.property.write(action.toValue);
         }
     }
+#ifndef QT_NO_DEBUG_STREAM
     if (stateChangeDebug()) {
         foreach(const QDeclarativeAction &action, applyList) {
             if (action.event)
@@ -243,6 +244,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
                            << "To:" << action.toValue;
         }
     }
+#endif
     if (!transition)
         d->applyBindings();
 }

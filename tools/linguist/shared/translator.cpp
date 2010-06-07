@@ -43,6 +43,8 @@
 
 #include "simtexth.h"
 
+#include <iostream>
+
 #include <stdio.h>
 #ifdef Q_OS_WIN
 // required for _setmode, to avoid _O_TEXT streams...
@@ -586,22 +588,21 @@ void Translator::reportDuplicates(const Duplicates &dupes,
                                   const QString &fileName, bool verbose)
 {
     if (!dupes.byId.isEmpty() || !dupes.byContents.isEmpty()) {
+        std::cerr << "Warning: dropping duplicate messages in '" << qPrintable(fileName);
         if (!verbose) {
-            qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
-                     qPrintable(fileName));
+            std::cerr << "'\n(try -verbose for more info).\n";
         } else {
-            qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
+            std::cerr << "':\n";
             foreach (int i, dupes.byId)
-                qWarning("\n* ID: %s", qPrintable(message(i).id()));
+                std::cerr << "\n* ID: " << qPrintable(message(i).id()) << std::endl;
             foreach (int j, dupes.byContents) {
                 const TranslatorMessage &msg = message(j);
-                qWarning("\n* Context: %s\n* Source: %s",
-                        qPrintable(msg.context()),
-                        qPrintable(msg.sourceText()));
+                std::cerr << "\n* Context: " << qPrintable(msg.context())
+                          << "\n* Source: " << qPrintable(msg.sourceText()) << std::endl;
                 if (!msg.comment().isEmpty())
-                    qWarning("* Comment: %s", qPrintable(msg.comment()));
+                    std::cerr << "* Comment: " << qPrintable(msg.comment()) << std::endl;
             }
-            qWarning();
+            std::cerr << std::endl;
         }
     }
 }
@@ -688,7 +689,7 @@ void Translator::normalizeTranslations(ConversionData &cd)
         cd.appendError(QLatin1String(
             "Removed plural forms as the target language has less "
             "forms.\nIf this sounds wrong, possibly the target language is "
-            "not set or recognized.\n"));
+            "not set or recognized."));
 }
 
 QString Translator::guessLanguageCodeFromFileName(const QString &filename)
@@ -737,7 +738,7 @@ void Translator::setCodecName(const QByteArray &name)
     QTextCodec *codec = QTextCodec::codecForName(name);
     if (!codec) {
         if (!name.isEmpty())
-            qWarning("No QTextCodec for %s available. Using Latin1\n", name.constData());
+            std::cerr << "No QTextCodec for " << name.constData() << " available. Using Latin1.\n";
         m_codec = QTextCodec::codecForName("ISO-8859-1");
     } else {
         m_codec = codec;

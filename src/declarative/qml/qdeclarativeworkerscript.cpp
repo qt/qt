@@ -521,7 +521,7 @@ void QDeclarativeWorkerScriptEngine::run()
     that the main GUI thread is not blocked.
 
     Messages can be passed between the new thread and the parent thread
-    using sendMessage() and the onMessage() handler.
+    using \l sendMessage() and the \l {WorkerScript::onMessage}{onMessage()} handler.
 
     Here is an example:
 
@@ -555,7 +555,7 @@ QDeclarativeWorkerScript::~QDeclarativeWorkerScript()
 /*!
     \qmlproperty url WorkerScript::source
 
-    This holds the url of the javascript file that implements the
+    This holds the url of the JavaScript file that implements the
     \tt WorkerScript.onMessage() handler for threaded operations.
 */
 QUrl QDeclarativeWorkerScript::source() const
@@ -576,7 +576,7 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
     emit sourceChanged();
 }
 
-/*
+/*!
     \qmlmethod WorkerScript::sendMessage(jsobject message)
 
     Sends the given \a message to a worker script handler in another

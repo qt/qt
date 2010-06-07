@@ -307,7 +307,7 @@ Rectangle {
     set to a value such as 0.5 units/second.  Animating from 0 to 1.0 with a velocity
     of 0.5 will take 2000 ms to complete.
 
-    \sa SpringFollow
+    \sa SpringFollow, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSmoothedAnimation::QDeclarativeSmoothedAnimation(QObject *parent)

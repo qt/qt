@@ -49,6 +49,7 @@
 #include <qgesture.h>
 #include <qgesturerecognizer.h>
 #include <qgraphicsitem.h>
+#include <qgraphicswidget.h>
 #include <qgraphicsview.h>
 #include <qmainwindow.h>
 
@@ -359,6 +360,7 @@ private slots:
     void viewportCoordinates();
     void partialGesturePropagation();
     void testQGestureRecognizerCleanup();
+    void testReuseCanceledGestures();
 };
 
 tst_Gestures::tst_Gestures()
@@ -2068,6 +2070,170 @@ void tst_Gestures::testQGestureRecognizerCleanup()
     w->show();
     QTest::qWaitForWindowShown(w);
     delete w;
+}
+
+class ReuseCanceledGesturesRecognizer : public QGestureRecognizer
+{
+public:
+    enum Type {
+        RmbAndCancelAllType,
+        LmbType
+    };
+
+    ReuseCanceledGesturesRecognizer(Type type) : m_type(type) {}
+
+    QGesture *create(QObject *) {
+        QGesture *g = new QGesture;
+        return g;
+    }
+
+    Result recognize(QGesture *gesture, QObject *, QEvent *event) {
+        QMouseEvent *me = static_cast<QMouseEvent *>(event);
+        Qt::MouseButton mouseButton(m_type == LmbType ? Qt::LeftButton : Qt::RightButton);
+
+        switch(event->type()) {
+        case QEvent::MouseButtonPress:
+            if (me->button() == mouseButton && gesture->state() == Qt::NoGesture) {
+                gesture->setHotSpot(QPointF(me->globalPos()));
+                if (m_type == RmbAndCancelAllType)
+                    gesture->setGestureCancelPolicy(QGesture::CancelAllInContext);
+                return QGestureRecognizer::TriggerGesture;
+            }
+            break;
+        case QEvent::MouseButtonRelease:
+            if (me->button() == mouseButton && gesture->state() > Qt::NoGesture)
+                return QGestureRecognizer::FinishGesture;
+        default:
+            break;
+        }
+        return QGestureRecognizer::Ignore;
+    }
+private:
+    Type m_type;
+};
+
+class ReuseCanceledGesturesWidget : public QGraphicsWidget
+{
+  public:
+    ReuseCanceledGesturesWidget(Qt::GestureType gestureType = Qt::TapGesture, QGraphicsItem *parent = 0)
+        : QGraphicsWidget(parent),
+        m_gestureType(gestureType),
+        m_started(0), m_updated(0), m_canceled(0), m_finished(0)
+    {
+    }
+
+    bool event(QEvent *event) {
+        if (event->type() == QEvent::Gesture) {
+            QGesture *gesture = static_cast<QGestureEvent*>(event)->gesture(m_gestureType);
+            if (gesture) {
+                switch(gesture->state()) {
+                case Qt::GestureStarted: m_started++; break;
+                case Qt::GestureUpdated: m_updated++; break;
+                case Qt::GestureFinished: m_finished++; break;
+                case Qt::GestureCanceled: m_canceled++; break;
+                default: break;
+                }
+            }
+            return true;
+        }
+        if (event->type() == QEvent::GraphicsSceneMousePress) {
+            return true;
+        }
+        return QGraphicsWidget::event(event);
+    }
+
+    int started() { return m_started; }
+    int updated() { return m_updated; }
+    int finished() { return m_finished; }
+    int canceled() { return m_canceled; }
+
+  private:
+    Qt::GestureType m_gestureType;
+    int m_started;
+    int m_updated;
+    int m_canceled;
+    int m_finished;
+};
+
+void tst_Gestures::testReuseCanceledGestures()
+{
+    Qt::GestureType cancellingGestureTypeId = QGestureRecognizer::registerRecognizer(
+            new ReuseCanceledGesturesRecognizer(ReuseCanceledGesturesRecognizer::RmbAndCancelAllType));
+    Qt::GestureType tapGestureTypeId = QGestureRecognizer::registerRecognizer(
+            new ReuseCanceledGesturesRecognizer(ReuseCanceledGesturesRecognizer::LmbType));
+
+    QMainWindow mw;
+    mw.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    QGraphicsView *gv = new QGraphicsView(&mw);
+    QGraphicsScene *scene = new QGraphicsScene;
+
+    gv->setScene(scene);
+    scene->setSceneRect(0,0,100,100);
+
+    // Create container and add to the scene
+    ReuseCanceledGesturesWidget *container = new ReuseCanceledGesturesWidget;
+    container->grabGesture(cancellingGestureTypeId); // << container grabs canceling gesture
+
+    // Create widget and add to the scene
+    ReuseCanceledGesturesWidget *target = new ReuseCanceledGesturesWidget(tapGestureTypeId, container);
+    target->grabGesture(tapGestureTypeId);
+
+    container->setGeometry(scene->sceneRect());
+
+    scene->addItem(container);
+
+    mw.setCentralWidget(gv);
+
+    // Viewport needs to grab all gestures that widgets in scene grab
+    gv->viewport()->grabGesture(cancellingGestureTypeId);
+    gv->viewport()->grabGesture(tapGestureTypeId);
+
+    mw.show();
+    QTest::qWaitForWindowShown(&mw);
+
+    QPoint targetPos(gv->mapFromScene(target->mapToScene(target->rect().center())));
+    targetPos = gv->viewport()->mapFromParent(targetPos);
+
+    // "Tap" starts on child widget
+    QTest::mousePress(gv->viewport(), Qt::LeftButton, 0, targetPos);
+    QCOMPARE(target->started(),  1);
+    QCOMPARE(target->updated(),  0);
+    QCOMPARE(target->finished(), 0);
+    QCOMPARE(target->canceled(), 0);
+
+    // Canceling gesture starts on parent
+    QTest::mousePress(gv->viewport(), Qt::RightButton, 0, targetPos);
+    QCOMPARE(target->started(),  1);
+    QCOMPARE(target->updated(),  0);
+    QCOMPARE(target->finished(), 0);
+    QCOMPARE(target->canceled(), 1); // <- child canceled
+
+    // Canceling gesture ends
+    QTest::mouseRelease(gv->viewport(), Qt::RightButton, 0, targetPos);
+    QCOMPARE(target->started(),  1);
+    QCOMPARE(target->updated(),  0);
+    QCOMPARE(target->finished(), 0);
+    QCOMPARE(target->canceled(), 1);
+
+    // Tap would end if not canceled
+    QTest::mouseRelease(gv->viewport(), Qt::LeftButton, 0, targetPos);
+    QCOMPARE(target->started(),  1);
+    QCOMPARE(target->updated(),  0);
+    QCOMPARE(target->finished(), 0);
+    QCOMPARE(target->canceled(), 1);
+
+    // New "Tap" starts
+    QTest::mousePress(gv->viewport(), Qt::LeftButton, 0, targetPos);
+    QCOMPARE(target->started(),  2);
+    QCOMPARE(target->updated(),  0);
+    QCOMPARE(target->finished(), 0);
+    QCOMPARE(target->canceled(), 1);
+
+    QTest::mouseRelease(gv->viewport(), Qt::LeftButton, 0, targetPos);
+    QCOMPARE(target->started(),  2);
+    QCOMPARE(target->updated(),  0);
+    QCOMPARE(target->finished(), 1);
+    QCOMPARE(target->canceled(), 1);
 }
 
 void tst_Gestures::conflictingGesturesInGraphicsView()

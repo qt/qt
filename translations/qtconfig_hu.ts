@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="hu">
+<TS version="2.0" language="hu_HU">
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindow.cpp" line="+202"/>
+        <location filename="../tools/qtconfig/mainwindow.cpp" line="+204"/>
         <source>Desktop Settings (Default)</source>
-        <translation>Asztali beállítások (Alapértelmezett)</translation>
+        <translation>Az asztal beállításai (Alapértelmezett)</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Choose style and palette based on your desktop settings.</source>
-        <translation>Stílus és paletta alapú kiválasztása az asztali beállításokban.</translation>
+        <translation>Stílus és paletta választása az asztal beállításai alapján.</translation>
     </message>
     <message>
         <location line="+144"/>
         <source>On The Spot</source>
-        <translation>Azon nyomban</translation>
+        <translation>On The Spot</translation>
     </message>
     <message>
         <location line="+33"/>
         <location line="+1"/>
-        <location line="+38"/>
+        <location line="+40"/>
         <location line="+1"/>
         <source>Auto (default)</source>
         <translation>Automatikus (alapértelmezett)</translation>
     </message>
     <message>
-        <location line="-38"/>
+        <location line="-40"/>
         <source>Choose audio output automatically.</source>
-        <translation>Audió kimenet automatikus kiválasztása.</translation>
+        <translation>Válasszon automatikusan egy hangkimenetet.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -40,17 +40,17 @@
     <message>
         <location line="+1"/>
         <source>Experimental aRts support for GStreamer.</source>
-        <translation>Kísérleti aRts támogatás a GStreamerhez.</translation>
+        <translation>Kísérleti aRts támogatás GStreamer-hez.</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <source>Phonon GStreamer backend not available.</source>
-        <translation>Phonon GStreamer backend nem elérhető.</translation>
+        <translation>Phonon GStreamer segítő nem érhető el.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Choose render method automatically</source>
-        <translation>Render eljárás automatikus kiválasztása</translation>
+        <translation>Válasszon automatikusan egy renderelési módot</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -61,7 +61,8 @@
     <message>
         <location line="+0"/>
         <source>Use X11 Overlays</source>
-        <translation>X11 borítás használata</translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Használja az X11 átlapolást</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -70,72 +71,76 @@
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Use OpenGL if avaiable</source>
-        <translation>OpenGL használata, ha rendelkezésre áll</translation>
+        <translation type="obsolete">Használja az OpenGL-t ha elérhető</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Use OpenGL if available</source>
+        <translation>Használja az OpenGL-t ha elérhető</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+1"/>
         <source>Software</source>
-        <translation>Szoftver</translation>
+        <translation>Szoftveres</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Use simple software rendering</source>
-        <translation>Egyszerű szoftver adás használata</translation>
+        <translation>Használjon szoftveres renderelést</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>No changes to be saved.</source>
-        <translation>A változtatások nincsenek elmentve.</translation>
+        <translation>Nem történt változás.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Saving changes...</source>
-        <translation>Változtatások elmentése...</translation>
+        <translation>Változások mentése...</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>Over The Spot</source>
-        <translation>Célon túlmenően</translation>
+        <translation>Over The Spot</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Off The Spot</source>
-        <translation>Elkalandozás</translation>
+        <translation>Off The Spot</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Root</source>
-        <translation>Rendszergazda</translation>
+        <translation>Root</translation>
     </message>
     <message>
         <location line="+466"/>
         <source>Select a Directory</source>
-        <translation>Egy könyvtár kiválasztása</translation>
+        <translation>Válasszon egy könyvtárat</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Verzió %2&lt;br/&gt;&lt;br/&gt;Szerzői jog (C) 2010 Nokia vállalat és/vagy leányvállalata(i).</translation>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Verzió %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+1"/>
         <location line="+8"/>
         <source>Qt Configuration</source>
-        <translation>Qt Konfiguráció</translation>
+        <translation>Qt beállítás</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Save Changes</source>
-        <translation>Változtatások elmentése</translation>
+        <translation>Változások mentése</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save changes to settings?</source>
-        <translation>Változtatások elmentése a beállításokba ?</translation>
+        <translation>Menti a beállítások változását?</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -150,416 +155,395 @@
     <message>
         <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Mégse</translation>
+        <translation>&amp;Mégsem</translation>
     </message>
 </context>
 <context>
     <name>MainWindowBase</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindowbase.ui" line="+54"/>
+        <location filename="../tools/qtconfig/mainwindowbase.ui"/>
         <source>Qt Configuration</source>
-        <translation>Qt Konfiguráció
-</translation>
+        <translation>Qt beállítás</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>Appearance</source>
-        <translation>Feltűnés</translation>
+        <translation>Megjelenés</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>GUI Style</source>
-        <translation>GUI Stílus</translation>
+        <translation>GUI stílus</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Select GUI &amp;Style:</source>
-        <translation>GUI &amp;Stílus kiválasztása:</translation>
+        <translation>Válasszon egy &amp;stílust:</translation>
     </message>
     <message>
-        <location line="+88"/>
-        <source>Build Palette</source>
-        <translation>Építési paletta</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>&amp;3-D Effects:</source>
-        <translation>&amp;3 D Hatások:</translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>Window Back&amp;ground:</source>
-        <translation>Ablak Hát&amp;tér:</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>&amp;Tune Palette...</source>
-        <translation>&amp;Hangolási paletta...</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Please use the KDE Control Center to set the palette.</source>
-        <translation>Kérem használja a KDE Vezérlő Központot a paletta beállításához.</translation>
-    </message>
-    <message>
-        <location line="-154"/>
+        <location/>
         <source>Preview</source>
         <translation>Előnézet</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Select &amp;Palette:</source>
-        <translation>&amp;Paletta kiválasztása:</translation>
+        <translation>Előnézet &amp;választása:</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>Active Palette</source>
-        <translation>Aktív paletta</translation>
+        <translation>Aktív elemek</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Inactive Palette</source>
-        <translation>Inaktív paletta</translation>
+        <translation>Inaktív elemek</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Disabled Palette</source>
-        <translation>Tiltott paletta</translation>
+        <translation>Letiltott elemek</translation>
     </message>
     <message>
-        <location line="+138"/>
+        <location/>
+        <source>Build Palette</source>
+        <translation>Paletta felépítése</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;3-D Effects:</source>
+        <translation>&amp;3-D effektek:</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Window Back&amp;ground:</source>
+        <translation>Ablak &amp;háttér:</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Tune Palette...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Please use the KDE Control Center to set the palette.</source>
+        <translation>Kérem, használja a KDE vezérlőközpontot a paletta beállításához.</translation>
+    </message>
+    <message>
+        <location/>
         <source>Fonts</source>
-        <translation>Betűk</translation>
+        <translation>Betűtípusok</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Default Font</source>
-        <translation>Alapértelmezett betű</translation>
+        <translation>Alapértelmezett betűtípus</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location/>
         <source>&amp;Style:</source>
         <translation>&amp;Stílus:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;Point Size:</source>
-        <translation>&amp;Pont méret:</translation>
+        <translation>&amp;Pontméret:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>F&amp;amily:</source>
-        <translation>Csa&amp;lád:</translation>
+        <translation>&amp;Család:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Sample Text</source>
-        <translation>Minta szöveg</translation>
+        <translation>Példa szöveg</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Font Substitution</source>
-        <translation>Betű helyettesítés</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>S&amp;elect or Enter a Family:</source>
-        <translation>Egy család ki&amp;választása vgy bevitele:</translation>
+        <translation>Válassza ki, vagy írja b&amp;íe a betűcsaládot:</translation>
     </message>
     <message>
-        <location line="+38"/>
+        <location/>
         <source>Current Substitutions:</source>
-        <translation>Aktuális helyettesítés:</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <location line="+501"/>
+        <location/>
         <source>Up</source>
         <translation>Fel</translation>
     </message>
     <message>
-        <location line="-494"/>
-        <location line="+508"/>
+        <location/>
         <source>Down</source>
         <translation>Le</translation>
     </message>
     <message>
-        <location line="-501"/>
-        <location line="+494"/>
+        <location/>
         <source>Remove</source>
-        <translation>Eltávolítás</translation>
+        <translation>Törlés</translation>
     </message>
     <message>
-        <location line="-464"/>
+        <location/>
         <source>Select s&amp;ubstitute Family:</source>
-        <translation>Család &amp;helyettesítésének kiválasztása:</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
-        <location line="+487"/>
+        <location/>
         <source>Add</source>
-        <translation>Hozzáad</translation>
+        <translation>Hozzáadás</translation>
     </message>
     <message>
-        <location line="-474"/>
+        <location/>
         <source>Interface</source>
-        <translation>Interfész</translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Interfész</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Feel Settings</source>
-        <translation>Érzet beállítások</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+26"/>
+        <location/>
         <source> ms</source>
-        <translation> ms</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location/>
         <source>&amp;Double Click Interval:</source>
-        <translation>&amp;Dupla kattintási intervallum:</translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">&amp;Dupla kattintás sebessége:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>No blinking</source>
         <translation>Nincs villogás</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>&amp;Cursor Flash Time:</source>
-        <translation>&amp;Kurzor flash idő:</translation>
+        <translation>&amp;Kurzor villogás sebessége:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source> lines</source>
-        <translation>sorok</translation>
+        <translation> sor</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Wheel &amp;Scroll Lines:</source>
-        <translation>Kerék sor &amp;görgetés:</translation>
+        <translation>Görgetett &amp;sorok száma:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Resolve symlinks in URLs</source>
-        <translation>URL-ben található szimlinkek megoldása</translation>
+        <translation>Szimbolikus linkek feloldása az URL-ekben</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>GUI Effects</source>
-        <translation>GUI hatások</translation>
+        <translation>GUI effektek</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>&amp;Enable</source>
         <translation>&amp;Engedélyezés</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Alt+E</source>
-        <translation>Alt+E</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location/>
         <source>&amp;Menu Effect:</source>
-        <translation>&amp;Menü hatás:</translation>
+        <translation>&amp;Menü effekt:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>C&amp;omboBox Effect:</source>
-        <translation>C&amp;omboBox hatás:</translation>
+        <translation>&amp;Legördülő lista effekt:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>&amp;ToolTip Effect:</source>
-        <translation>&amp;Eszköz tipp hatás:</translation>
+        <translation>&amp;ToolTip effekt:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Tool&amp;Box Effect:</source>
-        <translation>Eszköz&amp;doboz hatás:</translation>
+        <translation>Eszköz&amp;tár effekt:</translation>
     </message>
     <message>
-        <location line="+17"/>
-        <location line="+19"/>
-        <location line="+14"/>
-        <location line="+19"/>
+        <location/>
         <source>Disable</source>
-        <translation>Tiltás</translation>
+        <translation>Letiltás</translation>
     </message>
     <message>
-        <location line="-47"/>
-        <location line="+19"/>
-        <location line="+14"/>
-        <location line="+19"/>
+        <location/>
         <source>Animate</source>
-        <translation>Animálás</translation>
+        <translation>Animáció</translation>
     </message>
     <message>
-        <location line="-47"/>
-        <location line="+33"/>
+        <location/>
         <source>Fade</source>
-        <translation>Elhalkulás</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location/>
         <source>Global Strut</source>
-        <translation>Globális struktúra</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Minimum &amp;Width:</source>
-        <translation>Minimum &amp;szélesség:</translation>
+        <translation>Minimum s&amp;zélesség:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Minimum Hei&amp;ght:</source>
-        <translation>Minimum ma&amp;gasség:</translation>
+        <translation>Minimum &amp;magasság:</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+10"/>
+        <location/>
         <source> pixels</source>
-        <translation>pixelek</translation>
+        <translation> pixel</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Enhanced support for languages written right-to-left</source>
-        <translation>Kiterjesztett támogatás a jobbról balra írt nyelvek számára</translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Javított támogatás balról jobbra író nyelvekhez</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>XIM Input Style:</source>
         <translation>XIM beviteli stílus:</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>On The Spot</source>
-        <translation>Azon nyomban</translation>
+        <translation>On The Spot</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Over The Spot</source>
-        <translation>Célon túlmenően</translation>
+        <translation>Over The Spot</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Off The Spot</source>
-        <translation>Elkalandozás</translation>
+        <translation>Off The Spot</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Root</source>
-        <translation>Rendszergazda</translation>
+        <translation>Root</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>Default Input Method:</source>
-        <translation>Alapértelmezett beviteli eljárás:</translation>
+        <translation>Alapértelmezett beviteli mód:</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location/>
         <source>Printer</source>
         <translation>Nyomtató</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Enable Font embedding</source>
-        <translation>Betű beágyazás engedélyezése</translation>
+        <translation>Font beágyazás engedélyezése</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>Font Paths</source>
-        <translation>Betű útvonalak</translation>
+        <translation>Fontok útvonalai</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location/>
         <source>Browse...</source>
-        <translation>Böngészés...</translation>
+        <translation>Tallózás...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Press the &lt;b&gt;Browse&lt;/b&gt; button or enter a directory and press Enter to add them to the list.</source>
-        <translation>Nyomja meg a &lt;b&gt;Böngészés&lt;/b&gt; gombot vagy lépjen be egy könyvtárba és nyomja meg az Enter gombot hogy hozzáadja őket a listához.</translation>
+        <translation>Nyomja meg a &lt;b&gt;Tallózás&lt;b&gt; gombot, vagy írja be a mappa elérési útját, majd nyomja meg az Enter-t a listához adáshoz.</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>Phonon</source>
-        <translation>Phonon</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>About Phonon</source>
-        <translation>Phonon-ról</translation>
+        <translation>A Phonon névjegye</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+44"/>
+        <location/>
         <source>Current Version:</source>
-        <translation>Aktuális verzió:</translation>
+        <translation>Jelenlegi verzió:</translation>
     </message>
     <message>
-        <location line="-37"/>
-        <location line="+44"/>
+        <location/>
         <source>Not available</source>
-        <translation>Nem elérhető</translation>
+        <translation>Nem érhető el</translation>
     </message>
     <message>
-        <location line="-37"/>
-        <location line="+44"/>
+        <location/>
         <source>Website:</source>
-        <translation>Weblap:</translation>
+        <translation>Weboldal:</translation>
     </message>
     <message>
-        <location line="-37"/>
+        <location/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>About GStreamer</source>
-        <translation>GStreamer-ről</translation>
+        <translation>A GStreamer névjegye</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>GStreamer backend settings</source>
-        <translation>GStreamer backend beállítások</translation>
+        <translation>A GStreamer backend beállításai</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Preferred audio sink:</source>
-        <translation>Preferrált audió tartály:</translation>
+        <translatorcomment>CHECKIT</translatorcomment>
+        <translation type="unfinished">Preferált hangrendszer:</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Preferred render method:</source>
-        <translation>Preferrált render eljárás:</translation>
+        <translation>Preferált renderelési mód:</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -569,271 +553,270 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Megjegyzés: Ezekben a beállításokban történő változtatások megakadályozhatják az alkalmazásokat  a megfelelő betöltéstől.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Figyelem: ezen beállítások megváltoztatása egyes alkalmazások indulásában gondokat okozhat.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location/>
         <source>&amp;File</source>
         <translation>&amp;Fájl</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>&amp;Help</source>
         <translation>&amp;Súgó</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>&amp;Save</source>
-        <translation>&amp;Mentés</translation>
+        <translation>M&amp;entés</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Save</source>
         <translation>Mentés</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>E&amp;xit</source>
         <translation>&amp;Kilépés</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Exit</source>
         <translation>Kilépés</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>&amp;About</source>
         <translation>&amp;Névjegy</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>About</source>
         <translation>Névjegy</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location/>
         <source>About &amp;Qt</source>
-        <translation>&amp;Qt-ról</translation>
+        <translation>&amp;Qt névjegy</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>About Qt</source>
-        <translation>Qt-ról</translation>
+        <translation>A Qt névjegye</translation>
     </message>
 </context>
 <context>
     <name>PaletteEditorAdvancedBase</name>
     <message>
-        <location filename="../tools/qtconfig/paletteeditoradvancedbase.ui" line="+61"/>
+        <location filename="../tools/qtconfig/paletteeditoradvancedbase.ui"/>
         <source>Tune Palette</source>
-        <translation>Hangoló paletta</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>&lt;b&gt;Edit Palette&lt;/b&gt;&lt;p&gt;Change the palette of the current widget or form.&lt;/p&gt;&lt;p&gt;Use a generated palette or select colors for each color group and each color role.&lt;/p&gt;&lt;p&gt;The palette can be tested with different widget layouts in the preview section.&lt;/p&gt;</source>
-        <translation>&lt;b&gt;Paletta szerkesztése&lt;/b&gt;&lt;p&gt;Az aktuális widget vagy űrlap palettájának megváltoztatása&lt;/p&gt;&lt;p&gt;Egy generált paletta használata vagy szín kiválasztás mindegyik színcsoport és szín szabályra.&lt;/p&gt;&lt;p&gt;A paletta tesztelhető különböző widget szerkezetekkel az előnézeti szegmensben.&lt;/p&gt;</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location/>
         <source>Select &amp;Palette:</source>
-        <translation>&amp;Paletta kiválasztása:</translation>
+        <translation type="unfinished">Előnézet &amp;választása:</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location/>
         <source>Active Palette</source>
-        <translation>Aktív paletta</translation>
+        <translation type="unfinished">Aktív elemek</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Inactive Palette</source>
-        <translation>Inaktív paletta</translation>
+        <translation type="unfinished">Inaktív elemek</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Disabled Palette</source>
-        <translation>Paletta tiltása</translation>
+        <translation type="unfinished">Letiltott elemek</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location/>
         <source>Auto</source>
-        <translation>Auto</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Build inactive palette from active</source>
-        <translation>Inaktív paletta építése aktívból</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Build disabled palette from active</source>
-        <translation>Tiltott paletta építése aktívból</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>Central color &amp;roles</source>
-        <translation>Központi szín &amp;szabályok</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Choose central color role</source>
-        <translation>Központi szín szabályok kiválasztása</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&lt;b&gt;Select a color role.&lt;/b&gt;&lt;p&gt;Available central roles are: &lt;ul&gt; &lt;li&gt;Window - general background color.&lt;/li&gt; &lt;li&gt;WindowText - general foreground color. &lt;/li&gt; &lt;li&gt;Base - used as background color for e.g. text entry widgets, usually white or another light color. &lt;/li&gt; &lt;li&gt;Text - the foreground color used with Base. Usually this is the same as WindowText, in what case it must provide good contrast both with Window and Base. &lt;/li&gt; &lt;li&gt;Button - general button background color, where buttons need a background different from Window, as in the Macintosh style. &lt;/li&gt; &lt;li&gt;ButtonText - a foreground color used with the Button color. &lt;/li&gt; &lt;li&gt;Highlight - a color to indicate a selected or highlighted item. &lt;/li&gt; &lt;li&gt;HighlightedText - a text color that contrasts to Highlight. &lt;/li&gt; &lt;li&gt;BrightText - a text color that is very different from WindowText and contrasts well with e.g. black. &lt;/li&gt; &lt;/ul&gt; &lt;/p&gt;</source>
-        <translation>&lt;b&gt;Egy szín szabály kiválasztása.&lt;/b&gt;&lt;p&gt;Az elérhetp központi szabályok: &lt;ul&gt; &lt;li&gt;Ablak - általános háttér szín.&lt;/li&gt; &lt;li&gt;AblakSzöveg - általános előtér szín. &lt;/li&gt; &lt;li&gt;Alap - háttérszínként használva példul szöveg beviteli widgetekre, rendszerint fehér vagy más világos színekre. &lt;/li&gt; &lt;li&gt;Szöveg - az előtér szín van haszálva a bázissal. Rendszerint ez ugyanaz, mint az AblakSzöveg, amilyen esetekben egy jó ellentétet kell biztosítania mindkettőre Ablakkal és Bázissal. &lt;/li&gt; &lt;li&gt;Gomb - általános gomb háttér szín, ahol a gomboknak szüksége van egy háttére ami különbözik az ablakétól, mint a Macintosh stílusban. &lt;/li&gt; &lt;li&gt;GombSzöveg - egy előtér szín van használva gomb színnel. &lt;/li&gt; &lt;li&gt;Kihangsúlyozás - egy szín a kiválasztott vagy kihangsúlyozott elem jelölésére. &lt;/li&gt; &lt;li&gt;KihangsúlyozottSzöveg - egy szöveg szín, ami ellentétes a kihangsúlyozással. &lt;/li&gt; &lt;li&gt;VilágosSzöveg - egy szöveg szín, ami nagyon különböző az AblakSzövegtől és a kontrasztoktól jól van példul feketével. &lt;/li&gt; &lt;/ul&gt; &lt;/p&gt;</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location/>
         <source>Window</source>
-        <translation>Ablak</translation>
+        <translation type="unfinished">Ablak</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>WindowText</source>
-        <translation>AblakSzöveg</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Button</source>
-        <translation>Gomb</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Base</source>
-        <translation>Bázis</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Text</source>
         <translation>Szöveg</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>BrightText</source>
-        <translation>VilágosSzöveg</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>ButtonText</source>
-        <translation>GombSzöveg</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Highlight</source>
-        <translation>Kihangsúlyozás</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>HighlightedText</source>
-        <translation>KihangsúlyozottSzöveg</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location/>
         <source>&amp;Select Color:</source>
-        <translation>Szín &amp;kiválasztása:</translation>
+        <translation>&amp;Szín választás:</translation>
     </message>
     <message>
-        <location line="+24"/>
-        <location line="+171"/>
+        <location/>
         <source>Choose a color</source>
-        <translation>Egy szín kiválasztása</translation>
+        <translation>Válasszon színt</translation>
     </message>
     <message>
-        <location line="-168"/>
+        <location/>
         <source>Choose a color for the selected central color role.</source>
-        <translation>Egy szín kiválasztása a kiválasztott központi szín szabályokra.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location/>
         <source>3-D shadow &amp;effects</source>
-        <translation>3 D árnyék &amp;hatások</translation>
+        <translation>3D árnyék &amp;effektek</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location/>
         <source>Build &amp;from button color</source>
-        <translation>Építés gomb szín&amp;ből</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Generate shadings</source>
-        <translation>Árnyékolások generálása</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>Check to let 3D-effect colors be calculated from button-color.</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Choose 3D-effect color role</source>
-        <translation>3D hatás szín szabályok kiválasztása</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location/>
         <source>&lt;b&gt;Select a color role.&lt;/b&gt;&lt;p&gt;Available effect roles are: &lt;ul&gt; &lt;li&gt;Light - lighter than Button color. &lt;/li&gt; &lt;li&gt;Midlight - between Button and Light. &lt;/li&gt; &lt;li&gt;Mid - between Button and Dark. &lt;/li&gt; &lt;li&gt;Dark - darker than Button. &lt;/li&gt; &lt;li&gt;Shadow - a very dark color. &lt;/li&gt; &lt;/ul&gt;</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location/>
         <source>Light</source>
         <translation>Világos</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Midlight</source>
-        <translation>Központi fény</translation>
+        <translation>Sötétebb</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Mid</source>
-        <translation>Középső</translation>
+        <translation>Közepes</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Dark</source>
         <translation>Sötét</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location/>
         <source>Shadow</source>
         <translation>Árnyék</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location/>
         <source>Select Co&amp;lor:</source>
         <translation>&amp;Szín kiválasztása:</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location/>
         <source>Choose a color for the selected effect color role.</source>
-        <translation>Egy szín kiválasztása a kiválaszott hatás szín szabályra.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>Close dialog and apply all changes.</source>
-        <translation>Párbeszéd ablak bezárása és az összes változtatás alkalmazása.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Cancel</source>
-        <translation>Mégse</translation>
+        <translation>Mégsem</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Close dialog and discard all changes.</source>
-        <translation>Párbeszédablak bezárása és az összes változtatás eldobása.</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -841,68 +824,68 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/qtconfig/previewframe.cpp" line="+81"/>
         <source>Desktop settings will only take effect after an application restart.</source>
-        <translation>Az asztal beállítások kizárólag az alkalmazás újraindítása utan lépnek érvénybe.</translation>
+        <translation>Az asztal új beállításai kizárólag az alkalmazás újraindítása utan lépnek érvénybe.</translation>
     </message>
 </context>
 <context>
     <name>PreviewWidgetBase</name>
     <message>
-        <location filename="../tools/qtconfig/previewwidgetbase.ui" line="+66"/>
+        <location filename="../tools/qtconfig/previewwidgetbase.ui"/>
         <source>Preview Window</source>
-        <translation>Előnézet ablak</translation>
+        <translation>Előnézeti ablak</translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location/>
         <source>ButtonGroup</source>
-        <translation>GombCsoport</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>RadioButton1</source>
-        <translation>RádioGomb1</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>RadioButton2</source>
-        <translation>RádioGomb2</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>RadioButton3</source>
-        <translation>RádioGomb3</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>ButtonGroup2</source>
-        <translation>GombCsoport2</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>CheckBox1</source>
-        <translation>Jelölőnégyzet1</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>CheckBox2</source>
-        <translation>Jelölőnégyzet2</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location/>
         <source>LineEdit</source>
-        <translation>SorSzerkesztés</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location/>
         <source>ComboBox</source>
-        <translation>ComboBox</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location/>
         <source>PushButton</source>
-        <translation>NyomóGomb</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location/>
         <source>&lt;p&gt;
 &lt;a href=&quot;http://qt.nokia.com&quot;&gt;http://qt.nokia.com&lt;/a&gt;
 &lt;/p&gt;

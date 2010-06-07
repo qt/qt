@@ -53,7 +53,9 @@ public:
     virtual void registerTypes(const char *uri)
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.labs.folderlistmodel"));
+#ifndef QT_NO_DIRMODEL
         qmlRegisterType<QDeclarativeFolderListModel>(uri,1,0,"FolderListModel");
+#endif
     }
 };
 //![class decl]

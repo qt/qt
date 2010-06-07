@@ -2201,9 +2201,11 @@ minimal|small|medium|large|full)
     ;;
 *)
     # not known to be sufficient for anything
-    if [ '!' -f "$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h" ]; then
+    if [ '!' -f "$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h" ] && [ '!' -f `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` ]; then
         echo >&2 "Error: configuration file not found:"
         echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
+        echo >&2 "  or"
+        echo >&2 "  `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`"
         OPT_HELP=yes
     fi
 esac
@@ -7229,7 +7231,11 @@ full)
 *)
     tmpconfig="$outpath/src/corelib/global/qconfig.h.new"
     echo "#ifndef QT_BOOTSTRAPPED" >"$tmpconfig"
-    cat "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" >>"$tmpconfig"
+    if [ -f "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" ]; then
+        cat "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" >>"$tmpconfig"
+    elif [ -f `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` ]; then
+        cat `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` >>"$tmpconfig"
+    fi
     echo "#endif" >>"$tmpconfig"
     ;;
 esac
@@ -7509,6 +7515,10 @@ then
 fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#ifndef QT_BOOTSTRAPPED
+
+EOF
     for cfg in $QCONFIG_FLAGS; do
         cfgd=`echo $cfg | sed 's/=.*$//'` # trim pushed 'Foo=Bar' defines
         cfg=`echo $cfg | sed 's/=/ /'`    # turn first '=' into a space
@@ -7541,6 +7551,10 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 EOF
         fi
     done
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#endif // QT_BOOTSTRAPPED
+
+EOF
 fi
 
 if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then

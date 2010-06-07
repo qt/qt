@@ -1388,8 +1388,9 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-") + QLatin1String(metaObject()->className()), opt, QSize(size, size))
-                  + QLatin1Char('-') + QString::number(pe);                               
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-")
+                                                          % QLatin1String(metaObject()->className()), opt, QSize(size, size))
+                                 % HexString<uint>(pe);
             if (!QPixmapCache::find(pixmapName, pixmap)) {
                 int border = size/5;
                 int sqsize = 2*(size/2);

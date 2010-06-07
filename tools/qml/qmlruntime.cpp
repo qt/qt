@@ -367,7 +367,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 #endif
       , loggerWindow(new LoggerWidget())
       , frame_stream(0), mb(0)
-      , portraitOrientation(0), landscapeOrientation(0)
+      , orientation(0)
       , showWarningsWindow(0)
       , m_scriptOptions(0)
       , tester(0)
@@ -418,7 +418,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 
     if (!(flags & Qt::FramelessWindowHint)) {
         createMenu(menuBar(),0);
-        setPortrait();
+        changeOrientation(orientation->actions().value(0));
     }
 
 #if !defined(Q_OS_SYMBIAN)
@@ -571,26 +571,25 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
 
-    QActionGroup *orientation = new QActionGroup(parent);
+    orientation = new QActionGroup(parent);
 
-    QAction *toggleOrientation = new QAction(tr("&Toggle Orientation"), parent);
-    toggleOrientation->setCheckable(true);
-    toggleOrientation->setShortcut(QKeySequence("Ctrl+T"));
-    settingsMenu->addAction(toggleOrientation);
-    connect(toggleOrientation, SIGNAL(triggered()), this, SLOT(toggleOrientation()));
+    QAction *rotateOrientation = new QAction(tr("Rotate orientation"), parent);
+    rotateOrientation->setShortcut(QKeySequence("Ctrl+T"));
+    settingsMenu->addAction(rotateOrientation);
+    connect(rotateOrientation, SIGNAL(triggered()), this, SLOT(rotateOrientation()));
 
     orientation->setExclusive(true);
-    portraitOrientation = new QAction(tr("orientation: Portrait"), parent);
-    portraitOrientation->setCheckable(true);
-    connect(portraitOrientation, SIGNAL(triggered()), this, SLOT(setPortrait()));
-    orientation->addAction(portraitOrientation);
-    propertiesMenu->addAction(portraitOrientation);
+    connect(orientation, SIGNAL(triggered(QAction*)), this, SLOT(changeOrientation(QAction*)));
 
-    landscapeOrientation = new QAction(tr("orientation: Landscape"), parent);
-    landscapeOrientation->setCheckable(true);
-    connect(landscapeOrientation, SIGNAL(triggered()), this, SLOT(setLandscape()));
-    orientation->addAction(landscapeOrientation);
-    propertiesMenu->addAction(landscapeOrientation);
+    orientation->addAction(tr("orientation: TopUp"));
+    orientation->addAction(tr("orientation: LeftUp"));
+    orientation->addAction(tr("orientation: TopDown"));
+    orientation->addAction(tr("orientation: RightUp"));
+    QList<QAction *> actions = orientation->actions();
+    for (int i=0; i<actions.count(); i++) {
+        propertiesMenu->addAction(actions[i]);
+        actions[i]->setCheckable(true);
+    }
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -624,21 +623,16 @@ void QDeclarativeViewer::proxySettingsChanged()
     reload ();
 }
 
-void QDeclarativeViewer::setPortrait()
+void QDeclarativeViewer::rotateOrientation()
 {
-    DeviceOrientation::instance()->setOrientation(DeviceOrientation::Portrait);
-    portraitOrientation->setChecked(true);
-}
+    QAction *current = orientation->checkedAction();
+    QList<QAction *> actions = orientation->actions();
+    int index = actions.indexOf(current);
+    if (index < 0)
+        return;
 
-void QDeclarativeViewer::setLandscape()
-{
-    DeviceOrientation::instance()->setOrientation(DeviceOrientation::Landscape);
-    landscapeOrientation->setChecked(true);
-}
-
-void QDeclarativeViewer::toggleOrientation()
-{
-    DeviceOrientation::instance()->setOrientation(DeviceOrientation::instance()->orientation()==DeviceOrientation::Portrait?DeviceOrientation::Landscape:DeviceOrientation::Portrait);
+    QAction *newOrientation = actions[(index + 1) % actions.count()];
+    changeOrientation(newOrientation);
 }
 
 void QDeclarativeViewer::toggleFullScreen()
@@ -971,12 +965,7 @@ void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_F9 || (event->key() == Qt::Key_9 && devicemode)) {
         toggleRecording();
     } else if (event->key() == Qt::Key_F10) {
-        if (portraitOrientation) {
-            if (portraitOrientation->isChecked())
-                setLandscape();
-            else
-                setPortrait();
-        }
+        rotateOrientation();
     }
 
     QWidget::keyPressEvent(event);
@@ -1179,6 +1168,23 @@ void QDeclarativeViewer::recordFrame()
     } else {
         frames.append(new QImage(frame));
     }
+}
+
+void QDeclarativeViewer::changeOrientation(QAction *action)
+{
+    if (!action)
+        return;
+    action->setChecked(true);
+
+    QString o = action->text().split(QLatin1Char(':')).value(1).trimmed();
+    if (o == QLatin1String("TopUp"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::TopUp);
+    else if (o == QLatin1String("TopDown"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::TopDown);
+    else if (o == QLatin1String("LeftUp"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::LeftUp);
+    else if (o == QLatin1String("RightUp"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::RightUp);
 }
 
 void QDeclarativeViewer::orientationChanged()

@@ -360,8 +360,10 @@ public:
     void setGraphicsEffect(QGraphicsEffect *effect);
 #endif //QT_NO_GRAPHICSEFFECT
 
+#ifndef QT_NO_GESTURES
     void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
     void ungrabGesture(Qt::GestureType type);
+#endif
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);
@@ -742,8 +744,10 @@ private:
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
     friend struct QWidgetExceptionCleaner;
+#ifndef QT_NO_GESTURES
     friend class QGestureManager;
     friend class QWinNativePanGestureRecognizer;
+#endif // QT_NO_GESTURES
     friend class QWidgetEffectSourcePrivate;
 
 #ifdef Q_WS_MAC

@@ -62,11 +62,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass PropertyChanges QDeclarativePropertyChanges
     \since 4.7
-    \brief The PropertyChanges element describes new property values for a state.
+    \brief The PropertyChanges element describes new property bindings or values for a state.
 
     PropertyChanges provides a state change that modifies the properties of an item.
 
-    Here is a property change that modifies the text and color of a Text element
+    Here is a property change that modifies the text and color of a \l Text element
     when it is clicked:
     
     \qml
@@ -89,6 +89,21 @@ QT_BEGIN_NAMESPACE
         MouseArea { anchors.fill: parent; onClicked: myText.state = 'myState' }
     }
     \endqml
+
+    By default, PropertyChanges will establish new bindings where appropriate.
+    For example, the following creates a new binding for myItem's height property.
+
+    \qml
+    PropertyChanges {
+        target: myItem
+        height: parent.height
+    }
+    \endqml
+
+    If you don't want a binding to be established (and instead just want to assign
+    the value of the binding at the time the state is entered),
+    you should set the PropertyChange's \l{PropertyChanges::explicit}{explicit}
+    property to \c true.
     
     State-specific script for signal handlers can also be specified:
 

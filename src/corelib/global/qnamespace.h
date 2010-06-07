@@ -236,7 +236,8 @@ public:
         TextJustificationForced = 0x10000,
         TextForceLeftToRight = 0x20000,
         TextForceRightToLeft = 0x40000,
-        TextLongestVariant = 0x80000
+        TextLongestVariant = 0x80000,
+        TextBypassShaping = 0x100000
 
 #if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
         ,SingleLine = TextSingleLine,
@@ -1719,6 +1720,7 @@ public:
     };
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
 
+#ifndef QT_NO_GESTURES
     enum GestureState
     {
         NoGesture,
@@ -1748,6 +1750,7 @@ public:
         IgnoredGesturesPropagateToParent = 0x04
     };
     Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
+#endif // QT_NO_GESTURES
 
     enum NavigationMode
     {
@@ -1777,7 +1780,9 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+#ifndef QT_NO_GESTURES
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
+#endif
 
 typedef bool (*qInternalCallback)(void **);
 

@@ -864,49 +864,49 @@ paused, and reaching the end of the media. They allow the developer to connect,
  some QML that will handle this event.
 
 
-\section1 Analyzing An Example: Dial
+\section1 Analyzing An Example: Dial Control
 
-In the Qt \e {examples/declarative/toys} folder you will find a folder
-\e {dial} which contains the \e dial example.
+In the Qt \e {examples/declarative/ui-components} folder you will find a folder
+\e {dialcontrol} which contains the \e dialcontrol example.
 
 \image qml-dial.png  "QML Dial example with Slider"
 
 In essence this small application has a sliding bar that you can slide using
 a mouse, and a graphical dial that responds to the position of the slider.
 
-The code for the example is in two parts: Dial.qml and dial-example.qml.
+The code for the example is in two parts: Dial.qml and dialcontrol.qml.
 
-\e {Dial.qml} can be found in the \e content sub-directory. It defines a Dial
+\e {Dial.qml} can be found in the \e content sub-directory. It defines a \c Dial
 component similar to an odometer. Eventually, the example will hook up a slider
 component so that moving the slider will change the position of a needle on the
 dial.
 
-The code for the Dial, identified by the name of the file, contains four images
+The code for the \c Dial, identified by the name of the file, contains four images
 in overlapping order: the background (numbers and divisions), the shadow of the
 needle, the needle itself, and finally the 'glass' overlay (containing
 transparent layers).
 
-The needle_shadow.png image has a Rotation assigned to the \e transform
+The \c needle_shadow.png image has a \l Rotation assigned to the \e transform
 attribute of the \l Image. The rotation is set to match the angle of the needle
 image angle value \e {needleRotation.angle}. Both the needle and the
 needle_shadow have the same default \e x and \e y values but the rotation origin
 for the needle is slightly different so that a shadow will be evident as the
 needle moves.
 
-\snippet ../../examples/declarative/toys/dial/content/Dial.qml  needle_shadow
+\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle_shadow
 
 And the needle
 
-\snippet ../../examples/declarative/toys/dial/content/Dial.qml  needle
+\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle
 
 The final image is the overlay which simply has a position defined.
 
-\snippet ../../examples/declarative/toys/dial/content/Dial.qml  overlay
+\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  overlay
 
-\e {dial-example.qml} in the \e {examples/declarative/toys/dial} directory is the
+\e {dialcontrol.qml} in the \e {examples/declarative/ui-components/dialcontrol} directory is the
 main file of the example. It defines the visual environment that the Dial
 will fit into. Because the \e Dial component and the images live in the \e
-content sub-directory we will have to import this into \e dial-example. So the
+content sub-directory we will have to import this into \e dialcontrol.qml. So the
 start of the file looks like
 
     \code
@@ -919,7 +919,7 @@ a gray color. Inside this rectangle is our component \e Dial and a \l Rectangle.
 Inside the rectangle called 'container' is another rectangle with the
 interesting name 'slider'.
 
-\snippet ../../examples/declarative/toys/dial/dial-example.qml  0
+\snippet ../../examples/declarative/ui-components/dialcontrol/dialcontrol.qml  0
 
 The Dial component, named 'dial, is \e anchored to the center of the main
 rectangle. The \c value attribute of 'dial' is set to a value based on the

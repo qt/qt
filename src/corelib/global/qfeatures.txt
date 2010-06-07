@@ -1185,6 +1185,12 @@ Requires: PROPERTIES
 Name: State machine
 SeeAlso: ???
 
+Feature: GESTURES
+Description: Provides a framework for gestures.
+Section: Utilities
+Requires:
+Name: Gesture
+SeeAlso: ???
 
 # SVG
 
@@ -1373,7 +1379,7 @@ SeeAlso: ???
 Feature: DBUS
 Description: Provides classes for D-Bus.
 Section: D-Bus
-Requires: PROPERTIES
+Requires: PROPERTIES DOM
 Name: QtDBus module
 SeeAlso: ???
 

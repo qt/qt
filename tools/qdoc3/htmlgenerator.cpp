@@ -519,14 +519,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
     case Atom::Code:
-	out() << "<pre class=\"highlightedCode\">"
+	out() << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
 	break;
 #ifdef QDOC_QML
     case Atom::Qml:
-	out() << "<pre class=\"highlightedCode\">"
+	out() << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
@@ -534,7 +534,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
 #endif
     case Atom::CodeNew:
         out() << "<p>you can rewrite it as</p>\n"
-              << "<pre class=\"highlightedCode\">"
+              << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
@@ -543,7 +543,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<p>For example, if you have code like</p>\n";
         // fallthrough
     case Atom::CodeBad:
-        out() << "<pre class=\"highlightedCode\">"
+        out() << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
 	break;
@@ -1797,31 +1797,51 @@ void HtmlGenerator::generateHeader(const QString& title,
 
     out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
 
-	out() << "  <!--[if IE]>";
-	out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">";
-	out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">";
-	out() << "<![endif]-->";
-    out() << "<!--[if lt IE 7]>";
-	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">";
-	out() << "<![endif]-->";
-    out() << "<!--[if IE 7]>";
-	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">";
-	out() << "<![endif]-->";
-    out() << "<!--[if IE 8]>";
-	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">";
-	out() << "<![endif]-->";
-
-
     //out() << "  <title>Qt Reference Documentation</title>";
-    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
-    out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
-    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-    out() << "</head>\n";
 
     if (offlineDocs)
-        out() << "<body class=\"offline\"  onload=\"CheckEmptyAndLoadList();\">\n";
+	{
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/OfflineStyle.css\" />";
+		out() << "</head>\n";
+		out() << "<body class=\"offline narrow\" >\n"; // narrow mainly for Creator
+	}	
     else
-        out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
+		{
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\"\n />";
+		out() << "  <!--[if IE]>\n";
+		out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
+		out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
+		out() << "<![endif]-->\n";
+		out() << "<!--[if lt IE 7]>\n";
+		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
+		out() << "<![endif]-->\n";
+		out() << "<!--[if IE 7]>\n";
+		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
+		out() << "<![endif]-->\n";
+		out() << "<!--[if IE 8]>\n";
+		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
+		out() << "<![endif]-->\n";
+		// jquery functions
+		out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
+		out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+		// menus and small docs js and css
+		out() << " <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
+		out() << " <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />";
+		
+		// syntax highlighter js and css
+		//	out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shCore.css\"/>\n";
+		//	out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shThemeDefault.css\"/>\n";
+		//	out() << " <script type=\"text/javascript\" src=\"scripts/shCore.js\"></script>\n";
+		//	out() << " <script type=\"text/javascript\" src=\"scripts/shBrushCpp.js\"></script>\n";
+		// out() << " <script type=\"text/javascript\">\n";
+		// out() << " 	SyntaxHighlighter.all();\n";
+		// out() << " </script>\n";
+		
+		out() << "</head>\n";
+		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
+		}
 
 #ifdef GENERATE_MAC_REFS    
     if (mainPage)
@@ -1863,8 +1883,16 @@ void HtmlGenerator::generateFooter(const Node *node)
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
-	      out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+	
+	    if (offlineDocs)
+		{
           out() << "</body>\n";
+		}
+		else
+		{
+			out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+			out() << "</body>\n";
+		}
           out() <<   "</html>\n";
 }
 
@@ -1886,7 +1914,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
-        out() << "<pre class=\"highlightedCode\">"
+        out() << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,
                                                         marker->markedUpIncludes(inner->includes())),
                                                  marker,inner))
@@ -2110,6 +2138,8 @@ void HtmlGenerator::generateNavigationBar(const NavigationBar& bar,
             out() << "</a>]\n";
 #endif
         }
+		if (fake->name() != QString("index.html"))
+			{
         if (bar.current.begin() != 0) {
             out() << "[<a href=\"" << "home"
                   << ".html\">Home</a>]\n";
@@ -2121,6 +2151,7 @@ void HtmlGenerator::generateNavigationBar(const NavigationBar& bar,
             out() << "</a>]\n";
         }
         out() << "</p>\n";
+		}
     }
 }
 #endif

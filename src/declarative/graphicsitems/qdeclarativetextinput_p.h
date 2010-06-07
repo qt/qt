@@ -72,21 +72,22 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedIte
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
-    Q_PROPERTY(QRect cursorRect READ cursorRect NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QRect cursorRectangle READ cursorRectangle NOTIFY cursorPositionChanged)
     Q_PROPERTY(QDeclarativeComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
-    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
-    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(int selectionStart READ selectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
     Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength NOTIFY maximumLengthChanged)
+#ifndef QT_NO_VALIDATOR
     Q_PROPERTY(QValidator* validator READ validator WRITE setValidator NOTIFY validatorChanged)
+#endif
     Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask NOTIFY inputMaskChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
     Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode NOTIFY echoModeChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
-    Q_PROPERTY(bool showInputPanelOnFocus READ showInputPanelOnFocus WRITE setShowInputPanelOnFocus NOTIFY showInputPanelOnFocusChanged)
     Q_PROPERTY(QString passwordCharacter READ passwordCharacter WRITE setPasswordCharacter NOTIFY passwordCharacterChanged)
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
@@ -110,7 +111,8 @@ public:
     };
 
     //Auxilliary functions needed to control the TextInput from QML
-    Q_INVOKABLE int positionAt(int x);
+    Q_INVOKABLE int positionAt(int x) const;
+    Q_INVOKABLE QRectF positionToRectangle(int x) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
 
     Q_INVOKABLE void openSoftwareInputPanel();
@@ -143,22 +145,20 @@ public:
     int cursorPosition() const;
     void setCursorPosition(int cp);
 
-    QRect cursorRect() const;
+    QRect cursorRectangle() const;
 
     int selectionStart() const;
-    void setSelectionStart(int);
-
     int selectionEnd() const;
-    void setSelectionEnd(int);
 
     QString selectedText() const;
 
     int maxLength() const;
     void setMaxLength(int ml);
 
+#ifndef QT_NO_VALIDATOR
     QValidator * validator() const;
     void setValidator(QValidator* v);
-
+#endif
     QString inputMask() const;
     void setInputMask(const QString &im);
 
@@ -175,9 +175,6 @@ public:
 
     bool focusOnPress() const;
     void setFocusOnPress(bool);
-
-    bool showInputPanelOnFocus() const;
-    void setShowInputPanelOnFocus(bool showOnFocus);
 
     bool autoScroll() const;
     void setAutoScroll(bool);
@@ -215,7 +212,6 @@ Q_SIGNALS:
     void focusOnPressChanged(bool focusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
-    void showInputPanelOnFocusChanged(bool showOnFocus);
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
@@ -224,6 +220,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     bool event(QEvent *e);
     void focusInEvent(QFocusEvent *event);
@@ -231,6 +228,8 @@ protected:
 
 public Q_SLOTS:
     void selectAll();
+    void selectWord();
+    void select(int start, int end);
 
 private Q_SLOTS:
     void updateSize(bool needsRedraw = true);
@@ -248,10 +247,12 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeTextInput)
+#ifndef QT_NO_VALIDATOR
 QML_DECLARE_TYPE(QValidator)
 QML_DECLARE_TYPE(QIntValidator)
 QML_DECLARE_TYPE(QDoubleValidator)
 QML_DECLARE_TYPE(QRegExpValidator)
+#endif
 
 QT_END_HEADER
 

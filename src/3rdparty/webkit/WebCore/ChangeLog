@@ -1,3 +1,177 @@
+2010-06-04  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Compilation fails when compiling against Qt 4.7 and Qt Mobility is installed
+        https://bugs.webkit.org/show_bug.cgi?id=40116
+
+        CONFIG += mobility has the side-effect of pulling in mobility includes, which conflict
+        with Qt 4.7's bearer managenent includes and break the build.
+
+        * WebCore.pro:
+
+2010-06-03  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix NPAPI support on Mac OS X/Cocoa-32
+
+        qt_mac_window_for() returns a NSWindow on Cocoa, so we were
+        passing in a NSWindow instead of a WindowRef as part of the
+        NP_CGContext.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38762
+
+        * WebCore.gypi: Reflect rename
+        * WebCore.pro: Reflect rename
+        * plugins/mac/PluginViewMac.cpp: Renamed to PluginViewMac.mm
+        and fix bug by getting the Carbon windowRef from the NSWindow.
+        * wscript: Reflect rename
+
+2010-06-02  Nico Weber  <thakis@chromium.org>
+
+        Reviewed by Simon Fraser.
+
+        Scroll events are sent twice per keypress for ports that don't have a platformWidget scrollbar
+        https://bugs.webkit.org/show_bug.cgi?id=39918
+
+        This was regressed by http://trac.webkit.org/changeset/58615 . Fix this by slightly tweaking
+        that patch.
+
+        Test: editing/input/page-up-down-scrolls.html
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::scrollPositionChanged):
+        * page/FrameView.h:
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::valueChanged):
+        * platform/ScrollView.h:
+        (WebCore::ScrollView::repaintFixedElementsAfterScrolling):
+
+2010-06-02  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix make install on Symbian for headers in package builds when INSTALL_HEADERS is not defined
+
+        First we wrote inst_headers.output with $$[QT_INSTALL_HEADERS] and then
+        overwrote it with the $$INSTALL_HEADERS variant without checking if the
+        variable was set.
+
+        Fixed and cleaned up the logic of falling back to $$[QT_INSTALL_HEADERS].
+
+        * WebCore.pro:
+
+2010-06-01  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayer: warnings when reloading page
+        https://bugs.webkit.org/show_bug.cgi?id=39694
+
+        Made sure recaching and masks aren't attempted on zero-size layers.
+
+        No new tests. Old tests (e.g. LayoutTests/compositing/masks) show the problem.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::MaskEffectQt::draw):
+        (WebCore::GraphicsLayerQtImpl::recache):
+
+2010-05-10  Rodrigo Belem  <rodrigo.belem@openbossa.org>
+
+        Reviewed by Kenneth Christiansen , Simon Hausmann and Gustavo Noronha.
+
+        [Qt, Gtk] Allows build-webkit script to receive an install prefix as parameter
+        https://bugs.webkit.org/show_bug.cgi?id=26224
+
+        This patch adds the ability, in the QtWebkit build system, to change
+        the installation path.
+
+        * WebCore.pro:
+
+2010-06-01  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix installation of the QtWebKit module .pri file when building inside of Qt
+
+        * WebCore.pro:
+
+2010-06-01  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix a QtWebKit.pc corruption problem.
+        https://bugs.webkit.org/show_bug.cgi?id=36826
+
+        The problem occurs while installing QtWebKit from trunk
+        or a source package.
+
+        * WebCore.pro:
+
+2010-06-01  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Fix Symbian package dependencies of apps against QtWebKit when installing into Qt
+
+        Install the versioning qt_webkit_version.pri into $$[QMAKE_MKSPECS]/modules, which is
+        where mkspecs/features/qt.prf expects it.
+
+        * WebCore.pro:
+
+2010-05-17  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Bring CanvasRenderingContext2D's createImageData() in line with HTML5 spec
+        Added createImageData(ImageData) which returns a new ImageData with the same size as the one passed.
+        Changed createImageData(width, height) to use the absolute values of width and height.
+
+        https://bugs.webkit.org/show_bug.cgi?id=39189
+
+        Spec link:
+        http://www.whatwg.org/specs/web-apps/current-work/#dom-context-2d-createimagedata
+
+        Test: fast/canvas/canvas-createImageData.html
+
+        * bindings/js/JSCanvasRenderingContext2DCustom.cpp:
+        (WebCore::JSCanvasRenderingContext2D::createImageData):
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::createImageData):
+        * html/canvas/CanvasRenderingContext2D.h:
+        * html/canvas/CanvasRenderingContext2D.idl:
+
+2010-05-16  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Properly handle invalid arguments to CanvasRenderingContext2D's getImageData() and putImageData().
+        Both should throw NOT_SUPPORTED_ERR when called with nonfinite arguments.
+        getImageData() should throw INDEX_SIZE_ERR if either width or height is 0.
+
+        https://bugs.webkit.org/show_bug.cgi?id=39175
+
+        Spec link:
+        http://www.whatwg.org/specs/web-apps/current-work/#pixel-manipulation
+
+        Test: fast/canvas/canvas-getImageData-invalid.html
+
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::createImageData):
+        (WebCore::CanvasRenderingContext2D::getImageData):
+        (WebCore::CanvasRenderingContext2D::putImageData):
+
+2010-05-31  Oswald Buddenhagen  <oswald.buddenhagen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Escape backslashes in the .pro files
+
+        qmake in Qt 4.7 warns about unescaped backspaces and deprecates them.
+
+        * WebCore.pro:
+
 2010-05-28  Antti Koivisto  <koivisto@iki.fi>
 
         Reviewed by Kenneth Rohde Christiansen.

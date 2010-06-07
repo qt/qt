@@ -202,7 +202,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , picture(0)
 #elif defined(Q_WS_WIN)
       , noPaintOnScreen(0)
+  #ifndef QT_NO_GESTURES
       , nativeGesturePanEnabled(0)
+  #endif
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
       , hasAlienChildren(0)
@@ -1399,8 +1401,10 @@ QWidget::~QWidget()
         qWarning("QWidget: %s (%s) deleted while being painted", className(), name());
 #endif
 
+#ifndef QT_NO_GESTURES
     foreach (Qt::GestureType type, d->gestureContext.keys())
         ungrabGesture(type);
+#endif
 
     // force acceptDrops false before winId is destroyed.
     d->registerDropSite(false);
@@ -8541,9 +8545,11 @@ bool QWidget::event(QEvent *event)
 #endif // Q_WS_MAC
         break;
     }
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
         event->ignore();
         break;
+#endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11959,6 +11965,7 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
     Synonym for QList<QWidget *>.
 */
 
+#ifndef QT_NO_GESTURES
 /*!
     Subscribes the widget to a given \a gesture with specific \a flags.
 
@@ -11986,7 +11993,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
         manager->cleanupCachedGestures(this, gesture);
     }
 }
-
+#endif // QT_NO_GESTURES
 
 /*!
     \typedef WId

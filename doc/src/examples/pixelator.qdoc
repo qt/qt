@@ -80,8 +80,6 @@
     functions to indicate the dimensions of the image and supply data to other
     components.
 
-    For convenience, the image to be used is passed in the constructor.
-
     \section1 ImageModel Class Implementation
 
     The constructor is trivial:
@@ -89,7 +87,7 @@
     \snippet examples/itemviews/pixelator/imagemodel.cpp 0
 
     The \c setImage() function sets the image that will be used by the model:
-   
+
     \snippet examples/itemviews/pixelator/imagemodel.cpp 1
 
     The QAbstractItemModel::reset() call tells the view(s) that the model
@@ -233,7 +231,7 @@
     This enables the items to be drawn without any gaps between them. Removing
     the headers also prevents the user from adjusting the sizes of individual
     rows and columns. 
-    
+
     We also set the minimum section size to 1 on the headers. If we
     didn't, the headers would default to a larger size, preventing
     us from displaying really small items (which can be specified

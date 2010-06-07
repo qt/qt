@@ -127,9 +127,11 @@ QString QDeclarativeTextEdit::text() const
 {
     Q_D(const QDeclarativeTextEdit);
 
+#ifndef QT_NO_TEXTHTMLPARSER
     if (d->richText)
         return d->document->toHtml();
     else
+#endif
         return d->document->toPlainText();
 }
 
@@ -260,7 +262,11 @@ void QDeclarativeTextEdit::setText(const QString &text)
     d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
+#ifndef QT_NO_TEXTHTMLPARSER
         d->control->setHtml(text);
+#else
+        d->control->setPlainText(text);
+#endif
     } else {
         d->control->setPlainText(text);
     }
@@ -325,7 +331,11 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
         d->control->setPlainText(d->text);
         updateSize();
     } else if (!wasRich && d->richText) {
+#ifndef QT_NO_TEXTHTMLPARSER
         d->control->setHtml(d->text);
+#else
+        d->control->setPlainText(d->text);
+#endif
         updateSize();
     }
     d->format = format;
@@ -570,7 +580,7 @@ int QDeclarativeTextEdit::positionAt(int x, int y) const
 }
 
 /*!
-    \qmlmethod int TextEdit::moveCursorSeletion(int pos)
+    \qmlmethod int TextEdit::moveCursorSelection(int pos)
 
     Moves the cursor to \a position and updates the selection accordingly.
     (To only move the cursor, set the \l cursorPosition property.)
@@ -717,12 +727,9 @@ void QDeclarativeTextEdit::loadCursorDelegate()
     \qmlproperty int TextEdit::selectionStart
 
     The cursor position before the first character in the current selection.
-    Setting this and selectionEnd allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionStart to a value outside of
-    the current text, selectionStart will not be changed.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
     \sa selectionEnd, cursorPosition, selectedText
 */
@@ -732,25 +739,13 @@ int QDeclarativeTextEdit::selectionStart() const
     return d->control->textCursor().selectionStart();
 }
 
-void QDeclarativeTextEdit::setSelectionStart(int s)
-{
-    Q_D(QDeclarativeTextEdit);
-    if(d->lastSelectionStart == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionStart = s;
-    d->updateSelection();// Will emit the relevant signals
-}
-
 /*!
     \qmlproperty int TextEdit::selectionEnd
 
     The cursor position after the last character in the current selection.
-    Setting this and selectionStart allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionEnd to a value outside of
-    the current text, selectionEnd will not be changed.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
     \sa selectionStart, cursorPosition, selectedText
 */
@@ -758,15 +753,6 @@ int QDeclarativeTextEdit::selectionEnd() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->control->textCursor().selectionEnd();
-}
-
-void QDeclarativeTextEdit::setSelectionEnd(int s)
-{
-    Q_D(QDeclarativeTextEdit);
-    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionEnd = s;
-    d->updateSelection();// Will emit the relevant signals
 }
 
 /*!
@@ -1018,6 +1004,8 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 }
 
 /*!
+    \qmlmethod void TextEdit::selectAll()
+
     Causes all text to be selected.
 */
 void QDeclarativeTextEdit::selectAll()
@@ -1027,6 +1015,8 @@ void QDeclarativeTextEdit::selectAll()
 }
 
 /*!
+    \qmlmethod void TextEdit::selectWord()
+
     Causes the word closest to the current cursor position to be selected.
 */
 void QDeclarativeTextEdit::selectWord()
@@ -1037,6 +1027,36 @@ void QDeclarativeTextEdit::selectWord()
     d->control->setTextCursor(c);
 }
 
+/*!
+    \qmlmethod void TextEdit::select(start,end)
+
+    Causes the text from \a start to \a end to be selected.
+
+    If either start or end is out of range, the selection is not changed.
+
+    After calling this, selectionStart will become the lesser
+    and selectionEnd will become the greater (regardless of the order passed
+    to this method).
+
+    \sa selectionStart, selectionEnd
+*/
+void QDeclarativeTextEdit::select(int start, int end)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (start < 0 || end < 0 || start > d->text.length() || end > d->text.length())
+        return;
+    QTextCursor cursor = d->control->textCursor();
+    cursor.beginEditBlock();
+    cursor.setPosition(start, QTextCursor::MoveAnchor);
+    cursor.setPosition(end, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    d->control->setTextCursor(cursor);
+
+    // QTBUG-11100
+    updateSelectionMarkers();
+}
+
+#ifndef QT_NO_CLIPBOARD
 /*!
     \qmlmethod TextEdit::cut()
 
@@ -1069,7 +1089,7 @@ void QDeclarativeTextEdit::paste()
     Q_D(QDeclarativeTextEdit);
     d->control->paste();
 }
-
+#endif // QT_NO_CLIPBOARD
 
 /*!
 \overload
@@ -1087,9 +1107,15 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
             p = p->parentItem();
         }
         setFocus(true);
-        if (hasFocus() == hadFocus && d->showInputPanelOnFocus && !isReadOnly()) {
-            // re-open input panel on press if already focused
-            openSoftwareInputPanel();
+        if (d->showInputPanelOnFocus) {
+            if (hasFocus() && hadFocus && !isReadOnly()) {
+                // re-open input panel on press if already focused
+                openSoftwareInputPanel();
+            }
+        } else { // show input panel on click
+            if (hasFocus() && !hadFocus) {
+                d->clickCausedFocus = true;
+            }
         }
     }
     if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
@@ -1106,6 +1132,17 @@ void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (!d->showInputPanelOnFocus) { // input panel on click
+        if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
+            if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+                if (view->scene() && view->scene() == scene()) {
+                    qt_widget_private(view)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+                }
+            }
+        }
+    }
+    d->clickCausedFocus = false;
+
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
@@ -1182,9 +1219,14 @@ void QDeclarativeTextEdit::drawContents(QPainter *painter, const QRect &bounds)
 void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 {
     Q_D(const QDeclarativeTextEdit);
-    QRect r = rf.toRect();
-    if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
-        r = r.translated(0,d->yoff);
+    QRect r;
+    if (!rf.isValid()) {
+        r = QRect(0,0,INT_MAX,INT_MAX);
+    } else {
+        r = rf.toRect();
+        if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
+            r = r.translated(0,d->yoff);
+    }
     dirtyCache(r);
     emit update();
 }
@@ -1254,7 +1296,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
     QTextCursor cursor = control->textCursor();
     bool startChange = (lastSelectionStart != cursor.selectionStart());
     bool endChange = (lastSelectionEnd != cursor.selectionEnd());
-    //### Is it worth calculating a more minimal set of movements?
     cursor.beginEditBlock();
     cursor.setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
     cursor.setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
@@ -1264,8 +1305,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
         q->selectionStartChanged();
     if(endChange)
         q->selectionEndChanged();
-    startChange = (lastSelectionStart != control->textCursor().selectionStart());
-    endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
 }
 
 void QDeclarativeTextEdit::updateSelectionMarkers()
@@ -1351,10 +1390,14 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     customizing when you want the input keyboard to be shown and hidden in
     your application.
 
-    By default input panels are shown when TextEdit element gains focus and hidden
-    when the focus is lost. You can disable the automatic behavior by setting the
-    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
-    and closeSoftwareInputPanel() to implement the behavior you want.
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextEdit and need to be
+    manually closed by the user. On other platforms the panels are automatically opened
+    when TextEdit element gains focus and closed when the focus is lost.
+
+  . You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
 
     Only relevant on platforms, which provide virtual keyboards.
 
@@ -1363,12 +1406,19 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
         TextEdit {
             id: textEdit
             text: "Hello world!"
-            showInputPanelOnFocus: false
+            focusOnPress: false
             MouseArea {
                 anchors.fill: parent
-                onClicked: textEdit.openSoftwareInputPanel()
+                onClicked: {
+                    if (!textEdit.focus) {
+                        textEdit.focus = true;
+                        textEdit.openSoftwareInputPanel();
+                    } else {
+                        textEdit.focus = false;
+                        textEdit.closeSoftwareInputPanel();
+                    }
+                }
             }
-            onFocusChanged: if (!focus) closeSoftwareInputpanel()
         }
     \endcode
 */
@@ -1391,10 +1441,14 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
     for customizing when you want the input keyboard to be shown and hidden in
     your application.
 
-    By default input panels are shown when TextEdit element gains focus and hidden
-    when the focus is lost. You can disable the automatic behavior by setting the
-    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
-    and closeSoftwareInputPanel() to implement the behavior you want.
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextEdit and need to be
+    manually closed by the user. On other platforms the panels are automatically opened
+    when TextEdit element gains focus and closed when the focus is lost.
+
+  . You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
 
     Only relevant on platforms, which provide virtual keyboards.
 
@@ -1403,12 +1457,19 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
         TextEdit {
             id: textEdit
             text: "Hello world!"
-            showInputPanelOnFocus: false
+            focusOnPress: false
             MouseArea {
                 anchors.fill: parent
-                onClicked: textEdit.openSoftwareInputPanel()
+                onClicked: {
+                    if (!textEdit.focus) {
+                        textEdit.focus = true;
+                        textEdit.openSoftwareInputPanel();
+                    } else {
+                        textEdit.focus = false;
+                        textEdit.closeSoftwareInputPanel();
+                    }
+                }
             }
-            onFocusChanged: if (!focus) closeSoftwareInputpanel()
         }
     \endcode
 */
@@ -1424,35 +1485,13 @@ void QDeclarativeTextEdit::closeSoftwareInputPanel()
     }
 }
 
-/*!
-    \qmlproperty bool TextEdit::showInputPanelOnFocus
-    Whether input panels are automatically shown when TextEdit element gains
-    focus and hidden when focus is lost. By default this is set to true.
-
-    Only relevant on platforms, which provide virtual keyboards.
-*/
-bool QDeclarativeTextEdit::showInputPanelOnFocus() const
-{
-    Q_D(const QDeclarativeTextEdit);
-    return d->showInputPanelOnFocus;
-}
-
-void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool showOnFocus)
-{
-    Q_D(QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus == showOnFocus)
-        return;
-
-    d->showInputPanelOnFocus = showOnFocus;
-
-    emit showInputPanelOnFocusChanged(d->showInputPanelOnFocus);
-}
-
 void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
-        openSoftwareInputPanel();
+    if (d->showInputPanelOnFocus) {
+        if (d->focusOnPress && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
+            openSoftwareInputPanel();
+        }
     }
     QDeclarativePaintedItem::focusInEvent(event);
 }
@@ -1460,8 +1499,10 @@ void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
 void QDeclarativeTextEdit::focusOutEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus && !isReadOnly()) {
-        closeSoftwareInputPanel();
+    if (d->showInputPanelOnFocus) {
+        if (d->focusOnPress && !isReadOnly()) {
+            closeSoftwareInputPanel();
+        }
     }
     QDeclarativePaintedItem::focusOutEvent(event);
 }
