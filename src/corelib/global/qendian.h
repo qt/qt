@@ -43,6 +43,7 @@
 #define QENDIAN_H
 
 #ifdef Q_OS_LINUX
+# include <qglobal.h>
 QT_BEGIN_INCLUDE_NAMESPACE
 # include <features.h>
 QT_END_INCLUDE_NAMESPACE
