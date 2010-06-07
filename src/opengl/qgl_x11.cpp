@@ -115,6 +115,20 @@ extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
 #define GLX_FRONT_LEFT_EXT                 0x20DE
 #endif
 
+#ifndef GLX_ARB_create_context
+#define GLX_CONTEXT_DEBUG_BIT_ARB          0x00000001
+#define GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x00000002
+#define GLX_CONTEXT_MAJOR_VERSION_ARB      0x2091
+#define GLX_CONTEXT_MINOR_VERSION_ARB      0x2092
+#define GLX_CONTEXT_FLAGS_ARB              0x2094
+#endif
+
+#ifndef GLX_ARB_create_context_profile
+#define GLX_CONTEXT_CORE_PROFILE_BIT_ARB   0x00000001
+#define GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
+#define GLX_CONTEXT_PROFILE_MASK_ARB       0x9126
+#endif
+
 /*
   The qt_gl_choose_cmap function is internal and used by QGLWidget::setContext()
   and GLX (not Windows).  If the application can't find any sharable
@@ -635,21 +649,70 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         shareContext = 0;
     }
 
+    const int major = d->reqFormat.majorVersion();
+    const int minor = d->reqFormat.minorVersion();
+    const int profile = d->reqFormat.profile() == QGLFormat::CompatibilityProfile
+        ? GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB
+        : GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+
     d->cx = 0;
-    if (shareContext) {
+
+    if ((major == 3 && minor >= 2) || major > 3) {
+        QGLTemporaryContext *tmpContext = 0;
+        if (!QGLContext::currentContext())
+            tmpContext = new QGLTemporaryContext;
+
+        int attributes[] = { GLX_CONTEXT_MAJOR_VERSION_ARB, major,
+                             GLX_CONTEXT_MINOR_VERSION_ARB, minor,
+                             GLX_CONTEXT_PROFILE_MASK_ARB, profile,
+                             0 };
+
+        PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribs =
+            (PFNGLXCREATECONTEXTATTRIBSARBPROC) qglx_getProcAddress("glXCreateContextAttribsARB");
+
+        if (glXCreateContextAttribs) {
+            int spec[45];
+            glXGetConfig(disp, (XVisualInfo*)d->vi, GLX_BUFFER_SIZE, &res);
+            buildSpec(spec, format(), d->paintDevice, res, true);
+
+            GLXFBConfig *configs;
+            int configCount = 0;
+            configs = glXChooseFBConfig(disp, xinfo->screen(), spec, &configCount);
+
+            if (configs && configCount > 0) {
+                d->cx = glXCreateContextAttribs(disp, configs[0],
+                    shareContext ? (GLXContext)shareContext->d_func()->cx : 0, direct, attributes);
+                if (!d->cx && shareContext) {
+                    shareContext = 0;
+                    d->cx = glXCreateContextAttribs(disp, configs[0], 0, direct, attributes);
+                }
+                d->screen = ((XVisualInfo*)d->vi)->screen;
+            }
+            XFree(configs);
+        } else {
+            qWarning("QGLContext::chooseContext(): OpenGL %d.%d is not supported", major, minor);
+        }
+
+        if (tmpContext)
+            delete tmpContext;
+    }
+    if (!d->cx && shareContext) {
         d->cx = glXCreateContext(disp, (XVisualInfo *)d->vi,
                                (GLXContext)shareContext->d_func()->cx, direct);
         d->screen = ((XVisualInfo*)d->vi)->screen;
-        if (d->cx) {
-            QGLContext *share = const_cast<QGLContext *>(shareContext);
-            d->sharing = true;
-            share->d_func()->sharing = true;
-        }
     }
     if (!d->cx) {
         d->cx = glXCreateContext(disp, (XVisualInfo *)d->vi, NULL, direct);
         d->screen = ((XVisualInfo*)d->vi)->screen;
+        shareContext = 0;
     }
+
+    if (shareContext && d->cx) {
+        QGLContext *share = const_cast<QGLContext *>(shareContext);
+        d->sharing = true;
+        share->d_func()->sharing = true;
+    }
+
     if (!d->cx)
         return false;
     d->glFormat.setDirectRendering(glXIsDirect(disp, (GLXContext)d->cx));
