@@ -748,30 +748,87 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 int disty = (fy & 0x0000ffff) >> 8;
                 int idisty = 256 - disty;
                 int count = length * data->m11 + 2;
-                int x_ = fx >> 16;
+                int x = fx >> 16;
 
-                quint32 intermediate_buffer[buffer_size + 2][2];
+                // The idea is first to do the interpolation between the row s1 and the row s2
+                // into an intermediate buffer, then we interpolate between two pixel of this buffer.
+
+                // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
+                // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
+                quint32 intermediate_buffer[2][buffer_size + 2];
                 Q_ASSERT(length * data->m11 <= buffer_size);
+                int f = 0;
+                int lim = count;
                 if (blendType == BlendTransformedBilinearTiled) {
-                    x_ %= image_width;
-                    if (x_ < 0) x_ += image_width;
+                    x %= image_width;
+                    if (x < 0) x += image_width;
+                } else {
+                    lim = qMin(count, image_x2-x);
+                    if (x < image_x1) {
+                        Q_ASSERT(x < image_x2);
+                        uint t = fetch(s1, image_x1, data->texture.colorTable);
+                        uint b = fetch(s2, image_x1, data->texture.colorTable);
+                        quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                        quint32 ag = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                        do {
+                            intermediate_buffer[0][f] = rb;
+                            intermediate_buffer[1][f] = ag;
+                            f++;
+                            x++;
+                        } while (x < image_x1 && f < lim);
+                    }
                 }
-                for (int f = 0; f < count; f++) {
-                    int x;
+
+#if defined(QT_ALWAYS_HAVE_SSE2)
+                if (blendType != BlendTransformedBilinearTiled &&
+                        (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)) {
+
+                    const __m128i disty_ = _mm_set1_epi16(disty);
+                    const __m128i idisty_ = _mm_set1_epi16(idisty);
+                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+
+                    lim -= 3;
+                    for (; f < lim; x += 4, f += 4) {
+                        // Load 4 pixels from s1, and split the alpha-green and red-blue component
+                        __m128i top = _mm_loadu_si128((__m128i*)((const uint *)(s1)+x));
+                        __m128i topAG = _mm_srli_epi16(top, 8);
+                        __m128i topRB = _mm_and_si128(top, colorMask);
+                        // Multiplies each colour component by idisty
+                        topAG = _mm_mullo_epi16 (topAG, idisty_);
+                        topRB = _mm_mullo_epi16 (topRB, idisty_);
+
+                        // Same for the s2 vector
+                        __m128i bottom = _mm_loadu_si128((__m128i*)((const uint *)(s2)+x));
+                        __m128i bottomAG = _mm_srli_epi16(bottom, 8);
+                        __m128i bottomRB = _mm_and_si128(bottom, colorMask);
+                        bottomAG = _mm_mullo_epi16 (bottomAG, disty_);
+                        bottomRB = _mm_mullo_epi16 (bottomRB, disty_);
+
+                        // Add the values, and shift to only keep 8 significant bits per colors
+                        __m128i rAG =_mm_add_epi16(topAG, bottomAG);
+                        rAG = _mm_srli_epi16(rAG, 8);
+                        _mm_storeu_si128((__m128i*)(&intermediate_buffer[1][f]), rAG);
+                        __m128i rRB =_mm_add_epi16(topRB, bottomRB);
+                        rRB = _mm_srli_epi16(rRB, 8);
+                        _mm_storeu_si128((__m128i*)(&intermediate_buffer[0][f]), rRB);
+                    }
+                }
+#endif
+                for (; f < count; f++) { // Same as above but without sse2
                     if (blendType == BlendTransformedBilinearTiled) {
-                        if (x_ >= image_width) x_ -= image_width;
-                        x = x_;
+                        if (x >= image_width) x -= image_width;
                     } else {
-                        x = qBound(image_x1, x_, image_x2 - 1);
+                        x = qMin(x, image_x2 - 1);
                     }
 
                     uint t = fetch(s1, x, data->texture.colorTable);
                     uint b = fetch(s2, x, data->texture.colorTable);
 
-                    intermediate_buffer[f][0] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
-                    intermediate_buffer[f][1] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
-                    x_++;
+                    intermediate_buffer[0][f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                    intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                    x++;
                 }
+                // Now interpolate the values from the intermediate_buffer to get the final result.
                 fx &= fixed_scale - 1;
                 Q_ASSERT((fx >> 16) == 0);
                 while (b < end) {
@@ -782,8 +839,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
                     register int distx = (fx & 0x0000ffff) >> 8;
                     register int idistx = 256 - distx;
-                    int rb = ((intermediate_buffer[x1][0] * idistx + intermediate_buffer[x2][0] * distx) >> 8) & 0xff00ff;
-                    int ag = (intermediate_buffer[x1][1] * idistx + intermediate_buffer[x2][1] * distx) & 0xff00ff00;
+                    int rb = ((intermediate_buffer[0][x1] * idistx + intermediate_buffer[0][x2] * distx) >> 8) & 0xff00ff;
+                    int ag = (intermediate_buffer[1][x1] * idistx + intermediate_buffer[1][x2] * distx) & 0xff00ff00;
                     *b = rb | ag;
                     b++;
                     fx += fdx;
