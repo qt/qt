@@ -78,8 +78,8 @@ public:
     bool partialNewFrame;
 
 private:
-    void fillRect(QImage *image, int x, int y, int w, int h, QRgb col);
-    inline QRgb color(uchar index) const;
+    void fillRect(QImage *image, int x, int y, int w, int h, uchar col);
+    //inline uchar color(uchar index) const;
 
     // GIF specific stuff
     QRgb* globalcmap;
@@ -197,13 +197,13 @@ void QGIFFormat::disposePrevious(QImage *image)
       case RestoreBackground:
         if (trans_index>=0) {
             // Easy:  we use the transparent color
-            fillRect(image, l, t, r-l+1, b-t+1, Q_TRANSPARENT);
+            fillRect(image, l, t, r-l+1, b-t+1, trans_index);
         } else if (bgcol>=0) {
             // Easy:  we use the bgcol given
-            fillRect(image, l, t, r-l+1, b-t+1, color(bgcol));
+            fillRect(image, l, t, r-l+1, b-t+1, bgcol);
         } else {
             // Impossible:  We don't know of a bgcol - use pixel 0
-            QRgb *bits = (QRgb*)image->bits();
+            const uchar *bits = image->constBits();
             fillRect(image, l, t, r-l+1, b-t+1, bits[0]);
         }
         // ### Changed: QRect(l, t, r-l+1, b-t+1)
@@ -211,9 +211,7 @@ void QGIFFormat::disposePrevious(QImage *image)
       case RestoreImage: {
         if (frame >= 0) {
             for (int ln=t; ln<=b; ln++) {
-                memcpy(image->scanLine(ln)+l,
-                    backingstore.scanLine(ln-t),
-                    (r-l+1)*sizeof(QRgb));
+                memcpy(image->scanLine(ln)+l, backingstore.constScanLine(ln-t), (r-l+1));
             }
             // ### Changed: QRect(l, t, r-l+1, b-t+1)
         }
@@ -341,9 +339,8 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 if (sheight <= 0)
                     sheight = newtop + newheight;
 
-                QImage::Format format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
                 if (image->isNull()) {
-                    (*image) = QImage(swidth, sheight, format);
+                    (*image) = QImage(swidth, sheight, QImage::Format_Indexed8);
                     bpl = image->bytesPerLine();
                     bits = image->bits();
                     memset(bits, 0, image->byteCount());
@@ -377,10 +374,10 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     if (left || top || width<swidth || height<sheight) {
                         // Not full-size image - erase with bg or transparent
                         if (trans_index >= 0) {
-                            fillRect(image, 0, 0, swidth, sheight, color(trans_index));
+                            fillRect(image, 0, 0, swidth, sheight, trans_index);
                             // ### Changed: QRect(0, 0, swidth, sheight)
                         } else if (bgcol>=0) {
-                            fillRect(image, 0, 0, swidth, sheight, color(bgcol));
+                            fillRect(image, 0, 0, swidth, sheight, bgcol);
                             // ### Changed: QRect(0, 0, swidth, sheight)
                         }
                     }
@@ -399,7 +396,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         // We just use the backing store as a byte array
                         backingstore = QImage(qMax(backingstore.width(), w),
                                               qMax(backingstore.height(), h),
-                                              QImage::Format_RGB32);
+                                              QImage::Format_Indexed8);
                         memset(bits, 0, image->byteCount());
                     }
                     const int dest_bpl = backingstore.bytesPerLine();
@@ -479,7 +476,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     if (needfirst) {
                         firstcode=oldcode=code;
                         if (!out_of_bounds && image->height() > y && firstcode!=trans_index)
-                            ((QRgb*)FAST_SCAN_LINE(bits, bpl, y))[x] = color(firstcode);
+                            FAST_SCAN_LINE(bits, bpl, y)[x] = firstcode;
                         x++;
                         if (x>=swidth) out_of_bounds = true;
                         needfirst=false;
@@ -909,11 +906,11 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
     return;
 }
 
-void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, QRgb color)
+void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, uchar color)
 {
     if (w>0) {
         for (int j=0; j<h; j++) {
-            QRgb *line = (QRgb*)image->scanLine(j+row);
+            uchar *line = (uchar*)image->scanLine(j+row);
             for (int i=0; i<w; i++)
                 *(line+col+i) = color;
         }
@@ -936,8 +933,8 @@ void QGIFFormat::nextY(unsigned char *bits, int bpl)
         // Don't dup with transparency
         if (trans_index < 0) {
             for (i=1; i<=my; i++) {
-                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(QRgb), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(QRgb),
-                       (right-left+1)*sizeof(QRgb));
+                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(uchar), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(uchar),
+                       (right-left+1)*sizeof(uchar));
             }
         }
 
@@ -965,8 +962,8 @@ void QGIFFormat::nextY(unsigned char *bits, int bpl)
         // Don't dup with transparency
         if (trans_index < 0) {
             for (i=1; i<=my; i++) {
-                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(QRgb), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(QRgb),
-                       (right-left+1)*sizeof(QRgb));
+                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(uchar), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(uchar),
+                       (right-left+1)*sizeof(uchar));
             }
         }
 
@@ -989,8 +986,8 @@ void QGIFFormat::nextY(unsigned char *bits, int bpl)
         // Don't dup with transparency
         if (trans_index < 0) {
             for (i=1; i<=my; i++) {
-                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(QRgb), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(QRgb),
-                       (right-left+1)*sizeof(QRgb));
+                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(uchar), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(uchar),
+                       (right-left+1)*sizeof(uchar));
             }
         }
         // if (!out_of_bounds) {
@@ -1010,14 +1007,16 @@ void QGIFFormat::nextY(unsigned char *bits, int bpl)
     if (y >= sheight) out_of_bounds=true; //y=bottom;
 }
 
-inline QRgb QGIFFormat::color(uchar index) const
+#if 0
+inline uchar QGIFFormat::color(uchar index) const
 {
     if (index == trans_index || index > ncols)
-        return Q_TRANSPARENT;
+        return trans_index;
 
-    QRgb *map = lcmap ? localcmap : globalcmap;
+    uchar *map = lcmap ? localcmap : globalcmap;
     return map ? map[index] : 0;
 }
+#endif
 
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
