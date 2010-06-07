@@ -457,10 +457,13 @@ void tst_MakeTestSelfTest::make_check()
     QString testsDir(SRCDIR "/..");
     QString checktest(SRCDIR "/checktest/checktest");
 
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
     if (qgetenv("RUN_SLOW_TESTS").isEmpty()) {
-        QSKIP("This test is too slow to run by default on Windows. Set RUN_SLOW_TESTS=1 to run it.", SkipAll);
+        QSKIP("This test is too slow to run by default on this OS. Set RUN_SLOW_TESTS=1 to run it.", SkipAll);
     }
+#endif
+
+#ifdef Q_OS_WIN32
     checktest.replace("/", "\\");
     checktest += ".exe";
 #endif
