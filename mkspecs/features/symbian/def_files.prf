@@ -41,7 +41,7 @@ symbian-abld|symbian-sbsv2 {
         }
     }
 
-} else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
+} else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib):!contains(CONFIG, plugin) {
     !isEmpty(DEF_FILE) {
         defFile = $$DEF_FILE
     } else {
