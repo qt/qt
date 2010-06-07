@@ -73,5 +73,8 @@ ts-qvfb.depends = sub-tools
 
 ts.depends = ts-qt ts-designer ts-linguist ts-assistant ts-qtconfig ts-qvfb
 
+check-ts.commands = (cd $$PWD && perl check-ts.pl)
+check-ts.depends = ts
+
 QMAKE_EXTRA_TARGETS += ts-qt ts-designer ts-linguist ts-assistant ts-qtconfig ts-qvfb \
-                       ts
+                       ts check-ts
