@@ -245,11 +245,6 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
         return 0;
     }
 
-    if (d->nbytes == 15840000)
-    {
-        d->nbytes = 15840000;
-    }
-
     d->ref.ref();
     return d.take();
 
@@ -902,11 +897,6 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
 
     d->bytes_per_line = bpl;
     d->nbytes = d->bytes_per_line * height;
-
-    if (d->nbytes == 15840000)
-    {
-        d->nbytes = 15840000;
-    }
 
     return d;
 }
