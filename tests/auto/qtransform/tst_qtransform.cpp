@@ -85,6 +85,7 @@ private slots:
     void inverted();
     void projectivePathMapping();
     void mapInt();
+    void mapPathWithPoint();
 
 private:
     void mapping_data();
@@ -791,6 +792,13 @@ void tst_QTransform::mapInt()
 
     QCOMPARE(x, 10);
     QCOMPARE(y, 10);
+}
+
+void tst_QTransform::mapPathWithPoint()
+{
+    QPainterPath p(QPointF(10, 10));
+    p = QTransform::fromTranslate(10, 10).map(p);
+    QCOMPARE(p.currentPosition(), QPointF(20, 20));
 }
 
 QTEST_APPLESS_MAIN(tst_QTransform)
