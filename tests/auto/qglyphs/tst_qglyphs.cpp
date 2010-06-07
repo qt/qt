@@ -77,7 +77,7 @@ Q_DECLARE_METATYPE(QGlyphs);
 
 void tst_QGlyphs::initTestCase()
 {
-    m_testFontId = QFontDatabase::addApplicationFont("test.ttf");
+    m_testFontId = QFontDatabase::addApplicationFont(SRCDIR "test.ttf");
     QVERIFY(m_testFontId >= 0);
 
     m_testFont = QFont("QtsSpecialTestFont");

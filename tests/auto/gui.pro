@@ -57,6 +57,7 @@ SUBDIRS=\
     qfontdialog \
     qfontmetrics \
     qformlayout \
+    qglyphs \
     qgraphicsanchorlayout \
     qgraphicsanchorlayout1 \
     qgraphicseffect \
