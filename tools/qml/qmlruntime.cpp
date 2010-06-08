@@ -281,7 +281,12 @@ public:
                     ret << httpProxy;
                     return ret;
                 }
+#ifdef Q_OS_WIN
+		// systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
+                return QNetworkProxyFactory::proxyForQuery(query);
+#else
                 return QNetworkProxyFactory::systemProxyForQuery(query);
+#endif
             }
             void setHttpProxy (QNetworkProxy proxy)
             {
