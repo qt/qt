@@ -52,6 +52,11 @@
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include "../../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativeGridView : public QObject
 {
     Q_OBJECT
@@ -833,21 +838,34 @@ void tst_QDeclarativeGridView::componentChanges()
 
     QSignalSpy highlightSpy(gridView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(gridView, SIGNAL(delegateChanged()));
+    QSignalSpy headerSpy(gridView, SIGNAL(headerChanged()));
+    QSignalSpy footerSpy(gridView, SIGNAL(footerChanged()));
 
     gridView->setHighlight(&component);
     gridView->setDelegate(&delegateComponent);
+    gridView->setHeader(&component);
+    gridView->setFooter(&component);
 
     QTRY_COMPARE(gridView->highlight(), &component);
     QTRY_COMPARE(gridView->delegate(), &delegateComponent);
+    QTRY_COMPARE(gridView->header(), &component);
+    QTRY_COMPARE(gridView->footer(), &component);
 
     QTRY_COMPARE(highlightSpy.count(),1);
     QTRY_COMPARE(delegateSpy.count(),1);
+    QTRY_COMPARE(headerSpy.count(),1);
+    QTRY_COMPARE(footerSpy.count(),1);
 
     gridView->setHighlight(&component);
     gridView->setDelegate(&delegateComponent);
+    gridView->setHeader(&component);
+    gridView->setFooter(&component);
 
     QTRY_COMPARE(highlightSpy.count(),1);
     QTRY_COMPARE(delegateSpy.count(),1);
+    QTRY_COMPARE(headerSpy.count(),1);
+    QTRY_COMPARE(footerSpy.count(),1);
+
     delete canvas;
 }
 

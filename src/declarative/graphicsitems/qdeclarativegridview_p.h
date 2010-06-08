@@ -80,6 +80,9 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
 
     Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode NOTIFY snapModeChanged)
 
+    Q_PROPERTY(QDeclarativeComponent *header READ header WRITE setHeader NOTIFY headerChanged)
+    Q_PROPERTY(QDeclarativeComponent *footer READ footer WRITE setFooter NOTIFY footerChanged)
+
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(SnapMode)
     Q_ENUMS(Flow)
@@ -142,6 +145,12 @@ public:
     SnapMode snapMode() const;
     void setSnapMode(SnapMode mode);
 
+    QDeclarativeComponent *footer() const;
+    void setFooter(QDeclarativeComponent *);
+
+    QDeclarativeComponent *header() const;
+    void setHeader(QDeclarativeComponent *);
+
     enum PositionMode { Beginning, Center, End, Visible, Contain };
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
@@ -172,6 +181,8 @@ Q_SIGNALS:
     void keyNavigationWrapsChanged();
     void cacheBufferChanged();
     void snapModeChanged();
+    void headerChanged();
+    void footerChanged();
 
 protected:
     virtual bool event(QEvent *event);

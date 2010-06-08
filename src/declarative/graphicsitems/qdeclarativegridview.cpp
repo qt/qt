@@ -108,6 +108,7 @@ public:
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , highlightMoveDuration(150)
+    , footerComponent(0), footer(0), headerComponent(0), header(0)
     , bufferMode(BufferBefore | BufferAfter), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
@@ -128,6 +129,8 @@ public:
     void createHighlight();
     void updateHighlight();
     void updateCurrent(int modelIndex);
+    void updateHeader();
+    void updateFooter();
     void fixupPosition();
 
     FxGridItem *visibleItem(int modelIndex) const {
@@ -230,6 +233,18 @@ public:
         return visibleItems.count() ? visibleItems.first() : 0;
     }
 
+    int lastVisibleIndex() const {
+        int lastIndex = -1;
+        for (int i = visibleItems.count()-1; i >= 0; --i) {
+            FxGridItem *gridItem = visibleItems.at(i);
+            if (gridItem->index != -1) {
+                lastIndex = gridItem->index;
+                break;
+            }
+        }
+        return lastIndex;
+    }
+
     // Map a model index to visibleItems list index.
     // These may differ if removed items are still present in the visible list,
     // e.g. doing a removal animation
@@ -283,6 +298,9 @@ public:
                     scheduleLayout();
                 }
             }
+        } else if ((header && header->item == item) || (footer && footer->item == item)) {
+            updateHeader();
+            updateFooter();
         }
     }
 
@@ -330,6 +348,10 @@ public:
     QSmoothedAnimation *highlightXAnimator;
     QSmoothedAnimation *highlightYAnimator;
     int highlightMoveDuration;
+    QDeclarativeComponent *footerComponent;
+    FxGridItem *footer;
+    QDeclarativeComponent *headerComponent;
+    FxGridItem *header;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
     int bufferMode;
     QDeclarativeGridView::SnapMode snapMode;
@@ -412,7 +434,6 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     Q_Q(QDeclarativeGridView);
     if (!isValid() || !q->isComponentComplete())
         return;
-
     itemCount = model->count();
     qreal bufferFrom = from - buffer;
     qreal bufferTo = to + buffer;
@@ -522,6 +543,10 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         deferredRelease = true;
     }
     if (changed) {
+        if (header)
+            updateHeader();
+        if (footer)
+            updateFooter();
         if (flow == QDeclarativeGridView::LeftToRight)
             q->setContentHeight(endPosition() - startPosition());
         else
@@ -579,6 +604,10 @@ void QDeclarativeGridViewPrivate::layout()
             item->setPosition(colPos, rowPos);
         }
     }
+    if (header)
+        updateHeader();
+    if (footer)
+        updateFooter();
     q->refill();
     updateHighlight();
     moveReason = Other;
@@ -740,6 +769,94 @@ void QDeclarativeGridViewPrivate::updateCurrent(int modelIndex)
     updateHighlight();
     emit q->currentIndexChanged();
     releaseItem(oldCurrentItem);
+}
+
+void QDeclarativeGridViewPrivate::updateFooter()
+{
+    Q_Q(QDeclarativeGridView);
+    if (!footer && footerComponent) {
+        QDeclarativeItem *item = 0;
+        QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
+        QObject *nobj = footerComponent->create(context);
+        if (nobj) {
+            QDeclarative_setParent_noEvent(context, nobj);
+            item = qobject_cast<QDeclarativeItem *>(nobj);
+            if (!item)
+                delete nobj;
+        } else {
+            delete context;
+        }
+        if (item) {
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
+            item->setZValue(1);
+            QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
+            itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+            footer = new FxGridItem(item, q);
+        }
+    }
+    if (footer) {
+        if (visibleItems.count()) {
+            qreal endPos = endPosition();
+            if (lastVisibleIndex() == model->count()-1) {
+                footer->setPosition(0, endPos);
+            } else {
+                qreal visiblePos = position() + q->height();
+                if (endPos <= visiblePos || footer->endRowPos() < endPos)
+                    footer->setPosition(0, endPos);
+            }
+        } else {
+            qreal endPos = 0;
+            if (header) {
+                endPos += flow == QDeclarativeGridView::LeftToRight
+                                   ? header->item->height()
+                                   : header->item->width();
+            }
+            footer->setPosition(0, endPos);
+        }
+    }
+}
+
+void QDeclarativeGridViewPrivate::updateHeader()
+{
+    Q_Q(QDeclarativeGridView);
+    if (!header && headerComponent) {
+        QDeclarativeItem *item = 0;
+        QDeclarativeContext *context = new QDeclarativeContext(qmlContext(q));
+        QObject *nobj = headerComponent->create(context);
+        if (nobj) {
+            QDeclarative_setParent_noEvent(context, nobj);
+            item = qobject_cast<QDeclarativeItem *>(nobj);
+            if (!item)
+                delete nobj;
+        } else {
+            delete context;
+        }
+        if (item) {
+            QDeclarative_setParent_noEvent(item, q->viewport());
+            item->setParentItem(q->viewport());
+            item->setZValue(1);
+            QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
+            itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+            header = new FxGridItem(item, q);
+        }
+    }
+    if (header) {
+        if (visibleItems.count()) {
+            qreal startPos = startPosition();
+            qreal headerSize = flow == QDeclarativeGridView::LeftToRight
+                               ? header->item->height()
+                               : header->item->width();
+            if (visibleIndex == 0) {
+                header->setPosition(0, startPos - headerSize);
+            } else {
+                if (position() <= startPos || header->rowPos() > startPos - headerSize)
+                    header->setPosition(0, startPos - headerSize);
+            }
+        } else {
+            header->setPosition(0, 0);
+        }
+    }
 }
 
 void QDeclarativeGridViewPrivate::fixupPosition()
@@ -958,6 +1075,8 @@ QDeclarativeGridView::~QDeclarativeGridView()
     d->clear();
     if (d->ownModel)
         delete d->model;
+    delete d->header;
+    delete d->footer;
 }
 
 /*!
@@ -1524,6 +1643,67 @@ void QDeclarativeGridView::setSnapMode(SnapMode mode)
     }
 }
 
+/*!
+    \qmlproperty Component GridView::footer
+    This property holds the component to use as the footer.
+
+    An instance of the footer component is created for each view.  The
+    footer is positioned at the end of the view, after any items.
+
+    \sa header
+*/
+QDeclarativeComponent *QDeclarativeGridView::footer() const
+{
+    Q_D(const QDeclarativeGridView);
+    return d->footerComponent;
+}
+
+void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
+{
+    Q_D(QDeclarativeGridView);
+    if (d->footerComponent != footer) {
+        if (d->footer) {
+            delete d->footer;
+            d->footer = 0;
+        }
+        d->footerComponent = footer;
+        d->updateFooter();
+        d->updateGrid();
+        emit footerChanged();
+    }
+}
+
+/*!
+    \qmlproperty Component GridView::header
+    This property holds the component to use as the header.
+
+    An instance of the header component is created for each view.  The
+    header is positioned at the beginning of the view, before any items.
+
+    \sa footer
+*/
+QDeclarativeComponent *QDeclarativeGridView::header() const
+{
+    Q_D(const QDeclarativeGridView);
+    return d->headerComponent;
+}
+
+void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
+{
+    Q_D(QDeclarativeGridView);
+    if (d->headerComponent != header) {
+        if (d->header) {
+            delete d->header;
+            d->header = 0;
+        }
+        d->headerComponent = header;
+        d->updateHeader();
+        d->updateFooter();
+        d->updateGrid();
+        emit headerChanged();
+    }
+}
+
 bool QDeclarativeGridView::event(QEvent *event)
 {
     Q_D(QDeclarativeGridView);
@@ -1590,6 +1770,8 @@ qreal QDeclarativeGridView::minYExtent() const
     if (d->flow == QDeclarativeGridView::TopToBottom)
         return QDeclarativeFlickable::minYExtent();
     qreal extent = -d->startPosition();
+    if (d->header && d->visibleItems.count())
+        extent += d->header->item->height();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent += d->highlightRangeStart;
         extent = qMax(extent, -(d->rowPosAt(0) + d->rowSize() - d->highlightRangeEnd));
@@ -1610,6 +1792,8 @@ qreal QDeclarativeGridView::maxYExtent() const
     } else {
         extent = -(d->endPosition() - height());
     }
+    if (d->footer)
+        extent -= d->footer->item->height();
     const qreal minY = minYExtent();
     if (extent > minY)
         extent = minY;
@@ -1622,6 +1806,8 @@ qreal QDeclarativeGridView::minXExtent() const
     if (d->flow == QDeclarativeGridView::LeftToRight)
         return QDeclarativeFlickable::minXExtent();
     qreal extent = -d->startPosition();
+    if (d->header && d->visibleItems.count())
+        extent += d->header->item->width();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent += d->highlightRangeStart;
         extent = qMax(extent, -(d->rowPosAt(0) + d->rowSize() - d->highlightRangeEnd));
@@ -1642,6 +1828,8 @@ qreal QDeclarativeGridView::maxXExtent() const
     } else {
         extent = -(d->endPosition() - height());
     }
+    if (d->footer)
+        extent -= d->footer->item->width();
     const qreal minX = minXExtent();
     if (extent > minX)
         extent = minX;
