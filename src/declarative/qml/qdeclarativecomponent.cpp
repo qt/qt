@@ -78,7 +78,7 @@ class QByteArray;
     \since 4.7
     \brief The Component element encapsulates a QML component description.
 
-    Components are reusable, encapsulated Qml element with a well-defined interface.
+    Components are reusable, encapsulated QML elements with well-defined interfaces.
     They are often defined in \l {qdeclarativedocuments.html}{Component Files}.
 
     The \e Component element allows defining components within a QML file.
