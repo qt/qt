@@ -66,6 +66,8 @@ void MMF::AbstractVideoPlayer::construct()
 
     createPlayer();
 
+    m_player->RegisterForVideoLoadingNotification(*this);
+
     TRACE_EXIT_0();
 }
 

@@ -126,8 +126,6 @@ void MMF::DsaVideoPlayer::createPlayer()
 
     // CVideoPlayerUtility::NewL starts DSA
     m_dsaActive = true;
-
-    m_player->RegisterForVideoLoadingNotification(*this);
 }
 
 void MMF::DsaVideoPlayer::initVideoOutput()
