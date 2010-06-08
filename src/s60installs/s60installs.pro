@@ -151,9 +151,9 @@ symbian: {
     contains(QT_CONFIG, declarative): {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtDeclarative$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.sources = $$QMAKE_LIBDIR_QT/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
-        gesturesImport.sources = $$QMAKE_LIBDIR_QT/qmlgesturesplugin$${QT_LIBINFIX}.dll
-        particlesImport.sources = $$QMAKE_LIBDIR_QT/qmlparticlesplugin$${QT_LIBINFIX}.dll
+        folderlistmodelImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
+        gesturesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
+        particlesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
 
         folderlistmodelImport.sources += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
         gesturesImport.sources += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
@@ -166,11 +166,11 @@ symbian: {
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
 
         contains(QT_CONFIG, webkit): {
-            webkitImport.sources = $$QMAKE_LIBDIR_QT/qmlwebkitplugin$${QT_LIBINFIX}.dll
+            webkitImport.sources = $$QT_BUILD_TREE/imports/org/webkit/qmlwebkitplugin$${QT_LIBINFIX}.dll
             webkitImport.sources += $$QT_SOURCE_TREE/src/imports/webkit/qmldir
             webkitImport.path = $$QT_IMPORTS_BASE_DIR/org/webkit
             DEPLOYMENT += webkitImport
-        }        
+        }
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
