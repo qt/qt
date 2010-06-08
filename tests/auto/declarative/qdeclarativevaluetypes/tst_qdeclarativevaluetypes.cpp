@@ -46,6 +46,13 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include "testtypes.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
+extern int qt_defaultDpi();
+
 class tst_qdeclarativevaluetypes : public QObject
 {
     Q_OBJECT
@@ -464,7 +471,7 @@ void tst_qdeclarativevaluetypes::font()
         QCOMPARE(object->property("f_overline").toBool(), object->font().overline());
         QCOMPARE(object->property("f_strikeout").toBool(), object->font().strikeOut());
         QCOMPARE(object->property("f_pointSize").toDouble(), object->font().pointSizeF());
-        QCOMPARE(object->property("f_pixelSize").toInt(), object->font().pixelSize());
+        QCOMPARE(object->property("f_pixelSize").toInt(), int((object->font().pointSizeF() * qt_defaultDpi()) / qreal(72.)));
         QCOMPARE(object->property("f_capitalization").toInt(), (int)object->font().capitalization());
         QCOMPARE(object->property("f_letterSpacing").toDouble(), object->font().letterSpacing());
         QCOMPARE(object->property("f_wordSpacing").toDouble(), object->font().wordSpacing());

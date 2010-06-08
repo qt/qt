@@ -2132,52 +2132,39 @@ QAbstractAnimation *QDeclarativePropertyAnimation::qtAnimation()
     return d->va;
 }
 
-struct PropertyUpdater : public QDeclarativeBulkValueUpdater
+void QDeclarativeAnimationPropertyUpdater::setValue(qreal v)
 {
-    QDeclarativeStateActions actions;
-    int interpolatorType;       //for Number/ColorAnimation
-    int prevInterpolatorType;   //for generic
-    QVariantAnimation::Interpolator interpolator;
-    bool reverse;
-    bool fromSourced;
-    bool fromDefined;
-    bool *wasDeleted;
-    PropertyUpdater() : prevInterpolatorType(0), wasDeleted(0) {}
-    ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
-    void setValue(qreal v)
-    {
-        bool deleted = false;
-        wasDeleted = &deleted;
-        if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
-            v = 1 - v;
-        for (int ii = 0; ii < actions.count(); ++ii) {
-            QDeclarativeAction &action = actions[ii];
+    bool deleted = false;
+    wasDeleted = &deleted;
+    if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
+        v = 1 - v;
+    for (int ii = 0; ii < actions.count(); ++ii) {
+        QDeclarativeAction &action = actions[ii];
 
-            if (v == 1.)
-                QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
-            else {
-                if (!fromSourced && !fromDefined) {
-                    action.fromValue = action.property.read();
-                    if (interpolatorType)
-                        QDeclarativePropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
-                }
-                if (!interpolatorType) {
-                    int propType = action.property.propertyType();
-                    if (!prevInterpolatorType || prevInterpolatorType != propType) {
-                        prevInterpolatorType = propType;
-                        interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
-                    }
-                }
-                if (interpolator)
-                    QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        if (v == 1.)
+            QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        else {
+            if (!fromSourced && !fromDefined) {
+                action.fromValue = action.property.read();
+                if (interpolatorType)
+                    QDeclarativePropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
             }
-            if (deleted)
-                return;
+            if (!interpolatorType) {
+                int propType = action.property.propertyType();
+                if (!prevInterpolatorType || prevInterpolatorType != propType) {
+                    prevInterpolatorType = propType;
+                    interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
+                }
+            }
+            if (interpolator)
+                QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         }
-        wasDeleted = 0;
-        fromSourced = true;
+        if (deleted)
+            return;
     }
-};
+    wasDeleted = 0;
+    fromSourced = true;
+}
 
 void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions,
                                      QDeclarativeProperties &modified,
@@ -2207,7 +2194,7 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
         props << d->defaultProperties.split(QLatin1Char(','));
     }
 
-    PropertyUpdater *data = new PropertyUpdater;
+    QDeclarativeAnimationPropertyUpdater *data = new QDeclarativeAnimationPropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
     data->reverse = direction == Backward ? true : false;
@@ -2786,7 +2773,7 @@ void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
 {
     Q_UNUSED(modified);
     Q_D(QDeclarativeAnchorAnimation);
-    PropertyUpdater *data = new PropertyUpdater;
+    QDeclarativeAnimationPropertyUpdater *data = new QDeclarativeAnimationPropertyUpdater;
     data->interpolatorType = QMetaType::QReal;
     data->interpolator = d->interpolator;
 
