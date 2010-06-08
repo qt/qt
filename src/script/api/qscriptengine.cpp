@@ -1525,7 +1525,7 @@ void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
 
 #ifndef QT_NO_REGEXP
 
-Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 JSC::JSValue QScriptEnginePrivate::newRegExp(JSC::ExecState *exec, const QRegExp &regexp)
 {
@@ -2019,8 +2019,6 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
 }
 
 #ifndef QT_NO_REGEXP
-
-Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 /*!
   Creates a QtScript object of class RegExp with the given
