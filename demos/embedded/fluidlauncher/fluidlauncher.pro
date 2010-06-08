@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
+VERSION = $$QT_VERSION
 
 # Input
 HEADERS += \
@@ -215,6 +216,16 @@ symbian {
             $$appResourceDir(examples/script/context2d/context2d.mif)
     }
 
+    qmldemos = qmlcalculator qmlclocks qmldialcontrol qmleasing qmlflickr qmlphotoviewer qmltwitter
+    contains(QT_CONFIG, declarative) {
+        for(qmldemo, qmldemos) {
+            executables.sources += $$QT_BUILD_TREE/demos/embedded/$${qmldemo}/$${qmldemo}.exe
+            reg_resource.sources += $$regResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}_reg.rsc)
+            resource.sources += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.rsc)
+            mifs.sources += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.mif)
+        }
+    }
+
     files.sources = $$PWD/screenshots $$PWD/slides
     files.path = .
 
@@ -242,6 +253,8 @@ symbian {
 
     DEPLOYMENT += config files executables viewerimages saxbookmarks reg_resource resource \
         mifs desktopservices_music desktopservices_images fluidbackup
+
+    contains(QT_CONFIG, declarative):for(qmldemo, qmldemos):include($$QT_BUILD_TREE/demos/embedded/$${qmldemo}/deployment.pri)
 
     DEPLOYMENT.installer_header = 0xA000D7CD
 

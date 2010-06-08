@@ -49,6 +49,8 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qmetatype.h>
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_HEADER
 
 Q_DECLARE_METATYPE(Qt::GestureState)
@@ -257,5 +259,7 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QGesture::GestureCancelPolicy)
 QT_END_HEADER
+
+#endif // QT_NO_GESTURES
 
 #endif // QGESTURE_H

@@ -483,8 +483,10 @@ void QNetworkConfigurationManagerPrivate::pollEngines()
     QMutexLocker locker(&mutex);
 
     for (int i = 0; i < sessionEngines.count(); ++i) {
-        if ((forcedPolling && sessionEngines.at(i)->requiresPolling()) ||
-            sessionEngines.at(i)->configurationsInUse()) {
+        if (!sessionEngines.at(i)->requiresPolling())
+            continue;
+
+        if (forcedPolling || sessionEngines.at(i)->configurationsInUse()) {
             pollingEngines.insert(i);
             QMetaObject::invokeMethod(sessionEngines.at(i), "requestUpdate");
         }

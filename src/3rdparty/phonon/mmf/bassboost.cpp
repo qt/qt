@@ -49,6 +49,7 @@ const char* BassBoost::description()
 bool BassBoost::getParameters(CMdaAudioOutputStream *stream,
     QList<EffectParameter> &parameters)
 {
+    Q_UNUSED(parameters)
     QScopedPointer<CBassBoost> effect;
     TRAPD(err, effect.reset(CBassBoost::NewL(*stream)));
     return (KErrNone == err);

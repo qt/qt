@@ -52,7 +52,9 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #include <windowsm.h>
 #include <tpcshell.h>
 #ifdef QT_WINCE_GESTURES
+#ifndef QT_NO_GESTURES
 #include <gesture.h>
+#endif
 #endif
 #endif
 
@@ -198,6 +200,7 @@ struct SHRGINFO {
 #define SPI_SETSIPINFO        224
 #endif
 
+#ifndef QT_NO_GESTURES
 typedef DWORD (API *AygRecognizeGesture)(SHRGINFO*);
 static AygRecognizeGesture ptrRecognizeGesture = 0;
 static bool aygResolved = false;
@@ -211,6 +214,7 @@ static void resolveAygLibs()
         ptrRecognizeGesture = (AygRecognizeGesture) ayglib.resolve("SHRecognizeGesture");
     }
 }
+#endif // QT_NO_GESTURES
 
 #endif
 
@@ -463,7 +467,9 @@ public:
     bool        translateConfigEvent(const MSG &msg);
     bool        translateCloseEvent(const MSG &msg);
     bool        translateTabletEvent(const MSG &msg, PACKET *localPacketBuf, int numPackets);
+#ifndef QT_NO_GESTURES
     bool        translateGestureEvent(const MSG &msg, const GESTUREINFO &gi);
+#endif
     void        repolishStyle(QStyle &style);
     inline void showChildren(bool spontaneous) { d_func()->showChildren(spontaneous); }
     inline void hideChildren(bool spontaneous) { d_func()->hideChildren(spontaneous); }
@@ -843,6 +849,7 @@ void qt_init(QApplicationPrivate *priv, int)
         ptrSetProcessDPIAware();
 #endif
 
+#ifndef QT_NO_GESTURES
     priv->GetGestureInfo = 0;
     priv->GetGestureExtraArgs = 0;
     priv->CloseGestureInfoHandle = 0;
@@ -883,6 +890,7 @@ void qt_init(QApplicationPrivate *priv, int)
         (PtrEndPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
                                                    "EndPanningFeedback");
 #endif
+#endif // QT_NO_GESTURES
 }
 
 /*****************************************************************************
@@ -1542,7 +1550,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
     case WM_SETTINGCHANGE:
 #ifdef Q_WS_WINCE
         // CE SIP hide/show
-        if (wParam == SPI_SETSIPINFO) {
+        if (qt_desktopWidget && wParam == SPI_SETSIPINFO) {
             QResizeEvent re(QSize(0, 0), QSize(0, 0)); // Calculated by QDesktopWidget
             QApplication::sendEvent(qt_desktopWidget, &re);
             break;
@@ -1667,12 +1675,14 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
                         shrg.ptDown.y = GET_Y_LPARAM(lParam);
                         shrg.dwFlags = SHRG_RETURNCMD | SHRG_NOANIMATION;
                         resolveAygLibs();
+#ifndef QT_NO_GESTURES
                         if (ptrRecognizeGesture && (ptrRecognizeGesture(&shrg) == GN_CONTEXTMENU)) {
                             if (QApplication::activePopupWidget())
                                 QApplication::activePopupWidget()->close();
                             QContextMenuEvent e(QContextMenuEvent::Mouse, pos, globalPos);
                             result = qt_sendSpontaneousEvent(alienWidget, &e);
                         }
+#endif // QT_NO_GESTURES
                     }
                 }
             }
@@ -2556,6 +2566,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
             }
             result = false;
             break;
+#ifndef QT_NO_GESTURES
 #if !defined(Q_WS_WINCE) || defined(QT_WINCE_GESTURES)
         case WM_GESTURE: {
             GESTUREINFO gi;
@@ -2590,6 +2601,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
             break;
         }
 #endif // !defined(Q_WS_WINCE) || defined(QT_WINCE_GESTURES)
+#endif // QT_NO_GESTURES
 #ifndef QT_NO_CURSOR
         case WM_SETCURSOR: {
             QCursor *ovr = QApplication::overrideCursor();
@@ -3825,6 +3837,7 @@ bool QETWidget::translateCloseEvent(const MSG &)
     return d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
+#ifndef QT_NO_GESTURES
 bool QETWidget::translateGestureEvent(const MSG &, const GESTUREINFO &gi)
 {
     const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
@@ -3863,7 +3876,7 @@ bool QETWidget::translateGestureEvent(const MSG &, const GESTUREINFO &gi)
         qt_sendSpontaneousEvent(widget, &event);
     return true;
 }
-
+#endif // QT_NO_GESTURES
 
 void  QApplication::setCursorFlashTime(int msecs)
 {

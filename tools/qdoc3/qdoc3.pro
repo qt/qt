@@ -37,6 +37,7 @@ HEADERS += apigenerator.h \
 	   cppcodeparser.h \
 	   cpptoqsconverter.h \
 	   dcfsection.h \
+	   ditaxmlgenerator.h \
            doc.h \
 	   editdistance.h \
 	   generator.h \
@@ -81,6 +82,7 @@ SOURCES += apigenerator.cpp \
 	   cppcodeparser.cpp \
 	   cpptoqsconverter.cpp \
 	   dcfsection.cpp \
+	   ditaxmlgenerator.cpp \
            doc.cpp \
 	   editdistance.cpp \
 	   generator.cpp \

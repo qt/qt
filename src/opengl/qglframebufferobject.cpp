@@ -1024,6 +1024,36 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 }
 
 /*!
+    \fn bool QGLFramebufferObject::bindDefault()
+    \internal
+
+    Switches rendering back to the default, windowing system provided
+    framebuffer.
+    Returns true upon success, false otherwise.
+
+    \sa bind(), release()
+*/
+bool QGLFramebufferObject::bindDefault()
+{
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+
+    if (ctx) {
+        bool ext_detected = (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject);
+        if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(ctx)))
+            return false;
+
+        ctx->d_ptr->current_fbo = ctx->d_ptr->default_fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->default_fbo);
+#ifdef QT_DEBUG
+    } else {
+        qWarning("QGLFramebufferObject::bindDefault() called without current context.");
+#endif
+    }
+
+    return ctx != 0;
+}
+
+/*!
     \fn bool QGLFramebufferObject::hasOpenGLFramebufferObjects()
 
     Returns true if the OpenGL \c{GL_EXT_framebuffer_object} extension

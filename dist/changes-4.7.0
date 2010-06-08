@@ -50,14 +50,27 @@ Third party components
 QtCore
 ------
 
+ - QString
+    * Added QString(const QChar *) constructor.
+      NOTE: This is source-incompatible for the bogus QString(0) case.
+    * Removed internal but exported qt_winQString2MB() and qt_winMB2QString()
+    * Added setRawData() function (also revived the one in QByteArray)
+    * Various performance improvements
+ - QList
+    * Added reserve() function
+    * Various performance improvements
  - QMetaType
     * Significantly improved performance of the type() function
+    * [QTBUG-8235] Support QEasingCurve as a built in metatype.
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
  - QXmlStreamReader
     * [QTBUG-9196] fixed crash when parsing
  - QTimer
     * singleShot with 0 timeout will now avoid allocating objects
+ - QAbstractAnimation
+    * [QTBUG-10654] Avoids animation with loopCount == 0 to change state
+      to running and stopped.
 
 QtGui
 -----
@@ -95,6 +108,8 @@ QtGui
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
       the item has focus and something else has the same shortcut sequence.
+    * [QTBUG-10574] Fixed crash when flag "QGraphicsItem::ItemIgnoresTransformations"
+      is set.
 
  - QGraphicsView
     * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
@@ -289,12 +304,7 @@ Qt for Windows CE
  - [QTBUG-5492] Made widgetbox-filter match on class names, too.
 
 - Linguist
-  - Linguist GUI
-
-  - lupdate
-
-  - lrelease
-
+  * The GNU gettext PO format support has been improved
 
 - rcc
 
@@ -310,6 +320,29 @@ Qt for Windows CE
    compatibility option -limit-xpm-linelength.
 
 - qmake
+  * Removed remainder of tmake compatibility
+  * Removed remainder of mac9 mode
+  * Removed MSVC6 generator
+  * Removed makespecs for MSVC.NET and MSVC2002
+  * Deprecated -win32/-unix/-macx options, following various cleanups
+    relating to platform support. Cross-building makespecs should now
+    specify a TARGET_PLATFORM.
+  * Started to warn about use of various constructs:
+    - non-lowercased replace $$function() calls
+    - deprecated variables
+    - unescaped backslashes.
+      NOTE: You should use UNIX path separators where possible. qmake
+      will warn about unnecessary Windows path separators in the future.
+  * Removed expansion of qmake- & environment variables in some unexpected
+    cases (double expansions, command line options, etc.)
+  * Removed splitting at semicolons of literal values which were assigned
+    directly to INCLUDEPATH and DEPENDPATH
+  * Removed UNIX-specific exporting of all qmake variables to the environment
+    of subprocesses invoked via system(). You should put specific assignments
+    into the invoked shell command instead.
+  * Started to short-cut evaluation inside if() tests, consistently with
+    evaluation outside if().
+  * Added possibility to request project recursion from within a PRO file
 
 
 - configure

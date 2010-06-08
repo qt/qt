@@ -44,6 +44,7 @@ qhp.Qt.extraFiles          = index.html \
 									images/page.png \
 									images/page_bg.png \
 									images/sprites-combined.png \
+									images/arrow-down.png \
 									images/spinner.gif \
                              	    images/stylesheet-coffee-plastique.png \
                              	    images/taskmenuextension-example.png \

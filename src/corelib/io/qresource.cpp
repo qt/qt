@@ -928,7 +928,7 @@ public:
     }
 };
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 #define QT_USE_MMAP
 #endif
 

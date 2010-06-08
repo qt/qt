@@ -70,9 +70,9 @@ int main(int argc, char *argv[])
     const QFileInfo inputInfo(input);
     const QString output = QString::fromLatin1(argv[2]);
     if (inputInfo.isDir())
-        return S60ThemeConvert::convertDefaultThemeToBlob(input, output);
+        return S60ThemeConvert::convertDefaultThemeToBlob(input, output) ? 0 : 1;
     else if (inputInfo.suffix().compare(QString::fromLatin1("tdf"), Qt::CaseInsensitive) == 0)
-        return S60ThemeConvert::convertTdfToBlob(input, output);
+        return S60ThemeConvert::convertTdfToBlob(input, output) ? 0 : 1;
 
     return help();
 }

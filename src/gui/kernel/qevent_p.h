@@ -120,6 +120,7 @@ public:
     qreal pressure;
 };
 
+#ifndef QT_NO_GESTURES
 class QNativeGestureEvent : public QEvent
 {
 public:
@@ -164,7 +165,7 @@ public:
     QMap<Qt::GestureType, bool> accepted;
     QMap<Qt::GestureType, QWidget *> targetWidgets;
 };
-
+#endif // QT_NO_GESTURES
 
 class QFileOpenEventPrivate
 {
