@@ -5834,14 +5834,12 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
        fi
 
        if [ "${screen}" = "directfb" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if [ -n "$PKG_CONFIG" ]; then
-               if $PKG_CONFIG --exists directfb 2>/dev/null; then
-                   QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
-                   QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
-               elif directfb-config --version >/dev/null 2>&1; then
-                   QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
-                   QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
-               fi
+           if test -n "$PKG_CONFIG" && "$PKG_CONFIG" --exists directfb 2>/dev/null; then
+               QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
+               QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
+           elif directfb-config --version >/dev/null 2>&1; then
+               QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
+               QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
            fi
 
            # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
