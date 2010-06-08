@@ -9,9 +9,8 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_qdeclarativexmllistmodel.cpp
 
 symbian: {
-    DEFINES += SRCDIR=\".\"
     importFiles.sources = data
-    importFiles.path = 
+    importFiles.path = .
     DEPLOYMENT = importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
