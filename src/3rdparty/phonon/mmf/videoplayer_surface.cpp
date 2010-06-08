@@ -59,7 +59,8 @@ SurfaceVideoPlayer::~SurfaceVideoPlayer()
 
 void MMF::SurfaceVideoPlayer::videoWindowSizeChanged()
 {
-    updateScaleFactors(m_videoOutput->videoWindowSize());
+    if (m_videoOutput)
+        updateScaleFactors(m_videoOutput->videoWindowSize());
 }
 
 
@@ -80,6 +81,8 @@ void MMF::SurfaceVideoPlayer::createPlayer()
 
 void MMF::SurfaceVideoPlayer::initVideoOutput()
 {
+    Q_ASSERT(m_videoOutput);
+
     bool connected = connect(
         m_videoOutput, SIGNAL(videoWindowSizeChanged()),
         this, SLOT(videoWindowSizeChanged())
