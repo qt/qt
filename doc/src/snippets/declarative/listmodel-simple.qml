@@ -42,28 +42,39 @@
 import Qt 4.7
 
 Rectangle {
-    id: window
-    width: 120; height: 120
-    color: "black"
+    width: 200; height: 200
 
-    Rectangle { id: myRect; width: 50; height: 50; color: "red" }
-
-    states: State {
-        name: "reanchored"
-
-        AnchorChanges {
-            target: myRect
-            anchors.top: window.top
-            anchors.bottom: window.bottom
+    ListModel {
+        id: fruitModel
+//![0]
+        ListElement {
+            name: "Apple"
+            cost: 2.45
         }
-        PropertyChanges {
-            target: myRect
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
+        ListElement {
+            name: "Orange"
+            cost: 3.25
+        }
+        ListElement {
+            name: "Banana"
+            cost: 1.95
+        }
+//![1]
+    }
+
+    Component {
+        id: fruitDelegate
+        Row {
+            spacing: 10
+            Text { text: name }
+            Text { text: '$' + cost }
         }
     }
 
-    MouseArea { anchors.fill: parent; onClicked: window.state = "reanchored" }
+    ListView {
+        anchors.fill: parent
+        model: fruitModel
+        delegate: fruitDelegate
+    }
 }
-//![0]
-
+//![1]

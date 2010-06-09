@@ -38,32 +38,66 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
 import Qt 4.7
 
 Rectangle {
-    id: window
-    width: 120; height: 120
-    color: "black"
+    width: 200; height: 200
 
-    Rectangle { id: myRect; width: 50; height: 50; color: "red" }
 
-    states: State {
-        name: "reanchored"
+//![model]
+ListModel {
+    id: fruitModel
 
-        AnchorChanges {
-            target: myRect
-            anchors.top: window.top
-            anchors.bottom: window.bottom
-        }
-        PropertyChanges {
-            target: myRect
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
+    ListElement {
+        name: "Apple"
+        cost: 2.45
+        attributes: [
+            ListElement { description: "Core" },
+            ListElement { description: "Deciduous" }
+        ]
+    }
+    ListElement {
+        name: "Orange"
+        cost: 3.25
+        attributes: [
+            ListElement { description: "Citrus" }
+        ]
+    }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
+        attributes: [
+            ListElement { description: "Tropical" },
+            ListElement { description: "Seedless" }
+        ]
+    }
+}
+//![model]
+
+//![delegate]
+Component {
+    id: fruitDelegate
+    Item {
+        width: 200; height: 50
+        Text { id: nameField; text: name }
+        Text { text: '$' + cost; anchors.left: nameField.right }
+        Row {
+            anchors.top: nameField.bottom
+            spacing: 5
+            Text { text: "Attributes:" }
+            Repeater {
+                model: attributes
+                Text { text: description } 
+            }
         }
     }
-
-    MouseArea { anchors.fill: parent; onClicked: window.state = "reanchored" }
 }
-//![0]
+//![delegate]
 
+ListView {
+    width: 200; height: 200
+    model: fruitModel
+    delegate: fruitDelegate
+}
+
+}

@@ -1,4 +1,4 @@
-/****************************************************************************
+myModel/****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
@@ -38,32 +38,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QDeclarativeView>
+#include <QDeclarativeContext>
+
+#include <QApplication>
+#include <QDirModel>
+
 //![0]
-import Qt 4.7
+int main(int argc, char ** argv)
+{
+    QApplication app(argc, argv);
 
-Rectangle {
-    id: window
-    width: 120; height: 120
-    color: "black"
+    QDeclarativeView view;
 
-    Rectangle { id: myRect; width: 50; height: 50; color: "red" }
+    QDirModel model;
+    view.rootContext()->setContextProperty("dirModel", &model);
 
-    states: State {
-        name: "reanchored"
+    view.setSource(QUrl::fromLocalFile("view.qml"));
+    view.show();
 
-        AnchorChanges {
-            target: myRect
-            anchors.top: window.top
-            anchors.bottom: window.bottom
-        }
-        PropertyChanges {
-            target: myRect
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
-        }
-    }
-
-    MouseArea { anchors.fill: parent; onClicked: window.state = "reanchored" }
+    return app.exec();
 }
 //![0]
 

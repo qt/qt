@@ -41,29 +41,20 @@
 //![0]
 import Qt 4.7
 
-Rectangle {
-    id: window
-    width: 120; height: 120
-    color: "black"
+ListModel {
+    id: fruitModel
 
-    Rectangle { id: myRect; width: 50; height: 50; color: "red" }
-
-    states: State {
-        name: "reanchored"
-
-        AnchorChanges {
-            target: myRect
-            anchors.top: window.top
-            anchors.bottom: window.bottom
-        }
-        PropertyChanges {
-            target: myRect
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
-        }
+    ListElement {
+        name: "Apple"
+        cost: 2.45
     }
-
-    MouseArea { anchors.fill: parent; onClicked: window.state = "reanchored" }
+    ListElement {
+        name: "Orange"
+        cost: 3.25
+    }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
+    }
 }
 //![0]
-

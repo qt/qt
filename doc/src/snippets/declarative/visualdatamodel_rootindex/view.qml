@@ -41,29 +41,26 @@
 //![0]
 import Qt 4.7
 
-Rectangle {
-    id: window
-    width: 120; height: 120
-    color: "black"
+ListView {
+    id: view
+    width: 300
+    height: 400
 
-    Rectangle { id: myRect; width: 50; height: 50; color: "red" }
+    model: VisualDataModel {
+        model: dirModel
 
-    states: State {
-        name: "reanchored"
+        delegate: Rectangle {
+            width: 200; height: 25
+            Text { text: filePath }
 
-        AnchorChanges {
-            target: myRect
-            anchors.top: window.top
-            anchors.bottom: window.bottom
-        }
-        PropertyChanges {
-            target: myRect
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (hasModelChildren) 
+                        view.model.rootIndex = view.model.modelIndex(index)
+                }
+            }
         }
     }
-
-    MouseArea { anchors.fill: parent; onClicked: window.state = "reanchored" }
 }
 //![0]
-

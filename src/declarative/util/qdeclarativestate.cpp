@@ -144,8 +144,9 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     can, for example, be used to apply different sets of property values or execute
     different scripts.
 
-    Here is an example. In the default state, \c myRect is colored black. In the "clicked"
-    state, the color is red. Clicking within the MouseArea toggles the rectangle's state
+    The following example displays a single Rectangle. In the default state, the rectangle
+    is colored black. In the "clicked" state, a PropertyChanges element changes the
+    rectangle's color to red. Clicking within the MouseArea toggles the rectangle's state
     between the default state and the "clicked" state, thus toggling the color of the
     rectangle between black and red.
 

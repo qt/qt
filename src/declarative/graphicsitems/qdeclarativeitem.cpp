@@ -726,7 +726,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     The signal properties have a \l KeyEvent parameter, named
     \e event which contains details of the event.  If a key is
     handled \e event.accepted should be set to true to prevent the
-    event from propagating up the item heirarchy.
+    event from propagating up the item hierarchy.
 
     \code
     Item {

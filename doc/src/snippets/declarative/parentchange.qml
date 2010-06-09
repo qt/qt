@@ -42,28 +42,28 @@
 import Qt 4.7
 
 Rectangle {
-    id: window
-    width: 120; height: 120
-    color: "black"
+    width: 200
+    height: 100
 
-    Rectangle { id: myRect; width: 50; height: 50; color: "red" }
-
-    states: State {
-        name: "reanchored"
-
-        AnchorChanges {
-            target: myRect
-            anchors.top: window.top
-            anchors.bottom: window.bottom
-        }
-        PropertyChanges {
-            target: myRect
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
-        }
+    Rectangle { 
+        id: redRect
+        width: 100; height: 100
+        color: "red"
     }
 
-    MouseArea { anchors.fill: parent; onClicked: window.state = "reanchored" }
+    Rectangle { 
+        id: blueRect
+        x: redRect.width
+        width: 50; height: 50
+        color: "blue"
+
+        states: State {
+            name: "reparented"
+            ParentChange { target: blueRect; parent: redRect; x: 10; y: 10 }
+        }
+
+        MouseArea { anchors.fill: parent; onClicked: blueRect.state = "reparented" }
+    }
 }
 //![0]
 
