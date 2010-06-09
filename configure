@@ -4668,7 +4668,7 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
 fi
 
 # detect neon support
-if ([ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]) && [ "${CFG_NEON}" = "auto" ]; then
+if ( [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ] ) && [ "${CFG_NEON}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
 	CFG_NEON=yes
     else
@@ -5354,7 +5354,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     fi
 fi # X11/QWS
 
-# x11
+# X11
 if [ "$PLATFORM_X11" = "yes" ]; then
     x11tests="$relpath/config.tests/x11"
     X11TESTS_FLAGS=
