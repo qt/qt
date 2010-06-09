@@ -75,6 +75,15 @@
 */
 
 /*!
+    \title Image Elements: Image
+    \example declarative/imageelements/image
+
+    This example shows how to use the Image element and its \l{Image::fillMode}{fillModes}.
+
+    \image qml-image-example.png
+*/
+
+/*!
     \page declarative-cppextensions-reference.html
     \title C++ Extensions: Reference examples
 
