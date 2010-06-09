@@ -1,3 +1,4 @@
+symbian:include(../plugins/qpluginbase.pri)
 TEMPLATE = lib
 CONFIG += qt plugin
 
