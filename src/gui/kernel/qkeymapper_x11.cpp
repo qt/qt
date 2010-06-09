@@ -517,7 +517,7 @@ void QKeyMapperPrivate::clearMappings()
         //     qWarning("Qt: unable to determine keyboard layout, please talk to qt-bugs@trolltech.com"); ?
 
         keyboardInputLocale = q_getKeyboardLocale(layoutName, variantName);
-        keyboardInputDirection = keyboardInputLocale.isWrittenRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+        keyboardInputDirection = keyboardInputLocale.textDirection();
 
 #if 0
         qDebug() << "keyboard input locale ="

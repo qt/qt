@@ -3480,9 +3480,9 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 /*!
   \since 4.7
 
-  Returns true if the language is written right to left.
+  Returns the text direction of the language.
 */
-bool QLocale::isWrittenRightToLeft() const
+Qt::LayoutDirection QLocale::textDirection() const
 {
     Language lang = language();
     if (lang == QLocale::Arabic ||
@@ -3490,9 +3490,9 @@ bool QLocale::isWrittenRightToLeft() const
         lang == QLocale::Persian ||
         lang == QLocale::Urdu ||
         lang == QLocale::Syriac)
-        return true;
+        return Qt::RightToLeft;
 
-    return false;
+    return Qt::LeftToRight;
 }
 
 

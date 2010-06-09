@@ -52,7 +52,7 @@ QT_USE_NAMESPACE
 QKeyMapperPrivate::QKeyMapperPrivate()
 {
     keyboardInputLocale = QLocale::system();
-    keyboardInputDirection = keyboardInputLocale.isWrittenRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+    keyboardInputDirection = keyboardInputLocale.textDirection();
 }
 
 QKeyMapperPrivate::~QKeyMapperPrivate()

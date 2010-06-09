@@ -672,7 +672,7 @@ QKeyMapperPrivate::updateKeyboard()
 #endif
     if (iso639Code) {
         keyboardInputLocale = QLocale(QCFString::toQString(iso639Code));
-        keyboardInputDirection = keyboardInputLocale.isWrittenRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+        keyboardInputDirection = keyboardInputLocale.textDirection();
     } else {
         keyboardInputLocale = QLocale::c();
         keyboardInputDirection = Qt::LeftToRight;

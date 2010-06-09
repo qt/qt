@@ -409,7 +409,7 @@ QXIMInputContext::QXIMInputContext()
                 if (dashPos >= 0)
                     variantName.truncate(dashPos);
                 QLocale keyboardInputLocale = q_getKeyboardLocale(layoutNames.at(i), variantName);
-                if (keyboardInputLocale.isWrittenRightToLeft())
+                if (keyboardInputLocale.textDirection() == Qt::RightToLeft)
                     qt_use_rtl_extensions = true;
             }
         }
