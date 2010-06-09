@@ -159,16 +159,16 @@ symbian: {
         gesturesImport.sources += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
         particlesImport.sources += $$QT_SOURCE_TREE/src/imports/particles/qmldir
 
-        folderlistmodelImport.path = $$QT_IMPORTS_BASE_DIR/Qt/labs/folderlistmodel
-        gesturesImport.path = $$QT_IMPORTS_BASE_DIR/Qt/labs/gestures
-        particlesImport.path = $$QT_IMPORTS_BASE_DIR/Qt/labs/particles
+        folderlistmodelImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/folderlistmodel
+        gesturesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/gestures
+        particlesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/particles
 
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
 
         contains(QT_CONFIG, webkit): {
             webkitImport.sources = $$QT_BUILD_TREE/imports/org/webkit/qmlwebkitplugin$${QT_LIBINFIX}.dll
             webkitImport.sources += $$QT_SOURCE_TREE/src/imports/webkit/qmldir
-            webkitImport.path = $$QT_IMPORTS_BASE_DIR/org/webkit
+            webkitImport.path = c:$$QT_IMPORTS_BASE_DIR/org/webkit
             DEPLOYMENT += webkitImport
         }
     }
