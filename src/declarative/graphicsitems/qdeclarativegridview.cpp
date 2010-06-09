@@ -261,12 +261,19 @@ public:
         return -1; // Not in visibleList
     }
 
-    qreal snapPosAt(qreal pos) {
+    qreal snapPosAt(qreal pos) const {
+        Q_Q(const QDeclarativeGridView);
         qreal snapPos = 0;
         if (!visibleItems.isEmpty()) {
             pos += rowSize()/2;
             snapPos = visibleItems.first()->rowPos() - visibleIndex / columns * rowSize();
             snapPos = pos - fmodf(pos - snapPos, qreal(rowSize()));
+            qreal maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+            qreal minExtent = flow == QDeclarativeGridView::LeftToRight ? -q->minYExtent() : -q->minXExtent();
+            if (snapPos > maxExtent)
+                snapPos = maxExtent;
+            if (snapPos < minExtent)
+                snapPos = minExtent;
         }
         return snapPos;
     }
@@ -901,7 +908,6 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         }
     } else if (snapMode != QDeclarativeGridView::NoSnap) {
         qreal pos = -snapPosAt(-(data.move.value() - highlightRangeStart)) + highlightRangeStart;
-        pos = qMin(qMax(pos, maxExtent), minExtent);
         qreal dist = qAbs(data.move.value() - pos);
         if (dist > 0) {
             timeline.reset(data.move);
@@ -923,7 +929,6 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                                         QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity)
 {
     Q_Q(QDeclarativeGridView);
-
     moveReason = Mouse;
     if ((!haveHighlightRange || highlightRange != QDeclarativeGridView::StrictlyEnforceRange)
         && snapMode == QDeclarativeGridView::NoSnap) {
@@ -968,9 +973,10 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
         qreal accel = deceleration;
         qreal v2 = v * v;
         qreal overshootDist = 0.0;
-        if (maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) {
+        if ((maxDistance > 0.0 && v2 / (2.0f * maxDistance) < accel) || snapMode == QDeclarativeGridView::SnapOneRow) {
             // + rowSize()/4 to encourage moving at least one item in the flick direction
             qreal dist = v2 / (accel * 2.0) + rowSize()/4;
+            dist = qMin(dist, maxDistance);
             if (v > 0)
                 dist = -dist;
             data.flickTarget = -snapPosAt(-(data.move.value() - highlightRangeStart) + dist) + highlightRangeStart;
@@ -1826,7 +1832,7 @@ qreal QDeclarativeGridView::maxXExtent() const
         if (d->highlightRangeEnd != d->highlightRangeStart)
             extent = qMin(extent, -(d->endPosition() - d->highlightRangeEnd + 1));
     } else {
-        extent = -(d->endPosition() - height());
+        extent = -(d->endPosition() - width());
     }
     if (d->footer)
         extent -= d->footer->item->width();
