@@ -3478,6 +3478,25 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 }
 
 /*!
+  \since 4.7
+
+  Returns true if the language is written right to left.
+*/
+bool QLocale::isWrittenRightToLeft() const
+{
+    Language lang = language();
+    if (lang == QLocale::Arabic ||
+        lang == QLocale::Hebrew ||
+        lang == QLocale::Persian ||
+        lang == QLocale::Urdu ||
+        lang == QLocale::Syriac)
+        return true;
+
+    return false;
+}
+
+
+/*!
     \since 4.5
 
     Returns the localized name of the "AM" suffix for times specified using

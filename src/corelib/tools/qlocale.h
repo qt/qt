@@ -666,6 +666,8 @@ public:
 
     MeasurementSystem measurementSystem() const;
 
+    bool isWrittenRightToLeft() const;
+
     inline bool operator==(const QLocale &other) const;
     inline bool operator!=(const QLocale &other) const;
 
