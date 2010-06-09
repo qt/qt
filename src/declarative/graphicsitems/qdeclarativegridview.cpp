@@ -1791,7 +1791,9 @@ qreal QDeclarativeGridView::maxYExtent() const
     if (d->flow == QDeclarativeGridView::TopToBottom)
         return QDeclarativeFlickable::maxYExtent();
     qreal extent;
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
+    if (!d->model || !d->model->count()) {
+        extent = 0;
+    } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent = -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart);
         if (d->highlightRangeEnd != d->highlightRangeStart)
             extent = qMin(extent, -(d->endPosition() - d->highlightRangeEnd + 1));
@@ -1827,7 +1829,9 @@ qreal QDeclarativeGridView::maxXExtent() const
     if (d->flow == QDeclarativeGridView::LeftToRight)
         return QDeclarativeFlickable::maxXExtent();
     qreal extent;
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
+    if (!d->model || !d->model->count()) {
+        extent = 0;
+    } if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
         extent = -(d->rowPosAt(d->model->count()-1) - d->highlightRangeStart);
         if (d->highlightRangeEnd != d->highlightRangeStart)
             extent = qMin(extent, -(d->endPosition() - d->highlightRangeEnd + 1));

@@ -2248,7 +2248,9 @@ qreal QDeclarativeListView::maxYExtent() const
     if (d->orient == QDeclarativeListView::Horizontal)
         return height();
     if (d->maxExtentDirty) {
-        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
+        if (!d->model || !d->model->count()) {
+            d->maxExtent = 0;
+        } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
             d->maxExtent = -(d->positionAt(d->model->count()-1) - d->highlightRangeStart);
             if (d->highlightRangeEnd != d->highlightRangeStart)
                 d->maxExtent = qMin(d->maxExtent, -(d->endPosition() - d->highlightRangeEnd + 1));
@@ -2290,7 +2292,9 @@ qreal QDeclarativeListView::maxXExtent() const
     if (d->orient == QDeclarativeListView::Vertical)
         return width();
     if (d->maxExtentDirty) {
-        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
+        if (!d->model || !d->model->count()) {
+            d->maxExtent = 0;
+        } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
             d->maxExtent = -(d->positionAt(d->model->count()-1) - d->highlightRangeStart);
             if (d->highlightRangeEnd != d->highlightRangeStart)
                 d->maxExtent = qMin(d->maxExtent, -(d->endPosition() - d->highlightRangeEnd + 1));

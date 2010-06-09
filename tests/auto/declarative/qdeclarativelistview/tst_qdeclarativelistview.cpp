@@ -807,6 +807,14 @@ void tst_QDeclarativeListView::enforceRange()
 
     QTRY_COMPARE(listview->currentIndex(), 6);
 
+    // change model
+    TestModel model2;
+    for (int i = 0; i < 5; i++)
+        model2.addItem("Item" + QString::number(i), "");
+
+    ctxt->setContextProperty("testModel", &model2);
+    QCOMPARE(listview->count(), 5);
+
     delete canvas;
 }
 

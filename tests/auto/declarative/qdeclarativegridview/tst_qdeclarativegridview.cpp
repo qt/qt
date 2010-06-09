@@ -1110,6 +1110,13 @@ void tst_QDeclarativeGridView::enforceRange()
     gridview->setCurrentIndex(5);
     QTRY_COMPARE(gridview->contentY(), 100.);
 
+    TestModel model2;
+    for (int i = 0; i < 5; i++)
+        model2.addItem("Item" + QString::number(i), "");
+
+    ctxt->setContextProperty("testModel", &model2);
+    QCOMPARE(gridview->count(), 5);
+
     delete canvas;
 }
 
