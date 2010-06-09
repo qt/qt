@@ -42,8 +42,9 @@
 #ifndef QENDIAN_H
 #define QENDIAN_H
 
+#include <QtCore/qglobal.h>
+
 #ifdef Q_OS_LINUX
-# include <qglobal.h>
 QT_BEGIN_INCLUDE_NAMESPACE
 # include <features.h>
 QT_END_INCLUDE_NAMESPACE
@@ -52,8 +53,6 @@ QT_END_INCLUDE_NAMESPACE
 #ifdef __GLIBC__
 #include <byteswap.h>
 #endif
-
-#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
