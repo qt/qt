@@ -49,6 +49,11 @@
 // These don't let normal people run tests!
 //#include "../network-settings.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativepixmapcache : public QObject
 {
     Q_OBJECT

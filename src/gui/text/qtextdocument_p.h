@@ -132,6 +132,7 @@ public:
         BlockAdded = 6,
         BlockDeleted = 7,
         GroupFormatChange = 8,
+        CursorMoved = 9,
         Custom = 256
     };
     enum Operation {
@@ -315,6 +316,7 @@ private:
     bool modified;
 
     int editBlock;
+    int editBlockCursorPosition;
     int docChangeFrom;
     int docChangeOldLength;
     int docChangeLength;
