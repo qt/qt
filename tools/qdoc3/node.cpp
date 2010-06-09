@@ -624,7 +624,7 @@ void InnerNode::removeChild(Node *child)
 	QMap<QString, Node *>::Iterator prim =
 		primaryFunctionMap.find(child->name());
 	NodeList& secs = secondaryFunctionMap[child->name()];
-	if (*prim == child) {
+	if (prim != primaryFunctionMap.end() && *prim == child) {
 	    if (secs.isEmpty()) {
 		primaryFunctionMap.remove(child->name());
 	    }
@@ -636,12 +636,12 @@ void InnerNode::removeChild(Node *child)
 	    secs.removeAll(child);
 	}
         QMap<QString, Node *>::Iterator ent = childMap.find( child->name() );
-        if ( *ent == child )
+        if (ent != childMap.end() && *ent == child)
             childMap.erase( ent );
     }
     else {
 	QMap<QString, Node *>::Iterator ent = childMap.find(child->name());
-	if (*ent == child)
+	if (ent != childMap.end() && *ent == child)
 	    childMap.erase(ent);
     }
 }
