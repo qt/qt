@@ -38,22 +38,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
-Rectangle {
-    id: parentItem
-    property QtObject newObject
+ListModel {
+    id: fruitModel
 
-    width: 100
-    height: 100
-    
-    function createIt() {
-//![0]
-newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    parentItem, "dynamicSnippet1");
-//![0]
+    ListElement {
+        name: "Apple"
+        cost: 2.45
     }
-
-    Component.onCompleted: createIt()
+    ListElement {
+        name: "Orange"
+        cost: 3.25
+    }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
+    }
 }
+//![0]

@@ -91,8 +91,8 @@ public:
    \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 
-   Item (and all dervied elements) provides built in support for states and transitions
-   via its state, states and transitions properties. StateGroup provides an easy way to
+   Item (and all derived elements) provides built in support for states and transitions
+   via its \l{Item::state}{state}, \l{Item::states}{states} and \l{Item::transitions}{transitions} properties. StateGroup provides an easy way to
    use this support in other (non-Item-derived) elements.
 
    \qml

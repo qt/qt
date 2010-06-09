@@ -38,22 +38,66 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
 
 Rectangle {
-    id: parentItem
-    property QtObject newObject
+    width: 200; height: 200
 
-    width: 100
-    height: 100
-    
-    function createIt() {
-//![0]
-newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    parentItem, "dynamicSnippet1");
-//![0]
+
+//![model]
+ListModel {
+    id: fruitModel
+
+    ListElement {
+        name: "Apple"
+        cost: 2.45
+        attributes: [
+            ListElement { description: "Core" },
+            ListElement { description: "Deciduous" }
+        ]
     }
+    ListElement {
+        name: "Orange"
+        cost: 3.25
+        attributes: [
+            ListElement { description: "Citrus" }
+        ]
+    }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
+        attributes: [
+            ListElement { description: "Tropical" },
+            ListElement { description: "Seedless" }
+        ]
+    }
+}
+//![model]
 
-    Component.onCompleted: createIt()
+//![delegate]
+Component {
+    id: fruitDelegate
+    Item {
+        width: 200; height: 50
+        Text { id: nameField; text: name }
+        Text { text: '$' + cost; anchors.left: nameField.right }
+        Row {
+            anchors.top: nameField.bottom
+            spacing: 5
+            Text { text: "Attributes:" }
+            Repeater {
+                model: attributes
+                Text { text: description } 
+            }
+        }
+    }
+}
+//![delegate]
+
+ListView {
+    width: 200; height: 200
+    model: fruitModel
+    delegate: fruitDelegate
+}
+
 }

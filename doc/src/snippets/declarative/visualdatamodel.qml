@@ -38,22 +38,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
 Rectangle {
-    id: parentItem
-    property QtObject newObject
+    width: 200; height: 100
 
-    width: 100
-    height: 100
-    
-    function createIt() {
-//![0]
-newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    parentItem, "dynamicSnippet1");
-//![0]
+    VisualDataModel {
+        id: visualModel
+        model: ListModel {
+            ListElement { name: "Apple" }
+            ListElement { name: "Orange" }
+        }
+        delegate: Rectangle {
+            height: 25
+            width: 100
+            Text { text: "Name: " + name}
+        }
     }
 
-    Component.onCompleted: createIt()
+    ListView {
+        anchors.fill: parent
+        model: visualModel
+    }
 }
+//![0]

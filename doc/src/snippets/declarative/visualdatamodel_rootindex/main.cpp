@@ -1,4 +1,4 @@
-/****************************************************************************
+myModel/****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
@@ -38,22 +38,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QDeclarativeView>
+#include <QDeclarativeContext>
 
-import Qt 4.7
+#include <QApplication>
+#include <QDirModel>
 
-Rectangle {
-    id: parentItem
-    property QtObject newObject
-
-    width: 100
-    height: 100
-    
-    function createIt() {
 //![0]
-newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    parentItem, "dynamicSnippet1");
-//![0]
-    }
+int main(int argc, char ** argv)
+{
+    QApplication app(argc, argv);
 
-    Component.onCompleted: createIt()
+    QDeclarativeView view;
+
+    QDirModel model;
+    view.rootContext()->setContextProperty("dirModel", &model);
+
+    view.setSource(QUrl::fromLocalFile("view.qml"));
+    view.show();
+
+    return app.exec();
 }
+//![0]
+

@@ -38,22 +38,44 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
-Rectangle {
-    id: parentItem
-    property QtObject newObject
+Item {
+    id: myItem
+    width: 200; height: 200
 
-    width: 100
-    height: 100
-    
-    function createIt() {
-//![0]
-newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    parentItem, "dynamicSnippet1");
-//![0]
+    Rectangle {
+        id: myRect
+        width: 100; height: 100
+        color: "red"
     }
 
-    Component.onCompleted: createIt()
+    states: [
+        State {
+            name: "moved"
+            PropertyChanges {
+                target: myRect
+                x: 50
+                y: 50
+            }
+        }
+    ]
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: myItem.state = 'moved'
+    }
+//![0]
+
+//![transitions]
+transitions: [
+    Transition {
+        NumberAnimation { properties: "x,y"; duration: 500 }
+    }
+]
+//![transitions]
+
+//![1]
 }
+//![1]
