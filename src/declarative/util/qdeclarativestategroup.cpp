@@ -263,7 +263,7 @@ void QDeclarativeStateGroup::componentComplete()
 
     for (int ii = 0; ii < d->states.count(); ++ii) {
         QDeclarativeState *state = d->states.at(ii);
-        if (state->name().isEmpty())
+        if (!state->isNamed())
             state->setName(QLatin1String("anonymousState") % QString::number(++d->unnamedCount));
     }
 
@@ -295,7 +295,7 @@ bool QDeclarativeStateGroupPrivate::updateAutoState()
     for (int ii = 0; ii < states.count(); ++ii) {
         QDeclarativeState *state = states.at(ii);
         if (state->isWhenKnown()) {
-            if (!state->name().isEmpty()) {
+            if (state->isNamed()) {
                 if (state->when() && state->when()->evaluate().toBool()) {
                     if (stateChangeDebug()) 
                         qWarning() << "Setting auto state due to:" 

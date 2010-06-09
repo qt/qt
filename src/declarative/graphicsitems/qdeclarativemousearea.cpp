@@ -410,7 +410,7 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         setHovered(true);
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
-        if (d->isConnected("pressAndHold(QDeclarativeMouseEvent*)"))
+        if (d->isPressAndHoldConnected())
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
         event->setAccepted(setPressed(true));

@@ -1234,9 +1234,9 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
     your application.
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
-    Symbian^3 -based devices the panels are opened by clicking TextInput and need to be
-    manually closed by the user. On other platforms the panels are automatically opened
-    when TextInput element gains focus and closed when the focus is lost.
+    Symbian^3 -based devices the panels are opened by clicking TextInput. On other platforms
+    the panels are automatically opened when TextInput element gains focus. Input panels are
+    always closed if no editor owns focus.
 
   . You can disable the automatic behavior by setting the property \c focusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
@@ -1258,9 +1258,9 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
                         textInput.openSoftwareInputPanel();
                     } else {
                         textInput.focus = false;
-                        textInput.closeSoftwareInputPanel();
                     }
                 }
+                onPressAndHold: textInput.closeSoftwareInputPanel();
             }
         }
     \endqml
@@ -1285,9 +1285,9 @@ void QDeclarativeTextInput::openSoftwareInputPanel()
     your application.
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
-    Symbian^3 -based devices the panels are opened by clicking TextInput and need to be
-    manually closed by the user. On other platforms the panels are automatically opened
-    when TextInput element gains focus and closed when the focus is lost.
+    Symbian^3 -based devices the panels are opened by clicking TextInput. On other platforms
+    the panels are automatically opened when TextInput element gains focus. Input panels are
+    always closed if no editor owns focus.
 
   . You can disable the automatic behavior by setting the property \c focusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
@@ -1309,9 +1309,9 @@ void QDeclarativeTextInput::openSoftwareInputPanel()
                         textInput.openSoftwareInputPanel();
                     } else {
                         textInput.focus = false;
-                        textInput.closeSoftwareInputPanel();
                     }
                 }
+                onPressAndHold: textInput.closeSoftwareInputPanel();
             }
         }
     \endqml
@@ -1333,22 +1333,11 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextInput);
     if (d->showInputPanelOnFocus) {
-        if (d->focusOnPress && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
+        if (d->focusOnPress && !isReadOnly()) {
             openSoftwareInputPanel();
         }
     }
     QDeclarativePaintedItem::focusInEvent(event);
-}
-
-void QDeclarativeTextInput::focusOutEvent(QFocusEvent *event)
-{
-    Q_D(const QDeclarativeTextInput);
-    if (d->showInputPanelOnFocus) {
-        if (d->focusOnPress && !isReadOnly()) {
-            closeSoftwareInputPanel();
-        }
-    }
-    QDeclarativePaintedItem::focusOutEvent(event);
 }
 
 void QDeclarativeTextInputPrivate::init()
