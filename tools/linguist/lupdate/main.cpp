@@ -63,7 +63,7 @@ static void printOut(const QString & out)
 }
 
 class LU {
-    Q_DECLARE_TR_FUNCTIONS(LUpdate);
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
 };
 
 static void recursiveFileInfoList(const QDir &dir,
