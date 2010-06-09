@@ -281,7 +281,12 @@ public:
                     ret << httpProxy;
                     return ret;
                 }
+#ifdef Q_OS_WIN
+		// systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
+                return QNetworkProxyFactory::proxyForQuery(query);
+#else
                 return QNetworkProxyFactory::systemProxyForQuery(query);
+#endif
             }
             void setHttpProxy (QNetworkProxy proxy)
             {
@@ -799,11 +804,11 @@ void QDeclarativeViewer::statusChanged()
         tester->executefailure();
 
     if (canvas->status() == QDeclarativeView::Ready) {
-        initialSize = canvas->sizeHint();
+        initialSize = canvas->initialSize();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-            updateSizeHints();
             if (!isFullScreen() && !isMaximized()) {
                 resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
+                updateSizeHints();
             }
         }
     }
@@ -936,7 +941,7 @@ void QDeclarativeViewer::sceneResized(QSize size)
         if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
             updateSizeHints();
         }
-     }
+    }
 }
 
 void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
@@ -1259,7 +1264,6 @@ void QDeclarativeViewer::updateSizeHints()
         setMinimumSize(QSize(0,0));
         setMaximumSize(QSize(16777215,16777215));
     }
-    updateGeometry();
 }
 
 void QDeclarativeViewer::registerTypes()

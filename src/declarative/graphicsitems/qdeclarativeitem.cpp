@@ -1633,7 +1633,7 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
 
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
 {
-    QObjectList children = prop->object->children();
+    const QObjectList children = prop->object->children();
     if (index < children.count())
         return children.at(index);
     else
@@ -2389,6 +2389,28 @@ void QDeclarativeItem::forceFocus()
             parent->setFocus(Qt::OtherFocusReason);
         parent = parent->parentItem();
     }
+}
+
+
+/*!
+  \qmlmethod Item::childAt(real x, real y)
+
+  Returns the visible child item at point (\a x, \a y), which is in this
+  item's coordinate system, or \c null if there is no such item.
+  */
+QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
+{
+    const QList<QGraphicsItem *> children = childItems();
+    for (int i = children.count()-1; i >= 0; --i) {
+        if (QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i))) {
+            if (child->isVisible() && child->x() <= x
+                && child->x() + child->width() >= x
+                && child->y() <= y
+                && child->y() + child->height() >= y)
+                return child;
+        }
+    }
+    return 0;
 }
 
 void QDeclarativeItemPrivate::focusChanged(bool flag)
