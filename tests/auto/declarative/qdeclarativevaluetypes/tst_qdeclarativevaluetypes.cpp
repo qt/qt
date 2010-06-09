@@ -51,7 +51,9 @@
 #define SRCDIR "."
 #endif
 
+QT_BEGIN_NAMESPACE
 extern int qt_defaultDpi();
+QT_END_NAMESPACE
 
 class tst_qdeclarativevaluetypes : public QObject
 {
