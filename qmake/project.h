@@ -127,7 +127,6 @@ public:
     QStringList userTestFunctions() { return testFunctions.keys(); }
 
     QString projectFile();
-    QString configFile();
     inline QMakeProperty *properties() { return prop; }
 
     bool doProjectTest(QString str, QMap<QString, QStringList> &place);
@@ -173,9 +172,6 @@ inline QString QMakeProject::projectFile()
         return QString("(stdin)");
     return pfile;
 }
-
-inline QString QMakeProject::configFile()
-{ return cfile; }
 
 inline QStringList &QMakeProject::values(const QString &v)
 { return values(v, vars); }
