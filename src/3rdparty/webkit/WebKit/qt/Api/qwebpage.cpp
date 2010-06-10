@@ -3071,6 +3071,8 @@ QWebPluginFactory *QWebPage::pluginFactory() const
     The default implementation returns the following value:
 
     "Mozilla/5.0 (%Platform%; %Security%; %Subplatform%; %Locale%) AppleWebKit/%WebKitVersion% (KHTML, like Gecko) %AppVersion Safari/%WebKitVersion%"
+    
+    On mobile platforms such as Symbian S60 and Maemo, "Mobile Safari" is used instead of "Safari".
 
     In this string the following values are replaced at run-time:
     \list
@@ -3097,7 +3099,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 #elif defined Q_WS_X11
     "X11"
 #elif defined Q_OS_SYMBIAN
-    "SymbianOS"
+    "Symbian"
 #else
     "Unknown"
 #endif
@@ -3164,7 +3166,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 #elif defined Q_OS_ULTRIX
     "DEC Ultrix"
 #elif defined Q_WS_S60
-    "Series60"
+    ""
 #elif defined Q_OS_UNIX
     "UNIX BSD/SYSV system"
 #elif defined Q_OS_UNIXWARE
@@ -3181,16 +3183,25 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
     switch (symbianVersion) {
     case QSysInfo::SV_9_2:
-        osVer = "/9.2";
+        osVer = "OS/9.2";
         break;
     case QSysInfo::SV_9_3:
-        osVer = "/9.3";
+        osVer = "OS/9.3";
         break;
     case QSysInfo::SV_9_4:
-        osVer = "/9.4";
+        osVer = "OS/9.4";
+        break;
+    case QSysInfo::SV_SF_2:
+        osVer = "/2";
+        break;
+    case QSysInfo::SV_SF_3:
+        osVer = "/3";
+        break;
+    case QSysInfo::SV_SF_4:
+        osVer = "/4";
         break;
     default: 
-        osVer = "Unknown";
+        osVer = "";
     }
 #endif
     ua = ua.arg(osVer);
@@ -3259,20 +3270,20 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 
     // SubPlatform Version
     QString subPlatformVer;
-#ifdef Q_OS_SYMBIAN
+#ifdef Q_WS_S60
     QSysInfo::S60Version s60Version = QSysInfo::s60Version();
     switch (s60Version) {
     case QSysInfo::SV_S60_3_1:
-        subPlatformVer = "/3.1";
+        subPlatformVer = "Series60/3.1";
         break;
     case QSysInfo::SV_S60_3_2:
-        subPlatformVer = "/3.2";
+        subPlatformVer = "Series60/3.2";
         break;
     case QSysInfo::SV_S60_5_0:
-        subPlatformVer = "/5.0";
+        subPlatformVer = "Series60/5.0";
         break;
     default: 
-        subPlatformVer = " Unknown";
+        subPlatformVer = "";
     }
 #endif
     ua = ua.arg(subPlatformVer);
@@ -3282,7 +3293,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     if (view())
         locale = view()->locale();
     QString name = locale.name();
-    name[2] = QLatin1Char('-');
+    name.replace(QLatin1Char('_'), QLatin1Char('-'));
     ua.append(name);
     ua.append(QLatin1String(") "));
 
@@ -3305,8 +3316,13 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
         ua.append(QLatin1String(qVersion()));
     }
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    ua.append(QString(QLatin1String(" Mobile Safari/%1"))
+                      .arg(qWebKitVersion()));
+#else
     ua.append(QString(QLatin1String(" Safari/%1"))
                       .arg(qWebKitVersion()));
+#endif
 
     return ua;
 }

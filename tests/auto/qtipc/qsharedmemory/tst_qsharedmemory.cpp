@@ -56,7 +56,7 @@
 #elif defined(Q_OS_WINCE)
 #define LACKEYDIR SRCDIR
 #else
-#define LACKEYDIR SRCDIR "../lackey"
+#define LACKEYDIR "../lackey"
 #endif
 
 Q_DECLARE_METATYPE(QSharedMemory::SharedMemoryError)
@@ -421,7 +421,7 @@ void tst_QSharedMemory::readOnly()
     QString program = LACKEYDIR "/lackey";
     QStringList arguments;
     rememberKey("readonly_segfault");
-    arguments << LACKEYDIR "/scripts/readonly_segfault.js";
+    arguments << SRCDIR "../lackey/scripts/readonly_segfault.js";
 
     // ### on windows disable the popup somehow
     QProcess p;
@@ -734,7 +734,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 
     rememberKey("market");
 
-    QStringList arguments = QStringList() << LACKEYDIR "/scripts/producer.js";
+    QStringList arguments = QStringList() << SRCDIR "../lackey/scripts/producer.js";
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
     producer.start( LACKEYDIR "/lackey", arguments);
@@ -744,7 +744,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
     for (int i = 0; i < processes; ++i) {
-        QStringList arguments = QStringList() << LACKEYDIR  "/scripts/consumer.js";
+        QStringList arguments = QStringList() << SRCDIR  "../lackey/scripts/consumer.js";
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
 #ifdef Q_OS_WINCE

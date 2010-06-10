@@ -97,6 +97,7 @@ public:
     virtual void createTextureData(int width, int height) = 0;
     virtual void resizeTextureData(int width, int height) = 0;
     virtual int glyphMargin() const { return 0; }
+    virtual int glyphPadding() const { return 0; }
 
     virtual void fillTexture(const Coord &coord, glyph_t glyph) = 0;
 

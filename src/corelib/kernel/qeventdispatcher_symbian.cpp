@@ -100,25 +100,40 @@ static inline int qt_socket_select(int nfds, fd_set *readfds, fd_set *writefds, 
 class QSelectMutexGrabber
 {
 public:
-    QSelectMutexGrabber(int fd, QMutex *mutex)
-        : m_mutex(mutex)
+    QSelectMutexGrabber(int fd, QMutex *threadMutex, QMutex *selectCallMutex)
+        : m_threadMutex(threadMutex), m_selectCallMutex(selectCallMutex), bHasThreadLock(false)
     {
-        if (m_mutex->tryLock())
+        // see if selectThread is waiting m_waitCond
+        // if yes ... dont write to pipe
+        if (m_threadMutex->tryLock()) {
+            bHasThreadLock = true;
             return;
+        }
+
+        // still check that SelectThread
+        // is in select call
+        if (m_selectCallMutex->tryLock()) {
+            m_selectCallMutex->unlock();
+            return;
+        }
 
         char dummy = 0;
         qt_pipe_write(fd, &dummy, 1);
 
-        m_mutex->lock();
+        m_threadMutex->lock();
+        bHasThreadLock = true;
     }
 
     ~QSelectMutexGrabber()
     {
-        m_mutex->unlock();
+        if(bHasThreadLock)
+            m_threadMutex->unlock();
     }
 
 private:
-    QMutex *m_mutex;
+    QMutex *m_threadMutex;
+    QMutex *m_selectCallMutex;
+    bool bHasThreadLock;
 };
 
 /*
@@ -400,7 +415,12 @@ void QSelectThread::run()
 
         int ret;
         int savedSelectErrno;
-        ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
+        {
+            // helps fighting the race condition between
+            // selctthread and new socket requests (cancel, restart ...)
+            QMutexLocker locker(&m_selectCallMutex);
+            ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
+        }
         savedSelectErrno = errno;
 
         char buffer;
@@ -464,9 +484,9 @@ void QSelectThread::run()
                 } // end for
 
                 // traversed all, so update
+                updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
                 updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
                 updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
-                updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
 
                 break;
             case EINTR: // Should never occur on Symbian, but this is future proof!
@@ -476,9 +496,9 @@ void QSelectThread::run()
                 break;
             }
         } else {
+            updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
             updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
             updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
-            updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
         }
 
         m_waitCond.wait(&m_mutex);
@@ -495,7 +515,9 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
         start();
     }
 
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    QMutexLocker locker(&m_grabberMutex);
+
+    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
 
     Q_ASSERT(!m_AOStatuses.contains(notifier));
 
@@ -506,7 +528,9 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
 
 void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 {
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    QMutexLocker locker(&m_grabberMutex);
+
+    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
 
     m_AOStatuses.remove(notifier);
 
@@ -515,7 +539,9 @@ void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 
 void QSelectThread::restart()
 {
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    QMutexLocker locker(&m_grabberMutex);
+
+    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
 
     m_waitCond.wakeAll();
 }

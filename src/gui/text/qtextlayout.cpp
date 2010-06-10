@@ -89,9 +89,9 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
         if (align & Qt::AlignJustify && eng->option.textDirection() == Qt::RightToLeft)
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
-            x = line.width - (line.textWidth + leadingSpaceWidth(eng, line));
+            x = line.width - (line.textAdvance + leadingSpaceWidth(eng, line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - line.textWidth)/2;
+            x = (line.width - line.textAdvance)/2;
     }
     return x;
 }
@@ -1928,6 +1928,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 found:       
     if (lbh.rightBearing > 0) // If right bearing has not yet been adjusted
         lbh.adjustRightBearing();
+    line.textAdvance = line.textWidth;
     line.textWidth -= qMin(QFixed(), lbh.rightBearing);
 
     if (line.length == 0) {

@@ -3652,4 +3652,6 @@ EXPORTS
 	_Z40QBasicAtomicPointer_fetchAndStoreAcquirePVPvS_ @ 3651 NONAME
 	_Z40QBasicAtomicPointer_fetchAndStoreRelaxedPVPvS_ @ 3652 NONAME
 	_Z40QBasicAtomicPointer_fetchAndStoreReleasePVPvS_ @ 3653 NONAME
+	_ZN10QTextCodec11validCodecsEv @ 3654 NONAME
+	_ZN20QStateMachinePrivate12clearHistoryEv @ 3655 NONAME
 

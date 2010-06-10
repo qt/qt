@@ -566,7 +566,8 @@ public:
     void _q_readRX71MultiTouchEvents();
 #endif
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
+    int pressureSupported;
     int maxTouchPressure;
     QList<QTouchEvent::TouchPoint> appAllTouchPoints;
 #endif

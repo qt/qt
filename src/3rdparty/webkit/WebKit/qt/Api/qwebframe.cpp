@@ -324,8 +324,9 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, QWebFrame::RenderLayer l
     }
 }
 
-static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy, const QPoint& pos)
+bool QWEBKIT_EXPORT qtwebkit_webframe_scrollOverflow(QWebFrame* qFrame, int dx, int dy, const QPoint& pos)
 {
+    WebCore::Frame* frame = QWebFramePrivate::core(qFrame);
     if (!frame || !frame->document() || !frame->view() || !frame->eventHandler())
         return false;
 
@@ -348,17 +349,24 @@ static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy, const
     bool scrolledHorizontal = false;
     bool scrolledVertical = false;
 
-    if (dx > 0)
-        scrolledHorizontal = renderLayer->scroll(ScrollRight, ScrollByPixel, dx);
-    else if (dx < 0)
-        scrolledHorizontal = renderLayer->scroll(ScrollLeft, ScrollByPixel, qAbs(dx));
+    do {
+        if (dx > 0)
+            scrolledHorizontal = renderLayer->scroll(ScrollRight, ScrollByPixel, dx);
+        else if (dx < 0)
+            scrolledHorizontal = renderLayer->scroll(ScrollLeft, ScrollByPixel, qAbs(dx));
 
-    if (dy > 0)
-        scrolledVertical = renderLayer->scroll(ScrollDown, ScrollByPixel, dy);
-    else if (dy < 0)
-        scrolledVertical = renderLayer->scroll(ScrollUp, ScrollByPixel, qAbs(dy));
+        if (dy > 0)
+            scrolledVertical = renderLayer->scroll(ScrollDown, ScrollByPixel, dy);
+        else if (dy < 0)
+            scrolledVertical = renderLayer->scroll(ScrollUp, ScrollByPixel, qAbs(dy));
 
-    return (scrolledHorizontal || scrolledVertical);
+        if (scrolledHorizontal || scrolledVertical)
+            return true;
+
+        renderLayer = renderLayer->parent();
+    } while (renderLayer);
+
+    return false;
 }
 
 
@@ -1060,7 +1068,7 @@ void QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int d
     if (!qFrame)
         return;
 
-    if (webframe_scrollOverflow(QWebFramePrivate::core(qFrame), dx, dy, pos))
+    if (qtwebkit_webframe_scrollOverflow(qFrame, dx, dy, pos))
         return;
 
     bool scrollHorizontal = false;
@@ -1074,7 +1082,7 @@ void QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int d
 
         if (dy > 0)  // scroll down
             scrollVertical = qFrame->scrollBarValue(Qt::Vertical) < qFrame->scrollBarMaximum(Qt::Vertical);
-            else if (dy < 0) //scroll up
+        else if (dy < 0) //scroll up
             scrollVertical = qFrame->scrollBarValue(Qt::Vertical) > qFrame->scrollBarMinimum(Qt::Vertical);
 
         if (scrollHorizontal || scrollVertical) {

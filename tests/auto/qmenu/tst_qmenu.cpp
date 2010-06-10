@@ -51,6 +51,7 @@
 #include <QListWidget>
 #include <QWidgetAction>
 #include <QDesktopWidget>
+#include <qdialog.h>
 
 #include <qmenu.h>
 #include <qstyle.h>
@@ -104,6 +105,7 @@ private slots:
     void setFixedWidth();
     void deleteActionInTriggered();
     void pushButtonPopulateOnAboutToShow();
+    void QTBUG_10735_crashWithDialog();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -929,6 +931,58 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
     QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
 
+}
+
+
+class MyMenu : public QMenu
+{
+    Q_OBJECT
+public:
+    MyMenu() : m_currentIndex(0)
+    {
+        for (int i = 0; i < 2; ++i)
+            dialogActions[i] = addAction( QString("dialog %1").arg(i), dialogs + i, SLOT(exec()));
+    }
+
+
+    void activateAction(int index)
+    {
+        m_currentIndex = index;
+        popup(QPoint());
+        QTest::qWaitForWindowShown(this);
+        setActiveAction(dialogActions[index]);
+        QTimer::singleShot(500, this, SLOT(checkVisibility()));
+        QTest::keyClick(this, Qt::Key_Enter); //activation
+    }
+
+public slots:
+    void activateLastAction()
+    {
+        activateAction(1); 
+    }
+
+    void checkVisibility()
+    {
+        QTRY_VERIFY(dialogs[m_currentIndex].isVisible());
+        if (m_currentIndex == 1) {
+            QApplication::closeAllWindows(); //this is the end of the test
+        }
+    }
+
+
+private:
+    QAction *dialogActions[2];
+    QDialog dialogs[2];
+    int m_currentIndex;
+};
+
+void tst_QMenu::QTBUG_10735_crashWithDialog()
+{
+    MyMenu menu;
+
+    QTimer::singleShot(1000, &menu, SLOT(activateLastAction()));
+    menu.activateAction(0);
+ 
 }
 
 
