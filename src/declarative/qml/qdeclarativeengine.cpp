@@ -191,7 +191,7 @@ when the property has one of the following types:
 \o \c vector3d - use \l{Qt::vector3d()}{Qt.vector3d()}
 \endlist
 
-There are also string based constructors for these types, see \l{qdeclarativebasictypes.html}{QML Basic Types}.
+There are also string based constructors for these types. See \l{qdeclarativebasictypes.html}{QML Basic Types} for more information.
 
 \section1 Date/Time Formatters
 
@@ -1054,8 +1054,9 @@ or \c null if there was an error in creating the component.
 Call \l {Component::createObject()}{Component.createObject()} on the returned
 component to create an object instance of the component.
 
-Here is an example. Remember that QML files that might be loaded
-over the network cannot be expected to be ready immediately.
+Here is an example. Notice it checks whether the component \l{Component::status}{status} is
+\c Component.Ready before calling \l {Component::createObject()}{createObject()}
+in case the QML file is loaded over a network and thus is not ready immediately.
 
 \snippet doc/src/snippets/declarative/componentCreation.js 0
 \codeline
@@ -1095,12 +1096,12 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
 /*!
 \qmlmethod object Qt::createQmlObject(string qml, object parent, string filepath)
 
-Returns a new object created from the given \a string of QML with the specified \a parent,
+Returns a new object created from the given \a string of QML which will have the specified \a parent,
 or \c null if there was an error in creating the object.
 
 If \a filepath is specified, it will be used for error reporting for the created object.
 
-Example (where \c targetItem is the id of an existing QML item):
+Example (where \c parentItem is the id of an existing QML item):
 
 \snippet doc/src/snippets/declarative/createQmlObject.qml 0
 
