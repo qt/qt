@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
     to be provided to multiple views.
 
     Any item within a Package may be assigned a name via the
-    \e {Package.name} attached property.
+    \l{Package::name}{Package.name} attached property.
 
     The example below creates a Package containing two named items;
     \e list and \e grid.  The third element in the package (the \l Rectangle) is parented to whichever
@@ -71,6 +71,11 @@ QT_BEGIN_NAMESPACE
     \snippet examples/declarative/modelviews/package/view.qml 0
 
     \sa {declarative/modelviews/package}{Package example}, QtDeclarative
+*/
+
+/*!
+    \qmlattachedproperty bool Package::name
+    This attached property holds the name of an item within a Package.
 */
 
 

@@ -119,7 +119,7 @@ public:
     delegate (items).
 
     An item can determine its index within the
-    model via the \c VisualItemModel.index attached property.
+    model via the \l{VisualItemModel::index}{index} attached property.
 
     The example below places three colored rectangles in a ListView.
     \code
@@ -146,6 +146,13 @@ QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(QObject *parent)
     : QDeclarativeVisualModel(*(new QDeclarativeVisualItemModelPrivate), parent)
 {
 }
+
+/*!
+    \qmlattachedproperty int VisualItemModel::index
+    This attached property holds the index of this delegate's item within the model.
+
+    It is attached to each instance of the delegate.
+*/
 
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeVisualItemModel::children()
 {

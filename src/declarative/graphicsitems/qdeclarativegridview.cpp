@@ -1087,7 +1087,7 @@ QDeclarativeGridView::~QDeclarativeGridView()
 
 /*!
     \qmlattachedproperty bool GridView::isCurrentItem
-    This attched property is true if this delegate is the current item; otherwise false.
+    This attached property is true if this delegate is the current item; otherwise false.
 
     It is attached to each instance of the delegate.
 */
