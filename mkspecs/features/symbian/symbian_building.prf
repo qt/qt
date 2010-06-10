@@ -96,6 +96,9 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
         QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
         QMAKE_POST_LINK = && $$QMAKE_POST_LINK
     }
+
+    contains(CONFIG, plugin):QMAKE_ELF2E32_FLAGS += --definput=plugin_commonu.def
+
     # The tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error.
     # The comparison of dso files is to avoid extra building of modules that depend on this dso, in
     # case it has not changed.

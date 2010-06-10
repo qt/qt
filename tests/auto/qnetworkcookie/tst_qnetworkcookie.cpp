@@ -693,6 +693,12 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     cookieA.setPath("/foo");
     list = QList<QNetworkCookie>() << cookieA << cookieB;
     QTest::newRow("real-3") << "a=b; expires=Mar 10 07:00:00 2009 GMT, Tue; path=/foo\nc=d; expires=Fri Mar 20 07:00:00 2009 GMT" << list;
+
+    // do not accept cookies with non-alphanumeric characters in domain field (QTBUG-11029)
+    cookie = QNetworkCookie("NonAlphNumDomName", "NonAlphNumDomValue");
+    cookie.setDomain("!@#$%^&*();:."); // the ';' is actually problematic, because it is a separator
+    list = QList<QNetworkCookie>();
+    QTest::newRow("domain-non-alpha-numeric") << "NonAlphNumDomName=NonAlphNumDomValue; domain=!@#$%^&*()" << list;
 }
 
 void tst_QNetworkCookie::parseMultipleCookies()

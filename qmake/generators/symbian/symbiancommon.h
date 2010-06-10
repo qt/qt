@@ -81,6 +81,8 @@ protected:
                       QString &iconFile,
                       QMap<QString, QStringList> &userRssRules);
 
+    void writeCustomDefFile();
+
     QStringList symbianLangCodesFromTsFiles();
     void fillQt2S60LangMapTable();
 

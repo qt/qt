@@ -711,7 +711,7 @@ bool QDeclarativeWebView::sceneEvent(QEvent *event)
     return QDeclarativeItem::sceneEvent(event);
 }
 
-
+#ifndef QT_NO_ACTION
 /*!
     \qmlproperty action WebView::back
     This property holds the action for causing the previous URL in the history to be displayed.
@@ -747,6 +747,7 @@ QAction *QDeclarativeWebView::stopAction() const
 {
     return page()->action(QWebPage::Stop);
 }
+#endif // QT_NO_ACTION
 
 /*!
     \qmlproperty real WebView::title

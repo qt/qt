@@ -91,11 +91,8 @@ void Schema::loadFromData() const
                      "        elementFormDefault=\"qualified\">"
                      "</xsd:schema>" );
 
-    QBuffer buffer(&data);
-    buffer.open(QIODevice::ReadOnly);
-
     QXmlSchema schema;
-    schema.load(&buffer);
+    schema.load(data);
 
     if (schema.isValid())
         qDebug() << "schema is valid";

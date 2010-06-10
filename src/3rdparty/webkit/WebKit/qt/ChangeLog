@@ -1,3 +1,69 @@
+2010-06-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Shinichiro Hamaji.
+
+        [Qt] Fix compilation with QT_NO_PROPERTIES
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * Api/qwebpage.cpp:
+        (QWebPage::event):
+        * Api/qwebpage_p.h:
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::openInspectorFrontend):
+
+2010-05-17  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix compilation with QT_NO_COMBOBOX
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::createSelectPopup):
+        * WebCoreSupport/QtFallbackWebPopup.cpp:
+        * WebCoreSupport/QtFallbackWebPopup.h:
+
+2010-05-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with QT_NO_BEARERMANAGEMENT
+        https://bugs.webkit.org/show_bug.cgi?id=38324
+
+        * Api/qwebsettings.cpp:
+
+2010-03-24  Viatcheslav Ostapenko  <ostapenko.viatcheslav@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        Auto-uppercase and predictive text need to be disabled for S60 (as for maemo)
+        https://bugs.webkit.org/show_bug.cgi?id=33176
+
+        * WebCoreSupport/EditorClientQt.cpp:
+
+2010-06-01  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Add documentation to the QtWebkit bridge
+        https://bugs.webkit.org/show_bug.cgi?id=35861
+
+        This patch includes comprehensive qdoc documentation for the QtWebkit bridge.
+
+        * docs/qtwebkit-bridge.qdoc: Added.
+        * docs/qtwebkit.qdoc:
+        * docs/webkitsnippets/doc_src_qtscript.qdoc: Added.
+        * docs/webkitsnippets/qtwebkit_bridge_snippets.cpp: Added.
+        (wrapInFunction):
+
+2010-06-01  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Rename versioning .pri file to what Qt's mkspecs/features/qt.pri expects.
+
+        * qt_webkit_version.pri: Renamed from WebKit/qt/qtwebkit_version.pri.
+
 2010-05-31  Oswald Buddenhagen  <oswald.buddenhagen@nokia.com>
 
         Reviewed by Simon Hausmann.

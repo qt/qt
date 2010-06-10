@@ -63,6 +63,8 @@
 #include <private/qt_x11_p.h>
 #endif
 
+#include <private/qstylehelper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QIconLoader, iconLoaderInstance)
@@ -488,14 +490,12 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
         basePixmap.load(filename);
 
     int actualSize = qMin(size.width(), size.height());
-    QString key = QLatin1String("$qt_theme_")
-                  + QString::number(basePixmap.cacheKey(), 16)
-                  + QLatin1Char('_')
-                  + QString::number(mode)
-                  + QLatin1Char('_')
-                  + QString::number(qApp->palette().cacheKey(), 16)
-                  + QLatin1Char('_')
-                  + QString::number(actualSize);
+
+    QString key = QLatin1Literal("$qt_theme_")
+                  % HexString<qint64>(basePixmap.cacheKey())
+                  % HexString<int>(mode)
+                  % HexString<qint64>(qApp->palette().cacheKey())
+                  % HexString<int>(actualSize);
 
     QPixmap cachedPixmap;
     if (QPixmapCache::find(key, &cachedPixmap)) {

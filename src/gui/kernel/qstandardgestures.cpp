@@ -47,6 +47,8 @@
 #include "qabstractscrollarea.h"
 #include "qdebug.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 QPanGestureRecognizer::QPanGestureRecognizer()
@@ -563,3 +565,5 @@ void QTapAndHoldGestureRecognizer::reset(QGesture *state)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES

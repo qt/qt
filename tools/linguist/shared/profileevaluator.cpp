@@ -2594,19 +2594,19 @@ void ProFileEvaluator::addProperties(const QHash<QString, QString> &properties)
 void ProFileEvaluator::logMessage(const QString &message)
 {
     if (d->m_verbose && !d->m_skipLevel)
-        qWarning("%s", qPrintable(message));
+        fprintf(stderr, "%s\n", qPrintable(message));
 }
 
 void ProFileEvaluator::fileMessage(const QString &message)
 {
     if (!d->m_skipLevel)
-        qWarning("%s", qPrintable(message));
+        fprintf(stderr, "%s\n", qPrintable(message));
 }
 
 void ProFileEvaluator::errorMessage(const QString &message)
 {
     if (!d->m_skipLevel)
-        qWarning("%s", qPrintable(message));
+        fprintf(stderr, "%s\n", qPrintable(message));
 }
 
 void ProFileEvaluator::setVerbose(bool on)

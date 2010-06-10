@@ -94,6 +94,8 @@ public:
             }
         }
 
+        writeCustomDefFile();
+
         return T::writeMakefile(t);
     }
 };

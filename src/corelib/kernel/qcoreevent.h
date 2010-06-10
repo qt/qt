@@ -275,17 +275,19 @@ public:
         TouchUpdate = 195,
         TouchEnd = 196,
 
+#ifndef QT_NO_GESTURES
         NativeGesture = 197,                    // Internal for platform gesture support
-
+#endif
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,
 
         UpdateSoftKeys = 201,                   // Internal for compressing soft key updates
 
         WinIdChange = 203,
+#ifndef QT_NO_GESTURES
         Gesture = 198,
         GestureOverride = 202,
-
+#endif
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
@@ -327,7 +329,9 @@ private:
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
     friend class QGraphicsScenePrivate;
+#ifndef QT_NO_GESTURES
     friend class QGestureManager;
+#endif
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

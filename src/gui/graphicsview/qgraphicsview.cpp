@@ -2688,10 +2688,12 @@ void QGraphicsView::setupViewport(QWidget *widget)
     if (d->scene && !d->scene->d_func()->allItemsIgnoreTouchEvents)
         widget->setAttribute(Qt::WA_AcceptTouchEvents);
 
+#ifndef QT_NO_GESTURES
     if (d->scene) {
         foreach (Qt::GestureType gesture, d->scene->d_func()->grabbedGestures.keys())
             widget->grabGesture(gesture);
     }
+#endif
 
     widget->setAcceptDrops(acceptDrops());
 }
@@ -2838,6 +2840,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
 
         return true;
     }
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
     case QEvent::GestureOverride:
     {
@@ -2851,6 +2854,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         }
         return true;
     }
+#endif // QT_NO_GESTURES
     default:
         break;
     }

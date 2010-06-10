@@ -5268,7 +5268,7 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
 
         if (isVisible() && data->crect.size() != oldSize) {
             Q_ASSERT(d->extra->topextra);
-            QWidgetBackingStore *bs = d->extra->topextra->backingStore;
+            QWidgetBackingStore *bs = d->extra->topextra->backingStore.data();
             const bool hasStaticContents = bs && bs->hasStaticContents();
             // If we have a backing store with static contents, we have to disable the top-level
             // resize optimization in order to get invalidated regions for resized widgets.

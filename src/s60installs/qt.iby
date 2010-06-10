@@ -74,6 +74,21 @@ data=\epoc32\data\z\resource\qt\plugins\codecs\qtwcodecs.qtplugin          resou
 // iconengines stubs
 data=\epoc32\data\z\resource\qt\plugins\iconengines\qsvgicon.qtplugin      resource\qt\plugins\iconengines\qsvgicon.qtplugin
 
+// qml import plugins
+file=ABI_DIR\BUILD_DIR\qmlwebkitplugin.dll      SHARED_LIB_DIR\qmlwebkitplugin.dll
+file=ABI_DIR\BUILD_DIR\qmlfolderlistmodelplugin.dll      SHARED_LIB_DIR\qmlfolderlistmodelplugin.dll
+file=ABI_DIR\BUILD_DIR\qmlgesturesplugin.dll      SHARED_LIB_DIR\qmlgesturesplugin.dll
+file=ABI_DIR\BUILD_DIR\qmlparticlesplugin.dll      SHARED_LIB_DIR\qmlparticlesplugin.dll
+
+data=\epoc32\data\z\resource\qt\imports\org\webkit\qmlwebkitplugin.qtplugin    resource\qt\imports\org\webkit\qmlwebkitplugin.qtplugin
+data=\epoc32\data\z\resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin    resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin
+data=\epoc32\data\z\resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin    resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin
+data=\epoc32\data\z\resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin    resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin
+
+data=\epoc32\data\z\resource\qt\imports\org\webkit\qmldir    resource\qt\imports\org\webkit\qmldir
+data=\epoc32\data\z\resource\qt\imports\Qt\labs\folderlistmodel\qmldir    resource\qt\imports\Qt\labs\folderlistmodel\qmldir
+data=\epoc32\data\z\resource\qt\imports\Qt\labs\gestures\qmldir    resource\qt\imports\Qt\labs\gestures\qmldir
+data=\epoc32\data\z\resource\qt\imports\Qt\labs\particles\qmldir    resource\qt\imports\Qt\labs\particles\qmldir
 
 // QtMultimedia audio backend
 data=\epoc32\data\qt\qtlibspluginstubs\qaudio.qtplugin resource\qt\plugins\audio\qaudio.qtplugin

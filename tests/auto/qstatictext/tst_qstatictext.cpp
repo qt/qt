@@ -324,8 +324,7 @@ bool tst_QStaticText::supportsTransformations() const
 
     QPaintEngine::Type type = engine->type();
 
-    if (type == QPaintEngine::OpenGL2
-        || type == QPaintEngine::OpenGL
+    if (type == QPaintEngine::OpenGL
 #if !defined Q_WS_WIN
         || type == QPaintEngine::Raster
 #endif
@@ -471,7 +470,7 @@ void tst_QStaticText::transformationChanged()
 
         p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
-        p.scale(7.0, 5.0);
+        p.scale(2.0, 2.5);
         p.drawText(QRectF(0, 0, 1000, 1000), 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
@@ -487,7 +486,7 @@ void tst_QStaticText::transformationChanged()
 
         p.drawStaticText(QPointF(0, 0), text);
 
-        p.scale(7.0, 5.0);
+        p.scale(2.0, 2.5);
         p.drawStaticText(QPointF(0, 0), text);
     }
 
