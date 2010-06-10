@@ -1026,7 +1026,7 @@ inline QRgb QGIFFormat::color(uchar index) const
 QGifHandler::QGifHandler()
 {
     gifFormat = new QGIFFormat;
-    nextDelay = 0;
+    nextDelay = 100;
     loopCnt = 1;
     frameNumber = -1;
     scanIsCached = false;
