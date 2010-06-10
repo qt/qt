@@ -189,15 +189,22 @@ void tst_QApplication::getSetCheck()
 {
     int argc = 0;
     QApplication obj1(argc, 0, QApplication::GuiServer);
-    // QInputContext * QApplication::inputContext()
-    // void QApplication::setInputContext(QInputContext *)
     MyInputContext *var1 = new MyInputContext;
+
+    // QApplication takes ownership, so check for reparenting:
     obj1.setInputContext(var1);
-    QCOMPARE((QInputContext *)var1, obj1.inputContext());
+    QCOMPARE(var1->parent(), static_cast<QObject *>(&obj1));
+
+    // Test for self-assignment:
+    obj1.setInputContext(obj1.inputContext());
+    QVERIFY(obj1.inputContext());
+    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
+
+    // Resetting the input context to 0 is not allowed:
     QTest::ignoreMessage(QtWarningMsg, "QApplication::setInputContext: called with 0 input context");
-    obj1.setInputContext((QInputContext *)0);
-    QCOMPARE((QInputContext *)var1, obj1.inputContext());
-    // delete var1; // No delete, since QApplication takes ownership
+    obj1.setInputContext(0);
+
+    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
 }
 
 class CloseEventTestWindow : public QWidget

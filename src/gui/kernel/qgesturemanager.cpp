@@ -286,6 +286,9 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
     // check if a running gesture switched back to maybe state
     QSet<QGesture *> activeToMaybeGestures = m_activeGestures & newMaybeGestures;
 
+    // check if a maybe gesture switched to canceled - reset it but don't send an event
+    QSet<QGesture *> maybeToCanceledGestures = m_maybeGestures & notGestures;
+
     // check if a running gesture switched back to not gesture state,
     // i.e. were canceled
     QSet<QGesture *> canceledGestures = m_activeGestures & notGestures;
@@ -345,7 +348,8 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
                 << "\n\tstarted:" << startedGestures
                 << "\n\ttriggered:" << triggeredGestures
                 << "\n\tfinished:" << finishedGestures
-                << "\n\tcanceled:" << canceledGestures;
+                << "\n\tcanceled:" << canceledGestures
+                << "\n\tmaybe-canceled:" << maybeToCanceledGestures;
     }
 
     QSet<QGesture *> undeliveredGestures;
@@ -366,7 +370,7 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
 
     // reset gestures that ended
     QSet<QGesture *> endedGestures =
-            finishedGestures + canceledGestures + undeliveredGestures;
+            finishedGestures + canceledGestures + undeliveredGestures + maybeToCanceledGestures;
     foreach (QGesture *gesture, endedGestures) {
         recycle(gesture);
         m_gestureTargets.remove(gesture);

@@ -4668,7 +4668,7 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
 fi
 
 # detect neon support
-if ([ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]) && [ "${CFG_NEON}" = "auto" ]; then
+if ( [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ] ) && [ "${CFG_NEON}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
 	CFG_NEON=yes
     else
@@ -5354,7 +5354,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     fi
 fi # X11/QWS
 
-# x11
+# X11
 if [ "$PLATFORM_X11" = "yes" ]; then
     x11tests="$relpath/config.tests/x11"
     X11TESTS_FLAGS=
@@ -5834,14 +5834,12 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
        fi
 
        if [ "${screen}" = "directfb" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if [ -n "$PKG_CONFIG" ]; then
-               if $PKG_CONFIG --exists directfb 2>/dev/null; then
-                   QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
-                   QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
-               elif directfb-config --version >/dev/null 2>&1; then
-                   QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
-                   QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
-               fi
+           if test -n "$PKG_CONFIG" && "$PKG_CONFIG" --exists directfb 2>/dev/null; then
+               QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
+               QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
+           elif directfb-config --version >/dev/null 2>&1; then
+               QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
+               QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
            fi
 
            # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.

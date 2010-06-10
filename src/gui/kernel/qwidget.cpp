@@ -379,6 +379,8 @@ void QWidget::setInputContext(QInputContext *context)
     if (d->ic)
         delete d->ic;
     d->ic = context;
+    if (d->ic)
+        d->ic->setParent(this);
 #endif
 }
 
