@@ -251,7 +251,7 @@ void QLocalSocketPrivate::checkReadyRead()
 void QLocalSocketPrivate::startAsyncRead()
 {
     do {
-        DWORD bytesToRead = bytesAvailable();
+        DWORD bytesToRead = checkPipeState();
         if (bytesToRead == 0) {
             // There are no bytes in the pipe but we need to
             // start the overlapped read with some buffer size.
@@ -334,9 +334,11 @@ void QLocalSocket::abort()
 }
 
 /*!
-    The number of bytes available from the pipe
-  */
-DWORD QLocalSocketPrivate::bytesAvailable()
+    \internal
+    Returns the number of available bytes in the pipe.
+    Sets QLocalSocketPrivate::pipeClosed to true if the connection is broken.
+ */
+DWORD QLocalSocketPrivate::checkPipeState()
 {
     Q_Q(QLocalSocket);
     DWORD bytes;
@@ -531,7 +533,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
     }
     QIncrementalSleepTimer timer(msecs);
     forever {
-        d->bytesAvailable();    // to check if PeekNamedPipe fails
+        d->checkPipeState();
         if (d->pipeClosed)
             close();
         if (state() == UnconnectedState)
