@@ -165,7 +165,7 @@ static const HashTableValue JSCanvasRenderingContext2DPrototypeTableValues[45] =
     { "drawImageFromRect", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionDrawImageFromRect), (intptr_t)0 },
     { "setShadow", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionSetShadow), (intptr_t)0 },
     { "createPattern", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreatePattern), (intptr_t)0 },
-    { "createImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreateImageData), (intptr_t)2 },
+    { "createImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionCreateImageData), (intptr_t)0 },
     { "getImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionGetImageData), (intptr_t)4 },
     { "putImageData", DontDelete|Function, (intptr_t)static_cast<NativeFunction>(jsCanvasRenderingContext2DPrototypeFunctionPutImageData), (intptr_t)0 },
     { 0, 0, 0, 0 }
@@ -1018,15 +1018,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateImageData
     if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    float sw = args.at(0).toFloat(exec);
-    float sh = args.at(1).toFloat(exec);
-
-
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createImageData(sw, sh, ec)));
-    setDOMException(exec, ec);
-    return result;
+    return castedThisObj->createImageData(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionGetImageData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

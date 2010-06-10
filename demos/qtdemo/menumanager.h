@@ -85,7 +85,6 @@ public:
 
     QDeclarativeEngine* declarativeEngine;
     QDeclarativeItem *qmlRoot;
-    QImage *qmlBgImage;
 
 private slots:
     void exampleFinished();

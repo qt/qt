@@ -48,7 +48,7 @@
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativeguard_p.h>
 
-#include <private/qdeclarativedebugtiming_p.h>
+#include <private/qdeclarativedebugtrace_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -93,35 +93,35 @@ QDeclarativeScene::QDeclarativeScene()
 
 void QDeclarativeScene::keyPressEvent(QKeyEvent *e)
 {
-    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Key);
+    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::Key);
 
     QGraphicsScene::keyPressEvent(e);
 }
 
 void QDeclarativeScene::keyReleaseEvent(QKeyEvent *e)
 {
-    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Key);
+    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::Key);
 
     QGraphicsScene::keyReleaseEvent(e);
 }
 
 void QDeclarativeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *e)
 {
-    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Mouse);
+    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::Mouse);
 
     QGraphicsScene::mouseMoveEvent(e);
 }
 
 void QDeclarativeScene::mousePressEvent(QGraphicsSceneMouseEvent *e)
 {
-    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Mouse);
+    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::Mouse);
 
     QGraphicsScene::mousePressEvent(e);
 }
 
 void QDeclarativeScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *e)
 {
-    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::Mouse);
+    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::Mouse);
 
     QGraphicsScene::mouseReleaseEvent(e);
 }
@@ -675,8 +675,8 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
 {
     Q_D(QDeclarativeView);
 
-    QDeclarativeDebugTiming::addEvent(QDeclarativeDebugTiming::FramePaint);
-    QDeclarativeDebugTiming::startRange(QDeclarativeDebugTiming::Painting);
+    QDeclarativeDebugTrace::addEvent(QDeclarativeDebugTrace::FramePaint);
+    QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Painting);
 
     int time = 0;
     if (frameRateDebug()) 
@@ -684,7 +684,7 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
 
     QGraphicsView::paintEvent(event);
 
-    QDeclarativeDebugTiming::endRange(QDeclarativeDebugTiming::Painting);
+    QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;

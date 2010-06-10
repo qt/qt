@@ -51,6 +51,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTextCodec>
 
+#include <iostream>
+
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
@@ -106,6 +108,11 @@ static int yyInPos;
 static QString yyPackage;
 static QStack<Scope*> yyScope;
 static QString yyDefaultContext;
+
+std::ostream &yyMsg(int line = 0)
+{
+    return std::cerr << qPrintable(yyFileName) << ':' << (line ? line : yyLineNo) << ": ";
+}
 
 static QChar getChar()
 {
@@ -189,10 +196,7 @@ static int getToken()
                     while ( !metAsterSlash ) {
                         yyCh = getChar();
                         if ( yyCh == EOF ) {
-                            qFatal( "%s: Unterminated Java comment starting at"
-                                    " line %d\n",
-                                    qPrintable(yyFileName), yyLineNo );
-
+                            yyMsg() << "Unterminated Java comment.\n";
                             return Tok_Comment;
                         }
 
@@ -228,8 +232,8 @@ static int getToken()
                                 else {
                                     int sub(yyCh.toLower().toAscii() - 87);
                                     if( sub > 15 || sub < 10) {
-                                        qFatal( "%s:%d: Invalid Unicode",
-                                            qPrintable(yyFileName), yyLineNo );
+                                        yyMsg() << "Invalid Unicode value.\n";
+                                        break;
                                     }
                                     unicode += sub;
                                 }
@@ -251,8 +255,7 @@ static int getToken()
                 }
 
                 if ( yyCh != QLatin1Char('"') )
-                    qFatal( "%s:%d: Unterminated string",
-                        qPrintable(yyFileName), yyLineNo );
+                    yyMsg() << "Unterminated string.\n";
 
                 yyCh = getChar();
 
@@ -365,9 +368,8 @@ static bool matchString( QString &s )
         if (yyTok == Tok_String)
             s += yyString;
         else {
-            qWarning( "%s:%d: String used in translation can only contain strings"
-                " concatenated with other strings, not expressions or numbers.",
-                qPrintable(yyFileName), yyLineNo );
+            yyMsg() << "String used in translation can contain only literals"
+                       " concatenated with other literals, not expressions or numbers.\n";
             return false;
         }
         yyTok = getToken();
@@ -475,8 +477,8 @@ static void parse( Translator *tor )
                 yyScope.push(new Scope(yyIdent, Scope::Clazz, yyLineNo));
             }
             else {
-                qFatal( "%s:%d: Class must be followed by a classname",
-                                          qPrintable(yyFileName), yyLineNo );
+                yyMsg() << "'class' must be followed by a class name.\n";
+                break;
             }
             while (!match(Tok_LeftBrace)) {
                 yyTok = getToken();
@@ -547,8 +549,7 @@ static void parse( Translator *tor )
 
         case Tok_RightBrace:
             if ( yyScope.isEmpty() ) {
-                qFatal( "%s:%d: Unbalanced right brace in Java code\n",
-                        qPrintable(yyFileName), yyLineNo );
+                yyMsg() << "Excess closing brace.\n";
             }
             else
                 delete (yyScope.pop());
@@ -577,8 +578,7 @@ static void parse( Translator *tor )
                         yyPackage.append(QLatin1String("."));
                         break;
                     default:
-                         qFatal( "%s:%d: Package keyword should be followed by com.package.name;",
-                                          qPrintable(yyFileName), yyLineNo );
+                         yyMsg() << "'package' must be followed by package name.\n";
                          break;
                 }
                 yyTok = getToken();
@@ -591,11 +591,9 @@ static void parse( Translator *tor )
     }
 
     if ( !yyScope.isEmpty() )
-        qFatal( "%s:%d: Unbalanced braces in Java code\n",
-                 qPrintable(yyFileName), yyScope.top()->line );
+        yyMsg(yyScope.top()->line) << "Unbalanced opening brace.\n";
     else if ( yyParenDepth != 0 )
-        qFatal( "%s:%d: Unbalanced parentheses in Java code\n",
-                 qPrintable(yyFileName), yyParenLineNo );
+        yyMsg(yyParenLineNo) << "Unbalanced opening parenthesis.\n";
 }
 
 

@@ -3190,7 +3190,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     subRule2.drawRule(p, r);
                 }
 
-                handleSubRule.drawRule(p, grooveSubRule.boxRect(hr, Margin));
+                handleSubRule.drawRule(p, handleSubRule.boxRect(hr, Margin));
             }
 
             if (slider->subControls & SC_SliderTickmarks) {

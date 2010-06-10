@@ -909,7 +909,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     QWidgetPrivate *pd = pw->d_func();
     QRect clipR(pd->clipRect());
 #ifdef Q_WS_QWS
-    QWidgetBackingStore *wbs = x->backingStore;
+    QWidgetBackingStore *wbs = x->backingStore.data();
     QWSWindowSurface *surface = static_cast<QWSWindowSurface*>(wbs->windowSurface);
     clipR = clipR.intersected(surface->clipRegion().translated(-toplevelOffset).boundingRect());
 #endif
@@ -939,7 +939,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         invalidateBuffer((newRect & clipR).translated(-data.crect.topLeft()));
     } else {
 
-        QWidgetBackingStore *wbs = x->backingStore;
+        QWidgetBackingStore *wbs = x->backingStore.data();
         QRegion childExpose(newRect & clipR);
 
         if (sourceRect.isValid() && wbs->bltRect(sourceRect, dx, dy, pw))
@@ -982,7 +982,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     if (x->inTopLevelResize)
         return;
 
-    QWidgetBackingStore *wbs = x->backingStore;
+    QWidgetBackingStore *wbs = x->backingStore.data();
     if (!wbs)
         return;
 

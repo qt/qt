@@ -275,11 +275,6 @@ qreal QDeclarativeImage::paintedHeight() const
     \o Image.Error - an error occurred while loading the image
     \endlist
 
-    Note that a change in the status property does not cause anything to happen
-    (although it reflects what has happened with the image internally). If you wish
-    to react to the change in status you need to do it yourself, for example in one
-    of the following ways:
-
     Use this status to provide an update or respond to the status change in some way.
     For example, you could:
 

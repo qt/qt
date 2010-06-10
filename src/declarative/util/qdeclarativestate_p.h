@@ -84,7 +84,7 @@ public:
     void deleteFromBinding();
 };
 
-class QDeclarativeActionEvent
+class Q_AUTOTEST_EXPORT QDeclarativeActionEvent
 {
 public:
     virtual ~QDeclarativeActionEvent();

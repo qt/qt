@@ -37,6 +37,7 @@
 #include "CSSPropertyNames.h"
 #include "CachedCSSStyleSheet.h"
 #include "Chrome.h"
+#include "ChromeClient.h"
 #include "DOMWindow.h"
 #include "DocLoader.h"
 #include "DocumentType.h"
@@ -1852,6 +1853,13 @@ IntRect Frame::tiledBackingStoreContentsRect()
     if (!m_view)
         return IntRect();
     return IntRect(IntPoint(), m_view->contentsSize());
+}
+
+IntRect Frame::tiledBackingStoreVisibleRect()
+{
+    if (!m_page)
+        return IntRect();
+    return m_page->chrome()->client()->visibleRectForTiledBackingStore();
 }
 #endif
 

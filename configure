@@ -2201,9 +2201,11 @@ minimal|small|medium|large|full)
     ;;
 *)
     # not known to be sufficient for anything
-    if [ '!' -f "$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h" ]; then
+    if [ '!' -f "$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h" ] && [ '!' -f `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` ]; then
         echo >&2 "Error: configuration file not found:"
         echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
+        echo >&2 "  or"
+        echo >&2 "  `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`"
         OPT_HELP=yes
     fi
 esac
@@ -3201,15 +3203,25 @@ fi
 
 #prefix
 if [ -z "$QT_INSTALL_PREFIX" ]; then
-    if [ "$CFG_DEV" = "yes" ]; then
-	QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
-    elif [ "$PLATFORM_QWS" = "yes" ]; then
-        QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
-        if [ "$PLATFORM" != "$XPLATFORM" ]; then
-            QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
+    if [ -d "$EPOCROOT" ]; then
+        case "$XPLATFORM" in *symbian*)
+            QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
+            QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
+            ;;
+        esac
+    fi
+
+    if [ -z "$QT_INSTALL_PREFIX" ]; then # still empty
+        if [ "$CFG_DEV" = "yes" ]; then
+            QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
+        elif [ "$PLATFORM_QWS" = "yes" ]; then
+            QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
+            if [ "$PLATFORM" != "$XPLATFORM" ]; then
+                    QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
+            fi
+        else
+            QT_INSTALL_PREFIX="/usr/local/Trolltech/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Trolltech/Qt-$QT_VERSION
         fi
-    else
-        QT_INSTALL_PREFIX="/usr/local/Trolltech/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Trolltech/Qt-$QT_VERSION
     fi
 fi
 QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
@@ -7229,7 +7241,11 @@ full)
 *)
     tmpconfig="$outpath/src/corelib/global/qconfig.h.new"
     echo "#ifndef QT_BOOTSTRAPPED" >"$tmpconfig"
-    cat "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" >>"$tmpconfig"
+    if [ -f "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" ]; then
+        cat "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" >>"$tmpconfig"
+    elif [ -f `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` ]; then
+        cat `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` >>"$tmpconfig"
+    fi
     echo "#endif" >>"$tmpconfig"
     ;;
 esac
@@ -7509,6 +7525,10 @@ then
 fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#ifndef QT_BOOTSTRAPPED
+
+EOF
     for cfg in $QCONFIG_FLAGS; do
         cfgd=`echo $cfg | sed 's/=.*$//'` # trim pushed 'Foo=Bar' defines
         cfg=`echo $cfg | sed 's/=/ /'`    # turn first '=' into a space
@@ -7541,6 +7561,10 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 EOF
         fi
     done
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#endif // QT_BOOTSTRAPPED
+
+EOF
 fi
 
 if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
@@ -8025,7 +8049,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "NOTE: When linking against OpenSSL, you can override the default"
     echo "library names through OPENSSL_LIBS."
     echo "For example:"
-    echo "    ./configure -openssl-linked OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto'"
+    echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     echo
 fi
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then

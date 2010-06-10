@@ -48,6 +48,7 @@
 #include "qline.h"
 #include "qdebug.h"
 #include <QtCore/qcoreapplication.h>
+#include "private/qstylehelper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -96,9 +97,11 @@ const uchar *qt_patternForBrush(int brushStyle, bool invert)
 
 QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
 {
+
     QPixmap pm;
-    QString key = QLatin1String("$qt-brush$") + QString::number(brushStyle)
-                  + QString::number((int)invert);
+    QString key = QLatin1Literal("$qt-brush$")
+                  % HexString<uint>(brushStyle)
+                  % QLatin1Char(invert ? '1' : '0');
     if (!QPixmapCache::find(key, pm)) {
         pm = QBitmap::fromData(QSize(8, 8), qt_patternForBrush(brushStyle, invert),
                                QImage::Format_MonoLSB);

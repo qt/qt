@@ -110,13 +110,53 @@ class QWidgetItemV2;
 
 class QStyle;
 
+class Q_AUTOTEST_EXPORT QRefCountedWidgetBackingStore
+{
+public:
+    QRefCountedWidgetBackingStore();
+    ~QRefCountedWidgetBackingStore();
+
+    void create(QWidget *tlw);
+    void destroy();
+
+    void ref();
+    void deref();
+
+    inline QWidgetBackingStore* data()
+    {
+        return m_ptr;
+    }
+
+    inline QWidgetBackingStore* operator->()
+    {
+        return m_ptr;
+    }
+
+    inline QWidgetBackingStore& operator*()
+    {
+        return *m_ptr;
+    }
+
+    inline operator bool() const
+    {
+        return (0 != m_ptr);
+    }
+
+private:
+    Q_DISABLE_COPY(QRefCountedWidgetBackingStore)
+
+private:
+    QWidgetBackingStore* m_ptr;
+    int m_count;
+};
+
 struct QTLWExtra {
     // *************************** Cross-platform variables *****************************
 
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     QIcon *icon; // widget icon
     QPixmap *iconPixmap;
-    QWidgetBackingStore *backingStore;
+    QRefCountedWidgetBackingStore backingStore;
     QWindowSurface *windowSurface;
     QPainter *sharedPainter;
 
@@ -502,7 +542,9 @@ public:
     bool setMinimumSize_helper(int &minw, int &minh);
     bool setMaximumSize_helper(int &maxw, int &maxh);
     void setConstraints_sys();
+    bool pointInsideRectAndMask(const QPoint &) const;
     QWidget *childAt_helper(const QPoint &, bool) const;
+    QWidget *childAtRecursiveHelper(const QPoint &p, bool, bool includeFrame = false) const;
     void updateGeometry_helper(bool forceUpdate);
 
     void getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const;
@@ -685,7 +727,9 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
+#ifndef QT_NO_GESTURES
     QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
+#endif
 
     // Bit fields.
     uint high_attributes[4]; // the low ones are in QWidget::widget_attributes
@@ -714,8 +758,9 @@ public:
     void updateX11AcceptFocus();
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
+#ifndef QT_NO_GESTURES
     uint nativeGesturePanEnabled : 1;
-
+#endif
     bool shouldShowMaximizeButton();
     void winUpdateIsOpaque();
     void reparentChildren();
@@ -925,11 +970,18 @@ inline void QWidgetPrivate::setSharedPainter(QPainter *painter)
     x->sharedPainter = painter;
 }
 
+inline bool QWidgetPrivate::pointInsideRectAndMask(const QPoint &p) const
+{
+    Q_Q(const QWidget);
+    return q->rect().contains(p) && (!extra || !extra->hasMask || q->testAttribute(Qt::WA_MouseNoMask)
+                                     || extra->mask.contains(p));
+}
+
 inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
 {
     Q_Q(const QWidget);
     QTLWExtra *x = q->window()->d_func()->maybeTopData();
-    return x ? x->backingStore : 0;
+    return x ? x->backingStore.data() : 0;
 }
 
 QT_END_NAMESPACE

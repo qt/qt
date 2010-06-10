@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeEngine;
 class QMetaProperty;
 
-class QDeclarativePropertyCache : public QDeclarativeRefCount, public QDeclarativeCleanup
+class Q_AUTOTEST_EXPORT QDeclarativePropertyCache : public QDeclarativeRefCount, public QDeclarativeCleanup
 {
 public:
     QDeclarativePropertyCache(QDeclarativeEngine *);

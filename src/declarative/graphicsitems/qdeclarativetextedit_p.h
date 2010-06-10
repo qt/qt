@@ -82,11 +82,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
     Q_PROPERTY(QRect cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
     Q_PROPERTY(QDeclarativeComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
-    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
-    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(int selectionStart READ selectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
-    Q_PROPERTY(bool showInputPanelOnFocus READ showInputPanelOnFocus WRITE setShowInputPanelOnFocus NOTIFY showInputPanelOnFocusChanged)
     Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection NOTIFY persistentSelectionChanged)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
@@ -160,18 +159,12 @@ public:
     void setCursorDelegate(QDeclarativeComponent*);
 
     int selectionStart() const;
-    void setSelectionStart(int);
-
     int selectionEnd() const;
-    void setSelectionEnd(int);
 
     QString selectedText() const;
 
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
-
-    bool showInputPanelOnFocus() const;
-    void setShowInputPanelOnFocus(bool showOnFocus);
 
     bool persistentSelection() const;
     void setPersistentSelection(bool on);
@@ -198,6 +191,10 @@ public:
     qreal paintedWidth() const;
     qreal paintedHeight() const;
 
+    Q_INVOKABLE QRectF positionToRectangle(int) const;
+    Q_INVOKABLE int positionAt(int x, int y) const;
+    Q_INVOKABLE void moveCursorSelection(int pos);
+
 Q_SIGNALS:
     void textChanged(const QString &);
     void paintedSizeChanged();
@@ -221,10 +218,16 @@ Q_SIGNALS:
     void persistentSelectionChanged(bool isPersistentSelection);
     void textMarginChanged(qreal textMargin);
     void selectByMouseChanged(bool selectByMouse);
-    void showInputPanelOnFocusChanged(bool showOnFocus);
 
 public Q_SLOTS:
     void selectAll();
+    void selectWord();
+    void select(int start, int end);
+#ifndef QT_NO_CLIPBOARD
+    void cut();
+    void copy();
+    void paste();
+#endif
 
 private Q_SLOTS:
     void updateImgCache(const QRectF &rect);

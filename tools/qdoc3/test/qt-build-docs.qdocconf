@@ -36,6 +36,7 @@ qhp.Qt.extraFiles          = index.html \
 									images/page.png \
 									images/page_bg.png \
 									images/sprites-combined.png \
+									images/arrow-down.png \
 									images/spinner.gif \
                              	    images/stylesheet-coffee-plastique.png \
                              	    images/taskmenuextension-example.png \
@@ -43,6 +44,7 @@ qhp.Qt.extraFiles          = index.html \
                              	   images/dynamiclayouts-example.png \
 									scripts/functions.js \
 									scripts/jquery.js \
+									style/OfflineStyle.css \
 								    style/style_ie6.css \
 									style/style_ie7.css \
 									style/style_ie8.css \

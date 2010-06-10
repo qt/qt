@@ -39,50 +39,98 @@
 **
 ****************************************************************************/
 
+//![import]
 import Qt 4.7
+//![import]
 
-//! [3]
 Rectangle {
-    width: 240; height: 180; color: "white"
-    // ContactModel model is defined in dummydata/ContactModel.qml
-    // The viewer automatically loads files in dummydata/* to assist
-    // development without a real data source.
+    width: childrenRect.width; height: childrenRect.height
 
-    // Define a delegate component.  A component will be
-    // instantiated for each visible item in the list.
-//! [0]
+Row {
+
+//![classdocs simple]
+GridView {
+    width: 300; height: 200
+
+    model: ContactModel {}
+    delegate: Column {
+        Image { source: portrait; anchors.horizontalCenter: parent.horizontalCenter }
+        Text { text: name; anchors.horizontalCenter: parent.horizontalCenter }
+    }
+}
+//![classdocs simple]
+
+
+//![classdocs advanced]
+Rectangle {
+    width: 300; height: 200
+
     Component {
-        id: delegate
+        id: contactDelegate
         Item {
-            id: wrapper
-            width: 80; height: 78
+            width: grid.cellWidth; height: grid.cellHeight
             Column {
+                anchors.fill: parent
                 Image { source: portrait; anchors.horizontalCenter: parent.horizontalCenter }
                 Text { text: name; anchors.horizontalCenter: parent.horizontalCenter }
             }
         }
     }
-//! [0]
-    // Define a highlight component.  Just one of these will be instantiated
-    // by each ListView and placed behind the current item.
-//! [1]
-    Component {
-        id: highlight
-        Rectangle {
-            color: "lightsteelblue"
-            radius: 5
-        }
-    }
-//! [1]
-    // The actual grid
-//! [2]
+
     GridView {
-        width: parent.width; height: parent.height
-        model: ContactModel; delegate: delegate
+        id: grid
+        anchors.fill: parent
         cellWidth: 80; cellHeight: 80
-        highlight: highlight
+
+        model: ContactModel {}
+        delegate: contactDelegate
+        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
         focus: true
     }
-//! [2]
 }
-//! [3]
+//![classdocs advanced]
+
+//![delayRemove]
+Component {
+    id: delegate
+    Item {
+        GridView.onRemove: SequentialAnimation {
+            PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: true }
+            NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
+            PropertyAction { target: wrapper; property: "GridView.delayRemove"; value: false }
+        }
+    }
+}
+//![delayRemove]
+
+//![highlightFollowsCurrentItem]
+Component {
+    id: highlight
+    Rectangle {
+        width: view.cellWidth; height: view.cellHeight
+        color: "lightsteelblue"; radius: 5
+        SpringFollow on x { to: view.currentItem.x; spring: 3; damping: 0.2 }
+        SpringFollow on y { to: view.currentItem.y; spring: 3; damping: 0.2 }
+    }
+}
+
+GridView {
+    id: view
+    width: 300; height: 200
+    cellWidth: 80; cellHeight: 80
+
+    model: ContactModel {}
+    delegate: Column {
+        Image { source: portrait; anchors.horizontalCenter: parent.horizontalCenter }
+        Text { text: name; anchors.horizontalCenter: parent.horizontalCenter }
+    }
+
+    highlight: highlight
+    highlightFollowsCurrentItem: false
+    focus: true
+}
+//![highlightFollowsCurrentItem]
+
+}
+
+}

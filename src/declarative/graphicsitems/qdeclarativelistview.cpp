@@ -427,6 +427,8 @@ public:
                 scheduleLayout();
             }
         }
+        if (currentItem && currentItem->item == item)
+            updateHighlight();
         if (trackedItem && trackedItem->item == item)
             q->trackedPositionChanged();
     }
@@ -1103,7 +1105,9 @@ void QDeclarativeListViewPrivate::updateHeader()
 
 void QDeclarativeListViewPrivate::fixupPosition()
 {
-    moveReason = Other;
+    if ((haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange)
+        || snapMode != QDeclarativeListView::NoSnap)
+        moveReason = Other;
     if (orient == QDeclarativeListView::Vertical)
         fixupY();
     else
@@ -1325,13 +1329,11 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     Another component can display this model data in a ListView, like this:
 
-    \table 
-    \row 
-    \o \snippet doc/src/snippets/declarative/listview/listview.qml import
+    \snippet doc/src/snippets/declarative/listview/listview.qml import
     \codeline
     \snippet doc/src/snippets/declarative/listview/listview.qml classdocs simple
-    \o \image listview-simple.png
-    \endtable
+
+    \image listview-simple.png
 
     Here, the ListView creates a \c ContactModel component for its model, and a \l Text element
     for its delegate. The view will create a new \l Text component for each item in the model. Notice
@@ -1342,13 +1344,10 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
     to enable keyboard navigation for the list view.
     
-    \table
-    \row
-    \o \snippet doc/src/snippets/declarative/listview/listview.qml classdocs advanced
-    \o \image listview-highlight.png
-    \endtable
+    \snippet doc/src/snippets/declarative/listview/listview.qml classdocs advanced
+    \image listview-highlight.png
 
-    In a ListView, delegates are instantiated as needed and may be destroyed at any time.
+    In a GridView, delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
     \note Views do not enable \e clip automatically.  If the view
@@ -1466,13 +1465,15 @@ void QDeclarativeListView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
     }
     d->clear();
+    QDeclarativeVisualModel *oldModel = d->model;
+    d->model = 0;
     d->setPosition(0);
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
     QDeclarativeVisualModel *vim = 0;
     if (object && (vim = qobject_cast<QDeclarativeVisualModel *>(object))) {
         if (d->ownModel) {
-            delete d->model;
+            delete oldModel;
             d->ownModel = false;
         }
         d->model = vim;
@@ -1480,6 +1481,8 @@ void QDeclarativeListView::setModel(const QVariant &model)
         if (!d->ownModel) {
             d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
+        } else {
+            d->model = oldModel;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))
             dataModel->setModel(model);
@@ -1630,7 +1633,7 @@ int QDeclarativeListView::count() const
     This property holds the component to use as the highlight.
 
     An instance of the highlight component is created for each list.
-    The geometry of the resultant component instance is managed by the list
+    The geometry of the resulting component instance is managed by the list
     so as to stay with the current item, unless the highlightFollowsCurrentItem
     property is false.
 
@@ -1663,7 +1666,7 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
     
-    Here is a highlight with its motion defined by the a \l {SpringFollow} item:
+    Here is a highlight with its motion defined by a \l {SpringFollow} item:
 
     \snippet doc/src/snippets/declarative/listview/listview.qml highlightFollowsCurrentItem
 
@@ -2038,8 +2041,8 @@ void QDeclarativeListView::setHighlightResizeDuration(int duration)
 /*!
     \qmlproperty enumeration ListView::snapMode
 
-    This property determines where the view's scrolling behavior stops following a drag or flick.
-    The allowed values are:
+    This property determines how the view scrolling will settle following a drag or flick.
+    The possible values are:
 
     \list
     \o ListView.NoSnap (default) - the view stops anywhere within the visible area.
