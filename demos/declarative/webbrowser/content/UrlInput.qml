@@ -73,6 +73,10 @@ Item {
             urlText.text = webView.url
             webView.focus = true
         }
+        Keys.onEnterPressed: {
+            container.urlEntered(urlText.text)
+            webView.focus = true
+        }
         Keys.onReturnPressed: {
             container.urlEntered(urlText.text)
             webView.focus = true

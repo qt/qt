@@ -78,7 +78,7 @@ class QByteArray;
     \since 4.7
     \brief The Component element encapsulates a QML component description.
 
-    Components are reusable, encapsulated Qml element with a well-defined interface.
+    Components are reusable, encapsulated QML elements with well-defined interfaces.
     They are often defined in \l {qdeclarativedocuments.html}{Component Files}.
 
     The \e Component element allows defining components within a QML file.
@@ -547,16 +547,18 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 
 /*!
     \qmlmethod object Component::createObject(parent)
-    Returns an object instance from this component, or null if object creation fails.
+
+    Creates and returns an object instance of this component that will have the given 
+    \a parent. Returns null if object creation fails.
 
     The object will be created in the same context as the one in which the component
     was created. This function will always return null when called on components
     which were not created in QML.
 
-    Note that if the returned object is to be displayed, its \c parent must be set to
-    an existing item in a scene, or else the object will not be visible. The parent
-    argument is required to help you avoid this, you must explicitly pass in null if
-    you wish to create an object without setting a parent.
+    If you wish to create an object without setting a parent, specify \c null for
+    the \a parent value. Note that if the returned object is to be displayed, you 
+    must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent} 
+    property, or else the object will not be visible.
 */
 
 /*!

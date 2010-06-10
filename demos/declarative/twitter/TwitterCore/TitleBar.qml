@@ -107,7 +107,7 @@ Item {
         name: "Tags"
         PropertyChanges { target: container; x: -tagButton.x + 5 }
         PropertyChanges { target: tagButton; text: "OK" }
-        PropertyChanges { target: lineEdit; focus: true }
+        PropertyChanges { target: editor; focus: true }
     }
 
     transitions: Transition {

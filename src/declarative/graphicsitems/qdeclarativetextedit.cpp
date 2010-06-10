@@ -1391,9 +1391,9 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     your application.
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
-    Symbian^3 -based devices the panels are opened by clicking TextEdit and need to be
-    manually closed by the user. On other platforms the panels are automatically opened
-    when TextEdit element gains focus and closed when the focus is lost.
+    Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
+    the panels are automatically opened when TextEdit element gains focus. Input panels are
+    always closed if no editor owns focus.
 
   . You can disable the automatic behavior by setting the property \c focusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
@@ -1415,9 +1415,9 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
                         textEdit.openSoftwareInputPanel();
                     } else {
                         textEdit.focus = false;
-                        textEdit.closeSoftwareInputPanel();
                     }
                 }
+                onPressAndHold: textEdit.closeSoftwareInputPanel();
             }
         }
     \endcode
@@ -1442,9 +1442,9 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
     your application.
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
-    Symbian^3 -based devices the panels are opened by clicking TextEdit and need to be
-    manually closed by the user. On other platforms the panels are automatically opened
-    when TextEdit element gains focus and closed when the focus is lost.
+    Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
+    the panels are automatically opened when TextEdit element gains focus. Input panels are
+    always closed if no editor owns focus.
 
   . You can disable the automatic behavior by setting the property \c focusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
@@ -1466,9 +1466,9 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
                         textEdit.openSoftwareInputPanel();
                     } else {
                         textEdit.focus = false;
-                        textEdit.closeSoftwareInputPanel();
                     }
                 }
+                onPressAndHold: textEdit.closeSoftwareInputPanel();
             }
         }
     \endcode
@@ -1489,22 +1489,11 @@ void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextEdit);
     if (d->showInputPanelOnFocus) {
-        if (d->focusOnPress && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
+        if (d->focusOnPress && !isReadOnly()) {
             openSoftwareInputPanel();
         }
     }
     QDeclarativePaintedItem::focusInEvent(event);
-}
-
-void QDeclarativeTextEdit::focusOutEvent(QFocusEvent *event)
-{
-    Q_D(const QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus) {
-        if (d->focusOnPress && !isReadOnly()) {
-            closeSoftwareInputPanel();
-        }
-    }
-    QDeclarativePaintedItem::focusOutEvent(event);
 }
 
 QT_END_NAMESPACE
