@@ -427,6 +427,10 @@ public:
                 scheduleLayout();
             }
         }
+        if ((header && header->item == item) || (footer && footer->item == item)) {
+            updateHeader();
+            updateFooter();
+        }
         if (currentItem && currentItem->item == item)
             updateHighlight();
         if (trackedItem && trackedItem->item == item)
@@ -1045,6 +1049,8 @@ void QDeclarativeListViewPrivate::updateFooter()
             QDeclarative_setParent_noEvent(item, q->viewport());
             item->setParentItem(q->viewport());
             item->setZValue(1);
+            QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
+            itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
             footer = new FxListItem(item, q);
         }
     }
@@ -1083,6 +1089,8 @@ void QDeclarativeListViewPrivate::updateHeader()
             QDeclarative_setParent_noEvent(item, q->viewport());
             item->setParentItem(q->viewport());
             item->setZValue(1);
+            QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
+            itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
             header = new FxListItem(item, q);
             if (visibleItems.isEmpty())
                 visiblePos = header->size();
@@ -2074,6 +2082,15 @@ void QDeclarativeListView::setSnapMode(SnapMode mode)
     }
 }
 
+/*!
+    \qmlproperty Component ListView::footer
+    This property holds the component to use as the footer.
+
+    An instance of the footer component is created for each view.  The
+    footer is positioned at the end of the view, after any items.
+
+    \sa header
+*/
 QDeclarativeComponent *QDeclarativeListView::footer() const
 {
     Q_D(const QDeclarativeListView);
@@ -2097,6 +2114,15 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
     }
 }
 
+/*!
+    \qmlproperty Component ListView::header
+    This property holds the component to use as the header.
+
+    An instance of the header component is created for each view.  The
+    header is positioned at the beginning of the view, before any items.
+
+    \sa footer
+*/
 QDeclarativeComponent *QDeclarativeListView::header() const
 {
     Q_D(const QDeclarativeListView);
@@ -2222,7 +2248,9 @@ qreal QDeclarativeListView::maxYExtent() const
     if (d->orient == QDeclarativeListView::Horizontal)
         return height();
     if (d->maxExtentDirty) {
-        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
+        if (!d->model || !d->model->count()) {
+            d->maxExtent = 0;
+        } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
             d->maxExtent = -(d->positionAt(d->model->count()-1) - d->highlightRangeStart);
             if (d->highlightRangeEnd != d->highlightRangeStart)
                 d->maxExtent = qMin(d->maxExtent, -(d->endPosition() - d->highlightRangeEnd + 1));
@@ -2264,7 +2292,9 @@ qreal QDeclarativeListView::maxXExtent() const
     if (d->orient == QDeclarativeListView::Vertical)
         return width();
     if (d->maxExtentDirty) {
-        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
+        if (!d->model || !d->model->count()) {
+            d->maxExtent = 0;
+        } else if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
             d->maxExtent = -(d->positionAt(d->model->count()-1) - d->highlightRangeStart);
             if (d->highlightRangeEnd != d->highlightRangeStart)
                 d->maxExtent = qMin(d->maxExtent, -(d->endPosition() - d->highlightRangeEnd + 1));

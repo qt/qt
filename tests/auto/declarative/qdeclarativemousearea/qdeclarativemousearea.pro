@@ -5,11 +5,9 @@ macx:CONFIG -= app_bundle
 HEADERS += ../shared/testhttpserver.h
 SOURCES += tst_qdeclarativemousearea.cpp ../shared/testhttpserver.cpp
 
-# Define SRCDIR equal to test's source directory
 symbian: {
-    DEFINES += SRCDIR=\".\"
     importFiles.sources = data
-    importFiles.path = 
+    importFiles.path = .
     DEPLOYMENT = importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
