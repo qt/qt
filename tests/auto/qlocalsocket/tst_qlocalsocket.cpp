@@ -980,6 +980,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
 
     QLocalServer server;
     QLocalSocket client;
+    QSignalSpy readChannelFinishedSpy(&client, SIGNAL(readChannelFinished()));
 
     QVERIFY(server.listen("writeAndDisconnectServer"));
     client.connectToServer("writeAndDisconnectServer");
@@ -992,10 +993,19 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     memset(buffer, 0, sizeof(buffer));
     QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     clientSocket->waitForBytesWritten();
-    clientSocket->disconnectFromServer();
-    QVERIFY(client.waitForReadyRead());
+    clientSocket->close();
+    server.close();
+
+    // Wait for the client to notice the broken connection.
+    int timeout = 5000;
+    do {
+        const int timestep = 100;
+        QTest::qWait(timestep);
+        timeout -= timestep;
+    } while (!readChannelFinishedSpy.count() && timeout > 0);
+
+    QVERIFY(!readChannelFinishedSpy.isEmpty());
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    QVERIFY(client.waitForDisconnected());
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 

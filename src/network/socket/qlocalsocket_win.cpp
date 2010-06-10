@@ -192,6 +192,9 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
 {
     Q_D(QLocalSocket);
 
+    if (d->pipeClosed && d->actualReadBufferSize == 0)
+        return -1;  // signal EOF
+
     qint64 readSoFar;
     // If startAsyncRead() read data, copy it to its destination.
     if (maxSize == 1 && d->actualReadBufferSize > 0) {
@@ -213,10 +216,8 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     }
 
     if (d->pipeClosed) {
-        if (readSoFar == 0) {
+        if (d->actualReadBufferSize == 0)
             QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
-            return -1;  // signal EOF
-        }
     } else {
         if (!d->readSequenceStarted)
             d->startAsyncRead();
@@ -345,7 +346,8 @@ DWORD QLocalSocketPrivate::bytesAvailable()
         if (!pipeClosed) {
             pipeClosed = true;
             emit q->readChannelFinished();
-            QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
+            if (actualReadBufferSize == 0)
+                QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         }
     }
     return 0;
