@@ -45,9 +45,7 @@
 #include <QtCore/qglobal.h>
 
 #ifdef Q_OS_LINUX
-QT_BEGIN_INCLUDE_NAMESPACE
 # include <features.h>
-QT_END_INCLUDE_NAMESPACE
 #endif
 
 #ifdef __GLIBC__
