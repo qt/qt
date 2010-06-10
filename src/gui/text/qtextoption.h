@@ -134,8 +134,8 @@ private:
     uint align : 8;
     uint wordWrap : 4;
     uint design : 1;
-    uint direction : 1;
-    uint unused : 19;
+    uint direction : 2;
+    uint unused : 18;
     uint f;
     qreal tab;
     QTextOptionPrivate *d;

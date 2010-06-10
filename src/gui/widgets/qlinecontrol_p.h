@@ -78,7 +78,7 @@ class Q_GUI_EXPORT QLineControl : public QObject
 
 public:
     QLineControl(const QString &txt = QString())
-        : m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LeftToRight),
+        : m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LayoutDirectionAuto),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
         m_validInput(1), m_blinkStatus(0), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
@@ -272,7 +272,14 @@ public:
     QChar passwordCharacter() const { return m_passwordCharacter; }
     void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
 
-    Qt::LayoutDirection layoutDirection() const { return m_layoutDirection; }
+    Qt::LayoutDirection layoutDirection() const {
+        if (m_layoutDirection == Qt::LayoutDirectionAuto) {
+            if (m_text.isEmpty())
+                return QApplication::keyboardInputDirection();
+            return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+        }
+        return m_layoutDirection;
+    }
     void setLayoutDirection(Qt::LayoutDirection direction)
     {
         if (direction != m_layoutDirection) {

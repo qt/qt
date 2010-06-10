@@ -3478,6 +3478,25 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 }
 
 /*!
+  \since 4.7
+
+  Returns the text direction of the language.
+*/
+Qt::LayoutDirection QLocale::textDirection() const
+{
+    Language lang = language();
+    if (lang == QLocale::Arabic ||
+        lang == QLocale::Hebrew ||
+        lang == QLocale::Persian ||
+        lang == QLocale::Urdu ||
+        lang == QLocale::Syriac)
+        return Qt::RightToLeft;
+
+    return Qt::LeftToRight;
+}
+
+
+/*!
     \since 4.5
 
     Returns the localized name of the "AM" suffix for times specified using
