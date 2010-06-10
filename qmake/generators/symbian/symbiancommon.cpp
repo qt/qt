@@ -503,7 +503,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
         // Wrapped files deployment
         QString currentPath = qmake_getpwd();
         QString sisName = QString("%1.sis").arg(pkgTarget);
-        twf << "\"" << currentPath << "/" << sisName << "\" - \"c:\\adm\\" << sisName << "\"" << endl;
+        twf << "\"" << currentPath << "/" << sisName << "\" - \"c:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
         bootStrapPath.append("/smartinstaller.sis");

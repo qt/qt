@@ -45,6 +45,8 @@
 #include <QtWebKit>
 
 static const int pictureSize = 256;
+static const char* const msgPartNotInTdf = "  Warning: The .tdf file does not have a part for ";
+static const char* const msgSvgNotFound = "  Fatal: Could not find part .svg ";
 
 void dumpPartPictures(const QHash<QString, QPicture> &partPictures) {
     foreach (const QString &partKey, partPictures.keys()) {
@@ -84,6 +86,7 @@ private:
 WebKitSVGRenderer::WebKitSVGRenderer(QWidget *parent)
     : QWebView(parent)
 {
+
     connect(this, SIGNAL(loadFinished(bool)), SLOT(loadFinishedSlot(bool)));
     setFixedSize(pictureSize, pictureSize);
     QPalette pal = palette();
@@ -202,11 +205,19 @@ bool loadThemeFromTdf(const QString &tdfFile,
         return false;
     const QString tdfBasePath = QFileInfo(tdfFile).absolutePath();
     WebKitSVGRenderer renderer;
-    foreach(const QString& partKey, parsedPartSvgs.keys()) {
-        const QString tdfFullName =
-            tdfBasePath + QDir::separator() + parsedPartSvgs.value(partKey);
-        if (!QFile(tdfFullName).exists())
-            qWarning() << "Could not find part:" << parsedPartSvgs.value(partKey);
+    foreach (const QString &partKey, QS60Style::partKeys()) {
+        qDebug() << partKey;
+        QString tdfFullName;
+        if (parsedPartSvgs.contains(partKey)) {
+            tdfFullName = tdfBasePath + QDir::separator() + parsedPartSvgs.value(partKey);
+        } else {
+            qWarning() << msgPartNotInTdf << partKey;
+            tdfFullName = tdfBasePath + QDir::separator() + partKey + QLatin1String(".svg");
+        }
+        if (!QFile(tdfFullName).exists()) {
+            qWarning() << msgSvgNotFound << QDir::toNativeSeparators(tdfFullName);
+            return false;
+        }
         const QPicture partPicture = renderer.svgToQPicture(tdfFullName);
         parsedPartPictures.insert(partKey, partPicture);
     }
@@ -276,8 +287,8 @@ bool loadDefaultTheme(const QString &themePath,
         const QString partFileName = partKey + QLatin1String(".svg");		
         const QString partFile(dir.absolutePath() + QDir::separator() + partFileName);
         if (!QFile::exists(partFile)) {
-            qWarning() << "Could not find part:" << partFileName;
-            continue;
+            qWarning() << msgSvgNotFound << partFileName;
+            return false;
         }
         const QPicture partPicture = renderer.svgToQPicture(partFile);
         partPictures.insert(partKey, partPicture);

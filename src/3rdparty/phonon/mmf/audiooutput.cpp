@@ -78,6 +78,9 @@ bool MMF::AudioOutput::setOutputDevice(int index)
 {
     Q_ASSERT_X(index == AudioOutputDeviceID, Q_FUNC_INFO,
                "We only support one output device, with id 0");
+#ifdef QT_NO_DEBUG
+    Q_UNUSED(index)
+#endif
     return true;
 }
 

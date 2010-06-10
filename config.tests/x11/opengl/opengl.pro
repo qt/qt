@@ -7,4 +7,5 @@ for(p, QMAKE_LIBDIR_OPENGL) {
 }
 
 CONFIG -= qt
-LIBS += -lGL -lGLU
+win32-g++*:LIBS += -lopengl32
+else:LIBS += -lGL -lGLU
