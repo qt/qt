@@ -1,6 +1,10 @@
 # make sure we have a sis file and then call 'runonphone' to execute it on the phone
 
 contains(TEMPLATE, app)|!equals(DEPLOYMENT, default_deployment) {
+    sis_destdir = $$DESTDIR
+    !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
+    contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
+
     run_target.target = runonphone
     run_target.depends = sis
     run_target.commands = runonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis "$${sis_destdir}$${TARGET}.sis"
