@@ -2191,7 +2191,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         if(args.count() != 1) {
             fprintf(stderr, "%s:%d prompt(question) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
-        } else if(projectFile() == "-") {
+        } else if(pfile == "-") {
             fprintf(stderr, "%s:%d prompt(question) cannot be used when '-o -' is used.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
