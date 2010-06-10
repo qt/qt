@@ -1750,6 +1750,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             }
             const bool enabled = optionMenuItem.state & State_Enabled;
             const bool checkable = optionMenuItem.checkType != QStyleOptionMenuItem::NotCheckable;
+            bool ignoreCheckMark = false;
+
+#ifndef QT_NO_COMBOBOX
+            if (qobject_cast<const QComboBox*>(widget))
+                ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
+#endif
 
             uint text_flags = Qt::AlignLeading | Qt::TextShowMnemonic | Qt::TextDontClip
                             | Qt::TextSingleLine | Qt::AlignVCenter;
@@ -1787,7 +1793,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     iconRect.translate(-optionCheckBox.rect.width() - vSpacing, 0);
                     optionCheckBox.rect.translate(textRect.width() + iconRect.width(), 0);
                 }
-                drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
+                if (!ignoreCheckMark)
+                    drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
             }
             //draw icon and/or checkState
             QPixmap pix = menuItem->icon.pixmap(pixelMetric(PM_SmallIconSize),
