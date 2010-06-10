@@ -206,6 +206,9 @@ private:
     // For QNetworkSessionPrivate to indicate about state changes
     void configurationStateChangeReport(TUint32 accessPointId,
                                    QNetworkSession::State newState);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+    QNetworkConfigurationPrivatePointer configurationFromEasyWlan(TUint32 apId, TUint connectionId);
+#endif
 
 private: // Data
     bool               iFirstUpdate; 

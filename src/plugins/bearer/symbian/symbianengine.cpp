@@ -683,6 +683,12 @@ void SymbianEngine::updateActiveAccessPoints()
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+            if (!ptr) {
+                // If IAP was not found, check if the update was about EasyWLAN
+                ptr = configurationFromEasyWlan(apId, connectionId);
+            }
+#endif
             if (ptr) {
                 iConnectionMonitor.GetIntAttribute(connectionId, subConnectionCount, KConnectionStatus, connectionStatus, status);
                 User::WaitForRequest(status);          
@@ -713,7 +719,7 @@ void SymbianEngine::updateActiveAccessPoints()
     if (iOnline != online) {
         iOnline = online;
         mutex.unlock();
-        emit this->onlineStateChanged(iOnline);
+        emit this->onlineStateChanged(online);
         mutex.lock();
     }
 }
@@ -951,15 +957,15 @@ void SymbianEngine::RunL()
     QMutexLocker locker(&mutex);
 
     if (iStatus != KErrCancel) {
-#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-        qDebug("QNCM CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
-#endif
         // By default, start relistening notifications. Stop only if interesting event occured.
         iWaitingCommsDatabaseNotifications = true;
         RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
         switch (event) {
         case RDbNotifier::ECommit:   /** A transaction has been committed.  */
         case RDbNotifier::ERecover:  /** The database has been recovered    */
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+            qDebug("QNCM CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
+#endif
             // Mark that there is update pending. No need to ask more events,
             // as we know we will be updating anyway when the timer expires.
             if (!iUpdatePending) {
@@ -1026,8 +1032,15 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             TRequestStatus status;
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
+
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+            if (!ptr) {
+                // Check if status was regarding EasyWLAN
+                ptr = configurationFromEasyWlan(apId, connectionId);
+            }
+#endif
             if (ptr) {
                 ptr->mutex.lock();
                 toSymbianConfig(ptr)->connectionId = connectionId;
@@ -1047,6 +1060,12 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+            if (!ptr) {
+                // Check for EasyWLAN
+                ptr = configurationFromEasyWlan(apId, connectionId);
+            }
+#endif
             if (ptr) {
                 ptr->mutex.lock();
                 toSymbianConfig(ptr)->connectionId = connectionId;
@@ -1149,6 +1168,12 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         User::WaitForRequest(status);
         QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+        if (!ptr) {
+            // If IAP was not found, check if the update was about EasyWLAN
+            ptr = configurationFromEasyWlan(apId, connectionId);
+        }
+#endif
         if (ptr) {
             QMutexLocker configLocker(&ptr->mutex);
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
@@ -1163,6 +1188,43 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         break;
     }
 }
+
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+// Tries to derive configuration from EasyWLAN.
+// First checks if the interface brought up was EasyWLAN, then derives the real SSID,
+// and looks up configuration based on that one.
+QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUint32 apId, TUint connectionId)
+{
+    if (apId == iCmManager.EasyWlanIdL()) {
+        TRequestStatus status;
+        TBuf<50> easyWlanNetworkName;
+        iConnectionMonitor.GetStringAttribute( connectionId, 0, KNetworkName,
+                                               easyWlanNetworkName, status );
+        User::WaitForRequest(status);
+        if (status.Int() == KErrNone) {
+            QString realSSID = QString::fromUtf16(easyWlanNetworkName.Ptr(), easyWlanNetworkName.Length());
+
+            // Browser through all items and check their name for match
+            QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> >::const_iterator i =
+                    accessPointConfigurations.constBegin();
+            while (i != accessPointConfigurations.constEnd()) {
+                QNetworkConfigurationPrivatePointer ptr = i.value();
+
+                QMutexLocker configLocker(&ptr->mutex);
+
+                if (ptr->name == realSSID) {
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+                    qDebug() << "QNCM EasyWlan uses real SSID: " << realSSID;
+#endif
+                    return ptr;
+                }
+                ++i;
+            }
+        }
+    }
+    return QNetworkConfigurationPrivatePointer();
+}
+#endif
 
 // Sessions may use this function to report configuration state changes,
 // because on some Symbian platforms (especially Symbian^3) all state changes are not
