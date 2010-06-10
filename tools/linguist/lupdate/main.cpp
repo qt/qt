@@ -651,6 +651,7 @@ int main(int argc, char **argv)
                     }
                 } else {
                     sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
+                    projectRoots.insert(fi.absolutePath() + QLatin1Char('/'));
                 }
             }
             numFiles++;

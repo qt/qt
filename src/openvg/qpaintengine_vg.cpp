@@ -1622,11 +1622,48 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         QRectF rect(points[0], points[1], points[2] - points[0],
                     points[5] - points[1]);
         clip(rect.toRect(), op);
-    } else {
-        // The best we can do is clip to the bounding rectangle
-        // of all control points.
-        clip(path.controlPointRect().toRect(), op);
+        return;
     }
+
+    // Try converting the path into a QRegion that tightly follows
+    // the outline of the path we want to clip with.
+    QRegion region(path.convertToPainterPath().toFillPolygon(QTransform()).toPolygon());
+    switch (op) {
+        case Qt::NoClip:
+        {
+            region = defaultClipRegion();
+        }
+        break;
+
+        case Qt::ReplaceClip:
+        {
+            region = d->transform.map(region);
+        }
+        break;
+
+        case Qt::IntersectClip:
+        {
+            region = s->clipRegion.intersect(d->transform.map(region));
+        }
+        break;
+
+        case Qt::UniteClip:
+        {
+            region = s->clipRegion.unite(d->transform.map(region));
+        }
+        break;
+    }
+    if (region.numRects() <= d->maxScissorRects) {
+        // We haven't reached the maximum scissor count yet, so we can
+        // still make use of this region.
+        s->clipRegion = region;
+        updateScissor();
+        return;
+    }
+
+    // The best we can do is clip to the bounding rectangle
+    // of all control points.
+    clip(path.controlPointRect().toRect(), op);
 }
 
 void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
