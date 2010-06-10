@@ -6,16 +6,14 @@ contains(sql-drivers, psql) {
     HEADERS +=      drivers/psql/qsql_psql.h
     SOURCES +=      drivers/psql/qsql_psql.cpp
 
-    unix|win32-g++ {
+    unix|win32-g++* {
         !static:!isEmpty(QT_LFLAGS_PSQL) {
             !contains(QT_CONFIG, system-zlib): QT_LFLAGS_PSQL -= -lz
             !static:LIBS *= $$QT_LFLAGS_PSQL
             QMAKE_CXXFLAGS *= $$QT_CFLAGS_PSQL
         }
         !contains(LIBS, .*pq.*):LIBS *= -lpq
-    }
-
-    win32:!win32-g++:!contains(LIBS, .*pq.* ) LIBS *= -llibpq -lws2_32 -ladvapi32
+    } else:win32:!contains(LIBS, .*pq.* ) LIBS *= -llibpq -lws2_32 -ladvapi32
 }
 
 contains(sql-drivers, mysql) {
@@ -35,8 +33,8 @@ contains(sql-drivers, mysql) {
     }
 
     win32:!contains(LIBS, .*mysql.*):!contains(LIBS, .*mysqld.*) {
-        !win32-g++:LIBS     *= -llibmysql    
-	win32-g++:LIBS	    *= -lmysql
+        !win32-g++*:LIBS *= -llibmysql
+        else:LIBS        *= -lmysql
     }    
 }
 
@@ -49,8 +47,8 @@ contains(sql-drivers, odbc) {
      unix:DEFINES += UNICODE
 
      win32 {
-         !win32-borland:LIBS     *= -lodbc32
-         win32-borland:LIBS      *= $(BCB)/lib/PSDK/odbc32.lib
+         !win32-borland:LIBS *= -lodbc32
+         else:LIBS           *= $(BCB)/lib/PSDK/odbc32.lib
      }
 }
 
@@ -71,7 +69,7 @@ contains(sql-drivers, tds) {
 
     win32 {
         !win32-borland:LIBS += -lNTWDBLIB
-        win32-borland:LIBS += $(BCB)/lib/PSDK/NTWDBLIB.LIB
+        else:LIBS           += $(BCB)/lib/PSDK/NTWDBLIB.LIB
     }
 }
 
@@ -83,7 +81,7 @@ contains(sql-drivers, db2) {
     
     win32 {
         !win32-borland:LIBS += -ldb2cli
-#        win32-borland:LIBS  += $(BCB)/lib/PSDK/db2cli.lib
+#        else:LIBS          += $(BCB)/lib/PSDK/db2cli.lib
     }
 }
 
@@ -95,7 +93,7 @@ contains(sql-drivers, ibase) {
     
     win32 {
         !win32-borland:LIBS *= -lgds32_ms
-        win32-borland:LIBS  += gds32.lib
+        else:LIBS           += gds32.lib
     }
 }
 
