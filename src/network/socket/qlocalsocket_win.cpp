@@ -252,6 +252,9 @@ void QLocalSocketPrivate::startAsyncRead()
 {
     do {
         DWORD bytesToRead = checkPipeState();
+        if (pipeClosed)
+            return;
+
         if (bytesToRead == 0) {
             // There are no bytes in the pipe but we need to
             // start the overlapped read with some buffer size.

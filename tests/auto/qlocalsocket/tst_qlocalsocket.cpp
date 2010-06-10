@@ -1004,7 +1004,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
         timeout -= timestep;
     } while (!readChannelFinishedSpy.count() && timeout > 0);
 
-    QVERIFY(!readChannelFinishedSpy.isEmpty());
+    QCOMPARE(readChannelFinishedSpy.count(), 1);
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
