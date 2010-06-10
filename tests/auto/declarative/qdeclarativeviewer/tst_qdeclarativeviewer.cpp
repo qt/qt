@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
+#include "../../../shared/util.h"
 #include "qmlruntime.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -126,8 +127,8 @@ void tst_QDeclarativeViewer::loading()
     viewer->show();
 
     // initial size
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
+    QTRY_COMPARE(rootItem->width(), 200.0);
+    QTRY_COMPARE(rootItem->height(), 300.0);
     QCOMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
@@ -137,8 +138,8 @@ void tst_QDeclarativeViewer::loading()
     qApp->processEvents();
 
     // window resized
-    QCOMPARE(rootItem->width(), 400.0);
-    QCOMPARE(rootItem->height(), 500.0-viewer->menuBar()->height());
+    QTRY_COMPARE(rootItem->width(), 400.0);
+    QTRY_COMPARE(rootItem->height(), 500.0-viewer->menuBar()->height());
     QCOMPARE(viewer->view()->size(), QSize(400, 500-viewer->menuBar()->height()));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500-viewer->menuBar()->height()));
@@ -150,8 +151,8 @@ void tst_QDeclarativeViewer::loading()
     QVERIFY(rootItem);
 
     // reload cause the window to return back to initial size
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
+    QTRY_COMPARE(rootItem->width(), 200.0);
+    QTRY_COMPARE(rootItem->height(), 300.0);
     QCOMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
@@ -162,8 +163,8 @@ void tst_QDeclarativeViewer::loading()
     qApp->processEvents();
 
     // window resized again
-    QCOMPARE(rootItem->width(), 400.0);
-    QCOMPARE(rootItem->height(), 500.0-viewer->menuBar()->height());
+    QTRY_COMPARE(rootItem->width(), 400.0);
+    QTRY_COMPARE(rootItem->height(), 500.0-viewer->menuBar()->height());
     QCOMPARE(viewer->view()->size(), QSize(400, 500-viewer->menuBar()->height()));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500-viewer->menuBar()->height()));
@@ -175,8 +176,8 @@ void tst_QDeclarativeViewer::loading()
     QVERIFY(rootItem);
 
     // open also causes the window to return back to initial size
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
+    QTRY_COMPARE(rootItem->width(), 200.0);
+    QTRY_COMPARE(rootItem->height(), 300.0);
     QCOMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
@@ -260,8 +261,8 @@ void tst_QDeclarativeViewer::resizing()
     viewer->resize(QSize(250,350));
     qApp->processEvents();
 
-    QCOMPARE(rootItem->width(), 250.0);
-    QCOMPARE(rootItem->height(), 350.0-viewer->menuBar()->height());
+    QTRY_COMPARE(rootItem->width(), 250.0);
+    QTRY_COMPARE(rootItem->height(), 350.0-viewer->menuBar()->height());
     QCOMPARE(viewer->view()->size(), QSize(250, 350-viewer->menuBar()->height()));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350-viewer->menuBar()->height()));
@@ -271,7 +272,7 @@ void tst_QDeclarativeViewer::resizing()
     // do not size view to root object
     rootItem->setWidth(100);
     rootItem->setHeight(200);
-    QCOMPARE(viewer->size(), QSize(250, 350));
+    QTRY_COMPARE(viewer->size(), QSize(250, 350));
 }
 
 void tst_QDeclarativeViewer::paths()
