@@ -131,6 +131,9 @@ void SymbianEngine::initialize()
     }
 
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    TRAP_IGNORE(iConnectionMonitor.SetUintAttribute(EBearerIdAll, 0, KBearerGroupThreshold, 1));
+#endif
     TRAP_IGNORE(iConnectionMonitor.NotifyEventL(*this));
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -804,6 +807,59 @@ void SymbianEngine::updateStatesToSnaps()
     }    
 }
 
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+void SymbianEngine::updateMobileBearerToConfigs(TConnMonBearerInfo bearerInfo)
+{
+    QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
+        accessPointConfigurations.constBegin();
+    while (i != accessPointConfigurations.constEnd()) {
+        QNetworkConfigurationPrivatePointer ptr = i.value();
+
+        QMutexLocker locker(&ptr->mutex);
+
+        SymbianNetworkConfigurationPrivate *p = toSymbianConfig(ptr);
+
+        if (p->bearer >= SymbianNetworkConfigurationPrivate::Bearer2G &&
+            p->bearer <= SymbianNetworkConfigurationPrivate::BearerHSPA) {
+            switch (bearerInfo) {
+            case EBearerInfoCSD:
+                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                break;
+            case EBearerInfoWCDMA:
+                p->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+                break;
+            case EBearerInfoCDMA2000:
+                p->bearer = SymbianNetworkConfigurationPrivate::BearerCDMA2000;
+                break;
+            case EBearerInfoGPRS:
+                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                break;
+            case EBearerInfoHSCSD:
+                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                break;
+            case EBearerInfoEdgeGPRS:
+                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                break;
+            case EBearerInfoWcdmaCSD:
+                p->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+                break;
+            case EBearerInfoHSDPA:
+                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                break;
+            case EBearerInfoHSUPA:
+                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                break;
+            case EBearerInfoHSxPA:
+                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                break;
+            }
+        }
+
+        ++i;
+    }
+}
+#endif
+
 bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePointer ptr,
                                                QNetworkConfiguration::StateFlags newState)
 {
@@ -941,6 +997,20 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
     QMutexLocker locker(&mutex);
 
     switch (aEvent.EventType()) {
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    case EConnMonBearerInfoChange:
+        {
+        CConnMonBearerInfoChange* realEvent;
+        realEvent = (CConnMonBearerInfoChange*) &aEvent;
+        TUint connectionId = realEvent->ConnectionId();
+        if (connectionId == EBearerIdAll) {
+            //Network level event
+            TConnMonBearerInfo bearerInfo = (TConnMonBearerInfo)realEvent->BearerInfo();
+            updateMobileBearerToConfigs(bearerInfo);
+        }
+        break;
+        }
+#endif
     case EConnMonConnectionStatusChange:
         {
         CConnMonConnectionStatusChange* realEvent;
