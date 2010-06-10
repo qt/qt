@@ -910,8 +910,8 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
         //    <=> Note: It's possible that in this case reported IAP is
         //              clone of the one of the IAPs of the used SNAP
         //              => If mappingName matches, clone has been found
-        QNetworkConfiguration pt = QNetworkConfigurationManager()
-                                    .configurationFromIdentifier(QString::number(qHash(iapId)));
+        QNetworkConfiguration pt = QNetworkConfigurationManager().configurationFromIdentifier(
+                QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId)));
 
         SymbianNetworkConfigurationPrivate *symbianConfig =
             toSymbianConfig(privateConfiguration(pt));
@@ -938,7 +938,8 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
     
     if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
         if (engine) {
-            QNetworkConfiguration pt = QNetworkConfigurationManager().configurationFromIdentifier(QString::number(qHash(iapId)));
+            QNetworkConfiguration pt = QNetworkConfigurationManager().configurationFromIdentifier(
+                    QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId)));
             // Try to found User Selected IAP from known IAPs (accessPointConfigurations)
             if (pt.isValid()) {
                 return pt;

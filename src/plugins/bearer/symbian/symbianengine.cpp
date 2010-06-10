@@ -72,9 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE
-    static const int KValueThatWillBeAddedToSNAPId = 1000;
-#endif
 static const int KUserChoiceIAPId = 0;
 
 SymbianNetworkConfigurationPrivate::SymbianNetworkConfigurationPrivate()
@@ -113,7 +110,7 @@ QString SymbianNetworkConfigurationPrivate::bearerName() const
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
-:   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iFirstUpdate(true), iInitOk(true),
+:   QBearerEngine(parent), CActive(CActive::EPriorityHigh), iFirstUpdate(true), iInitOk(true),
     iUpdatePending(false)
 {
 }
@@ -282,7 +279,7 @@ void SymbianEngine::updateConfigurationsL()
         RCmConnectionMethod connectionMethod = iCmManager.ConnectionMethodL(connectionMethods[i]);
         CleanupClosePushL(connectionMethod);
         TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
-        QString ident = QString::number(qHash(iapId));
+        QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
         if (accessPointConfigurations.contains(ident)) {
             knownConfigs.removeOne(ident);
         } else {
@@ -313,7 +310,8 @@ void SymbianEngine::updateConfigurationsL()
         RCmDestination destination;
         destination = iCmManager.DestinationL(destinations[i]);
         CleanupClosePushL(destination);
-        QString ident = QString::number(qHash(destination.Id()+KValueThatWillBeAddedToSNAPId)); //TODO: Check if it's ok to add 1000 SNAP Id to prevent SNAP ids overlapping IAP ids
+        QString ident = QT_BEARERMGMT_CONFIGURATION_SNAP_PREFIX +
+                        QString::number(qHash(destination.Id()));
         if (snapConfigurations.contains(ident)) {
             knownSnapConfigs.removeOne(ident);
         } else {
@@ -347,7 +345,7 @@ void SymbianEngine::updateConfigurationsL()
             CleanupClosePushL(connectionMethod);
             
             TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
-            QString iface = QString::number(qHash(iapId));
+            QString iface = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
             // Check that IAP can be found from accessPointConfigurations list
             QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.value(iface);
             if (!priv) {
@@ -402,7 +400,7 @@ void SymbianEngine::updateConfigurationsL()
     TInt retVal = pDbTView->GotoFirstRecord();
     while (retVal == KErrNone) {
         pDbTView->ReadUintL(TPtrC(COMMDB_ID), apId);
-        QString ident = QString::number(qHash(apId));
+        QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
         if (accessPointConfigurations.contains(ident)) {
             knownConfigs.removeOne(ident);
         } else {
@@ -470,7 +468,7 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
 {
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
-    QString ident = QString::number(qHash(iapId));
+    QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
     
     HBufC *pName = connectionMethod.GetStringAttributeL(CMManager::ECmName);
     CleanupStack::PushL(pName);
@@ -570,7 +568,7 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
         User::Leave(KErrNotFound);
     }
     
-    QString ident = QString::number(qHash(aApId));
+    QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(aApId));
     
     QT_TRYCATCH_LEAVING(apNetworkConfiguration->name = QString::fromUtf16(name.Ptr(),name.Length()));
     apNetworkConfiguration->isValid = true;
@@ -637,10 +635,12 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
     TCmDefConnValue defaultConnectionValue;
     iCmManager.ReadDefConnL(defaultConnectionValue);
     if (defaultConnectionValue.iType == ECmDefConnDestination) {
-        QString iface = QString::number(qHash(defaultConnectionValue.iId+KValueThatWillBeAddedToSNAPId));
+        QString iface = QT_BEARERMGMT_CONFIGURATION_SNAP_PREFIX +
+                        QString::number(qHash(defaultConnectionValue.iId));
         ptr = snapConfigurations.value(iface);
     } else if (defaultConnectionValue.iType == ECmDefConnConnectionMethod) {
-        QString iface = QString::number(qHash(defaultConnectionValue.iId));
+        QString iface = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX +
+                        QString::number(qHash(defaultConnectionValue.iId));
         ptr = accessPointConfigurations.value(iface);
     }
 #endif
@@ -678,7 +678,7 @@ void SymbianEngine::updateActiveAccessPoints()
             iConnectionMonitor.GetConnectionInfo(i, connectionId, subConnectionCount);
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
-            QString ident = QString::number(qHash(apId));
+            QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 iConnectionMonitor.GetIntAttribute(connectionId, subConnectionCount, KConnectionStatus, connectionStatus, status);
@@ -735,7 +735,8 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
         // Set state of returned IAPs to Discovered
         // if state is not already Active
         for(TUint i=0; i<iapInfo.iCount; i++) {
-            QString ident = QString::number(qHash(iapInfo.iIap[i].iIapId));
+            QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX +
+                            QString::number(qHash(iapInfo.iIap[i].iIapId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 unavailableConfigs.removeOne(ident);
@@ -955,7 +956,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             TRequestStatus status;
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
-            QString ident = QString::number(qHash(apId));
+            QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 ptr->mutex.lock();
@@ -974,7 +975,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             TRequestStatus status;
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
-            QString ident = QString::number(qHash(apId));
+            QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 ptr->mutex.lock();
@@ -1045,7 +1046,8 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         TConnMonIapInfo iaps = realEvent->IapAvailability();
         QList<QString> unDiscoveredConfigs = accessPointConfigurations.keys();
         for ( TUint i = 0; i < iaps.Count(); i++ ) {
-            QString ident = QString::number(qHash(iaps.iIap[i].iIapId));
+            QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX +
+                            QString::number(qHash(iaps.iIap[i].iIapId));
 
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
@@ -1075,7 +1077,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         TRequestStatus status;
         iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
         User::WaitForRequest(status);
-        QString ident = QString::number(qHash(apId));
+        QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
         if (ptr) {
             QMutexLocker configLocker(&ptr->mutex);
@@ -1109,7 +1111,8 @@ void SymbianEngine::configurationStateChangeReport(TUint32 accessPointId, QNetwo
     switch (newState) {
     case QNetworkSession::Disconnected:
         {
-            QString ident = QString::number(qHash(accessPointId));
+            QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX +
+                            QString::number(qHash(accessPointId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 // Configuration is either Defined or Discovered

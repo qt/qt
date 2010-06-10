@@ -55,6 +55,9 @@
 // Uncomment and compile QtBearer to gain detailed state tracing
 // #define QT_BEARERMGMT_SYMBIAN_DEBUG
 
+#define QT_BEARERMGMT_CONFIGURATION_SNAP_PREFIX QLatin1String("S_")
+#define QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX  QLatin1String("I_")
+
 class CCommsDatabase;
 class QEventLoop;
 
