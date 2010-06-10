@@ -15,8 +15,7 @@ contains(QT_CONFIG, system-tiff) {
                 unix|win32-g++*:LIBS += -ljpeg
                 win32:!win32-g++*:LIBS += libjpeg.lib
         }
-}
-!contains(QT_CONFIG, system-tiff) {
+} else {
 	INCLUDEPATH += ../../../3rdparty/libtiff/libtiff
 	SOURCES  += \
 	    ../../../3rdparty/libtiff/libtiff/tif_aux.c \

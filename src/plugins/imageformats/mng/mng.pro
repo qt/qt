@@ -16,8 +16,7 @@ symbian: {
 contains(QT_CONFIG, system-mng) {
         unix|win32-g++*:LIBS += -lmng
         win32:!win32-g++*:LIBS += libmng.lib
-}
-!contains(QT_CONFIG, system-mng) {
+} else {
         DEFINES += MNG_BUILD_SO
         DEFINES += MNG_NO_INCLUDE_JNG
 	INCLUDEPATH += ../../../3rdparty/libmng
