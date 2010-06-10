@@ -694,8 +694,17 @@ void QNetworkSessionPrivateImpl::PreferredCarrierAvailable(TAccessPointInfo aOld
             SymbianNetworkConfigurationPrivate *symbianConfig =
                 toSymbianConfig(privateConfiguration(configs[i]));
 
-            if (symbianConfig->numericIdentifier() == aNewAPInfo.AccessPoint())
-                emit preferredConfigurationChanged(configs[i], aIsSeamless);
+            if (symbianConfig->numericIdentifier() == aNewAPInfo.AccessPoint()) {
+                // Any slot connected to the signal might throw an std::exception,
+                // which must not propagate into Symbian code (this function is a callback
+                // from platform). We could convert exception to a symbian Leave, but since the
+                // prototype of this function bans this (no trailing 'L'), we just catch
+                // and drop.
+                QT_TRY {
+                    emit preferredConfigurationChanged(configs[i], aIsSeamless);
+                }
+                QT_CATCH (std::exception&) {}
+            }
         }
     } else {
         migrate();
@@ -705,7 +714,10 @@ void QNetworkSessionPrivateImpl::PreferredCarrierAvailable(TAccessPointInfo aOld
 void QNetworkSessionPrivateImpl::NewCarrierActive(TAccessPointInfo /*aNewAPInfo*/, TBool /*aIsSeamless*/)
 {
     if (iALREnabled > 0) {
-        emit newConfigurationActivated();
+        QT_TRY {
+            emit newConfigurationActivated();
+        }
+        QT_CATCH (std::exception&) {}
     } else {
         accept();
     }
@@ -727,18 +739,24 @@ void QNetworkSessionPrivateImpl::Error(TInt /*aError*/)
         if (ipConnectionNotifier) {
             ipConnectionNotifier->StopNotifications();
         }
-        syncStateWithInterface();
-        // In some cases IAP is still in Connected state when
-        // syncStateWithInterface(); is called
-        // => Following call makes sure that Session state
-        //    changes immediately to Disconnected.
-        newState(QNetworkSession::Disconnected);
-        emit closed();
+        QT_TRY {
+            syncStateWithInterface();
+            // In some cases IAP is still in Connected state when
+            // syncStateWithInterface(); is called
+            // => Following call makes sure that Session state
+            //    changes immediately to Disconnected.
+            newState(QNetworkSession::Disconnected);
+            emit closed();
+        }
+        QT_CATCH (std::exception&) {}
     } else if (iStoppedByUser) {
         // If the user of this session has called the stop() and
         // configuration is based on internet SNAP, this needs to be
         // done here because platform might roam.
-        newState(QNetworkSession::Disconnected);
+        QT_TRY {
+            newState(QNetworkSession::Disconnected);
+        }
+        QT_CATCH (std::exception&) {}
     }
 }
 #endif
@@ -978,12 +996,12 @@ void QNetworkSessionPrivateImpl::RunL()
             if (error != KErrNone) {
                 isOpen = false;
                 iError = QNetworkSession::UnknownSessionError;
-                emit QNetworkSessionPrivate::error(iError);
+                QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
                 Cancel();
                 if (ipConnectionNotifier) {
                     ipConnectionNotifier->StopNotifications();
                 }
-                syncStateWithInterface();
+                QT_TRYCATCH_LEAVING(syncStateWithInterface());
                 return;
             }
  
@@ -1010,8 +1028,10 @@ void QNetworkSessionPrivateImpl::RunL()
 
             startTime = QDateTime::currentDateTime();
 
-            newState(QNetworkSession::Connected);
-            emit quitPendingWaitsForOpened();
+            QT_TRYCATCH_LEAVING({
+                    newState(QNetworkSession::Connected);
+                    emit quitPendingWaitsForOpened();
+                });
             }
             break;
         case KErrNotFound: // Connection failed
@@ -1019,12 +1039,12 @@ void QNetworkSessionPrivateImpl::RunL()
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::InvalidConfigurationError;
-            emit QNetworkSessionPrivate::error(iError);
+            QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
             Cancel();
             if (ipConnectionNotifier) {
                 ipConnectionNotifier->StopNotifications();
             }
-            syncStateWithInterface();
+            QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
         case KErrCancel: // Connection attempt cancelled
         case KErrAlreadyExists: // Connection already exists
@@ -1038,12 +1058,12 @@ void QNetworkSessionPrivateImpl::RunL()
             } else {
                 iError = QNetworkSession::UnknownSessionError;
             }
-            emit QNetworkSessionPrivate::error(iError);
+            QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
             Cancel();
             if (ipConnectionNotifier) {
                 ipConnectionNotifier->StopNotifications();
             }
-            syncStateWithInterface();
+            QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
     }
 }
@@ -1364,7 +1384,7 @@ void ConnectionProgressNotifier::DoCancel()
 void ConnectionProgressNotifier::RunL()
 {
     if (iStatus == KErrNone) {
-        iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError);
+        QT_TRYCATCH_LEAVING(iOwner.handleSymbianConnectionStatusChange(iProgress().iStage, iProgress().iError));
     
         SetActive();
         iConnection.ProgressNotification(iProgress, iStatus);
