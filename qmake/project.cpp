@@ -1406,16 +1406,6 @@ QMakeProject::read(uchar cmd)
             return false;
     }
 
-    if(cmd & ReadPostFiles) { // parse post files
-        const QStringList l = vars["QMAKE_POST_INCLUDE_FILES"];
-        for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            if(read((*it), vars)) {
-                if(vars["QMAKE_INTERNAL_INCLUDED_FILES"].indexOf((*it)) == -1)
-                    vars["QMAKE_INTERNAL_INCLUDED_FILES"].append((*it));
-            }
-        }
-    }
-
     if(cmd & ReadCmdLine) {
         parser.file = "(internal)";
         parser.from_file = false;
