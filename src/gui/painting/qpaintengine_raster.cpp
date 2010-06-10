@@ -68,6 +68,7 @@
 //   #include <private/qrasterizer_p.h>
 #include <private/qimage_p.h>
 #include <private/qstatictext_p.h>
+#include "qmemrotate_p.h"
 
 #include "qpaintengine_raster_p.h"
 //   #include "qbezier_p.h"
@@ -2521,6 +2522,58 @@ QRectF qt_mapRect_non_normalizing(const QRectF &r, const QTransform &t)
     return QRectF(r.topLeft() * t, r.bottomRight() * t);
 }
 
+namespace {
+    enum RotationType {
+        Rotation90,
+        Rotation180,
+        Rotation270,
+        NoRotation
+    };
+
+    inline RotationType qRotationType(const QTransform &transform)
+    {
+        QTransform::TransformationType type = transform.type();
+
+        if (type > QTransform::TxRotate)
+            return NoRotation;
+
+        if (type == QTransform::TxRotate && qFuzzyIsNull(transform.m11()) && qFuzzyCompare(transform.m12(), qreal(-1))
+            && qFuzzyCompare(transform.m21(), qreal(1)) && qFuzzyIsNull(transform.m22()))
+            return Rotation90;
+
+        if (type == QTransform::TxScale && qFuzzyCompare(transform.m11(), qreal(-1)) && qFuzzyIsNull(transform.m12())
+            && qFuzzyIsNull(transform.m21()) && qFuzzyCompare(transform.m22(), qreal(-1)))
+            return Rotation180;
+
+        if (type == QTransform::TxRotate && qFuzzyIsNull(transform.m11()) && qFuzzyCompare(transform.m12(), qreal(1))
+            && qFuzzyCompare(transform.m21(), qreal(-1)) && qFuzzyIsNull(transform.m22()))
+            return Rotation270;
+
+        return NoRotation;
+    }
+
+    template <typename T> void memRotate(RotationType type, const T *srcBase, int w, int h, int sbpl, T *dstBase, int dbpl)
+    {
+        switch (type) {
+        case Rotation90:
+            qt_memrotate90(srcBase, w, h, sbpl, dstBase, dbpl);
+            break;
+        case Rotation180:
+            qt_memrotate180(srcBase, w, h, sbpl, dstBase, dbpl);
+            break;
+        case Rotation270:
+            qt_memrotate270(srcBase, w, h, sbpl, dstBase, dbpl);
+            break;
+        case NoRotation:
+            break;
+        }
+    }
+
+    inline bool isPixelAligned(const QRectF &rect) {
+        return QRectF(rect.toRect()) == rect;
+    }
+}
+
 /*!
     \reimp
 */
@@ -2581,6 +2634,58 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     bool stretch_sr = r.width() != sr.width() || r.height() != sr.height();
 
     const QClipData *clip = d->clip();
+
+    if (s->matrix.type() > QTransform::TxTranslate
+        && !stretch_sr
+        && (!clip || clip->hasRectClip)
+        && s->intOpacity == 256
+        && (d->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver
+            || d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)
+        && d->rasterBuffer->format == img.format()
+        && (d->rasterBuffer->format == QImage::Format_RGB16
+            || d->rasterBuffer->format == QImage::Format_RGB32
+            || (d->rasterBuffer->format == QImage::Format_ARGB32_Premultiplied
+                && d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)))
+    {
+        RotationType rotationType = qRotationType(s->matrix);
+
+        if (rotationType != NoRotation && img.rect().contains(sr.toAlignedRect())) {
+            QRectF transformedTargetRect = s->matrix.mapRect(r);
+
+            if ((!(s->renderHints & QPainter::SmoothPixmapTransform) && !(s->renderHints & QPainter::Antialiasing))
+                || (isPixelAligned(transformedTargetRect) && isPixelAligned(sr)))
+            {
+                QRect clippedTransformedTargetRect = transformedTargetRect.toRect().intersected(clip ? clip->clipRect : d->deviceRect);
+                if (clippedTransformedTargetRect.isNull())
+                    return;
+
+                QRectF clippedTargetRect = s->matrix.inverted().mapRect(QRectF(clippedTransformedTargetRect));
+
+                QRect clippedSourceRect
+                    = QRectF(sr.x() + clippedTargetRect.x() - r.x(), sr.y() + clippedTargetRect.y() - r.y(),
+                            clippedTargetRect.width(), clippedTargetRect.height()).toRect();
+
+                uint dbpl = d->rasterBuffer->bytesPerLine();
+                uint sbpl = img.bytesPerLine();
+
+                uchar *dst = d->rasterBuffer->buffer();
+                uint bpp = img.depth() >> 3;
+
+                const uchar *srcBase = img.bits() + clippedSourceRect.y() * sbpl + clippedSourceRect.x() * bpp;
+                uchar *dstBase = dst + clippedTransformedTargetRect.y() * dbpl + clippedTransformedTargetRect.x() * bpp;
+
+                uint cw = clippedSourceRect.width();
+                uint ch = clippedSourceRect.height();
+
+                if (d->rasterBuffer->format == QImage::Format_RGB16)
+                    memRotate(rotationType, (quint16 *)srcBase, cw, ch, sbpl, (quint16 *)dstBase, dbpl);
+                else
+                    memRotate(rotationType, (quint32 *)srcBase, cw, ch, sbpl, (quint32 *)dstBase, dbpl);
+
+                return;
+            }
+        }
+    }
 
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 

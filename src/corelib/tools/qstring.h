@@ -590,7 +590,7 @@ public:
 #endif
 
     bool isSimpleText() const { if (!d->clean) updateProperties(); return d->simpletext; }
-    bool isRightToLeft() const { if (!d->clean) updateProperties(); return d->righttoleft; }
+    bool isRightToLeft() const;
 
     QString(int size, Qt::Initialization);
 

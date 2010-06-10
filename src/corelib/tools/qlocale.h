@@ -666,6 +666,8 @@ public:
 
     MeasurementSystem measurementSystem() const;
 
+    Qt::LayoutDirection textDirection() const;
+
     inline bool operator==(const QLocale &other) const;
     inline bool operator!=(const QLocale &other) const;
 
