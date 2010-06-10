@@ -61,6 +61,7 @@ SOURCES += access/qftp.cpp \
 contains(QT_CONFIG, zlib) {
    INCLUDEPATH += ../3rdparty/zlib
 } else:!contains(QT_CONFIG, no-zlib) {
-   unix:LIBS_PRIVATE += -lz
-#  win32:LIBS += libz.lib
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
 }
