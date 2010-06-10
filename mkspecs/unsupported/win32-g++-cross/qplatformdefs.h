@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,31 +39,4 @@
 **
 ****************************************************************************/
 
-/* Sample program for configure to test IPv6 support on target
-platforms. We check for the required IPv6 data structures. */
-
-#if defined(__hpux)
-#define _HPUX_SOURCE
-#endif
-
-#ifdef __MINGW32__
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-
-int main()
-{
-    sockaddr_in6 tmp;
-    sockaddr_storage tmp2;
-    (void)tmp.sin6_addr.s6_addr;
-    (void)tmp.sin6_port;
-    (void)tmp.sin6_family;
-    (void)tmp.sin6_scope_id;
-    (void)tmp2;
-
-    return 0;
-}
+#include "../../win32-g++/qplatformdefs.h"
