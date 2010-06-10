@@ -4828,6 +4828,11 @@ void QWidget::setLayoutDirection(Qt::LayoutDirection direction)
 {
     Q_D(QWidget);
 
+    if (direction == Qt::LayoutDirectionAuto) {
+        unsetLayoutDirection();
+        return;
+    }
+
     setAttribute(Qt::WA_SetLayoutDirection);
     d->setLayoutDirection_helper(direction);
 }
