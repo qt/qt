@@ -564,7 +564,8 @@ void SessionTab::finished(quint32 errorCode, qint64 dataReceived, QString errorT
 {
     QMessageBox msgBox;
     msgBox.setStandardButtons(QMessageBox::Close);
-    msgBox.setText(QString("Data transfer completed. \nError code: ") + QString::number(errorCode) +
+    msgBox.setText(QString("Data transfer completed. \nError code: ") +
+                   QString::number(int(errorCode)) +
                    "\nError type: " + errorType +
                    "\nBytes received: " +
                    QString::number(dataReceived));

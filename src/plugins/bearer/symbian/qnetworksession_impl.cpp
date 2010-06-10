@@ -63,7 +63,12 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     iMobility = NULL;
 #endif
-
+    // Try to load "Open C" dll dynamically and
+    // try to attach to unsetdefaultif function dynamically.
+    // This is to avoid build breaks with old OpenC versions.
+    if (iOpenCLibrary.Load(_L("libc")) == KErrNone) {
+        iDynamicUnSetdefaultif = (TOpenCUnSetdefaultifFunction)iOpenCLibrary.Lookup(597);
+    }
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
 }
 
@@ -86,14 +91,15 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
         iMobility = NULL;
     }
 #endif
-
     iConnection.Close();
     iSocketServ.Close();
     
     // Close global 'Open C' RConnection
+    // Clears also possible unsetdefaultif() flags.
     setdefaultif(0);
     
     iConnectionMonitor.Close();
+    iOpenCLibrary.Close();
 }
 
 void QNetworkSessionPrivateImpl::configurationStateChanged(TUint32 accessPointId, TUint32 connMonId, QNetworkSession::State newState)
@@ -525,8 +531,15 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     iConnection.Close();
     iSocketServ.Close();
     
-    // Close global 'Open C' RConnection
-    setdefaultif(0);
+    // Close global 'Open C' RConnection. If OpenC supports,
+    // close the defaultif for good to avoid difficult timing
+    // and bouncing issues of network going immediately back up
+    //  because of e.g. select() thread etc.
+    if (iDynamicUnSetdefaultif) {
+        iDynamicUnSetdefaultif();
+    } else {
+        setdefaultif(0);
+    }
 
     if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
         newState(QNetworkSession::Closing);
@@ -611,8 +624,13 @@ void QNetworkSessionPrivateImpl::migrate()
 {
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     if (iMobility) {
-        // Close global 'Open C' RConnection
-        setdefaultif(0);
+        // Close global 'Open C' RConnection. If openC supports, use the 'heavy'
+        // version to block all subsequent requests.
+        if (iDynamicUnSetdefaultif) {
+            iDynamicUnSetdefaultif();
+        } else {
+            setdefaultif(0);
+        }
         // Start migrating to new IAP
         iMobility->MigrateToPreferredCarrier();
     }

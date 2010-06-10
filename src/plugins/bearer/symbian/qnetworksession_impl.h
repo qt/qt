@@ -73,6 +73,8 @@ QT_BEGIN_NAMESPACE
 class ConnectionProgressNotifier;
 class SymbianEngine;
 
+typedef void (*TOpenCUnSetdefaultifFunction)();
+
 class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
                                  , public MMobilityProtocolResp
@@ -152,6 +154,9 @@ private: // data
 #endif
 
     QDateTime startTime;
+
+    RLibrary iOpenCLibrary;
+    TOpenCUnSetdefaultifFunction iDynamicUnSetdefaultif;
 
     mutable RSocketServ iSocketServ;
     mutable RConnection iConnection;
