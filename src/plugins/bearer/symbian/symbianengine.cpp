@@ -46,7 +46,6 @@
 #include <cdbcols.h>
 #include <d32dbms.h>
 #include <nifvar.h>
-#include <QEventLoop>
 #include <QTimer>
 #include <QTime>  // For randgen seeding
 #include <QtCore> // For randgen seeding
@@ -115,7 +114,7 @@ QString SymbianNetworkConfigurationPrivate::bearerName() const
 
 SymbianEngine::SymbianEngine(QObject *parent)
 :   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iFirstUpdate(true), iInitOk(true),
-    iIgnoringUpdates(false)
+    iUpdatePending(false)
 {
 }
 
@@ -188,6 +187,28 @@ SymbianEngine::~SymbianEngine()
     CTrapCleanup* cleanup = CTrapCleanup::New();
     delete ipCommsDB;
     delete cleanup;
+}
+
+void SymbianEngine::delayedConfigurationUpdate()
+{
+    QMutexLocker locker(&mutex);
+
+    if (iUpdatePending) {
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+        qDebug("QNCM delayed configuration update (ECommit or ERecover occurred).");
+#endif
+        TRAPD(error, updateConfigurationsL());
+        if (error == KErrNone) {
+            updateStatesToSnaps();
+        }
+        iUpdatePending = false;
+        // Start monitoring again.
+        if (!IsActive()) {
+            SetActive();
+            // Start waiting for new notification
+            ipCommsDB->RequestNotification(iStatus);
+        }
+    }
 }
 
 bool SymbianEngine::hasIdentifier(const QString &id)
@@ -872,55 +893,30 @@ void SymbianEngine::RunL()
 {
     QMutexLocker locker(&mutex);
 
-    if (iIgnoringUpdates) {
-#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-        qDebug("QNCM CommsDB event handling postponed (postpone-timer running because IAPs/SNAPs were updated very recently).");
-#endif
-        return;
-    }
-
-    RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
-
-    switch (event) {
-    case RDbNotifier::EUnlock:   /** All read locks have been removed.  */
-    case RDbNotifier::ECommit:   /** A transaction has been committed.  */
-    case RDbNotifier::ERollback: /** A transaction has been rolled back */
-    case RDbNotifier::ERecover:  /** The database has been recovered    */
+    if (iStatus != KErrCancel) {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
         qDebug("QNCM CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
 #endif
-        iIgnoringUpdates = true;
-        // Other events than ECommit get lower priority. In practice with those events,
-        // we delay_before_updating methods, whereas
-        // with ECommit we _update_before_delaying the reaction to next event.
-        // Few important notes: 1) listening to only ECommit does not seem to be adequate,
-        // but updates will be missed. Hence other events are reacted upon too.
-        // 2) RDbNotifier records the most significant event, and that will be returned once
-        // we issue new RequestNotification, and hence updates will not be missed even
-        // when we are 'not reacting to them' for few seconds.
-        if (event == RDbNotifier::ECommit) {
-            TRAPD(error, updateConfigurationsL());
-            if (error == KErrNone) {
-                QT_TRYCATCH_LEAVING(updateStatesToSnaps());
-            }
-            locker.unlock();
-            waitRandomTime();
-            locker.relock();
-        } else {
-            locker.unlock();
-            waitRandomTime();
-            locker.relock();
-            TRAPD(error, updateConfigurationsL());
-            if (error == KErrNone) {
-                QT_TRYCATCH_LEAVING(updateStatesToSnaps());
-            }
-        }
-        iIgnoringUpdates = false; // Wait time done, allow updating again
+        // By default, start relistening notifications. Stop only if interesting event occured.
         iWaitingCommsDatabaseNotifications = true;
-        break;
-    default:
-        // Do nothing
-        break;
+        RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
+        switch (event) {
+        case RDbNotifier::ECommit:   /** A transaction has been committed.  */
+        case RDbNotifier::ERecover:  /** The database has been recovered    */
+            // Mark that there is update pending. No need to ask more events,
+            // as we know we will be updating anyway when the timer expires.
+            if (!iUpdatePending) {
+                iUpdatePending = true;
+                iWaitingCommsDatabaseNotifications = false;
+                // Update after random time, so that many processes won't
+                // start updating simultaneously
+                updateConfigurationsAfterRandomTime();
+            }
+            break;
+        default:
+            // Do nothing
+            break;
+        }
     }
 
     if (iWaitingCommsDatabaseNotifications) {
@@ -1135,15 +1131,13 @@ void SymbianEngine::configurationStateChangeReport(TUint32 accessPointId, QNetwo
 }
 
 // Waits for 2..6 seconds.
-void SymbianEngine::waitRandomTime()
+void SymbianEngine::updateConfigurationsAfterRandomTime()
 {
-    int iTimeToWait = qMax(2000, (qAbs(qrand()) % 7) * 1000);
+    int iTimeToWait = qMax(1000, (qAbs(qrand()) % 68) * 100);
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug("QNCM waiting random time: %d ms", iTimeToWait);
 #endif
-    QEventLoop loop;
-    QTimer::singleShot(iTimeToWait, &loop, SLOT(quit()));
-    loop.exec();
+    QTimer::singleShot(iTimeToWait, this, SLOT(delayedConfigurationUpdate()));
 }
 
 QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aConnectionId)
@@ -1164,7 +1158,7 @@ QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aCon
 
 AccessPointsAvailabilityScanner::AccessPointsAvailabilityScanner(SymbianEngine& owner,
                                                                RConnectionMonitor& connectionMonitor)
-    : CActive(CActive::EPriorityStandard), iOwner(owner), iConnectionMonitor(connectionMonitor)
+    : CActive(CActive::EPriorityHigh), iOwner(owner), iConnectionMonitor(connectionMonitor)
 {
     CActiveScheduler::Add(this);  
 }

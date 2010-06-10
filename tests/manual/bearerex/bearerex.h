@@ -55,13 +55,16 @@
 #endif
 #include "qnetworkconfigmanager.h"
 #include "qnetworksession.h"
+#include "datatransferer.h"
 #include "xqlistwidget.h"
 
 QT_BEGIN_NAMESPACE
-class QHttp;
+class QNetworkAccessManager;
+class QNetworkReply;
 QT_END_NAMESPACE
 
 class SessionTab;
+class DataTransferer;
 
 QT_USE_NAMESPACE
 
@@ -113,14 +116,15 @@ public:
     QString stateString(QNetworkSession::State state);    
 
 private Q_SLOTS:
-    void on_createQHttpButton_clicked();
+    void on_createQNetworkAccessManagerButton_clicked();
     void on_sendRequestButton_clicked();
     void on_openSessionButton_clicked();
     void on_closeSessionButton_clicked();
     void on_stopConnectionButton_clicked();
     void on_deleteSessionButton_clicked();
+    void on_dataObjectChanged(const QString& newObjectType);
     void on_alrButton_clicked();
-    void done(bool error);
+    void finished(quint32 errorCode, qint64 dataReceived, QString errorType);
     
     void newConfigurationActivated();
     void preferredConfigurationChanged(const QNetworkConfiguration& config, bool isSeamless);
@@ -131,13 +135,14 @@ private Q_SLOTS:
     void error(QNetworkSession::SessionError error);
 
 private: //data
-    QHttp* m_http;
+    // QNetworkAccessManager* m_networkAccessManager;
+    DataTransferer* m_dataTransferer;
     QNetworkSession* m_NetworkSession;
     QNetworkConfigurationManager* m_ConfigManager;
     QListWidget* m_eventListWidget;
     QNetworkConfiguration m_config;
     int m_index;
-    bool m_httpRequestOngoing;
+    bool m_dataTransferOngoing;
     bool m_alrEnabled;
 };
 

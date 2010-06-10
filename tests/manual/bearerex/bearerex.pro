@@ -17,10 +17,12 @@ maemo5|maemo6 {
 
 # Example headers and sources
 HEADERS += bearerex.h \
-           xqlistwidget.h
+           xqlistwidget.h \
+    datatransferer.h
     
 SOURCES += bearerex.cpp \
            main.cpp \
-           xqlistwidget.cpp
+           xqlistwidget.cpp \
+    datatransferer.cpp
 
 symbian:TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData
