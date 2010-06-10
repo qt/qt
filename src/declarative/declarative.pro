@@ -20,7 +20,6 @@ include(../qbase.pri)
 #DESTDIR=.
 
 #modules
-include(3rdparty/3rdparty.pri)
 include(util/util.pri)
 include(graphicsitems/graphicsitems.pri)
 include(qml/qml.pri)

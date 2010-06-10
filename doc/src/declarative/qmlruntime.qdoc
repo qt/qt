@@ -152,7 +152,7 @@
 
     \section2 Runtime Object
 
-    All applications using the launcher will have access to the 'runtime'
+    All applications using the launcher will have access to the \c runtime
     property on the root context. This property contains several pieces of
     information about the runtime environment of the application.
 
@@ -160,11 +160,19 @@
 
     A special piece of dummy data which is integrated into the launcher is
     a simple orientation property. The orientation can be set via the
-    settings menu in the application, or by pressing Ctrl+T to toggle it.
+    settings menu in the application, or by pressing Ctrl+T to rotate it.
 
-    To use this from within your QML file, access runtime.orientation,
-    which can be either Orientation.Landscape or Orientation.Portrait and which can be bound to in your
-    application. An example is below:
+    To use this from within your QML file, access \c runtime.orientation,
+    which can be one of the following values:
+
+    \list
+    \o \c Orientation.Portrait
+    \o \c Orientation.Landscape
+    \o \c Orientation.PortraitInverted (Portrait orientation, upside-down)
+    \o \c Orientation.LandscapeInverted (Landscape orientation, upside-down)
+    \endlist
+
+    These values can be bound to in your application. For example:
 
     \code
     Item {
@@ -172,13 +180,13 @@
     }
     \endcode
 
-    This allows your application to respond to the orientation of the screen changing. The launcher
+    This allows your application to respond to changes in the screen's orientation. The launcher
     will automatically update this on some platforms (currently the N900 only) to match the physical
     screen's orientation. On other plaforms orientation changes will only happen when explictly asked for.
 
     \section3 Window Active
 
-    The runtime.isActiveWindow property tells whether the main window of the launcher is currently active
+    The \c runtime.isActiveWindow property tells whether the main window of the launcher is currently active
     or not. This is especially useful for embedded devices when you want to pause parts of your application,
     including animations, when your application loses focus or goes to the background.
 

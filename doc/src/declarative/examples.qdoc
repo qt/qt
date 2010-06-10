@@ -79,6 +79,7 @@ For example, from your build directory, run:
 \section2 Image Elements
 \list
 \o \l{declarative/imageelements/borderimage}{BorderImage}
+\o \l{declarative/imageelements/image}{Image}
 \endlist
 
 \section2 Positioners
