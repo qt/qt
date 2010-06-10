@@ -234,7 +234,7 @@ contains(QMAKE_MAC_XARCH, no) {
         IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
     }
 
-    win32-g++|!win32:!*-icc* {
+    win32-g++*|!win32:!*-icc* {
         mmx {
             mmx_compiler.commands = $$QMAKE_CXX -c -Winline
 

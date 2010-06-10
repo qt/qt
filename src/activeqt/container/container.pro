@@ -19,7 +19,7 @@ QTDIR_build:DESTDIR  = $$QT_BUILD_TREE/lib
 
 LIBS    += -lole32 -loleaut32
 !wince*:LIBS    += -luser32 -lgdi32 -ladvapi32
-win32-g++:LIBS += -luuid
+win32-g++*:LIBS += -luuid
 
 HEADERS =   ../control/qaxaggregated.h \
             qaxbase.h \
