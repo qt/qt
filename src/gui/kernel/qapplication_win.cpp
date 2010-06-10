@@ -206,8 +206,6 @@ static void resolveAygLibs()
     if (!aygResolved) {
         aygResolved = true;
         QLibrary ayglib(QLatin1String("aygshell"));
-        if (!ayglib.load())
-            return;
         ptrRecognizeGesture = (AygRecognizeGesture) ayglib.resolve("SHRecognizeGesture");
     }
 }
@@ -3642,13 +3640,11 @@ static void initWinTabFunctions()
         return;
 
     QLibrary library(QLatin1String("wintab32"));
-    if (library.load()) {
-        ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
-        ptrWTGet = (PtrWTGet)library.resolve("WTGetW");
-        ptrWTEnable = (PtrWTEnable)library.resolve("WTEnable");
-        ptrWTOverlap = (PtrWTEnable)library.resolve("WTOverlap");
-        ptrWTPacketsGet = (PtrWTPacketsGet)library.resolve("WTPacketsGet");
-    }
+    ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
+    ptrWTGet = (PtrWTGet)library.resolve("WTGetW");
+    ptrWTEnable = (PtrWTEnable)library.resolve("WTEnable");
+    ptrWTOverlap = (PtrWTEnable)library.resolve("WTOverlap");
+    ptrWTPacketsGet = (PtrWTPacketsGet)library.resolve("WTPacketsGet");
 #endif // Q_OS_WINCE
 }
 #endif // QT_NO_TABLETEVENT

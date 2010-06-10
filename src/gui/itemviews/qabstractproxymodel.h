@@ -81,7 +81,19 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    bool setItemData(const QModelIndex& index, const QMap<int, QVariant> &roles);
     bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole);
+
+    QModelIndex buddy(const QModelIndex &index) const;
+    bool canFetchMore(const QModelIndex &parent) const;
+    void fetchMore(const QModelIndex &parent);
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+    QSize span(const QModelIndex &index) const;
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+
+    QMimeData* mimeData(const QModelIndexList &indexes) const;
+    QStringList mimeTypes() const;
+    Qt::DropActions supportedDropActions() const;
 
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);

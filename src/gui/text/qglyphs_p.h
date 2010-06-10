@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,86 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QLIBRARY_P_H
-#define QLIBRARY_P_H
+#ifndef QGLYPHS_P_H
+#define QGLYPHS_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
+// of internal files.  This header file may change from version to version
+// without notice, or even be removed.
 //
 // We mean it.
 //
 
-#ifdef Q_WS_WIN
-# include "QtCore/qt_windows.h"
-#endif
-#include "QtCore/qlibrary.h"
-#include "QtCore/qpointer.h"
-#include "QtCore/qstringlist.h"
-#include "QtCore/qplugin.h"
-#include "QtCore/qsharedpointer.h"
+#include <qfont.h>
+#include "qglyphs.h"
 
-#ifndef QT_NO_LIBRARY
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-bool qt_debug_component();
-
-class QSettings;
-class QLibraryPrivate
+class QGlyphsPrivate: public QSharedData
 {
 public:
+    QGlyphsPrivate()
+    {
+    }
 
-#ifdef Q_WS_WIN
-    HINSTANCE
-#else
-    void *
-#endif
-    pHnd;
+    QGlyphsPrivate(const QGlyphsPrivate &other)
+      : QSharedData(other), glyphIndexes(other.glyphIndexes), glyphPositions(other.glyphPositions), font(other.font)
+    {
+    }
 
-    QString fileName, qualifiedFileName;
-    QString fullVersion;
-
-    bool load();
-    bool loadPlugin(); // loads and resolves instance
-    bool unload();
-    void release();
-    void *resolve(const char *);
-
-    static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString());
-
-    QWeakPointer<QObject> inst;
-    QtPluginInstanceFunction instance;
-    uint qt_version;
-    QString lastModified;
-
-    QString errorString;
-    QLibrary::LoadHints loadHints;
-
-    bool isPlugin(QSettings *settings = 0);
-
-
-private:
-    explicit QLibraryPrivate(const QString &canonicalFileName, const QString &version);
-    ~QLibraryPrivate();
-
-    bool load_sys();
-    bool unload_sys();
-    void *resolve_sys(const char *);
-
-    QAtomicInt libraryRefCount;
-    QAtomicInt libraryUnloadCount;
-
-    enum {IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
-    friend class QLibraryPrivateHasFriends;
+    QVector<quint32> glyphIndexes;
+    QVector<QPointF> glyphPositions;
+    QFont font;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_LIBRARY
+QT_END_HEADER
 
-#endif // QLIBRARY_P_H
+#endif // QGLYPHS_P_H

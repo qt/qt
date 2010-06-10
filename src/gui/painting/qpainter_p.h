@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 class QPaintEngine;
 class QEmulationPaintEngine;
 class QPaintEngineEx;
+struct QFixedPoint;
 
 struct QTLWExtra;
 
@@ -228,7 +229,7 @@ public:
     void draw_helper(const QPainterPath &path, DrawOperation operation = StrokeAndFillDraw);
     void drawStretchedGradient(const QPainterPath &path, DrawOperation operation);
     void drawOpaqueBackground(const QPainterPath &path, DrawOperation operation);
-    void drawGlyphs(const quint32 *glyphArray, const QPointF *positionArray, int glyphCount);
+    void drawGlyphs(quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount);
 
     void updateMatrix();
     void updateInvMatrix();

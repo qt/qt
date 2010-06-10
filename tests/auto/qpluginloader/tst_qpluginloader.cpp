@@ -287,12 +287,14 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
 
         QSignalSpy spy1(loader1.instance(), SIGNAL(destroyed()));
         QSignalSpy spy2(loader2.instance(), SIGNAL(destroyed()));
-        QCOMPARE(loader1.unload(), false);  // refcount not reached 0, not really unloaded
-        QCOMPARE(spy1.count(), 0);
-        QCOMPARE(spy2.count(), 0);
+        if (pass == 0) {
+            QCOMPARE(loader2.unload(), false);  // refcount not reached 0, not really unloaded
+            QCOMPARE(spy1.count(), 0);
+            QCOMPARE(spy2.count(), 0);
+        }
         QCOMPARE(instance1->pluginName(), QLatin1String("Plugin ok"));
         QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
-        QCOMPARE(loader2.unload(), true);   // refcount reached 0, did really unload
+        QVERIFY(loader1.unload());   // refcount reached 0, did really unload
         QCOMPARE(spy1.count(), 1);
         QCOMPARE(spy2.count(), 1);
     }
