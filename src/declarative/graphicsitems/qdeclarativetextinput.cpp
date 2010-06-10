@@ -253,6 +253,7 @@ void QDeclarativeTextInput::setColor(const QColor &c)
         d->color = c;
         clearCache();
         update();
+        emit colorChanged(c);
     }
 }
 
