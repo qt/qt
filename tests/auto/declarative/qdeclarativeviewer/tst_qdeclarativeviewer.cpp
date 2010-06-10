@@ -44,6 +44,7 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
 #include "qmlruntime.h"
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -85,6 +86,10 @@ void tst_QDeclarativeViewer::orientation()
     QVERIFY(rootItem);
     window.show();
 
+    QApplication::setActiveWindow(&window);
+    QTest::qWaitForWindowShown(&window);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&window));
+
     QCOMPARE(rootItem->width(), 200.0);
     QCOMPARE(rootItem->height(), 300.0);
     QCOMPARE(viewer->view()->size(), QSize(200, 300));
@@ -124,6 +129,10 @@ void tst_QDeclarativeViewer::loading()
     QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject());
     QVERIFY(rootItem);
     viewer->show();
+
+    QApplication::setActiveWindow(viewer);
+    QTest::qWaitForWindowShown(viewer);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
     // initial size
     QCOMPARE(rootItem->width(), 200.0);
@@ -192,6 +201,10 @@ void tst_QDeclarativeViewer::fileBrowser()
     viewer->openFile();
     viewer->show();
 
+    QApplication::setActiveWindow(viewer);
+    QTest::qWaitForWindowShown(viewer);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
+
     // Browser.qml successfully loaded
     QDeclarativeItem* browserItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject());
     QVERIFY(viewer->view());
@@ -224,6 +237,10 @@ void tst_QDeclarativeViewer::resizing()
     QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject());
     QVERIFY(rootItem);
     viewer->show();
+
+    QApplication::setActiveWindow(viewer);
+    QTest::qWaitForWindowShown(viewer);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
     // initial size
     QCOMPARE(rootItem->width(), 200.0);
