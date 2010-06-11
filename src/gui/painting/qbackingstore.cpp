@@ -747,12 +747,8 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     }
 
     // Alien widgets.
-    if (!widget->internalWinId() && !widget->isWindow()) { //### LITEHACK we need winid support!!!
-#ifdef Q_WS_LITE
-        QWidget *nativeParent = widget->window();        //### LITEHACK so far only toplevels are native
-#else
+    if (!widget->internalWinId() && !widget->isWindow()) {
         QWidget *nativeParent = widget->nativeParentWidget();        // Alien widgets with the top-level as the native parent (common case).
-#endif
         if (nativeParent == tlw) {
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
                 dirtyOnScreen += region.translated(topLevelOffset);

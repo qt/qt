@@ -2429,10 +2429,7 @@ WId QWidget::effectiveWinId() const
         return id;
     QWidget *realParent = nativeParentWidget();
     Q_ASSERT(realParent);
-#ifndef Q_WS_LITE
-    //### we really need to implement winId functionality
     Q_ASSERT(realParent->internalWinId());
-#endif
     return realParent->internalWinId();
 }
 
@@ -4121,9 +4118,6 @@ QWidget *QWidget::window() const
 */
 QWidget *QWidget::nativeParentWidget() const
 {
-#ifdef Q_WS_LITE
-    return window(); //### we don't have native child widgets yet
-#endif
     QWidget *parent = parentWidget();
     while (parent && !parent->internalWinId())
         parent = parent->parentWidget();
