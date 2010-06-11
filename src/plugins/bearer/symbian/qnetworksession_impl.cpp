@@ -53,10 +53,11 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
-    : CActive(CActive::EPriorityUserInput), engine(engine),
-      ipConnectionNotifier(0), iHandleStateNotificationsFromManager(false),
-      iFirstSync(true), iStoppedByUser(false), iClosedByUser(false), iDeprecatedConnectionId(0),
-      iError(QNetworkSession::UnknownSessionError), iALREnabled(0), iConnectInBackground(false)
+:   CActive(CActive::EPriorityUserInput), engine(engine),
+    iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
+    iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
+    iClosedByUser(false), iDeprecatedConnectionId(0),
+    iError(QNetworkSession::UnknownSessionError), iALREnabled(0), iConnectInBackground(false)
 {
     CActiveScheduler::Add(this);
 
@@ -69,6 +70,13 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
     if (iOpenCLibrary.Load(_L("libc")) == KErrNone) {
         iDynamicUnSetdefaultif = (TOpenCUnSetdefaultifFunction)iOpenCLibrary.Lookup(597);
     }
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "QNS this : " << QString::number((uint)this) << " - ";
+    if (iDynamicUnSetdefaultif)
+        qDebug() << "dynamic setdefaultif() resolution succeeded. ";
+    else
+        qDebug() << "dynamic setdefaultif() resolution failed. ";
+#endif
 
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
 }
@@ -517,10 +525,25 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     // that does not seem to be trusted on all Symbian versions --> safest
     // to go down.
     if (publicConfig.type() == QNetworkConfiguration::UserChoice || state == QNetworkSession::Connecting) {
+        SymbianNetworkConfigurationPrivate *symbianConfig =
+            toSymbianConfig(privateConfiguration(publicConfig));
+
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-    qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-             << "going Disconnected because session was Connecting.";
+
+        symbianConfig->mutex.lock();
+        qDebug() << "QNS this : " << QString::number((uint)this) << " - "
+                 << "going Disconnected right away. Deprecating connection monitor ID: "
+                 << symbianConfig->connectionId;
+        symbianConfig->mutex.unlock();
 #endif
+
+        // The connection has gone down, and processing of status updates must be
+        // stopped. Depending on platform, there may come 'connecting/connected' states
+        // considerably later (almost a second). Connection id is an increasing
+        // number, so this does not affect next _real_ 'conneting/connected' states.
+        symbianConfig->mutex.lock();
+        iDeprecatedConnectionId = symbianConfig->connectionId;
+        symbianConfig->mutex.unlock();
         newState(QNetworkSession::Closing);
         newState(QNetworkSession::Disconnected);
     }
