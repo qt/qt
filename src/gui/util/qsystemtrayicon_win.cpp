@@ -53,11 +53,8 @@
 
 #include <qt_windows.h>
 #include <commctrl.h>
-#include <QBitmap>
 #include <QLibrary>
 #include <QApplication>
-#include <QToolTip>
-#include <QDesktopWidget>
 #include <QSettings>
 
 QT_BEGIN_NAMESPACE
@@ -87,7 +84,6 @@ public:
     ~QSystemTrayIconSys();
     bool winEvent( MSG *m, long *result );
     bool trayMessage(DWORD msg);
-    bool iconDrawItem(LPDRAWITEMSTRUCT lpdi);
     void setIconContents(NOTIFYICONDATA &data);
     bool showMessage(const QString &title, const QString &message, QSystemTrayIcon::MessageIcon type, uint uSecs);
     bool allowsMessages();
@@ -170,7 +166,6 @@ void QSystemTrayIconSys::setIconContents(NOTIFYICONDATA &tnd)
 
 static int iconFlag( QSystemTrayIcon::MessageIcon icon )
 {
-#if NOTIFYICON_VERSION >= 3
     switch (icon) {
         case QSystemTrayIcon::Information:
             return NIIF_INFO;
@@ -184,15 +179,10 @@ static int iconFlag( QSystemTrayIcon::MessageIcon icon )
             Q_ASSERT_X(false, "QSystemTrayIconSys::showMessage", "Invalid QSystemTrayIcon::MessageIcon value");
             return NIIF_NONE;
     }
-#else
-    Q_UNUSED(icon);
-    return 0;
-#endif
 }
 
 bool QSystemTrayIconSys::showMessage(const QString &title, const QString &message, QSystemTrayIcon::MessageIcon type, uint uSecs)
 {
-#if NOTIFYICON_VERSION >= 3
     NOTIFYICONDATA tnd;
     memset(&tnd, 0, notifyIconSize);
     Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -209,13 +199,6 @@ bool QSystemTrayIconSys::showMessage(const QString &title, const QString &messag
     tnd.uFlags = NIF_INFO;
 
     return Shell_NotifyIcon(NIM_MODIFY, &tnd);
-#else
-    Q_UNUSED(title);
-    Q_UNUSED(message);
-    Q_UNUSED(type);
-    Q_UNUSED(uSecs);
-    return false;
-#endif
 }
 
 bool QSystemTrayIconSys::trayMessage(DWORD msg)
@@ -233,15 +216,6 @@ bool QSystemTrayIconSys::trayMessage(DWORD msg)
     }
 
     return Shell_NotifyIcon(msg, &tnd);
-}
-
-bool QSystemTrayIconSys::iconDrawItem(LPDRAWITEMSTRUCT lpdi)
-{
-    if (!hIcon)
-        return false;
-
-    DrawIconEx(lpdi->hDC, lpdi->rcItem.left, lpdi->rcItem.top, hIcon, 0, 0, 0, 0, DI_NORMAL);
-    return true;
 }
 
 void QSystemTrayIconSys::createIcon()
@@ -264,25 +238,8 @@ void QSystemTrayIconSys::createIcon()
 bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
 {
     switch(m->message) {
-    case WM_CREATE:
-#ifdef GWLP_USERDATA
-        SetWindowLongPtr(winId(), GWLP_USERDATA, (LONG_PTR)((CREATESTRUCTW*)m->lParam)->lpCreateParams);
-#else
-        SetWindowLong(winId(), GWL_USERDATA, (LONG)((CREATESTRUCTW*)m->lParam)->lpCreateParams);
-#endif
-        break;
-
-    case WM_DRAWITEM:
-        return iconDrawItem((LPDRAWITEMSTRUCT)m->lParam);
-
     case MYWM_NOTIFYICON:
         {
-            RECT r;
-            GetWindowRect(winId(), &r);
-            QEvent *e = 0;
-            Qt::KeyboardModifiers keys = QApplication::keyboardModifiers();
-            QPoint gpos = QCursor::pos();
-
             switch (m->lParam) {
             case WM_LBUTTONUP:
                 if (ignoreNextMouseRelease)
@@ -311,13 +268,9 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
             case WM_MBUTTONUP:
                 emit q->activated(QSystemTrayIcon::MiddleClick);
                 break;
+
             default:
-                        break;
-            }
-            if (e) {
-                bool res = QApplication::sendEvent(q, e);
-                delete e;
-                return res;
+                break;
             }
             break;
         }
@@ -474,6 +427,7 @@ QRect QSystemTrayIconPrivate::geometry_sys() const
 {
     if (!sys)
         return QRect();
+
     return sys->findIconGeometry(q_uNOTIFYICONID);
 }
 
