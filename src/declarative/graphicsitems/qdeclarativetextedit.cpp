@@ -113,7 +113,7 @@ TextEdit {
 
     \image declarative-textedit.png
 
-    A QDeclarativeTextEdit object can be instantiated in Qml using the tag \c &lt;TextEdit&gt;.
+    A QDeclarativeTextEdit object can be instantiated in QML using the tag \c &lt;TextEdit&gt;.
 */
 
 /*!

@@ -97,7 +97,7 @@ QT_BEGIN_NAMESPACE
     Image { source: "pics/star.png" }
     \endqml
 
-    A QDeclarativeImage object can be instantiated in Qml using the tag \l Image.
+    A QDeclarativeImage object can be instantiated in QML using the tag \l Image.
 */
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)

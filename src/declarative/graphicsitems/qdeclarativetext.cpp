@@ -161,7 +161,7 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
     The \c elide property can alternatively be used to fit a line of plain text to a set width.
 
-    A QDeclarativeText object can be instantiated in Qml using the tag \c Text.
+    A QDeclarativeText object can be instantiated in QML using the tag \c Text.
 */
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
