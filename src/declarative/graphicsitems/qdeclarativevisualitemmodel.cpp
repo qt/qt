@@ -141,6 +141,8 @@ public:
     \endcode
 
     \image visualitemmodel.png
+
+    \sa {declarative/modelviews/visualitemmodel}{VisualItemModel example}
 */
 QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(QObject *parent)
     : QDeclarativeVisualModel(*(new QDeclarativeVisualItemModelPrivate), parent)
