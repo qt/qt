@@ -75,17 +75,20 @@ private slots:
 
     void robustnessBombing();
 
+    void sessionClosing_data();
+    void sessionClosing();
+
     void outOfProcessSession();
     void invalidSession();
 
     void repeatedOpenClose_data();
     void repeatedOpenClose();
-    
-    void roamingErrorCodes();
-    
+
     void sessionStop_data();
     void sessionStop();
 
+    void roamingErrorCodes();
+    
     void sessionProperties_data();
     void sessionProperties();
 
@@ -131,6 +134,7 @@ void tst_QNetworkSession::initTestCase()
     // If you wish to skip tests, set value as false. This is often very convinient because tests are so lengthy.
     // Better way still would be to make this readable from a file.
     testsToRun["robustnessBombing"] = true;
+    testsToRun["sessionClosing"] = true;
     testsToRun["outOfProcessSession"] = true;
     testsToRun["invalidSession"] = true;
     testsToRun["repeatedOpenClose"] = true;
@@ -265,6 +269,53 @@ void tst_QNetworkSession::robustnessBombing()
     testSession.reject();
 }
 
+void tst_QNetworkSession::sessionClosing_data() {
+    QTest::addColumn<QString>("bearerType");
+    QTest::addColumn<QNetworkConfiguration::Type>("configurationType");
+
+    QTest::newRow("WLAN_IAP") << "WLAN" << QNetworkConfiguration::InternetAccessPoint;
+    QTest::newRow("Cellular_IAP") << "cellular" << QNetworkConfiguration::InternetAccessPoint;
+    QTest::newRow("SNAP") << "bearer_type_not_relevant_with_SNAPs" << QNetworkConfiguration::ServiceNetwork;
+}
+
+// Testcase for closing the session at unexpected times
+void tst_QNetworkSession::sessionClosing()
+{
+    if (!testsToRun["sessionClosing"]) {
+        QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);
+    }
+    QFETCH(QString, bearerType);
+    QFETCH(QNetworkConfiguration::Type, configurationType);
+
+    // Update configurations so that WLANs are discovered too.
+    updateConfigurations();
+
+    // First check that opening once succeeds and determine if test is doable
+    QNetworkConfiguration config = suitableConfiguration(bearerType, configurationType);
+    if (!config.isValid()) {
+        QSKIP("No suitable configurations, skipping this round of repeated open-close test.", SkipSingle);
+    }
+    qDebug() << "Using following configuration to bomb with close(): " << config.name();
+    QNetworkSession session(config);
+    if (!openSession(&session) ||
+        !closeSession(&session)) {
+        QSKIP("Unable to open/close session, skipping this round of close() bombing.", SkipSingle);
+    }
+
+    qDebug() << "Closing without issuing open()";
+    session.close();
+
+    for (int i = 0; i < 25; i++) {
+        qDebug() << "Opening and then waiting: " << i * 100 << " ms before closing.";
+        session.open();
+        QTest::qWait(i*100);
+        session.close();
+        // Sooner or later session must end in Disconnected state,
+        // no matter what the phase was.
+        QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+        QTest::qWait(200); // Give platform a breathe, otherwise we'll be catching other errors
+    }
+}
 
 void tst_QNetworkSession::invalidSession()
 { 
@@ -1060,15 +1111,27 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     QTRY_VERIFY(stateChangedSpy.count() > 0);
                     state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 1).at(0));                    
                     
+                    for (int i = 0; i < stateChangedSpy.count(); i++) {
+                        QNetworkSession::State state_temp =
+                                qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(i).at(0));
+                        // Extra debug because a fragile point in testcase because statuses vary.
+                        qDebug() << "------- Statechange spy at: " << i << " is " << state_temp;
+                    }
+
                     if (state == QNetworkSession::Roaming) {
                         QTRY_VERIFY(session.state() == QNetworkSession::Connected);
                         QTRY_VERIFY(session2.state() == QNetworkSession::Connected);
+                        roamedSuccessfully = true;
+                    } else if (state == QNetworkSession::Closing) {
+                        QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY(session.state() == QNetworkSession::Connected);
                         roamedSuccessfully = true;
                     } else if (state == QNetworkSession::Disconnected) {
                         QTRY_VERIFY(!errorSpy.isEmpty());
                         QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
                   	} else if (state == QNetworkSession::Connected) {
                         QTRY_VERIFY(errorSpy.isEmpty());
+
                         if (stateChangedSpy.count() > 1) {
                             state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 2).at(0));                        
                             QVERIFY(state == QNetworkSession::Roaming);
@@ -1102,9 +1165,18 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         QVERIFY(state == QNetworkSession::Closing);
                         state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(1).at(0));
                         QVERIFY(state == QNetworkSession::Disconnected);
-                    } else { // Assume .count() == 1
-                        QCOMPARE(stateChangedSpy2.count(), 1); 
-                        QNetworkSession::State state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
+                    } else {
+                        QVERIFY(stateChangedSpy2.count() >= 1);
+
+                        for (int i = 0; i < stateChangedSpy2.count(); i++) {
+                            QNetworkSession::State state_temp =
+                                    qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(i).at(0));
+                            // Extra debug because a fragile point in testcase.
+                            qDebug() << "+++++ Statechange spy at: " << i << " is " << state_temp;
+                        }
+
+                        QNetworkSession::State state =
+                                qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(stateChangedSpy2.count() - 1).at(0));
                          // Symbian version dependant.
                         QVERIFY(state == QNetworkSession::Disconnected);	
                     }
