@@ -278,6 +278,20 @@ public:
         return snapPos;
     }
 
+    FxGridItem *snapItemAt(qreal pos) {
+        for (int i = 0; i < visibleItems.count(); ++i) {
+            FxGridItem *item = visibleItems[i];
+            if (item->index == -1)
+                continue;
+            qreal itemTop = item->rowPos();
+            if (item->index == model->count()-1 || (itemTop+rowSize()/2 >= pos))
+                return item;
+        }
+        if (visibleItems.count() && visibleItems.first()->rowPos() <= pos)
+            return visibleItems.first();
+        return 0;
+    }
+
     int snapIndex() {
         int index = currentIndex;
         for (int i = 0; i < visibleItems.count(); ++i) {
@@ -877,7 +891,6 @@ void QDeclarativeGridViewPrivate::fixupPosition()
 
 void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
 {
-    Q_Q(QDeclarativeGridView);
     if ((flow == QDeclarativeGridView::TopToBottom && &data == &vData)
         || (flow == QDeclarativeGridView::LeftToRight && &data == &hData))
         return;
@@ -885,7 +898,41 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     int oldDuration = fixupDuration;
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
-    if (haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
+    if (snapMode != QDeclarativeGridView::NoSnap) {
+        FxGridItem *topItem = snapItemAt(position()+highlightRangeStart);
+        FxGridItem *bottomItem = snapItemAt(position()+highlightRangeEnd);
+        qreal pos;
+        if (topItem && bottomItem && haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
+            qreal topPos = qMin(topItem->rowPos() - highlightRangeStart, -maxExtent);
+            qreal bottomPos = qMax(bottomItem->rowPos() - highlightRangeEnd, -minExtent);
+            pos = qAbs(data.move + topPos) < qAbs(data.move + bottomPos) ? topPos : bottomPos;
+        } else if (topItem) {
+            pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
+        } else if (bottomItem) {
+            pos = qMax(qMin(bottomItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
+        } else {
+            fixupDuration = oldDuration;
+            return;
+        }
+        if (currentItem && haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
+            updateHighlight();
+            qreal currPos = currentItem->rowPos();
+            if (pos < currPos + rowSize() - highlightRangeEnd)
+                pos = currPos + rowSize() - highlightRangeEnd;
+            if (pos > currPos - highlightRangeStart)
+                pos = currPos - highlightRangeStart;
+        }
+
+        qreal dist = qAbs(data.move + pos);
+        if (dist > 0) {
+            timeline.reset(data.move);
+            if (fixupDuration)
+                timeline.move(data.move, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
+            else
+                timeline.set(data.move, -pos);
+            vTime = timeline.time();
+        }
+    } else if (haveHighlightRange && highlightRange == QDeclarativeGridView::StrictlyEnforceRange) {
         if (currentItem) {
             updateHighlight();
             qreal pos = currentItem->rowPos();
@@ -902,17 +949,6 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
                 else
                     timeline.set(data.move, -viewPos);
             }
-            vTime = timeline.time();
-        }
-    } else if (snapMode != QDeclarativeGridView::NoSnap) {
-        qreal pos = -snapPosAt(-(data.move.value() - highlightRangeStart)) + highlightRangeStart;
-        qreal dist = qAbs(data.move.value() - pos);
-        if (dist > 0) {
-            timeline.reset(data.move);
-            if (fixupDuration)
-                timeline.move(data.move, pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-            else
-                timeline.set(data.move, pos);
             vTime = timeline.time();
         }
     } else {
