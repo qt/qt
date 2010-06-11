@@ -56,8 +56,8 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 :   CActive(CActive::EPriorityUserInput), engine(engine),
     iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
-    iClosedByUser(false), iDeprecatedConnectionId(0),
-    iError(QNetworkSession::UnknownSessionError), iALREnabled(0), iConnectInBackground(false)
+    iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
+    iConnectInBackground(false)
 {
     CActiveScheduler::Add(this);
 
@@ -73,9 +73,9 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - ";
     if (iDynamicUnSetdefaultif)
-        qDebug() << "dynamic setdefaultif() resolution succeeded. ";
+        qDebug() << "dynamic unsetdefaultif() is present in PIPS library. ";
     else
-        qDebug() << "dynamic setdefaultif() resolution failed. ";
+        qDebug() << "dynamic unsetdefaultif() not present in PIPS library. ";
 #endif
 
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
@@ -108,6 +108,9 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
     
     iConnectionMonitor.Close();
     iOpenCLibrary.Close();
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "QNS this : " << QString::number((uint)this) << " - destroyed (and setdefaultif(0))";
+#endif
 }
 
 void QNetworkSessionPrivateImpl::configurationStateChanged(TUint32 accessPointId, TUint32 connMonId, QNetworkSession::State newState)
@@ -115,18 +118,12 @@ void QNetworkSessionPrivateImpl::configurationStateChanged(TUint32 accessPointId
     if (iHandleStateNotificationsFromManager) {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
         qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-                << "configurationStateChanged from manager for IAP : " << QString::number(accessPointId)
-                << "configurationStateChanged connMon ID : " << QString::number(connMonId)
-                << " : to a state: " << newState
-                << " whereas my current state is: " << state;
+                 << "configurationStateChanged from manager for IAP : " << QString::number(accessPointId)
+                 << "connMon ID : " << QString::number(connMonId) << " : to a state: " << newState
+                 << "whereas my current state is: " << state;
+#else
+      Q_UNUSED(connMonId);
 #endif
-        if (connMonId == iDeprecatedConnectionId) {
-#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-            qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-                    << "however status update from manager ignored because it related to already closed connection.";
-#endif
-            return;
-        }
         this->newState(newState, accessPointId);
     }
 }
@@ -250,6 +247,14 @@ QNetworkInterface QNetworkSessionPrivateImpl::interface(TUint iapId) const
 #ifndef QT_NO_NETWORKINTERFACE
 QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "QNS this : " << QString::number((uint)this) << " - "
+             << "currentInterface() requested, state: " << state
+             << "publicConfig validity: " << publicConfig.isValid();
+    if (activeInterface.isValid())
+        qDebug() << "interface is: " << activeInterface.humanReadableName();
+#endif
+
     if (!publicConfig.isValid() || state != QNetworkSession::Connected) {
         return QNetworkInterface();
     }
@@ -339,7 +344,6 @@ void QNetworkSessionPrivateImpl::open()
     // Clear possible previous states
     iStoppedByUser = false;
     iClosedByUser = false;
-    iDeprecatedConnectionId = 0;
 
     TInt error = iSocketServ.Connect();
     if (error != KErrNone) {
@@ -396,7 +400,11 @@ void QNetworkSessionPrivateImpl::open()
             if (!IsActive()) {
                 SetActive();
             }
-            newState(QNetworkSession::Connecting);
+            // Avoid flip flop of states if the configuration is already
+            // active. IsOpen/opened() will indicate when ready.
+            if (state != QNetworkSession::Connected) {
+                newState(QNetworkSession::Connecting);
+            }
     } else if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
         SymbianNetworkConfigurationPrivate *symbianConfig =
             toSymbianConfig(privateConfiguration(publicConfig));
@@ -420,7 +428,11 @@ void QNetworkSessionPrivateImpl::open()
         if (!IsActive()) {
             SetActive();
         }
-        newState(QNetworkSession::Connecting);
+        // Avoid flip flop of states if the configuration is already
+        // active. IsOpen/opened() will indicate when ready.
+        if (state != QNetworkSession::Connected) {
+            newState(QNetworkSession::Connecting);
+        }
     } else if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
         iKnownConfigsBeforeConnectionStart = engine->accessPointConfigurationIdentifiers();
         iConnection.Start(iStatus);
@@ -485,11 +497,6 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     iClosedByUser = true;
     isOpen = false;
 
-#ifndef OCC_FUNCTIONALITY_AVAILABLE
-    // On Symbian^3 we need to keep track of active configuration longer
-    // in case of empty-SNAP-triggered EasyWLAN.
-    activeConfig = QNetworkConfiguration();
-#endif
     serviceConfig = QNetworkConfiguration();
     
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -525,25 +532,10 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     // that does not seem to be trusted on all Symbian versions --> safest
     // to go down.
     if (publicConfig.type() == QNetworkConfiguration::UserChoice || state == QNetworkSession::Connecting) {
-        SymbianNetworkConfigurationPrivate *symbianConfig =
-            toSymbianConfig(privateConfiguration(publicConfig));
-
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-
-        symbianConfig->mutex.lock();
         qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-                 << "going Disconnected right away. Deprecating connection monitor ID: "
-                 << symbianConfig->connectionId;
-        symbianConfig->mutex.unlock();
+                 << "going disconnected right away, since either UserChoice or Connecting";
 #endif
-
-        // The connection has gone down, and processing of status updates must be
-        // stopped. Depending on platform, there may come 'connecting/connected' states
-        // considerably later (almost a second). Connection id is an increasing
-        // number, so this does not affect next _real_ 'conneting/connected' states.
-        symbianConfig->mutex.lock();
-        iDeprecatedConnectionId = symbianConfig->connectionId;
-        symbianConfig->mutex.unlock();
         newState(QNetworkSession::Closing);
         newState(QNetworkSession::Disconnected);
     }
@@ -1191,6 +1183,12 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         return false;
     }
 
+    // Make sure that some lagging 'connecting' state-changes do not overwrite
+    // if we are already connected (may righfully still happen with roaming though).
+    if (state == QNetworkSession::Connected && newState == QNetworkSession::Connecting) {
+        return false;
+    }
+
     bool emitSessionClosed = false;
 
     // If we abruptly go down and user hasn't closed the session, we've been aborted.
@@ -1306,27 +1304,12 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
 #endif
         }
     }
-    
     if (emitSessionClosed) {
         emit closed();
     }
     if (state == QNetworkSession::Disconnected) {
-        // The connection has gone down, and processing of status updates must be
-        // stopped. Depending on platform, there may come 'connecting/connected' states
-        // considerably later (almost a second). Connection id is an increasing
-        // number, so this does not affect next _real_ 'conneting/connected' states.
-
-        SymbianNetworkConfigurationPrivate *symbianConfig =
-            toSymbianConfig(privateConfiguration(publicConfig));
-
-        symbianConfig->mutex.lock();
-        iDeprecatedConnectionId = symbianConfig->connectionId;
-        symbianConfig->mutex.unlock();
-
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
         // Just in case clear activeConfiguration.
         activeConfig = QNetworkConfiguration();
-#endif
     }
     return retVal;
 }

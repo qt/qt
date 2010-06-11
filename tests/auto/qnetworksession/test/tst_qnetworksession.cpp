@@ -680,7 +680,7 @@ void tst_QNetworkSession::sessionStop()
         QVERIFY(openSession(&innocentSession));    
         qDebug("Waiting for %d ms after open to make sure all platform indications are propagated", configWaitdelayInMs);
         QTest::qWait(configWaitdelayInMs);
-    qDebug("----------4.2 Calling closedSession.stop()");
+        qDebug("----------4.2 Calling closedSession.stop()");
         closedSession.stop();
         qDebug("Waiting for %d ms to get all configurationChange signals from platform..", configWaitdelayInMs);
         QTest::qWait(configWaitdelayInMs); // Wait to get all relevant configurationChange() signals
@@ -1088,21 +1088,28 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                 if (configuration.type() == QNetworkConfiguration::ServiceNetwork) {
                     bool roamedSuccessfully = false;
 
-                    QCOMPARE(stateChangedSpy2.count(), 4);
+                    QNetworkSession::State state;
+                    if (stateChangedSpy2.count() == 4) {
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
+                        QVERIFY(state == QNetworkSession::Connecting);
 
-                    QNetworkSession::State state =
-                        qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
-                    QVERIFY(state == QNetworkSession::Connecting);
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(1).at(0));
+                        QVERIFY(state == QNetworkSession::Connected);
 
-                    state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(1).at(0));
-                    QVERIFY(state == QNetworkSession::Connected);
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(2).at(0));
+                        QVERIFY(state == QNetworkSession::Closing);
 
-                    state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(2).at(0));
-                    QVERIFY(state == QNetworkSession::Closing);
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(3).at(0));
+                        QVERIFY(state == QNetworkSession::Disconnected);
+                    } else if (stateChangedSpy2.count() == 2) {
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(0).at(0));
+                        QVERIFY(state == QNetworkSession::Closing);
 
-                    state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(3).at(0));
-                    QVERIFY(state == QNetworkSession::Disconnected);
-                    
+                        state = qvariant_cast<QNetworkSession::State>(stateChangedSpy2.at(1).at(0));
+                        QVERIFY(state == QNetworkSession::Disconnected);
+                    } else {
+                        QFAIL("Unexpected amount of state changes when roaming.");
+                    }
 			
                     QTRY_VERIFY(session.state() == QNetworkSession::Roaming ||
                                 session.state() == QNetworkSession::Connected ||
@@ -1137,16 +1144,18 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                             QVERIFY(state == QNetworkSession::Roaming);
                         }
                         roamedSuccessfully = true;
-                  	}
+                    }
 
                     if (roamedSuccessfully) {
+                        // Verify that you can open session based on the disconnected configuration
                         QString configId = session.sessionProperty("ActiveConfiguration").toString();
-                        QNetworkConfiguration config = manager.configurationFromIdentifier(configId); 
+                        QNetworkConfiguration config = manager.configurationFromIdentifier(configId);
                         QNetworkSession session3(config);
                         QSignalSpy errorSpy3(&session3, SIGNAL(error(QNetworkSession::SessionError)));
                         QSignalSpy sessionOpenedSpy3(&session3, SIGNAL(opened()));
                         session3.open();
-                        session3.waitForOpened();      
+                        session3.waitForOpened();
+                        QTest::qWait(1000); // Wait awhile to get all signals from platform
                         if (session.isOpen())
                             QVERIFY(!sessionOpenedSpy3.isEmpty() || !errorSpy3.isEmpty());
                         session.stop();
