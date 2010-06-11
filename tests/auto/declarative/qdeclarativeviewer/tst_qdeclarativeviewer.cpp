@@ -93,7 +93,7 @@ void tst_QDeclarativeViewer::orientation()
 
     QCOMPARE(rootItem->width(), 200.0);
     QCOMPARE(rootItem->height(), 300.0);
-    QCOMPARE(viewer->view()->size(), QSize(200, 300));
+    QTRY_COMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), viewer->sizeHint());
@@ -103,7 +103,7 @@ void tst_QDeclarativeViewer::orientation()
 
     QCOMPARE(rootItem->width(), 300.0);
     QCOMPARE(rootItem->height(), 200.0);
-    QCOMPARE(viewer->view()->size(), QSize(300, 200));
+    QTRY_COMPARE(viewer->view()->size(), QSize(300, 200));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(300, 200));
     QCOMPARE(viewer->size(), QSize(300, 200+viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), viewer->sizeHint());
@@ -113,7 +113,7 @@ void tst_QDeclarativeViewer::orientation()
 
     QCOMPARE(rootItem->width(), 200.0);
     QCOMPARE(rootItem->height(), 300.0);
-    QCOMPARE(viewer->view()->size(), QSize(200, 300));
+    QTRY_COMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), viewer->sizeHint());
@@ -255,21 +255,20 @@ void tst_QDeclarativeViewer::resizing()
     viewer->setSizeToView(false);
 
     // size view to root object
-    rootItem->setWidth(100);
+    rootItem->setWidth(150);
     rootItem->setHeight(200);
     qApp->processEvents();
 
-    QCOMPARE(rootItem->width(), 100.0);
+    QCOMPARE(rootItem->width(), 150.0);
     QCOMPARE(rootItem->height(), 200.0);
-    QCOMPARE(viewer->view()->size(), QSize(100, 200));
+    QCOMPARE(viewer->view()->size(), QSize(150, 200));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(100, 200));
-    QCOMPARE(viewer->size(), QSize(100, 200+viewer->menuBar()->height()));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(150, 200));
+    QCOMPARE(viewer->size(), QSize(150, 200+viewer->menuBar()->height()));
 
     // do not size root object to view
-    viewer->resize(QSize(150,250));
-    QCOMPARE(rootItem->width(), 100.0);
+    viewer->resize(QSize(180,250));
+    QCOMPARE(rootItem->width(), 150.0);
     QCOMPARE(rootItem->height(), 200.0);
 
     viewer->setSizeToView(true);
@@ -284,10 +283,9 @@ void tst_QDeclarativeViewer::resizing()
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350-viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), QSize(250, 350));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
 
     // do not size view to root object
-    rootItem->setWidth(100);
+    rootItem->setWidth(150);
     rootItem->setHeight(200);
     QTRY_COMPARE(viewer->size(), QSize(250, 350));
 }

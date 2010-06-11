@@ -56,17 +56,20 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass TextInput QDeclarativeTextInput
     \since 4.7
-    \brief The TextInput item allows you to add an editable line of text to a scene.
+    \brief The TextInput item displays an editable line of text.
     \inherits Item
 
-    TextInput can only display a single line of text, and can only display
-    plain text. However it can provide addition input constraints on the text.
+    The TextInput element displays a single line of editable plain text.
 
-    Input constraints include setting a QValidator, an input mask, or a
-    maximum input length.
+    TextInput is used to accept a line of text input. Input constraints
+    can be placed on a TextInput item (for example, through a \l validator or \l inputMask),
+    and setting \l echoMode to an appropriate value enables TextInput to be used for
+    a password input field.
 
     On Mac OS X, the Up/Down key bindings for Home/End are explicitly disabled.
     If you want such bindings (on any platform), you will need to construct them in QML.
+    
+    \sa TextEdit, Text
 */
 QDeclarativeTextInput::QDeclarativeTextInput(QDeclarativeItem* parent)
     : QDeclarativePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
@@ -558,7 +561,7 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
 /*!
     \qmlclass IntValidator QIntValidator
 
-    This element provides a validator for integer values
+    This element provides a validator for integer values.
 */
 /*!
     \qmlproperty int IntValidator::top
@@ -601,10 +604,14 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
     \qmlproperty enumeration DoubleValidator::notation
     This property holds the notation of how a string can describe a number.
 
-    The values for this property are DoubleValidator.StandardNotation or DoubleValidator.ScientificNotation.
-    If this property is set to DoubleValidator.ScientificNotation, the written number may have an exponent part(i.e. 1.5E-2).
+    The possible values for this property are:
+    
+    \list
+    \o DoubleValidator.StandardNotation 
+    \o DoubleValidator.ScientificNotation (default)
+    \endlist
 
-    By default, this property is set to DoubleValidator.ScientificNotation.
+    If this property is set to DoubleValidator.ScientificNotation, the written number may have an exponent part (e.g. 1.5E-2).
 */
 
 /*!
