@@ -58,7 +58,7 @@ symbian: {
         bearerStubZ = $${EPOCROOT}$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin
         BLD_INF_RULES.prj_exports += \
             "qsymbianbearer.qtplugin $$bearerStubZ" \
-            "qsymbianbearer.qtplugin $${EPOCROOT}/epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
+            "qsymbianbearer.qtplugin $${EPOCROOT}epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         pluginLocations = $$QT_BUILD_TREE/plugins/s60
         bearerPluginLocation = $$QT_BUILD_TREE/plugins/bearer
