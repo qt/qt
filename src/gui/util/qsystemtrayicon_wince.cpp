@@ -283,6 +283,11 @@ bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
     return true;
 }
 
+bool QSystemTrayIconPrivate::supportsMessages_sys()
+{
+    return true;
+}
+
 QT_END_NAMESPACE
 
 #endif

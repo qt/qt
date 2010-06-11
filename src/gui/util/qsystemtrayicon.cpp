@@ -356,10 +356,7 @@ bool QSystemTrayIcon::isSystemTrayAvailable()
 */
 bool QSystemTrayIcon::supportsMessages()
 {
-#if defined(Q_WS_QWS)
-    return false;
-#endif
-    return true;
+    return QSystemTrayIconPrivate::supportsMessages_sys();
 }
 
 /*!

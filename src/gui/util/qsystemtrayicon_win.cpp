@@ -111,8 +111,6 @@ public:
     bool trayMessage(DWORD msg);
     void setIconContents(NOTIFYICONDATA &data);
     bool showMessage(const QString &title, const QString &message, QSystemTrayIcon::MessageIcon type, uint uSecs);
-    bool allowsMessages();
-    bool supportsMessages();
     QRect findIconGeometry(const int a_iButtonID);
     void createIcon();
     HICON hIcon;
@@ -125,7 +123,7 @@ private:
     bool ignoreNextMouseRelease;
 };
 
-bool QSystemTrayIconSys::allowsMessages()
+static bool allowsMessages()
 {
 #ifndef QT_NO_SETTINGS
     QSettings settings(QLatin1String("HKEY_CURRENT_USER\\Software\\Microsoft"
@@ -134,11 +132,6 @@ bool QSystemTrayIconSys::allowsMessages()
 #else
     return false;
 #endif
-}
-
-bool QSystemTrayIconSys::supportsMessages()
-{
-    return allowsMessages();
 }
 
 QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
@@ -449,7 +442,7 @@ QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
 
 void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString &message, QSystemTrayIcon::MessageIcon type, int timeOut)
 {
-    if (!sys || !sys->allowsMessages())
+    if (!sys || !allowsMessages())
         return;
 
     uint uSecs = 0;
@@ -467,15 +460,7 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
     //title is limited to 63 chars + NULL
     QString titleString = title.left(63) + QChar();
 
-    if (sys->supportsMessages()) {
-        sys->showMessage(titleString, messageString, type, (unsigned int)uSecs);
-    } else {
-        //use fallback
-        QRect iconPos = sys->findIconGeometry(q_uNOTIFYICONID);
-        if (iconPos.isValid()) {
-            QBalloonTip::showBalloon(type, title, message, sys->q, iconPos.center(), uSecs, true);
-        }
-    }
+    sys->showMessage(titleString, messageString, type, uSecs);
 }
 
 QRect QSystemTrayIconPrivate::geometry_sys() const
@@ -526,6 +511,11 @@ void QSystemTrayIconPrivate::updateToolTip_sys()
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 {
     return true;
+}
+
+bool QSystemTrayIconPrivate::supportsMessages_sys()
+{
+    return allowsMessages();
 }
 
 QT_END_NAMESPACE
