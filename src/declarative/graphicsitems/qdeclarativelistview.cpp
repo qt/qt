@@ -737,7 +737,7 @@ void QDeclarativeListViewPrivate::layout()
 {
     Q_Q(QDeclarativeListView);
     layoutScheduled = false;
-    if (!isValid()) {
+    if (!isValid() && !visibleItems.count()) {
         clear();
         setPosition(0);
         return;
