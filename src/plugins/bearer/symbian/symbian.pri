@@ -10,8 +10,6 @@ SOURCES += ../symbianengine.cpp \
            ../qnetworksession_impl.cpp \
            ../main.cpp
 
-TARGET.UID3=0x20021319
-
 INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 symbian-abld:INCLUDEPATH += $$QT_BUILD_TREE/include/QtNetwork/private
 

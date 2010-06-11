@@ -10,3 +10,4 @@ exists($${EPOCROOT}epoc32/release/armv5/lib/cmmanager.lib) {
 }
 
 TARGET = $${TARGET}_3_2
+TARGET.UID3 = 0x2002131D
