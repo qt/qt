@@ -3678,7 +3678,9 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
                     sz += QSize(borderSize.cxLeftWidth + borderSize.cxRightWidth - 2,
                                 borderSize.cyBottomHeight + borderSize.cyTopHeight - 2);
                 }
-                sz += QSize(23, 0); //arrow button
+                const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin) + 1);
+                sz += QSize(qMax(pixelMetric(QStyle::PM_ScrollBarExtent, option, widget)
+                                 + textMargins, 23), 0); //arrow button
             }
         }
         break;

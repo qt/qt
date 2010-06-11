@@ -1926,30 +1926,7 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
         return QWindowsStyle::sizeFromContents(type, option, size, widget);
 
     QSize sz(size);
-
-    QSize newSize = QWindowsXPStyle::sizeFromContents(type, option, size, widget);
     switch (type) {
-    case CT_LineEdit:
-    case CT_ComboBox:
-        {
-            HTHEME theme = pOpenThemeData(0, L"Button");
-            MARGINS borderSize;
-            if (theme) {
-                int result = pGetThemeMargins(theme,
-                                              NULL,
-                                              BP_PUSHBUTTON,
-                                              PBS_NORMAL,
-                                              TMT_CONTENTMARGINS,
-                                              NULL,
-                                              &borderSize);
-                if (result == S_OK) {
-                    sz += QSize(borderSize.cxLeftWidth + borderSize.cxRightWidth - 2,
-                                borderSize.cyBottomHeight + borderSize.cyTopHeight - 2);
-                }
-                sz += QSize(23, 0); //arrow button
-            }
-        }
-        return sz;
     case CT_MenuItem:
         sz = QWindowsXPStyle::sizeFromContents(type, option, size, widget);
         int minimumHeight;
@@ -1990,7 +1967,7 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
     default:
         break;
     }
-    return newSize;
+    return QWindowsXPStyle::sizeFromContents(type, option, size, widget);
 }
 
 /*!
