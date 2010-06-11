@@ -1023,8 +1023,14 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
             heightShrink = heightShrink >> 1;
             break;
         case QS60StylePrivate::SF_ListHighlight:
-            widthShrink = widthShrink - 2;
-            heightShrink = heightShrink - 2;
+            //In Sym^3 devices highlights are less blocky
+            if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
+                widthShrink += 2;
+                heightShrink += 2;
+            } else {
+                widthShrink -= 2;
+                heightShrink -= 2;
+            }
             break;
         case QS60StylePrivate::SF_PopupBackground:
             widthShrink = widthShrink + 5;
