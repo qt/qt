@@ -928,7 +928,7 @@ void QGLContext::makeCurrent()
     } else if (d->paintDevice->devType() == QInternal::Pbuffer) {
         ok = glXMakeCurrent(xinfo->display(), (GLXPbuffer)d->pbuf, (GLXContext)d->cx);
     } else if (d->paintDevice->devType() == QInternal::Widget) {
-        ok = glXMakeCurrent(xinfo->display(), ((QWidget *)d->paintDevice)->winId(), (GLXContext)d->cx);
+        ok = glXMakeCurrent(xinfo->display(), ((QWidget *)d->paintDevice)->internalWinId(), (GLXContext)d->cx);
     }
     if (!ok)
         qWarning("QGLContext::makeCurrent(): Failed.");
