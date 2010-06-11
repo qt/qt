@@ -128,106 +128,24 @@ GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, i
     return chosenConfig;
 }
 
-
-QGLXGLWidgetSurface::QGLXGLWidgetSurface(MyDisplay* xd)
-    : QPlatformGLWidgetSurface()
-    , m_xd(xd)
-    , m_config(0)
-    , m_winId(0)
-    , m_widget(0)
-{
-}
-
-QGLXGLWidgetSurface::~QGLXGLWidgetSurface()
-{
-}
-
-static Colormap qt_glx_integration_colormap = 0;
-
-
-bool QGLXGLWidgetSurface::create(QGLWidget *widget, QGLFormat& format)
-{
-    m_widget = widget;
-
-    m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
-
-    Window parentWindow = widget->window()->winId();
-
-    XVisualInfo* visualInfo;
-    visualInfo = glXGetVisualFromFBConfig(m_xd->display, m_config);
-
-    // ### This will leak the colormap, but we need a colormap for each visual
-//    if (!qt_glx_integration_colormap) {
-        qt_glx_integration_colormap = XCreateColormap(m_xd->display, parentWindow,
-                                                      visualInfo->visual, AllocNone);
-//    }
-
-    XSetWindowAttributes windowAttribs;
-    windowAttribs.background_pixel = m_xd->whitePixel();
-    windowAttribs.border_pixel = m_xd->blackPixel();
-    windowAttribs.colormap = qt_glx_integration_colormap;
-
-    m_winId = XCreateWindow(m_xd->display, parentWindow,
-                            widget->x(), widget->y(), widget->width(), widget->height(),
-                            0, visualInfo->depth, InputOutput, visualInfo->visual,
-                            CWBackPixel|CWBorderPixel|CWColormap, &windowAttribs);
-#ifdef MYX11_DEBUG
-    qDebug() << "QGLXGLWidgetSurface::create" << hex << "parent" << parentWindow << "win:" << m_winId << widget;
-#endif
-
-    XSetWindowBackgroundPixmap(m_xd->display, m_winId, XNone);
-    XMapWindow(m_xd->display, m_winId);
-
-    XFree(visualInfo);
-    return true;
-}
-
-void QGLXGLWidgetSurface::setGeometry(const QRect& rect)
-{
-#ifdef MYX11_DEBUG
-    qDebug() << "QGLXGLWidgetSurface::setGeometry" << rect << hex << m_xd->display << m_winId << "toplevel?" << m_widget->isWindow();
-#endif
-    //### toplevel QGLWidgets do have a separate X window owned by the surface, but it has a
-    // local geometry
-    if (m_widget->isWindow())
-        XMoveResizeWindow(m_xd->display, m_winId, 0, 0, rect.width(), rect.height());
-    else
-        XMoveResizeWindow(m_xd->display, m_winId, rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-bool QGLXGLWidgetSurface::filterEvent(QEvent *e)
-{
-    if (e->type() == QEvent::ParentAboutToChange) {
-        // We temporarily hide the window and re-parent it with the root window
-        // as it's quite likely that the parent window is about to be deleted,
-        // which would otherwise destroy our window along with it.
-        XUnmapWindow(m_xd->display, m_winId);
-        XReparentWindow(m_xd->display, m_winId, m_xd->rootWindow(), 0, 0);
-#ifdef MYX11_DEBUG
-        qDebug() << "filterEvent unmap" << hex << m_winId;
-#endif
-    }
-
-    if (e->type() == QEvent::ParentChange) {
-        // Once we've got a new parent, we need to reparent the window and show it again:
-        XReparentWindow(m_xd->display, m_winId, m_widget->window()->winId(), m_widget->x(), m_widget->y());
-        XMapWindow(m_xd->display, m_winId);
-#ifdef MYX11_DEBUG
-        qDebug() << "filterEvent reparent" << hex << m_winId << "to:" << m_widget->window()->winId();
-#endif
-    }
-
-    return false; // Allow the event to pass through to QGLWidget
-}
-
-
-QGLXGLContext::QGLXGLContext(MyDisplay *xd)
+QGLXGLContext::QGLXGLContext(WId winId, MyDisplay *xd, QGLFormat& format, QPlatformGLContext* shareContext)
     : QPlatformGLContext()
     , m_xd(xd)
-    , m_drawable(0)
+    , m_drawable((Drawable)winId)
     , m_config(0)
     , m_context(0)
 {
+    GLXContext shareGlxContext = 0;
+    if (shareContext)
+        shareGlxContext = static_cast<QGLXGLContext*>(shareContext)->glxContext();
+
+    m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
+
+    m_context = glXCreateNewContext(m_xd->display, m_config, GLX_RGBA_TYPE, shareGlxContext, True);
+#ifdef MYX11_DEBUG
+    qDebug() << "QGLXGLContext::create context" << m_context;
+#endif
+
 }
 
 QGLXGLContext::~QGLXGLContext()
@@ -236,63 +154,6 @@ QGLXGLContext::~QGLXGLContext()
         qDebug("Destroying GLX context 0x%x", m_context);
         glXDestroyContext(m_xd->display, m_context);
     }
-}
-
-bool QGLXGLContext::create(QPaintDevice* device, QGLFormat& format, QPlatformGLContext* shareContext)
-{
-    Q_UNUSED(format);
-
-    if (device->devType() != QInternal::Widget) {
-        qWarning("Creating a GL context is only supported on QWidgets");
-        return false;
-    }
-
-    GLXContext shareGlxContext = 0;
-    if (shareContext)
-        shareGlxContext = static_cast<QGLXGLContext*>(shareContext)->glxContext();
-
-
-    QWidget* widget = static_cast<QWidget*>(device);
-    QGLWidget* glWidget = qobject_cast<QGLWidget*>(widget);
-    if (glWidget) {
-        // Take the config from the QGLWidget's glx surface:
-        QGLXGLWidgetSurface* surface = static_cast<QGLXGLWidgetSurface*>(glWidget->platformSurface());
-        m_config = surface->config();
-        m_drawable = (Drawable)surface->winId();
-#ifdef MYX11_DEBUG
-        qDebug() << "QGLXGLContext::create" << hex << m_config << m_drawable;
-#endif
-    }
-    else {
-        if (!widget->isTopLevel()) {
-            qWarning("Creating a GL context is only supported on top-level QWidgets");
-            return false;
-        }
-        m_drawable = (Drawable)widget->platformWindow()->winId();
-
-        // ### This might choose a config with a visual that isn't compatable with the native window:
-        m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
-    }
-
-    m_context = glXCreateNewContext(m_xd->display, m_config, GLX_RGBA_TYPE, shareGlxContext, True);
-#ifdef MYX11_DEBUG
-    qDebug() << "QGLXGLContext::create context" << m_context;
-#endif
-
-    // Get the XVisualInfo for the window:
-//    XWindowAttributes windowAttribs;
-//    XGetWindowAttributes(m_display, m_widget->winId(), &windowAttribs);
-//    XVisualInfo visualInfoTemplate;
-//    visualInfoTemplate.visualid = 33; //XVisualIDFromVisual(windowAttribs.visual);
-//    XVisualInfo *visualInfo;
-//    int matchingCount = 0;
-//    visualInfo = XGetVisualInfo(m_xd->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
-
-//    m_context = glXCreateContext(m_xd->display, visualInfo, 0, True);
-
-//    qDebug("Created GLX context 0x%x for visual ID %d", m_context, visualInfoTemplate.visualid);
-
-    return true;
 }
 
 void QGLXGLContext::makeCurrent()

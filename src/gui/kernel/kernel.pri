@@ -208,7 +208,8 @@ embedded_lite {
                 kernel/qplatformscreen_lite.h \
                 kernel/qplatformintegrationfactory_lite_p.h \
                 kernel/qplatformintegrationplugin_lite.h \
-                kernel/qplatformwindow_lite.h
+                kernel/qplatformwindow_lite.h \
+                kernel/qplatformglcontext_lite.h
 		
 	SOURCES += \
 		kernel/qapplication_lite.cpp \

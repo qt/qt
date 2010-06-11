@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformWindowPrivate;
 class QWidget;
+class QPlatformGLContext;
+
 class Q_GUI_EXPORT QPlatformWindow
 {
     Q_DECLARE_PRIVATE(QPlatformWindow);
@@ -75,6 +77,8 @@ public:
     virtual void lower();
 
     virtual void setOpacity(qreal level);
+
+    virtual QPlatformGLContext *glContext();
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 };

@@ -56,21 +56,9 @@ QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, in
     return QPixmap();
 }
 
-#ifndef QT_NO_OPENGL
 bool QPlatformIntegration::hasOpenGL() const
 {
     return false;
 }
-
-QPlatformGLContext * QPlatformIntegration::createGLContext()
-{
-    return 0;
-}
-
-QPlatformGLWidgetSurface * QPlatformIntegration::createGLWidgetSurface()
-{
-    return 0;
-}
-#endif
 
 QT_END_NAMESPACE

@@ -81,18 +81,12 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
-#ifndef QT_NO_OPENGL
     bool hasOpenGL() const;
-    QPlatformGLContext * createGLContext();
-    QPlatformGLWidgetSurface * createGLWidgetSurface();
-#endif
 
     MyDisplay *xd;
 
 private:
-#ifndef QT_NO_OPENGL
     bool mUseOpenGL;
-#endif
     QTestLiteScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
 };

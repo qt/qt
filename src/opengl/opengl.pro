@@ -79,10 +79,8 @@ SOURCES	+= qgl.cpp \
 embedded_lite {
     DEFINES += QT_NO_EGL
 
-    SOURCES += qgl_lite.cpp
-    HEADERS += qglplatformintegration_lite.h
-
-    SOURCES += qglpixelbuffer_stub.cpp
+    SOURCES +=  qgl_lite.cpp \
+                qglpixelbuffer_stub.cpp
 }
 
 x11 {

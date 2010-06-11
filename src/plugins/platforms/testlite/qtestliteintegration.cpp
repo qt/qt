@@ -109,19 +109,15 @@ QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
 
 QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
-#ifndef QT_NO_OPENGL
     if (mUseOpenGL)
         return new QGLPixmapData(type);
-#endif
     return new QRasterPixmapData(type);
 }
 
 QWindowSurface *QTestLiteIntegration::createWindowSurface(QWidget *widget, WId) const
 {
-#ifndef QT_NO_OPENGL
     if (mUseOpenGL)
         return new QGLWindowSurface(widget);
-#endif
 
     return new QTestLiteWindowSurface(mPrimaryScreen, widget);
 }
@@ -140,23 +136,9 @@ QPixmap QTestLiteIntegration::grabWindow(WId window, int x, int y, int width, in
     return QPixmap::fromImage(img);
 }
 
-#ifndef QT_NO_OPENGL
 bool QTestLiteIntegration::hasOpenGL() const
 {
     return glXQueryExtension(xd->display, 0, 0) != 0;
 }
-
-QPlatformGLContext *QTestLiteIntegration::createGLContext()
-{
-    return new QGLXGLContext(xd);
-}
-
-QPlatformGLWidgetSurface *QTestLiteIntegration::createGLWidgetSurface()
-{
-    return new QGLXGLWidgetSurface(xd);
-}
-
-#endif // QT_NO_OPENGL
-
 
 QT_END_NAMESPACE

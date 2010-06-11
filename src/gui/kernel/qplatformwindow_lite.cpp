@@ -76,3 +76,8 @@ void QPlatformWindow::setOpacity(qreal level)
     Q_UNUSED(level);
     qWarning("This plugin does not support setting window opacity");
 }
+
+QPlatformGLContext *QPlatformWindow::glContext()
+{
+    return 0;
+}

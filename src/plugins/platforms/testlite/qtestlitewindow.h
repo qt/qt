@@ -126,6 +126,8 @@ public:
 
     void setCursor(QCursor * cursor);
 
+    QPlatformGLContext *glContext();
+
 private:
     int xpos, ypos;
     int width, height;
@@ -135,6 +137,7 @@ private:
     GC createGC();
     Cursor createCursorShape(int cshape);
     Cursor createCursorBitmap(QCursor * cursor);
+    QPlatformGLContext *createGLContext();
 
     int currentCursor;
 
@@ -142,6 +145,7 @@ private:
 
     QTestLiteScreen *mScreen;
     Qt::WindowFlags window_flags;
+    QPlatformGLContext *mGLContext;
 
     friend class QTestLiteWindowSurface; // x_window, gc and windowSurface
 };

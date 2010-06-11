@@ -77,7 +77,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     Q_ASSERT(platformWindow);
 
     // QGLWidget does not need/work with a windowsurface
-    if (!surface && !q->inherits("QGLWidget")) {
+    if (!surface) {// && !q->inherits("QGLWidget")) {
         surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
     }
 
@@ -343,17 +343,19 @@ void QWidgetPrivate::show_sys()
     if (!q->isWindow())
         return;
 
-    if (QWindowSurface *surface = q->windowSurface()) {
+    if (QPlatformWindow *window = q->platformWindow()) {
          const QRect geomRect = q->geometry();
-         const QRect windowRect = q->platformWindow()->geometry();
+         const QRect windowRect = window->geometry();
          if (windowRect != geomRect) {
              q->platformWindow()->setGeometry(geomRect);
-             if (windowRect.size() != geomRect.size()) {
-                surface->resize(geomRect.size());
+             if (QWindowSurface *surface = q->windowSurface())
+                 if (windowRect.size() != geomRect.size()) {
+                 surface->resize(geomRect.size());
              }
          }
          q->platformWindow()->setVisible(true);
      }
+
 
     if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
         q->activateWindow(); //###

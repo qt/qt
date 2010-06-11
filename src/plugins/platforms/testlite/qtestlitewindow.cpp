@@ -55,6 +55,9 @@
 #include <QTimer>
 #include <QApplication>
 
+#include <QtOpenGL/QGLFormat>
+#include "qglxintegration.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -146,7 +149,7 @@ private:
 
 QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration,
                                  QTestLiteScreen */*screen*/, QWidget *window)
-    :QPlatformWindow(window)
+    :QPlatformWindow(window), mGLContext(0)
 {
     xd = platformIntegration->xd;
     xd->windowList.append(this);
@@ -190,6 +193,7 @@ QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration
     currentCursor = -1;
 
     setWindowFlags(window->windowFlags()); //##### This should not be the plugin's responsibility
+
 
     //xw->windowTL = this;
 }
@@ -661,8 +665,6 @@ void QTestLiteWindow::setWindowTitle(const QString &title)
     XSetWMName(xd->display, x_window, &windowName);
 }
 
-
-
 GC QTestLiteWindow::createGC()
 {
     GC gc;
@@ -674,14 +676,14 @@ GC QTestLiteWindow::createGC()
     return gc;
 }
 
-
 void QTestLiteWindow::paintEvent()
 {
 #ifdef MYX11_DEBUG
 //    qDebug() << "QTestLiteWindow::paintEvent" << shm_img.size() << painted;
 #endif
 
-    widget()->windowSurface()->flush(widget(), QRect(xpos,ypos,width, height), QPoint());
+    if (QWindowSurface *surface = widget()->windowSurface())
+        surface->flush(widget(), QRect(xpos,ypos,width, height), QPoint());
 }
 
 
@@ -1003,6 +1005,21 @@ void QTestLiteWindow::setCursor(QCursor * cursor)
 
     XDefineCursor(xd->display, x_window, c);
     XFlush(xd->display);
+}
+
+QPlatformGLContext *QTestLiteWindow::glContext()
+{
+    if (!mGLContext) {
+        mGLContext = createGLContext();
+    }
+    return mGLContext;
+}
+
+QPlatformGLContext *QTestLiteWindow::createGLContext()
+{
+    QGLFormat format;
+    QPlatformGLContext *context = new QGLXGLContext(x_window, xd, format, 0);
+    return context;
 }
 
 Cursor QTestLiteWindow::createCursorBitmap(QCursor * cursor)

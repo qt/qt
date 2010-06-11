@@ -51,11 +51,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifndef QT_NO_OPENGL
-class QPlatformGLContext;
-class QPlatformGLWidgetSurface;
-#endif
-
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
@@ -73,12 +68,7 @@ public:
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
-// OpenGL Integration functions
-#ifndef QT_NO_OPENGL
     virtual bool hasOpenGL() const;
-    virtual QPlatformGLContext       * createGLContext();
-    virtual QPlatformGLWidgetSurface * createGLWidgetSurface();
-#endif
 };
 
 QT_END_NAMESPACE

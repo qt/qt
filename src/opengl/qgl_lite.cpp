@@ -40,38 +40,17 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QtGui/private/qapplication_p.h>
 #include <QPixmap>
 #include <QDebug>
 
 #include <QtGui/private/qapplication_p.h>
+#include <QtGui/QPlatformWindow>
 
 #include "qgl.h"
 #include "qgl_p.h"
-#include "qglplatformintegration_lite.h"
 
 QT_BEGIN_NAMESPACE
-
-QPlatformGLContext::QPlatformGLContext()
-{
-}
-
-QPlatformGLContext::~QPlatformGLContext()
-{
-}
-
-QPlatformGLWidgetSurface::QPlatformGLWidgetSurface()
-{
-}
-
-QPlatformGLWidgetSurface::~QPlatformGLWidgetSurface()
-{
-}
-
-bool QPlatformGLWidgetSurface::filterEvent(QEvent*)
-{
-    // By default, return false to allow the event to pass through
-    return false;
-}
 
 
 bool QGLFormat::hasOpenGL()
@@ -82,8 +61,16 @@ bool QGLFormat::hasOpenGL()
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
-    d->platformContext = QApplicationPrivate::platformIntegration()->createGLContext();
-    d->valid = d->platformContext->create(d->paintDevice, d->glFormat, shareContext ? shareContext->d_func()->platformContext : 0);
+    if (!d->paintDevice && d->paintDevice->devType() != QInternal::Widget) {
+        d->valid = false;
+    }else {
+        QWidget *widget = static_cast<QWidget *>(d->paintDevice);
+        if (!widget->platformWindow()){
+            widget->winId();//make window
+        }
+        d->platformContext = widget->platformWindow()->glContext();
+        d->valid =(bool) d->platformContext;
+    }
 
     return d->valid;
 }
@@ -154,29 +141,11 @@ void QGLWidget::setContext(QGLContext *context,
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
 
-    if (!d->wsurf) {
-        // If the application has set WA_TranslucentBackground and not explicitly set
-        // the alpha buffer size to zero, modify the format so it have an alpha channel
-        QGLFormat format = d->glcx->d_func()->glFormat;
-        if (testAttribute(Qt::WA_TranslucentBackground) && format.alphaBufferSize() == -1)
-            format.setAlphaBufferSize(1);
-
-        d->wsurf = QApplicationPrivate::platformIntegration()->createGLWidgetSurface();
-        d->wsurf->create(this, format);
-        d->glcx->d_func()->glFormat = format;
-    }
-
     if (!d->glcx->isValid())
         d->glcx->create(shareContext ? shareContext : oldcx);
 
     if (deleteOldContext)
         delete oldcx;
-}
-
-QPlatformGLWidgetSurface* QGLWidget::platformSurface()
-{
-    Q_D(QGLWidget);
-    return d->wsurf;
 }
 
 void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget *shareWidget)
@@ -247,33 +216,12 @@ void QGLWidget::setMouseTracking(bool enable)
 
 bool QGLWidget::event(QEvent *e)
 {
-    Q_D(QGLWidget);
-
-    if (d->wsurf) {
-        bool eventFiltered = d->wsurf->filterEvent(e);
-        if (eventFiltered)
-            return true;
-    }
-
     return QWidget::event(e);
 }
 
-void QGLWidget::resizeEvent(QResizeEvent *)
+void QGLWidget::resizeEvent(QResizeEvent *e)
 {
-    Q_D(QGLWidget);
-    if (!isValid())
-        return;
-
-    if (!d->wsurf) {
-        qWarning("QGLWidget::resizeEvent() - widget does not have a platform surface");
-        return;
-    }
-    d->wsurf->setGeometry(geometry()); //### What about moveEvent?
-
-    makeCurrent();
-    if (!d->glcx->initialized())
-        glInit();
-    resizeGL(width(), height());
+    return QWidget::resizeEvent(e);
 }
 
 
