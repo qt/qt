@@ -54,7 +54,7 @@ struct QScopedPointerDeleter
     static inline void cleanup(T *pointer)
     {
         // Enforce a complete type.
-        // If you get a compile error here, read the secion on forward declared
+        // If you get a compile error here, read the section on forward declared
         // classes in the QScopedPointer documentation.
         typedef char IsIncompleteType[ sizeof(T) ? 1 : -1 ];
         (void) sizeof(IsIncompleteType);
@@ -69,7 +69,7 @@ struct QScopedPointerArrayDeleter
     static inline void cleanup(T *pointer)
     {
         // Enforce a complete type.
-        // If you get a compile error here, read the secion on forward declared
+        // If you get a compile error here, read the section on forward declared
         // classes in the QScopedPointer documentation.
         typedef char IsIncompleteType[ sizeof(T) ? 1 : -1 ];
         (void) sizeof(IsIncompleteType);
@@ -186,11 +186,18 @@ template <class T, class Cleanup>
 Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
 { p1.swap(p2); }
 
+namespace QtPrivate {
+    template <typename X, typename Y> struct QScopedArrayEnsureSameType;
+    template <typename X> struct QScopedArrayEnsureSameType<X,X> { typedef X* Type; };
+    template <typename X> struct QScopedArrayEnsureSameType<const X, X> { typedef X* Type; };
+}
+
 template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
 class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
 {
 public:
-    explicit inline QScopedArrayPointer(T *p = 0)
+    template <typename D>
+    explicit inline QScopedArrayPointer(D *p = 0, typename QtPrivate::QScopedArrayEnsureSameType<T,D>::Type = 0)
         : QScopedPointer<T, Cleanup>(p)
     {
     }
@@ -206,6 +213,17 @@ public:
     }
 
 private:
+    explicit inline QScopedArrayPointer(void *p) {
+        // Enforce the same type.
+
+        // If you get a compile error here, make sure you declare
+        // QScopedArrayPointer with the same template type as you pass to the
+        // constructor. See also the QScopedPointer documentation.
+
+        // Storing a scalar array as a pointer to a different type is not
+        // allowed and results in undefined behavior.
+    }
+
     Q_DISABLE_COPY(QScopedArrayPointer)
 };
 
