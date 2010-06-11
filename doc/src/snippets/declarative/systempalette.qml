@@ -38,15 +38,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
-//! [0]
-Column {
-    Repeater {
-        model: ["apples", "oranges", "pears"]
-        Text { text: "Data: " + modelData }
+Rectangle {
+    SystemPalette { id: myPalette; colorGroup: SystemPalette.Active }
+
+    width: 640; height: 480
+    color: myPalette.window
+
+    Text {
+        anchors.fill: parent
+        text: "Hello!"; color: myPalette.windowText
     }
 }
-//! [0]
-
+//![0]

@@ -1358,6 +1358,8 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
+
+    \sa ListModel, GridView
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)

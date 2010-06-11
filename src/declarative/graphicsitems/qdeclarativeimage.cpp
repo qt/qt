@@ -83,6 +83,8 @@ QT_BEGIN_NAMESPACE
     that images which do not form part of the user interface have their
     size bounded via the \l sourceSize property. This is especially important for content
     that is loaded from external sources or provided by the user.
+
+    \sa {declarative/imageelements/image}{Image example}
 */
 
 /*!

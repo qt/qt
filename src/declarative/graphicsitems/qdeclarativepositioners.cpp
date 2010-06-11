@@ -358,6 +358,7 @@ Column {
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Column.
 
+  \sa Row, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Column::add
@@ -500,6 +501,8 @@ Row {
   width of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Row.
+
+  \sa Column, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Row::add
@@ -653,6 +656,8 @@ Grid {
   width or height of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Grid.
+
+  \sa Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Grid::add
@@ -908,6 +913,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
   positioner may exhibit strange behaviour.  If you need to perform any of these
   actions, consider positioning the items without the use of a Flow.
 
+    \sa Grid, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Flow::add
