@@ -223,11 +223,15 @@ bool QLibraryPrivate::load_sys()
 
 #ifdef Q_OS_MAC
     if (!pHnd) {
-        if (CFBundleRef bundle = CFBundleGetBundleWithIdentifier(QCFString(fileName))) {
+        QByteArray utf8Bundle = fileName.toUtf8();
+        QCFType<CFURLRef> bundleUrl = CFURLCreateFromFileSystemRepresentation(NULL, reinterpret_cast<const UInt8*>(utf8Bundle.data()), utf8Bundle.length(), true);
+        QCFType<CFBundleRef> bundle = CFBundleCreate(NULL, bundleUrl);
+        if(bundle) {
             QCFType<CFURLRef> url = CFBundleCopyExecutableURL(bundle);
-            QCFString str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            pHnd = dlopen(QFile::encodeName(str), dlFlags);
-            attempt = str;
+            char executableFile[FILENAME_MAX];
+            CFURLGetFileSystemRepresentation(url, true, reinterpret_cast<UInt8*>(executableFile), FILENAME_MAX);
+            attempt = QString::fromUtf8(executableFile);
+            pHnd = dlopen(QFile::encodeName(attempt), dlFlags);
         }
     }
 #endif
