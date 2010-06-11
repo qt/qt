@@ -135,13 +135,13 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_TableHeaderItem,        QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
     {SE_ToolTip,                QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
     {SE_ToolBar,                QS60StyleEnums::SP_QsnFrPopupSubCenter},
-    {SE_ToolBarButton,          QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
-    {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
+    {SE_ToolBarButton,          QS60StyleEnums::SP_QgnFrSctrlButtonCenter},
+    {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QgnFrSctrlButtonCenterPressed},
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
     {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
     {SE_TableItemPressed,       QS60StyleEnums::SP_QsnFrGridCenterPressed},
-    {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListPressed},
+    {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListCenterPressed},
 };
 
 static const int frameElementsCount =
@@ -1824,7 +1824,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointSouth;
                 painter->save();
                 painter->setPen(option->palette.windowText().color());
-                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnIndiSubMenu, painter, arrowOptions.rect,
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnIndiSubmenu, painter, arrowOptions.rect,
                     (flags | QS60StylePrivate::SF_ColorSkinned | arrowDirection));
                 painter->restore();
             }
@@ -3328,13 +3328,13 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             part = QS60StyleEnums::SP_QgnNoteErased;
             break;
         case SP_ToolBarHorizontalExtensionButton:
-            part = QS60StyleEnums::SP_QgnIndiSubMenu;
+            part = QS60StyleEnums::SP_QgnIndiSubmenu;
             if (QApplication::layoutDirection() == Qt::RightToLeft)
                 adjustedFlags |= QS60StylePrivate::SF_PointSouth;
             break;
         case SP_ToolBarVerticalExtensionButton:
             adjustedFlags |= QS60StylePrivate::SF_PointEast;
-            part = QS60StyleEnums::SP_QgnIndiSubMenu;
+            part = QS60StyleEnums::SP_QgnIndiSubmenu;
             break;
 
         default:
