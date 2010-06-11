@@ -118,6 +118,7 @@ For example, from your build directory, run:
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
 \o \l{declarative/modelviews/stringlistmodel}{String ListModel}
+\o \l{declarative/modelviews/visualitemmodel}{VisualItemModel}
 \o \l{declarative/modelviews/webview}{WebView}
 \endlist
 
