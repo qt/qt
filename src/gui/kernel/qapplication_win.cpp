@@ -4070,7 +4070,6 @@ void QApplicationPrivate::initializeMultitouch_sys()
     if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
         static const int QT_SM_DIGITIZER = 94;
         QApplicationPrivate::HasTouchSupport = GetSystemMetrics(QT_SM_DIGITIZER);
-        qDebug() << "QApplicationPrivate::HasTouchSupport " << QApplicationPrivate::HasTouchSupport;
     }
 
     QLibrary library(QLatin1String("user32"));
