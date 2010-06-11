@@ -672,8 +672,12 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
                              GLX_CONTEXT_PROFILE_MASK_ARB, profile,
                              0 };
 
-        PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribs =
-            (PFNGLXCREATECONTEXTATTRIBSARBPROC) qglx_getProcAddress("glXCreateContextAttribsARB");
+        typedef GLXContext ( * Q_PFNGLXCREATECONTEXTATTRIBSARBPROC)
+            (Display* dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const int *attrib_list);
+
+
+        Q_PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribs =
+            (Q_PFNGLXCREATECONTEXTATTRIBSARBPROC) qglx_getProcAddress("glXCreateContextAttribsARB");
 
         if (glXCreateContextAttribs) {
             int spec[45];
