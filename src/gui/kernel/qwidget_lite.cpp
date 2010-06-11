@@ -85,6 +85,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     setWinId(q->platformWindow()->winId());
 
+    QApplicationPrivate::platformIntegration()->moveToScreen(q, screenNumber);
 //    qDebug() << "create_sys" << q << q->internalWinId();
 }
 
@@ -119,14 +120,31 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
 
-//    QWidget *oldParent = q->parentWidget();
+
+    //    QWidget *oldParent = q->parentWidget();
     Qt::WindowFlags oldFlags = data.window_flags;
+
+    int targetScreen = -1;
+    // Handle a request to move the widget to a particular screen
+    if (newparent && newparent->windowType() == Qt::Desktop) {
+        // make sure the widget is created on the same screen as the
+        // programmer specified desktop widget
+
+        // get the desktop's screen number
+        targetScreen = newparent->d_func()->screenNumber;
+        newparent = 0;
+    }
+
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
-
     }
+
     if (!newparent) {
         f |= Qt::Window;
+        if (targetScreen == -1) {
+            if (parent)
+                targetScreen = qobject_cast<QWidget *>(parent)->d_func()->screenNumber;
+        }
     }
 
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
@@ -153,6 +171,15 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         q->setAttribute(Qt::WA_WState_Hidden);
     q->setAttribute(Qt::WA_WState_ExplicitShowHide, explicitlyHidden);
 
+    // move the window to the selected screen
+    if (!newparent && targetScreen != -1) {
+        screenNumber = targetScreen;
+        // only if it is already created
+        if (q->testAttribute(Qt::WA_WState_Created)) {
+            QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
+            platform->moveToScreen(q, targetScreen);
+        }
+    }
 }
 
 QPoint QWidget::mapToGlobal(const QPoint &pos) const

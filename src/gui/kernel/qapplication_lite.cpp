@@ -63,6 +63,7 @@
 #include <QWindowSystemInterface>
 #include <QPlatformIntegration>
 
+#include "qdesktopwidget_lite_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -395,11 +396,16 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
     QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
 
-    QPlatformScreen *screen = pi->screens().first();
-    if (!screen)
-        return 0;
-    QWidget *w = screen->topLevelAt(pos);
-    return w;
+    QList<QPlatformScreen *> screens = pi->screens();
+    QList<QPlatformScreen *>::const_iterator screen = screens.constBegin();
+    QList<QPlatformScreen *>::const_iterator end = screens.constEnd();
+
+    while (screen != end) {
+        if ((*screen)->geometry().contains(pos))
+            return (*screen)->topLevelAt(pos);
+        ++screen;
+    }
+    return 0;
 }
 
 void QApplication::beep()
@@ -813,6 +819,7 @@ void QApplicationPrivate::reportScreenCount(int count)
     if (QCoreApplication::startingUp())
         return;
 
+    QApplication::desktop()->d_func()->updateScreenList();
     // signal anything listening for creation or deletion of screens
     QDesktopWidget *desktop = QApplication::desktop();
     emit desktop->screenCountChanged(count);
@@ -823,6 +830,8 @@ void QApplicationPrivate::reportGeometryChange(int screenIndex)
     // This operation only makes sense after the QApplication constructor runs
     if (QCoreApplication::startingUp())
         return;
+
+    QApplication::desktop()->d_func()->updateScreenList();
 
     // signal anything listening for screen geometry changes
     QDesktopWidget *desktop = QApplication::desktop();
@@ -844,6 +853,8 @@ void QApplicationPrivate::reportAvailableGeometryChange(int screenIndex)
     // This operation only makes sense after the QApplication constructor runs
     if (QCoreApplication::startingUp())
         return;
+
+    QApplication::desktop()->d_func()->updateScreenList();
 
     // signal anything listening for screen geometry changes
     QDesktopWidget *desktop = QApplication::desktop();

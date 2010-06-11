@@ -629,6 +629,7 @@ public:
 #if defined(Q_WS_LITE)
     void setPlatformWindow(QPlatformWindow *window);
     QPlatformWindow *platformWindow() const;
+    friend class QDesktopScreenWidget;
 #endif
 
 Q_SIGNALS:

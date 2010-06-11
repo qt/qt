@@ -815,6 +815,8 @@ public:
 #elif defined(Q_WS_LITE)
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
+
+    int screenNumber; // screen the widget should be displayed on
 #ifndef QT_NO_CURSOR
     void updateCursor() const;
 #endif

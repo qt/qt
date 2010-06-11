@@ -98,6 +98,8 @@ public:
 
     virtual void repaint(const QRegion&);
 
+    virtual QRect localGeometry() { return mLocalGeometry; }
+
 protected:
     friend class QFbWindowSurface;
     friend class QFbScreen;
@@ -106,7 +108,7 @@ protected:
     QRect oldGeometry;
     bool visibleFlag;
     Qt::WindowFlags flags;
-
+    QRect mLocalGeometry;        // local screen coordinates
 
     WId windowId;
 };
@@ -131,8 +133,7 @@ public:
     virtual void setDirty(const QRect &rect);
 
     virtual void removeWindow(QFbWindow * surface);
-    virtual void addWindow(QFbWindow * surface) {
-        windowStack.prepend(surface); invalidateRectCache(); }
+    virtual void addWindow(QFbWindow * surface);
     virtual void raise(QPlatformWindow * surface);
     virtual void lower(QPlatformWindow * surface);
     virtual QWidget * topLevelAt(const QPoint & p) const;

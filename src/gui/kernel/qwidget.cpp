@@ -211,6 +211,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , hasAlienChildren(0)
       , window_event(0)
       , qd_hd(0)
+#elif defined (Q_WS_LITE)
+      , screenNumber(0)
 #endif
 {
     if (!qApp) {
@@ -1153,6 +1155,12 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         // make sure the widget is created on the same screen as the
         // programmer specified desktop widget
         xinfo = desktopWidget->d_func()->xinfo;
+    }
+#elif defined(Q_WS_LITE)
+    if (desktopWidget) {
+        int screen = desktopWidget->d_func()->screenNumber;
+        QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
+        platform->moveToScreen(q, screen);
     }
 #else
     Q_UNUSED(desktopWidget);

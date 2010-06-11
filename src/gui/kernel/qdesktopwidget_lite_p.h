@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,63 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_VNC_H
-#define QGRAPHICSSYSTEM_VNC_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qvnccursor.h"
-#include "../fb_base/fb_base.h"
-#include <QPlatformIntegration>
+#ifndef QDESKTOPWIDGET_LITE_P_H
+#define QDESKTOPWIDGET_LITE_P_H
 
-QT_BEGIN_NAMESPACE
+#include "QDesktopWidget"
+#include "private/qwidget_p.h"
 
-class QVNCServer;
-class QVNCDirtyMap;
-
-class QVNCScreenPrivate;
-
-class QVNCScreen : public QFbScreen
-{
+class QDesktopScreenWidget : public QWidget {
     Q_OBJECT
 public:
-    QVNCScreen(QRect screenSize, int screenId);
-
-    int linestep() const { return image() ? image()->bytesPerLine() : 0; }
-    uchar *base() const { return image() ? image()->bits() : 0; }
-    QVNCDirtyMap *dirtyMap();
-
-public:
-    QVNCScreenPrivate *d_ptr;
-
-private:
-    QVNCServer *server;
-    QRegion doRedraw();
-    friend class QVNCIntegration;
+    QDesktopScreenWidget(int screenNumber) { setWindowFlags(Qt::Desktop); setVisible(false); d_func()->screenNumber = screenNumber; }
 };
 
-class QVNCIntegrationPrivate;
-
-
-class QVNCIntegration : public QPlatformIntegration
-{
+class QDesktopWidgetPrivate : public QWidgetPrivate {
 public:
-    QVNCIntegration(const QStringList& paramList);
+    QDesktopWidgetPrivate() { updateScreenList(); }
+    ~QDesktopWidgetPrivate() {foreach(QDesktopScreenWidget *s, screens) delete s; }
+    void updateScreenList();
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    void moveToScreen(QWidget *window, int screen);
-
-private:
-    QVNCScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
+    QList<QDesktopScreenWidget *> screens;
 };
 
-
-
-QT_END_NAMESPACE
-
-#endif //QGRAPHICSSYSTEM_VNC_H
-
+#endif // QDESKTOPWIDGET_LITE_P_H

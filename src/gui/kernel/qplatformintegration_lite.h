@@ -66,9 +66,11 @@ public:
     virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
     virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
     virtual QBlittable *createBlittable(const QSize &size) const;
+    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
 
 // Window System functions
     virtual QList<QPlatformScreen *> screens() const = 0;
+    virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
 // OpenGL Integration functions

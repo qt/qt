@@ -105,7 +105,7 @@ public:
     class UserEvent {
     public:
         UserEvent(QWidget * w, ulong time, QEvent::Type t)
-            { widget = QWeakPointer<QWidget>::QWeakPointer(w); type = t; timestamp = time; }
+            { widget = QWeakPointer<QWidget>(w); type = t; timestamp = time; }
         QWeakPointer<QWidget> widget;
         QEvent::Type type;
         unsigned long timestamp;

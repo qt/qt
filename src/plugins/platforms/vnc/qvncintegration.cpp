@@ -50,7 +50,6 @@
 
 #include <QtCore/QTimer>
 
-
 QVNCScreen::QVNCScreen(QRect screenSize, int screenId)
         : QFbScreen::QFbScreen()
 {
@@ -99,6 +98,8 @@ QVNCIntegration::QVNCIntegration(const QStringList& paramList)
 {
     int sizeX = defaultWidth();
     int sizeY = defaultHeight();
+    int offsetX = 0;
+    int offsetY = 0;
     int display = defaultDisplay();
     bool showUsage = false;
 
@@ -111,6 +112,19 @@ QVNCIntegration::QVNCIntegration(const QStringList& paramList)
         else if (confString.startsWith(QLatin1String("display="))) {
             display = confString.section(QLatin1Char('='), 1, 1).toInt();
         }
+        else if (confString.startsWith(QLatin1String("offset="))) {
+            QString val = confString.section(QLatin1Char('='), 1, 1);
+            offsetX = val.section(QLatin1Char('x'), 0, 0).toInt();
+            offsetY = val.section(QLatin1Char('x'), 1, 1).toInt();
+        }
+        else if (confString == QLatin1String("vnc")) {
+            QRect screenRect(offsetX, offsetY, sizeX, sizeY);
+            QVNCScreen *screen = new QVNCScreen(screenRect, display);
+            mScreens.append(screen);
+            screen->setObjectName(QString("screen %1").arg(display));
+            screen->setDirty(screenRect);
+            ++display;
+        }
         else {
             qWarning() << "Unknown VNC option:" << confString;
             showUsage = true;
@@ -120,9 +134,12 @@ QVNCIntegration::QVNCIntegration(const QStringList& paramList)
     if (showUsage)
         usage();
 
-    mPrimaryScreen = new QVNCScreen(QRect(0, 0, sizeX, sizeY), display);
-
-    mScreens.append(mPrimaryScreen);
+    QRect screenRect(offsetX, offsetY, sizeX, sizeY);
+    QVNCScreen *screen = new QVNCScreen(screenRect, display);
+    mScreens.append(screen);
+    mPrimaryScreen = qobject_cast<QVNCScreen *>(mScreens.first());
+    screen->setObjectName(QString("screen %1").arg(display));
+    screen->setDirty(screenRect);
 }
 
 QPixmapData *QVNCIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -155,3 +172,18 @@ QPlatformWindow *QVNCIntegration::createPlatformWindow(QWidget *widget, WId /*wi
     return w;
 }
 
+void QVNCIntegration::moveToScreen(QWidget *window, int screen)
+{
+    if (screen < 0 || screen > mScreens.size())
+        return;
+    QVNCScreen * newScreen = qobject_cast<QVNCScreen *>(mScreens.at(screen));
+    for(int i = 0; i < mScreens.size(); i++) {
+        QVNCScreen *oldScreen = qobject_cast<QVNCScreen *>(mScreens.at(i));
+        if (oldScreen->windowStack.contains(static_cast<QFbWindow *>(window->platformWindow()))) {
+            oldScreen->removeWindow(static_cast<QFbWindow *>(window->platformWindow()));
+            break;
+        }
+    }
+    window->platformWindow()->setGeometry(window->geometry());  // this should be unified elsewhere
+    newScreen->addWindow(static_cast<QFbWindow *>(window->platformWindow()));
+}

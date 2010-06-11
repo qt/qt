@@ -831,14 +831,13 @@ static bool buttonChange(Qt::MouseButtons before, Qt::MouseButtons after, Qt::Mo
 
 void QVNCServer::pointerEvent()
 {
+    QPoint screenOffset = this->screen()->geometry().topLeft();
+
     QRfbPointerEvent ev;
     if (ev.read(client)) {
-//        const QPoint offset = qvnc_screen->offset();
-//        QWSServer::sendMouseEvent(offset + QPoint(ev.x, ev.y), ev.buttons);
-
         QPoint eventPoint(ev.x, ev.y);
-        eventPoint += screen()->geometry().topLeft();
-        //qDebug() << "pointerEvent" << ev.x << ev.y << hex << ev.buttons;
+        eventPoint += screenOffset;         // local to global translation
+
         if (ev.wheelDirection == ev.WheelNone) {
             QEvent::Type type = QEvent::MouseMove;
             Qt::MouseButton button = Qt::NoButton;
