@@ -464,6 +464,15 @@ QNetworkAccessManager::~QNetworkAccessManager()
 #ifndef QT_NO_NETWORKPROXY
     delete d_func()->proxyFactory;
 #endif
+
+    // Delete the QNetworkReply children first.
+    // Else a QAbstractNetworkCache might get deleted in ~QObject
+    // before a QNetworkReply that accesses the QAbstractNetworkCache
+    // object in its destructor.
+    qDeleteAll(findChildren<QNetworkReply *>());
+    // The other children will be deleted in this ~QObject
+    // FIXME instead of this "hack" make the QNetworkReplyImpl
+    // properly watch the cache deletion, e.g. via a QWeakPointer.
 }
 
 #ifndef QT_NO_NETWORKPROXY

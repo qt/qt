@@ -773,11 +773,11 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
     if (saved && cd.isVerbose()) {
         int generatedCount = finished + unfinished;
         cd.appendError(QCoreApplication::translate("LRelease",
-            "    Generated %n translation(s) (%1 finished and %2 unfinished)\n", 0,
+            "    Generated %n translation(s) (%1 finished and %2 unfinished)", 0,
             QCoreApplication::CodecForTr, generatedCount).arg(finished).arg(unfinished));
         if (untranslated)
             cd.appendError(QCoreApplication::translate("LRelease",
-                "    Ignored %n untranslated source text(s)\n", 0,
+                "    Ignored %n untranslated source text(s)", 0,
                 QCoreApplication::CodecForTr, untranslated));
     }
     return saved;

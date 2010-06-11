@@ -484,9 +484,9 @@ void QSelectThread::run()
                 } // end for
 
                 // traversed all, so update
+                updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
                 updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
                 updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
-                updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
 
                 break;
             case EINTR: // Should never occur on Symbian, but this is future proof!
@@ -496,9 +496,9 @@ void QSelectThread::run()
                 break;
             }
         } else {
+            updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
             updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
             updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
-            updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
         }
 
         m_waitCond.wait(&m_mutex);

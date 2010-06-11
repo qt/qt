@@ -12006,4 +12006,10 @@ EXPORTS
 	_ZTV20QGraphicsViewPrivate @ 12005 NONAME
 	_ZTV23QImageTextureGlyphCache @ 12006 NONAME
 	_ZTV26QAbstractScrollAreaPrivate @ 12007 NONAME
+	_ZN11QTextCursor20setVerticalMovementXEi @ 12008 NONAME
+	_ZN11QTextCursor23setKeepPositionOnInsertEb @ 12009 NONAME
+	_ZN19QApplicationPrivate23runtime_graphics_systemE @ 12010 NONAME DATA 1
+	_ZNK11QTextCursor17verticalMovementXEv @ 12011 NONAME
+	_ZNK11QTextCursor20keepPositionOnInsertEv @ 12012 NONAME
+	_ZNK12QFontMetrics5widthERK7QStringii @ 12013 NONAME
 

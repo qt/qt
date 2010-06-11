@@ -310,10 +310,20 @@ void QDeclarativePathViewPrivate::regenerate()
     \brief The PathView element lays out model-provided items on a path.
     \inherits Item
 
-    The model is typically provided by a QAbstractListModel "C++ model object", but can also be created directly in QML.
+    A PathView displays data from models created from built-in QML elements like ListModel
+    and XmlListModel, or custom model classes defined in C++ that inherit from
+    QAbstractListModel.
 
+    A ListView has a \l model, which defines the data to be displayed, and
+    a \l delegate, which defines how the data should be displayed.  
     The \l delegate is instantiated for each item on the \l path.
     The items may be flicked to move them along the path.
+
+    For example, if there is a simple list model defined in a file \c ContactModel.qml like this:
+
+    \snippet doc/src/snippets/declarative/pathview/ContactModel.qml 0
+
+    This data can be represented as a PathView, like this:
 
     \snippet doc/src/snippets/declarative/pathview/pathview.qml 0
 
@@ -885,6 +895,7 @@ void QDeclarativePathView::setPathItemCount(int i)
     if (i < 1)
         i = 1;
     d->pathItems = i;
+    d->updateMappedRange();
     if (d->isValid() && isComponentComplete()) {
         d->regenerate();
     }

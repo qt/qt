@@ -58,8 +58,7 @@ Item {
         onReleased: {
         }
         onDoubleClicked: {
-            textInp.selectionStart=0;
-            textInp.selectionEnd=textInp.text.length;
+            textInp.selectAll()
         }
         z: textInp.z + 1
     }

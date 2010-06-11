@@ -65,7 +65,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSmoothedAnimation : public QAbstractAnimation
+class Q_AUTOTEST_EXPORT QSmoothedAnimation : public QAbstractAnimation
 {
 public:
     QSmoothedAnimation(QObject *parent=0);

@@ -948,6 +948,8 @@ public:
 #endif
         Key_MediaNext  = 0x01000083,
         Key_MediaRecord = 0x01000084,
+        Key_MediaPause = 0x1000085,
+        Key_MediaTogglePlayPause = 0x1000086,
         Key_HomePage  = 0x01000090,
         Key_Favorites  = 0x01000091,
         Key_Search  = 0x01000092,
@@ -1090,11 +1092,15 @@ public:
         Key_Context2 = 0x01100001,
         Key_Context3 = 0x01100002,
         Key_Context4 = 0x01100003,
-        Key_Call = 0x01100004,
-        Key_Hangup = 0x01100005,
+        Key_Call = 0x01100004,      // set absolute state to in a call (do not toggle state)
+        Key_Hangup = 0x01100005,    // set absolute state to hang up (do not toggle state)
         Key_Flip = 0x01100006,
-        Key_Camera = 0x01100007,
-        Key_CameraFocus = 0x01100008,
+        Key_ToggleCallHangup = 0x01100007, // a toggle key for answering, or hanging up, based on current call state
+        Key_VoiceDial = 0x01100008,
+        Key_LastNumberRedial = 0x01100009,
+
+        Key_Camera = 0x01100020,
+        Key_CameraFocus = 0x01100021,
 
         Key_unknown = 0x01ffffff
     };
@@ -1720,6 +1726,7 @@ public:
     };
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
 
+#ifndef QT_NO_GESTURES
     enum GestureState
     {
         NoGesture,
@@ -1749,6 +1756,7 @@ public:
         IgnoredGesturesPropagateToParent = 0x04
     };
     Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
+#endif // QT_NO_GESTURES
 
     enum NavigationMode
     {
@@ -1778,7 +1786,9 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+#ifndef QT_NO_GESTURES
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
+#endif
 
 typedef bool (*qInternalCallback)(void **);
 

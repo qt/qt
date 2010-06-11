@@ -49,7 +49,7 @@ Item {
 
     Image {
         id: icon; anchors.centerIn: parent
-        opacity: action.enabled ? 1.0 : 0.4
+        opacity: if(action != undefined) {action.enabled ? 1.0 : 0.4} else 0
     }
 
     MouseArea {

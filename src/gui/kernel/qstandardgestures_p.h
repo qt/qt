@@ -56,6 +56,8 @@
 #include "qgesturerecognizer.h"
 #include "private/qgesture_p.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 class QPanGestureRecognizer : public QGestureRecognizer
@@ -109,5 +111,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #endif // QSTANDARDGESTURES_P_H

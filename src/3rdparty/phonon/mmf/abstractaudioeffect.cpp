@@ -184,6 +184,8 @@ int AbstractAudioEffect::effectParameterChanged(
     const EffectParameter &param, const QVariant &value)
 {
     // Default implementation
+    Q_UNUSED(param)
+    Q_UNUSED(value)
     Q_ASSERT_X(false, Q_FUNC_INFO, "Effect has no parameters");
     return 0;
 }

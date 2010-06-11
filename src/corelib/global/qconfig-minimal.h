@@ -447,6 +447,9 @@
 #ifndef QT_NO_UNDOVIEW
 #  define QT_NO_UNDOVIEW
 #endif
+#ifndef QT_NO_GESTURES
+#  define QT_NO_GESTURES
+#endif
 
 /* Widgets */
 #ifndef QT_NO_GROUPBOX

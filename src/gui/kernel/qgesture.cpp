@@ -42,6 +42,8 @@
 #include "qgesture.h"
 #include "private/qgesture_p.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
  /*!
@@ -725,3 +727,5 @@ void QTapAndHoldGesture::setPosition(const QPointF &value)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES

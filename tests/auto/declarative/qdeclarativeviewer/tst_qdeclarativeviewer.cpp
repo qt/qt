@@ -82,7 +82,7 @@ void tst_QDeclarativeViewer::orientation()
     QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
-    viewer->toggleOrientation();
+    viewer->rotateOrientation();
     qApp->processEvents();
 
     QCOMPARE(rootItem->width(), 300.0);
@@ -92,7 +92,7 @@ void tst_QDeclarativeViewer::orientation()
     QCOMPARE(viewer->size(), QSize(300, 200+viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
-    viewer->toggleOrientation();
+    viewer->rotateOrientation();
     qApp->processEvents();
 
     QCOMPARE(rootItem->width(), 200.0);

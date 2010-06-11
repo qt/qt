@@ -46,6 +46,7 @@
 #include <qdeclarativeinfo.h>
 
 #include <QValidator>
+#include <QTextCursor>
 #include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
@@ -429,10 +430,12 @@ void QDeclarativeTextInput::setCursorPosition(int cp)
   Returns a Rect which encompasses the cursor, but which may be larger than is
   required. Ignores custom cursor delegates.
 */
-QRect QDeclarativeTextInput::cursorRect() const
+QRect QDeclarativeTextInput::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->cursorRect();
+    QRect r = d->control->cursorRect();
+    r.setHeight(r.height()-1); // Make consistent with TextEdit (QLineControl inexplicably adds 1)
+    return r;
 }
 
 /*!
@@ -454,15 +457,6 @@ int QDeclarativeTextInput::selectionStart() const
     return d->lastSelectionStart;
 }
 
-void QDeclarativeTextInput::setSelectionStart(int s)
-{
-    Q_D(QDeclarativeTextInput);
-    if(d->lastSelectionStart == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionStart = s;
-    d->control->setSelection(s, d->lastSelectionEnd - s);
-}
-
 /*!
     \qmlproperty int TextInput::selectionEnd
 
@@ -482,13 +476,12 @@ int QDeclarativeTextInput::selectionEnd() const
     return d->lastSelectionEnd;
 }
 
-void QDeclarativeTextInput::setSelectionEnd(int s)
+void QDeclarativeTextInput::select(int start, int end)
 {
     Q_D(QDeclarativeTextInput);
-    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
+    if (start < 0 || end < 0 || start > d->control->text().length() || end > d->control->text().length())
         return;
-    d->lastSelectionEnd = s;
-    d->control->setSelection(d->lastSelectionStart, s - d->lastSelectionStart);
+    d->control->setSelection(start, end-start);
 }
 
 /*!
@@ -835,6 +828,19 @@ void QDeclarativeTextInput::moveCursor()
 }
 
 /*!
+    \qmlmethod rect TextInput::positionToRectangle(int x)
+*/
+QRectF QDeclarativeTextInput::positionToRectangle(int x) const
+{
+    Q_D(const QDeclarativeTextInput);
+    QFontMetrics fm = QFontMetrics(d->font);
+    return QRectF(d->control->cursorToX(x)-d->hscroll,
+        0.0,
+        d->control->cursorWidth(),
+        cursorRectangle().height());
+}
+
+/*!
     \qmlmethod int TextInput::positionAt(int x)
 
     This function returns the character position at
@@ -845,10 +851,10 @@ void QDeclarativeTextInput::moveCursor()
     This means that for all x values before the first character this function returns 0,
     and for all x values after the last character this function returns text.length.
 */
-int QDeclarativeTextInput::positionAt(int x)
+int QDeclarativeTextInput::positionAt(int x) const
 {
     Q_D(const QDeclarativeTextInput);
-    return d->control->xToPos(x - d->hscroll);
+    return d->control->xToPos(x + d->hscroll);
 }
 
 void QDeclarativeTextInputPrivate::focusChanged(bool hasFocus)
@@ -885,6 +891,22 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
         QDeclarativePaintedItem::keyPressEvent(ev);
 }
 
+/*!
+\overload
+Handles the given mouse \a event.
+*/
+void QDeclarativeTextInput::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QDeclarativeTextInput);
+    if (d->selectByMouse) {
+        int cursor = d->xToPos(event->pos().x());
+        d->control->selectWordAtPos(cursor);
+        event->setAccepted(true);
+    } else {
+        QDeclarativePaintedItem::mouseDoubleClickEvent(event);
+    }
+}
+
 void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
@@ -897,12 +919,17 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
             p = p->parentItem();
         }
         setFocus(true);
-        if (hasFocus() == hadFocus && d->showInputPanelOnFocus && !isReadOnly()) {
-            // re-open input panel on press w already focused
-            openSoftwareInputPanel();
+        if (d->showInputPanelOnFocus) {
+            if (hasFocus() && hadFocus && !isReadOnly()) {
+                // re-open input panel on press if already focused
+                openSoftwareInputPanel();
+            }
+        } else { // show input panel on click
+            if (hasFocus() && !hadFocus) {
+                d->clickCausedFocus = true;
+            }
         }
     }
-
     bool mark = event->modifiers() & Qt::ShiftModifier;
     int cursor = d->xToPos(event->pos().x());
     d->control->moveCursor(cursor, mark);
@@ -927,6 +954,16 @@ Handles the given mouse \a event.
 void QDeclarativeTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
+    if (!d->showInputPanelOnFocus) { // input panel on click
+        if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
+            if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+                if (view->scene() && view->scene() == scene()) {
+                    qt_widget_private(view)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+                }
+            }
+        }
+    }
+    d->clickCausedFocus = false;
     d->control->processEvent(event);
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
@@ -943,10 +980,9 @@ bool QDeclarativeTextInput::event(QEvent* ev)
         case QEvent::GraphicsSceneMousePress:
         case QEvent::GraphicsSceneMouseMove:
         case QEvent::GraphicsSceneMouseRelease:
+        case QEvent::GraphicsSceneMouseDoubleClick:
             break;
         default:
-            if (ev->type() == QEvent::GraphicsSceneMouseDoubleClick && !d->selectByMouse)
-                break;
             handled = d->control->processEvent(ev);
             if (ev->type() == QEvent::InputMethod)
                 updateSize();
@@ -1021,7 +1057,6 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
         d->hscroll -= minLB;
         offset = QPoint(d->hscroll, 0);
     }
-
     d->control->draw(p, offset, r, flags);
 
     p->restore();
@@ -1059,12 +1094,27 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
     }
 }
 
+/*!
+    \qmlmethod void TextInput::selectAll()
+
+    Causes all text to be selected.
+*/
 void QDeclarativeTextInput::selectAll()
 {
     Q_D(QDeclarativeTextInput);
     d->control->setSelection(0, d->control->text().length());
 }
 
+/*!
+    \qmlmethod void TextInput::selectWord()
+
+    Causes the word closest to the current cursor position to be selected.
+*/
+void QDeclarativeTextInput::selectWord()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->selectWordAtPos(d->control->cursor());
+}
 
 /*!
     \qmlproperty bool TextInput::smooth
@@ -1183,26 +1233,37 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
     customizing when you want the input keyboard to be shown and hidden in
     your application.
 
-    By default input panels are shown when TextInput element gains focus and hidden
-    when the focus is lost. You can disable the automatic behavior by setting the
-    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
-    and closeSoftwareInputPanel() to implement the behavior you want.
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextInput and need to be
+    manually closed by the user. On other platforms the panels are automatically opened
+    when TextInput element gains focus and closed when the focus is lost.
+
+  . You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
 
     Only relevant on platforms, which provide virtual keyboards.
 
-    \code
+    \qml
         import Qt 4.7
         TextInput {
             id: textInput
             text: "Hello world!"
-            showInputPanelOnFocus: false
+            focusOnPress: false
             MouseArea {
                 anchors.fill: parent
-                onClicked: textInput.openSoftwareInputPanel()
+                onClicked: {
+                    if (!textInput.focus) {
+                        textInput.focus = true;
+                        textInput.openSoftwareInputPanel();
+                    } else {
+                        textInput.focus = false;
+                        textInput.closeSoftwareInputPanel();
+                    }
+                }
             }
-            onFocusChanged: if (!focus) closeSoftwareInputPanel()
         }
-    \endcode
+    \endqml
 */
 void QDeclarativeTextInput::openSoftwareInputPanel()
 {
@@ -1223,26 +1284,37 @@ void QDeclarativeTextInput::openSoftwareInputPanel()
     for customizing when you want the input keyboard to be shown and hidden in
     your application.
 
-    By default input panels are shown when TextInput element gains focus and hidden
-    when the focus is lost. You can disable the automatic behavior by setting the
-    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
-    and closeSoftwareInputPanel() to implement the behavior you want.
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextInput and need to be
+    manually closed by the user. On other platforms the panels are automatically opened
+    when TextInput element gains focus and closed when the focus is lost.
+
+  . You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
 
     Only relevant on platforms, which provide virtual keyboards.
 
-    \code
+    \qml
         import Qt 4.7
         TextInput {
             id: textInput
             text: "Hello world!"
-            showInputPanelOnFocus: false
+            focusOnPress: false
             MouseArea {
                 anchors.fill: parent
-                onClicked: textInput.openSoftwareInputPanel()
+                onClicked: {
+                    if (!textInput.focus) {
+                        textInput.focus = true;
+                        textInput.openSoftwareInputPanel();
+                    } else {
+                        textInput.focus = false;
+                        textInput.closeSoftwareInputPanel();
+                    }
+                }
             }
-            onFocusChanged: if (!focus) closeSoftwareInputPanel()
         }
-    \endcode
+    \endqml
 */
 void QDeclarativeTextInput::closeSoftwareInputPanel()
 {
@@ -1257,35 +1329,13 @@ void QDeclarativeTextInput::closeSoftwareInputPanel()
     }
 }
 
-/*!
-    \qmlproperty bool TextInput::showInputPanelOnFocus
-    Whether input panels are automatically shown when TextInput element gains
-    focus and hidden when focus is lost. By default this is set to true.
-
-    Only relevant on platforms, which provide virtual keyboards.
-*/
-bool QDeclarativeTextInput::showInputPanelOnFocus() const
-{
-    Q_D(const QDeclarativeTextInput);
-    return d->showInputPanelOnFocus;
-}
-
-void QDeclarativeTextInput::setShowInputPanelOnFocus(bool showOnFocus)
-{
-    Q_D(QDeclarativeTextInput);
-    if (d->showInputPanelOnFocus == showOnFocus)
-        return;
-
-    d->showInputPanelOnFocus = showOnFocus;
-
-    emit showInputPanelOnFocusChanged(d->showInputPanelOnFocus);
-}
-
 void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextInput);
-    if (d->showInputPanelOnFocus && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
-        openSoftwareInputPanel();
+    if (d->showInputPanelOnFocus) {
+        if (d->focusOnPress && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
+            openSoftwareInputPanel();
+        }
     }
     QDeclarativePaintedItem::focusInEvent(event);
 }
@@ -1293,8 +1343,10 @@ void QDeclarativeTextInput::focusInEvent(QFocusEvent *event)
 void QDeclarativeTextInput::focusOutEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextInput);
-    if (d->showInputPanelOnFocus && !isReadOnly()) {
-        closeSoftwareInputPanel();
+    if (d->showInputPanelOnFocus) {
+        if (d->focusOnPress && !isReadOnly()) {
+            closeSoftwareInputPanel();
+        }
     }
     QDeclarativePaintedItem::focusOutEvent(event);
 }

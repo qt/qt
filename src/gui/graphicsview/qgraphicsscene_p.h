@@ -299,6 +299,7 @@ public:
     void enableTouchEventsOnViews();
 
     QList<QGraphicsObject *> cachedTargetItems;
+#ifndef QT_NO_GESTURES
     QHash<QGraphicsObject *, QSet<QGesture *> > cachedItemGestures;
     QHash<QGraphicsObject *, QSet<QGesture *> > cachedAlreadyDeliveredGestures;
     QHash<QGesture *, QGraphicsObject *> gestureTargets;
@@ -313,6 +314,7 @@ public:
     void cancelGesturesForChildren(QGesture *original);
     void grabGesture(QGraphicsItem *, Qt::GestureType gesture);
     void ungrabGesture(QGraphicsItem *, Qt::GestureType gesture);
+#endif // QT_NO_GESTURES
 
     void updateInputMethodSensitivityInViews();
 

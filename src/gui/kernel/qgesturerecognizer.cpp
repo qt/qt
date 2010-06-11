@@ -44,6 +44,8 @@
 #include "private/qgesture_p.h"
 #include "private/qgesturemanager_p.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -231,3 +233,5 @@ void QGestureRecognizer::unregisterRecognizer(Qt::GestureType type)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES

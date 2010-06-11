@@ -72,6 +72,7 @@
 #include <private/qmath_p.h>
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -5855,14 +5856,24 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
+    if (d->extended->type() == QPaintEngine::OpenGL2 && !staticText_d->untransformedCoordinates) {
+        staticText_d->untransformedCoordinates = true;
+        staticText_d->needsRelayout = true;
+    } else if (d->extended->type() != QPaintEngine::OpenGL2 && staticText_d->untransformedCoordinates) {
+        staticText_d->untransformedCoordinates = false;
+        staticText_d->needsRelayout = true;
+    }
+
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF transformedPosition = topLeftPosition * d->state->matrix;
-    QTransform matrix = d->state->matrix;
+    QPointF transformedPosition = topLeftPosition;
+    if (!staticText_d->untransformedCoordinates)
+        transformedPosition = transformedPosition * d->state->matrix;
+    QTransform oldMatrix;
 
     // The translation has been applied to transformedPosition. Remove translation
     // component from matrix.
-    if (d->state->matrix.isTranslating()) {
+    if (d->state->matrix.isTranslating() && !staticText_d->untransformedCoordinates) {
         qreal m11 = d->state->matrix.m11();
         qreal m12 = d->state->matrix.m12();
         qreal m13 = d->state->matrix.m13();
@@ -5871,6 +5882,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         qreal m23 = d->state->matrix.m23();
         qreal m33 = d->state->matrix.m33();
 
+        oldMatrix = d->state->matrix;
         d->state->matrix.setMatrix(m11, m12, m13,
                                    m21, m22, m23,
                                    0.0, 0.0, m33);
@@ -5879,7 +5891,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     // If the transform is not identical to the text transform,
     // we have to relayout the text (for other transformations than plain translation)
     bool staticTextNeedsReinit = staticText_d->needsRelayout;
-    if (staticText_d->matrix != d->state->matrix) {
+    if (!staticText_d->untransformedCoordinates && staticText_d->matrix != d->state->matrix) {
         staticText_d->matrix = d->state->matrix;
         staticTextNeedsReinit = true;
     }
@@ -5918,8 +5930,8 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     if (currentColor != oldPen.color())
         setPen(oldPen);
 
-    if (matrix.isTranslating())
-        d->state->matrix = matrix;
+    if (!staticText_d->untransformedCoordinates && oldMatrix.isTranslating())
+        d->state->matrix = oldMatrix;
 }
 
 /*!
@@ -6234,10 +6246,9 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 {
     const qreal radiusBase = qMax(qreal(1), maxRadius);
 
-    QString key = QLatin1String("WaveUnderline-");
-    key += pen.color().name();
-    key += QLatin1Char('-');
-    key += QString::number(radiusBase);
+    QString key = QLatin1Literal("WaveUnderline-")
+                  % pen.color().name()
+                  % HexString<qreal>(radiusBase);
 
     QPixmap pixmap;
     if (QPixmapCache::find(key, pixmap))

@@ -148,9 +148,10 @@ public:
     QFixedPoint *positionPool;           // 4 bytes per text
     QChar *charPool;                     // 4 bytes per text
 
-    unsigned char needsRelayout : 1;
-    unsigned char useBackendOptimizations : 1; // 1 byte per text
-    unsigned char textFormat              : 2;
+    unsigned char needsRelayout            : 1; // 1 byte per text
+    unsigned char useBackendOptimizations  : 1;
+    unsigned char textFormat               : 2;
+    unsigned char untransformedCoordinates : 1;
                                          // ================
                                          // 167 bytes per text
 

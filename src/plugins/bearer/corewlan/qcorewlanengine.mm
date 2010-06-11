@@ -70,9 +70,10 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 
-@interface QNSListener : NSObject
+
+@interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject
 {
-    NSNotificationCenter *center;
+    NSNotificationCenter *notificationCenter;
     CWInterface *currentInterface;
     QCoreWlanEngine *engine;
     NSLock *locker;
@@ -86,16 +87,16 @@
 
 @end
 
-@implementation QNSListener
+@implementation QT_MANGLE_NAMESPACE(QNSListener)
 @synthesize engine;
 
 - (id) init
 {
     [locker lock];
     QMacCocoaAutoReleasePool pool;
-    center = [NSNotificationCenter defaultCenter];
+    notificationCenter = [NSNotificationCenter defaultCenter];
     currentInterface = [CWInterface interfaceWithName:nil];
-    [center addObserver:self selector:@selector(notificationHandler:) name:kCWPowerDidChangeNotification object:nil];
+    [notificationCenter addObserver:self selector:@selector(notificationHandler:) name:kCWPowerDidChangeNotification object:nil];
     [locker unlock];
     return self;
 }
@@ -116,7 +117,7 @@
 -(void)remove
 {
     [locker lock];
-    [center removeObserver:self];
+    [notificationCenter removeObserver:self];
     [locker unlock];
 }
 
@@ -126,7 +127,7 @@
 }
 @end
 
-QNSListener *listener = 0;
+QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
 
 QT_BEGIN_NAMESPACE
 
@@ -296,6 +297,9 @@ void QScanThread::getUserConfigurations()
     for(uint row=0; row < [wifiInterfaces count]; row++ ) {
 
         CWInterface *wifiInterface = [CWInterface interfaceWithName: [wifiInterfaces objectAtIndex:row]];
+        if ( ![wifiInterface power] )
+            continue;
+
         NSString *nsInterfaceName = [wifiInterface name];
 // add user configured system networks
         SCDynamicStoreRef dynRef = SCDynamicStoreCreate(kCFAllocatorSystemDefault, (CFStringRef)@"Qt corewlan", nil, nil);
@@ -430,7 +434,7 @@ void QCoreWlanEngine::initialize()
     QMacCocoaAutoReleasePool pool;
 
     if([[CWInterface supportedInterfaces] count] > 0 && !listener) {
-        listener = [[QNSListener alloc] init];
+        listener = [[QT_MANGLE_NAMESPACE(QNSListener) alloc] init];
         listener.engine = this;
         hasWifi = true;
     } else {
@@ -782,6 +786,11 @@ void QCoreWlanEngine::networksChanged()
 
             if (ptr->name != cpPriv->name) {
                 ptr->name = cpPriv->name;
+                changed = true;
+            }
+
+            if (ptr->bearer != cpPriv->bearer) {
+                ptr->bearer = cpPriv->bearer;
                 changed = true;
             }
 
