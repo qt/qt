@@ -897,12 +897,10 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
 
             timeline.reset(data.move);
             if (viewPos != position()) {
-                if (fixupDuration) {
+                if (fixupDuration)
                     timeline.move(data.move, -viewPos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-                } else {
-                    data.move.setValue(-viewPos);
-                    q->viewportMoved();
-                }
+                else
+                    timeline.set(data.move, -viewPos);
             }
             vTime = timeline.time();
         }
@@ -911,12 +909,10 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         qreal dist = qAbs(data.move.value() - pos);
         if (dist > 0) {
             timeline.reset(data.move);
-            if (fixupDuration) {
+            if (fixupDuration)
                 timeline.move(data.move, pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
-            } else {
-                data.move.setValue(pos);
-                q->viewportMoved();
-            }
+            else
+                timeline.set(data.move, pos);
             vTime = timeline.time();
         }
     } else {
