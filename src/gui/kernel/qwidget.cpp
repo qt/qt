@@ -1019,7 +1019,6 @@ struct QWidgetExceptionCleaner
 
     \sa windowFlags
 */
-
 QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {

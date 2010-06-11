@@ -51,10 +51,8 @@
 #include <qmap.h>
 #include <qregexp.h>
 #include <QXmlStreamWriter>
-
 #include "codemarker.h"
 #include "config.h"
-#include "dcfsection.h"
 #include "pagegenerator.h"
 
 QT_BEGIN_NAMESPACE
@@ -134,18 +132,13 @@ class DitaXmlGenerator : public PageGenerator
     void generateBreadCrumbs(const QString& title,
                              const Node *node,
                              CodeMarker *marker);
-    void generateHeader(const QString& title, 
-                        const Node *node = 0,
-                        CodeMarker *marker = 0);
+    void generateHeader(const Node* node);
     void generateTitle(const QString& title, 
                        const Text &subTitle, 
                        SubTitleSize subTitleSize,
                        const Node *relative, 
                        CodeMarker *marker);
-    void generateFooter(const Node *node = 0);
-    void generateBrief(const Node *node, 
-                       CodeMarker *marker,
-                       const Node *relative = 0);
+    void generateBrief(const Node* node, CodeMarker* marker);
     void generateIncludes(const InnerNode *inner, CodeMarker *marker);
 #if 0
     void generateNavigationBar(const NavigationBar& bar, 
@@ -261,9 +254,6 @@ class DitaXmlGenerator : public PageGenerator
                             const Node *relative, 
                             CodeMarker *marker, 
                             const Node** node);
-    virtual void generateDcf(const QString &fileBase, 
-                             const QString &startPage,
-                             const QString &title, DcfSection &dcfRoot);
     virtual void generateIndex(const QString &fileBase, 
                                const QString &url,
                                const QString &title);
@@ -288,15 +278,8 @@ class DitaXmlGenerator : public PageGenerator
     NavigationBar currentNavigationBar;
 #endif
     QMap<QString, QString> refMap;
+    QMap<QString, QString> guidMap;
     int codeIndent;
-    DcfSection dcfClassesRoot;
-    DcfSection dcfOverviewsRoot;
-    DcfSection dcfExamplesRoot;
-    DcfSection dcfDesignerRoot;
-    DcfSection dcfLinguistRoot;
-    DcfSection dcfAssistantRoot;
-    DcfSection dcfQmakeRoot;
-    HelpProjectWriter *helpProjectWriter;
     bool inLink;
     bool inObsoleteLink;
     bool inContents;
@@ -323,6 +306,7 @@ class DitaXmlGenerator : public PageGenerator
     const Tree *myTree;
     bool slow;
     bool obsoleteLinks;
+    int noLinks;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;
     NodeMap nonCompatClasses;
@@ -341,6 +325,7 @@ class DitaXmlGenerator : public PageGenerator
     NewClassMaps newClassMaps;
     NewClassMaps newQmlClassMaps;
     static int id;
+    QXmlStreamWriter    writer;
 };
 
 #define DITAXMLGENERATOR_ADDRESS           "address"
