@@ -84,7 +84,7 @@ src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
 src_declarative.target = sub-declarative
 
 #CONFIG += ordered
-!wince*:!ordered {
+!wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib src_tools_uic
    embedded: src_gui.depends += src_network

@@ -282,8 +282,6 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << "\t$(SBS) reallyclean -c " << item << "_urel" << testClause << endl;
     }
     t << endl;
-
-    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)

@@ -409,8 +409,6 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
     }
     t << endl;
-
-    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
