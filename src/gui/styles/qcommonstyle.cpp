@@ -762,7 +762,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewRow:
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
-            QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
+            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
                                       ? QPalette::Normal : QPalette::Disabled;
             if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
                 cg = QPalette::Inactive;
@@ -775,7 +775,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
     case PE_PanelItemViewItem:
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
-            QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
+            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
                                       ? QPalette::Normal : QPalette::Disabled;
             if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
                 cg = QPalette::Inactive;

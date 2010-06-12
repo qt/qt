@@ -537,7 +537,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     // $, (,), *, +, ., ?, [, ,], ^, {, | and }.
     int pos = -1;
     if (syntax == QRegExp::Wildcard)
-        pos = path.indexOf(QRegExp(QLatin1String("[^\\][\\*\\?\\[\\]]")));
+        pos = path.indexOf(QRegExp(QLatin1String("[\\*\\?\\[]")));
     else if (syntax != QRegExp::FixedString)
         pos = path.indexOf(QRegExp(QLatin1String("[^\\][\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]")));
     QString pathPrefix = path.left(pos); // == path if pos < 0
