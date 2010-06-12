@@ -130,6 +130,11 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     Line break boundaries give possible places where a line break
     might happen and sentence boundaries will show the beginning and
     end of whole sentences.
+
+    The first position in a string is always a valid boundary and
+    refers to the position before the first character. The last
+    position at the length of the string is also valid and refers
+    to the position after the last character.
 */
 
 /*!
@@ -362,7 +367,8 @@ int QTextBoundaryFinder::toNextBoundary()
             ++pos;
         break;
     case Line:
-        while (pos < length && d->attributes[pos].lineBreakType < HB_Break)
+        Q_ASSERT(pos);
+        while (pos < length && d->attributes[pos-1].lineBreakType < HB_Break)
             ++pos;
         break;
     }
@@ -404,7 +410,7 @@ int QTextBoundaryFinder::toPreviousBoundary()
             --pos;
         break;
     case Line:
-        while (pos > 0 && d->attributes[pos].lineBreakType < HB_Break)
+        while (pos > 0 && d->attributes[pos-1].lineBreakType < HB_Break)
             --pos;
         break;
     }
@@ -429,7 +435,7 @@ bool QTextBoundaryFinder::isAtBoundary() const
     case Word:
         return d->attributes[pos].wordBoundary;
     case Line:
-        return d->attributes[pos].lineBreakType >= HB_Break;
+        return (pos > 0) ? d->attributes[pos-1].lineBreakType >= HB_Break : true;
     case Sentence:
         return d->attributes[pos].sentenceBoundary;
     }
