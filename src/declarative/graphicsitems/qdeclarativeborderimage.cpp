@@ -138,7 +138,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     BorderImage can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 
-    It can also handle .sci files, which are a Qml-specific format. A .sci file uses a simple text-based format that specifies
+    It can also handle .sci files, which are a QML-specific format. A .sci file uses a simple text-based format that specifies
     the borders, the image file and the tile rules.
 
     The following .sci file sets the borders to 10 on each side for the image \c picture.png:

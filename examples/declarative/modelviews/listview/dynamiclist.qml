@@ -95,6 +95,7 @@ Rectangle {
         id: fruitDelegate
 
         Item {
+            id: wrapper
             width: container.width; height: 55
 
             Column {
@@ -169,6 +170,38 @@ Rectangle {
 
                 MouseArea { anchors.fill:parent; onClicked: fruitModel.remove(index) }
             }
+
+            // Animate adding and removing items
+            ListView.delayRemove: true // so that the item is not destroyed immediately
+            ListView.onAdd: state = "add"
+            ListView.onRemove: state = "remove"
+            states: [
+                State {
+                    name: "add"
+                    PropertyChanges { target: wrapper; height: 55; clip: true }
+                },
+                State {
+                    name: "remove"
+                    PropertyChanges { target: wrapper; height: 0; clip: true }
+                }
+            ]
+            transitions: [
+                Transition {
+                    to: "add"
+                    SequentialAnimation {
+                        NumberAnimation { properties: "height"; from: 0; to: 55 }
+                        PropertyAction { target: wrapper; property: "state"; value: "" }
+                    }
+                },
+                Transition {
+                    to: "remove"
+                    SequentialAnimation {
+                        NumberAnimation { properties: "height" }
+                        // Make sure delayRemove is set back to false so that the item can be destroyed
+                        PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
+                    }
+                }
+            ]
         }
     }
 
