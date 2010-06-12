@@ -1356,7 +1356,6 @@ void QDeclarativeTextInputPrivate::init()
     Q_Q(QDeclarativeTextInput);
     control->setCursorWidth(1);
     control->setPasswordCharacter(QLatin1Char('*'));
-    control->setLayoutDirection(Qt::LeftToRight);
     q->setSmooth(smooth);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QGraphicsItem::ItemHasNoContents, false);

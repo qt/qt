@@ -1626,7 +1626,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
 QPainterPath QTransform::map(const QPainterPath &path) const
 {
     TransformationType t = inline_type();
-    if (t == TxNone || path.isEmpty())
+    if (t == TxNone || path.elementCount() == 0)
         return path;
 
     if (t >= TxProject)

@@ -177,6 +177,10 @@ public:
     void initContext(QGLContext *context, const QGLWidget* shareWidget);
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
+    void aboutToDestroy() {
+        if (glcx)
+            glcx->reset();
+    }
 
     QGLContext *glcx;
     QGLWidgetGLPaintDevice glDevice;
