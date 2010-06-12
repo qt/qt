@@ -62,6 +62,7 @@
 #include "QtGui/qevent.h"
 #include "qpointer.h"
 #include "qapplication.h"
+#include "QtCore/qthreadstorage.h"
 #include <w32std.h>
 #include <coecntrl.h>
 #include <eikenv.h>
@@ -85,10 +86,21 @@ const TInt KInternalStatusPaneChange = 0x50000000;
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
+class QS60ThreadLocalData
+{
+public:
+    QS60ThreadLocalData();
+    ~QS60ThreadLocalData();
+    bool usingCONEinstances;
+    RWsSession wsSession;
+    CWsScreenDevice *screenDevice;
+};
+
 class QS60Data
 {
 public:
     QS60Data();
+    QThreadStorage<QS60ThreadLocalData *> tls;
     TUid uid;
     int screenDepth;
     QPoint lastCursorPos;
@@ -125,9 +137,9 @@ public:
     int menuBeingConstructed : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
-    static inline RWsSession& wsSession();
+    inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
-    static inline CWsScreenDevice* screenDevice();
+    inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
     static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
@@ -256,7 +268,10 @@ inline void QS60Data::updateScreenSize()
 
 inline RWsSession& QS60Data::wsSession()
 {
-    return CCoeEnv::Static()->WsSession();
+    if(!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    return tls.localData()->wsSession;
 }
 
 inline RWindowGroup& QS60Data::windowGroup()
@@ -266,7 +281,10 @@ inline RWindowGroup& QS60Data::windowGroup()
 
 inline CWsScreenDevice* QS60Data::screenDevice()
 {
-    return CCoeEnv::Static()->ScreenDevice();
+    if(!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    return tls.localData()->screenDevice;
 }
 
 inline CCoeAppUi* QS60Data::appUi()
