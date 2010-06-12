@@ -48,11 +48,11 @@ class MaemoOrientation : public DeviceOrientation
     Q_OBJECT
 public:
     MaemoOrientation()
-        : DeviceOrientation(),m_current(TopUp), m_lastSeen(TopUp), m_lastSeenCount(0)
+        : DeviceOrientation(),m_current(Portrait), m_lastSeen(Portrait), m_lastSeenCount(0)
     {
         m_current = get();
         if (m_current == UnknownOrientation) 
-            m_current = TopUp;
+            m_current = Portrait;
 
         startTimer(100);
     }
@@ -101,13 +101,13 @@ private:
         if (abs(az) > 850) {
             o = UnknownOrientation;
         } else if (ax < -750) {
-            o = LeftUp;
+            o = Portrait;
         } else if (ax > 750) {
-            o = RightUp;
+            o = PortraitInverted;
         } else if (ay < -750) {
-            o = TopUp;
+            o = Landscape;
         } else if (ay > 750) {
-            o = TopDown;
+            o = LandscapeInverted;
         }
 
         return o;

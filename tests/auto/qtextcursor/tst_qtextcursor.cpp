@@ -151,6 +151,7 @@ private slots:
 
     void cursorPositionWithBlockUndoAndRedo();
     void cursorPositionWithBlockUndoAndRedo2();
+    void cursorPositionWithBlockUndoAndRedo3();
 
 private:
     int blockCount();
@@ -1756,9 +1757,9 @@ void tst_QTextCursor::adjustCursorsOnInsert()
 void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo()
 {
     cursor.insertText("AAAABBBBCCCCDDDD");
-    cursor.beginEditBlock();
     cursor.setPosition(12);
     int cursorPositionBefore = cursor.position();
+    cursor.beginEditBlock();
     cursor.insertText("*");
     cursor.setPosition(8);
     cursor.insertText("*");
@@ -1811,6 +1812,21 @@ void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo2()
 
 
     QVERIFY(doc->toPlainText() == "AAAABBBBCCCC");
+    QCOMPARE(cursor.position(), cursorPositionBefore);
+}
+
+void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo3()
+{
+    // verify that it's the position of the beginEditBlock that counts, and not the last edit position
+    cursor.insertText("AAAABBBB");
+    int cursorPositionBefore = cursor.position();
+    cursor.beginEditBlock();
+    cursor.setPosition(4);
+    QVERIFY(cursor.position() != cursorPositionBefore);
+    cursor.insertText("*");
+    cursor.endEditBlock();
+    QCOMPARE(cursor.position(), 5);
+    doc->undo(&cursor);
     QCOMPARE(cursor.position(), cursorPositionBefore);
 }
 
