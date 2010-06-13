@@ -1,3 +1,109 @@
+2010-06-13  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] GraphicsLayer: recaching images creates an unnecessary deep copy
+        https://bugs.webkit.org/show_bug.cgi?id=40535
+
+        Made sure the painter ends its operation before copying the pixmap.
+
+        No new tests: this is an optimization.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::recache):
+
+2010-03-24  Dumitru Daniliuc  <dumi@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Changing the V8 and JSC implementations of
+        SQLStatementErrorCallback to interpret as false all results that
+        could be converted to a false boolean. Pretty much a revert of
+        r54981.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36569
+
+        * bindings/js/JSCustomSQLStatementErrorCallback.cpp:
+        (WebCore::JSCustomSQLStatementErrorCallback::handleEvent):
+        * bindings/v8/custom/V8CustomSQLStatementErrorCallback.cpp:
+        (WebCore::V8CustomSQLStatementErrorCallback::handleEvent):
+        * bindings/v8/custom/V8CustomVoidCallback.cpp:
+        (WebCore::invokeCallback):
+        * bindings/v8/custom/V8CustomVoidCallback.h:
+
+2010-06-13  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] tests/hybridPixmap fails
+        https://bugs.webkit.org/show_bug.cgi?id=37316
+
+        The problem was that JSC::Instance::createRuntimeObject was never called.
+        This is fixed by overloading newRuntimeObject and calling Instance::createRuntimeObject
+        in between, instead of creating the runtime object directly inside the static function
+        QtPixmapInstance::createRuntimeObject, which had to be renamed as to not overshadow the virtual function.
+
+        This fixes an existing test, tests/hybridPixmap
+
+        * bridge/qt/qt_pixmapruntime.cpp:
+        (JSC::Bindings::QtPixmapInstance::newRuntimeObject):
+        (JSC::Bindings::QtPixmapInstance::createPixmapRuntimeObject):
+        * bridge/qt/qt_pixmapruntime.h:
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertQVariantToValue):
+
+2010-06-07  Mahesh Kulakrni  <mahesh.kulkarni@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [QT] QT_BEARER flag is not enabled on S60 properly
+        https://bugs.webkit.org/show_bug.cgi?id=39357
+
+        enable QT_BEARER for all platform based on qtmobility + 
+        bearer module availability or for qt 4.7+
+
+        * WebCore.pri: 
+
+2010-06-09  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Dirk Schulze.
+
+        [Qt] Imperfect dependency for generated SVGNames.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=40359
+
+        * WebCore.pri: Missing dependency added.
+
+2010-06-08  Kenneth Rohde Christiansen  <kenneth.christiansen@openbossa.org>
+
+        Unreviewed Buildbot fix.
+
+        Reset the Qt TextBreakIterator when reusing it.
+
+        * platform/text/qt/TextBreakIteratorQt.cpp:
+        (WebCore::setUpIterator):
+
+2010-06-08  Kenneth Rohde Christiansen  <kenneth.christiansen@openbossa.org>
+
+        Reviewed by Antti Koivisto.
+
+        [Qt] TextBreakIterator Qt performance
+        https://bugs.webkit.org/show_bug.cgi?id=39958
+
+        Rework TextBreakIteratorQt to be more in line with the ICU version.
+
+        We now reuse iterators where ever possible. The string data is compared
+        with memcmp, which should be faster than using a hash, as you need
+        to traverse the full buffer in the case the strings don't match,
+        where as the compare would fail quickly.
+
+        * platform/text/qt/TextBreakIteratorQt.cpp:
+        (WebCore::TextBreakIterator::TextBreakIterator):
+        (WebCore::setUpIterator):
+        (WebCore::wordBreakIterator):
+        (WebCore::characterBreakIterator):
+        (WebCore::lineBreakIterator):
+        (WebCore::sentenceBreakIterator):
+
 2010-06-07  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
 
         Reviewed by Simon Hausmann.
