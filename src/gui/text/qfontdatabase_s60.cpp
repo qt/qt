@@ -118,7 +118,7 @@ public:
         {
             if (!font)
                 return;
-            QS60Data::screenDevice()->ReleaseFont(font);
+            S60->screenDevice()->ReleaseFont(font);
         }
     };
 
@@ -205,7 +205,7 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
 
         CFont* font = NULL;
 #ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-        const TInt err = QS60Data::screenDevice()->GetNearestFontToDesignHeightInPixels(font, searchSpec);
+        const TInt err = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(font, searchSpec);
         Q_ASSERT(err == KErrNone && font);
         QScopedPointer<CFont, CFontFromScreenDeviceReleaser> sFont(font);
         QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font);
@@ -311,7 +311,7 @@ static void initializeDb()
 
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
 
-    const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
+    const int numTypeFaces = S60->screenDevice()->NumTypefaces();
     const QSymbianFontDatabaseExtrasImplementation *dbExtras =
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
     bool fontAdded = false;
