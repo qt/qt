@@ -260,17 +260,19 @@ QFontEngineFTS60::QFontEngineFTS60(const QFontDef &fd)
 */
 qreal QFontEngineS60::pixelsToPoints(qreal pixels, Qt::Orientation orientation)
 {
+    CWsScreenDevice* device = S60->screenDevice();
     return (orientation == Qt::Horizontal?
-        S60->screenDevice()->HorizontalPixelsToTwips(pixels)
-        :S60->screenDevice()->VerticalPixelsToTwips(pixels)) / KTwipsPerPoint;
+        device->HorizontalPixelsToTwips(pixels)
+        :device->VerticalPixelsToTwips(pixels)) / KTwipsPerPoint;
 }
 
 qreal QFontEngineS60::pointsToPixels(qreal points, Qt::Orientation orientation)
 {
+    CWsScreenDevice* device = S60->screenDevice();
     const int twips = points * KTwipsPerPoint;
     return orientation == Qt::Horizontal?
-        S60->screenDevice()->HorizontalTwipsToPixels(twips)
-        :S60->screenDevice()->VerticalTwipsToPixels(twips);
+        device->HorizontalTwipsToPixels(twips)
+        :device->VerticalTwipsToPixels(twips);
 }
 
 QFontEngineMultiS60::QFontEngineMultiS60(QFontEngine *first, int script, const QStringList &fallbackFamilies)
@@ -315,10 +317,10 @@ static void initializeDb()
     bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
-        QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
+        S60->screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        if (QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
+        if (S60->screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
             continue;
         QScopedPointer<CFont, QSymbianFontDatabaseExtrasImplementation::CFontFromScreenDeviceReleaser> sFont(font);
         if (font->TypeUid() == KCFbsFontUid) {
