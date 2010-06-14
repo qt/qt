@@ -334,6 +334,7 @@ private slots:
     void gestureOverChild();
     void multipleWidgetOnlyGestureInTree();
     void conflictingGestures();
+    void conflictingGesturesInGraphicsView();
     void finishedWithoutStarted();
     void unknownGesture();
     void graphicsItemGesture();
@@ -2233,6 +2234,71 @@ void tst_Gestures::testReuseCanceledGestures()
     QCOMPARE(target->updated(),  0);
     QCOMPARE(target->finished(), 1);
     QCOMPARE(target->canceled(), 1);
+}
+
+void tst_Gestures::conflictingGesturesInGraphicsView()
+{
+    QGraphicsScene scene;
+    GraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    GestureItem *item1 = new GestureItem("item1");
+    item1->grabGesture(CustomGesture::GestureType);
+    item1->size = QRectF(0, 0, 100, 100);
+    item1->setZValue(2);
+    scene.addItem(item1);
+
+    GestureItem *item2 = new GestureItem("item2");
+    item2->grabGesture(CustomGesture::GestureType);
+    item2->size = QRectF(0, 0, 100, 100);
+    item2->setZValue(5);
+    scene.addItem(item2);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+
+    CustomEvent event;
+
+    // nobody accepts override
+    item1->acceptGestureOverride = false;
+    item2->acceptGestureOverride = false;
+    event.hotSpot = mapToGlobal(item2->boundingRect().center(), item2, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item2, &scene);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+
+    item1->reset(); item2->reset();
+
+    // the original target accepts override
+    item1->acceptGestureOverride = false;
+    item2->acceptGestureOverride = true;
+    event.hotSpot = mapToGlobal(item2->boundingRect().center(), item2, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item2, &scene);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+
+    item1->reset(); item2->reset();
+
+    // the item behind accepts override
+    item1->acceptGestureOverride = true;
+    item2->acceptGestureOverride = false;
+    event.hotSpot = mapToGlobal(item2->boundingRect().center(), item2, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item2, &scene);
+
+    QCOMPARE(item2->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item2->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
 }
 
 QTEST_MAIN(tst_Gestures)

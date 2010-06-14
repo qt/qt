@@ -1035,6 +1035,8 @@ void Configure::parseCmdLine()
             qmakeLibs += QString("-l" + configCmdLine.at(i));
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS=")) {
             opensslLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
+            psqlLibs = configCmdLine.at(i);
         }
 
         else if( ( configCmdLine.at(i) == "-override-version" ) || ( configCmdLine.at(i) == "-version-override" ) ){
@@ -2747,6 +2749,8 @@ void Configure::generateOutputVars()
         else
             qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
         }
+    if (!psqlLibs.isEmpty())
+        qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
     if (!qmakeSql.isEmpty())
         qmakeVars += QString("sql-drivers    += ") + qmakeSql.join( " " );
     if (!qmakeSqlPlugins.isEmpty())
