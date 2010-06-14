@@ -145,7 +145,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Contructs a QGraphicsLayout object.
-    
+
     \a parent is passed to QGraphicsLayoutItem's constructor and the
     QGraphicsLayoutItem's isLayout argument is set to \e true.
 
@@ -259,7 +259,7 @@ void QGraphicsLayout::activate()
         return;
 
     d->activateRecursive(this);
-    
+
     // we don't call activate on a sublayout, but somebody might.
     // Therefore, we walk to the parentitem of the toplevel layout.
     QGraphicsLayoutItem *parentItem = this;
@@ -270,7 +270,7 @@ void QGraphicsLayout::activate()
     Q_ASSERT(!parentItem->isLayout());
 
     setGeometry(parentItem->contentsRect());    // relayout children
-    
+
     // ### bug, should be parentItem ?
     parentLayoutItem()->updateGeometry();            // bubble up; will set activated to false
     // ### too many resizes? maybe we should walk up the chain to the
@@ -307,7 +307,7 @@ void QGraphicsLayout::invalidate()
         // does not call the base implementation? In addition, updateGeometry()
         // does more than we need.
         layoutItem->d_func()->sizeHintCacheDirty = true;
-        layoutItem = layoutItem->parentLayoutItem();        
+        layoutItem = layoutItem->parentLayoutItem();
     }
     if (layoutItem)
         layoutItem->d_func()->sizeHintCacheDirty = true;
@@ -347,7 +347,7 @@ void QGraphicsLayout::updateGeometry()
     widget. QGraphicsLayout uses this event handler to listen for layout
     related events such as geometry changes, layout changes or layout
     direction changes.
-    
+
     \a e is a pointer to the event.
 
     You can reimplement this event handler to track similar events for your
