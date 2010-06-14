@@ -485,6 +485,8 @@ void QLocalSocketPrivate::_q_notified()
     if (!completeAsyncRead()) {
         pipeClosed = true;
         emit q->readChannelFinished();
+        if (actualReadBufferSize == 0)
+            QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         return;
     }
     startAsyncRead();

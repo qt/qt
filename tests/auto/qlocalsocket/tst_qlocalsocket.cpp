@@ -115,7 +115,7 @@ private slots:
     void writeToClientAndDisconnect();
     void debug();
     void bytesWrittenSignal();
-
+    void asyncDisconnectNotify();
 
 #ifdef Q_OS_SYMBIAN
 private:
@@ -1059,6 +1059,25 @@ void tst_QLocalSocket::bytesWrittenSignal()
     QVERIFY(!timedOut);
     QTest::qWait(2000);
     QVERIFY(writeThread.wait(2000));
+}
+
+
+void tst_QLocalSocket::asyncDisconnectNotify()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("asyncDisconnectNotify");
+#endif
+
+    QLocalServer server;
+    QVERIFY(server.listen("asyncDisconnectNotify"));
+    QLocalSocket client;
+    QSignalSpy disconnectedSpy(&client, SIGNAL(disconnected()));
+    client.connectToServer("asyncDisconnectNotify");
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    delete serverSocket;
+    QTRY_VERIFY(!disconnectedSpy.isEmpty());
 }
 
 #ifdef Q_OS_SYMBIAN
