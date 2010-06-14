@@ -523,10 +523,13 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     A XmlListModel could create a model from this data, like this:
 
     \qml
+    import Qt 4.7
+
     XmlListModel {
         id: xmlModel
         source: "http://www.mysite.com/feed.xml"
         query: "/rss/channel/item"
+
         XmlRole { name: "title"; query: "title/string()" }
         XmlRole { name: "pubDate"; query: "pubDate/string()" }
     }
@@ -536,7 +539,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     a model item for each \c <item> in the XML document. 
     
     The XmlRole objects define the
-    model item attributes; here, each model item will have \c title and \c pubDate 
+    model item attributes. Here, each model item will have \c title and \c pubDate 
     attributes that match the \c title and \c pubDate values of its corresponding \c <item>.
     (See \l XmlRole::query for more examples of valid XPath expressions for XmlRole.)
 
@@ -672,11 +675,11 @@ void QDeclarativeXmlListModel::setSource(const QUrl &src)
 
 /*!
     \qmlproperty string XmlListModel::xml
-    This property holds XML text set directly.
+    This property holds the XML data for this model, if set.
 
     The text is assumed to be UTF-8 encoded.
 
-    If both source and xml are set, xml will be used.
+    If both \l source and \c xml are set, \c xml will be used.
 */
 QString QDeclarativeXmlListModel::xml() const
 {
@@ -733,6 +736,7 @@ void QDeclarativeXmlListModel::setQuery(const QString &query)
         source: "http://mysite.com/feed.xml"
         query: "/feed/entry"
         namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';"
+
         XmlRole { name: "title"; query: "title/string()" }
     }
     \endqml

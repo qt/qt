@@ -281,7 +281,12 @@ public:
                     ret << httpProxy;
                     return ret;
                 }
+#ifdef Q_OS_WIN
+		// systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
+                return QNetworkProxyFactory::proxyForQuery(query);
+#else
                 return QNetworkProxyFactory::systemProxyForQuery(query);
+#endif
             }
             void setHttpProxy (QNetworkProxy proxy)
             {
@@ -581,10 +586,10 @@ void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     orientation->setExclusive(true);
     connect(orientation, SIGNAL(triggered(QAction*)), this, SLOT(changeOrientation(QAction*)));
 
-    orientation->addAction(tr("orientation: TopUp"));
-    orientation->addAction(tr("orientation: LeftUp"));
-    orientation->addAction(tr("orientation: TopDown"));
-    orientation->addAction(tr("orientation: RightUp"));
+    orientation->addAction(tr("orientation: Portrait"));
+    orientation->addAction(tr("orientation: Landscape"));
+    orientation->addAction(tr("orientation: Portrait (Inverted)"));
+    orientation->addAction(tr("orientation: Landscape (Inverted)"));
     QList<QAction *> actions = orientation->actions();
     for (int i=0; i<actions.count(); i++) {
         propertiesMenu->addAction(actions[i]);
@@ -799,11 +804,11 @@ void QDeclarativeViewer::statusChanged()
         tester->executefailure();
 
     if (canvas->status() == QDeclarativeView::Ready) {
-        initialSize = canvas->sizeHint();
+        initialSize = canvas->initialSize();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-            updateSizeHints();
             if (!isFullScreen() && !isMaximized()) {
                 resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
+                updateSizeHints();
             }
         }
     }
@@ -936,7 +941,7 @@ void QDeclarativeViewer::sceneResized(QSize size)
         if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
             updateSizeHints();
         }
-     }
+    }
 }
 
 void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
@@ -1177,14 +1182,14 @@ void QDeclarativeViewer::changeOrientation(QAction *action)
     action->setChecked(true);
 
     QString o = action->text().split(QLatin1Char(':')).value(1).trimmed();
-    if (o == QLatin1String("TopUp"))
-        DeviceOrientation::instance()->setOrientation(DeviceOrientation::TopUp);
-    else if (o == QLatin1String("TopDown"))
-        DeviceOrientation::instance()->setOrientation(DeviceOrientation::TopDown);
-    else if (o == QLatin1String("LeftUp"))
-        DeviceOrientation::instance()->setOrientation(DeviceOrientation::LeftUp);
-    else if (o == QLatin1String("RightUp"))
-        DeviceOrientation::instance()->setOrientation(DeviceOrientation::RightUp);
+    if (o == QLatin1String("Portrait"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::Portrait);
+    else if (o == QLatin1String("Landscape"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::Landscape);
+    else if (o == QLatin1String("Portrait (Inverted)"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::PortraitInverted);
+    else if (o == QLatin1String("Landscape (Inverted)"))
+        DeviceOrientation::instance()->setOrientation(DeviceOrientation::LandscapeInverted);
 }
 
 void QDeclarativeViewer::orientationChanged()
@@ -1259,7 +1264,6 @@ void QDeclarativeViewer::updateSizeHints()
         setMinimumSize(QSize(0,0));
         setMaximumSize(QSize(16777215,16777215));
     }
-    updateGeometry();
 }
 
 void QDeclarativeViewer::registerTypes()

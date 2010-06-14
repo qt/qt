@@ -86,8 +86,8 @@ QT_BEGIN_NAMESPACE
     The Transform elements let you create and control advanced transformations that can be configured
     independently using specialized properties.
 
-    You can assign any number of Transform elements to an Item. Each Transform is applied in order,
-    one at a time, to the Item it's assigned to.
+    You can assign any number of Transform elements to an \l Item. Each Transform is applied in order,
+    one at a time.
 */
 
 /*!
@@ -134,9 +134,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass Scale QGraphicsScale
     \since 4.7
-    \brief The Scale object provides a way to scale an Item.
+    \brief The Scale element provides a way to scale an Item.
 
-    The Scale object gives more control over scaling than using Item's scale property. Specifically,
+    The Scale element gives more control over scaling than using \l Item's \l{Item::scale}{scale} property. Specifically,
     it allows a different scale for the x and y axes, and allows the scale to be relative to an
     arbitrary point.
 
@@ -148,6 +148,8 @@ QT_BEGIN_NAMESPACE
         transform: Scale { origin.x: 25; origin.y: 25; xScale: 3}
     }
     \endqml
+
+    \sa Rotate, Translate
 */
 
 /*!
@@ -175,7 +177,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Rotation object provides a way to rotate an Item.
 
-    The Rotation object gives more control over rotation than using Item's rotation property.
+    The Rotation object gives more control over rotation than using \l Item's \l{Item::rotation}{rotation} property.
     Specifically, it allows (z axis) rotation to be relative to an arbitrary point.
 
     The following example rotates a Rectangle around its interior point 25, 25:
@@ -726,7 +728,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     The signal properties have a \l KeyEvent parameter, named
     \e event which contains details of the event.  If a key is
     handled \e event.accepted should be set to true to prevent the
-    event from propagating up the item heirarchy.
+    event from propagating up the item hierarchy.
 
     \code
     Item {
@@ -1633,7 +1635,7 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
 
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
 {
-    QObjectList children = prop->object->children();
+    const QObjectList children = prop->object->children();
     if (index < children.count())
         return children.at(index);
     else
@@ -2389,6 +2391,28 @@ void QDeclarativeItem::forceFocus()
             parent->setFocus(Qt::OtherFocusReason);
         parent = parent->parentItem();
     }
+}
+
+
+/*!
+  \qmlmethod Item::childAt(real x, real y)
+
+  Returns the visible child item at point (\a x, \a y), which is in this
+  item's coordinate system, or \c null if there is no such item.
+  */
+QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
+{
+    const QList<QGraphicsItem *> children = childItems();
+    for (int i = children.count()-1; i >= 0; --i) {
+        if (QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i))) {
+            if (child->isVisible() && child->x() <= x
+                && child->x() + child->width() >= x
+                && child->y() <= y
+                && child->y() + child->height() >= y)
+                return child;
+        }
+    }
+    return 0;
 }
 
 void QDeclarativeItemPrivate::focusChanged(bool flag)
