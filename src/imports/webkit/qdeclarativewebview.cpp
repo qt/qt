@@ -1163,9 +1163,9 @@ QString QDeclarativeWebPage::chooseFile(QWebFrame *originatingFrame, const QStri
 }
 
 /*!
-    \qmlsignal WebView::alert(message)
+    \qmlsignal WebView::onAlert(message)
 
-    This signal is emitted when the web engine sends a JavaScript alert. The \a message is the text
+    This handler is called when the web engine sends a JavaScript alert. The \a message is the text
     to be displayed in the alert to the user.
 */
 

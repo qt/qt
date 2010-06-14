@@ -38,19 +38,60 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
 
 Rectangle {
-    width: 50; height: childrenRect.height; color: "white"
+    width: 200; height: 200
 
-//! [0]
-    Column {
-        Repeater {
-            model: 10 
-            Text { text: "I'm item " + index }
-        }
+ListModel {
+    id: fruitModel
+
+    ListElement {
+        name: "Apple"
+        cost: 2.45
+        attributes: [
+            ListElement { description: "Core" },
+            ListElement { description: "Deciduous" }
+        ]
     }
-//! [0]
+    ListElement {
+        name: "Orange"
+        cost: 3.25
+        attributes: [
+            ListElement { description: "Citrus" }
+        ]
+    }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
+        attributes: [
+            ListElement { description: "Tropical" },
+            ListElement { description: "Seedless" }
+        ]
+    }
 }
 
+//![delegate]
+    Component {
+        id: fruitDelegate
+        Item {
+            width: 200; height: 50
+            Text { text: name }
+            Text { text: '$' + cost; anchors.right: parent.right }
+
+            // Double the price when clicked.
+            MouseArea {
+                anchors.fill: parent
+                onClicked: fruitModel.setProperty(index, "cost", cost * 2)
+            }
+        }
+    }
+//![delegate]
+
+ListView {
+    width: 200; height: 200
+    model: fruitModel
+    delegate: fruitDelegate
+}
+
+}

@@ -53,6 +53,30 @@ QT_BEGIN_NAMESPACE
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
 //TODO: support non-parent, non-sibling (need to find lowest common ancestor)
 
+static qreal hcenter(QGraphicsItem *i)
+{
+    QGraphicsItemPrivate *item = QGraphicsItemPrivate::get(i);
+
+    qreal width = item->width();
+    int iw = width;
+    if (iw % 2)
+        return (width + 1) / 2;
+    else
+        return width / 2;
+}
+
+static qreal vcenter(QGraphicsItem *i)
+{
+    QGraphicsItemPrivate *item = QGraphicsItemPrivate::get(i);
+
+    qreal height = item->height();
+    int ih = height;
+    if (ih % 2)
+        return (height + 1) / 2;
+    else
+        return height / 2;
+}
+
 //### const item?
 //local position
 static qreal position(QGraphicsObject *item, QDeclarativeAnchorLine::AnchorLine anchorLine)
@@ -73,10 +97,10 @@ static qreal position(QGraphicsObject *item, QDeclarativeAnchorLine::AnchorLine 
         ret = item->y() + d->height();
         break;
     case QDeclarativeAnchorLine::HCenter:
-        ret = item->x() + d->width()/2;
+        ret = item->x() + hcenter(item);
         break;
     case QDeclarativeAnchorLine::VCenter:
-        ret = item->y() + d->height()/2;
+        ret = item->y() + vcenter(item);
         break;
     case QDeclarativeAnchorLine::Baseline:
         if (d->isDeclarativeItem)
@@ -108,10 +132,10 @@ static qreal adjustedPosition(QGraphicsObject *item, QDeclarativeAnchorLine::Anc
         ret = d->height();
         break;
     case QDeclarativeAnchorLine::HCenter:
-        ret = d->width()/2;
+        ret = hcenter(item);
         break;
     case QDeclarativeAnchorLine::VCenter:
-        ret = d->height()/2;
+        ret = vcenter(item);
         break;
     case QDeclarativeAnchorLine::Baseline:
         if (d->isDeclarativeItem)
@@ -192,14 +216,14 @@ void QDeclarativeAnchorsPrivate::centerInChanged()
         QGraphicsItemPrivate *itemPrivate = QGraphicsItemPrivate::get(item);
         if (centerIn == item->parentItem()) {
             QGraphicsItemPrivate *parentPrivate = QGraphicsItemPrivate::get(item->parentItem());
-            QPointF p((parentPrivate->width() - itemPrivate->width()) / 2. + hCenterOffset,
-                      (parentPrivate->height() - itemPrivate->height()) / 2. + vCenterOffset);
+            QPointF p(hcenter(item->parentItem()) - hcenter(item) + hCenterOffset,
+                      vcenter(item->parentItem()) - vcenter(item) + vCenterOffset);
             setItemPos(p);
 
         } else if (centerIn->parentItem() == item->parentItem()) {
             QGraphicsItemPrivate *centerPrivate = QGraphicsItemPrivate::get(centerIn);
-            QPointF p(centerIn->x() + (centerPrivate->width() - itemPrivate->width()) / 2. + hCenterOffset,
-                      centerIn->y() + (centerPrivate->height() - itemPrivate->height()) / 2. + vCenterOffset);
+            QPointF p(centerIn->x() + hcenter(centerIn) - hcenter(item) + hCenterOffset,
+                      centerIn->y() + vcenter(centerIn) - vcenter(item) + vCenterOffset);
             setItemPos(p);
         }
 
@@ -535,9 +559,9 @@ void QDeclarativeAnchorsPrivate::updateVerticalAnchors()
             //Handle vCenter
             if (vCenter.item == item->parentItem()) {
                 setItemY(adjustedPosition(vCenter.item, vCenter.anchorLine)
-                              - itemPrivate->height()/2 + vCenterOffset);
+                              - vcenter(item) + vCenterOffset);
             } else if (vCenter.item->parentItem() == item->parentItem()) {
-                setItemY(position(vCenter.item, vCenter.anchorLine) - itemPrivate->height()/2 + vCenterOffset);
+                setItemY(position(vCenter.item, vCenter.anchorLine) - vcenter(item) + vCenterOffset);
             }
         } else if (usedAnchors & QDeclarativeAnchors::BaselineAnchor) {
             //Handle baseline
@@ -604,9 +628,9 @@ void QDeclarativeAnchorsPrivate::updateHorizontalAnchors()
         } else if (usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
             //Handle hCenter
             if (hCenter.item == item->parentItem()) {
-                setItemX(adjustedPosition(hCenter.item, hCenter.anchorLine) - itemPrivate->width()/2 + hCenterOffset);
+                setItemX(adjustedPosition(hCenter.item, hCenter.anchorLine) - hcenter(item) + hCenterOffset);
             } else if (hCenter.item->parentItem() == item->parentItem()) {
-                setItemX(position(hCenter.item, hCenter.anchorLine) - itemPrivate->width()/2 + hCenterOffset);
+                setItemX(position(hCenter.item, hCenter.anchorLine) - hcenter(item) + hCenterOffset);
             }
         }
 
