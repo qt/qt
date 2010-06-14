@@ -73,6 +73,10 @@ QT_BEGIN_NAMESPACE
     typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
 #elif defined(Q_OS_WIN)
+#include <Wincrypt.h>
+#ifndef HCRYPTPROV_LEGACY
+#define HCRYPTPROV_LEGACY HCRYPTPROV
+#endif
     typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(HCRYPTPROV_LEGACY, LPCWSTR);
     typedef PCCERT_CONTEXT (WINAPI *PtrCertFindCertificateInStore)(HCERTSTORE, DWORD, DWORD, DWORD, const void*, PCCERT_CONTEXT);
     typedef BOOL (WINAPI *PtrCertCloseStore)(HCERTSTORE, DWORD);
