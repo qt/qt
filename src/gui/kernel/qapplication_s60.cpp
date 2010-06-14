@@ -2196,4 +2196,29 @@ void QApplication::restoreOverrideCursor()
 
 #endif // QT_NO_CURSOR
 
+QS60ThreadLocalData::QS60ThreadLocalData()
+{
+    CCoeEnv *env = CCoeEnv::Static();
+    if (env) {
+        //if this is the UI thread, share objects owned by CONE
+        usingCONEinstances = true;
+        wsSession = env->WsSession();
+        screenDevice = env->ScreenDevice();
+    }
+    else {
+        usingCONEinstances = false;
+        qt_symbian_throwIfError(wsSession.Connect(qt_s60GetRFs()));
+        screenDevice = new CWsScreenDevice(wsSession);
+        screenDevice->Construct();
+    }
+}
+
+QS60ThreadLocalData::~QS60ThreadLocalData()
+{
+    if (!usingCONEinstances) {
+        delete screenDevice;
+        wsSession.Close();
+    }
+}
+
 QT_END_NAMESPACE
