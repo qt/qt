@@ -234,7 +234,7 @@ contains(QMAKE_MAC_XARCH, no) {
         IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
     }
 
-    win32-g++|!win32:!*-icc* {
+    win32-g++*|!win32:!*-icc* {
         mmx {
             mmx_compiler.commands = $$QMAKE_CXX -c -Winline
 
@@ -403,9 +403,10 @@ neon:*-g++* {
 }
 
 contains(QT_CONFIG, zlib) {
-   INCLUDEPATH += ../3rdparty/zlib
+    INCLUDEPATH += ../3rdparty/zlib
 } else:!contains(QT_CONFIG, no-zlib) {
-   unix:LIBS_PRIVATE += -lz
-#  win32:LIBS += libz.lib
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
 }
 
