@@ -89,6 +89,10 @@
 #define QT_FT_EXPORT_VAR( x )  extern  x
 #endif
 
+/* Minimum buffer size for raster object, that accounts
+   for TWorker and TCell sizes.*/
+#define MINIMUM_POOL_SIZE 4096
+
   QT_FT_EXPORT_VAR( const QT_FT_Raster_Funcs )  qt_ft_grays_raster;
 
 
