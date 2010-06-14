@@ -997,16 +997,9 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     clientSocket->close();
     server.close();
 
-    // Wait for the client to notice the broken connection.
-    int timeout = 5000;
-    do {
-        const int timestep = 100;
-        QTest::qWait(timestep);
-        timeout -= timestep;
-    } while (!readChannelFinishedSpy.count() && timeout > 0);
-
-    QCOMPARE(readChannelFinishedSpy.count(), 1);
+    QTRY_COMPARE(readChannelFinishedSpy.count(), 1);
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    client.waitForDisconnected();
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
