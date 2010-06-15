@@ -383,11 +383,13 @@ void QFbWindow::repaint(const QRegion &region)
                       dirtyClient.height());
     QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
     QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    QRect oldGeometryLocal = oldGeometry;
+    oldGeometry = currentGeometry;
     while (i != end) {
         // If this is a move, redraw the previous location
-        if (oldGeometry != currentGeometry) {
-            (*i)->setDirty(oldGeometry);
-            oldGeometry = currentGeometry;
+        if (oldGeometryLocal != currentGeometry) {
+            qDebug() << "repaint old area on screen" << (*i)->objectName();
+            (*i)->setDirty(oldGeometryLocal);
         }
         (*i)->setDirty(dirtyRegion);
         ++i;
