@@ -6916,20 +6916,23 @@ void QString::updateProperties() const
         p++;
     }
 
-    p = d->data;
-    d->righttoleft = false;
+    d->righttoleft = isRightToLeft();
+    d->clean = true;
+}
+
+bool QString::isRightToLeft() const
+{
+    ushort *p = d->data;
+    const ushort * const end = p + d->size;
+    bool righttoleft = false;
     while (p < end) {
         switch(QChar::direction(*p))
         {
         case QChar::DirL:
-        case QChar::DirLRO:
-        case QChar::DirLRE:
             goto end;
         case QChar::DirR:
         case QChar::DirAL:
-        case QChar::DirRLO:
-        case QChar::DirRLE:
-            d->righttoleft = true;
+            righttoleft = true;
             goto end;
         default:
             break;
@@ -6937,8 +6940,7 @@ void QString::updateProperties() const
         ++p;
     }
  end:
-    d->clean = true;
-    return;
+    return righttoleft;
 }
 
 /*! \fn bool QString::isSimpleText() const

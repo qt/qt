@@ -271,13 +271,13 @@ static struct {
     // name = is:nodeadkeys, description = Iceland
     { "is", "nodeadkeys", Qt::LeftToRight, QLocale::Icelandic, QLocale::Iceland },
     // name = il, description = Israel
-    { "il", "", Qt::LeftToRight, QLocale::Hebrew, QLocale::Israel },
+    { "il", "", Qt::RightToLeft, QLocale::Hebrew, QLocale::Israel },
     // name = il:lyx, description = Israel
-    { "il", "lyx", Qt::LeftToRight, QLocale::Hebrew, QLocale::Israel },
+    { "il", "lyx", Qt::RightToLeft, QLocale::Hebrew, QLocale::Israel },
     // name = il:si1452, description = Israel
-    { "il", "si1452", Qt::LeftToRight, QLocale::Hebrew, QLocale::Israel },
+    { "il", "si1452", Qt::RightToLeft, QLocale::Hebrew, QLocale::Israel },
     // name = il:phonetic, description = Israel
-    { "il", "phonetic", Qt::LeftToRight, QLocale::Hebrew, QLocale::Israel },
+    { "il", "phonetic", Qt::RightToLeft, QLocale::Hebrew, QLocale::Israel },
     // name = it, description = Italy
     { "it", "", Qt::LeftToRight, QLocale::Italian, QLocale::Italy },
     // name = it:nodeadkeys, description = Italy
@@ -419,11 +419,11 @@ static struct {
     // name = ch:fr_sundeadkeys, description = Switzerland
     { "ch", "fr_sundeadkeys", Qt::LeftToRight, QLocale::French, QLocale::Switzerland },
     // name = sy, description = Syria
-    { "sy", "", Qt::RightToLeft, QLocale::Arabic, QLocale::SyrianArabRepublic },
+    { "sy", "", Qt::RightToLeft, QLocale::Syriac, QLocale::SyrianArabRepublic },
     // name = sy:syc, description = Syria
-    { "sy", "syc", Qt::RightToLeft, QLocale::Arabic, QLocale::SyrianArabRepublic },
+    { "sy", "syc", Qt::RightToLeft, QLocale::Syriac, QLocale::SyrianArabRepublic },
     // name = sy:syc_phonetic, description = Syria
-    { "sy", "syc_phonetic", Qt::RightToLeft, QLocale::Arabic, QLocale::SyrianArabRepublic },
+    { "sy", "syc_phonetic", Qt::RightToLeft, QLocale::Syriac, QLocale::SyrianArabRepublic },
     // name = tj, description = Tajikistan
     { "tj", "", Qt::LeftToRight, QLocale::Tajik, QLocale::Tajikistan },
     // name = lk, description = Sri Lanka
