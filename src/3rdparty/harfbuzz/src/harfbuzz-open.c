@@ -1285,6 +1285,7 @@ HB_INTERNAL HB_Error
 _HB_OPEN_Load_Device( HB_Device** device,
 		       HB_Stream    stream )
 {
+  HB_Device*  d;
   HB_Error   error;
 
   HB_UShort   n, count;
@@ -1301,7 +1302,7 @@ _HB_OPEN_Load_Device( HB_Device** device,
     return error;
   }
 
-  HB_Device* d = *device;
+  d = *device;
 
   d->StartSize   = GET_UShort();
   d->EndSize     = GET_UShort();
@@ -1402,6 +1403,7 @@ _HB_OPEN_Get_Device( HB_Device** device,
 		      HB_UShort    size,
 		      HB_Short*    value )
 {
+  HB_Device* d;
   HB_UShort  byte, bits, mask, f, s;
   HB_Error   error;
 
@@ -1411,7 +1413,7 @@ _HB_OPEN_Get_Device( HB_Device** device,
     return error;
   }
 
-  HB_Device* d = *device;
+  d = *device;
 
   f = d->DeltaFormat;
 
