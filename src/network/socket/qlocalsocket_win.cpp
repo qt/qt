@@ -485,6 +485,8 @@ void QLocalSocketPrivate::_q_notified()
     if (!completeAsyncRead()) {
         pipeClosed = true;
         emit q->readChannelFinished();
+        if (actualReadBufferSize == 0)
+            QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         return;
     }
     startAsyncRead();
@@ -568,11 +570,22 @@ bool QLocalSocket::waitForReadyRead(int msecs)
     if (d->state != QLocalSocket::ConnectedState)
         return false;
 
+    // We already know that the pipe is gone, but did not enter the event loop yet.
+    if (d->pipeClosed) {
+        close();
+        return false;
+    }
+
     Q_ASSERT(d->readSequenceStarted);
     DWORD result = WaitForSingleObject(d->overlapped.hEvent, msecs == -1 ? INFINITE : msecs);
     switch (result) {
         case WAIT_OBJECT_0:
             d->_q_notified();
+            // We just noticed that the pipe is gone.
+            if (d->pipeClosed) {
+                close();
+                return false;
+            }
             return true;
         case WAIT_TIMEOUT:
             return false;
