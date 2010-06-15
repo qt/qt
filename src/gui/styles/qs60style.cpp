@@ -1768,40 +1768,41 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             //todo: move the vertical spacing stuff into subElementRect
             const int vSpacing = QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
             QStyleOptionMenuItem optionCheckBox;
-            if (checkable){
-                const int hSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
-                optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
-                optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
-                optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
-                optionCheckBox.rect.moveCenter(QPoint(
-                        optionCheckBox.rect.center().x(), 
-                        menuItem->rect.center().y()));
-                const int moveByX = optionCheckBox.rect.width() + vSpacing +
-                        pixelMetric(PM_DefaultFrameWidth) + 1;
-                if (optionMenuItem.direction == Qt::LeftToRight) {
-                    if (iconRect.isValid()) {
-                        iconRect.translate(moveByX, 0);
-                        iconRect.setWidth(iconRect.width() + vSpacing);
-                    }
-                    if (textRect.isValid()) {
-                        textRect.translate(moveByX, 0);
-                        textRect.setWidth(textRect.width() - moveByX - vSpacing);
-                    }
-                    optionCheckBox.rect.translate(vSpacing >> 1, hSpacing >> 1);
-                } else {
-                    if (textRect.isValid())
-                        textRect.setWidth(textRect.width() - moveByX);
-                    if (iconRect.isValid()) {
-                        iconRect.setWidth(iconRect.width() + vSpacing);
-                        iconRect.translate(-optionCheckBox.rect.width() - vSpacing, 0);
-                    }
-                    optionCheckBox.rect.translate(textRect.width() + iconRect.width(), 0);
+
+            //Regardless of checkbox visibility, make room for it, this mirrors native implementation,
+            //where text and icon placement is static regardless of content of menu item.
+            const int hSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
+            optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
+            optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
+            optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
+            optionCheckBox.rect.moveCenter(QPoint(
+                    optionCheckBox.rect.center().x(), 
+                    menuItem->rect.center().y()));
+            const int moveByX = optionCheckBox.rect.width() + vSpacing +
+                    pixelMetric(PM_DefaultFrameWidth);
+            if (optionMenuItem.direction == Qt::LeftToRight) {
+                if (iconRect.isValid()) {
+                    iconRect.translate(moveByX, 0);
+                    iconRect.setWidth(iconRect.width() + vSpacing);
                 }
+                if (textRect.isValid()) {
+                    textRect.translate(moveByX, 0);
+                    textRect.setWidth(textRect.width() - moveByX - vSpacing);
+                }
+                optionCheckBox.rect.translate(vSpacing + pixelMetric(PM_DefaultFrameWidth), hSpacing >> 1);
+            } else {
+                if (textRect.isValid())
+                    textRect.setWidth(textRect.width() - moveByX);
+                if (iconRect.isValid()) {
+                    iconRect.setWidth(iconRect.width() + vSpacing);
+                    iconRect.translate(-optionCheckBox.rect.width() - vSpacing, 0);
+                }
+                optionCheckBox.rect.translate(textRect.width() + iconRect.width(), 0);
             }
 
             const bool selected = (option->state & State_Selected) && (option->state & State_Enabled);
-            const int spacing = pixelMetric(PM_DefaultFrameWidth) * 2;
             if (selected) {
+                const int spacing = pixelMetric(PM_DefaultFrameWidth) * 2;
                 int start; int end;
                 if (QApplication::layoutDirection() == Qt::LeftToRight) {
                     start = optionMenuItem.rect.left() + spacing;
@@ -1872,6 +1873,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             //In Sym^3, native menu items have "lines" between them
             if (QS60StylePrivate::isSingleClickUi()) {
                 const QColor lineColorAlpha = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 15, 0);
+                const int spacing = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
                 //native platform sets each color byte to same value for "line 16" which just defines alpha for
                 //menuitem lines; lets use first byte "red".
                 QColor lineColor = optionMenuItem.palette.text().color();
@@ -2281,6 +2283,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
                 option->palette.window().texture().cacheKey() ==
                     QS60StylePrivate::m_themePalette->window().texture().cacheKey())
+                //todo: for combobox listviews, the background should include area for menu scrollers,
+                //but this produces drawing issues as we need to turn clipping off.
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
@@ -2597,11 +2601,11 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             }
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             //native items have small empty areas at the beginning and end of menu item
-            sz.setWidth(sz.width() + 2 * pixelMetric(PM_MenuHMargin));
+            sz.setWidth(sz.width() + 2 * pixelMetric(PM_MenuHMargin) + 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth));
             if (QS60StylePrivate::isTouchSupported())
                 //Make itemview easier to use in touch devices
                 //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
-                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
+                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin) - 8); //QCommonstyle adds 8 to height that this style handles through PM values
             break;
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
