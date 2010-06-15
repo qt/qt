@@ -134,10 +134,15 @@ OpenPagesWidget::~OpenPagesWidget()
 void OpenPagesWidget::selectCurrentPage()
 {
     TRACE_OBJ
+    const QModelIndex &current =
+        model()->index(CentralWidget::instance()->currentIndex(), 0);
+
     QItemSelectionModel * const selModel = selectionModel();
-    selModel->clearSelection();
-    selModel->select(model()->index(CentralWidget::instance()->currentIndex(), 0),
+    selModel->select(current,
         QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    selModel->clearSelection();
+
+    setCurrentIndex(current);
     scrollTo(currentIndex());
 }
 
@@ -204,17 +209,26 @@ void OpenPagesWidget::handleClicked(const QModelIndex &index)
 bool OpenPagesWidget::eventFilter(QObject *obj, QEvent *event)
 {
     TRACE_OBJ
-    if (obj == this && event->type() == QEvent::KeyPress) {
-        if (currentIndex().isValid()) {
-            QKeyEvent *ke = static_cast<QKeyEvent*>(event);
+    if (obj != this)
+        return QWidget::eventFilter(obj, event);
+
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *ke = static_cast<QKeyEvent*>(event);
+        if (currentIndex().isValid() && ke->modifiers() == 0) {
             const int key = ke->key();
-            if ((key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Space)
-                && ke->modifiers() == 0) {
+            if (key == Qt::Key_Return || key == Qt::Key_Enter
+                || key == Qt::Key_Space) {
                 emit setCurrentPage(currentIndex());
             } else if ((key == Qt::Key_Delete || key == Qt::Key_Backspace)
-                && ke->modifiers() == 0 && model()->rowCount() > 1) {
+                && model()->rowCount() > 1) {
                 emit closePage(currentIndex());
             }
+        }
+    } else if (event->type() == QEvent::KeyRelease) {
+        QKeyEvent *ke = static_cast<QKeyEvent*>(event);
+        if (ke->modifiers() == 0
+            && (ke->key() == Qt::Key_Up || ke->key() == Qt::Key_Down)) {
+                emit setCurrentPage(currentIndex());
         }
     }
     return QWidget::eventFilter(obj, event);
