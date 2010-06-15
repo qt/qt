@@ -46,7 +46,7 @@
 #include <qtextlayout.h>
 #include <qfontdatabase.h>
 
-#define DEBUG_SAVE_IMAGE
+// #define DEBUG_SAVE_IMAGE
 
 class tst_QGlyphs: public QObject
 {
