@@ -115,7 +115,8 @@ private slots:
     void writeToClientAndDisconnect();
     void debug();
     void bytesWrittenSignal();
-
+    void syncDisconnectNotify();
+    void asyncDisconnectNotify();
 
 #ifdef Q_OS_SYMBIAN
 private:
@@ -996,16 +997,9 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     clientSocket->close();
     server.close();
 
-    // Wait for the client to notice the broken connection.
-    int timeout = 5000;
-    do {
-        const int timestep = 100;
-        QTest::qWait(timestep);
-        timeout -= timestep;
-    } while (!readChannelFinishedSpy.count() && timeout > 0);
-
-    QCOMPARE(readChannelFinishedSpy.count(), 1);
+    QTRY_COMPARE(readChannelFinishedSpy.count(), 1);
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    client.waitForDisconnected();
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
@@ -1059,6 +1053,41 @@ void tst_QLocalSocket::bytesWrittenSignal()
     QVERIFY(!timedOut);
     QTest::qWait(2000);
     QVERIFY(writeThread.wait(2000));
+}
+
+void tst_QLocalSocket::syncDisconnectNotify()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("syncDisconnectNotify");
+#endif
+
+    QLocalServer server;
+    QVERIFY(server.listen("syncDisconnectNotify"));
+    QLocalSocket client;
+    client.connectToServer("syncDisconnectNotify");
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    delete serverSocket;
+    QCOMPARE(client.waitForReadyRead(), false);
+}
+
+void tst_QLocalSocket::asyncDisconnectNotify()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("asyncDisconnectNotify");
+#endif
+
+    QLocalServer server;
+    QVERIFY(server.listen("asyncDisconnectNotify"));
+    QLocalSocket client;
+    QSignalSpy disconnectedSpy(&client, SIGNAL(disconnected()));
+    client.connectToServer("asyncDisconnectNotify");
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    delete serverSocket;
+    QTRY_VERIFY(!disconnectedSpy.isEmpty());
 }
 
 #ifdef Q_OS_SYMBIAN
