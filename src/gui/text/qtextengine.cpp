@@ -885,7 +885,7 @@ void QTextEngine::shapeText(int item) const
     QFixed letterSpacing = font.d->letterSpacing;
     QFixed wordSpacing = font.d->wordSpacing;
 
-    if (letterSpacingIsAbsolute)
+    if (letterSpacingIsAbsolute && letterSpacing.value())
         letterSpacing *= font.d->dpi / qt_defaultDpiY();
 
     if (letterSpacing != 0) {
@@ -1404,7 +1404,10 @@ void QTextEngine::itemize() const
 #else
     bool ignore = ignoreBidi;
 #endif
-    if (!ignore && option.textDirection() == Qt::LeftToRight) {
+
+    bool rtl = isRightToLeft();
+
+    if (!ignore && !rtl) {
         ignore = true;
         const QChar *start = layoutData->string.unicode();
         const QChar * const end = start + length;
@@ -1420,7 +1423,7 @@ void QTextEngine::itemize() const
     QVarLengthArray<QScriptAnalysis, 4096> scriptAnalysis(length);
     QScriptAnalysis *analysis = scriptAnalysis.data();
 
-    QBidiControl control(option.textDirection() == Qt::RightToLeft);
+    QBidiControl control(rtl);
 
     if (ignore) {
         memset(analysis, 0, length*sizeof(QScriptAnalysis));
@@ -1514,6 +1517,23 @@ void QTextEngine::itemize() const
     addRequiredBoundaries();
     resolveAdditionalFormats();
 }
+
+bool QTextEngine::isRightToLeft() const
+{
+    switch (option.textDirection()) {
+    case Qt::LeftToRight:
+        return false;
+    case Qt::RightToLeft:
+        return true;
+    default:
+        break;
+    }
+    // this places the cursor in the right position depending on the keyboard layout
+    if (layoutData->string.isEmpty())
+        return QApplication::keyboardInputDirection() == Qt::RightToLeft;
+    return layoutData->string.isRightToLeft();
+}
+
 
 int QTextEngine::findItem(int strPos) const
 {
@@ -2511,7 +2531,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
 
     QList<QTextOption::Tab> tabArray = option.tabs();
     if (!tabArray.isEmpty()) {
-        if (option.textDirection() == Qt::RightToLeft) { // rebase the tabArray positions.
+        if (isRightToLeft()) { // rebase the tabArray positions.
             QList<QTextOption::Tab> newTabs;
             QList<QTextOption::Tab>::Iterator iter = tabArray.begin();
             while(iter != tabArray.end()) {
@@ -2646,6 +2666,12 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::Overline;
     if (f->d->strikeOut || format.fontStrikeOut())
         flags |= QTextItem::StrikeOut;
+}
+
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, QFontEngine *fe)
+    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
+      num_chars(0), chars(0), logClusters(0), f(font), fontEngine(fe), glyphs(g)
+{
 }
 
 QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const

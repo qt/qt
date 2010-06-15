@@ -295,7 +295,9 @@ void QAbstractScrollAreaPrivate::init()
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
 #ifndef Q_WS_MAC
+#ifndef QT_NO_GESTURES
     viewport->grabGesture(Qt::PanGesture);
+#endif
 #endif
 }
 
@@ -546,7 +548,9 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->viewport->setFocusProxy(this);
         d->viewport->installEventFilter(d->viewportFilter.data());
 #ifndef Q_WS_MAC
+#ifndef QT_NO_GESTURES
         d->viewport->grabGesture(Qt::PanGesture);
+#endif
 #endif
         d->layoutChildren();
         if (isVisible())
@@ -960,6 +964,7 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
         return false;
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
     {
         QGestureEvent *ge = static_cast<QGestureEvent *>(e);
@@ -980,6 +985,7 @@ bool QAbstractScrollArea::event(QEvent *e)
         }
         return false;
     }
+#endif // QT_NO_GESTURES
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
     case QEvent::ApplicationLayoutDirectionChange:
@@ -1036,9 +1042,11 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
 #endif
         return QFrame::event(e);
     case QEvent::LayoutRequest:
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
     case QEvent::GestureOverride:
         return event(e);
+#endif
     default:
         break;
     }

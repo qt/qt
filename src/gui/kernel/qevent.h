@@ -62,7 +62,9 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QAction;
+#ifndef QT_NO_GESTURES
 class QGesture;
+#endif
 
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
@@ -824,6 +826,7 @@ protected:
     friend class QApplicationPrivate;
 };
 
+#ifndef QT_NO_GESTURES
 class QGesture;
 class QGestureEventPrivate;
 class Q_GUI_EXPORT QGestureEvent : public QEvent
@@ -875,6 +878,7 @@ private:
     friend class QApplication;
     friend class QGestureManager;
 };
+#endif // QT_NO_GESTURES
 
 QT_END_NAMESPACE
 

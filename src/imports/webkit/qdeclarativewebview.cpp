@@ -711,7 +711,7 @@ bool QDeclarativeWebView::sceneEvent(QEvent *event)
     return QDeclarativeItem::sceneEvent(event);
 }
 
-
+#ifndef QT_NO_ACTION
 /*!
     \qmlproperty action WebView::back
     This property holds the action for causing the previous URL in the history to be displayed.
@@ -747,6 +747,7 @@ QAction *QDeclarativeWebView::stopAction() const
 {
     return page()->action(QWebPage::Stop);
 }
+#endif // QT_NO_ACTION
 
 /*!
     \qmlproperty real WebView::title
@@ -1162,9 +1163,9 @@ QString QDeclarativeWebPage::chooseFile(QWebFrame *originatingFrame, const QStri
 }
 
 /*!
-    \qmlsignal WebView::alert(message)
+    \qmlsignal WebView::onAlert(message)
 
-    This signal is emitted when the web engine sends a JavaScript alert. The \a message is the text
+    This handler is called when the web engine sends a JavaScript alert. The \a message is the text
     to be displayed in the alert to the user.
 */
 

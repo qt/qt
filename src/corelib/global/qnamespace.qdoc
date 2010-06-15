@@ -1317,7 +1317,7 @@
     \value Key_Enter     Typically located on the keypad.
     \value Key_Insert
     \value Key_Delete
-    \value Key_Pause
+    \value Key_Pause    The Pause/Break key (\note Not anything to do with pausing media)
     \value Key_Print
     \value Key_SysReq
     \value Key_Clear
@@ -1615,12 +1615,14 @@
     \value Key_BassDown
     \value Key_TrebleUp
     \value Key_TrebleDown
-    \value Key_MediaPlay
-    \value Key_MediaStop
+    \value Key_MediaPlay    A key setting the state of the media player to play
+    \value Key_MediaStop    A key setting the state of the media player to stop
     \value Key_MediaPrevious
     \omitvalue Key_MediaPrev
     \value Key_MediaNext
     \value Key_MediaRecord
+    \value Key_MediaPause   A key setting the state of the media player to pause (\note not the pause/break key)
+    \value Key_MediaTogglePlayPause   A key to toggle the play/pause state in the media player (rather than setting an absolute state)
     \value Key_HomePage
     \value Key_Favorites
     \value Key_Search
@@ -1741,18 +1743,21 @@
     \value Key_MediaLast
     \value Key_unknown
 
-    \value Key_Call
-    \value Key_Camera
-    \value Key_CameraFocus
+    \value Key_Call     A key to answer or initiate a call (\see Key_ToggleCallHangup for a key to toggle current call state)
+    \value Key_Camera   A key to activate the camera shutter
+    \value Key_CameraFocus  A key to focus the camera
     \value Key_Context1
     \value Key_Context2
     \value Key_Context3
     \value Key_Context4
     \value Key_Flip
-    \value Key_Hangup
+    \value Key_Hangup   A key to end an ongoing call (\see Key_ToggleCallHangup for a key to toggle current call state)
     \value Key_No
     \value Key_Select
     \value Key_Yes
+    \value Key_ToggleCallHangup A key to toggle the current call state (ie. either answer, or hangup) depending on current call state
+    \value Key_VoiceDial
+    \value Key_LastNumberRedial
 
     \value Key_Execute
     \value Key_Printer
@@ -2567,15 +2572,23 @@
 /*!
     \enum Qt::LayoutDirection
 
-    Specifies the direction of Qt's layouts:
+    Specifies the direction of Qt's layouts and text handling.
 
     \value LeftToRight  Left-to-right layout.
     \value RightToLeft  Right-to-left layout.
+    \value LayoutDirectionAuto   Automatic layout.
 
     Right-to-left layouts are necessary for certain languages,
     notably Arabic and Hebrew.
 
-    \sa QApplication::setLayoutDirection(), QWidget::setLayoutDirection()
+    LayoutDirectionAuto serves two purposes. When used in conjunction with widgets and layouts, it
+    will imply to use the layout direction set on the parent widget or QApplication. This
+    has the same effect as QWidget::unsetLayoutDirection().
+
+    When LayoutDirectoinAuto is used in conjunction with text layouting, it will imply that the text
+    directionality is determined from the content of the string to be layouted.
+
+    \sa QApplication::setLayoutDirection(), QWidget::setLayoutDirection(), QTextOption::setTextDirection(), QString::isRightToLeft()
 */
 
 /*!

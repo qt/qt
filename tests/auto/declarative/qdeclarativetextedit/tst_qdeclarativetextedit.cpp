@@ -50,10 +50,16 @@
 #include <QtDeclarative/qdeclarativeexpression.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativetextedit_p.h>
+#include <private/qdeclarativetextedit_p_p.h>
 #include <QFontMetrics>
 #include <QDeclarativeView>
 #include <QStyle>
 #include <QInputContext>
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
 
 class tst_qdeclarativetextedit : public QObject
 
@@ -86,7 +92,8 @@ private slots:
     void delegateLoading();
     void navigation();
     void readOnly();
-    void sendRequestSoftwareInputPanelEvent();
+    void openInputPanelOnClick();
+    void openInputPanelOnFocus();
     void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -551,11 +558,11 @@ void tst_qdeclarativetextedit::selection()
 
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
-        textEditObject->setSelectionEnd(i);
+        textEditObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textEditObject->selectedText());
     }
     for(int i=0; i<= testStr.size(); i++) {
-        textEditObject->setSelectionStart(i);
+        textEditObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textEditObject->selectedText());
     }
 
@@ -565,43 +572,26 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectionEnd() == 0);
     QVERIFY(textEditObject->selectedText().isNull());
 
-    for(int i=0; i< testStr.size(); i++) {
-        textEditObject->setSelectionStart(i);
-        QCOMPARE(textEditObject->selectionEnd(), i);
-        QCOMPARE(testStr.mid(i,0), textEditObject->selectedText());
-        textEditObject->setSelectionEnd(i+1);
-        QCOMPARE(textEditObject->selectionStart(), i);
-        QCOMPARE(testStr.mid(i,1), textEditObject->selectedText());
-    }
-
-    for(int i= testStr.size() - 1; i>0; i--) {
-        textEditObject->setSelectionEnd(i);
-        QCOMPARE(testStr.mid(i,0), textEditObject->selectedText());
-        textEditObject->setSelectionStart(i-1);
-        QCOMPARE(testStr.mid(i-1,1), textEditObject->selectedText());
-    }
-
     //Test Error Ignoring behaviour
     textEditObject->setCursorPosition(0);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionStart(-10);
+    textEditObject->select(-10,0);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionStart(100);
+    textEditObject->select(100,101);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionEnd(-10);
+    textEditObject->select(0,-10);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionEnd(100);
+    textEditObject->select(0,100);
     QVERIFY(textEditObject->selectedText().isNull());
-    textEditObject->setSelectionStart(0);
-    textEditObject->setSelectionEnd(10);
+    textEditObject->select(0,10);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionStart(-10);
+    textEditObject->select(-10,0);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionStart(100);
+    textEditObject->select(100,101);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionEnd(-10);
+    textEditObject->select(0,-10);
     QVERIFY(textEditObject->selectedText().size() == 10);
-    textEditObject->setSelectionEnd(100);
+    textEditObject->select(0,100);
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
@@ -834,14 +824,14 @@ public:
     bool closeInputPanelReceived;
 };
 
-void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
+void tst_qdeclarativetextedit::openInputPanelOnClick()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     MyInputContext ic;
     view.setInputContext(&ic);
     QDeclarativeTextEdit edit;
-    QSignalSpy inputPanelonFocusSpy(&edit, SIGNAL(showInputPanelOnFocusChanged(bool)));
+    QSignalSpy focusOnPressSpy(&edit, SIGNAL(focusOnPressChanged(bool)));
     edit.setText("Hello world");
     edit.setPos(0, 0);
     scene.addItem(&edit);
@@ -851,7 +841,60 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
-    QVERIFY(edit.showInputPanelOnFocus());
+    QDeclarativeItemPrivate* pri = QDeclarativeItemPrivate::get(&edit);
+    QDeclarativeTextEditPrivate *editPrivate = static_cast<QDeclarativeTextEditPrivate*>(pri);
+
+    // input panel on click
+    editPrivate->showInputPanelOnFocus = false;
+
+    QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
+            view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+    QApplication::processEvents();
+    if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
+        QCOMPARE(ic.openInputPanelReceived, false);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+        QApplication::processEvents();
+        QCOMPARE(ic.openInputPanelReceived, true);
+    } else if (behavior == QStyle::RSIP_OnMouseClick) {
+        QCOMPARE(ic.openInputPanelReceived, true);
+    }
+    ic.openInputPanelReceived = false;
+
+    // focus should not cause input panels to open or close
+    edit.setFocus(false);
+    edit.setFocus(true);
+    edit.setFocus(false);
+    edit.setFocus(true);
+    edit.setFocus(false);
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+}
+
+void tst_qdeclarativetextedit::openInputPanelOnFocus()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextEdit edit;
+    QSignalSpy focusOnPressSpy(&edit, SIGNAL(focusOnPressChanged(bool)));
+    edit.setText("Hello world");
+    edit.setPos(0, 0);
+    scene.addItem(&edit);
+    view.show();
+    qApp->setAutoSipEnabled(true);
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QDeclarativeItemPrivate* pri = QDeclarativeItemPrivate::get(&edit);
+    QDeclarativeTextEditPrivate *editPrivate = static_cast<QDeclarativeTextEditPrivate*>(pri);
+    editPrivate->showInputPanelOnFocus = true;
+
+    // test default values
+    QVERIFY(edit.focusOnPress());
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, false);
 
@@ -860,76 +903,94 @@ void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
     QApplication::processEvents();
     QVERIFY(edit.hasFocus());
     QCOMPARE(ic.openInputPanelReceived, true);
-    QCOMPARE(ic.closeInputPanelReceived, false);
     ic.openInputPanelReceived = false;
 
     // no events on release
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
     QCOMPARE(ic.openInputPanelReceived, false);
-    QCOMPARE(ic.closeInputPanelReceived, false);
     ic.openInputPanelReceived = false;
 
-    // Even with focus already gained, user needs
-    // to be able to open panel by pressing on the editor
+    // if already focused, input panel can be opened on press
+    QVERIFY(edit.hasFocus());
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
-    QCOMPARE(ic.closeInputPanelReceived, false);
     ic.openInputPanelReceived = false;
 
-    // input panel closed on focus lost
-    edit.setFocus(false);
+    // input method should stay enabled if focus
+    // is lost to an item that also accepts inputs
+    QDeclarativeTextEdit anotherEdit;
+    scene.addItem(&anotherEdit);
+    anotherEdit.setFocus(true);
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, true);
+    ic.openInputPanelReceived = false;
+    QCOMPARE(view.inputContext(), &ic);
+    QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
+
+    // input method should be disabled if focus
+    // is lost to an item that doesn't accept inputs
+    QDeclarativeItem item;
+    scene.addItem(&item);
+    item.setFocus(true);
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, false);
-    QCOMPARE(ic.closeInputPanelReceived, true);
-    ic.closeInputPanelReceived = false;
+    QVERIFY(view.inputContext() == 0);
+    QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 
-    // no input panel events if showInputPanelOnFocus is false
-    edit.setShowInputPanelOnFocus(false);
-    QCOMPARE(inputPanelonFocusSpy.count(),1);
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+    // no automatic input panel events should
+    // be sent if focusOnPress is false
+    edit.setFocusOnPress(false);
+    QCOMPARE(focusOnPressSpy.count(),1);
+    edit.setFocusOnPress(false);
+    QCOMPARE(focusOnPressSpy.count(),1);
     edit.setFocus(false);
     edit.setFocus(true);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+    QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, false);
 
-    edit.setShowInputPanelOnFocus(false);
-    QCOMPARE(inputPanelonFocusSpy.count(),1);
-
-    // one show input panel event when openSoftwareInputPanel is called
+    // one show input panel event should
+    // be set when openSoftwareInputPanel is called
     edit.openSoftwareInputPanel();
     QCOMPARE(ic.openInputPanelReceived, true);
     QCOMPARE(ic.closeInputPanelReceived, false);
     ic.openInputPanelReceived = false;
 
-    // one close input panel event when closeSoftwareInputPanel is called
+    // one close input panel event should
+    // be sent when closeSoftwareInputPanel is called
     edit.closeSoftwareInputPanel();
-    QCOMPARE(ic.openInputPanelReceived, false);
-    QCOMPARE(ic.closeInputPanelReceived, true);
-    ic.openInputPanelReceived = false;
-
-    // set showInputPanelOnFocus back to true
-    edit.setShowInputPanelOnFocus(true);
-    QCOMPARE(inputPanelonFocusSpy.count(),2);
-    edit.setFocus(false);
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, true);
     ic.closeInputPanelReceived = false;
 
-    // active window focus reason should not cause input panel to open
-    QGraphicsObject * editObject = qobject_cast<QGraphicsObject*>(&edit);
-    editObject->setFocus(Qt::ActiveWindowFocusReason);
+    // set focusOnPress back to true
+    edit.setFocusOnPress(true);
+    QCOMPARE(focusOnPressSpy.count(),2);
+    edit.setFocusOnPress(true);
+    QCOMPARE(focusOnPressSpy.count(),2);
+    edit.setFocus(false);
+    QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, false);
     QCOMPARE(ic.closeInputPanelReceived, false);
+    ic.closeInputPanelReceived = false;
 
-    // and input panel should not open if focus has already been set
+    // input panel should not re-open
+    // if focus has already been set
+    edit.setFocus(true);
+    QCOMPARE(ic.openInputPanelReceived, true);
+    ic.openInputPanelReceived = false;
     edit.setFocus(true);
     QCOMPARE(ic.openInputPanelReceived, false);
-    QCOMPARE(ic.closeInputPanelReceived, false);
 
-    edit.setShowInputPanelOnFocus(true);
-    QCOMPARE(inputPanelonFocusSpy.count(),2);
+    // input method should be disabled
+    // if TextEdit loses focus
+    edit.setFocus(false);
+    QApplication::processEvents();
+    QVERIFY(view.inputContext() == 0);
+    QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 void tst_qdeclarativetextedit::geometrySignals()

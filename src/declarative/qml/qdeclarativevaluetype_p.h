@@ -55,6 +55,7 @@
 
 #include "qdeclarativeproperty.h"
 #include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativenullablevalue_p_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
@@ -446,7 +447,7 @@ public:
         InBounce = QEasingCurve::InBounce, OutBounce = QEasingCurve::OutBounce,
         InOutBounce = QEasingCurve::InOutBounce, OutInBounce = QEasingCurve::OutInBounce,
         InCurve = QEasingCurve::InCurve, OutCurve = QEasingCurve::OutCurve,
-        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve,
+        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve
     };
 
     QDeclarativeEasingValueType(QObject *parent = 0);
@@ -547,6 +548,7 @@ private:
     QFont font;
     bool pixelSizeSet;
     bool pointSizeSet;
+    mutable QDeclarativeNullableValue<int> dpi;
 };
 
 QT_END_NAMESPACE

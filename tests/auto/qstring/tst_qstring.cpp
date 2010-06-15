@@ -207,6 +207,7 @@ private slots:
     void repeated() const;
     void repeated_data() const;
     void task262677remove();
+    void QTBUG10404_compareRef();
 };
 
 typedef QList<int> IntList;
@@ -4827,6 +4828,38 @@ void tst_QString::task262677remove()
     driveName.remove(2, INT_MAX); // should be "V:" - instead, it's "V::\\blahblah\\more_blahblah\\"
     QVERIFY(driveName == QLatin1String("V:"));
 }
+
+void tst_QString::QTBUG10404_compareRef()
+{
+    QString a = "ABCDEFGH";
+
+    QCOMPARE(QStringRef(&a, 1, 2).compare(QLatin1String("BC")), 0);
+    QVERIFY(QStringRef(&a, 1, 2).compare(QLatin1String("BCD")) < 0);
+    QCOMPARE(QStringRef(&a, 1, 2).compare(QLatin1String("Bc"), Qt::CaseInsensitive), 0);
+    QVERIFY(QStringRef(&a, 1, 2).compare(QLatin1String("bCD"), Qt::CaseInsensitive) < 0);
+
+    QCOMPARE(QStringRef(&a, 1, 2).compare(QString::fromLatin1("BC")), 0);
+    QVERIFY(QStringRef(&a, 1, 2).compare(QString::fromLatin1("BCD")) < 0);
+    QCOMPARE(QStringRef(&a, 1, 2).compare(QString::fromLatin1("Bc"), Qt::CaseInsensitive), 0);
+    QVERIFY(QStringRef(&a, 1, 2).compare(QString::fromLatin1("bCD"), Qt::CaseInsensitive) < 0);
+
+    QCOMPARE(QString::fromLatin1("BC").compare(QStringRef(&a, 1, 2)), 0);
+    QVERIFY(QString::fromLatin1("BCD").compare(QStringRef(&a, 1, 2)) > 0);
+    QCOMPARE(QString::fromLatin1("Bc").compare(QStringRef(&a, 1, 2), Qt::CaseInsensitive), 0);
+    QVERIFY(QString::fromLatin1("bCD").compare(QStringRef(&a, 1, 2), Qt::CaseInsensitive) > 0);
+
+    QCOMPARE(QStringRef(&a, 1, 2).compare(QStringRef(&a, 1, 2)), 0);
+    QVERIFY(QStringRef(&a, 1, 2).compare(QStringRef(&a, 1, 3)) < 0);
+    QCOMPARE(QStringRef(&a, 1, 2).compare(QStringRef(&a, 1, 2), Qt::CaseInsensitive), 0);
+    QVERIFY(QStringRef(&a, 1, 2).compare(QStringRef(&a, 1, 3), Qt::CaseInsensitive) < 0);
+
+    QString a2 = "ABCDEFGh";
+    QCOMPARE(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 2)), 0);
+    QVERIFY(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 3)) < 0);
+    QCOMPARE(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 2), Qt::CaseInsensitive), 0);
+    QVERIFY(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 3), Qt::CaseInsensitive) < 0);
+}
+
 
 
 QTEST_APPLESS_MAIN(tst_QString)

@@ -57,3 +57,4 @@ Rectangle {
         onClicked: aMusician.perform()
     }
 }
+//![0]

@@ -76,125 +76,41 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     For example:
 
-    \code
-    ListModel {
-        id: fruitModel
-        ListElement {
-            name: "Apple"
-            cost: 2.45
-        }
-        ListElement {
-            name: "Orange"
-            cost: 3.25
-        }
-        ListElement {
-            name: "Banana"
-            cost: 1.95
-        }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/listmodel.qml 0
 
-    Roles (properties) must begin with a lower-case letter.The above example defines a
+    Roles (properties) must begin with a lower-case letter. The above example defines a
     ListModel containing three elements, with the roles "name" and "cost".
 
     Values must be simple constants - either strings (quoted), bools (true, false), numbers,
     or enum values (like Text.AlignHCenter).
 
     The defined model can be used in views such as ListView:
-    \code
-    Component {
-        id: fruitDelegate
-        Item {
-            width: 200; height: 50
-            Text { text: name }
-            Text { text: '$'+cost; anchors.right: parent.right }
-        }
-    }
 
-    ListView {
-        model: fruitModel
-        delegate: fruitDelegate
-        anchors.fill: parent
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/listmodel-simple.qml 0
+    \dots 8
+    \snippet doc/src/snippets/declarative/listmodel-simple.qml 1
+    \image listmodel.png
 
     It is possible for roles to contain list data.  In the example below we create a list of fruit attributes:
 
-    \code
-    ListModel {
-        id: fruitModel
-        ListElement {
-            name: "Apple"
-            cost: 2.45
-            attributes: [
-                ListElement { description: "Core" },
-                ListElement { description: "Deciduous" }
-            ]
-        }
-        ListElement {
-            name: "Orange"
-            cost: 3.25
-            attributes: [
-                ListElement { description: "Citrus" }
-            ]
-        }
-        ListElement {
-            name: "Banana"
-            cost: 1.95
-            attributes: [
-                ListElement { description: "Tropical" },
-                ListElement { description: "Seedless" }
-            ]
-        }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/listmodel-nested.qml model
 
-    The delegate below will list all the fruit attributes:
-    \code
-    Component {
-        id: fruitDelegate
-        Item {
-            width: 200; height: 50
-            Text { id: name; text: name }
-            Text { text: '$'+cost; anchors.right: parent.right }
-            Row {
-                anchors.top: name.bottom
-                spacing: 5
-                Text { text: "Attributes:" }
-                Repeater {
-                    model: attributes
-                    Component { Text { text: description } }
-                }
-            }
-        }
-    }
-    \endcode
+    The delegate below displays all the fruit attributes:
+
+    \snippet doc/src/snippets/declarative/listmodel-nested.qml delegate
+    \image listmodel-nested.png
+
 
     \section2 Modifying list models
 
     The content of a ListModel may be created and modified using the clear(),
-    append(), and set() methods.  For example:
-
-    \code
-    Component {
-        id: fruitDelegate
-        Item {
-            width: 200; height: 50
-            Text { text: name }
-            Text { text: '$'+cost; anchors.right: parent.right }
-
-            // Double the price when clicked.
-            MouseArea {
-                anchors.fill: parent
-                onClicked: fruitModel.set(index, "cost", cost*2)
-            }
-        }
-    }
-    \endcode
+    append(), set() and setProperty() methods.  For example:
+    
+    \snippet doc/src/snippets/declarative/listmodel-modify.qml delegate
 
     When creating content dynamically, note that the set of available properties cannot be changed
-    except by first clearing the model - whatever properties are first added are then the
-    only permitted properties in the model.
+    except by first clearing the model. Whatever properties are first added to the model are then the
+    only permitted properties in the model until it is cleared.
 
 
     \section2 Using threaded list models with WorkerScript
@@ -214,11 +130,11 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
     The application's \tt Timer object periodically sends a message to the
-    worker script by calling \tt WorkerScript::sendMessage(). When this message
-    is received, \tt WorkerScript.onMessage() is invoked in
+    worker script by calling \l WorkerScript::sendMessage(). When this message
+    is received, \l {WorkerScript::onMessage}{WorkerScript.onMessage()} is invoked in
     \tt dataloader.js, which appends the current time to the list model.
 
-    Note the call to sync() from the \c WorkerScript.onMessage() handler.
+    Note the call to sync() from the \l {WorkerScript::onMessage}{WorkerScript.onMessage()} handler.
     You must call sync() or else the changes made to the list from the external
     thread will not be reflected in the list model in the main thread.
 
@@ -244,7 +160,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     In addition, the WorkerScript cannot add any list data to the model.
 
-    \sa {qmlmodels}{Data Models}, WorkerScript, QtDeclarative
+    \sa {qmlmodels}{Data Models}, {declarative/threading/threadedlistmodel}{Threaded ListModel example}, QtDeclarative
 */
 
 
@@ -454,7 +370,7 @@ void QDeclarativeListModel::insert(int index, const QScriptValue& valuemap)
     to the end of the list:
 
     \code
-        fruitModel.move(0,fruitModel.count-3,3)
+        fruitModel.move(0, fruitModel.count - 3, 3)
     \endcode
 
     \sa append()

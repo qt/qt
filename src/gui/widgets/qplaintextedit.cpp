@@ -1476,6 +1476,7 @@ bool QPlainTextEdit::event(QEvent *e)
             d->sendControlEvent(e);
     }
 #endif
+#ifndef QT_NO_GESTURES
     else if (e->type() == QEvent::Gesture) {
         QGestureEvent *ge = static_cast<QGestureEvent *>(e);
         QPanGesture *g = static_cast<QPanGesture *>(ge->gesture(Qt::PanGesture));
@@ -1499,6 +1500,7 @@ bool QPlainTextEdit::event(QEvent *e)
         }
         return true;
     }
+#endif // QT_NO_GESTURES
     return QAbstractScrollArea::event(e);
 }
 

@@ -1427,12 +1427,14 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
+#ifndef QT_NO_GESTURES
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
         QGestureManager *manager = QGestureManager::instance();
         foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
             manager->cleanupCachedGestures(o, type);
     }
+#endif
 
     clearFocus();
 
@@ -5687,17 +5689,19 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         return;
     }
 
-    // Find pixmap in cache, then remove to avoid deep copy when modifying.s
+    // Find pixmap in cache.
     QPixmap cachedPixmap;
     if (!QPixmapCache::find(cache->key, &cachedPixmap)) {
         update(rect);
         return;
     }
-    QPixmapCache::remove(cache->key);
 
     QRect scrollRect = (rect.isNull() ? boundingRect() : rect).toAlignedRect();
     if (!scrollRect.intersects(cache->boundingRect))
         return; // Nothing to scroll.
+
+    // Remove from cache to avoid deep copy when modifying.
+    QPixmapCache::remove(cache->key);
 
     QRegion exposed;
     cachedPixmap.scroll(dx, dy, scrollRect.translated(-cache->boundingRect.topLeft()), &exposed);
@@ -7569,6 +7573,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     QGraphicsItem::d_ptr->isObject = true;
 }
 
+#ifndef QT_NO_GESTURES
 /*!
     Subscribes the graphics object to the given \a gesture with specific \a flags.
 
@@ -7592,6 +7597,8 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
     if (QGraphicsItem::d_ptr->gestureContext.remove(gesture) && QGraphicsItem::d_ptr->scene)
         QGraphicsItem::d_ptr->scene->d_func()->ungrabGesture(this, gesture);
 }
+#endif // QT_NO_GESTURES
+
 /*!
     Updates the item's micro focus. This is slot for convenience.
 

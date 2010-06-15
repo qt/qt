@@ -58,7 +58,10 @@ QT_BEGIN_NAMESPACE
     taking its size hints into account, and you can propagate this to the other elements in your UI via anchors and bindings.
 
     This is a QGraphicsLayoutItem subclass, and its properties merely expose the QGraphicsLayoutItem functionality to QML.
-    See the QGraphicsLayoutItem documentation for further details.
+
+    The \l{declarative/cppextensions/qgraphicslayouts/layoutitem}{LayoutItem example}
+    demonstrates how a LayoutItem can be used within a \l{Graphics View Framework}{Graphics View}
+    scene.
 */
 
 /*!

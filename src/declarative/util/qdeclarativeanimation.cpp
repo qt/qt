@@ -557,6 +557,8 @@ void QDeclarativeAbstractAnimation::timelineComplete()
         NumberAnimation { ... duration: 200 }
     }
     \endcode
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -627,6 +629,8 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
     When used in a transition, ColorAnimation will by default animate
     all properties of type color that are changing. If a property or properties
     are explicitly set for the animation, then those will be used instead.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -1082,11 +1086,13 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
-    Animate a set of properties over 200ms, from their values in the start state to
+    For example, to animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
     NumberAnimation { properties: "x,y,scale"; duration: 200 }
     \endcode
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1156,6 +1162,8 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
     \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1224,7 +1232,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
     When used in a transition RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing
-    your own properties via \c properties or \c property.
+    your own properties via \l {PropertyAnimation::properties}{properties} or 
+    \l {PropertyAnimation::property}{property}.
 
     In the following example we use RotationAnimation to animate the rotation
     between states via the shortest path.
@@ -1238,6 +1247,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
         RotationAnimation { direction: RotationAnimation.Shortest }
     }
     \endqml
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1446,7 +1457,7 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
     }
     \endcode
 
-    \sa ParallelAnimation
+    \sa ParallelAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSequentialAnimation::QDeclarativeSequentialAnimation(QObject *parent) :
@@ -1508,7 +1519,7 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
     }
     \endcode
 
-    \sa SequentialAnimation
+    \sa SequentialAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -1657,6 +1668,8 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Depending on how the animation is used, the set of properties normally used will be
     different. For more information see the individual property documentation, as well
     as the \l{QML Animation} introduction.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativePropertyAnimation::QDeclarativePropertyAnimation(QObject *parent)
@@ -1761,7 +1774,7 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 
     To specify an easing curve you need to specify at least the type. For some curves you can also specify
     amplitude, period and/or overshoot (more details provided after the table). The default easing curve is
-    Linear.
+    \c Easing.Linear.
 
     \qml
     PropertyAnimation { properties: "y"; easing.type: Easing.InOutElastic; easing.amplitude: 2.0; easing.period: 1.5 }
@@ -1938,15 +1951,15 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
         \o \inlineimage qeasingcurve-outinbounce.png
     \endtable
 
-    easing.amplitude is only applicable for bounce and elastic curves (curves of type
-    Easing.InBounce, Easing.OutBounce, Easing.InOutBounce, Easing.OutInBounce, Easing.InElastic,
-    Easing.OutElastic, Easing.InOutElastic or Easing.OutInElastic).
+    \c easing.amplitude is only applicable for bounce and elastic curves (curves of type
+    \c Easing.InBounce, \c Easing.OutBounce, \c Easing.InOutBounce, \c Easing.OutInBounce, \c Easing.InElastic,
+    \c Easing.OutElastic, \c Easing.InOutElastic or \c Easing.OutInElastic).
 
-    easing.overshoot is only applicable if type is: Easing.InBack, Easing.OutBack,
-    Easing.InOutBack or Easing.OutInBack.
+    \c easing.overshoot is only applicable if \c easing.type is: \c Easing.InBack, \c Easing.OutBack,
+    \c Easing.InOutBack or \c Easing.OutInBack.
 
-    easing.period is only applicable if type is: Easing.InElastic, Easing.OutElastic,
-    Easing.InOutElastic or Easing.OutInElastic.
+    \c easing.period is only applicable if easing.type is: \c Easing.InElastic, \c Easing.OutElastic,
+    \c Easing.InOutElastic or \c Easing.OutInElastic.
 
     See the \l {declarative/animation/easing}{easing} example for a demonstration of
     the different easing settings.
@@ -2032,8 +2045,9 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
     The singular forms are slightly optimized, so if you do have only a single target/property
     to animate you should try to use them.
 
-    In many cases these properties do not need to be explicitly specified -- they can be
-    inferred from the animation framework.
+    In many cases these properties do not need to be explicitly specified, as they can be
+    inferred from the animation framework:
+
     \table 80%
     \row
     \o Value Source / Behavior
@@ -2119,52 +2133,39 @@ QAbstractAnimation *QDeclarativePropertyAnimation::qtAnimation()
     return d->va;
 }
 
-struct PropertyUpdater : public QDeclarativeBulkValueUpdater
+void QDeclarativeAnimationPropertyUpdater::setValue(qreal v)
 {
-    QDeclarativeStateActions actions;
-    int interpolatorType;       //for Number/ColorAnimation
-    int prevInterpolatorType;   //for generic
-    QVariantAnimation::Interpolator interpolator;
-    bool reverse;
-    bool fromSourced;
-    bool fromDefined;
-    bool *wasDeleted;
-    PropertyUpdater() : prevInterpolatorType(0), wasDeleted(0) {}
-    ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
-    void setValue(qreal v)
-    {
-        bool deleted = false;
-        wasDeleted = &deleted;
-        if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
-            v = 1 - v;
-        for (int ii = 0; ii < actions.count(); ++ii) {
-            QDeclarativeAction &action = actions[ii];
+    bool deleted = false;
+    wasDeleted = &deleted;
+    if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
+        v = 1 - v;
+    for (int ii = 0; ii < actions.count(); ++ii) {
+        QDeclarativeAction &action = actions[ii];
 
-            if (v == 1.)
-                QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
-            else {
-                if (!fromSourced && !fromDefined) {
-                    action.fromValue = action.property.read();
-                    if (interpolatorType)
-                        QDeclarativePropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
-                }
-                if (!interpolatorType) {
-                    int propType = action.property.propertyType();
-                    if (!prevInterpolatorType || prevInterpolatorType != propType) {
-                        prevInterpolatorType = propType;
-                        interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
-                    }
-                }
-                if (interpolator)
-                    QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        if (v == 1.)
+            QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        else {
+            if (!fromSourced && !fromDefined) {
+                action.fromValue = action.property.read();
+                if (interpolatorType)
+                    QDeclarativePropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
             }
-            if (deleted)
-                return;
+            if (!interpolatorType) {
+                int propType = action.property.propertyType();
+                if (!prevInterpolatorType || prevInterpolatorType != propType) {
+                    prevInterpolatorType = propType;
+                    interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
+                }
+            }
+            if (interpolator)
+                QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         }
-        wasDeleted = 0;
-        fromSourced = true;
+        if (deleted)
+            return;
     }
-};
+    wasDeleted = 0;
+    fromSourced = true;
+}
 
 void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions,
                                      QDeclarativeProperties &modified,
@@ -2194,7 +2195,7 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
         props << d->defaultProperties.split(QLatin1Char(','));
     }
 
-    PropertyUpdater *data = new PropertyUpdater;
+    QDeclarativeAnimationPropertyUpdater *data = new QDeclarativeAnimationPropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
     data->reverse = direction == Backward ? true : false;
@@ -2319,6 +2320,8 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
 
     When used in a transition, ParentAnimation will by default animate
     all ParentChanges.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -2771,7 +2774,7 @@ void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
 {
     Q_UNUSED(modified);
     Q_D(QDeclarativeAnchorAnimation);
-    PropertyUpdater *data = new PropertyUpdater;
+    QDeclarativeAnimationPropertyUpdater *data = new QDeclarativeAnimationPropertyUpdater;
     data->interpolatorType = QMetaType::QReal;
     data->interpolator = d->interpolator;
 

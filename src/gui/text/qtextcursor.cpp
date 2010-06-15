@@ -64,7 +64,7 @@ enum {
 
 QTextCursorPrivate::QTextCursorPrivate(QTextDocumentPrivate *p)
     : priv(p), x(0), position(0), anchor(0), adjusted_anchor(0),
-      currentCharFormat(-1), visualNavigation(false)
+      currentCharFormat(-1), visualNavigation(false), keepPositionOnInsert(false)
 {
     priv->addCursor(this);
 }
@@ -79,6 +79,7 @@ QTextCursorPrivate::QTextCursorPrivate(const QTextCursorPrivate &rhs)
     x = rhs.x;
     currentCharFormat = rhs.currentCharFormat;
     visualNavigation = rhs.visualNavigation;
+    keepPositionOnInsert = rhs.keepPositionOnInsert;
     priv->addCursor(this);
 }
 
@@ -95,7 +96,7 @@ QTextCursorPrivate::AdjustResult QTextCursorPrivate::adjustPosition(int position
     if (position < positionOfChange
         || (position == positionOfChange
             && (op == QTextUndoCommand::KeepCursor
-                || anchor < position)
+                || keepPositionOnInsert)
             )
          ) {
         result = CursorUnchanged;
@@ -361,7 +362,7 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     QTextBlock blockIt = block();
 
     if (op >= QTextCursor::Left && op <= QTextCursor::WordRight
-        && blockIt.blockFormat().layoutDirection() == Qt::RightToLeft) {
+        && blockIt.textDirection() == Qt::RightToLeft) {
         if (op == QTextCursor::Left)
             op = QTextCursor::NextCharacter;
         else if (op == QTextCursor::Right)
@@ -1276,6 +1277,80 @@ void QTextCursor::setVisualNavigation(bool b)
         d->visualNavigation = b;
 }
 
+
+/*!
+  \since 4.7
+
+  Sets the visual x position for vertical cursor movements.
+
+  The vertical movement x position is cleared automatically when the cursor moves horizontally, and kept
+  unchanged when the cursor moves vertically. The mechanism allows the cursor to move up and down on a
+  visually straight line with proportional fonts, and to gently "jump" over short lines.
+
+  A value of -1 indicates no predefined x position. It will then be set automatically the next time the
+  cursor moves up or down.
+
+  \sa verticalMovementX()
+  */
+void QTextCursor::setVerticalMovementX(int x)
+{
+    if (d)
+        d->x = x;
+}
+
+/*! \since 4.7
+
+  Returns the visual x position for vertical cursor movements.
+
+  A value of -1 indicates no predefined x position. It will then be set automatically the next time the
+  cursor moves up or down.
+
+  \sa setVerticalMovementX()
+  */
+int QTextCursor::verticalMovementX() const
+{
+    return d ? d->x : -1;
+}
+
+/*!
+  \since 4.7
+
+  Returns whether the cursor should keep its current position when text gets inserted at the position of the
+  cursor.
+
+  The default is false;
+
+  \sa setKeepPositionOnInsert()
+ */
+bool QTextCursor::keepPositionOnInsert() const
+{
+    return d ? d->keepPositionOnInsert : false;
+}
+
+/*!
+  \since 4.7
+
+  Defines whether the cursor should keep its current position when text gets inserted at the current position of the
+  cursor.
+
+  If \b is true, the cursor keeps its current position when text gets inserted at the positing of the cursor.
+  If \b is false, the cursor moves along with the inserted text.
+
+  The default is false.
+
+  Note that a cursor always moves when text is inserted before the current position of the cursor, and it
+  always keeps its position when text is inserted after the current position of the cursor.
+
+  \sa keepPositionOnInsert()
+ */
+void QTextCursor::setKeepPositionOnInsert(bool b)
+{
+    if (d)
+        d->keepPositionOnInsert = b;
+}
+
+
+
 /*!
     Inserts \a text at the current position, using the current
     character format.
@@ -1408,16 +1483,16 @@ void QTextCursor::deletePreviousChar()
 {
     if (!d || !d->priv)
         return;
-    
+
     if (d->position != d->anchor) {
         removeSelectedText();
         return;
     }
-    
+
     if (d->anchor < 1 || !d->canDelete(d->anchor-1))
         return;
     d->anchor--;
-    
+
     QTextDocumentPrivate::FragmentIterator fragIt = d->priv->find(d->anchor);
     const QTextFragmentData * const frag = fragIt.value();
     int fpos = fragIt.position();
@@ -1429,7 +1504,7 @@ void QTextCursor::deletePreviousChar()
         if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
             --d->anchor;
     }
-    
+
     d->adjusted_anchor = d->anchor;
     d->remove();
     d->setX();
@@ -2361,6 +2436,9 @@ void QTextCursor::beginEditBlock()
 {
     if (!d || !d->priv)
         return;
+
+    if (d->priv->editBlock == 0) // we are the initial edit block, store current cursor position for undo
+        d->priv->editBlockCursorPosition = d->position;
 
     d->priv->beginEditBlock();
 }

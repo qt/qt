@@ -262,7 +262,10 @@
 
     The QVG_SCISSOR_CLIP define will disable clipping with vgMask() or
     vgRenderToMask() and instead use the scissor rectangle list to perform
-    clipping.  Clipping with an arbitrary QPainterPath will not be supported.
+    clipping.  Clipping with an arbitrary QPainterPath will need to convert
+    the path into a series of rectangles.  If the number of rectangles
+    exceeds VG_MAX_SCISSOR_RECTS, then the results will not be exact.
+
     The QVG_SCISSOR_CLIP define should only be used if the OpenVG engine
     does not support vgMask() or vgRenderToMask().
 

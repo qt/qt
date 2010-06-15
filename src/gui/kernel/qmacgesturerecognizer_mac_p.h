@@ -57,6 +57,8 @@
 #include "qpoint.h"
 #include "qgesturerecognizer.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 class QMacSwipeGestureRecognizer : public QGestureRecognizer
@@ -98,5 +100,7 @@ private:
 #endif
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #endif // QMACSWIPEGESTURERECOGNIZER_MAC_P_H

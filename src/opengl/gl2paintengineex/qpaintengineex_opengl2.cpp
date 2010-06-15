@@ -1333,8 +1333,16 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     QFontEngineGlyphCache::Type glyphType = textItem->fontEngine->glyphFormat >= 0
                                             ? QFontEngineGlyphCache::Type(textItem->fontEngine->glyphFormat)
                                             : d->glyphCacheType;
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+        if (d->device->alphaRequested() || state()->matrix.type() > QTransform::TxTranslate
+            || (state()->composition_mode != QPainter::CompositionMode_Source
+            && state()->composition_mode != QPainter::CompositionMode_SourceOver))
+        {
+            glyphType = QFontEngineGlyphCache::Raster_A8;
+        }
+    }
 
-    d->drawCachedGlyphs(glyphType, textItem, true);
+    d->drawCachedGlyphs(glyphType, textItem);
 }
 
 bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
@@ -1408,7 +1416,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
             staticTextItem.numGlyphs = glyphs.size();
             staticTextItem.glyphPositions = positions.data();
 
-            d->drawCachedGlyphs(glyphType, &staticTextItem, false);
+            d->drawCachedGlyphs(glyphType, &staticTextItem);
         }
         return;
     }
@@ -1439,21 +1447,16 @@ namespace {
 // #define QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO
 
 void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType,
-                                                QStaticTextItem *staticTextItem,
-                                                bool includeMatrixInCache)
+                                                QStaticTextItem *staticTextItem)
 {
     Q_Q(QGL2PaintEngineEx);
 
     QOpenGL2PaintEngineState *s = q->state();
 
     QGLTextureGlyphCache *cache =
-        (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType,
-                                                                        includeMatrixInCache
-                                                                          ? s->matrix
-                                                                          : QTransform());
+        (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType) {
-        cache = new QGLTextureGlyphCache(ctx, glyphType,
-                                         includeMatrixInCache ? s->matrix : QTransform());
+        cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine->setGlyphCache(ctx, cache);
     }
 
@@ -1561,13 +1564,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(pensBrush);
 
-    // When painting a QStaticTextItem, the glyph positions are already in device coordinates,
-    // therefore we temporarily set an identity matrix on the painter for the draw call to
-    // avoid transforming the positions twice.
-    QTransform old = s->matrix;
-    if (includeMatrixInCache)
-        s->matrix = QTransform();
-
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
 
         // Subpixel antialiasing without gamma correction
@@ -1664,9 +1660,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 #else
     glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
-
-    if (includeMatrixInCache)
-        s->matrix = old;
 }
 
 void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,

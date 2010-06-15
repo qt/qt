@@ -250,6 +250,9 @@
 #ifndef QT_NO_SYSTEMTRAYICON
 #  define QT_NO_SYSTEMTRAYICON
 #endif
+#ifndef QT_NO_GESTURES
+#  define QT_NO_GESTURES
+#endif
 
 /* Widgets */
 #ifndef QT_NO_LCDNUMBER

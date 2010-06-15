@@ -48,6 +48,7 @@
 #include <private/qpaintengineex_p.h>
 #include <qvarlengtharray.h>
 #include <qmath.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1018,7 +1019,9 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
                 ;
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
             } else {                                // color pixmap, no mask
-                QString k = QString::fromLatin1("$qt-drawitem-%1").arg(pm.cacheKey());
+                QString k = QLatin1Literal("$qt-drawitem")
+                              % HexString<qint64>(pm.cacheKey());
+
                 if (!QPixmapCache::find(k, pm)) {
                     pm = pm.createHeuristicMask();
                     pm.setMask((QBitmap&)pm);

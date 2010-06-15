@@ -58,6 +58,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
+#include FT_SYNTHESIS_H
 #include FT_TRUETYPE_TABLES_H
 #include FT_TYPE1_TABLES_H
 #include FT_GLYPH_H
@@ -617,6 +618,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     cache_cost = 100;
     kerning_pairs_loaded = false;
     transform = false;
+    embolden = false;
     antialias = true;
     freetype = 0;
     default_load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
@@ -679,10 +681,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
 
     FT_Face face = lockFace();
 
-    //underline metrics
     if (FT_IS_SCALABLE(face)) {
-        line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
-        underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
         bool fake_oblique = (fontDef.style != QFont::StyleNormal) && !(face->style_flags & FT_STYLE_FLAG_ITALIC);
         if (fake_oblique)
             matrix.xy = 0x10000*3/10;
@@ -690,6 +689,12 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
         freetype->matrix = matrix;
         if (fake_oblique)
             transform = true;
+        // fake bold
+        if ((fontDef.weight == QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
+            embolden = true;
+        // underline metrics
+        line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
+        underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
     } else {
         // copied from QFontEngineQPF
         // ad hoc algorithm
@@ -789,6 +794,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph
     }
 
     FT_GlyphSlot slot = face->glyph;
+    if (embolden) FT_GlyphSlot_Embolden(slot);
     int left  = slot->metrics.horiBearingX;
     int right = slot->metrics.horiBearingX + slot->metrics.width;
     int top    = slot->metrics.horiBearingY;
@@ -934,6 +940,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph, Glyph
         return 0;
 
     FT_GlyphSlot slot = face->glyph;
+    if (embolden) FT_GlyphSlot_Embolden(slot);
     FT_Library library = qt_getFreetype();
 
     info.xOff = TRUNC(ROUND(slot->advance.x));
@@ -1209,6 +1216,8 @@ int QFontEngineFT::synthesized() const
     int s = 0;
     if ((fontDef.style != QFont::StyleNormal) && !(freetype->face->style_flags & FT_STYLE_FLAG_ITALIC))
         s = SynthesizedItalic;
+    if ((fontDef.weight == QFont::Bold) && !(freetype->face->style_flags & FT_STYLE_FLAG_BOLD))
+        s |= SynthesizedBold;
     if (fontDef.stretch != 100 && FT_IS_SCALABLE(freetype->face))
         s |= SynthesizedStretch;
     return s;

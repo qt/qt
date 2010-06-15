@@ -112,30 +112,48 @@ void QDeclarativeLoaderPrivate::initResize()
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based
-    subtree from a QML URL or Component.
+    subtree from a URL or Component.
 
-    Loader instantiates an item from a component. The component to
-    instantiate may be specified directly by the \c sourceComponent
-    property, or loaded from a URL via the \c source property.
+    The Loader element instantiates an item from a component. The component to
+    be instantiated may be specified directly by the \l sourceComponent
+    property, or loaded from a URL via the \l source property.
 
-    It is also an effective means of delaying the creation of a component
-    until it is required:
+    Loader can be used to delay the creation of a component until it is required.
+    For example, this loads "Page1.qml" as a component into the \l Loader element
+    when the \l MouseArea is clicked:
+
     \code
-    Loader { id: pageLoader }
-    Rectangle {
-        MouseArea { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+
+        MouseArea { 
+            anchors.fill: parent
+            onClicked: pageLoader.source = "Page1.qml"
+        }
+
+        Loader { id: pageLoader }
     }
     \endcode
 
+    Note that Loader is like any other graphical Item and needs to be positioned 
+    and sized accordingly to become visible. When a component is loaded, the 
+    Loader is automatically resized to the size of the component.
+
     If the Loader source is changed, any previous items instantiated
-    will be destroyed.  Setting \c source to an empty string, or setting
+    will be destroyed.  Setting \l source to an empty string, or setting
     sourceComponent to \e undefined
     will destroy the currently instantiated items, freeing resources
     and leaving the Loader empty.  For example:
 
     \code
     pageLoader.source = ""
+    \endcode
+
       or
+
+    \code
     pageLoader.sourceComponent = undefined
     \endcode
 
@@ -215,7 +233,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
 
 /*!
     \qmlproperty Component Loader::sourceComponent
-    The sourceComponent property holds the \l{Component} to instantiate.
+    This property holds the \l{Component} to instantiate.
 
     \qml
     Item {
@@ -228,6 +246,8 @@ void QDeclarativeLoader::setSource(const QUrl &url)
         Loader { sourceComponent: redSquare; x: 10 }
     }
     \endqml
+
+    Note this value must hold a \l Component object; it cannot be a \l Item.
 
     \sa source, progress
 */
@@ -340,19 +360,31 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     \o Loader.Error - an error occurred while loading the QML source
     \endlist
 
-    Note that a change in the status property does not cause anything to happen
-    (although it reflects what has happened to the loader internally). If you wish
-    to react to the change in status you need to do it yourself, for example in one
-    of the following ways:
-    \list
-    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: loader.status = Loader.Ready;}
-    \o Do something inside the onLoaded signal handler, e.g. Loader{id: loader; onLoaded: console.log('Loaded');}
-    \o Bind to the status variable somewhere, e.g. Text{text: if(loader.status!=Loader.Ready){'Not Loaded';}else{'Loaded';}}
-    \endlist
-    \sa progress
+    Use this status to provide an update or respond to the status change in some way.
+    For example, you could:
+
+    \e {Trigger a state change:}
+    \qml 
+        State { name: 'loaded'; when: loader.status = Loader.Ready }
+    \endqml
+
+    \e {Implement an \c onStatusChanged signal handler:}
+    \qml 
+        Loader {
+            id: loader
+            onStatusChanged: if (loader.status == Loader.Ready) console.log('Loaded')
+        }
+    \endqml
+
+    \e {Bind to the status value:}
+    \qml
+        Text { text: loader.status != Loader.Ready ? 'Not Loaded' : 'Loaded' }
+    \endqml
 
     Note that if the source is a local file, the status will initially be Ready (or Error). While
     there will be no onStatusChanged signal in that case, the onLoaded will still be invoked.
+
+    \sa progress
 */
 
 QDeclarativeLoader::Status QDeclarativeLoader::status() const
@@ -379,7 +411,7 @@ void QDeclarativeLoader::componentComplete()
 /*!
     \qmlsignal Loader::onLoaded()
 
-    This handler is called when the \l status becomes Loader.Ready, or on successful
+    This handler is called when the \l status becomes \c Loader.Ready, or on successful
     initial load.
 */
 

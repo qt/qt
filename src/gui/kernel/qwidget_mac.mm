@@ -752,6 +752,7 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
     return window;
 }
 
+#ifndef QT_NO_GESTURES
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
 /* We build the release package against the 10.4 SDK.
    So, to enable gestures for applications running on
@@ -768,6 +769,7 @@ enum {
     kEventParamMagnificationAmount  = 'magn'
 };
 #endif
+#endif // QT_NO_GESTURES
 
 // window events
 static EventTypeSpec window_events[] = {
@@ -1076,6 +1078,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
         handled_event = false;
         break; }
 
+#ifndef QT_NO_GESTURES
     case kEventClassGesture: {
         // First, find the widget that was under
         // the mouse when the gesture happened:
@@ -1142,6 +1145,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
         QApplication::sendSpontaneousEvent(widget, &qNGEvent);
     break; }
+#endif // QT_NO_GESTURES
 
     default:
         handled_event = false;
@@ -2684,6 +2688,7 @@ QWidget::macCGHandle() const
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -3990,10 +3995,10 @@ static void qt_mac_update_widget_position(QWidget *q, QRect oldRect, QRect newRe
         (oldRect.isValid() == false || newRect.isValid() == false)  ||
 
         // the position update is a part of a drag-and-drop operation
-        QDragManager::self()->object || 
-        
-        // we are on Panther (no HIViewSetNeedsDisplayInRect) 
-        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4 
+        QDragManager::self()->object ||
+
+        // we are on Panther (no HIViewSetNeedsDisplayInRect)
+        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4
     ){
         HIViewSetFrame(view, &bounds);
         return;

@@ -50,6 +50,11 @@
 #include <QtCore/qfile.h>
 #include <QtGui/qpainter.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativewebview : public QObject
 {
     Q_OBJECT

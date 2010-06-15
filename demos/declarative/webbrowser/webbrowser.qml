@@ -47,7 +47,7 @@ import "content"
 Rectangle {
     id: webBrowser
 
-    property string urlString : "http://qt.nokia.com/"
+    property string urlString : "http://www.nokia.com/"
 
     width: 800; height: 600
     color: "#343434"
@@ -55,6 +55,7 @@ Rectangle {
     FlickableWebView {
         id: webView
         url: webBrowser.urlString
+        onProgressChanged: header.urlChanged = false
         anchors { top: headerSpace.bottom; left: parent.left; right: parent.right; bottom: parent.bottom }
     }
 

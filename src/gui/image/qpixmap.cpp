@@ -82,6 +82,7 @@
 #endif
 
 #include "qpixmap_raster_p.h"
+#include "private/qstylehelper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -829,8 +830,14 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QFileInfo info(fileName);
-    QString key = QLatin1String("qt_pixmap_") + info.absoluteFilePath() + QLatin1Char('_') + QString::number(info.lastModified().toTime_t()) + QLatin1Char('_') +
-        QString::number(info.size()) + QLatin1Char('_') + QString::number(data ? data->pixelType() : QPixmapData::PixmapType);
+    if (!info.exists())
+        return false;
+
+    QString key = QLatin1Literal("qt_pixmap")
+                  % info.absoluteFilePath()
+                  % HexString<uint>(info.lastModified().toTime_t())
+                  % HexString<quint64>(info.size())
+                  % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
 
     if (QPixmapCache::find(key, *this))
         return true;

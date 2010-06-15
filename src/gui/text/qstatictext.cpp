@@ -115,10 +115,12 @@ QT_BEGIN_NAMESPACE
     Qt::RichText.
 
     If it's the first time the static text is drawn, or if the static text, or the painter's font
-    or matrix have been altered since the last time it was drawn, the text's layout has to be
-    recalculated. This will impose an overhead on the QPainter::drawStaticText() call where the
-    relayout occurs. To avoid this overhead in the paint event, you can call prepare() ahead of
-    time to ensure that the layout is calculated.
+    has been altered since the last time it was drawn, the text's layout has to be
+    recalculated. On some paint engines, changing the matrix of the painter will also cause the
+    layout to be recalculated. In particular, this will happen for any engine except for the
+    OpenGL2 paint engine. Recalculating the layout will impose an overhead on the
+    QPainter::drawStaticText() call where it occurs. To avoid this overhead in the paint event, you
+    can call prepare() ahead of time to ensure that the layout is calculated.
 
     \sa QPainter::drawText(), QPainter::drawStaticText(), QTextLayout, QTextDocument
 */
@@ -188,8 +190,9 @@ void QStaticText::detach()
 
   When drawStaticText() is called, the layout of the QStaticText will be recalculated if any part
   of the QStaticText object has changed since the last time it was drawn. It will also be
-  recalculated if the painter's font or matrix are not the same as when the QStaticText was last
-  drawn.
+  recalculated if the painter's font is not the same as when the QStaticText was last drawn, or,
+  on any other paint engine than the OpenGL2 engine, if the painter's matrix has been altered
+  since the static text was last drawn.
 
   To avoid the overhead of creating the layout the first time you draw the QStaticText after
   making changes, you can use the prepare() function and pass in the \a matrix and \a font you
@@ -321,6 +324,26 @@ QStaticText::PerformanceHint QStaticText::performanceHint() const
 }
 
 /*!
+   Sets the text option structure that controls the layout process to the given \a textOption.
+
+   \sa textOption()
+*/
+void QStaticText::setTextOption(const QTextOption &textOption)
+{
+    detach();
+    data->textOption = textOption;
+    data->invalidate();
+}
+
+/*!
+    Returns the current text option used to control the layout process.
+*/
+QTextOption QStaticText::textOption() const
+{
+    return data->textOption;
+}
+
+/*!
     Sets the preferred width for this QStaticText. If the text is wider than the specified width,
     it will be broken into multiple lines and grow vertically. If the text cannot be split into
     multiple lines, it will be larger than the specified \a textWidth.
@@ -364,14 +387,16 @@ QSizeF QStaticText::size() const
 
 QStaticTextPrivate::QStaticTextPrivate()
         : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0),
-          needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText)
+          needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText),
+          untransformedCoordinates(false)
 {
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     : text(other.text), font(other.font), textWidth(other.textWidth), matrix(other.matrix),
       items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0), needsRelayout(true),
-      useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat)
+      useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat),
+      untransformedCoordinates(other.untransformedCoordinates)
 {
 }
 
@@ -396,8 +421,9 @@ namespace {
     class DrawTextItemRecorder: public QPaintEngine
     {
     public:
-        DrawTextItemRecorder(bool useBackendOptimizations, int numChars)
-                : m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations)
+        DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations, int numChars)
+                : m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations),
+                  m_untransformedCoordinates(untransformedCoordinates)
         {
         }
 
@@ -423,7 +449,7 @@ namespace {
             if (m_dirtyPen)
                 currentItem.color = state->pen().color();
 
-            QTransform matrix = state->transform();
+            QTransform matrix = m_untransformedCoordinates ? QTransform() : state->transform();
             matrix.translate(position.x(), position.y());
 
             QVarLengthArray<glyph_t> glyphs;
@@ -486,14 +512,17 @@ namespace {
 
         bool m_dirtyPen;
         bool m_useBackendOptimizations;
+        bool m_untransformedCoordinates;
     };
 
     class DrawTextItemDevice: public QPaintDevice
     {
     public:
-        DrawTextItemDevice(bool useBackendOptimizations, int numChars)
+        DrawTextItemDevice(bool untransformedCoordinates, bool useBackendOptimizations,
+                           int numChars)
         {
-            m_paintEngine = new DrawTextItemRecorder(useBackendOptimizations, numChars);
+            m_paintEngine = new DrawTextItemRecorder(untransformedCoordinates,
+                                                     useBackendOptimizations, numChars);
         }
 
         ~DrawTextItemDevice()
@@ -571,6 +600,7 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         QTextLayout textLayout;
         textLayout.setText(text);
         textLayout.setFont(font);
+        textLayout.setTextOption(textOption);
 
         qreal leading = QFontMetricsF(font).leading();
         qreal height = -leading;
@@ -601,20 +631,25 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
                                       .arg(QString::number(color.blue(), 16), 2, QLatin1Char('0')));
 #endif
         document.setDefaultFont(font);
-        document.setDocumentMargin(0.0);
-        if (textWidth >= 0.0)
-            document.setTextWidth(textWidth);
+        document.setDocumentMargin(0.0);        
 #ifndef QT_NO_TEXTHTMLPARSER
         document.setHtml(text);
 #else
         document.setPlainText(text);
 #endif
+        if (textWidth >= 0.0)
+            document.setTextWidth(textWidth);
+        else
+            document.adjustSize();
+        document.setDefaultTextOption(textOption);
 
-        document.adjustSize();
         p->save();
         p->translate(topLeftPosition);
         document.drawContents(p);
         p->restore();
+
+        if (textWidth >= 0.0)
+            document.adjustSize(); // Find optimal size
 
         actualSize = document.size();
     }
@@ -629,7 +664,7 @@ void QStaticTextPrivate::init()
 
     position = QPointF(0, 0);
 
-    DrawTextItemDevice device(useBackendOptimizations, text.size());
+    DrawTextItemDevice device(untransformedCoordinates, useBackendOptimizations, text.size());
     {
         QPainter painter(&device);
         painter.setFont(font);

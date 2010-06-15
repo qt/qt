@@ -155,14 +155,26 @@ void QDeclarativeEnginePrivate::defineModule()
 \qmlclass Qt QDeclarativeEnginePrivate
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
-The Qt object provides useful enums and functions from Qt, for use in all QML files. 
+The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
-You do not create instances of this type, but instead use the members of the global "Qt" object.
+The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
+with enums and functions.  To use it, call the members of the global \c Qt object directly. 
+For example:
+
+\qml
+import Qt 4.7
+
+Text {
+    color: Qt.rgba(255, 0, 0, 1)
+    text: Qt.md5("hello, world")
+}
+\endqml
+
 
 \section1 Enums
 
 The Qt object contains all enums in the Qt namespace. For example, you can
-access the AlignLeft member of the Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+access the \c AlignLeft member of the \c Qt::AlignmentFlag enum with \c Qt.AlignLeft.
 
 For a full list of enums, see the \l{Qt Namespace} documentation.
 
@@ -172,14 +184,14 @@ data types. This is primarily useful when setting the properties of an item
 when the property has one of the following types:
 
 \list
-\o \c color - use \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::darker()}{Qt.darker()}, \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()}
+\o \c color - use \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()}, \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()}
 \o \c rect - use \l{Qt::rect()}{Qt.rect()}
 \o \c point - use \l{Qt::point()}{Qt.point()}
 \o \c size - use \l{Qt::size()}{Qt.size()}
 \o \c vector3d - use \l{Qt::vector3d()}{Qt.vector3d()}
 \endlist
 
-There are also string based constructors for these types, see \l{qdeclarativebasictypes.html}{QML Basic Types}.
+There are also string based constructors for these types. See \l{qdeclarativebasictypes.html}{QML Basic Types} for more information.
 
 \section1 Date/Time Formatters
 
@@ -200,8 +212,8 @@ items from files or strings. See \l{Dynamic Object Management} for an overview
 of their use.
 
 \list
-    \o \l{Qt::createComponent}{object Qt.createComponent(url)}
-    \o \l{Qt::createQmlObject}{object Qt.createQmlObject(string qml, object parent, string filepath)}
+    \o \l{Qt::createComponent()}{object Qt.createComponent(url)}
+    \o \l{Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
 \endlist
 */
 
@@ -1036,14 +1048,15 @@ QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
 /*!
 \qmlmethod object Qt::createComponent(url)
 
-Returns a \l Component object created from the QML file at the specified \a url,
+Returns a \l Component object created using the QML file at the specified \a url,
 or \c null if there was an error in creating the component.
 
 Call \l {Component::createObject()}{Component.createObject()} on the returned
 component to create an object instance of the component.
 
-Here is an example. Remember that QML files that might be loaded
-over the network cannot be expected to be ready immediately.
+Here is an example. Notice it checks whether the component \l{Component::status}{status} is
+\c Component.Ready before calling \l {Component::createObject()}{createObject()}
+in case the QML file is loaded over a network and thus is not ready immediately.
 
 \snippet doc/src/snippets/declarative/componentCreation.js 0
 \codeline
@@ -1083,12 +1096,12 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
 /*!
 \qmlmethod object Qt::createQmlObject(string qml, object parent, string filepath)
 
-Returns a new object created from the given \a string of QML with the specified \a parent,
+Returns a new object created from the given \a string of QML which will have the specified \a parent,
 or \c null if there was an error in creating the object.
 
 If \a filepath is specified, it will be used for error reporting for the created object.
 
-Example (where \c targetItem is the id of an existing QML item):
+Example (where \c parentItem is the id of an existing QML item):
 
 \snippet doc/src/snippets/declarative/createQmlObject.qml 0
 
@@ -1364,7 +1377,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
 /*!
 \qmlmethod color Qt::rgba(real red, real green, real blue, real alpha)
 
-Returns a Color with the specified \c red, \c green, \c blue and \c alpha components.
+Returns a color with the specified \c red, \c green, \c blue and \c alpha components.
 All components should be in the range 0-1 inclusive.
 */
 QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1392,7 +1405,7 @@ QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine
 /*!
 \qmlmethod color Qt::hsla(real hue, real saturation, real lightness, real alpha)
 
-Returns a Color with the specified \c hue, \c saturation, \c lightness and \c alpha components.
+Returns a color with the specified \c hue, \c saturation, \c lightness and \c alpha components.
 All components should be in the range 0-1 inclusive.
 */
 QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1420,7 +1433,9 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
 /*!
 \qmlmethod rect Qt::rect(int x, int y, int width, int height) 
 
-Returns a Rect with the top-left corner at \c x, \c y and the specified \c width and \c height.
+Returns a \c rect with the top-left corner at \c x, \c y and the specified \c width and \c height.
+
+The returned object has \c x, \c y, \c width and \c height attributes with the given values.
 */
 QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine *engine)
 {

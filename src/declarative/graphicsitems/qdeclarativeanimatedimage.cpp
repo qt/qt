@@ -63,22 +63,32 @@ QT_BEGIN_NAMESPACE
     \inherits Image
     \since 4.7
 
-    This item provides for playing animations stored as images containing a series of frames,
-    such as GIF files. The full list of supported formats can be determined with
-    QMovie::supportedFormats().
+    The AnimatedImage element provides for playing animations stored as images containing a series of frames,
+    such as GIF files. 
+    
+    The full list of supported formats can be determined with QMovie::supportedFormats().
 
     \table
     \row
     \o \image animatedimageitem.gif
     \o
     \qml
-Item {
-    width: anim.width; height: anim.height+8
-    AnimatedImage { id: anim; source: "pics/games-anim.gif" }
-    Rectangle { color: "red"; width: 4; height: 8; y: anim.height
-        x: (anim.width-width)*anim.currentFrame/(anim.frameCount-1)
+    import Qt 4.7
+
+    Rectangle {
+        width: animation.width; height: animation.height + 8
+
+        AnimatedImage { id: animation; source: "animation.gif" }
+
+        Rectangle { 
+            property int frames: animation.frameCount
+
+            width: 4; height: 8
+            x: (animation.width - width) * animation.currentFrame / frames
+            y: animation.height
+            color: "red"
+        }
     }
-}
     \endqml
     \endtable
 */
@@ -96,7 +106,7 @@ QDeclarativeAnimatedImage::~QDeclarativeAnimatedImage()
 
 /*!
   \qmlproperty bool AnimatedImage::paused
-  This property holds whether the animated image is paused or not
+  This property holds whether the animated image is paused.
 
   Defaults to false, and can be set to true when you want to pause.
 */
@@ -120,7 +130,7 @@ void QDeclarativeAnimatedImage::setPaused(bool pause)
 }
 /*!
   \qmlproperty bool AnimatedImage::playing
-  This property holds whether the animated image is playing or not
+  This property holds whether the animated image is playing.
 
   Defaults to true, so as to start playing immediately.
 */

@@ -50,15 +50,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-/*****************************************************************************
- *****************************************************************************
- XXX Experimental
- *****************************************************************************
-*****************************************************************************/
-
 class QDeclarativePackagePrivate;
 class QDeclarativePackageAttached;
-class QDeclarativePackage : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativePackage : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativePackage)

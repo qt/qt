@@ -823,7 +823,7 @@ void QDeclarativeImportDatabase::addPluginPath(const QString& path)
         qDebug() << "QDeclarativeImportDatabase::addPluginPath" << path;
 
     QUrl url = QUrl(path);
-    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
+    if (url.isRelative() || url.scheme() == QLatin1String("file")) {
         QDir dir = QDir(path);
         filePluginPath.prepend(dir.canonicalPath());
     } else {
@@ -842,7 +842,7 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
     QUrl url = QUrl(path);
     QString cPath;
 
-    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
+    if (url.isRelative() || url.scheme() == QLatin1String("file")) {
         QDir dir = QDir(path);
         cPath = dir.canonicalPath();
     } else {
