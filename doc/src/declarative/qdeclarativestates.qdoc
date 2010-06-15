@@ -70,58 +70,30 @@ In QML:
 \o A state can affect the properties of other objects, not just the object owning the state (and not just that object's children).
 \endlist
 
+To define a state for an item, add a \l State element to the \l{Item::states}{states} property. To
+change the current state of an \l Item, set the \l{Item::state}{state} property to the name
+of the required state.
+
 Here is an example of using states. In the default state \c myRect is positioned at 0,0. In the 'moved' state it is positioned at 50,50. Clicking within the mouse area changes the state from the default state to the 'moved' state, thus moving the rectangle.
 
-\qml
-Item {
-    id: myItem
-
-    Rectangle {
-        id: myRect
-        width: 100
-        height: 100
-        color: "red"
-    }
-
-    states: [
-        State {
-            name: "moved"
-            PropertyChanges {
-                target: myRect
-                x: 50
-                y: 50
-            }
-        }
-    ]
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: myItem.state = 'moved'
-    }
-}
-\endqml
+\snippet doc/src/snippets/declarative/states.qml 0
+\snippet doc/src/snippets/declarative/states.qml 1
 
 State changes can be animated using \l{state-transitions}{Transitions}.
 
-For example, adding this code to the above \c {Item {}} element animates the transition to the "moved" state:
+For example, adding this code to the above \c Item element animates the transition to the "moved" state:
 
-\qml
-    transitions: [
-        Transition {
-            NumberAnimation { properties: "x,y"; duration: 500 }
-        }
-    ]
-\endqml
+\snippet doc/src/snippets/declarative/states.qml transitions
 
 See \l{state-transitions}{Transitions} for more information.
 
 
 Other things you can do in a state change:
 \list
-\o override signal handlers with PropertyChanges
-\o change an item's visual parent with ParentChange
-\o change an item's anchors with AnchorChanges
-\o run some script with StateChangeScript
+\o Override signal handlers with PropertyChanges
+\o Change an item's visual parent with ParentChange
+\o Change an item's anchors with AnchorChanges
+\o Run some script with StateChangeScript
 \endlist
 
 */

@@ -86,7 +86,7 @@ Rectangle {
         onTriggered: { Logic.moveSkull() }
     }
     Timer {
-
+	id: startNewGameTimer;
         interval: 700;
         onTriggered: { Logic.startNewGame(); }
     }
@@ -177,7 +177,6 @@ Rectangle {
             id: progressIndicator
             color: "#221edd";
             width: 0;
-            Behavior on width { NumberAnimation { duration: startHeartbeatTimer.running ? 1000 : 0}}
             height: 30;
         }
     }
@@ -224,6 +223,15 @@ Rectangle {
             PropertyChanges {target: title; opacity: 0}
             PropertyChanges {target: skull; row: 0; column: 0; }
             PropertyChanges {target: skull; spawned: 1}
+        }
+    ]
+
+    transitions: [
+        Transition {
+            from: "*"
+            to: "starting"
+            NumberAnimation { target: progressIndicator; property: "width"; duration: 1000 }
+
         }
     ]
 

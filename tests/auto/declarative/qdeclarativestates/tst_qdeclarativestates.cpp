@@ -49,6 +49,24 @@
 #include <private/qdeclarativestategroup_p.h>
 #include <private/qdeclarativeitem_p.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
+class MyAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int foo READ foo WRITE setFoo)
+public:
+    MyAttached(QObject *parent) : QObject(parent), m_foo(13) {}
+
+    int foo() const { return m_foo; }
+    void setFoo(int f) { m_foo = f; }
+
+private:
+    int m_foo;
+};
 
 class MyRect : public QDeclarativeRectangle
 {
@@ -61,6 +79,10 @@ public:
     
     int propertyWithNotify() const { return m_prop; }
     void setPropertyWithNotify(int i) { m_prop = i; emit oddlyNamedNotifySignal(); }
+
+    static MyAttached *qmlAttachedProperties(QObject *o) {
+        return new MyAttached(o);
+    }
 Q_SIGNALS:
     void didSomething();
     void oddlyNamedNotifySignal();
@@ -69,6 +91,8 @@ private:
     int m_prop;
 };
 
+QML_DECLARE_TYPE(MyRect)
+QML_DECLARE_TYPEINFO(MyRect, QML_HAS_ATTACHED_PROPERTIES)
 
 class tst_qdeclarativestates : public QObject
 {
@@ -83,6 +107,7 @@ private slots:
     void initTestCase();
 
     void basicChanges();
+    void attachedPropertyChanges();
     void basicExtension();
     void basicBinding();
     void signalOverride();
@@ -112,6 +137,7 @@ private slots:
     void whenOrdering();
     void urlResolution();
     void unnamedWhen();
+    void returnToBase();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -217,6 +243,28 @@ void tst_qdeclarativestates::basicChanges()
         rect->setPropertyWithNotify(100);
         QCOMPARE(rect->color(), QColor(Qt::blue));
     }
+}
+
+void tst_qdeclarativestates::attachedPropertyChanges()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent component(&engine, SRCDIR "/data/attachedPropertyChanges.qml");
+    QVERIFY(component.isReady());
+
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item != 0);
+    QCOMPARE(item->width(), 50.0);
+
+    // Ensure attached property has been changed
+    QObject *attObj = qmlAttachedPropertiesObject<MyRect>(item, false);
+    QVERIFY(attObj);
+
+    MyAttached *att = qobject_cast<MyAttached*>(attObj);
+    QVERIFY(att);
+
+    QEXPECT_FAIL("", "QTBUG-11283", Abort);
+    QCOMPARE(att->foo(), 1);
 }
 
 void tst_qdeclarativestates::basicExtension()
@@ -1084,6 +1132,26 @@ void tst_qdeclarativestates::unnamedWhen()
     QCOMPARE(rectPrivate->state(), QLatin1String(""));
     QCOMPARE(rect->property("stateString").toString(), QLatin1String(""));
 }
+
+void tst_qdeclarativestates::returnToBase()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/returnToBase.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QCOMPARE(rectPrivate->state(), QLatin1String(""));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String(""));
+    rect->setProperty("triggerState", true);
+    QCOMPARE(rectPrivate->state(), QLatin1String("anonymousState1"));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String("inState"));
+    rect->setProperty("triggerState", false);
+    QCOMPARE(rectPrivate->state(), QLatin1String(""));
+    QCOMPARE(rect->property("stateString").toString(), QLatin1String("originalState"));
+}
+
 
 QTEST_MAIN(tst_qdeclarativestates)
 

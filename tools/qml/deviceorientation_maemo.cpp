@@ -102,8 +102,12 @@ private:
             o = UnknownOrientation;
         } else if (ax < -750) {
             o = Portrait;
+        } else if (ax > 750) {
+            o = PortraitInverted;
         } else if (ay < -750) {
             o = Landscape;
+        } else if (ay > 750) {
+            o = LandscapeInverted;
         }
 
         return o;

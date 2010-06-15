@@ -311,6 +311,7 @@ public:
           logClusters(0), f(0), fontEngine(0)
     {}
     QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format = QTextCharFormat());
+    QTextItemInt(const QGlyphLayout &g, QFont *font, QFontEngine *fe);
 
     /// copy the structure items, adjusting the glyphs arrays to the right subarrays.
     /// the width of the returned QTextItemInt is not adjusted, for speed reasons
@@ -457,6 +458,7 @@ public:
     void validate() const;
     void itemize() const;
 
+    bool isRightToLeft() const;
     static void bidiReorder(int numRuns, const quint8 *levels, int *visualOrder);
 
     const HB_CharAttributes *attributes() const;

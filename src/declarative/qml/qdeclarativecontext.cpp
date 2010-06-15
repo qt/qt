@@ -116,7 +116,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     All properties added explicitly by QDeclarativeContext::setContextProperty() take 
     precedence over the context object's properties.
 
-    Contexts form a hierarchy.  The root of this heirarchy is the QDeclarativeEngine's
+    Contexts form a hierarchy.  The root of this hierarchy is the QDeclarativeEngine's
     \l {QDeclarativeEngine::rootContext()}{root context}.  A component instance can 
     access the data in its own context, as well as all its ancestor contexts.  Data
     can be made available to all instances by modifying the 

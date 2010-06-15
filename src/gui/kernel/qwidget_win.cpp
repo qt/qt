@@ -544,6 +544,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -2075,7 +2076,7 @@ void QWidgetPrivate::registerTouchWindow()
 
 void QWidgetPrivate::winSetupGestures()
 {
-#if !defined(QT_NO_NATIVE_GESTURES)
+#if !defined(QT_NO_GESTURES) && !defined(QT_NO_NATIVE_GESTURES)
     Q_Q(QWidget);
     if (!q || !q->isVisible() || !nativeGesturePanEnabled)
         return;

@@ -72,6 +72,7 @@
 #include <private/qmath_p.h>
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1563,7 +1564,6 @@ void QPainter::initFrom(const QWidget *widget)
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
     }
-    d->state->layoutDirection = widget->layoutDirection();
 }
 
 
@@ -1873,7 +1873,7 @@ bool QPainter::begin(QPaintDevice *pd)
         QWidget *widget = static_cast<QWidget *>(d->original_device);
         initFrom(widget);
     } else {
-        d->state->layoutDirection = QApplication::layoutDirection();
+        d->state->layoutDirection = Qt::LayoutDirectionAuto;
         // make sure we have a font compatible with the paintdevice
         d->state->deviceFont = d->state->font = QFont(d->state->deviceFont, device());
     }
@@ -5855,14 +5855,24 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
+    if (d->extended->type() == QPaintEngine::OpenGL2 && !staticText_d->untransformedCoordinates) {
+        staticText_d->untransformedCoordinates = true;
+        staticText_d->needsRelayout = true;
+    } else if (d->extended->type() != QPaintEngine::OpenGL2 && staticText_d->untransformedCoordinates) {
+        staticText_d->untransformedCoordinates = false;
+        staticText_d->needsRelayout = true;
+    }
+
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF transformedPosition = topLeftPosition * d->state->matrix;
-    QTransform matrix = d->state->matrix;
+    QPointF transformedPosition = topLeftPosition;
+    if (!staticText_d->untransformedCoordinates)
+        transformedPosition = transformedPosition * d->state->matrix;
+    QTransform oldMatrix;
 
     // The translation has been applied to transformedPosition. Remove translation
     // component from matrix.
-    if (d->state->matrix.isTranslating()) {
+    if (d->state->matrix.isTranslating() && !staticText_d->untransformedCoordinates) {
         qreal m11 = d->state->matrix.m11();
         qreal m12 = d->state->matrix.m12();
         qreal m13 = d->state->matrix.m13();
@@ -5871,6 +5881,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         qreal m23 = d->state->matrix.m23();
         qreal m33 = d->state->matrix.m33();
 
+        oldMatrix = d->state->matrix;
         d->state->matrix.setMatrix(m11, m12, m13,
                                    m21, m22, m23,
                                    0.0, 0.0, m33);
@@ -5879,7 +5890,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     // If the transform is not identical to the text transform,
     // we have to relayout the text (for other transformations than plain translation)
     bool staticTextNeedsReinit = staticText_d->needsRelayout;
-    if (staticText_d->matrix != d->state->matrix) {
+    if (!staticText_d->untransformedCoordinates && staticText_d->matrix != d->state->matrix) {
         staticText_d->matrix = d->state->matrix;
         staticTextNeedsReinit = true;
     }
@@ -5918,8 +5929,8 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     if (currentColor != oldPen.color())
         setPen(oldPen);
 
-    if (matrix.isTranslating())
-        d->state->matrix = matrix;
+    if (!staticText_d->untransformedCoordinates && oldMatrix.isTranslating())
+        d->state->matrix = oldMatrix;
 }
 
 /*!
@@ -5936,6 +5947,23 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
 
     if (!d->engine || str.isEmpty() || pen().style() == Qt::NoPen)
         return;
+
+    if (tf & Qt::TextBypassShaping) {
+        // Skip harfbuzz complex shaping, shape using glyph advances only
+        int len = str.length();
+        int numGlyphs = len;
+        QVarLengthGlyphLayoutArray glyphs(len);
+        QFontEngine *fontEngine = d->state->font.d->engineForScript(QUnicodeTables::Common);
+        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0)) {
+            glyphs.resize(numGlyphs);
+            if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))
+                Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
+        }
+
+        QTextItemInt gf(glyphs, &d->state->font, fontEngine);
+        drawTextItem(p, gf);
+        return;
+    }
 
     QStackTextEngine engine(str, d->state->font);
     engine.option.setTextDirection(d->state->layoutDirection);
@@ -6217,10 +6245,9 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 {
     const qreal radiusBase = qMax(qreal(1), maxRadius);
 
-    QString key = QLatin1String("WaveUnderline-");
-    key += pen.color().name();
-    key += QLatin1Char('-');
-    key += QString::number(radiusBase);
+    QString key = QLatin1Literal("WaveUnderline-")
+                  % pen.color().name()
+                  % HexString<qreal>(radiusBase);
 
     QPixmap pixmap;
     if (QPixmapCache::find(key, pixmap))
@@ -8028,7 +8055,10 @@ start_lengthVariant:
     Sets the layout direction used by the painter when drawing text,
     to the specified \a direction.
 
-    \sa layoutDirection(), drawText(), {QPainter#Settings}{Settings}
+    The default is Qt::LayoutDirectionAuto, which will implicitly determine the
+    direction from the text drawn.
+
+    \sa QTextOption::setTextDirection(), layoutDirection(), drawText(), {QPainter#Settings}{Settings}
 */
 void QPainter::setLayoutDirection(Qt::LayoutDirection direction)
 {
@@ -8040,12 +8070,12 @@ void QPainter::setLayoutDirection(Qt::LayoutDirection direction)
 /*!
     Returns the layout direction used by the painter when drawing text.
 
-    \sa setLayoutDirection(), drawText(), {QPainter#Settings}{Settings}
+    \sa QTextOption::textDirection(), setLayoutDirection(), drawText(), {QPainter#Settings}{Settings}
 */
 Qt::LayoutDirection QPainter::layoutDirection() const
 {
     Q_D(const QPainter);
-    return d->state ? d->state->layoutDirection : Qt::LeftToRight;
+    return d->state ? d->state->layoutDirection : Qt::LayoutDirectionAuto;
 }
 
 QPainterState::QPainterState(const QPainterState *s)

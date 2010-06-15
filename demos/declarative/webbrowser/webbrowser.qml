@@ -55,6 +55,7 @@ Rectangle {
     FlickableWebView {
         id: webView
         url: webBrowser.urlString
+        onProgressChanged: header.urlChanged = false
         anchors { top: headerSpace.bottom; left: parent.left; right: parent.right; bottom: parent.bottom }
     }
 

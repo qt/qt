@@ -109,6 +109,7 @@ private slots:
     void task256066toPem();
     void nulInCN();
     void nulInSan();
+    void largeSerialNumber();
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -784,6 +785,18 @@ void tst_QSslCertificate::nulInSan()
 
     static const char realSAN[] = "www.bank.com\0www.badguy.com";
     QCOMPARE(dnssan, QString::fromLatin1(realSAN, sizeof realSAN - 1));
+}
+
+void tst_QSslCertificate::largeSerialNumber()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/cert-large-serial-number.pem");
+
+    QCOMPARE(certList.size(), 1);
+
+    const QSslCertificate &cert = certList.at(0);
+    QVERIFY(!cert.isNull());
+    QCOMPARE(cert.serialNumber(), QByteArray("01:02:03:04:05:06:07:08:09:10:aa:bb:cc:dd:ee:ff:17:18:19:20"));
 }
 
 #endif // QT_NO_OPENSSL

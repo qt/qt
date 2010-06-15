@@ -147,4 +147,16 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>Bizarre ~ and | context~</name>
+    <message>
+        <source>just something</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>something else</source>
+        <comment>comment with | and ~ and so~</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

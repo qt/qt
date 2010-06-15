@@ -62,24 +62,27 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
     \since 4.7
-    \brief The TextEdit item allows you to add editable formatted text to a scene.
+    \brief The TextEdit item displays multiple lines of editable formatted text.
     \inherits Item
+
+    The TextEdit item displays a block of editable, formatted text.
 
     It can display both plain and rich text. For example:
 
     \qml
 TextEdit {
-    id: edit
+    width: 240
     text: "<b>Hello</b> <i>World!</i>"
-    focus: true
     font.family: "Helvetica"
     font.pointSize: 20
     color: "blue"
-    width: 240
+    focus: true
 }
     \endqml
 
     \image declarative-textedit.gif
+
+    Setting \l {Item::focus}{focus} to \c true enables the TextEdit item to receive keyboard focus.
 
     Note that the TextEdit does not implement scrolling, following the cursor, or other behaviors specific
     to a look-and-feel. For example, to add flickable scrolling that follows the cursor:
@@ -96,7 +99,7 @@ TextEdit {
     You can translate between cursor positions (characters from the start of the document) and pixel
     points using positionAt() and positionToRectangle().
 
-    \sa Text
+    \sa Text, TextInput
 */
 
 /*!
@@ -110,7 +113,7 @@ TextEdit {
 
     \image declarative-textedit.png
 
-    A QDeclarativeTextEdit object can be instantiated in Qml using the tag \c &lt;TextEdit&gt;.
+    A QDeclarativeTextEdit object can be instantiated in QML using the tag \c &lt;TextEdit&gt;.
 */
 
 /*!
@@ -206,7 +209,7 @@ QString QDeclarativeTextEdit::text() const
     Sets the font size in pixels.
 
     Using this function makes the font device dependent.
-    Use \c pointSize to set the size of the font in a device independent manner.
+    Use \l pointSize to set the size of the font in a device independent manner.
 */
 
 /*!
@@ -453,12 +456,22 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     \qmlproperty enumeration TextEdit::horizontalAlignment
     \qmlproperty enumeration TextEdit::verticalAlignment
 
-    Sets the horizontal and vertical alignment of the text within the TextEdit items
+    Sets the horizontal and vertical alignment of the text within the TextEdit item's
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c TextEdit.AlignLeft, \c TextEdit.AlignRight and
-    \c TextEdit.AlignHCenter.  The valid values for \c verticalAlignment are \c TextEdit.AlignTop, \c TextEdit.AlignBottom
-    and \c TextEdit.AlignVCenter.
+    Valid values for \c horizontalAlignment are:
+    \list
+    \o TextEdit.AlignLeft (default)
+    \o TextEdit.AlignRight 
+    \o TextEdit.AlignHCenter
+    \endlist
+    
+    Valid values for \c verticalAlignment are:
+    \list
+    \o TextEdit.AlignTop (default)
+    \o TextEdit.AlignBottom
+    \c TextEdit.AlignVCenter
+    \endlist
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -529,8 +542,8 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
 /*!
     \qmlproperty real TextEdit::paintedWidth
 
-    Returns the width of the text, including width past the width
-    which is covered due to insufficient wrapping if WrapMode is set.
+    Returns the width of the text, including the width past the width
+    which is covered due to insufficient wrapping if \l wrapMode is set.
 */
 qreal QDeclarativeTextEdit::paintedWidth() const
 {
@@ -540,8 +553,8 @@ qreal QDeclarativeTextEdit::paintedWidth() const
 /*!
     \qmlproperty real TextEdit::paintedHeight
 
-    Returns the height of the text, including height past the height
-    which is covered due to there being more text than fits in the set height.
+    Returns the height of the text, including the height past the height
+    that is covered if the text does not fit within the set height.
 */
 qreal QDeclarativeTextEdit::paintedHeight() const
 {
@@ -567,10 +580,10 @@ QRectF QDeclarativeTextEdit::positionToRectangle(int pos) const
 /*!
     \qmlmethod int TextEdit::positionAt(x,y)
 
-    Returns the text position closest to pixel position (\a x,\a y).
+    Returns the text position closest to pixel position (\a x, \a y).
 
     Position 0 is before the first character, position 1 is after the first character
-    but before the second, and so on until position text.length, which is after all characters.
+    but before the second, and so on until position \l {text}.length, which is after all characters.
 */
 int QDeclarativeTextEdit::positionAt(int x, int y) const
 {
@@ -1056,6 +1069,7 @@ void QDeclarativeTextEdit::select(int start, int end)
     updateSelectionMarkers();
 }
 
+#ifndef QT_NO_CLIPBOARD
 /*!
     \qmlmethod TextEdit::cut()
 
@@ -1081,14 +1095,14 @@ void QDeclarativeTextEdit::copy()
 /*!
     \qmlmethod TextEdit::paste()
 
-    Relaces the currently selected text by the contents of the system clipboard.
+    Replaces the currently selected text by the contents of the system clipboard.
 */
 void QDeclarativeTextEdit::paste()
 {
     Q_D(QDeclarativeTextEdit);
     d->control->paste();
 }
-
+#endif // QT_NO_CLIPBOARD
 
 /*!
 \overload
@@ -1099,16 +1113,16 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextEdit);
     if (d->focusOnPress){
         bool hadFocus = hasFocus();
-        QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
-        while(p) {
-            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
-                p->setFocus();
-            p = p->parentItem();
-        }
-        setFocus(true);
-        if (hasFocus() == hadFocus && d->showInputPanelOnFocus && !isReadOnly()) {
-            // re-open input panel on press if already focused
-            openSoftwareInputPanel();
+        forceFocus();
+        if (d->showInputPanelOnFocus) {
+            if (hasFocus() && hadFocus && !isReadOnly()) {
+                // re-open input panel on press if already focused
+                openSoftwareInputPanel();
+            }
+        } else { // show input panel on click
+            if (hasFocus() && !hadFocus) {
+                d->clickCausedFocus = true;
+            }
         }
     }
     if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
@@ -1125,6 +1139,17 @@ void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (!d->showInputPanelOnFocus) { // input panel on click
+        if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
+            if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+                if (view->scene() && view->scene() == scene()) {
+                    qt_widget_private(view)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+                }
+            }
+        }
+    }
+    d->clickCausedFocus = false;
+
     if (!event->isAccepted())
         QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
@@ -1372,10 +1397,14 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     customizing when you want the input keyboard to be shown and hidden in
     your application.
 
-    By default input panels are shown when TextEdit element gains focus and hidden
-    when the focus is lost. You can disable the automatic behavior by setting the
-    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
-    and closeSoftwareInputPanel() to implement the behavior you want.
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
+    the panels are automatically opened when TextEdit element gains focus. Input panels are
+    always closed if no editor owns focus.
+
+    You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
 
     Only relevant on platforms, which provide virtual keyboards.
 
@@ -1384,12 +1413,19 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
         TextEdit {
             id: textEdit
             text: "Hello world!"
-            showInputPanelOnFocus: false
+            focusOnPress: false
             MouseArea {
                 anchors.fill: parent
-                onClicked: textEdit.openSoftwareInputPanel()
+                onClicked: {
+                    if (!textEdit.focus) {
+                        textEdit.focus = true;
+                        textEdit.openSoftwareInputPanel();
+                    } else {
+                        textEdit.focus = false;
+                    }
+                }
+                onPressAndHold: textEdit.closeSoftwareInputPanel();
             }
-            onFocusChanged: if (!focus) closeSoftwareInputpanel()
         }
     \endcode
 */
@@ -1412,10 +1448,14 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
     for customizing when you want the input keyboard to be shown and hidden in
     your application.
 
-    By default input panels are shown when TextEdit element gains focus and hidden
-    when the focus is lost. You can disable the automatic behavior by setting the
-    property showInputPanelOnFocus to false and use functions openSoftwareInputPanel()
-    and closeSoftwareInputPanel() to implement the behavior you want.
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
+    the panels are automatically opened when TextEdit element gains focus. Input panels are
+    always closed if no editor owns focus.
+
+    You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
 
     Only relevant on platforms, which provide virtual keyboards.
 
@@ -1424,12 +1464,19 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
         TextEdit {
             id: textEdit
             text: "Hello world!"
-            showInputPanelOnFocus: false
+            focusOnPress: false
             MouseArea {
                 anchors.fill: parent
-                onClicked: textEdit.openSoftwareInputPanel()
+                onClicked: {
+                    if (!textEdit.focus) {
+                        textEdit.focus = true;
+                        textEdit.openSoftwareInputPanel();
+                    } else {
+                        textEdit.focus = false;
+                    }
+                }
+                onPressAndHold: textEdit.closeSoftwareInputPanel();
             }
-            onFocusChanged: if (!focus) closeSoftwareInputpanel()
         }
     \endcode
 */
@@ -1445,46 +1492,15 @@ void QDeclarativeTextEdit::closeSoftwareInputPanel()
     }
 }
 
-/*!
-    \qmlproperty bool TextEdit::showInputPanelOnFocus
-    Whether input panels are automatically shown when TextEdit element gains
-    focus and hidden when focus is lost. By default this is set to true.
-
-    Only relevant on platforms, which provide virtual keyboards.
-*/
-bool QDeclarativeTextEdit::showInputPanelOnFocus() const
-{
-    Q_D(const QDeclarativeTextEdit);
-    return d->showInputPanelOnFocus;
-}
-
-void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool showOnFocus)
-{
-    Q_D(QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus == showOnFocus)
-        return;
-
-    d->showInputPanelOnFocus = showOnFocus;
-
-    emit showInputPanelOnFocusChanged(d->showInputPanelOnFocus);
-}
-
 void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(const QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus && !isReadOnly() && event->reason() != Qt::ActiveWindowFocusReason) {
-        openSoftwareInputPanel();
+    if (d->showInputPanelOnFocus) {
+        if (d->focusOnPress && !isReadOnly()) {
+            openSoftwareInputPanel();
+        }
     }
     QDeclarativePaintedItem::focusInEvent(event);
-}
-
-void QDeclarativeTextEdit::focusOutEvent(QFocusEvent *event)
-{
-    Q_D(const QDeclarativeTextEdit);
-    if (d->showInputPanelOnFocus && !isReadOnly()) {
-        closeSoftwareInputPanel();
-    }
-    QDeclarativePaintedItem::focusOutEvent(event);
 }
 
 QT_END_NAMESPACE

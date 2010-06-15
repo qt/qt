@@ -84,7 +84,7 @@ public:
     void deleteFromBinding();
 };
 
-class QDeclarativeActionEvent
+class Q_AUTOTEST_EXPORT QDeclarativeActionEvent
 {
 public:
     virtual ~QDeclarativeActionEvent();
@@ -146,6 +146,7 @@ public:
 
     QString name() const;
     void setName(const QString &);
+    bool isNamed() const;
 
     /*'when' is a QDeclarativeBinding to limit state changes oscillation
      due to the unpredictable order of evaluation of bound expressions*/
