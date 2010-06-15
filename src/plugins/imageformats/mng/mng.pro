@@ -14,10 +14,9 @@ symbian: {
 }
 
 contains(QT_CONFIG, system-mng) {
-        unix:LIBS += -lmng
-        win32:LIBS += libmng.lib
-}
-!contains(QT_CONFIG, system-mng) {
+        unix|win32-g++*:LIBS += -lmng
+        win32:!win32-g++*:LIBS += libmng.lib
+} else {
         DEFINES += MNG_BUILD_SO
         DEFINES += MNG_NO_INCLUDE_JNG
 	INCLUDEPATH += ../../../3rdparty/libmng
@@ -44,10 +43,11 @@ contains(QT_CONFIG, system-mng) {
 }
 
 contains(QT_CONFIG, system-zlib) {
-        LIBS += -lz
-}
-!contains(QT_CONFIG, system-zlib) {
-        INCLUDEPATH +=  ../../../3rdparty/zlib
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
+} else {
+    INCLUDEPATH +=  ../../../3rdparty/zlib
 }
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats

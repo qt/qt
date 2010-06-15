@@ -44,7 +44,9 @@ symbian:TARGET.UID3=0x2001B2E2
 
 #zlib support
 contains(QT_CONFIG, zlib) {
-   INCLUDEPATH += ../3rdparty/zlib
+    INCLUDEPATH += ../3rdparty/zlib
 } else:!contains(QT_CONFIG, no-zlib) {
-   unix:LIBS_PRIVATE += -lz
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
 }
