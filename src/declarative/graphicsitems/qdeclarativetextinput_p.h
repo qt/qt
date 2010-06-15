@@ -224,7 +224,6 @@ protected:
     void keyPressEvent(QKeyEvent* ev);
     bool event(QEvent *e);
     void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
 
 public Q_SLOTS:
     void selectAll();

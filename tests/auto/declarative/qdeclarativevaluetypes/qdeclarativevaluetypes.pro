@@ -8,9 +8,8 @@ SOURCES += tst_qdeclarativevaluetypes.cpp \
            testtypes.cpp
 
 symbian: {
-    DEFINES += SRCDIR=\".\"
     importFiles.sources = data
-    importFiles.path = 
+    importFiles.path = .
     DEPLOYMENT = importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"

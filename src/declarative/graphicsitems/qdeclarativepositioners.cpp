@@ -219,6 +219,7 @@ void QDeclarativeBasePositioner::prePositioning()
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(ii));
         if (!child)
             continue;
+        QDeclarativeItemPrivate *childPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(child));
         PositionedItem *item = 0;
         PositionedItem posItem(child);
         int wIdx = oldItems.find(posItem);
@@ -227,11 +228,13 @@ void QDeclarativeBasePositioner::prePositioning()
             positionedItems.append(posItem);
             item = &positionedItems[positionedItems.count()-1];
             item->isNew = true;
-            if (child->opacity() <= 0.0 || !child->isVisible())
+            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden)
                 item->isVisible = false;
         } else {
             item = &oldItems[wIdx];
-            if (child->opacity() <= 0.0 || !child->isVisible()) {
+            // Items are only omitted from positioning if they are explicitly hidden
+            // i.e. their positioning is not affected if an ancestor is hidden.
+            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden) {
                 item->isVisible = false;
             } else if (!item->isVisible) {
                 item->isVisible = true;
@@ -299,6 +302,12 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
     d->moveActions.clear();
 }
 
+static inline bool isInvisible(QDeclarativeItem *child)
+{
+    QDeclarativeItemPrivate *childPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(child));
+    return child->opacity() == 0.0 || childPrivate->explicitlyHidden || !child->width() || !child->height();
+}
+
 /*!
   \qmlclass Column QDeclarativeColumn
     \since 4.7
@@ -349,6 +358,7 @@ Column {
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Column.
 
+  \sa Row, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Column::add
@@ -414,11 +424,6 @@ Column {
 QDeclarativeColumn::QDeclarativeColumn(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Vertical, parent)
 {
-}
-
-static inline bool isInvisible(QDeclarativeItem *child)
-{
-    return child->opacity() == 0.0 || !child->isVisible() || !child->width() || !child->height();
 }
 
 void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
@@ -496,6 +501,8 @@ Row {
   width of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Row.
+
+  \sa Column, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Row::add
@@ -649,6 +656,8 @@ Grid {
   width or height of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Grid.
+
+  \sa Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Grid::add
@@ -904,6 +913,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
   positioner may exhibit strange behaviour.  If you need to perform any of these
   actions, consider positioning the items without the use of a Flow.
 
+    \sa Grid, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Flow::add
