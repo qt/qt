@@ -345,7 +345,7 @@ void QRasterPaintEngine::init()
     // The antialiasing raster.
     d->grayRaster.reset(new QT_FT_Raster);
     Q_CHECK_PTR(d->grayRaster.data());
-    if (qt_ft_grays_raster.raster_new(0, d->grayRaster.data()))
+    if (qt_ft_grays_raster.raster_new(d->grayRaster.data()))
         QT_THROW(std::bad_alloc()); // an error creating the raster is caused by a bad malloc
 
 
@@ -4185,7 +4185,11 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         return;
     }
 
-    const int rasterPoolInitialSize = 8192;
+    // Initial size for raster pool is MINIMUM_POOL_SIZE so as to
+    // minimize memory reallocations. However if initial size for
+    // raster pool is changed for lower value, reallocations will
+    // occur normally.
+    const int rasterPoolInitialSize = MINIMUM_POOL_SIZE;
     int rasterPoolSize = rasterPoolInitialSize;
     unsigned char *rasterPoolBase;
 #if defined(Q_WS_WIN64)
@@ -4229,7 +4233,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
-        if (error == -6) { // -6 is Result_err_OutOfMemory
+        if (error == -6) { // ErrRaster_OutOfMemory from qgrayraster.c
             int new_size = rasterPoolSize * 2;
             if (new_size > 1024 * 1024) {
                 qWarning("QPainter: Rasterization of primitive failed");
@@ -4255,7 +4259,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
             Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
 
             qt_ft_grays_raster.raster_done(*grayRaster.data());
-            qt_ft_grays_raster.raster_new(0, grayRaster.data());
+            qt_ft_grays_raster.raster_new(grayRaster.data());
             qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
         } else {
             done = true;
