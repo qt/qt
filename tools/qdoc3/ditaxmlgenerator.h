@@ -46,8 +46,6 @@
 #ifndef DITAXMLGENERATOR_H
 #define DITAXMLGENERATOR_H
 
-#define QDOC_NAME_ALIGNMENT
-
 #include <qmap.h>
 #include <qregexp.h>
 #include <QXmlStreamWriter>
@@ -56,15 +54,6 @@
 #include "pagegenerator.h"
 
 QT_BEGIN_NAMESPACE
-
-#if 0
-struct NavigationBar
-{
-    SectionIterator prev;
-    SectionIterator current;
-    SectionIterator next;
-};
-#endif
 
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMap<QString, NodeMultiMap> NewSinceMaps;
@@ -120,6 +109,9 @@ class DitaXmlGenerator : public PageGenerator
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);
+    
+    void writeDerivations(const ClassNode* cn, CodeMarker* marker);
+    void writeLocation(const ClassNode* cn, CodeMarker* marker);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -140,11 +132,6 @@ class DitaXmlGenerator : public PageGenerator
                        CodeMarker *marker);
     void generateBrief(const Node* node, CodeMarker* marker);
     void generateIncludes(const InnerNode *inner, CodeMarker *marker);
-#if 0
-    void generateNavigationBar(const NavigationBar& bar, 
-                               const Node *node,
-                               CodeMarker *marker);
-#endif
     void generateTableOfContents(const Node *node, 
                                  CodeMarker *marker,
                                  Doc::SectioningUnit sectioningUnit,
@@ -191,7 +178,7 @@ class DitaXmlGenerator : public PageGenerator
     void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 #endif
-#ifdef QDOC_NAME_ALIGNMENT
+
     void generateSection(const NodeList& nl,
                          const Node *relative,
                          CodeMarker *marker,
@@ -210,18 +197,7 @@ class DitaXmlGenerator : public PageGenerator
                             const Node *relative,
                             CodeMarker::SynopsisStyle style = CodeMarker::Accessors,
                             bool nameAlignment = false);
-#else
-    void generateSynopsis(const Node *node, 
-                          const Node *relative, 
-                          CodeMarker *marker,
-			  CodeMarker::SynopsisStyle style);
-    void generateSectionInheritedList(const Section& section, 
-                                      const Node *relative,
-                                      CodeMarker *marker);
-    QString highlightedCode(const QString& markedCode, 
-                            CodeMarker *marker, 
-                            const Node *relative);
-#endif
+
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
                           CodeMarker *marker,
@@ -244,9 +220,6 @@ class DitaXmlGenerator : public PageGenerator
     void findAllFunctions(const InnerNode *node);
     void findAllLegaleseTexts(const InnerNode *node);
     void findAllNamespaces(const InnerNode *node);
-#ifdef ZZZ_QDOC_QML    
-    void findAllQmlClasses(const InnerNode *node);
-#endif
     void findAllSince(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
@@ -273,12 +246,12 @@ class DitaXmlGenerator : public PageGenerator
                               CodeMarker* marker) const;
     void generatePageIndex(const QString& fileName, 
                            CodeMarker* marker) const;
+    QString writeGuidAttribute(QString text);
+    QString lookupGuid(QString text);
 
-#if 0
-    NavigationBar currentNavigationBar;
-#endif
+ private:
     QMap<QString, QString> refMap;
-    QMap<QString, QString> guidMap;
+    QMap<QString, QString> name2guidMap;
     int codeIndent;
     bool inLink;
     bool inObsoleteLink;
