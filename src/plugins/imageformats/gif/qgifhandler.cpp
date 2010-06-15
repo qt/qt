@@ -1061,7 +1061,7 @@ bool QGifHandler::imageIsComing() const
 
 bool QGifHandler::canRead() const
 {
-    if (!nextDelay && canRead(device())) {
+    if (canRead(device())) {
         setFormat("gif");
         return true;
     }
