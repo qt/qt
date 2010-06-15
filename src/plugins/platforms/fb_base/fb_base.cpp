@@ -160,6 +160,8 @@ void QFbScreen::generateRects()
             break;
         if (!windowStack[i]->visible())
             continue;
+        if (windowStack[i]->widget()->isMinimized())
+            continue;
 
         if (!windowStack[i]->widget()->testAttribute(Qt::WA_TranslucentBackground)) {
             QRect localGeometry = windowStack.at(i)->geometry().translated(-screenOffset); // global to local translation
