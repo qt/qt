@@ -37,16 +37,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
 import "content"
-import "../../ui-components/scrollbar"
+
+// This example shows how items can be dynamically added to and removed from
+// a ListModel, and how these list modifications can be animated.
 
 Rectangle {
     id: container
     width: 640; height: 480
     color: "#343434"
 
+    // The model:
     ListModel {
         id: fruitModel
 
@@ -77,55 +79,43 @@ Rectangle {
                 ListElement { description: "Smelly" }
             ]
         }
-        ListElement {
-            name: "Elderberry"; cost: 0.05
-            attributes: [
-                ListElement { description: "Berry" }
-            ]
-        }
-        ListElement {
-            name: "Fig"; cost: 0.25
-            attributes: [
-                ListElement { description: "Flower" }
-            ]
-        }
     }
 
+    // The delegate for each fruit in the model:
     Component {
-        id: fruitDelegate
-
+        id: listDelegate
+        
         Item {
-            id: wrapper
-            width: container.width; height: 55
+            id: delegateItem
+            width: listView.width; height: 55
+            clip: true
 
-            Column {
-                id: moveButtons
-                x: 5; width: childrenRect.width; anchors.verticalCenter: parent.verticalCenter
+            Row {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 10
 
-                Image {
-                    source: "content/pics/go-up.png"
-                    MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index-1,1) }
+                Column {
+                    Image {
+                        source: "content/pics/go-up.png"
+                        MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index-1,1) }
+                    }
+                    Image { source: "content/pics/go-down.png"
+                        MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index+1,1) }
+                    }
                 }
-                Image { source: "content/pics/go-down.png"
-                    MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index+1,1) }
-                }
-            }
 
-            Column {
-                anchors { right: itemButtons.left; verticalCenter: parent.verticalCenter; left: moveButtons.right; leftMargin: 10 }
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
 
-                Text {
-                    id: label
-                    width: parent.width
-                    color: "White"
-                    font.bold: true; font.pixelSize: 15
-                    text: name; elide: Text.ElideRight
-                }
-                Row {
-                    spacing: 5
-                    Repeater {
-                        model: attributes
-                        Component {
+                    Text { 
+                        text: name
+                        font.pixelSize: 15
+                        color: "white"
+                    }
+                    Row {
+                        spacing: 5
+                        Repeater {
+                            model: attributes
                             Text { text: description; color: "White" }
                         }
                     }
@@ -133,149 +123,81 @@ Rectangle {
             }
 
             Row {
-                id: itemButtons
-
-                anchors { right: removeButton.left; rightMargin: 35; verticalCenter: parent.verticalCenter }
-                width: childrenRect.width
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
                 spacing: 10
 
-                Image {
+                PressAndHoldButton {
+                    anchors.verticalCenter: parent.verticalCenter
                     source: "content/pics/list-add.png"
-                    scale: clickUp.isPressed ? 0.9 : 1
-
-                    ClickAutoRepeating {
-                        id: clickUp
-                        anchors.fill: parent
-                        onClicked: fruitModel.setProperty(index, "cost", cost+0.25)
-                    }
+                    onClicked: fruitModel.setProperty(index, "cost", cost + 0.25)
                 }
 
-                Text { id: costText; text: '$'+Number(cost).toFixed(2); font.pixelSize: 15; color: "White"; font.bold: true; }
+                Text { 
+                    id: costText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: '$' + Number(cost).toFixed(2)
+                    font.pixelSize: 15
+                    color: "white"
+                    font.bold: true
+                }
+
+                PressAndHoldButton {
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "content/pics/list-remove.png"
+                    onClicked: fruitModel.setProperty(index, "cost", Math.max(0,cost-0.25))
+                }
 
                 Image {
-                    source: "content/pics/list-remove.png"
-                    scale: clickDown.isPressed ? 0.9 : 1
-
-                    ClickAutoRepeating {
-                        id: clickDown
-                        anchors.fill: parent
-                        onClicked: fruitModel.setProperty(index, "cost", Math.max(0,cost-0.25))
-                    }
+                    source: "content/pics/archive-remove.png"
+                    MouseArea { anchors.fill:parent; onClicked: fruitModel.remove(index) }
                 }
             }
-            Image {
-                id: removeButton
-                anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 10 }
-                source: "content/pics/archive-remove.png"
 
-                MouseArea { anchors.fill:parent; onClicked: fruitModel.remove(index) }
+            // Animate adding and removing of items:
+
+            ListView.onAdd: SequentialAnimation {
+                PropertyAction { target: delegateItem; property: "height"; value: 0 }
+                NumberAnimation { target: delegateItem; property: "height"; to: 55; duration: 250; easing.type: Easing.InOutQuad }
             }
 
-            // Animate adding and removing items
-            ListView.delayRemove: true // so that the item is not destroyed immediately
-            ListView.onAdd: state = "add"
-            ListView.onRemove: state = "remove"
-            states: [
-                State {
-                    name: "add"
-                    PropertyChanges { target: wrapper; height: 55; clip: true }
-                },
-                State {
-                    name: "remove"
-                    PropertyChanges { target: wrapper; height: 0; clip: true }
-                }
-            ]
-            transitions: [
-                Transition {
-                    to: "add"
-                    SequentialAnimation {
-                        NumberAnimation { properties: "height"; from: 0; to: 55 }
-                        PropertyAction { target: wrapper; property: "state"; value: "" }
-                    }
-                },
-                Transition {
-                    to: "remove"
-                    SequentialAnimation {
-                        NumberAnimation { properties: "height" }
-                        // Make sure delayRemove is set back to false so that the item can be destroyed
-                        PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
-                    }
-                }
-            ]
+            ListView.onRemove: SequentialAnimation {
+                PropertyAction { target: delegateItem; property: "ListView.delayRemove"; value: true }
+                NumberAnimation { target: delegateItem; property: "height"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
+
+                // Make sure delayRemove is set back to false so that the item can be destroyed
+                PropertyAction { target: delegateItem; property: "ListView.delayRemove"; value: false }
+            }
         }
     }
 
+    // The view:
     ListView {
-        id: view
-        anchors { top: parent.top; left: parent.left; right: parent.right; bottom: buttons.top }
+        id: listView
+        anchors.fill: parent; anchors.margins: 20
         model: fruitModel
-        delegate: fruitDelegate
-    }
-
-    // Attach scrollbar to the right edge of the view.
-    ScrollBar {
-        id: verticalScrollBar
-
-        width: 8; height: view.height; anchors.right: view.right
-        opacity: 0
-        orientation: Qt.Vertical
-        position: view.visibleArea.yPosition
-        pageSize: view.visibleArea.heightRatio
-
-        // Only show the scrollbar when the view is moving.
-        states: State {
-            name: "ShowBars"; when: view.movingVertically
-            PropertyChanges { target: verticalScrollBar; opacity: 1 }
-        }
-        transitions: Transition {
-            NumberAnimation { properties: "opacity"; duration: 400 }
-        }
+        delegate: listDelegate
     }
 
     Row {
-        id: buttons
+        anchors { left: parent.left; bottom: parent.bottom; margins: 20 }
+        spacing: 10
 
-        x: 8; width: childrenRect.width; height: childrenRect.height
-        anchors { bottom: parent.bottom; bottomMargin: 8 }
-        spacing: 8
-
-        Image {
-            source: "content/pics/archive-insert.png"
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    fruitModel.append({
-                        "name": "Pizza Margarita",
-                        "cost": 5.95,
-                        "attributes": [{"description": "Cheese"},{"description": "Tomato"}]
-                    })
-                }
+        TextButton { 
+            text: "Add an item"
+            onClicked: {
+                fruitModel.append({
+                    "name": "Pizza Margarita",
+                    "cost": 5.95,
+                    "attributes": [{"description": "Cheese"}, {"description": "Tomato"}]
+                })
             }
         }
 
-        Image {
-            source: "content/pics/archive-insert.png"
-
-            MouseArea {
-                anchors.fill: parent;
-                onClicked: {
-                    fruitModel.insert(0, {
-                        "name": "Pizza Supreme",
-                        "cost": 9.95,
-                        "attributes": [{"description": "Cheese"},{"description": "Tomato"},{"description": "The Works"}]
-                    })
-                }
-            }
-        }
-
-        Image {
-            source: "content/pics/archive-remove.png"
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: fruitModel.clear()
-            }
+        TextButton { 
+            text: "Remove all items" 
+            onClicked: fruitModel.clear()
         }
     }
 }
+
