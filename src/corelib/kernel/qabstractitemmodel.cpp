@@ -2854,7 +2854,7 @@ void QAbstractItemModel::endMoveColumns()
 
     \note Use beginResetModel() and endResetModel() instead whenever possible.
     Use this method only if there is no way to call beginResetModel() before invalidating the model.
-    Otherwise it could lead to unexcpected behaviour, especially when used with proxy models.
+    Otherwise it could lead to unexpected behaviour, especially when used with proxy models.
 */
 void QAbstractItemModel::reset()
 {
