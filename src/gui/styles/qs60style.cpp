@@ -2870,16 +2870,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                     }
                 break;
                 case SC_ComboBoxListBoxPopup: {
-                    const QRect desktopContent = QApplication::desktop()->availableGeometry();
-
-                    // take the size of this and position bottom above available area
-                    QRect popupRect;
-                    const int width = desktopContent.width() - pixelMetric(PM_LayoutRightMargin) - pixelMetric(PM_LayoutLeftMargin);
-                    popupRect.setWidth(width);
-                    popupRect.setHeight(desktopContent.height()); //combobox resets height anyway based on content
-                    popupRect.setBottom(desktopContent.bottom());
-                    popupRect.translate(pixelMetric(PM_LayoutLeftMargin), 0);
-                    ret = popupRect;
+                    ret = QApplication::desktop()->availableGeometry();
                     }
                 break;
             default:
