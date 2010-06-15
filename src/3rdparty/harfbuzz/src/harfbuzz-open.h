@@ -30,6 +30,10 @@
 
 HB_BEGIN_HEADER
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
+
 /* Use this if a feature applies to all glyphs */
 #define HB_ALL_GLYPHS                    0xFFFF
 
@@ -42,10 +46,10 @@ HB_BEGIN_HEADER
 
 struct  HB_LangSys_
 {
+  HB_UShort*  FeatureIndex;           /* array of Feature indices  */
   HB_UShort   LookupOrderOffset;      /* always 0 for TT Open 1.0  */
   HB_UShort   ReqFeatureIndex;        /* required FeatureIndex     */
   HB_UShort   FeatureCount;           /* number of Feature indices */
-  HB_UShort*  FeatureIndex;           /* array of Feature indices  */
 };
 
 typedef struct HB_LangSys_  HB_LangSys;
@@ -53,8 +57,8 @@ typedef struct HB_LangSys_  HB_LangSys;
 
 struct  HB_LangSysRecord_
 {
-  HB_UInt     LangSysTag;            /* LangSysTag identifier */
   HB_LangSys  LangSys;               /* LangSys table         */
+  HB_UInt     LangSysTag;            /* LangSysTag identifier */
 };
 
 typedef struct HB_LangSysRecord_  HB_LangSysRecord;
@@ -62,9 +66,9 @@ typedef struct HB_LangSysRecord_  HB_LangSysRecord;
 
 struct  HB_ScriptTable_
 {
+  HB_LangSysRecord*  LangSysRecord;  /* array of LangSysRecords  */
   HB_LangSys         DefaultLangSys; /* DefaultLangSys table     */
   HB_UShort           LangSysCount;   /* number of LangSysRecords */
-  HB_LangSysRecord*  LangSysRecord;  /* array of LangSysRecords  */
 };
 
 typedef struct HB_ScriptTable_  HB_ScriptTable;
@@ -81,8 +85,8 @@ typedef struct HB_ScriptRecord_  HB_ScriptRecord;
 
 struct  HB_ScriptList_
 {
-  HB_UShort          ScriptCount;     /* number of ScriptRecords */
   HB_ScriptRecord*  ScriptRecord;    /* array of ScriptRecords  */
+  HB_UShort          ScriptCount;     /* number of ScriptRecords */
 };
 
 typedef struct HB_ScriptList_  HB_ScriptList;
@@ -92,9 +96,9 @@ typedef struct HB_ScriptList_  HB_ScriptList;
 
 struct HB_Feature_
 {
+  HB_UShort*  LookupListIndex;        /* array of LookupList indices  */
   HB_UShort   FeatureParams;          /* always 0 for TT Open 1.0     */
   HB_UShort   LookupListCount;        /* number of LookupList indices */
-  HB_UShort*  LookupListIndex;        /* array of LookupList indices  */
 };
 
 typedef struct HB_Feature_  HB_Feature;
@@ -111,9 +115,9 @@ typedef struct HB_FeatureRecord_  HB_FeatureRecord;
 
 struct  HB_FeatureList_
 {
-  HB_UShort           FeatureCount;   /* number of FeatureRecords */
-  HB_FeatureRecord*  FeatureRecord;  /* array of FeatureRecords  */
   HB_UShort*		ApplyOrder;	/* order to apply features */
+  HB_FeatureRecord*  FeatureRecord;  /* array of FeatureRecords  */
+  HB_UShort           FeatureCount;   /* number of FeatureRecords */
   HB_UShort		ApplyCount;	/* number of elements in ApplyOrder */
 };
 
@@ -127,10 +131,10 @@ typedef struct HB_SubTable_  HB_SubTable;
 
 struct  HB_Lookup_
 {
+  HB_SubTable*  SubTable;            /* array of SubTables  */
   HB_UShort      LookupType;          /* Lookup type         */
   HB_UShort      LookupFlag;          /* Lookup qualifiers   */
   HB_UShort      SubTableCount;       /* number of SubTables */
-  HB_SubTable*  SubTable;            /* array of SubTables  */
 };
 
 typedef struct HB_Lookup_  HB_Lookup;
@@ -144,9 +148,9 @@ typedef struct HB_Lookup_  HB_Lookup;
 
 struct  HB_LookupList_
 {
-  HB_UShort    LookupCount;           /* number of Lookups       */
   HB_Lookup*  Lookup;                /* array of Lookup records */
   HB_UInt*     Properties;            /* array of flags          */
+  HB_UShort    LookupCount;           /* number of Lookups       */
 };
 
 typedef struct HB_LookupList_  HB_LookupList;
@@ -167,8 +171,8 @@ typedef struct HB_LookupList_  HB_LookupList;
 
 struct  HB_CoverageFormat1_
 {
-  HB_UShort   GlyphCount;             /* number of glyphs in GlyphArray */
   HB_UShort*  GlyphArray;             /* array of glyph IDs             */
+  HB_UShort   GlyphCount;             /* number of glyphs in GlyphArray */
 };
 
 typedef struct HB_CoverageFormat1_  HB_CoverageFormat1;
@@ -187,8 +191,8 @@ typedef struct HB_RangeRecord_  HB_RangeRecord;
 
 struct  HB_CoverageFormat2_
 {
-  HB_UShort         RangeCount;       /* number of RangeRecords */
   HB_RangeRecord*  RangeRecord;      /* array of RangeRecords  */
+  HB_UShort         RangeCount;       /* number of RangeRecords */
 };
 
 typedef struct HB_CoverageFormat2_  HB_CoverageFormat2;
@@ -196,7 +200,7 @@ typedef struct HB_CoverageFormat2_  HB_CoverageFormat2;
 
 struct  HB_Coverage_
 {
-  HB_UShort  CoverageFormat;          /* 1 or 2 */
+  HB_Byte    CoverageFormat;          /* 1 or 2 */
 
   union
   {
@@ -210,10 +214,10 @@ typedef struct HB_Coverage_  HB_Coverage;
 
 struct  HB_ClassDefFormat1_
 {
+  HB_UShort*  ClassValueArray;        /* array of class values       */
   HB_UShort   StartGlyph;             /* first glyph ID of the
 					 ClassValueArray             */
   HB_UShort   GlyphCount;             /* size of the ClassValueArray */
-  HB_UShort*  ClassValueArray;        /* array of class values       */
 };
 
 typedef struct HB_ClassDefFormat1_  HB_ClassDefFormat1;
@@ -231,10 +235,10 @@ typedef struct HB_ClassRangeRecord_  HB_ClassRangeRecord;
 
 struct  HB_ClassDefFormat2_
 {
-  HB_UShort              ClassRangeCount;
-				      /* number of ClassRangeRecords */
   HB_ClassRangeRecord*  ClassRangeRecord;
 				      /* array of ClassRangeRecords  */
+  HB_UShort              ClassRangeCount;
+				      /* number of ClassRangeRecords */
 };
 
 typedef struct HB_ClassDefFormat2_  HB_ClassDefFormat2;
@@ -242,15 +246,14 @@ typedef struct HB_ClassDefFormat2_  HB_ClassDefFormat2;
 
 struct  HB_ClassDefinition_
 {
-  HB_Bool    loaded;
-
-  HB_UShort  ClassFormat;             /* 1 or 2                      */
-
   union
   {
     HB_ClassDefFormat1  cd1;
     HB_ClassDefFormat2  cd2;
   } cd;
+
+  HB_Byte    ClassFormat;             /* 1 or 2                      */
+  HB_Bool    loaded;
 };
 
 typedef struct HB_ClassDefinition_  HB_ClassDefinition;
@@ -258,11 +261,11 @@ typedef struct HB_ClassDefinition_  HB_ClassDefinition;
 
 struct HB_Device_
 {
+  HB_UShort*  DeltaValue;             /* array of compressed data      */
   HB_UShort   StartSize;              /* smallest size to correct      */
   HB_UShort   EndSize;                /* largest size to correct       */
-  HB_UShort   DeltaFormat;            /* DeltaValue array data format:
+  HB_Byte     DeltaFormat;            /* DeltaValue array data format:
 					 1, 2, or 3                    */
-  HB_UShort*  DeltaValue;             /* array of compressed data      */
 };
 
 typedef struct HB_Device_  HB_Device;
@@ -276,6 +279,9 @@ enum  HB_Type_
 
 typedef enum HB_Type_  HB_Type;
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 

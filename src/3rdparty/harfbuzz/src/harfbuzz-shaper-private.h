@@ -103,6 +103,7 @@ typedef struct {
 extern const HB_ScriptEngine hb_scriptEngines[];
 
 extern HB_Bool HB_BasicShape(HB_ShaperItem *shaper_item);
+extern HB_Bool HB_GreekShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_TibetanShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_HebrewShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_ArabicShape(HB_ShaperItem *shaper_item);

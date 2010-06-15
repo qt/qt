@@ -130,7 +130,7 @@ static int hangul_nextSyllableBoundary(const HB_UChar16 *s, int start, int end)
 static const HB_OpenTypeFeature hangul_features [] = {
     { HB_MAKE_TAG('c', 'c', 'm', 'p'), CcmpProperty },
     { HB_MAKE_TAG('l', 'j', 'm', 'o'), CcmpProperty },
-    { HB_MAKE_TAG('j', 'j', 'm', 'o'), CcmpProperty },
+    { HB_MAKE_TAG('v', 'j', 'm', 'o'), CcmpProperty },
     { HB_MAKE_TAG('t', 'j', 'm', 'o'), CcmpProperty },
     { 0, 0 }
 };
