@@ -794,7 +794,7 @@ QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget, WId) c
 
 QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {
-    QFbWindow *w = new QFbWindow(mPrimaryScreen, widget);
+    QFbWindow *w = new QFbWindow(widget);
     mPrimaryScreen->addWindow(w);
     return w;
 }
