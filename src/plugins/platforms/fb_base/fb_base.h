@@ -32,6 +32,7 @@ public:
     virtual void setDirty() { dirty = true; screen->setDirty(QRect()); }
     virtual bool isDirty() { return dirty; }
     virtual bool isOnScreen() { return onScreen; }
+    virtual QRect lastPainted() { return prevRect; }
 
 protected:
     QGraphicsSystemCursorImage * graphic;

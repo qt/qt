@@ -187,7 +187,7 @@ QRegion QFbScreen::doRedraw()
         QRect lastCursor = cursor->dirtyRect();
         repaintRegion += lastCursor;
     }
-    if (repaintRegion.isEmpty() && !cursor->isDirty()) {
+    if (repaintRegion.isEmpty() && (!cursor || !cursor->isDirty())) {
         return touchedRegion;
     }
 
@@ -239,7 +239,7 @@ QRegion QFbScreen::doRedraw()
     }
 
     QRect cursorRect;
-    if (cursor && cursor->isDirty()) {
+    if (cursor && (cursor->isDirty() || repaintRegion.intersects(cursor->lastPainted()))) {
         cursorRect = cursor->drawCursor(*compositePainter);
         touchedRegion += cursorRect;
     }
