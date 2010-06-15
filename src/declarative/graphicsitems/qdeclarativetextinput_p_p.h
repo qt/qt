@@ -72,9 +72,15 @@ public:
                  color((QRgb)0), style(QDeclarativeText::Normal),
                  styleColor((QRgb)0), hAlign(QDeclarativeTextInput::AlignLeft),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
-                 showInputPanelOnFocus(true), cursorVisible(false), autoScroll(true),
-                 selectByMouse(false)
+                 showInputPanelOnFocus(true), clickCausedFocus(false), cursorVisible(false),
+                 autoScroll(true), selectByMouse(false)
     {
+#ifdef Q_OS_SYMBIAN
+        if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
+            showInputPanelOnFocus = false;
+        }
+#endif
+
     }
 
     ~QDeclarativeTextInputPrivate()
@@ -116,6 +122,7 @@ public:
     bool focused;
     bool focusOnPress;
     bool showInputPanelOnFocus;
+    bool clickCausedFocus;
     bool cursorVisible;
     bool autoScroll;
     bool selectByMouse;

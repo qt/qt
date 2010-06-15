@@ -78,6 +78,56 @@ private slots:
     void oldCacheVersionFile();
     
     void sync();
+
+    void crashWhenParentingCache();
+};
+
+// FIXME same as in tst_qnetworkreply.cpp .. could be unified
+// Does not work for POST/PUT!
+class MiniHttpServer: public QTcpServer
+{
+    Q_OBJECT
+public:
+    QTcpSocket *client; // always the last one that was received
+    QByteArray dataToTransmit;
+    QByteArray receivedData;
+    bool doClose;
+    bool multiple;
+    int totalConnections;
+
+    MiniHttpServer(const QByteArray &data) : client(0), dataToTransmit(data), doClose(true), multiple(false), totalConnections(0)
+    {
+        listen();
+        connect(this, SIGNAL(newConnection()), this, SLOT(doAccept()));
+    }
+
+public slots:
+    void doAccept()
+    {
+        client = nextPendingConnection();
+        client->setParent(this);
+        ++totalConnections;
+        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+    }
+
+    void readyReadSlot()
+    {
+        receivedData += client->readAll();
+        int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
+
+        if (doubleEndlPos != -1) {
+            // multiple requests incoming. remove the bytes of the current one
+            if (multiple)
+                receivedData.remove(0, doubleEndlPos+4);
+
+            client->write(dataToTransmit);
+            if (doClose) {
+                client->disconnectFromHost();
+                disconnect(client, 0, this, 0);
+                client = 0;
+            }
+        }
+    }
 };
 
 // Subclass that exposes the protected functions.
@@ -580,6 +630,33 @@ public:
     bool write;
     Runner *other;
 };
+
+void tst_QNetworkDiskCache::crashWhenParentingCache()
+{
+    // the trick here is to not send the complete response
+    // but some data. So we get a readyRead() and it gets tried
+    // to be saved to the cache
+    QByteArray data("HTTP/1.0 200 OK\r\nCache-Control: max-age=300\r\nAge: 1\r\nContent-Length: 5\r\n\r\n123");
+    MiniHttpServer server(data);
+
+    QNetworkAccessManager *manager = new QNetworkAccessManager();
+    QNetworkDiskCache *diskCache = new QNetworkDiskCache(manager); // parent to qnam!
+    // we expect the temp dir to be cleaned at some point anyway
+    diskCache->setCacheDirectory(QDir::tempPath() + "/cacheDir_" + QCoreApplication::applicationPid());
+    manager->setCache(diskCache);
+
+    QUrl url("http://127.0.0.1:" + QString::number(server.serverPort()));
+    QNetworkRequest request(url);
+   // request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    QNetworkReply *reply = manager->get(request); // new reply is parented to qnam
+
+    // wait for readyRead of reply!
+    connect(reply, SIGNAL(readyRead()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    delete manager; // crashed before..
+}
 
 void tst_QNetworkDiskCache::sync()
 {

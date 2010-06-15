@@ -977,7 +977,7 @@ public:
     { return QMap<Key, T>::insertMulti(key, value); }
 
     inline QMultiMap &operator+=(const QMultiMap &other)
-    { unite(other); return *this; }
+    { this->unite(other); return *this; }
     inline QMultiMap operator+(const QMultiMap &other) const
     { QMultiMap result = *this; result += other; return result; }
 
@@ -1052,12 +1052,7 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
     typename QMap<Key, T>::iterator end(QMap<Key, T>::end());
     while (i != end && !qMapLessThanKey<Key>(key, i.key())) {
         if (i.value() == value) {
-#if defined(Q_CC_RVCT)
-            // RVCT has problems with scoping, apparently.
-            i = QMap<Key, T>::erase(i);
-#else
-            i = erase(i);
-#endif
+            i = this->erase(i);
             ++n;
         } else {
             ++i;

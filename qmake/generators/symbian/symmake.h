@@ -117,8 +117,6 @@ protected:
     void writeMmpFileBinaryVersionPart(QTextStream& t);
     void writeMmpFileRulesPart(QTextStream& t);
 
-    void writeCustomDefFile();
-
     void appendIfnotExist(QStringList &list, QString value);
     void appendIfnotExist(QStringList &list, QStringList values);
 

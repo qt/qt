@@ -59,8 +59,8 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l State
 \o \l PropertyChanges
 \o \l StateGroup
+\o \l StateChangeScript
 \o \l ParentChange (Item-specific)
-\o \l StateChangeScript (Item-specific)
 \o \l AnchorChanges (Item-specific)
 \endlist
 
@@ -76,6 +76,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l ParentAnimation
 \o \l AnchorAnimation
 \o \l SmoothedAnimation
+\o \l Vector3dAnimation
 \o \l PropertyAction
 \o \l ScriptAction
 \o \l Transition
@@ -167,8 +168,8 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \header
 \o \bold {Views}
 \o \bold {Positioners}
-\o \bold {Media}
 \o \bold {Effects}
+\o
 
 \row
 \o
@@ -201,13 +202,6 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 
 \o
 \list
-\o \l SoundEffect
-\o \l Audio
-\o \l Video
-\endlist
-
-\o
-\list
 \o \l Particles (experimental)
     \list
     \o \l ParticleMotionLinear
@@ -216,5 +210,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
     \endlist
 \endlist
 \endtable
+
+\o
 
 */

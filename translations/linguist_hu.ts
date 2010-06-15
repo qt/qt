@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="hu_HU" sourcelanguage="hu">
+<TS version="2.0" language="hu_HU">
+<context>
+    <name></name>
+    <message>
+        <source>(New Entry)</source>
+        <translation type="obsolete">(Új bejegyzés)</translation>
+    </message>
+</context>
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1358"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1366"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -14,7 +21,7 @@
     <message>
         <location filename="../tools/linguist/linguist/batchtranslationdialog.cpp" line="+79"/>
         <source>Batch Translation of &apos;%1&apos; - Qt Linguist</source>
-        <translation>&apos;%1&apos; Qt Linguist egy adat fordítása</translation>
+        <translation>&apos;%1&apos; kötegelt fordítása - Qt Linguist</translation>
     </message>
     <message>
         <location line="+37"/>
@@ -24,24 +31,24 @@
     <message>
         <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Mégse</translation>
+        <translation>&amp;Mégsem</translation>
     </message>
     <message>
         <location line="+42"/>
         <source>Linguist batch translator</source>
-        <translation>Linguist köteg fordító</translation>
+        <translation>Linguist kötegelt fordító</translation>
     </message>
     <message numerus="yes">
         <location line="+1"/>
         <source>Batch translated %n entries</source>
         <translation>
-            <numerusform>%n adat belépés lefordítva</numerusform>
+            <numerusform>%n üzenet sikeresen lefordítva</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/batchtranslation.ui"/>
         <source>Qt Linguist - Batch Translation</source>
-        <translation>Qt Linguist adat fordítás</translation>
+        <translation>Qt Linguist - Kötegelt fordítás</translation>
     </message>
     <message>
         <location/>
@@ -51,32 +58,40 @@
     <message>
         <location/>
         <source>Set translated entries to finished</source>
-        <translation>Lefordított bevitelek befejezettre állítása</translation>
+        <translation>A lefordított szövegek véglegesítése</translation>
     </message>
     <message>
         <location/>
         <source>Retranslate entries with existing translation</source>
-        <translation>Bevitelek újrafordítása létező fordításokkal</translation>
+        <translation>A módosított bejegyzések fordítása</translation>
+    </message>
+    <message>
+        <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked.</source>
+        <translation type="obsolete">A módosított bejegyzések fordítatlanra lesznek állítva, ha az &quot;A lefordított szövegek véglegesítése&quot; nincs bejelölve.</translation>
     </message>
     <message>
         <location/>
         <source>Translate also finished entries</source>
-        <translation>Befejezett belépéseknek is a lefordítása</translation>
+        <translation>A véglegesített bejegyzéseket is fordítsa</translation>
     </message>
     <message>
         <location/>
         <source>Phrase book preference</source>
-        <translation>Fázis könyv beállítások</translation>
+        <translation>Kifejezéstár sorrend</translation>
     </message>
     <message>
         <location/>
         <source>Move up</source>
-        <translation>Felfelé mozgatás</translation>
+        <translation>Fel</translation>
     </message>
     <message>
         <location/>
         <source>Move down</source>
-        <translation>Lefelé mozgatás</translation>
+        <translation>Le</translation>
+    </message>
+    <message>
+        <source>The batch translator will search through the selected phrase books in the order given above.</source>
+        <translation type="obsolete">A kötegelt fordító ebben a sorrendben keresi végig a kifejezéskönyveket.</translation>
     </message>
     <message>
         <location/>
@@ -86,17 +101,17 @@
     <message>
         <location/>
         <source>Cancel</source>
-        <translation>Mégse</translation>
+        <translation>Mégsem</translation>
     </message>
     <message>
         <location/>
         <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked</source>
-        <translation>Ne felejtse el, hogy a módosított belépések újra lesznek indítva befejezetlenre, ha a &apos;lefordított bevitelek befejezettre állítása&apos; felül meg van jelölve</translation>
+        <translation>A módosított bejegyzések fordítatlanra lesznek állítva, ha az &quot;A lefordított szövegek véglegesítése&quot; nincs bejelölve</translation>
     </message>
     <message>
         <location/>
         <source>The batch translator will search through the selected phrase books in the order given above</source>
-        <translation>A köteg fordító a kiválasztott fázis könyvek között fog keresni, a fent megadott sorrendben</translation>
+        <translation>A kötegelt fordító ebben a sorrendben keresi végig a kifejezéskönyveket</translation>
     </message>
 </context>
 <context>
@@ -104,23 +119,23 @@
     <message>
         <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+214"/>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
-        <translation>&lt;qt&gt;Dupliált üzenetek találhatóak a(z) &apos;%1&apos;-ben:</translation>
+        <translation>&lt;qt&gt;Duplikált üzenetek a(z) &apos;%1&apos; fájlban:</translation>
     </message>
     <message>
         <location line="+4"/>
         <location line="+8"/>
         <source>&lt;p&gt;[more duplicates omitted]</source>
-        <translation>&lt;p&gt;[többi duplikáció kihagyása]</translation>
+        <translation>&lt;p&gt;[a többi duplikátum kihagyva]</translation>
     </message>
     <message>
         <location line="-5"/>
         <source>&lt;p&gt;* ID: %1</source>
-        <translation>&lt;p&gt;* Azonosító: %1</translation>
+        <translation>&lt;p&gt;* ID: %1</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>&lt;p&gt;* Context: %1&lt;br&gt;* Source: %2</source>
-        <translation>&lt;p&gt;* Szövegösszefüggés: %1&lt;br&gt;* Forrás: %2</translation>
+        <translation>&lt;p&gt;* Környezet: %1&lt;br&gt;* Forrás: %2</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -131,17 +146,18 @@
         <location line="+71"/>
         <source>Linguist does not know the plural rules for &apos;%1&apos;.
 Will assume a single universal form.</source>
-        <translation>A Linguist nem ismeri a többes számú szabályokat a &apos;%1&apos;-re. Egy egyszerű univerzális formát fog feltételezni.</translation>
+        <translation>A Linguist nem ismer többesszámképzést a(z) &apos;%1&apos;-hez.
+Az egyes számú általános forma lesz alkalmazva.</translation>
     </message>
     <message>
         <location line="+56"/>
         <source>Cannot create &apos;%2&apos;: %1</source>
-        <translation>Nem lehet létrehozni &apos;%2&apos;: %1</translation>
+        <translation>&apos;%2&apos; létrehozása sikertelen: %1</translation>
     </message>
     <message>
         <location line="+56"/>
         <source>Universal Form</source>
-        <translation>Univerzális forma</translation>
+        <translation>Általános forma</translation>
     </message>
 </context>
 <context>
@@ -149,32 +165,32 @@ Will assume a single universal form.</source>
     <message>
         <location filename="../tools/linguist/linguist/errorsview.cpp" line="+76"/>
         <source>Accelerator possibly superfluous in translation.</source>
-        <translation>A gyorsítás valószínűleg nélkülözhető a fordításban.</translation>
+        <translation>Felesleges gyorsbillentyű van a fordításban.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Accelerator possibly missing in translation.</source>
-        <translation>A gyorsítás valószínűleg hiányzik a fordításban.</translation>
+        <translation>Egy gyorsbillentyű valószínűleg hiányzik a fordításból.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Translation does not end with the same punctuation as the source text.</source>
-        <translation>A fordítás nem ugyanazzal az írásjellel végződik, mint a forrás szöveg.</translation>
+        <translation>A lefordított mondat nem ugyanazzal az írásjellel végződik, mint a forrás.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>A phrase book suggestion for &apos;%1&apos; was ignored.</source>
-        <translation>A(z) &apos;%1&apos;-re tett fáziskönyv ajánlat mellőzve lett.</translation>
+        <translation>A &apos;%1&apos; kifejezéskönyvi ajánlás figyelmen kívül lett hagyva.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Translation does not refer to the same place markers as in the source text.</source>
-        <translation>Nem ugyanazok a hely megjelölők találhatóak a fordításban, mint a forrás szövegben.</translation>
+        <translation>A fordítás nem tartalmazza az összes %n helyfoglalót a szövegből.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Translation does not contain the necessary %n place marker.</source>
-        <translation>A fordítás nem tartalmazza a szükséges %n hely megjelölőket.</translation>
+        <translation>A fordításból kimaradt egy szükséges %n helyfoglaló.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -187,12 +203,12 @@ Will assume a single universal form.</source>
     <message>
         <location filename="../tools/linguist/linguist/finddialog.ui"/>
         <source>This window allows you to search for some text in the translation source file.</source>
-        <translation>Ez az ablak engedélyezi, hogy szöveget keresses a fordítás forrás fájlban.</translation>
+        <translation>Itt lehet keresni egy szöveget a fordítás alatt álló fájlban.</translation>
     </message>
     <message>
         <location/>
         <source>Type in the text to search for.</source>
-        <translation>Gépelje be szövegbe, amit keres..</translation>
+        <translation>A keresendő szöveg helye.</translation>
     </message>
     <message>
         <location/>
@@ -202,68 +218,67 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Source texts are searched when checked.</source>
-        <translation>Forrás szövegek keresési ellenőrzéskor.</translation>
+        <translation>A forrásszövegek is keresve lesznek.</translation>
     </message>
     <message>
         <location/>
         <source>Translations are searched when checked.</source>
-        <translation>Fordítások keresése ellenőrzéskor.</translation>
+        <translation>A fordítások is keresve lesznek.</translation>
     </message>
     <message>
         <location/>
         <source>Texts such as &apos;TeX&apos; and &apos;tex&apos; are considered as different when checked.</source>
-        <translation>&apos;TeX&apos; és &apos;tex&apos; szövegek különbözőként kezelése bejelöléskor.</translation>
+        <translation>A kis/nagybetű különbseg figyelembe lesz véve.</translation>
     </message>
     <message>
         <location/>
         <source>Comments and contexts are searched when checked.</source>
-        <translation>Megjegyzések és tartalmak keresése bejelöléskor.</translation>
+        <translation>A megjegyzések és környezetek is keresve lesznek.</translation>
     </message>
     <message>
         <location/>
         <source>Find</source>
-        <translation>Keresés
-</translation>
+        <translation>Keresés</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Find what:</source>
-        <translation>Ennek &amp;keresése:</translation>
+        <translation>Amit &amp;keres:</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Source texts</source>
-        <translation>&amp;Forrás szövegek</translation>
+        <translation>Fo&amp;rrásszöveg</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Translations</source>
-        <translation>&amp;Fordítások</translation>
+        <translation>For&amp;dítások</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Match case</source>
-        <translation>&amp;Egyezés</translation>
+        <translation>K&amp;is/nagybetű</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Comments</source>
-        <translation>&amp;Kommentek</translation>
+        <translation>&amp;Megjegyzések</translation>
     </message>
     <message>
         <location/>
         <source>Ignore &amp;accelerators</source>
-        <translation>&amp;Gyorsítások mellőzése</translation>
+        <translation>&amp;Gyorsbillentyűk kihagyása</translation>
     </message>
     <message>
         <location/>
         <source>Click here to find the next occurrence of the text you typed in.</source>
-        <translation>Kattintson ide a begépelt szöveg következő előfordulásának megkereséséhez.</translation>
+        <translation>A következő találat megjelenítéséhez kattintson ide.</translation>
     </message>
     <message>
         <location/>
         <source>Find Next</source>
-        <translation>Következő keresése</translation>
+        <translation>Következő</translation>
     </message>
     <message>
         <location/>
@@ -273,37 +288,34 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Cancel</source>
-        <translation>Mégse</translation>
+        <translation>Mégsem</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/finddialog.cpp" line="+12"/>
+        <location filename="../tools/linguist/linguist/finddialog.cpp" line="+14"/>
         <source></source>
         <comment>Choose Edit|Find from the menu bar or press Ctrl+F to pop up the Find dialog</comment>
-        <translatorcomment>Válassza ki a Szerkesztés/Keresés opciót a menüből vagy nyomja le a Ctrl+F billentyűket a keresési párbeszédablak felugrásához</translatorcomment>
         <translation></translation>
     </message>
 </context>
 <context>
     <name>FormMultiWidget</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+296"/>
+        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+302"/>
         <source>Alt+Delete</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translatorcomment>fordítsd, de ne változtasd</translatorcomment>
-        <translation>ALT+Delete</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Shift+Alt+Insert</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translatorcomment>Fordítsd,  de ne változtasd.</translatorcomment>
-        <translation>Shift+Alt+Insert</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Alt+Insert</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation>Alt+Insert</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+131"/>
@@ -313,23 +325,23 @@ Will assume a single universal form.</source>
     <message>
         <location line="+1"/>
         <source>Delete non-empty length variant?</source>
-        <translation>Törölje az 0 hosszúságú  változatok?</translation>
+        <translation>Biztosan törli ezt a hosszú változatot?</translation>
     </message>
 </context>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+761"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+763"/>
         <source>Dropped %n message(s) which had no ID.</source>
         <translation>
-            <numerusform>%n üzenez eldobva, melyek nem rendelkeztek azonosítóval.</numerusform>
+            <numerusform>%n azonosító nélküli üzenet eldobva.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location line="+4"/>
         <source>Excess context/disambiguation dropped from %n message(s).</source>
         <translation>
-            <numerusform>Fölösleges szövegösszefüggés/egyértelműsítés törlése %n üzenetből.</numerusform>
+            <numerusform>A többlet kontextus/egyértelmüsítés eltávolítva %n üzenetből.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -337,7 +349,8 @@ Will assume a single universal form.</source>
         <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
 </source>
         <translation>
-            <numerusform>%n fordítás legenerálása (%1 befejezett és %2 befejezetlen)</numerusform>
+            <numerusform>    %n fordítás legenerálva (%1 végleges és %2 nem végleges)
+</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -345,7 +358,8 @@ Will assume a single universal form.</source>
         <source>    Ignored %n untranslated source text(s)
 </source>
         <translation>
-            <numerusform>%n lefordítatlan forrás szöveg mellőzése</numerusform>
+            <numerusform>    %n lefordítatlan szöveg kihagyva
+</numerusform>
         </translation>
     </message>
 </context>
@@ -354,32 +368,32 @@ Will assume a single universal form.</source>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>MainWindow</source>
-        <translation>FőAblak</translation>
+        <translation>MainWindow</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Phrases</source>
-        <translation>&amp;Fázisok</translation>
+        <translation>&amp;Kifejezések</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Close Phrase Book</source>
-        <translation>&amp;Fázis könyvek bezárása</translation>
+        <translation>Kifejezéstár &amp;bezárása</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Edit Phrase Book</source>
-        <translation>Fázis könyvek &amp;szerkesztése</translation>
+        <translation>Kifejezéstár sz&amp;erkesztése</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Print Phrase Book</source>
-        <translation>&amp;Fázis könyvek nyomtatása</translation>
+        <translation>Kifejezéstár &amp;nyomtatása</translation>
     </message>
     <message>
         <location/>
         <source>V&amp;alidation</source>
-        <translation>&amp;Érvényesítés</translation>
+        <translation>&amp;Ellenőrzés</translation>
     </message>
     <message>
         <location/>
@@ -394,7 +408,7 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>&amp;Toolbars</source>
-        <translation>&amp;Eszköztár</translation>
+        <translation>&amp;Eszköztárak</translation>
     </message>
     <message>
         <location/>
@@ -404,7 +418,7 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>&amp;Translation</source>
-        <translation>&amp;Fordítások</translation>
+        <translation>F&amp;ordítás</translation>
     </message>
     <message>
         <location/>
@@ -413,23 +427,23 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>&amp;Edit</source>
-        <translation>&amp;Szerkesztés</translation>
+        <source>Recently Opened &amp;Files</source>
+        <translation>Előzőleg megnyitott &amp;fájlok</translation>
     </message>
     <message>
         <location/>
-        <source>&amp;Open...</source>
-        <translation>&amp;Megnyitás...</translation>
+        <source>&amp;Edit</source>
+        <translation>Sz&amp;erkesztés</translation>
     </message>
     <message>
         <location/>
         <source>Open a Qt translation source file (TS file) for editing</source>
-        <translation>Egy Qt fordítási forrás fájl (TS fájl) megnyitása szerkesztésre</translation>
+        <translation>Qt fordytási forrás (TS fájl) megnyitása szerkesztésre</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+O</source>
-        <translation>Ctrl+O</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -439,170 +453,95 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Close this window and exit.</source>
-        <translation>Ablak bezárása és kilépés.</translation>
+        <translation>Kilépés, és az ablak bezárása.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+Q</source>
-        <translation>Ctrl+Q</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+646"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+668"/>
         <location line="+15"/>
         <source>&amp;Save</source>
-        <translation>&amp;Mentés</translation>
+        <translation>Menté&amp;s</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Save changes made to this Qt translation source file</source>
-        <translation>Változtatások elmentése a Qt fordítási forrás fájlban</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Move to the previous unfinished item.</source>
-        <translation>Az előző befejezetlen elemre mozgatás.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Move to the next unfinished item.</source>
-        <translation>A következő befejezetlen elemre mozgatás.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Move to the previous item.</source>
-        <translation>Az előző elemre mozgatás.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Move to the next item.</source>
-        <translation>A következő elemre mozgatás.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Mark this item as done and move to the next unfinished item.</source>
-        <translation>Az elem készre jelölése és a következő befejezetlen elemre mozgás.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Copy from source text</source>
-        <translation>Másolás forrás szövegből</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Gyorsítások érvényesség ellenőrzésének kapcsolgatása, lásd vajon az et jelek száma megegyezik-e a a forrás és lefordított szövegben. Ha ez az ellenőrzés hibásan zárul le, a figyelmeztető ablakban egy üzenet tűnik fel.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</source>
-        <translation>A végződő írásjelek érvényesség ellenőrzésének kapcsolgatása. Ha ez az ellenőrzés nem sikerült, akkor egy üzenet bukkan fel a figyelmeztető ablakban.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Fázis ajánlások ellenőrzésének kapcsolgatása. Ha az ellenőrzés sikertelen, akkor egy üzenet bukkan fel a figyelmeztető ablakban.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
-        <translation>A hely megjelelölők érvényesség ellenőrzésének kapcsolgatása, lásd vajon a(z) %1, %2.. következetesen vannak-e használva a forrás és lefordított szövegben. Ha az ellenőrzés sikertelen, egy üzenet bukkan fel a figyelmeztető ablakban.</translation>
+        <translation>A fordításon végzett változtatások elmentése</translation>
     </message>
     <message>
         <location/>
         <source>Open Read-O&amp;nly...</source>
-        <translation>&amp;Csak olvasható megnyitása...</translation>
+        <translation>Megnyitás csak &amp;olvasásra...</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Save All</source>
-        <translation>Az összes &amp;mentése</translation>
+        <translation>Mind&amp;et menti</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-14"/>
         <location line="+11"/>
         <source>Save &amp;As...</source>
-        <translation>&amp;Másként mentés...</translation>
+        <translation>Mentés má&amp;sként...</translation>
     </message>
     <message>
         <location/>
         <source>Save As...</source>
-        <translation>Másként mentés...</translation>
+        <translation>Mentés másként...</translation>
     </message>
     <message>
         <location/>
         <source>Save changes made to this Qt translation source file into a new file.</source>
-        <translation>A változtatások egy új fájlba mentése, amik ebben a Qt fordítási forrás fájlban keletkeztek.</translation>
+        <translation>A fordításon végzett változtatások elmentése egy új fájlba.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+4"/>
         <source>&amp;Release</source>
-        <translation>&amp;Kiadás</translation>
+        <translation>Kia&amp;dás</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Create a Qt message file suitable for released applications from the current message file.</source>
-        <translation>Qt üzenez fájl létrehozása az aktuális üzenet fájlból, ami alkalmas a kiadásra.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Print...</source>
-        <translation>&amp;Nyomtatás...</translation>
+        <translation>Az alkalmazások számára használható Qt üzenetfájl létrehozása a jelenlegi fájlból.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+P</source>
-        <translation>Ctrl+P</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Undo</source>
-        <translation>&amp;Visszacsinálás</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Recently Opened &amp;Files</source>
-        <translation>&amp;Utoljára megnyitott &amp;fájlok</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Save</source>
-        <translation>Mentés</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Print a list of all the translation units in the current translation source file.</source>
-        <translation>Az összes fordítási egység kinyomtatása az aktuális fordítási forrás fájlban.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Undo the last editing operation performed on the current translation.</source>
-        <translation>Az utoljára szerkesztett művelet visszavonása az aktuális fordításon.</translation>
+        <translation>&amp;Visszavonás</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+Z</source>
-        <translation>Ctrl+Z</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Redo</source>
-        <translation>&amp;Helyreállítás</translation>
+        <translation>Új&amp;ra</translation>
     </message>
     <message>
         <location/>
         <source>Redo an undone editing operation performed on the translation.</source>
-        <translation>Szerkesztő művelet helyreállítása és visszavonása, ami az aktuális fordításon lett végrehajtva.</translation>
+        <translation>Egy visszavont szerkesztési művelet újra végrehajtása a fordításon.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+Y</source>
-        <translation>Ctrl+Y</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -612,12 +551,12 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Copy the selected translation text to the clipboard and deletes it.</source>
-        <translation>A kiválasztott fordítási szöveg vágólapra másolása és törlése.</translation>
+        <translation>A kijelölt szöveg vágólapra másolása és törlése.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+X</source>
-        <translation>Ctrl+X</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -627,12 +566,12 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Copy the selected translation text to the clipboard.</source>
-        <translation>A kiválaszott fordítási szöveg vágólapra másolása.</translation>
+        <translation>A kijelölt szöveg vágólapra másolása.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+C</source>
-        <translation>Ctrl+C</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -642,42 +581,37 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Paste the clipboard text into the translation.</source>
-        <translation>A vágólapon levő szöveg fordításba illesztése.</translation>
+        <translation>A vágólap tartalmának beillesztése a fordításba.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+V</source>
-        <translation>Ctrl+V</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Select &amp;All</source>
-        <translation>Az &amp;összes kiválasztása</translation>
+        <translation>Ö&amp;sszes kijelölése</translation>
     </message>
     <message>
         <location/>
         <source>Select the whole translation text.</source>
-        <translation>Az egész fordítási szöveg kiválasztása.</translation>
+        <translation>A fordítás teljes szövegét kijelöli.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+A</source>
-        <translation>Ctrl+A</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Find...</source>
-        <translation>&amp;Keresés...</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Search for some text in the translation source file.</source>
-        <translation>Néhány szövegre keresés a fordítási forrás fájlban.</translation>
+        <translation>Szöveg keresése a fordítás alatt levő fájlban.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+F</source>
-        <translation>Ctrl+F</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -687,182 +621,150 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Continue the search where it was left.</source>
-        <translation>A keresés folytatása ott, ahol abba lett hagyva.</translation>
+        <translation>Az előző keresés folytatása.</translation>
     </message>
     <message>
         <location/>
         <source>F3</source>
-        <translation>F3</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Prev Unfinished</source>
-        <translation>Az &amp;előző befejezetlen</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Close</source>
-        <translation>Bezárás</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Close All</source>
-        <translation>Az összes &amp;bezárása</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Ctrl+W</source>
-        <translation>Ctrl+W</translation>
+        <translation>&amp;Előző befejezetlen</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+K</source>
-        <translation>Ctrl+K</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Next Unfinished</source>
-        <translation>&amp;Következő befejezetlen</translation>
+        <translation>Következő befejezetle&amp;n</translation>
     </message>
     <message>
         <location/>
         <source>P&amp;rev</source>
-        <translation>&amp;Előző</translation>
+        <translation>E&amp;lőző</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+Shift+K</source>
-        <translation>Ctrl+Shift+K</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Ne&amp;xt</source>
-        <translation>&amp;Következő</translation>
+        <translation>Kö&amp;vetkező</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Done and Next</source>
-        <translation>&amp;Kész és Következő</translation>
+        <translation>Vé&amp;glegesítés és ugrás</translation>
     </message>
     <message>
         <location/>
         <source>Copies the source text into the translation field.</source>
-        <translation>Forrás szövegek fordítási mezőbe másolása.</translation>
+        <translation>A forrás szöveg bemásolása a fordításba.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+B</source>
-        <translation>Ctrl+B</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>&amp;Accelerators</source>
-        <translation>&amp;Gyorsítások</translation>
+        <translation>&amp;Gyorsbillentyűk</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Ending Punctuation</source>
-        <translation>&amp;Vég írásjelek</translation>
+        <translation>&amp;Záró írásjelek</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Phrase matches</source>
-        <translation>&amp;Fázis egyezés</translation>
+        <translation>&amp;Kifejezés egyezések</translation>
+    </message>
+    <message>
+        <source>Toggle checking that phrase suggestions are used.</source>
+        <translation type="obsolete">A kifejezéstár ajánlásainak használatának engedélyezése.</translation>
     </message>
     <message>
         <location/>
         <source>Place &amp;Marker Matches</source>
-        <translation>Hely &amp;megjelölők egyezései</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;New Phrase Book...</source>
-        <translation>&amp;Új fázis könyv...</translation>
+        <translation>&amp;Helyfoglalók egyezése</translation>
     </message>
     <message>
         <location/>
         <source>Create a new phrase book.</source>
-        <translation>Egy új fázis könyv létrehozása.</translation>
+        <translation>Kifejezéstár létrehozása.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+N</source>
-        <translation>Ctrl+N</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Open Phrase Book...</source>
-        <translation>Fázis könyv &amp;megnyitása...</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Open a phrase book to assist translation.</source>
-        <translation>Fáris könyv megnyitása a fordítás támogatásával.</translation>
+        <translation>Kifejezéstár megnyitása a fordításhoz.</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+H</source>
-        <translation>Ctrl+H</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Reset Sorting</source>
-        <translation>&amp;Rendezés helyreállítása</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Sort the items back in the same order as in the message file.</source>
-        <translation>Az elemek visszarendezése ugyanabba a sorrendben, ahogy az üzenet fájlban található.</translation>
+        <translation>Az üzenetfájlbeli sorrend visszaállítása.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Display guesses</source>
-        <translation>Feltételezések &amp;kijelzése</translation>
+        <translation>&amp;Tippek megjelenítése</translation>
     </message>
     <message>
         <location/>
         <source>Set whether or not to display translation guesses.</source>
-        <translation>Annak beállítása, hogy vajon kijelezze a fordítási feltételezéseket vagy sem.</translation>
+        <translation>Fordítási tippek megjelenítése vagy elrejtése.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Statistics</source>
-        <translation>&amp;Statisztikák</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Display translation statistics.</source>
-        <translation>Fordítási statisztikák kijelzése.</translation>
+        <translation>&amp;Statisztika</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Manual</source>
-        <translation>&amp;Kézi</translation>
+        <translation>&amp;Kézikönyv</translation>
     </message>
     <message>
         <location/>
         <source>F1</source>
-        <translation>F1</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>About Qt Linguist</source>
-        <translation>Qt Linguist-ról</translation>
+        <translation>A Qt Linguist névjegye</translation>
     </message>
     <message>
         <location/>
         <source>About Qt</source>
-        <translation>Qt-ról</translation>
+        <translation>A Qt névjegye</translation>
     </message>
     <message>
-        <location/>
         <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation>Információ megjelenítése a Trolltech Qt eszközrendszeréről.</translation>
+        <translation type="obsolete">Információk a Trolltech Qt eszközkészletéről.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;What&apos;s This?</source>
-        <translation>&amp;Mi ez?</translation>
+        <translation>Mi e&amp;z?</translation>
     </message>
     <message>
         <location/>
@@ -872,52 +774,44 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Enter What&apos;s This? mode.</source>
-        <translation>Mi ez? beviteli mód.</translation>
+        <translation>Átlépés &quot;Mi ez?&quot; módba.</translation>
     </message>
     <message>
         <location/>
         <source>Shift+F1</source>
-        <translation>Shift+F1</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Search And Translate...</source>
-        <translation>&amp;Keresés és fordítás...</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Replace the translation on all entries that matches the search source text.</source>
-        <translation>A fordítások kicserélése az összes olyan helyen, ahol az megegyezik a keresett forrás szöveggel.</translation>
-    </message>
-    <message>
-        <location/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+21"/>
-        <source>&amp;Batch Translation...</source>
-        <translation>&amp;Köteg fordítás...</translation>
+        <translation>A fordítás cseréje minden olyan előfordulásnál, ahol a forrásszöveg illeszkedik a keresett szóra.</translation>
     </message>
     <message>
         <location/>
         <source>Batch translate all entries using the information in the phrase books.</source>
-        <translation>Köteg fordítás mindenhol, ahol az információ a fázis könyvekben van haszálva.</translation>
+        <translation>Az összes bejegyzés automatikus fordítása a kifejezéstárak alapján.</translation>
     </message>
     <message>
         <location/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-34"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-13"/>
         <location line="+10"/>
         <source>Release As...</source>
-        <translation>Kiadás, mint...</translation>
+        <translation>Kiadás másként...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2005"/>
+        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
+        <translation type="obsolete">Az alkalmazások számára használható Qt üzenetfájl létrehozása a jelenlegi fájlból. A fájlnév a jelenlegi ts fájl nevéből lesz megállapítva.</translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2035"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
-        <translatorcomment>Ez az alkalmazás fő ablaka.</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location line="+188"/>
+        <location line="+190"/>
         <source>Source text</source>
-        <translation>Forrás szöveg</translation>
+        <translation>Forrás</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -929,7 +823,7 @@ Will assume a single universal form.</source>
         <location line="-2"/>
         <location line="+63"/>
         <source>Context</source>
-        <translation>Összefüggés</translation>
+        <translation>Környezet</translation>
     </message>
     <message>
         <location line="-62"/>
@@ -939,22 +833,22 @@ Will assume a single universal form.</source>
     <message>
         <location line="+79"/>
         <source>This panel lists the source contexts.</source>
-        <translation>Ez a panel kilistázza a forrás összefüggéseket.</translation>
+        <translation>Ez a panel a környezeteket listázza.</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+13"/>
         <source>Strings</source>
-        <translation>Sztringek</translation>
+        <translation>Szövegek</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+37"/>
         <source>Phrases and guesses</source>
-        <translation>Kommunikációk és feltételezések</translation>
+        <translation>Kifejezések és tippek</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Sources and Forms</source>
-        <translation>Források és formák</translation>
+        <translation>Források és űrlapok</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -965,10 +859,10 @@ Will assume a single universal form.</source>
         <location line="+59"/>
         <source> MOD </source>
         <comment>status bar: file(s) modified</comment>
-        <translation>MOD</translation>
+        <translation> MOD </translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+139"/>
         <source>Loading...</source>
         <translation>Betöltés...</translation>
     </message>
@@ -983,30 +877,30 @@ Will assume a single universal form.</source>
         <source>The file &apos;%1&apos; does not seem to be related to the currently open file(s) &apos;%2&apos;.
 
 Close the open file(s) first?</source>
-        <translation>A(z) &apos;%1&apos; fájl nem tartozik hozzá egyetlen aktuálisan megnyitott &apos;%2&apos; fájlhoz sem.
+        <translation>A(z) &apos;%1&apos; fájl nem kapcsolható a jelenleg megnyitott fájlokhoz (%2).
 
-Bezárja először a megnyitott fájl(oka)t?</translation>
+Bezárja a nyitott fájlokat?</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>The file &apos;%1&apos; does not seem to be related to the file &apos;%2&apos; which is being loaded as well.
 
 Skip loading the first named file?</source>
-        <translation>A(z) &apos;%1&apos; fájl nem tartozik egyetlen &apos;%2&apos; fájlhoz sem, amelyik ugyanúgy be lett töltve.
+        <translation>A(z) &apos;%1&apos; fájl nem a &apos;%2&apos; fájlhoz tartozónak tűnik.
 
-Azt első megnevezett fájl betöltésének kihagyása?</translation>
+Kihagyja ennek a fájlnak a betöltését?</translation>
     </message>
     <message numerus="yes">
         <location line="+61"/>
         <source>%n translation unit(s) loaded.</source>
         <translation>
-            <numerusform>%n fordítási egység betöltése.</numerusform>
+            <numerusform>%n fordítási egység betöltve.</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+94"/>
         <source>Related files (%1);;</source>
-        <translation>Hozzákapcsolodó fájlok (%1);;</translation>
+        <translation>Hozzátartozó fájlok (%1);;</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1017,27 +911,27 @@ Azt első megnevezett fájl betöltésének kihagyása?</translation>
         <location line="+10"/>
         <location line="+31"/>
         <source>File saved.</source>
-        <translation>Fájl elmentve.</translation>
+        <translation>A fájl elmentve.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
-        <location line="+1165"/>
+        <location line="+1187"/>
         <source>Release</source>
         <translation>Kiadás</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1164"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1186"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
-        <translation>Qt üzenet fájlok a kiadott alkalmazásra (*.qm)
-Az összes fájl(*)</translation>
+        <translation>Qt üzenetfájlok a kiadott alkalmazásokhoz (*.qm)
+Minden fájl (*)</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+12"/>
         <source>File created.</source>
-        <translation>Fál létrehozva.</translation>
+        <translation>A fájl létrehozva.</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -1048,34 +942,34 @@ Az összes fájl(*)</translation>
     <message>
         <location line="-347"/>
         <source>Context: %1</source>
-        <translation>Összefüggés: %1</translation>
+        <translation>Környezet: %1</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>finished</source>
-        <translation>Befejezve</translation>
+        <translation>végleges</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>unresolved</source>
-        <translation>Nincs megoldva</translation>
+        <translation>hibás</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>obsolete</source>
-        <translation>Elavulás</translation>
+        <translation>elavult</translation>
     </message>
     <message>
         <location line="+15"/>
         <location line="+307"/>
         <source>Printing... (page %1)</source>
-        <translation>Nyomtatás... (%1 lap)</translation>
+        <translation>Nyomtatás... (oldal %1)</translation>
     </message>
     <message>
         <location line="-300"/>
         <location line="+307"/>
         <source>Printing completed</source>
-        <translation>Nyomtatás teljesítve</translation>
+        <translation>Nyomtatás befejezve</translation>
     </message>
     <message>
         <location line="-305"/>
@@ -1086,7 +980,7 @@ Az összes fájl(*)</translation>
     <message>
         <location line="-232"/>
         <source>Search wrapped.</source>
-        <translation>Keresés elrejtése.</translation>
+        <translation>A keresés befejeződött.</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -1094,7 +988,7 @@ Az összes fájl(*)</translation>
         <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
-        <location line="+516"/>
+        <location line="+538"/>
         <location line="+1"/>
         <location line="+274"/>
         <location line="+40"/>
@@ -1103,67 +997,67 @@ Az összes fájl(*)</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1198"/>
+        <location line="-1220"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
-        <translation>A(z) &apos;%1&apos; sztring nem található.</translation>
+        <translation>A szöveg nem található: &apos;%1&apos;.</translation>
     </message>
     <message>
         <location line="-82"/>
         <source>Search And Translate in &apos;%1&apos; - Qt Linguist</source>
-        <translation>Keresés és fordítás a(z) &apos;%1&apos;-ben - Qt Linguist</translation>
+        <translation>Keresés és fordítás itt: &apos;%1&apos; - Qt Linguist</translation>
     </message>
     <message>
         <location line="+34"/>
         <location line="+23"/>
         <location line="+24"/>
         <source>Translate - Qt Linguist</source>
-        <translation>Qt Linguist fordítása</translation>
+        <translation>Fordítás - Qt Linguist</translation>
     </message>
     <message numerus="yes">
         <location line="-46"/>
         <source>Translated %n entry(s)</source>
         <translation>
-            <numerusform>%n bevitel lefordítva</numerusform>
+            <numerusform>%n bejegyzés lefordítva</numerusform>
         </translation>
     </message>
     <message>
         <location line="+23"/>
         <source>No more occurrences of &apos;%1&apos;. Start over?</source>
-        <translation>Nem található &apos;%1&apos; több előfordulása. Előlről kezdi?</translation>
+        <translation>Nincs több találat erre: &apos;%1&apos;. Kezdjük elölről?</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>Create New Phrase Book</source>
-        <translation>Új kommunikációs könyv létrehozása</translation>
+        <translation>Kifejezéstár létrehozása</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph)
 All files (*)</source>
-        <translation>Qt kommunikációs könyv (*.qph)
-Az összes fájl (*)</translation>
+        <translation>Qt kifejezéstárak (*.qph)
+Minden fájl (*)</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Phrase book created.</source>
-        <translation>Kommunikációs könyv létrehozva.</translation>
+        <translation>A kifejezéstár létrehozva.</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Open Phrase Book</source>
-        <translation>Kommunikációs könyv megnyitása</translation>
+        <translation>Kifejezéstár megnyitása</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph);;All files (*)</source>
-        <translation>Qt kommunikációs könyvek (*.qpm);;Az összes fájl (*)</translation>
+        <translation>Qt kifejezéstárak (*.qph);;Minden fájl (*)</translation>
     </message>
     <message numerus="yes">
         <location line="+7"/>
         <source>%n phrase(s) loaded.</source>
         <translation>
-            <numerusform>%n kommunikáció betöltése.</numerusform>
+            <numerusform>%n kifejezés betöltve.</numerusform>
         </translation>
     </message>
     <message>
@@ -1171,47 +1065,56 @@ Az összes fájl (*)</translation>
         <location line="+3"/>
         <location line="+7"/>
         <source>Add to phrase book</source>
-        <translation>Kommunikációs könyv hozzáadása</translation>
+        <translation>Hozzáadás a kifejezéstárhoz</translation>
     </message>
     <message>
         <location line="-9"/>
         <source>No appropriate phrasebook found.</source>
-        <translation>Nem található megfelelő kommunikációs könyv.</translation>
+        <translation>Nincs megfelelő kifejezéstár.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Adding entry to phrasebook %1</source>
-        <translation>Új elem hozzáadása a(z) %1 fázis fáziskönyvhöz</translation>
+        <translation>Hozzáadás ehhez kifejezéstárhoz: &apos;%1&apos;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Select phrase book to add to</source>
-        <translation>Kommunikációs könyv kiválasztása hozzáadásra</translation>
+        <translation>Válassza ki a bővítendő kifejezéstárat</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Unable to launch Qt Assistant (%1)</source>
-        <translation>Nem lehet elindítani a Qt Assistant (%1)</translation>
+        <translation>A Qt Asszisztens elindítása sikertelen (%1)</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Version %1</source>
-        <translation>%1 Verzió</translation>
+        <translation>Verzió %1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist egy olyan eszköz, amelyekkel fordítások adhat hozzá a Qt alkalmazásokhoz.&lt;/p&gt;&lt;p&gt;Szerzői jog(C) 2010 Nokia Vállalat és/vagy leányvállalatai.</translation>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;A Qt Linguist a Qt alkalmazások fordítását segítő eszköz.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</translation>
+    </message>
+    <message>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translatorcomment>&lt;/p&gt;</translatorcomment>
+        <translation type="obsolete">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;A Qt Linguist a Qt alkalmazások fordítását segítő eszköz.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation és leányvállalata(i).</translation>
+    </message>
+    <message>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;A Qt Linguist a Qt alkalmazások fordítását segítő eszköz.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2000-2007 Trolltech ASA. Minden jog fenntartva.&lt;/p&gt;&lt;p&gt;Ez a program abban a reményben került közreadásra, hogy hasznos lesz, de minden egyéb GARANCIA NÉLKÜL, az ELADHATÓSÁGRA vagy VALAMELY CÉLRA VALÓ ALKALMAZHATÓSÁGRA való származtatott garanciát is beleértve.&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+38"/>
         <source>Do you want to save the modified files?</source>
-        <translation>El szeretné menteni a módosított fájlokat?</translation>
+        <translation>Menti a módosított fájlokat?</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Do you want to save &apos;%1&apos;?</source>
-        <translation>El szeretné menteni a(z) %1-t ?</translation>
+        <translation>Menti ezt a fájlt &apos;%1&apos;?</translation>
     </message>
     <message>
         <location line="+43"/>
@@ -1227,10 +1130,10 @@ Az összes fájl (*)</translation>
         <location line="+267"/>
         <location line="+12"/>
         <source>No untranslated translation units left.</source>
-        <translation>Nem maradtak lefordítatlan fordítások.</translation>
+        <translation>Nincs több lefordítandó kifejezés.</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+198"/>
         <source>&amp;Window</source>
         <translation>&amp;Ablak</translation>
     </message>
@@ -1242,27 +1145,27 @@ Az összes fájl (*)</translation>
     <message>
         <location line="+1"/>
         <source>Ctrl+M</source>
-        <translation>Ctrl+M</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Display the manual for %1.</source>
-        <translation>A manuál megjelenítése %1-re vonatkozóan.</translation>
+        <translation>%1 kézikönyvének megtekintése.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Display information about %1.</source>
-        <translation>Információ megjelenítése a(z) %1-ről.</translation>
+        <translation>Információk megjelenítése erről: %1.</translation>
     </message>
     <message>
         <location line="+70"/>
         <source>&amp;Save &apos;%1&apos;</source>
-        <translation>&apos;%1&apos; &amp;mentése</translation>
+        <translation>&apos;%1&apos; menté&amp;se</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save &apos;%1&apos; &amp;As...</source>
-        <translation>&apos;%1&apos; &amp;másként mentése...</translation>
+        <translation>&apos;%1&apos; mentése máské&amp;nt...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1272,12 +1175,12 @@ Az összes fájl (*)</translation>
     <message>
         <location line="+1"/>
         <source>Release &apos;%1&apos; As...</source>
-        <translation>&apos;%1&apos; másként kiadása...</translation>
+        <translation>&apos;%1&apos; kiadása mint...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Close &apos;%1&apos;</source>
-        <translation>&apos;%1&apos; &amp;bezárása</translation>
+        <translation>&apos;%1&apos; be&amp;zárása</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1288,33 +1191,33 @@ Az összes fájl (*)</translation>
     <message>
         <location line="-10"/>
         <source>Save All</source>
-        <translation>Az összes mentése</translation>
+        <translation>Mindet menti</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>&amp;Release All</source>
-        <translation>Az összes &amp;kiadása</translation>
+        <translation>Összes k&amp;iadása</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>Close All</source>
-        <translation>Az összes bezárása</translation>
+        <translation>Mindet bezár</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Translation File &amp;Settings for &apos;%1&apos;...</source>
-        <translation>Fordítási fájlok &amp;beállítása erre &apos;%1&apos;...</translation>
+        <translation>Fordításfájl beállítá&amp;sok ehhez: &apos;%1&apos;...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Batch Translation of &apos;%1&apos;...</source>
-        <translation>A(z) &apos;%1&apos; &amp;köteg fordítása...</translation>
+        <translation>&apos;%1&apos; köte&amp;gelt fordítása...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Search And &amp;Translate in &apos;%1&apos;...</source>
-        <translation>Keresés és &amp;fordítás &apos;%1&apos;-ben...</translation>
+        <translation>Keresés és fordí&amp;tás itt: &apos;%1&apos;...</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1343,7 +1246,7 @@ Az összes fájl (*)</translation>
         <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Validation</source>
-        <translation>Érvényesítés</translation>
+        <translation>Ellenőrzés</translation>
     </message>
     <message>
         <location/>
@@ -1354,151 +1257,313 @@ Az összes fájl (*)</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+84"/>
         <source>Cannot read from phrase book &apos;%1&apos;.</source>
-        <translation>Nem lehet a(z) &apos;%1&apos; kommunikációs könyvből olvasni.</translation>
+        <translation>Nem lehet a(z) &apos;%1&apos; kifejezéstárból olvasni.</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Close this phrase book.</source>
-        <translation>A kommunikációs könyv bezárása.</translation>
+        <translation>Kifejezéstár bezárása.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Enables you to add, modify, or delete entries in this phrase book.</source>
-        <translation>Hozzáadás, módosítás, vagy törlés engedélyezése ebben a kommunikációs könyvben.</translation>
+        <translation>Lehetővé teszi a bejegyzések szerkesztését a kifejezéskönyvben.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Print the entries in this phrase book.</source>
-        <translation>Az összes bevitel kinyomtatása ebben a társalgási szótárban.</translation>
+        <translation>A kifejezéskönyv tartalmának nyomtatása.</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Cannot create phrase book &apos;%1&apos;.</source>
-        <translation>Nem lehet a &apos;%1&apos; társalgási szótárat létrehozni.</translation>
+        <translation>A(z) &apos;%1&apos; kifejezéstár létrehozása sikertelen.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Do you want to save phrase book &apos;%1&apos;?</source>
-        <translation>El szeretné menteni a &apos;%1&apos; társalgási szótárat?</translation>
+        <translation>Biztosan menti a(z) &apos;%1&apos; kifejezéskönyvet?</translation>
     </message>
     <message>
-        <location line="+323"/>
+        <location line="+349"/>
         <source>All</source>
-        <translation>Mind</translation>
+        <translation>Minden</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Open/Refresh Form &amp;Preview</source>
-        <translation>Forma megnyitása/felfrissítése &amp;nézet</translation>
+        <translation>Form &amp;előnézet megnyitása/frissítése</translation>
     </message>
     <message>
         <location/>
         <source>Form Preview Tool</source>
-        <translation>Forma előnézeti eszköz</translation>
+        <translation>Form előnézeti eszköz</translation>
     </message>
     <message>
         <location/>
         <source>F5</source>
-        <translation>F5</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-536"/>
+        <source>&amp;Open...</source>
+        <translation>Meg&amp;nyitás...</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Save</source>
+        <translation>Mentés</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Print...</source>
+        <translation>&amp;Nyomtatás...</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Print a list of all the translation units in the current translation source file.</source>
+        <translation>A fordítási egységeket listázza a jelenlegi fordításfájlban.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Undo the last editing operation performed on the current translation.</source>
+        <translation>A legutolsó szerkesztő művelet visszavonása a fordításon.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Find...</source>
+        <translation>K&amp;eresés...</translation>
+    </message>
+    <message>
+        <source>Previous unfinished item.</source>
+        <translation type="obsolete">Előző lefordítatlan bejegyzés.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move to the previous unfinished item.</source>
+        <translation>Ugrás a előző lefordítatlan bejegyzésre.</translation>
+    </message>
+    <message>
+        <source>Next unfinished item.</source>
+        <translation type="obsolete">Következő lefordítatlan bejegyzés.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move to the next unfinished item.</source>
+        <translation>Ugrás a következő lefordítatlan bejegyzésre.</translation>
+    </message>
+    <message>
+        <source>Move to previous item.</source>
+        <translation type="obsolete">Ugrás az előző bejegyzésre.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move to the previous item.</source>
+        <translation>Ugrás az előző bejegyzésre.</translation>
+    </message>
+    <message>
+        <source>Next item.</source>
+        <translation type="obsolete">Következő bejegyzés.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move to the next item.</source>
+        <translation>Ugrás a következő bejegyzésre.</translation>
+    </message>
+    <message>
+        <source>Mark item as done and move to the next unfinished item.</source>
+        <translation type="obsolete">Az aktuális bejegyzés késznek jelölése és ugrás a következő lefordítatlanra.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Mark this item as done and move to the next unfinished item.</source>
+        <translation>Ezt a bejegyzést késznek jelöli és a következő lefordítatlanra ugrik.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Copy from source text</source>
+        <translation>Forrásszöveg másolása</translation>
+    </message>
+    <message>
+        <source>Toggle the validity check of accelerators.</source>
+        <translation type="obsolete">A gyorsbillentyűk meglétének ellenőrzése.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
+        <translation>A gyorsbillentyűk meglétének ellenőrzése, vagyis hogy a forrás és célszövegben található &amp;&amp; jelek száma megegyezik-e. Ha nem, akkor a figyelmeztetések közt jelezve lesz.</translation>
+    </message>
+    <message>
+        <source>Toggle the validity check of ending punctuation.</source>
+        <translation type="obsolete">A mondatvégi írásjelek ellenőrzése.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</source>
+        <translation>A mondatvégi írásjelek ellenőrzése. Ha nem, akkor a figyelmeztetések közt jelezve lesz.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
+        <translation>Az ajánlásokhoz való igazodás ellenőrzése. Ha van ajánlás, mégsincs felhasználva a fordításban, akkor a figyelmeztetések közt jelezve lesz.</translation>
+    </message>
+    <message>
+        <source>Toggle the validity check of place markers.</source>
+        <translation type="obsolete">A helyfoglalók ellenőrzése.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
+        <translation>A helyfoglalók ellenőrzése, vagyis a %1, %2, ... helyfoglalók konzisztensen vannak-e használva a fordításban. Ha nem, akkor a figyelmeztetések közt jelezve lesz.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;New Phrase Book...</source>
+        <translation>Ú&amp;j kifejezéstár...</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Open Phrase Book...</source>
+        <translation>Kifejezéstár meg&amp;nyitása...</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Reset Sorting</source>
+        <translation>Rendezés &amp;visszaállítása</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Display translation statistics.</source>
+        <translation>Fordítási statisztikák megjelenítése.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Search And Translate...</source>
+        <translation>Keresés és &amp;fordítás...</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Close</source>
+        <translation>Bezárás</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Close All</source>
+        <translation>Mind&amp;et bezár</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Ctrl+W</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-561"/>
+        <source>&amp;Batch Translation...</source>
+        <translation>&amp;Kötegelt fordítás...</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1"/>
         <source>Translation File &amp;Settings...</source>
-        <translation>Fordítási fájl &amp;beállítások...</translation>
+        <translation>Fordítási fájl beállítá&amp;sai...</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Add to Phrase Book</source>
-        <translation>Társalgási szótárhoz &amp;hozzáadás</translation>
+        <translation>Hozzá&amp;adás a kifejezéstárhoz</translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+T</source>
-        <translation>Ctrl+T</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+J</source>
-        <translation>Ctrl+J</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Ctrl+Shift+J</source>
-        <translation>Ctrl+Shift+J</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
         <source>Previous unfinished item</source>
-        <translation>Előző befejezetlen elem</translation>
+        <translation>Előző lefordítatlan bejegyzés</translation>
     </message>
     <message>
         <location/>
         <source>Next unfinished item</source>
-        <translation>Következő befejezetlen elem</translation>
+        <translation>Következő lefordítatlan bejegyzés</translation>
     </message>
     <message>
         <location/>
         <source>Move to previous item</source>
-        <translation>Az előző befejezetlen elemre mozgás</translation>
+        <translation>Ugrás az előző bejegyzésre</translation>
     </message>
     <message>
         <location/>
         <source>Next item</source>
-        <translation>Következő elem</translation>
+        <translation>Következő bejegyzés</translation>
     </message>
     <message>
         <location/>
         <source>Mark item as done and move to the next unfinished item</source>
-        <translation>Az elem készként jelölése és a következő befejezetlen elemre mozgatás</translation>
+        <translation>Az aktuális bejegyzés késznek jelölése és ugrás a következő lefordítatlanra</translation>
     </message>
     <message>
         <location/>
         <source>Copies the source text into the translation field</source>
-        <translation>A forrás szöveg fordítási szövegbe másolása</translation>
+        <translation>A forrás szöveg bemásolása a fordításba</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of accelerators</source>
-        <translation>Gyorsítások érvényesség ellenőrzésének kapcsolgatása</translation>
+        <translation>A gyorsbillentyűk meglétének ellenőrzése</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of ending punctuation</source>
-        <translation>Vég írásjelek érvényesség ellenőrzésének kapcsolgatása</translation>
+        <translation>A mondatvégi írásjelek ellenőrzése</translation>
     </message>
     <message>
         <location/>
         <source>Toggle checking that phrase suggestions are used</source>
-        <translation>A használt társalgási ajánlások ellenőrzésének kapcsolgatása</translation>
+        <translation>A kifejezéstár ajánlásainak használatának engedélyezése</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of place markers</source>
-        <translation>Hely megjelölők érvényesség vizsgálatának kapcsolgatása</translation>
+        <translation>A helyfoglalók ellenőrzése</translation>
     </message>
     <message>
         <location/>
         <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the TS file.</source>
-        <translation>Egy Qt üzenet fájl létrehozása az aktuális üzenet fájlból, amely megfelelő az alkalmazás kiadásaira. A fájlnév TS fájl nevéből lesz automatikusan meghatározva.</translation>
+        <translation>Az alkalmazások számára használható Qt üzenetfájl létrehozása a jelenlegi fájlból. A fájlnév a jelenlegi ts fájl nevéből lesz megállapítva.</translation>
     </message>
     <message>
         <location/>
         <source>Length Variants</source>
-        <translation>Hossz változatok</translation>
+        <translation>Hosszú változat</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Display information about the Qt toolkit by Nokia.</source>
+        <translation>Információk a Nokia Qt eszközkészletéről.</translation>
     </message>
 </context>
 <context>
     <name>MessageEditor</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+42"/>
+        <location filename="../../../../../home/hron/Projects/localize/qt-l10n-hu/tools/linguist/linguist/messageeditor.cpp" line="+42"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
-        <translatorcomment>Ez a fő ablak jobb panelja.</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+72"/>
         <source>Russian</source>
         <translation>Orosz</translation>
     </message>
@@ -1528,14 +1593,14 @@ Az összes fájl (*)</translation>
         <translation>Kínai</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+47"/>
         <source>This whole panel allows you to view and edit the translation of some source text.</source>
-        <translation>Ez az egész pabel engedélyezi néhány forrás szöveg fordításának megtekintését és szerkesztését.</translation>
+        <translation>Ezen a panelen tekinthetőek meg és szerkeszthetők a fordítások.</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+10"/>
         <source>Source text</source>
-        <translation>Forrás szöveg</translation>
+        <translation>Forrásszöveg</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1545,12 +1610,12 @@ Az összes fájl (*)</translation>
     <message>
         <location line="+4"/>
         <source>Source text (Plural)</source>
-        <translation>Forrás szöveg (Többesszám)</translation>
+        <translation>Forrásszöveg (többes szám)</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>This area shows the plural form of the source text.</source>
-        <translation>Ez a terület mutatja a forrás szöveg többesszámú formáját.</translation>
+        <translation>Ez a terület mutatja a forrás szöveg többesszámát.</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1560,22 +1625,22 @@ Az összes fájl (*)</translation>
     <message>
         <location line="+3"/>
         <source>This area shows a comment that may guide you, and the context in which the text occurs.</source>
-        <translation>Ez a terület mutatja a megjegyzéseket, ami segítheti Önt, és az összefüggéseket, hogy melyik szövegben fordul elő.</translation>
+        <translation>Ez a rész mutatja meg a fejlesztő segítő megjegyzéseit, és a szövegkörnyezet részleteit.</translation>
     </message>
     <message>
         <location line="+59"/>
         <source>Here you can enter comments for your own use. They have no effect on the translated applications.</source>
-        <translation>Itt hozzáadhatja a saját megjegyzését saját használatra. Nincsen hatásuk a lefordított alkalmazásokon.</translation>
+        <translation>Ide lehet beírni a fordításhoz tartozó megjegyzéseket. Ez nincs hatással a lefordított alkalmazásokra.</translation>
     </message>
     <message>
-        <location line="+232"/>
+        <location line="+234"/>
         <source>%1 translation (%2)</source>
         <translation>%1 fordítás (%2)</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>This is where you can enter or modify the translation of the above source text.</source>
-        <translation>Ez az a hely, ahol beviheti és módosíthatja a fentebb található forrás szöveg fordítását.</translation>
+        <translation>Itt írható be, vagy módosítható a forrás szöveg fordítása.</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -1585,62 +1650,54 @@ Az összes fájl (*)</translation>
     <message>
         <location line="+1"/>
         <source>%1 translator comments</source>
-        <translation>%1 fordító megjegyzések</translation>
+        <translation>%1 fordítói megjegyzés</translation>
     </message>
     <message>
         <location line="+157"/>
         <source>&apos;%1&apos;
 Line: %2</source>
-        <translation>&apos;%1&apos;
+        <translation>&apos;%1&apos;￼
 Sor: %2</translation>
     </message>
 </context>
 <context>
     <name>MessageModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+839"/>
         <source>Completion status for %1</source>
-        <translation>%1 elkészítési státusza</translation>
+        <translation>Készültségi állapot %1 nyelvhez</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>&lt;file header&gt;</source>
-        <translation>&lt;file header&gt;</translation>
+        <translation>&lt;fájl fejléc&gt;</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&lt;context comment&gt;</source>
-        <translation>&lt;context comment&gt;</translation>
+        <translation>&lt;környezet megjegyzés&gt;</translation>
     </message>
     <message>
         <location line="+71"/>
         <source>&lt;unnamed context&gt;</source>
-        <translation>&lt;unnamed context&gt;</translation>
+        <translation>&lt;névtelen környezet&gt;</translation>
     </message>
 </context>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-614"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-600"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
-        <translatorcomment>Ez a fő ablak jobb panelja.</translatorcomment>
         <translation></translation>
     </message>
 </context>
 <context>
     <name>PhraseBookBox</name>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+12"/>
-        <source></source>
-        <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
-        <translatorcomment>Társalgás -&gt; Társalgási szótár szerkesztése... A felbukkanó ablak egy  TársalgásiSzótárDoboz.</translatorcomment>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+54"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+66"/>
         <source>(New Entry)</source>
-        <translation>(Új bevitel)</translation>
+        <translation>(Új bejegyzés)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1655,17 +1712,12 @@ Sor: %2</translation>
     <message>
         <location line="+1"/>
         <source>Cannot save phrase book &apos;%1&apos;.</source>
-        <translation>Nem lehet elmenteni a(z) &apos;%1&apos; társalgási szótárat.</translation>
+        <translation>Nem lehet ezt a kifejezéstárat elmenteni: &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/phrasebookbox.ui"/>
         <source>Edit Phrase Book</source>
-        <translation>Társalgási szótár szerkesztése</translation>
-    </message>
-    <message>
-        <location/>
-        <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
-        <translation>Ez az ablak engedélyezi új bevitelek hozzáadását, módosítását, vagy törlését egy társalgási szótárban.</translation>
+        <translation>Kifejezéstár szerkesztése</translation>
     </message>
     <message>
         <location/>
@@ -1675,22 +1727,22 @@ Sor: %2</translation>
     <message>
         <location/>
         <source>This is the phrase in the target language corresponding to the source phrase.</source>
-        <translation>Ez a forrás társalgás megfelelője a cél nyelvben.</translation>
+        <translation>A forrás nyelvi kifejezés célnyelvi megfelelője.</translation>
     </message>
     <message>
         <location/>
         <source>S&amp;ource phrase:</source>
-        <translation>&amp;Forrás társalgás:</translation>
+        <translation>F&amp;orrás kifejezés:</translation>
     </message>
     <message>
         <location/>
         <source>This is a definition for the source phrase.</source>
-        <translation>Ez egy forrás fordítás definíció.</translation>
+        <translation>Ez a forráskifejezés meghatározása.</translation>
     </message>
     <message>
         <location/>
         <source>This is the phrase in the source language.</source>
-        <translation>Ez egy társalgás a forrás nyelvben.</translation>
+        <translation>Ez a forrás nyelvi kifejezés.</translation>
     </message>
     <message>
         <location/>
@@ -1700,22 +1752,37 @@ Sor: %2</translation>
     <message>
         <location/>
         <source>Click here to add the phrase to the phrase book.</source>
-        <translation>Kattintson ide a társalgás hozzáadásához a társalgási könyvben.</translation>
+        <translation>Kattintson ide a kifejezés kifejezéstárba vételéhez.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>&amp;Save</source>
+        <translation>Menté&amp;s</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Click here to save the changes made.</source>
+        <translation>Kattintson ide a változások mentéséhez.</translation>
+    </message>
+    <message>
+        <location/>
+        <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
+        <translation>Ebben az ablakban nyílik lehetőség a kifejezéstár bővítésére, szűkítésére és módosítására.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;New Entry</source>
-        <translation>&amp;Új bevitel</translation>
+        <translation>Ú&amp;j bejegyzés</translation>
     </message>
     <message>
         <location/>
         <source>Click here to remove the entry from the phrase book.</source>
-        <translation>Kattintson ide a bevitel társalgási könyvből való eltávolításához.</translation>
+        <translation>Kattintson ide a kifejezés törléséhez a kifejezéstárból.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Remove Entry</source>
-        <translation>Bevitel &amp;eltávolítása</translation>
+        <translation>Bejegyzés tö&amp;rlése</translation>
     </message>
     <message>
         <location/>
@@ -1724,13 +1791,8 @@ Sor: %2</translation>
     </message>
     <message>
         <location/>
-        <source>Click here to save the changes made.</source>
-        <translation>Kattintson ide a változtatások elmentéséhez.</translation>
-    </message>
-    <message>
-        <location/>
-        <source>&amp;Save</source>
-        <translation>&amp;Mentés</translation>
+        <source>Close</source>
+        <translation>Bezárás</translation>
     </message>
     <message>
         <location/>
@@ -1738,9 +1800,10 @@ Sor: %2</translation>
         <translation>Kattintson ide az ablak bezárásához.</translation>
     </message>
     <message>
-        <location/>
-        <source>Close</source>
-        <translation>Bezárás</translation>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-146"/>
+        <source></source>
+        <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1748,7 +1811,7 @@ Sor: %2</translation>
     <message>
         <location filename="../tools/linguist/linguist/phrasemodel.cpp" line="+117"/>
         <source>Source phrase</source>
-        <translation>Forrás társalgás</translation>
+        <translation>Forrás kifejezés</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1776,12 +1839,12 @@ Sor: %2</translation>
     <message>
         <location line="+113"/>
         <source>Guess (%1)</source>
-        <translation>Feltételezés (%1)</translation>
+        <translation>Tipp (%1)</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Guess</source>
-        <translation>Feltételezés</translation>
+        <translation>Tipp</translation>
     </message>
 </context>
 <context>
@@ -1789,20 +1852,21 @@ Sor: %2</translation>
     <message>
         <location filename="../tools/linguist/shared/qm.cpp" line="+12"/>
         <source>Compiled Qt translations</source>
+        <translatorcomment>Released files (*.qm)</translatorcomment>
         <translation>Lefordított Qt fordítások</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1280"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1302"/>
         <source>Translation files (%1);;</source>
         <translation>Fordítási fájlok (%1);;</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>All files (*)</source>
-        <translation>Fájlok hozzáadása ( *)</translation>
+        <translation>Minden fájl (*)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1127"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1134"/>
         <location line="+27"/>
         <location line="+67"/>
         <location line="+39"/>
@@ -1813,34 +1877,59 @@ Sor: %2</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+658"/>
+        <source>C++ source files</source>
+        <translation type="obsolete">C++ forrásfájlok</translation>
+    </message>
+    <message>
+        <source>Java source files</source>
+        <translation type="obsolete">Java forrásfájlok</translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/shared/po.cpp" line="+817"/>
         <source>GNU Gettext localization files</source>
         <translation>GNU Gettext lokalizációs fájlok</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>GNU Gettext localization template files</source>
+        <translation>GNU Gettext lokalizációs sablonfájlok</translation>
+    </message>
+    <message>
+        <source>Qt Script source files</source>
+        <translation type="obsolete">Qt szkript fájlok</translation>
+    </message>
+    <message>
         <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
         <source>Qt translation sources (format 1.1)</source>
-        <translation>Qt fordítási forrása (1.1 formátum)</translation>
+        <translation>Qt fordítási fájlok (1.1-es formátum)</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Qt translation sources (format 2.0)</source>
-        <translation>Qt fordítás források (2.0 formátum)</translation>
+        <translation>Qt fordítási fájlok (2.0-ás formátum)</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Qt translation sources (latest format)</source>
-        <translation>Qt fordítási források (legutolsó formátum)</translation>
+        <translation>Qt fordítási fájlok (legújabb formátum)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+827"/>
+        <source>Qt Designer form files</source>
+        <translation type="obsolete">Qt Designer űrlapfájlok</translation>
+    </message>
+    <message>
+        <source>Qt Jambi form files</source>
+        <translation type="obsolete">Qt Jambi űrlapfájlok</translation>
+    </message>
+    <message>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+829"/>
         <source>XLIFF localization files</source>
         <translation>XLIFF lokalizációs fájlok</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qph.cpp" line="+183"/>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+195"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
-        <translation>Qt Linguist &apos;Társalgási Könyv&apos;</translation>
+        <translation>Qt Linguist &apos;Kifejezéstár&apos;</translation>
     </message>
 </context>
 <context>
@@ -1848,17 +1937,17 @@ Sor: %2</translation>
     <message>
         <location filename="../tools/linguist/linguist/sourcecodeview.cpp" line="+70"/>
         <source>&lt;i&gt;Source code not available&lt;/i&gt;</source>
-        <translation>&lt;i&gt;A forrás kód nem elérhető&lt;/i&gt;</translation>
+        <translation>&lt;i&gt;A forráskód nem elérhető&lt;/i&gt;</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>&lt;i&gt;File %1 not available&lt;/i&gt;</source>
-        <translation>&lt;i&gt;A(z) %1 fájl nem elérhető&lt;/i&gt;</translation>
+        <translation>&lt;i&gt;A fájl (%1) nem elérhető&lt;/i&gt;</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>&lt;i&gt;File %1 not readable&lt;/i&gt;</source>
-        <translation>&lt;i&gt;A(z) %1 fájl nem olvasható&lt;/i&gt;</translation>
+        <translation>&lt;i&gt;A fájl (%1) nem olvasható&lt;/i&gt;</translation>
     </message>
 </context>
 <context>
@@ -1886,17 +1975,17 @@ Sor: %2</translation>
     <message>
         <location/>
         <source>Words:</source>
-        <translation>Szavak:</translation>
+        <translation>Szavak száma:</translation>
     </message>
     <message>
         <location/>
         <source>Characters:</source>
-        <translation>Karakterek:</translation>
+        <translation>Karakterek száma:</translation>
     </message>
     <message>
         <location/>
         <source>Characters (with spaces):</source>
-        <translation>Karakterek (szóközökkel):</translation>
+        <translation>Karakterek száma (szóközökkel):</translation>
     </message>
     <message>
         <location/>
@@ -1905,16 +1994,25 @@ Sor: %2</translation>
     </message>
 </context>
 <context>
+    <name>TrWindow</name>
+    <message>
+        <location filename="../tools/linguist/linguist/trwindow.cpp" line="+14"/>
+        <source></source>
+        <comment>This is the application&apos;s main window.</comment>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>TranslateDialog</name>
     <message>
         <location filename="../tools/linguist/linguist/translatedialog.ui"/>
         <source>This window allows you to search for some text in the translation source file.</source>
-        <translation>Ez az ablak engedélyezi, hogy rákeressen néhány szövegre a fordítási forrás fájlban.</translation>
+        <translation>Ebben az ablakban kereshetsz a fordítás forrásfájljában.</translation>
     </message>
     <message>
         <location/>
         <source>Type in the text to search for.</source>
-        <translation>Gépelje be a keresni kívánt szöveget.</translation>
+        <translation>Írd be a keresett szöveget.</translation>
     </message>
     <message>
         <location/>
@@ -1924,32 +2022,32 @@ Sor: %2</translation>
     <message>
         <location/>
         <source>&amp;Translate to:</source>
-        <translation>&amp;Fordítás erre:</translation>
+        <translation>Fordí&amp;tása:</translation>
     </message>
     <message>
         <location/>
         <source>Search options</source>
-        <translation>Keresés opciók</translation>
+        <translation>Keresési opciók</translation>
     </message>
     <message>
         <location/>
         <source>Texts such as &apos;TeX&apos; and &apos;tex&apos; are considered as different when checked.</source>
-        <translation>&apos;TeX&apos; és &apos;text&apos; szövegek különbözően kezelése bejelöléskor.</translation>
+        <translation>Kis- és nagybetű érzékeny keresés.</translation>
     </message>
     <message>
         <location/>
         <source>Match &amp;case</source>
-        <translation>Megegyező &amp;eset</translation>
+        <translation>Kis/nagy&amp;betű</translation>
     </message>
     <message>
         <location/>
         <source>Mark new translation as &amp;finished</source>
-        <translation>Új fordítások &amp;befejezettként jelölése</translation>
+        <translation>Új fordítás megjelölése be&amp;fejezettként</translation>
     </message>
     <message>
         <location/>
         <source>Click here to find the next occurrence of the text you typed in.</source>
-        <translation>Kattintson ide a begépelt szöveg következő előfordulásának megkereséséhez.</translation>
+        <translation>Kattints ide a megadott szöveg következő előfordulásának megkereséséhez.</translation>
     </message>
     <message>
         <location/>
@@ -1964,31 +2062,31 @@ Sor: %2</translation>
     <message>
         <location/>
         <source>Translate All</source>
-        <translation>Az összes fordítása</translation>
+        <translation>Összes fordítása</translation>
     </message>
     <message>
         <location/>
         <source>Click here to close this window.</source>
-        <translation>Kattintson ide az ablak bezárásához.</translation>
+        <translation>Kattints ide az ablak bezárásához.</translation>
     </message>
     <message>
         <location/>
         <source>Cancel</source>
-        <translation>Mégse</translation>
+        <translation>Mégsem</translation>
     </message>
 </context>
 <context>
     <name>TranslationSettingsDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
+        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+93"/>
         <source>Any Country</source>
-        <translation>Bármeny ország</translation>
+        <translation>Bármely ország</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-22"/>
         <location line="+8"/>
         <source>Settings for &apos;%1&apos; - Qt Linguist</source>
-        <translation>&apos;%1&apos;-re állítás - Qt Linguist</translation>
+        <translation>&apos;%1&apos; beállításai - Qt Linguist</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/translationsettings.ui"/>
@@ -2003,7 +2101,7 @@ Sor: %2</translation>
     <message>
         <location/>
         <source>Country/Region</source>
-        <translation>OrszágRégió</translation>
+        <translation>Ország/Régió</translation>
     </message>
     <message>
         <location/>

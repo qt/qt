@@ -139,7 +139,8 @@ public:
 
     virtual void scrollRectIntoViewRecursively(const IntRect&);
     virtual void setScrollPosition(const IntPoint&);
-    virtual void scrollPositionChanged();
+    void scrollPositionChanged();
+    virtual void repaintFixedElementsAfterScrolling();
 
     String mediaType() const;
     void setMediaType(const String&);

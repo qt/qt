@@ -952,12 +952,14 @@ static int qCocoaViewCount = 0;
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
 
+#ifndef QT_NO_GESTURES
     QNativeGestureEvent qNGEvent;
     qNGEvent.gestureType = QNativeGestureEvent::Zoom;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qNGEvent.percentage = [event magnification];
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
+#endif // QT_NO_GESTURES
 }
 
 - (void)rotateWithEvent:(NSEvent *)event;
@@ -965,12 +967,14 @@ static int qCocoaViewCount = 0;
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
 
+#ifndef QT_NO_GESTURES
     QNativeGestureEvent qNGEvent;
     qNGEvent.gestureType = QNativeGestureEvent::Rotate;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qNGEvent.percentage = -[event rotation];
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
+#endif // QT_NO_GESTURES
 }
 
 - (void)swipeWithEvent:(NSEvent *)event;
@@ -978,6 +982,7 @@ static int qCocoaViewCount = 0;
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
 
+#ifndef QT_NO_GESTURES
     QNativeGestureEvent qNGEvent;
     qNGEvent.gestureType = QNativeGestureEvent::Swipe;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
@@ -991,6 +996,7 @@ static int qCocoaViewCount = 0;
     else if ([event deltaY] == -1)
         qNGEvent.angle = 270.0f;
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
+#endif // QT_NO_GESTURES
 }
 
 - (void)beginGestureWithEvent:(NSEvent *)event;
@@ -998,11 +1004,13 @@ static int qCocoaViewCount = 0;
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
 
+#ifndef QT_NO_GESTURES
     QNativeGestureEvent qNGEvent;
     qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
+#endif // QT_NO_GESTURES
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event;
@@ -1010,11 +1018,13 @@ static int qCocoaViewCount = 0;
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
 
+#ifndef QT_NO_GESTURES
     QNativeGestureEvent qNGEvent;
     qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
+#endif // QT_NO_GESTURES
 }
 
 - (void)frameDidChange:(NSNotification *)note

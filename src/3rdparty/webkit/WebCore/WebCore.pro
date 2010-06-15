@@ -74,7 +74,8 @@ CONFIG(QTDIR_build) {
     !static: DEFINES += QT_MAKEDLL
     symbian: TARGET =$$TARGET$${QT_LIBINFIX}
 }
-include($$PWD/../WebKit/qt/qtwebkit_version.pri)
+moduleFile=$$PWD/../WebKit/qt/qt_webkit_version.pri
+include($$moduleFile)
 VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
 unix {
@@ -2165,7 +2166,7 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
             mac {
                 SOURCES += \
                     plugins/mac/PluginPackageMac.cpp \
-                    plugins/mac/PluginViewMac.cpp
+                    plugins/mac/PluginViewMac.mm
                 OBJECTIVE_SOURCES += \
                     platform/text/mac/StringImplMac.mm \
                     platform/mac/WebCoreNSStringExtras.mm
@@ -2495,8 +2496,12 @@ contains(DEFINES, ENABLE_QT_BEARER=1) {
     SOURCES += \
         platform/network/qt/NetworkStateNotifierQt.cpp
 
-    CONFIG += mobility
-    MOBILITY += bearer
+    # Bearer management is part of Qt 4.7, so don't accidentially
+    # pull in Qt Mobility when building against >= 4.7
+    !greaterThan(QT_MINOR_VERSION, 6) {
+        CONFIG += mobility
+        MOBILITY += bearer
+    }
 }
 
 contains(DEFINES, ENABLE_SVG=1) {
@@ -2840,24 +2845,45 @@ contains(DEFINES, ENABLE_SYMBIAN_DIALOG_PROVIDERS) {
 include($$PWD/../WebKit/qt/Api/headers.pri)
 HEADERS += $$WEBKIT_API_HEADERS
 
-!CONFIG(QTDIR_build) {
+CONFIG(QTDIR_build) {
+    modfile.files = $$moduleFile
+    modfile.path = $$[QMAKE_MKSPECS]/modules
+
+    INSTALLS += modfile
+} else {
     exists($$OUTPUT_DIR/include/QtWebKit/classheaders.pri): include($$OUTPUT_DIR/include/QtWebKit/classheaders.pri)
     WEBKIT_INSTALL_HEADERS = $$WEBKIT_API_HEADERS $$WEBKIT_CLASS_HEADERS
 
     !symbian {
         headers.files = $$WEBKIT_INSTALL_HEADERS
-        headers.path = $$[QT_INSTALL_HEADERS]/QtWebKit
-        target.path = $$[QT_INSTALL_LIBS]
 
-        INSTALLS += target headers
+        !isEmpty(INSTALL_HEADERS): headers.path = $$INSTALL_HEADERS/QtWebKit
+        else: headers.path = $$[QT_INSTALL_HEADERS]/QtWebKit
+
+        !isEmpty(INSTALL_LIBS): target.path = $$INSTALL_LIBS
+        else: target.path = $$[QT_INSTALL_LIBS]
+
+        modfile.files = $$moduleFile
+        modfile.path = $$[QMAKE_MKSPECS]/modules
+
+        INSTALLS += target headers modfile
     } else {
         # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
         inst_headers.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
         inst_headers.input = WEBKIT_INSTALL_HEADERS
-        inst_headers.output = $$[QT_INSTALL_HEADERS]/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+
+        !isEmpty(INSTALL_HEADERS): inst_headers.output = $$INSTALL_HEADERS/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+        else: inst_headers.output = $$[QT_INSTALL_HEADERS]/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+
         QMAKE_EXTRA_COMPILERS += inst_headers
 
-        install.depends += compiler_inst_headers_make_all
+        inst_modfile.commands = $$inst_headers.commands
+        inst_modfile.input = moduleFile
+        inst_modfile.output = $$[QMAKE_MKSPECS]/modules
+
+        QMAKE_EXTRA_COMPILERS += inst_modfile
+
+        install.depends += compiler_inst_headers_make_all compiler_inst_modfile_make_all
         QMAKE_EXTRA_TARGETS += install
     }
 
@@ -2875,7 +2901,7 @@ HEADERS += $$WEBKIT_API_HEADERS
         QMAKE_PKGCONFIG_LIBDIR = $$target.path
         QMAKE_PKGCONFIG_INCDIR = $$headers.path
         QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-        lib_replace.match = $$DESTDIR
+        lib_replace.match = $$re_escape($$DESTDIR)
         lib_replace.replace = $$[QT_INSTALL_LIBS]
         QMAKE_PKGCONFIG_INSTALL_REPLACE += lib_replace
     }

@@ -63,7 +63,7 @@ class QDeclarativeTimeLineValue;
 class QDeclarativeTimeLineCallback;
 struct QDeclarativeTimeLinePrivate;
 class QDeclarativeTimeLineObject;
-class QDeclarativeTimeLine : public QAbstractAnimation
+class Q_AUTOTEST_EXPORT QDeclarativeTimeLine : public QAbstractAnimation
 {
 Q_OBJECT
 public:
@@ -117,7 +117,7 @@ private:
     QDeclarativeTimeLinePrivate *d;
 };
 
-class QDeclarativeTimeLineObject
+class Q_AUTOTEST_EXPORT QDeclarativeTimeLineObject
 {
 public:
     QDeclarativeTimeLineObject();
@@ -129,7 +129,7 @@ protected:
     QDeclarativeTimeLine *_t;
 };
 
-class QDeclarativeTimeLineValue : public QDeclarativeTimeLineObject
+class Q_AUTOTEST_EXPORT QDeclarativeTimeLineValue : public QDeclarativeTimeLineObject
 {
 public:
     QDeclarativeTimeLineValue(qreal v = 0.) : _v(v) {}
@@ -147,7 +147,7 @@ private:
     qreal _v;
 };
 
-class QDeclarativeTimeLineCallback
+class Q_AUTOTEST_EXPORT QDeclarativeTimeLineCallback
 {
 public:
     typedef void (*Callback)(void *);

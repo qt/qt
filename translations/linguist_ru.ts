@@ -290,19 +290,19 @@ Will assume a single universal form.</source>
         <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+302"/>
         <source>Alt+Delete</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Shift+Alt+Insert</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Alt+Insert</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+131"/>
@@ -312,7 +312,7 @@ Will assume a single universal form.</source>
     <message>
         <location line="+1"/>
         <source>Delete non-empty length variant?</source>
-        <translation>Удалить непустой вариант длины?</translation>
+        <translation>Удалить вариант перевода?</translation>
     </message>
 </context>
 <context>
@@ -320,7 +320,7 @@ Will assume a single universal form.</source>
     <message numerus="yes">
         <location filename="../tools/linguist/shared/qm.cpp" line="+763"/>
         <source>Dropped %n message(s) which had no ID.</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Удалено %n сообщение, у которого не было ID.</numerusform>
             <numerusform>Удалено %n сообщения, у которых не было ID.</numerusform>
             <numerusform>Удалено %n сообщений, у которых не было ID.</numerusform>
@@ -329,7 +329,7 @@ Will assume a single universal form.</source>
     <message numerus="yes">
         <location line="+4"/>
         <source>Excess context/disambiguation dropped from %n message(s).</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Удалён лишний контекст из %n сообщения.</numerusform>
             <numerusform>Удалён лишний контекст из %n сообщений.</numerusform>
             <numerusform>Удалён лишний контекст из %n сообщений.</numerusform>
@@ -481,12 +481,12 @@ Skip loading the first named file?</source>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
-        <location line="+1165"/>
+        <location line="+1187"/>
         <source>Release</source>
         <translation>Скомпилировать</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1164"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1186"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Скомпилированные файлы перевода для приложений Qt (*.qm)
@@ -553,7 +553,7 @@ All files (*)</source>
         <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
-        <location line="+516"/>
+        <location line="+538"/>
         <location line="+1"/>
         <location line="+274"/>
         <location line="+40"/>
@@ -562,7 +562,7 @@ All files (*)</source>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1198"/>
+        <location line="-1220"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>Не удалось найти строку &apos;%1&apos;.</translation>
@@ -693,7 +693,7 @@ All files (*)</source>
         <translation>Непереведённых записей не осталось.</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+198"/>
         <source>&amp;Window</source>
         <translation>&amp;Окно</translation>
     </message>
@@ -705,7 +705,7 @@ All files (*)</source>
     <message>
         <location line="+1"/>
         <source>Ctrl+M</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+12"/>
@@ -969,7 +969,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -984,7 +984,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+Q</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1024,7 +1024,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+P</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1039,7 +1039,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1054,7 +1054,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+Y</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1069,7 +1069,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1084,7 +1084,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1099,7 +1099,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1114,7 +1114,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+A</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1129,7 +1129,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+F</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1144,7 +1144,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>F3</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1159,7 +1159,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Length Variants</source>
-        <translation>Варианты длины</translation>
+        <translation>Варианты перевода</translation>
     </message>
     <message>
         <location/>
@@ -1169,7 +1169,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+K</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1184,7 +1184,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+J</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1199,7 +1199,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+Shift+K</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1214,7 +1214,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+Shift+J</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1239,7 +1239,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+B</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1294,7 +1294,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1309,7 +1309,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+H</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1349,7 +1349,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1360,11 +1360,6 @@ All files (*)</source>
         <location/>
         <source>About Qt</source>
         <translation>О Qt</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation>Показать информацию об инструментарии Qt от Nokia.</translation>
     </message>
     <message>
         <location/>
@@ -1384,7 +1379,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Shift+F1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1414,7 +1409,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>F5</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1424,7 +1419,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+T</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1439,7 +1434,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1454,7 +1449,7 @@ All files (*)</source>
     <message>
         <location/>
         <source>Ctrl+W</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -1505,6 +1500,11 @@ All files (*)</source>
         <location/>
         <source>Toggle the validity check of place markers</source>
         <translation>Переключение проверки маркеров форматирования</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Display information about the Qt toolkit by Nokia.</source>
+        <translation>Показать информацию об инструментарии Qt от Nokia.</translation>
     </message>
 </context>
 <context>
@@ -1795,7 +1795,7 @@ Line: %2</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1842"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1864"/>
         <source>Translation files (%1);;</source>
         <translation>Файлы перевода (%1);;</translation>
     </message>
@@ -1816,9 +1816,14 @@ Line: %2</source>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+658"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+817"/>
         <source>GNU Gettext localization files</source>
         <translation>Файлы локализации GNU Gettext</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>GNU Gettext localization template files</source>
+        <translation>Файлы шаблонов локализации GNU Gettext</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/qm.cpp" line="+12"/>
@@ -1846,7 +1851,7 @@ Line: %2</source>
         <translation>Исходные файлы перевода Qt (последний формат)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+827"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+829"/>
         <source>XLIFF localization files</source>
         <translation>Файлы локализации XLIFF</translation>
     </message>

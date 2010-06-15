@@ -66,6 +66,8 @@ private slots:
     void naming_convention();
     void naming_convention_data();
 
+    void make_check();
+
 private:
     QStringList find_subdirs(QString const&, FindSubdirsMode, QString const& = QString());
 
@@ -444,6 +446,83 @@ QStringList tst_MakeTestSelfTest::find_subdirs(QString const& pro_file, FindSubd
     }
 
     return out;
+}
+
+void tst_MakeTestSelfTest::make_check()
+{
+    /*
+        Run `make check' over the whole tests tree with a custom TESTRUNNER,
+        to verify that the TESTRUNNER mechanism works right.
+    */
+    QString testsDir(SRCDIR "/..");
+    QString checktest(SRCDIR "/checktest/checktest");
+
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
+    if (qgetenv("RUN_SLOW_TESTS").isEmpty()) {
+        QSKIP("This test is too slow to run by default on this OS. Set RUN_SLOW_TESTS=1 to run it.", SkipAll);
+    }
+#endif
+
+#ifdef Q_OS_WIN32
+    checktest.replace("/", "\\");
+    checktest += ".exe";
+#endif
+
+    QProcess make;
+    make.setWorkingDirectory(testsDir);
+
+    QStringList arguments;
+    arguments << "-k";
+    arguments << "check";
+    arguments << QString("TESTRUNNER=%1").arg(checktest);
+
+    // find the right make; from externaltests.cpp
+    static const char makes[] =
+        "nmake.exe\0"
+        "mingw32-make.exe\0"
+        "gmake\0"
+        "make\0"
+    ;
+
+    bool ok = false;
+    for (const char *p = makes; *p; p += strlen(p) + 1) {
+        make.start(p, arguments);
+        if (make.waitForStarted()) {
+            ok = true;
+            break;
+        }
+    }
+
+    if (!ok) {
+        QFAIL("Could not find the right make tool in PATH");
+    }
+
+    QVERIFY(make.waitForFinished(1000 * 60 * 10));
+    QCOMPARE(make.exitStatus(), QProcess::NormalExit);
+
+    int pass = 0;
+    QList<QByteArray> out = make.readAllStandardOutput().split('\n');
+    QStringList fails;
+    foreach (QByteArray line, out) {
+        while (line.endsWith("\r")) {
+            line.chop(1);
+        }
+        if (line.startsWith("CHECKTEST FAIL")) {
+            fails << QString::fromLocal8Bit(line);
+        }
+        if (line.startsWith("CHECKTEST PASS")) {
+            ++pass;
+        }
+    }
+
+    // We can't check that the exit code of make is 0, because some tests
+    // may have failed to compile, but that doesn't mean `make check' is broken.
+    // We do assume there are at least this many unbroken tests, though.
+    QVERIFY2(fails.count() == 0,
+        qPrintable(QString("`make check' doesn't work for %1 tests:\n%2")
+            .arg(fails.count()).arg(fails.join("\n")))
+    );
+    QVERIFY(pass > 50);
 }
 
 QStringList find_test_class(QString const& filename)

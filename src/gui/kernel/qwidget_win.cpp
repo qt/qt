@@ -2075,7 +2075,7 @@ void QWidgetPrivate::registerTouchWindow()
 
 void QWidgetPrivate::winSetupGestures()
 {
-#if !defined(QT_NO_NATIVE_GESTURES)
+#if !defined(QT_NO_GESTURES) && !defined(QT_NO_NATIVE_GESTURES)
     Q_Q(QWidget);
     if (!q || !q->isVisible() || !nativeGesturePanEnabled)
         return;

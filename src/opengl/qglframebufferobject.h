@@ -108,6 +108,8 @@ public:
     QPaintEngine *paintEngine() const;
     GLuint handle() const;
 
+    static bool bindDefault();
+
     static bool hasOpenGLFramebufferObjects();
 
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);

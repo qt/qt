@@ -757,6 +757,7 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
     return window;
 }
 
+#ifndef QT_NO_GESTURES
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
 /* We build the release package against the 10.4 SDK.
    So, to enable gestures for applications running on
@@ -773,6 +774,7 @@ enum {
     kEventParamMagnificationAmount  = 'magn'
 };
 #endif
+#endif // QT_NO_GESTURES
 
 // window events
 static EventTypeSpec window_events[] = {
@@ -1081,6 +1083,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
         handled_event = false;
         break; }
 
+#ifndef QT_NO_GESTURES
     case kEventClassGesture: {
         // First, find the widget that was under
         // the mouse when the gesture happened:
@@ -1147,6 +1150,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
         QApplication::sendSpontaneousEvent(widget, &qNGEvent);
     break; }
+#endif // QT_NO_GESTURES
 
     default:
         handled_event = false;

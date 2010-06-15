@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,20 +39,28 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+#include <QtCore/QFileInfo>
+#include <QtGui/QApplication>
+#include <QtDeclarative/QDeclarativeView>
 
-ListModel {
-    id: menuModel
-    ListElement {
-        name: "Bill Jones"
-        icon: "pics/qtlogo-64.png"
-    }
-    ListElement {
-        name: "Jane Doe"
-        icon: "pics/qtlogo-64.png"
-    }
-    ListElement {
-        name: "John Smith"
-        icon: "pics/qtlogo-64.png"
-    }
+int main(int argc, char *argv[])
+{
+    QApplication application(argc, argv);
+
+    const QString mainQmlApp = QLatin1String("dialcontrol.qml");
+    QDeclarativeView view;
+    view.setSource(QUrl(mainQmlApp));
+    view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
+
+#if defined(QT_KEYPAD_NAVIGATION)
+    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+#endif // QT_KEYPAD_NAVIGATION
+
+#if defined(Q_OS_SYMBIAN)
+    view.showFullScreen();
+#else // Q_OS_SYMBIAN
+    view.show();
+#endif // Q_OS_SYMBIAN
+
+    return application.exec();
 }

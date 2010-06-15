@@ -353,6 +353,29 @@ static void slurpComment(QByteArray &msg, const QList<QByteArray> &lines, int & 
     --l;
 }
 
+static void splitContext(QByteArray *comment, QByteArray *context)
+{
+    char *data = comment->data();
+    int len = comment->size();
+    int sep = -1, j = 0;
+
+    for (int i = 0; i < len; i++, j++) {
+        if (data[i] == '~' && i + 1 < len)
+            i++;
+        else if (data[i] == '|')
+            sep = j;
+        data[j] = data[i];
+    }
+    if (sep >= 0) {
+        QByteArray tmp = comment->mid(sep + 1, j - sep - 1);
+        comment->truncate(sep);
+        *context = *comment;
+        *comment = tmp;
+    } else {
+        comment->truncate(j);
+    }
+}
+
 static QString makePoHeader(const QString &str)
 {
     return QLatin1String("po-header-") + str.toLower().replace(QLatin1Char('-'), QLatin1Char('_'));
@@ -411,6 +434,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     lines.append(QByteArray());
 
     int l = 0, lastCmtLine = -1;
+    bool qtContexts = false;
     PoItem item;
     for (; l != lines.size(); ++l) {
         QByteArray line = lines.at(l);
@@ -437,7 +461,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         continue;
                     int idx = hdr.indexOf(':');
                     if (idx < 0) {
-                        cd.appendError(QString::fromLatin1("Unexpected PO header format '%1'\n")
+                        cd.appendError(QString::fromLatin1("Unexpected PO header format '%1'")
                             .arg(QString::fromLatin1(hdr)));
                         error = true;
                         break;
@@ -449,6 +473,8 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         translator.setLanguageCode(QString::fromLatin1(hdrValue));
                     } else if (hdrName == "X-Source-Language") {
                         translator.setSourceLanguageCode(QString::fromLatin1(hdrValue));
+                    } else if (hdrName == "X-Qt-Contexts") {
+                        qtContexts = (hdrValue == "true");
                     } else if (hdrName == "Plural-Forms") {
                         pluralForms  = hdrValue;
                     } else if (hdrName == "MIME-Version") {
@@ -456,7 +482,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                     } else if (hdrName == "Content-Type") {
                         if (cd.m_codecForSource.isEmpty()) {
                             if (!hdrValue.startsWith("text/plain; charset=")) {
-                                cd.appendError(QString::fromLatin1("Unexpected Content-Type header '%1'\n")
+                                cd.appendError(QString::fromLatin1("Unexpected Content-Type header '%1'")
                                     .arg(QString::fromLatin1(hdrValue)));
                                 error = true;
                                 // This will avoid a flood of conversion errors.
@@ -465,7 +491,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                                 QByteArray cod = hdrValue.mid(20);
                                 QTextCodec *cdc = QTextCodec::codecForName(cod);
                                 if (!cdc) {
-                                    cd.appendError(QString::fromLatin1("Unsupported codec '%1'\n")
+                                    cd.appendError(QString::fromLatin1("Unsupported codec '%1'")
                                             .arg(QString::fromLatin1(cod)));
                                     error = true;
                                     // This will avoid a flood of conversion errors.
@@ -477,7 +503,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         }
                     } else if (hdrName == "Content-Transfer-Encoding") {
                         if (hdrValue != "8bit") {
-                            cd.appendError(QString::fromLatin1("Unexpected Content-Transfer-Encoding '%1'\n")
+                            cd.appendError(QString::fromLatin1("Unexpected Content-Transfer-Encoding '%1'")
                                 .arg(QString::fromLatin1(hdrValue)));
                             return false;
                         }
@@ -498,7 +524,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                 // Keep in sync with savePO
                 static const char * const dfltHdrs[] = {
                     "MIME-Version", "Content-Type", "Content-Transfer-Encoding",
-                    "Plural-Forms", "X-Language", "X-Source-Language"
+                    "Plural-Forms", "X-Language", "X-Source-Language", "X-Qt-Contexts"
                 };
                 uint cdh = 0;
                 for (int cho = 0; cho < hdrOrder.length(); cho++) {
@@ -596,7 +622,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                     slurpComment(item.translatorComments, lines, l);
                     break;
                 case '.':
-                    if (line.startsWith("#. ts-context ")) {
+                    if (line.startsWith("#. ts-context ")) { // legacy
                         item.context = line.mid(14);
                     } else if (line.startsWith("#. ts-id ")) {
                         item.id = line.mid(9);
@@ -615,8 +641,10 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                                     codec->toUnicode(extra);
                     } else if (line.startsWith("#| msgctxt ")) {
                         item.oldTscomment = slurpEscapedString(lines, l, 11, "#| ", cd);
+                        if (qtContexts)
+                            splitContext(&item.oldTscomment, &item.context);
                     } else {
-                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'\n"))
+                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                             .arg(l + 1).arg(codec->toUnicode(lines[l])));
                         error = true;
                     }
@@ -633,13 +661,13 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                     } else if (line.startsWith("#~ msgctxt ")) {
                         item.tscomment = slurpEscapedString(lines, l, 11, "#~ ", cd);
                     } else {
-                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'\n"))
+                        cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                             .arg(l + 1).arg(codec->toUnicode(lines[l])));
                         error = true;
                     }
                     break;
                 default:
-                    cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'\n"))
+                    cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                         .arg(l + 1).arg(codec->toUnicode(lines[l])));
                     error = true;
                     break;
@@ -647,6 +675,8 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
             lastCmtLine = l;
         } else if (line.startsWith("msgctxt ")) {
             item.tscomment = slurpEscapedString(lines, l, 8, QByteArray(), cd);
+            if (qtContexts)
+                splitContext(&item.tscomment, &item.context);
         } else if (line.startsWith("msgid ")) {
             item.msgId = slurpEscapedString(lines, l, 6, QByteArray(), cd);
         } else if (line.startsWith("msgid_plural ")) {
@@ -655,7 +685,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                 item.extra[QLatin1String("po-msgid_plural")] = codec->toUnicode(extra);
             item.isPlural = true;
         } else {
-            cd.appendError(QString(QLatin1String("PO-format error in line %1: '%2'\n"))
+            cd.appendError(QString(QLatin1String("PO-format error in line %1: '%2'"))
                 .arg(l + 1).arg(codec->toUnicode(lines[l])));
             error = true;
         }
@@ -672,6 +702,16 @@ static void addPoHeader(Translator::ExtraData &headers, QStringList &hdrOrder,
     headers[makePoHeader(qName)] = value;
 }
 
+static QString escapeComment(const QString &in, bool escape)
+{
+    QString out = in;
+    if (escape) {
+        out.replace(QLatin1Char('~'), QLatin1String("~~"));
+        out.replace(QLatin1Char('|'), QLatin1String("~|"));
+    }
+    return out;
+}
+
 bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     QString str_format = QLatin1String("-format");
@@ -679,6 +719,13 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
     bool ok = true;
     QTextStream out(&dev);
     out.setCodec(cd.m_outputCodec.isEmpty() ? QByteArray("UTF-8") : cd.m_outputCodec);
+
+    bool qtContexts = false;
+    foreach (const TranslatorMessage &msg, translator.messages())
+        if (!msg.context().isEmpty()) {
+            qtContexts = true;
+            break;
+        }
 
     QString cmt = translator.extra(QLatin1String("po-header_comment"));
     if (!cmt.isEmpty())
@@ -703,6 +750,8 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
     }
     if (!translator.sourceLanguageCode().isEmpty())
         addPoHeader(headers, hdrOrder, "X-Source-Language", translator.sourceLanguageCode());
+    if (qtContexts)
+        addPoHeader(headers, hdrOrder, "X-Qt-Contexts", QLatin1String("true"));
     QString hdrStr;
     foreach (const QString &hdr, hdrOrder) {
         hdrStr += hdr;
@@ -721,8 +770,6 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
         if (!msg.extraComment().isEmpty())
             out << poEscapedLines(QLatin1String("#."), true, msg.extraComment());
 
-        if (!msg.context().isEmpty())
-            out << QLatin1String("#. ts-context ") << msg.context() << '\n';
         if (!msg.id().isEmpty())
             out << QLatin1String("#. ts-id ") << msg.id() << '\n';
 
@@ -770,15 +817,21 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 
         QString prefix = QLatin1String("#| ");
         if (!msg.oldComment().isEmpty())
-            out << poEscapedString(prefix, QLatin1String("msgctxt"), noWrap, msg.oldComment());
+            out << poEscapedString(prefix, QLatin1String("msgctxt"), noWrap,
+                                   escapeComment(msg.oldComment(), qtContexts));
         if (!msg.oldSourceText().isEmpty())
             out << poEscapedString(prefix, QLatin1String("msgid"), noWrap, msg.oldSourceText());
         QString plural = msg.extra(QLatin1String("po-old_msgid_plural"));
         if (!plural.isEmpty())
             out << poEscapedString(prefix, QLatin1String("msgid_plural"), noWrap, plural);
         prefix = QLatin1String((msg.type() == TranslatorMessage::Obsolete) ? "#~ " : "");
-        if (!msg.comment().isEmpty())
-            out << poEscapedString(prefix, QLatin1String("msgctxt"), noWrap, msg.comment());
+        if (!msg.context().isEmpty())
+            out << poEscapedString(prefix, QLatin1String("msgctxt"), noWrap,
+                                   escapeComment(msg.context(), true) + QLatin1Char('|')
+                                   + escapeComment(msg.comment(), true));
+        else if (!msg.comment().isEmpty())
+            out << poEscapedString(prefix, QLatin1String("msgctxt"), noWrap,
+                                   escapeComment(msg.comment(), qtContexts));
         out << poEscapedString(prefix, QLatin1String("msgid"), noWrap, msg.sourceText());
         if (!msg.isPlural()) {
             QString transl = msg.translation();

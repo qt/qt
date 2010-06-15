@@ -47,6 +47,8 @@
 #include "qwidget.h"
 #include "qdebug.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 QMacSwipeGestureRecognizer::QMacSwipeGestureRecognizer()
@@ -260,3 +262,5 @@ void QMacPanGestureRecognizer::reset(QGesture *gesture)
 #endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES

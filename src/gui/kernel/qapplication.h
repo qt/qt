@@ -399,7 +399,9 @@ private:
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
 #endif
+#ifndef QT_NO_GESTURES
     friend class QGestureManager;
+#endif
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
     Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())

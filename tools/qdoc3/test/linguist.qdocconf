@@ -30,13 +30,15 @@ qhp.Linguist.extraFiles          = images/bg_l.png \
 									images/page.png \
 									images/page_bg.png \
 									images/sprites-combined.png \
-									images/spinner.gif \
+									images/arrow-down.png \
+s									images/spinner.gif \
                              	    images/stylesheet-coffee-plastique.png \
                              	    images/taskmenuextension-example.png \
                              	   images/coloreditorfactoryimage.png \
                              	   images/dynamiclayouts-example.png \
 									scripts/functions.js \
 									scripts/jquery.js \
+									style/OfflineStyle.css \
 									style/style_ie6.css \
 									style/style_ie7.css \
 									style/style_ie8.css \

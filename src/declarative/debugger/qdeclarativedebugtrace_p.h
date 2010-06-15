@@ -50,7 +50,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QUrl;
-class QDeclarativeDebugTrace : public QDeclarativeDebugService
+class Q_AUTOTEST_EXPORT QDeclarativeDebugTrace : public QDeclarativeDebugService
 {
 public:
     enum EventType {

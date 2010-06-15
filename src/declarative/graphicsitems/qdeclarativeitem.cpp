@@ -97,9 +97,11 @@ QT_BEGIN_NAMESPACE
 
     The Translate object provides independent control over position in addition to the Item's x and y properties.
 
-    The following example moves the Y axis of the Rectangles while still allowing the Row element
+    The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
+    import Qt 4.7
+
     Row {
         Rectangle {
             width: 100; height: 100
@@ -113,6 +115,8 @@ QT_BEGIN_NAMESPACE
         }
     }
     \endqml
+
+    \image translate.png
 */
 
 /*!

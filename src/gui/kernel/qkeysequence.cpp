@@ -439,6 +439,10 @@ static const struct {
     { Qt::Key_MediaPrevious,              QT_TRANSLATE_NOOP("QShortcut", "Media Previous") },
     { Qt::Key_MediaNext,                  QT_TRANSLATE_NOOP("QShortcut", "Media Next") },
     { Qt::Key_MediaRecord,                QT_TRANSLATE_NOOP("QShortcut", "Media Record") },
+    //: Media player pause button
+    { Qt::Key_MediaPause,                 QT_TRANSLATE_NOOP("QShortcut", "Media Pause") },
+    //: Media player button to toggle between playing and paused
+    { Qt::Key_MediaTogglePlayPause,       QT_TRANSLATE_NOOP("QShortcut", "Toggle Media Play/Pause") },
     { Qt::Key_HomePage,                   QT_TRANSLATE_NOOP("QShortcut", "Home Page") },
     { Qt::Key_Favorites,                  QT_TRANSLATE_NOOP("QShortcut", "Favorites") },
     { Qt::Key_Search,                     QT_TRANSLATE_NOOP("QShortcut", "Search") },
@@ -575,13 +579,25 @@ static const struct {
 
     // --------------------------------------------------------------
     // Device keys
-    { Qt::Key_Context1,     QT_TRANSLATE_NOOP("QShortcut", "Context1") },
-    { Qt::Key_Context2,     QT_TRANSLATE_NOOP("QShortcut", "Context2") },
-    { Qt::Key_Context3,     QT_TRANSLATE_NOOP("QShortcut", "Context3") },
-    { Qt::Key_Context4,     QT_TRANSLATE_NOOP("QShortcut", "Context4") },
-    { Qt::Key_Call,         QT_TRANSLATE_NOOP("QShortcut", "Call") },
-    { Qt::Key_Hangup,       QT_TRANSLATE_NOOP("QShortcut", "Hangup") },
-    { Qt::Key_Flip,         QT_TRANSLATE_NOOP("QShortcut", "Flip") },
+    { Qt::Key_Context1,         QT_TRANSLATE_NOOP("QShortcut", "Context1") },
+    { Qt::Key_Context2,         QT_TRANSLATE_NOOP("QShortcut", "Context2") },
+    { Qt::Key_Context3,         QT_TRANSLATE_NOOP("QShortcut", "Context3") },
+    { Qt::Key_Context4,         QT_TRANSLATE_NOOP("QShortcut", "Context4") },
+    //: Button to start a call (note: a separate button is used to end the call)
+    { Qt::Key_Call,             QT_TRANSLATE_NOOP("QShortcut", "Call") },
+    //: Button to end a call (note: a separate button is used to start the call)
+    { Qt::Key_Hangup,           QT_TRANSLATE_NOOP("QShortcut", "Hangup") },
+    //: Button that will hang up if we're in call, or make a call if we're not.
+    { Qt::Key_ToggleCallHangup, QT_TRANSLATE_NOOP("QShortcut", "Toggle Call/Hangup") },
+    { Qt::Key_Flip,             QT_TRANSLATE_NOOP("QShortcut", "Flip") },
+    //: Button to trigger voice dialling
+    { Qt::Key_VoiceDial,        QT_TRANSLATE_NOOP("QShortcut", "Voice Dial") },
+    //: Button to redial the last number called
+    { Qt::Key_LastNumberRedial, QT_TRANSLATE_NOOP("QShortcut", "Last Number Redial") },
+    //: Button to trigger the camera shutter (take a picture)
+    { Qt::Key_Camera,           QT_TRANSLATE_NOOP("QShortcut", "Camera Shutter") },
+    //: Button to focus the camera
+    { Qt::Key_CameraFocus,      QT_TRANSLATE_NOOP("QShortcut", "Camera Focus") },
 
     // --------------------------------------------------------------
     // Japanese keyboard support

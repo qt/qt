@@ -161,6 +161,51 @@ static inline bool hasBackingStoreSupport()
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
+
+QRefCountedWidgetBackingStore::QRefCountedWidgetBackingStore()
+    :   m_ptr(0)
+    ,   m_count(0)
+{
+
+}
+
+QRefCountedWidgetBackingStore::~QRefCountedWidgetBackingStore()
+{
+    delete m_ptr;
+}
+
+void QRefCountedWidgetBackingStore::create(QWidget *widget)
+{
+    destroy();
+    m_ptr = new QWidgetBackingStore(widget);
+    m_count = 0;
+}
+
+void QRefCountedWidgetBackingStore::destroy()
+{
+    delete m_ptr;
+    m_ptr = 0;
+    m_count = 0;
+}
+
+void QRefCountedWidgetBackingStore::ref()
+{
+    Q_ASSERT(m_ptr);
+    ++m_count;
+}
+
+void QRefCountedWidgetBackingStore::deref()
+{
+    if (m_count) {
+        Q_ASSERT(m_ptr);
+        if (0 == --m_count) {
+            delete m_ptr;
+            m_ptr = 0;
+        }
+    }
+}
+
+
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
       , extra(0)
@@ -202,7 +247,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , picture(0)
 #elif defined(Q_WS_WIN)
       , noPaintOnScreen(0)
+  #ifndef QT_NO_GESTURES
       , nativeGesturePanEnabled(0)
+  #endif
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
       , hasAlienChildren(0)
@@ -1348,11 +1395,9 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     // a real toplevel window needs a backing store
     if (isWindow() && windowType() != Qt::Desktop) {
-        delete d->topData()->backingStore;
-        // QWidgetBackingStore will check this variable, hence it must be 0
-        d->topData()->backingStore = 0;
+        d->topData()->backingStore.destroy();
         if (hasBackingStoreSupport())
-            d->topData()->backingStore = new QWidgetBackingStore(this);
+            d->topData()->backingStore.create(this);
     }
 
     d->setModal_sys();
@@ -1397,8 +1442,10 @@ QWidget::~QWidget()
         qWarning("QWidget: %s (%s) deleted while being painted", className(), name());
 #endif
 
+#ifndef QT_NO_GESTURES
     foreach (Qt::GestureType type, d->gestureContext.keys())
         ungrabGesture(type);
+#endif
 
     // force acceptDrops false before winId is destroyed.
     d->registerDropSite(false);
@@ -1478,8 +1525,7 @@ QWidget::~QWidget()
         // the backing store will delete its window surface, which may or may
         // not have a reference to this widget that will be used later to
         // notify the window it no longer has a surface.
-        delete d->extra->topextra->backingStore;
-        d->extra->topextra->backingStore = 0;
+        d->extra->topextra->backingStore.destroy();
     }
 #endif
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
@@ -1577,7 +1623,6 @@ void QWidgetPrivate::createTLExtra()
         QTLWExtra* x = extra->topextra = new QTLWExtra;
         x->icon = 0;
         x->iconPixmap = 0;
-        x->backingStore = 0;
         x->windowSurface = 0;
         x->sharedPainter = 0;
         x->incw = x->inch = 0;
@@ -1661,7 +1706,7 @@ void QWidgetPrivate::deleteExtra()
 #endif
         if (extra->topextra) {
             deleteTLSysExtra();
-            delete extra->topextra->backingStore;
+            extra->topextra->backingStore.destroy();
             delete extra->topextra->icon;
             delete extra->topextra->iconPixmap;
 #if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
@@ -8540,9 +8585,11 @@ bool QWidget::event(QEvent *event)
 #endif // Q_WS_MAC
         break;
     }
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
         event->ignore();
         break;
+#endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11975,6 +12022,7 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
     Synonym for QList<QWidget *>.
 */
 
+#ifndef QT_NO_GESTURES
 /*!
     Subscribes the widget to a given \a gesture with specific \a flags.
 
@@ -12002,7 +12050,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
         manager->cleanupCachedGestures(this, gesture);
     }
 }
-
+#endif // QT_NO_GESTURES
 
 /*!
     \typedef WId
