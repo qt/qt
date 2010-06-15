@@ -271,7 +271,6 @@ bool QMngHandlerPrivate::getNextImage(QImage *result)
     }
     if ((MNG_NOERROR == ret) || (MNG_NEEDTIMERWAIT == ret)) {
         *result = image;
-        image.fill(0);
         frameIndex = nextIndex++;
         if (haveReadAll && (frameCount == 0))
             frameCount = nextIndex;

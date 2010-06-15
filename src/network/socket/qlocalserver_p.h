@@ -99,6 +99,7 @@ public:
     struct Listener {
         HANDLE handle;
         OVERLAPPED overlapped;
+        bool connected;
     };
 
     void setError(const QString &function);
