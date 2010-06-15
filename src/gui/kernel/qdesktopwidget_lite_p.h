@@ -59,7 +59,7 @@
 class QDesktopScreenWidget : public QWidget {
     Q_OBJECT
 public:
-    QDesktopScreenWidget(int screenNumber) { setWindowFlags(Qt::Desktop); setVisible(false); d_func()->screenNumber = screenNumber; }
+    QDesktopScreenWidget(int screenNumber = -1) { setWindowFlags(Qt::Desktop); setVisible(false); d_func()->screenNumber = screenNumber; }
 };
 
 class QDesktopWidgetPrivate : public QWidgetPrivate {
@@ -69,6 +69,7 @@ public:
     void updateScreenList();
 
     QList<QDesktopScreenWidget *> screens;
+    QDesktopScreenWidget virtualScreen;
 };
 
 #endif // QDESKTOPWIDGET_LITE_P_H

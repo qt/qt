@@ -86,11 +86,13 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
+    bool isVirtualDesktop() { return virtualDesktop; }
     void moveToScreen(QWidget *window, int screen);
 
 private:
     QVNCScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
+    bool virtualDesktop;
 };
 
 

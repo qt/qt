@@ -400,6 +400,12 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
     QList<QPlatformScreen *>::const_iterator screen = screens.constBegin();
     QList<QPlatformScreen *>::const_iterator end = screens.constEnd();
 
+    // The first screen in a virtual environment should know about all top levels
+    if (pi->isVirtualDesktop()) {
+        QWidget *w = (*screen)->topLevelAt(pos);
+        return w;
+    }
+
     while (screen != end) {
         if ((*screen)->geometry().contains(pos))
             return (*screen)->topLevelAt(pos);

@@ -95,6 +95,7 @@ static void usage()
 }
 
 QVNCIntegration::QVNCIntegration(const QStringList& paramList)
+    : virtualDesktop(false)
 {
     int sizeX = defaultWidth();
     int sizeY = defaultHeight();
@@ -124,6 +125,9 @@ QVNCIntegration::QVNCIntegration(const QStringList& paramList)
             screen->setObjectName(QString("screen %1").arg(display));
             screen->setDirty(screenRect);
             ++display;
+        }
+        else if (confString == QLatin1String("virtual")) {
+            virtualDesktop = true;
         }
         else {
             qWarning() << "Unknown VNC option:" << confString;
@@ -167,13 +171,27 @@ QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget, WId) const
 
 QPlatformWindow *QVNCIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {
-    QFbWindow *w = new QFbWindow(mPrimaryScreen, widget);
-    mPrimaryScreen->addWindow(w);
+    QFbWindow *w = new QFbWindow(widget);
+    if (virtualDesktop) {
+        QList<QPlatformScreen *>::const_iterator i = mScreens.constBegin();
+        QList<QPlatformScreen *>::const_iterator end = mScreens.constEnd();
+        QFbScreen *screen;
+        while (i != end) {
+            screen = static_cast<QFbScreen *>(*i);
+            screen->addWindow(w);
+            ++i;
+        }
+    }
+    else
+        mPrimaryScreen->addWindow(w);
     return w;
 }
 
 void QVNCIntegration::moveToScreen(QWidget *window, int screen)
 {
+    if (virtualDesktop) {   // all windows exist on all screens in virtual desktop mode
+        return;
+    }
     if (screen < 0 || screen > mScreens.size())
         return;
     QVNCScreen * newScreen = qobject_cast<QVNCScreen *>(mScreens.at(screen));

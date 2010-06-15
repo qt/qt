@@ -71,9 +71,19 @@ void QDesktopWidgetPrivate::updateScreenList()
         }
     }
 
+    QRegion virtualGeometry;
+    bool doVirtualGeometry = QApplicationPrivate::platformIntegration()->isVirtualDesktop();
+
     // update the geometry of each screen widget
     for (int i = 0; i < screens.length(); i++) {
-        screens.at(i)->setGeometry(screenList.at(i)->geometry());
+        QRect screenGeometry = screenList.at(i)->geometry();
+        screens.at(i)->setGeometry(screenGeometry);
+        if (doVirtualGeometry)
+            virtualGeometry += screenGeometry;
+    }
+
+    if (doVirtualGeometry) {
+        virtualScreen.setGeometry(virtualGeometry.boundingRect());
     }
 }
 
@@ -106,6 +116,8 @@ int QDesktopWidget::numScreens() const
 QWidget *QDesktopWidget::screen(int screen)
 {
     Q_D(QDesktopWidget);
+    if (QApplicationPrivate::platformIntegration()->isVirtualDesktop())
+        return &d->virtualScreen;
     if (screen < 0 || screen >= d->screens.length())
         return d->screens.at(0);
     return d->screens.at(screen);

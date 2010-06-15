@@ -162,8 +162,9 @@ void QFbScreen::generateRects()
             continue;
 
         if (!windowStack[i]->widget()->testAttribute(Qt::WA_TranslucentBackground)) {
-            remainingScreen -= windowStack[i]->localGeometry();
-            QRegion windowRegion(windowStack[i]->localGeometry());
+            QRect localGeometry = windowStack.at(i)->geometry().translated(-screenOffset); // global to local translation
+            remainingScreen -= localGeometry;
+            QRegion windowRegion(localGeometry);
             windowRegion -= remainingScreen;
             foreach(QRect rect, windowRegion.rects()) {
                 cachedRects += QPair<QRect, int>(rect, i);
@@ -180,7 +181,7 @@ void QFbScreen::generateRects()
 
 QRegion QFbScreen::doRedraw()
 {
-    QPoint screenOffset = mGeometry.topLeft();  // optimize me!
+    QPoint screenOffset = mGeometry.topLeft();
 
     QRegion touchedRegion;
     if (cursor && cursor->isDirty() && cursor->isOnScreen()) {
@@ -257,9 +258,7 @@ QRegion QFbScreen::doRedraw()
 void QFbScreen::addWindow(QFbWindow *surface)
 {
     windowStack.prepend(surface);
-    surface->mScreen = this;
-    QPoint screenOffset = mGeometry.topLeft();
-    surface->localGeometry() = surface->geometry().translated(-screenOffset); // global to local translation
+    surface->mScreens.append(this);
     invalidateRectCache();
     setDirty(surface->geometry());
 }
@@ -267,13 +266,19 @@ void QFbScreen::addWindow(QFbWindow *surface)
 void QFbScreen::removeWindow(QFbWindow * surface)
 {
     windowStack.removeOne(surface);
+    surface->mScreens.removeOne(this);
     invalidateRectCache();
     setDirty(surface->geometry());
 }
 
 void QFbWindow::raise()
 {
-    mScreen->raise(this);
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        (*i)->raise(this);
+        ++i;
+    }
 }
 
 void QFbScreen::raise(QPlatformWindow * surface)
@@ -289,7 +294,12 @@ void QFbScreen::raise(QPlatformWindow * surface)
 
 void QFbWindow::lower()
 {
-    mScreen->lower(this);
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        (*i)->lower(this);
+        ++i;
+    }
 }
 
 void QFbScreen::lower(QPlatformWindow * surface)
@@ -315,9 +325,8 @@ QWidget * QFbScreen::topLevelAt(const QPoint & p) const
     return 0;
 }
 
-QFbWindow::QFbWindow(QFbScreen *screen, QWidget *window)
+QFbWindow::QFbWindow(QWidget *window)
     :QPlatformWindow(window),
-      mScreen(screen),
       visibleFlag(false)
 {
     static QAtomicInt winIdGenerator(1);
@@ -327,7 +336,12 @@ QFbWindow::QFbWindow(QFbScreen *screen, QWidget *window)
 
 QFbWindow::~QFbWindow()
 {
-    mScreen->removeWindow(this);
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        (*i)->removeWindow(this);
+        ++i;
+    }
 }
 
 
@@ -361,18 +375,23 @@ void QFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoin
 void QFbWindow::repaint(const QRegion &region)
 {
     QRect currentGeometry = geometry();
-    // If this is a move, redraw the previous location
-    if (oldGeometry != currentGeometry) {
-        mScreen->setDirty(oldGeometry);
-        oldGeometry = currentGeometry;
-    }
 
     QRect dirtyClient = region.boundingRect();
     QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
                       currentGeometry.top() + dirtyClient.top(),
                       dirtyClient.width(),
                       dirtyClient.height());
-    mScreen->setDirty(dirtyRegion);
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        // If this is a move, redraw the previous location
+        if (oldGeometry != currentGeometry) {
+            (*i)->setDirty(oldGeometry);
+            oldGeometry = currentGeometry;
+        }
+        (*i)->setDirty(dirtyRegion);
+        ++i;
+    }
 }
 
 void QFbWindowSurface::resize(const QSize &size)
@@ -389,13 +408,15 @@ void QFbWindow::setGeometry(const QRect &rect)
     oldGeometry = geometry();
 
 
-    mScreen->invalidateRectCache();
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        (*i)->invalidateRectCache();
+        ++i;
+    }
 //###    QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
-
-    QPoint screenOffset = mScreen->geometry().topLeft();
-    mLocalGeometry = rect.translated(-screenOffset);     // global to local translation
 }
 
 bool QFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
@@ -416,14 +437,24 @@ void QFbWindowSurface::endPaint(const QRegion &region)
 void QFbWindow::setVisible(bool visible)
 {
     visibleFlag = visible;
-    mScreen->invalidateRectCache();
-    mScreen->setDirty(geometry());
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        (*i)->invalidateRectCache();
+        (*i)->setDirty(geometry());
+        ++i;
+    }
 }
 
 Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags type)
 {
     flags = type;
-    mScreen->invalidateRectCache();
+    QList<QFbScreen *>::const_iterator i = mScreens.constBegin();
+    QList<QFbScreen *>::const_iterator end = mScreens.constEnd();
+    while (i != end) {
+        (*i)->invalidateRectCache();
+        ++i;
+    }
     return flags;
 }
 

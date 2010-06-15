@@ -80,7 +80,7 @@ class QFbWindow : public QPlatformWindow
 {
 public:
 
-    QFbWindow(QFbScreen *screen, QWidget *window);
+    QFbWindow(QWidget *window);
     ~QFbWindow();
 
 
@@ -99,17 +99,14 @@ public:
 
     virtual void repaint(const QRegion&);
 
-    virtual QRect localGeometry() { return mLocalGeometry; }
-
 protected:
     friend class QFbWindowSurface;
     friend class QFbScreen;
     QFbWindowSurface *surface;
-    QFbScreen *mScreen;
+    QList<QFbScreen *> mScreens;
     QRect oldGeometry;
     bool visibleFlag;
     Qt::WindowFlags flags;
-    QRect mLocalGeometry;        // local screen coordinates
 
     WId windowId;
 };
