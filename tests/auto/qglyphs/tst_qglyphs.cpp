@@ -46,7 +46,7 @@
 #include <qtextlayout.h>
 #include <qfontdatabase.h>
 
-//#define DEBUG_SAVE_IMAGE
+#define DEBUG_SAVE_IMAGE
 
 class tst_QGlyphs: public QObject
 {
@@ -305,7 +305,7 @@ void tst_QGlyphs::drawNonExistentGlyphs()
 void tst_QGlyphs::drawMultiScriptText1()
 {
     QString text;
-    text += QChar(0x3131); // Hangul, Kiyeok
+    text += QChar(0x03D0); // Greek, beta
 
     QTextLayout textLayout(text);
     textLayout.beginLayout();
@@ -349,7 +349,7 @@ void tst_QGlyphs::drawMultiScriptText2()
 
     QString text;
     text += QChar(0x0621); // Arabic, Hamza
-    text += QChar(0x3131); // Hangul, Kiyeok
+    text += QChar(0x03D0); // Greek, beta
 
     QTextLayout textLayout(text);
     textLayout.beginLayout();
