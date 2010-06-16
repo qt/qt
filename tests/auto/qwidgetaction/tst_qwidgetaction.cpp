@@ -51,6 +51,8 @@
 #include <qmainwindow.h>
 #include <qmenubar.h>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -185,13 +187,13 @@ void tst_QWidgetAction::visibilityUpdate()
     action->setDefaultWidget(combo);
 
     tb.addAction(action);
-    qApp->processEvents(); //the call to show is delayed by the toolbar layout
-    QVERIFY(combo->isVisible());
+    //the call to show is delayed by the toolbar layout
+    QTRY_VERIFY(combo->isVisible());
     QVERIFY(action->isVisible());
 
     action->setVisible(false);
-    QTest::qWait(100); //the call to hide is delayed by the toolbar layout
-    QVERIFY(!combo->isVisible());
+    //the call to hide is delayed by the toolbar layout
+    QTRY_VERIFY(!combo->isVisible());
 
     delete action;
     // action also deletes combo
