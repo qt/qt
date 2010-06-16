@@ -289,7 +289,7 @@ QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
         QtFontSize *newPixelSizes = (QtFontSize *)malloc(sizeof(QtFontSize));
         Q_CHECK_PTR(newPixelSizes);
         pixelSizes = newPixelSizes;
-    } else if (!(count % 8)) {
+    } else if (!(count % 8) || count == 1) {
         QtFontSize *newPixelSizes = (QtFontSize *)
                      realloc(pixelSizes,
                               (((count+8) >> 3) << 3) * sizeof(QtFontSize));
