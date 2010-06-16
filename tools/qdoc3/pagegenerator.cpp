@@ -299,8 +299,8 @@ QTextStream &PageGenerator::out()
 /*!
   Recursive writing of html files from the root \a node.
  */
-void PageGenerator::generateInnerNode(const InnerNode *node,
-                                      CodeMarker *marker)
+void
+PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
 {
     if (!node->url().isNull())
         return;

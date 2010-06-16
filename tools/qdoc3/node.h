@@ -175,6 +175,7 @@ class Node
     virtual QString nameForLists() const { return nam; }
 
     Access access() const { return acc; }
+    QString accessString() const;
     const Location& location() const { return loc; }
     const Doc& doc() const { return d; }
     Status status() const { return sta; }
@@ -312,6 +313,7 @@ struct RelatedClass
       : access(access0), 
         node(node0),
         dataTypeWithTemplateArgs(dataTypeWithTemplateArgs0) { }
+    QString accessString() const;
 
     Node::Access        access;
     ClassNode*          node;
