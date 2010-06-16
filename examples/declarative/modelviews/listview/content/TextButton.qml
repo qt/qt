@@ -40,32 +40,39 @@
 
 import Qt 4.7
 
-Item {
-    id: page
-    property int repeatdelay: 300
-    property int repeatperiod: 75
-    property bool isPressed: false
+Rectangle {
+    id: container
 
-    signal pressed
-    signal released
+    property alias text: label.text
+
     signal clicked
 
-    SequentialAnimation on isPressed {
-        running: false
-        id: autoRepeat
-        PropertyAction { target: page; property: "isPressed"; value: true }
-        ScriptAction { script: page.pressed() }
-        ScriptAction { script: page.clicked() }
-        PauseAnimation { duration: repeatdelay }
-        SequentialAnimation {
-            loops: Animation.Infinite
-            ScriptAction { script: page.clicked() }
-            PauseAnimation { duration: repeatperiod }
-        }
+    width: label.width + 20; height: label.height + 6
+    smooth: true
+    radius: 10
+
+    gradient: Gradient {
+        GradientStop { id: gradientStop; position: 0.0; color: palette.light }
+        GradientStop { position: 1.0; color: palette.button }
     }
+
+    SystemPalette { id: palette }
+
     MouseArea {
+        id: mouseArea
         anchors.fill: parent
-        onPressed: autoRepeat.start()
-        onReleased: { autoRepeat.stop(); parent.isPressed = false; page.released() }
+        onClicked: { container.clicked() }
+    }
+
+    Text {
+        id: label
+        anchors.centerIn: parent
+    }
+
+    states: State {
+        name: "pressed"
+        when: mouseArea.pressed
+        PropertyChanges { target: gradientStop; color: palette.dark }
     }
 }
+

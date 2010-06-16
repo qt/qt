@@ -41,7 +41,7 @@
 import Qt 4.7
 import "content"
 
-// This example illustrates expanding a list item to show a more detailed view
+// This example illustrates expanding a list item to show a more detailed view.
 
 Rectangle {
     id: page
@@ -49,13 +49,13 @@ Rectangle {
     color: "black"
 
     // Delegate for the recipes.  This delegate has two modes:
-    // 1. the list mode (default), which just shows the picture and title of the recipe.
-    // 2. the details mode, which also shows the ingredients and method.
+    // 1. List mode (default), which just shows the picture and title of the recipe.
+    // 2. Details mode, which also shows the ingredients and method.
     Component {
         id: recipeDelegate
 
         Item {
-            id: wrapper
+            id: recipe
 
             // Create a property to contain the visibility of the details.
             // We can bind multiple element's opacity to this one property,
@@ -63,14 +63,15 @@ Rectangle {
             // want to fade.
             property real detailsOpacity : 0
 
-            width: list.width
+            width: listView.width
+            height: 70
 
             // A simple rounded rectangle for the background
             Rectangle {
                 id: background
-                x: 1; y: 2; width: parent.width - 2; height: parent.height - 4
-                color: "#FEFFEE"
-                border.color: "#FFBE4F"
+                x: 2; y: 2; width: parent.width - x*2; height: parent.height - y*2
+                color: "ivory"
+                border.color: "orange"
                 radius: 5
             }
 
@@ -78,50 +79,53 @@ Rectangle {
             // When clicked it changes mode to 'Details'.  If we are already
             // in Details mode, then no change will happen.
             MouseArea {
-                id: pageMouse
                 anchors.fill: parent
-                onClicked: wrapper.state = 'Details';
+                onClicked: recipe.state = 'Details';
             }
 
-            // Layout the page.  Picture, title and ingredients at the top, method at the
+            // Lay out the page: picture, title and ingredients at the top, and method at the
             // bottom.  Note that elements that should not be visible in the list
-            // mode have their opacity set to wrapper.detailsOpacity.
+            // mode have their opacity set to recipe.detailsOpacity.
             Row {
                 id: topLayout
-                x: 10; y: 10; height: recipePic.height; width: parent.width
+                x: 10; y: 10; height: recipeImage.height; width: parent.width
                 spacing: 10
 
                 Image {
-                    id: recipePic
-                    source: picture; width: 48; height: 48
+                    id: recipeImage
+                    width: 50; height: 50
+                    source: picture
                 }
 
                 Column {
-                    width: background.width-recipePic.width-20; height: recipePic.height; 
+                    width: background.width - recipeImage.width - 20; height: recipeImage.height
                     spacing: 5
 
-                    Text { id: name; text: title; font.bold: true; font.pointSize: 16 }
+                    Text { 
+                        text: title
+                        font.bold: true; font.pointSize: 16
+                    }
 
                     Text {
                         text: "Ingredients"
                         font.pointSize: 12; font.bold: true
-                        opacity: wrapper.detailsOpacity
+                        opacity: recipe.detailsOpacity
                     }
 
                     Text {
                         text: ingredients
                         wrapMode: Text.WordWrap
                         width: parent.width
-                        opacity: wrapper.detailsOpacity
+                        opacity: recipe.detailsOpacity
                     }
                 }
             }
 
             Item {
                 id: details
-                x: 10; width: parent.width-20
+                x: 10; width: parent.width - 20
                 anchors { top: topLayout.bottom; topMargin: 10; bottom: parent.bottom; bottomMargin: 10 }
-                opacity: wrapper.detailsOpacity
+                opacity: recipe.detailsOpacity
 
                 Text {
                     id: methodTitle
@@ -153,30 +157,28 @@ Rectangle {
             }
 
             // A button to close the detailed view, i.e. set the state back to default ('').
-            MediaButton {
-                y: 10; anchors { right: background.right; rightMargin: 5 }
-                opacity: wrapper.detailsOpacity
+            TextButton {
+                y: 10
+                anchors { right: background.right; rightMargin: 10 }
+                opacity: recipe.detailsOpacity
                 text: "Close"
 
-                onClicked: wrapper.state = '';
+                onClicked: recipe.state = '';
             }
-
-            // Set the default height to the height of the picture, plus margin.
-            height: 68
 
             states: State {
                 name: "Details"
 
                 PropertyChanges { target: background; color: "white" }
-                PropertyChanges { target: recipePic; width: 128; height: 128 } // Make picture bigger
-                PropertyChanges { target: wrapper; detailsOpacity: 1; x: 0 } // Make details visible
-                PropertyChanges { target: wrapper; height: list.height } // Fill the entire list area with the detailed view
+                PropertyChanges { target: recipeImage; width: 130; height: 130 } // Make picture bigger
+                PropertyChanges { target: recipe; detailsOpacity: 1; x: 0 } // Make details visible
+                PropertyChanges { target: recipe; height: listView.height } // Fill the entire list area with the detailed view
 
                 // Move the list so that this item is at the top.
-                PropertyChanges { target: wrapper.ListView.view; explicit: true; contentY: wrapper.y }
+                PropertyChanges { target: recipe.ListView.view; explicit: true; contentY: recipe.y }
 
                 // Disallow flicking while we're in detailed view
-                PropertyChanges { target: wrapper.ListView.view; interactive: false }
+                PropertyChanges { target: recipe.ListView.view; interactive: false }
             }
 
             transitions: Transition {
@@ -191,10 +193,10 @@ Rectangle {
 
     // The actual list
     ListView {
-        id: list
+        id: listView
         anchors.fill: parent
-        clip: true
-        model: Recipes
+        model: RecipesModel {}
         delegate: recipeDelegate
+        clip: true
     }
 }

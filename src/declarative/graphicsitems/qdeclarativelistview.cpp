@@ -1936,6 +1936,8 @@ void QDeclarativeListView::setCacheBuffer(int b)
 /*!
     \qmlproperty string ListView::section.property
     \qmlproperty enumeration ListView::section.criteria
+    \qmlproperty Component ListView::section.delegate
+
     These properties hold the expression to be evaluated for the \l section attached property.
 
     \c section.property hold the name of the property to use to determine
@@ -1948,6 +1950,8 @@ void QDeclarativeListView::setCacheBuffer(int b)
     \o ViewSection.FullString (default) - section is the value of the property.
     \o ViewSection.FirstCharacter - section is the first character of the property value.
     \endlist
+
+    \c section.delegate holds the delegate component for each section.
 
     Each item in the list has attached properties named \c ListView.section and
     \c ListView.prevSection.  These may be used to place a section header for
@@ -1985,7 +1989,7 @@ QString QDeclarativeListView::currentSection() const
 
     These properties hold the move and resize animation speed of the highlight delegate.
 
-    \c highlightFollowsCurrentItem must be true for these properties
+    \l highlightFollowsCurrentItem must be true for these properties
     to have effect.
 
     The default value for the speed properties is 400 pixels/second.
