@@ -180,6 +180,7 @@ private:
     bool closeNewTabIfNeeded;
 
     friend class HelpViewer;
+    QUrl m_loadingUrl;
     Qt::MouseButtons m_pressedButtons;
     Qt::KeyboardModifiers m_keyboardModifiers;
 };
@@ -237,6 +238,11 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
             return false;
     }
 
+    m_loadingUrl = url; // because of async page loading, we will hit some kind
+    // of race condition while using a remote command, like a combination of
+    // SetSource; SyncContent. SetSource would be called and SyncContents shortly
+    // afterwards, but the page might not have finished loading and the old url
+    // would be returned.
     return true;
 }
 
@@ -270,6 +276,7 @@ HelpViewer::HelpViewer(qreal zoom, QWidget *parent)
     connect(page(), SIGNAL(linkHovered(QString, QString, QString)), this,
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
+    connect(this, SIGNAL(loadStarted()), this, SLOT(setLoadStarted()));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
     connect(this, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged()));
     connect(page(), SIGNAL(printRequested(QWebFrame*)), this, SIGNAL(printRequested()));
@@ -336,6 +343,11 @@ void HelpViewer::setTitle(const QString &title)
 QUrl HelpViewer::source() const
 {
     TRACE_OBJ
+    HelpPage *currentPage = static_cast<HelpPage*> (page());
+    if (currentPage && !d->m_loadFinished) {
+        // see HelpPage::acceptNavigationRequest(...)
+        return currentPage->m_loadingUrl;
+    }
     return url();
 }
 
