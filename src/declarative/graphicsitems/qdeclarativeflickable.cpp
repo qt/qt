@@ -1214,6 +1214,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         default:
             break;
         }
+        stealThisEvent = d->stealMouse;   // Update stealThisEvent and grabber in case changed by function calls above
         grabber = qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem());
         if (grabber && stealThisEvent && !grabber->keepMouseGrab() && grabber != this) {
             d->clearDelayedPress();
