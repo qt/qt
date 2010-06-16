@@ -100,6 +100,7 @@ void QDeclarativeTextInput::setText(const QString &s)
     if(s == text())
         return;
     d->control->setText(s);
+    d->updateHorizontalScroll();
     //emit textChanged();
 }
 
@@ -337,6 +338,7 @@ void QDeclarativeTextInput::setHAlign(HAlignment align)
         return;
     d->hAlign = align;
     updateRect();
+    d->updateHorizontalScroll();
     emit horizontalAlignmentChanged(d->hAlign);
 }
 
@@ -554,7 +556,9 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
         return;
 
     d->autoScroll = b;
-
+    d->updateHorizontalScroll();
+    //We need to repaint so that the scrolling is taking into account.
+    updateSize(true);
     emit autoScrollChanged(d->autoScroll);
 }
 
@@ -836,6 +840,7 @@ void QDeclarativeTextInput::moveCursor()
     Q_D(QDeclarativeTextInput);
     if(!d->cursorItem)
         return;
+    d->updateHorizontalScroll();
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
@@ -845,7 +850,6 @@ void QDeclarativeTextInput::moveCursor()
 QRectF QDeclarativeTextInput::positionToRectangle(int x) const
 {
     Q_D(const QDeclarativeTextInput);
-    QFontMetrics fm = QFontMetrics(d->font);
     return QRectF(d->control->cursorToX(x)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
@@ -1006,6 +1010,55 @@ void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
     QDeclarativePaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
+void QDeclarativeTextInputPrivate::updateHorizontalScroll()
+{
+    Q_Q(QDeclarativeTextInput);
+    QFontMetrics fm = QFontMetrics(font);
+    int cix = qRound(control->cursorToX());
+    QRect br(q->boundingRect().toRect());
+    //###Is this using bearing appropriately?
+    int minLB = qMax(0, -fm.minLeftBearing());
+    int minRB = qMax(0, -fm.minRightBearing());
+    int widthUsed = qRound(control->naturalTextWidth()) + 1 + minRB;
+    if (autoScroll) {
+        if ((minLB + widthUsed) <=  br.width()) {
+            // text fits in br; use hscroll for alignment
+            switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
+            case Qt::AlignRight:
+                hscroll = widthUsed - br.width() + 1;
+                break;
+            case Qt::AlignHCenter:
+                hscroll = (widthUsed - br.width()) / 2;
+                break;
+            default:
+                // Left
+                hscroll = 0;
+                break;
+            }
+            hscroll -= minLB;
+        } else if (cix - hscroll >= br.width()) {
+            // text doesn't fit, cursor is to the right of br (scroll right)
+            hscroll = cix - br.width() + 1;
+        } else if (cix - hscroll < 0 && hscroll < widthUsed) {
+            // text doesn't fit, cursor is to the left of br (scroll left)
+            hscroll = cix;
+        } else if (widthUsed - hscroll < br.width()) {
+            // text doesn't fit, text document is to the left of br; align
+            // right
+            hscroll = widthUsed - br.width() + 1;
+        }
+    } else {
+        if(hAlign == QDeclarativeTextInput::AlignRight){
+            hscroll = q->width() - widthUsed;
+        }else if(hAlign == QDeclarativeTextInput::AlignHCenter){
+            hscroll = (q->width() - widthUsed) / 2;
+        } else {
+            hscroll = 0;
+        }
+        hscroll -= minLB;
+    }
+}
+
 void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
 {
     Q_D(QDeclarativeTextInput);
@@ -1019,48 +1072,11 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
             flags |= QLineControl::DrawSelections;
     QPoint offset = QPoint(0,0);
     QFontMetrics fm = QFontMetrics(d->font);
-    int cix = qRound(d->control->cursorToX());
     QRect br(boundingRect().toRect());
-    //###Is this using bearing appropriately?
-    int minLB = qMax(0, -fm.minLeftBearing());
-    int minRB = qMax(0, -fm.minRightBearing());
-    int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
     if (d->autoScroll) {
-        if ((minLB + widthUsed) <=  br.width()) {
-            // text fits in br; use hscroll for alignment
-            switch (d->hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
-            case Qt::AlignRight:
-                d->hscroll = widthUsed - br.width() + 1;
-                break;
-            case Qt::AlignHCenter:
-                d->hscroll = (widthUsed - br.width()) / 2;
-                break;
-            default:
-                // Left
-                d->hscroll = 0;
-                break;
-            }
-            d->hscroll -= minLB;
-        } else if (cix - d->hscroll >= br.width()) {
-            // text doesn't fit, cursor is to the right of br (scroll right)
-            d->hscroll = cix - br.width() + 1;
-        } else if (cix - d->hscroll < 0 && d->hscroll < widthUsed) {
-            // text doesn't fit, cursor is to the left of br (scroll left)
-            d->hscroll = cix;
-        } else if (widthUsed - d->hscroll < br.width()) {
-            // text doesn't fit, text document is to the left of br; align
-            // right
-            d->hscroll = widthUsed - br.width() + 1;
-        }
         // the y offset is there to keep the baseline constant in case we have script changes in the text.
         offset = br.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
     } else {
-        if(d->hAlign == AlignRight){
-            d->hscroll = width() - widthUsed;
-        }else if(d->hAlign == AlignHCenter){
-            d->hscroll = (width() - widthUsed) / 2;
-        }
-        d->hscroll -= minLB;
         offset = QPoint(d->hscroll, 0);
     }
     d->control->draw(p, offset, r, flags);
@@ -1230,6 +1246,7 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
 {
     Q_D(QDeclarativeTextInput);
     d->control->moveCursor(position, true);
+    d->updateHorizontalScroll();
 }
 
 /*!
@@ -1420,6 +1437,7 @@ void QDeclarativeTextInput::selectionChanged()
 void QDeclarativeTextInput::q_textChanged()
 {
     Q_D(QDeclarativeTextInput);
+    d->updateHorizontalScroll();
     updateSize();
     emit textChanged();
     if(hasAcceptableInput() != d->oldValidity){
