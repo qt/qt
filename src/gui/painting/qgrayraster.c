@@ -156,6 +156,7 @@
 #define ErrRaster_Invalid_Outline   -1
 #define ErrRaster_Invalid_Argument  -3
 #define ErrRaster_Memory_Overflow   -4
+#define ErrRaster_OutOfMemory       -6
 
 #define QT_FT_BEGIN_HEADER
 #define QT_FT_END_HEADER
@@ -221,7 +222,6 @@
 #define UPSCALE( x )    ( (x) >> ( 6 - PIXEL_BITS ) )
 #define DOWNSCALE( x )  ( (x) << ( 6 - PIXEL_BITS ) )
 #endif
-
 
   /*************************************************************************/
   /*                                                                       */
@@ -1757,8 +1757,7 @@
 #ifdef DEBUG_GRAYS
           fprintf( stderr, "Rotten glyph!\n" );
 #endif
-          /* == Raster_Err_OutOfMemory in qblackraster.c */
-          return -6;
+          return ErrRaster_OutOfMemory;
         }
 
         if ( bottom-top >= ras.band_size )
@@ -1784,7 +1783,7 @@
 
 
   static int
-  gray_raster_render( PRaster                  raster,
+  gray_raster_render( QT_FT_Raster                  raster,
                       const QT_FT_Raster_Params*  params )
   {
     const QT_FT_Outline*  outline    = (const QT_FT_Outline*)params->source;
@@ -1794,6 +1793,12 @@
 
     if ( !raster || !raster->buffer || !raster->buffer_size )
       return ErrRaster_Invalid_Argument;
+
+    // If raster object and raster buffer are allocated, but
+    // raster size isn't of the minimum size, indicate out of
+    // memory.
+    if (raster && raster->buffer && raster->buffer_size < MINIMUM_POOL_SIZE )
+      return ErrRaster_OutOfMemory;
 
     /* return immediately if the outline is empty */
     if ( outline->n_points == 0 || outline->n_contours <= 0 )
@@ -1874,19 +1879,15 @@
   /****                         a static object.                  *****/
 
   static int
-  gray_raster_new( void *  memory,
-                   QT_FT_Raster*  araster )
+  gray_raster_new( QT_FT_Raster*  araster )
   {
-    if (memory)
-      fprintf(stderr, "gray_raster_new(), memory ignored");
-    memory = malloc(sizeof(TRaster));
-    if (!memory) {
+    *araster = malloc(sizeof(TRaster));
+    if (!*araster) {
         *araster = 0;
         return ErrRaster_Memory_Overflow;
     }
-    QT_FT_MEM_ZERO(memory, sizeof(TRaster));
+    QT_FT_MEM_ZERO(*araster, sizeof(TRaster));
 
-    *araster = (QT_FT_Raster) memory;
     return 0;
   }
 
@@ -1905,10 +1906,9 @@
   {
     PRaster  rast = (PRaster)raster;
 
-
     if ( raster )
     {
-      if ( pool_base && pool_size >= (long)sizeof ( TWorker ) + 2048 )
+      if ( pool_base && ( pool_size >= MINIMUM_POOL_SIZE ) )
       {
         PWorker  worker = (PWorker)pool_base;
 
@@ -1922,6 +1922,13 @@
                                       ~( sizeof ( TCell ) - 1 );
         rast->band_size   = (int)( rast->buffer_size /
                                      ( sizeof ( TCell ) * 8 ) );
+      }
+      else if ( pool_base)
+      { // Case when there is a raster pool allocated, but it
+        // doesn't have the minimum size (and so memory will be reallocated)
+          rast->buffer = pool_base;
+          rast->worker = NULL;
+          rast->buffer_size = pool_size;
       }
       else
       {
