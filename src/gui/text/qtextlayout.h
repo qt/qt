@@ -49,6 +49,7 @@
 #include <QtCore/qobject.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
+#include <QtGui/qglyphs.h>
 
 QT_BEGIN_HEADER
 
@@ -166,6 +167,8 @@ public:
     qreal minimumWidth() const;
     qreal maximumWidth() const;
 
+    QList<QGlyphs> glyphs() const;
+
     QTextEngine *engine() const { return d; }
     void setFlags(int flags);
 private:
@@ -236,6 +239,8 @@ public:
 private:
     QTextLine(int line, QTextEngine *e) : i(line), eng(e) {}
     void layout_helper(int numGlyphs);
+    QList<QGlyphs> glyphs() const;
+
     friend class QTextLayout;
     int i;
     QTextEngine *eng;

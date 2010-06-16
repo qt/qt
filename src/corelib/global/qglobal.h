@@ -2041,8 +2041,7 @@ enum { /* TYPEINFO flags */
     Q_DUMMY_TYPE = 0x4
 };
 
-#define Q_DECLARE_TYPEINFO_TEMPLATE(TYPE, FLAGS, TEMPLATE_ARG) \
-template <TEMPLATE_ARG> \
+#define Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS) \
 class QTypeInfo<TYPE > \
 { \
 public: \
@@ -2057,7 +2056,8 @@ public: \
 }
 
 #define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
-Q_DECLARE_TYPEINFO_TEMPLATE(TYPE, FLAGS,  )
+template<> \
+Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS)
 
 
 template <typename T>

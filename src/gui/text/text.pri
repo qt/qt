@@ -39,7 +39,9 @@ HEADERS += \
 	text/qzipwriter_p.h \
 	text/qtextodfwriter_p.h \
 	text/qstatictext_p.h \
-	text/qstatictext.h
+	text/qstatictext.h \
+        text/qglyphs.h \
+        text/qglyphs_p.h
 
 SOURCES += \
 	text/qfont.cpp \
@@ -69,7 +71,8 @@ SOURCES += \
 	text/qcssparser.cpp \
 	text/qzip.cpp \
 	text/qtextodfwriter.cpp \
-	text/qstatictext.cpp
+	text/qstatictext.cpp \
+        text/qglyphs.cpp
 
 win32 {
 	SOURCES += \

@@ -61,6 +61,8 @@
 #include "qstyle.h"
 #include "qthread.h"
 #include "qvarlengtharray.h"
+#include "qstatictext.h"
+#include "qglyphs.h"
 
 #include <private/qfontengine_p.h>
 #include <private/qpaintengine_p.h>
@@ -70,8 +72,8 @@
 #include <private/qwidget_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
-#include <qstatictext.h>
 #include <private/qstatictext_p.h>
+#include <private/qglyphs_p.h>
 #include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -5705,16 +5707,47 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     d->engine->drawImage(QRectF(x, y, w, h), image, QRectF(sx, sy, sw, sh), flags);
 }
 
+/*!
+    Draws the glyphs represented by \a glyphs at \a position. The \a position gives the
+    edge of the baseline for the string of glyphs. The glyphs will be retrieved from the font
+    selected on \a glyphs and at offsets given by the positions in \a glyphs.
+
+    \since 4.8
+
+    \sa QGlyphs::setFont(), QGlyphs::setPositions(), QGlyphs::setGlyphIndexes()
+*/
+void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
+{
+    Q_D(QPainter);
+
+    QFont oldFont = d->state->font;
+    d->state->font = glyphs.font();
+
+    QVector<quint32> glyphIndexes = glyphs.glyphIndexes();
+    QVector<QPointF> glyphPositions = glyphs.positions();
+
+    int count = qMin(glyphIndexes.size(), glyphPositions.size());
+    QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
+    for (int i=0; i<count; ++i)
+        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));    
+
+    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count);
+
+    d->state->font = oldFont;
+}
 
 void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray, const QPointF *positionArray,
                     int glyphCount)
-{
+{    
+    QVarLengthArray<QFixedPoint, 128> positions(glyphCount);
+    for (int i=0; i<glyphCount; ++i)
+        positions[i] = QFixedPoint::fromPointF(positionArray[i]);
+
     QPainterPrivate *painter_d = QPainterPrivate::get(painter);
-    painter_d->drawGlyphs(glyphArray, positionArray, glyphCount);
+    painter_d->drawGlyphs(const_cast<quint32 *>(glyphArray), positions.data(), glyphCount);
 }
 
-void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *positionArray,
-                                 int glyphCount)
+void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount)
 {
     updateState(state);
 
@@ -5730,11 +5763,6 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
         fontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
     }
 
-    QVarLengthArray<QFixedPoint, 128> positions;
-    for (int i=0; i<glyphCount; ++i) {
-        QFixedPoint fp = QFixedPoint::fromPointF(positionArray[i]);
-        positions.append(fp);
-    }
 
     if (extended != 0) {
         QStaticTextItem staticTextItem;
@@ -5743,7 +5771,7 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
         staticTextItem.fontEngine = fontEngine;
         staticTextItem.numGlyphs = glyphCount;
         staticTextItem.glyphs = reinterpret_cast<glyph_t *>(const_cast<glyph_t *>(glyphArray));
-        staticTextItem.glyphPositions = positions.data();
+        staticTextItem.glyphPositions = positions;
 
         extended->drawStaticTextItem(&staticTextItem);
     } else {
@@ -5760,7 +5788,7 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *posit
 
         textItem.glyphs.numGlyphs = glyphCount;
         textItem.glyphs.glyphs = reinterpret_cast<HB_Glyph *>(const_cast<quint32 *>(glyphArray));
-        textItem.glyphs.offsets = positions.data();
+        textItem.glyphs.offsets = positions;
         textItem.glyphs.advances_x = advances.data();
         textItem.glyphs.advances_y = advances.data();
         textItem.glyphs.justifications = glyphJustifications.data();

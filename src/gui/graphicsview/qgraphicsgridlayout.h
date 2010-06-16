@@ -109,7 +109,7 @@ public:
     int columnCount() const;
 
     QGraphicsLayoutItem *itemAt(int row, int column) const;
-    
+
     // inherited from QGraphicsLayout
     int count() const;
     QGraphicsLayoutItem *itemAt(int index) const;
