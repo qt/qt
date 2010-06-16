@@ -501,19 +501,18 @@ QString DitaXmlGenerator::format()
 }
 
 /*!
-  Create a new GUID, write it to the XML stream
-  as an "id" attribute, and return it.
+  Calls lookupGuid() to get a GUID for \a text, then writes
+  it to the XML stream as an "id" attribute, and returns it.
  */
 QString DitaXmlGenerator::writeGuidAttribute(QString text)
 {
-    QString guid = QUuid::createUuid().toString();
-    name2guidMap.insert(text,guid);
+    QString guid = lookupGuid(text);
     writer.writeAttribute("id",guid);
     return guid;
 }
 
 /*!
-  Looks up \a text in the GUID map. It it finds \a text,
+  Looks up \a text in the GUID map. If it finds \a text,
   it returns the associated GUID. Otherwise it inserts
   \a text into the map with a new GUID, and it returns
   the new GUID.
@@ -1436,6 +1435,12 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         writer.writeStartElement(CXXCLASSACCESSSPECIFIER);
         writer.writeAttribute("value",inner->accessString());
         writer.writeEndElement(); // <cxxClassAccessSpecifier>
+        if (cn->isAbstract()) {
+            writer.writeStartElement(CXXCLASSABSTRACT);
+            writer.writeAttribute("name","abstract");
+            writer.writeAttribute("value","abstract");
+            writer.writeEndElement(); // </cxxClassAbstract>
+        }
         writeDerivations(cn, marker);
         writeLocation(cn, marker);
         writer.writeEndElement(); // <cxxClassDefinition>
@@ -1452,6 +1457,26 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
     
         writer.writeEndElement(); // </apiDesc>
         writer.writeEndElement(); // </cxxClassDetail>
+
+        sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
+        s = sections.begin();
+        while (s != sections.end()) {
+            if ((*s).name == "Member Function Documentation") {
+                writeFunctions((*s),cn,marker);
+            }
+            else if ((*s).name == "Member Type Documentation") {
+                writeNestedClasses((*s),cn,marker);
+                writeEnumerations((*s),cn,marker);
+                writeTypedefs((*s),cn,marker);
+            }
+            else if ((*s).name == "Member Variable Documentation") {
+                writeDataMembers((*s),cn,marker);
+            }
+            else if ((*s).name == "Property Documentation") {
+                writeProperties((*s),cn,marker);
+            }
+            ++s;
+        }
         writer.writeEndElement(); // </cxxClass>
     }
 
@@ -4502,19 +4527,101 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
      }
 }
 
-void DitaXmlGenerator::writeLocation(const ClassNode* cn, CodeMarker* marker)
+void DitaXmlGenerator::writeLocation(const Node* n, CodeMarker* marker)
 {
-    writer.writeStartElement(CXXCLASSAPIITEMLOCATION);
-    writer.writeStartElement(CXXCLASSDECLARATIONFILE);
+    QString s1, s2, s3;
+    if (n->type() == Node::Class) {
+        s1 = CXXCLASSAPIITEMLOCATION;
+        s2 = CXXCLASSDECLARATIONFILE;
+        s3 = CXXCLASSDECLARATIONFILELINE;
+    }
+    else if (n->type() == Node::Function) {
+        s1 = CXXFUNCTIONAPIITEMLOCATION;
+        s2 = CXXFUNCTIONDECLARATIONFILE;
+        s3 = CXXFUNCTIONDECLARATIONFILELINE;
+    }
+    writer.writeStartElement(s1);
+    writer.writeStartElement(s2);
     writer.writeAttribute("name","filePath");
-    writer.writeAttribute("value",cn->location().filePath());
-    writer.writeEndElement(); // </cxxClassDeclarationFile>
-    writer.writeStartElement(CXXCLASSDECLARATIONFILELINE);
+    writer.writeAttribute("value",n->location().filePath());
+    writer.writeEndElement(); // </cxx<s2>DeclarationFile>
+    writer.writeStartElement(s3);
     writer.writeAttribute("name","lineNumber");
     QString lineNr;
-    writer.writeAttribute("value",lineNr.setNum(cn->location().lineNo()));
-    writer.writeEndElement(); // </cxxClassDeclarationFileLine>
-    writer.writeEndElement(); // </cxxClassApiItemLocation>
+    writer.writeAttribute("value",lineNr.setNum(n->location().lineNo()));
+    writer.writeEndElement(); // </cxx<s3>DeclarationFileLine>
+    writer.writeEndElement(); // </cxx<s1>ApiItemLocation>
+}
+
+void DitaXmlGenerator::writeFunctions(const Section& s, 
+                                      const ClassNode* cn, 
+                                      CodeMarker* marker) {
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Function) {
+            const FunctionNode* fn = reinterpret_cast<const FunctionNode*>(*m);
+            QString name = fn->name();
+            writer.writeStartElement(CXXFUNCTION);
+            writeGuidAttribute(name);
+            writer.writeStartElement(APINAME);
+            writer.writeCharacters(name);
+            writer.writeEndElement(); // </apiName>
+            generateBrief(fn,marker);
+            writer.writeStartElement(CXXFUNCTIONDETAIL);
+            writer.writeStartElement(CXXFUNCTIONDEFINITION);
+            writer.writeStartElement(CXXFUNCTIONACCESSSPECIFIER);
+            writer.writeAttribute("value",fn->accessString());
+            writer.writeEndElement(); // <cxxFunctionAccessSpecifier>
+
+            writeLocation(fn, marker);
+            writer.writeEndElement(); // <cxxFunctionDefinition>
+            writer.writeStartElement(APIDESC);
+
+            if (!fn->doc().isEmpty()) {
+                writer.writeStartElement("p");
+                writer.writeAttribute("outputclass","h2");
+                writer.writeCharacters("Function Description");
+                writer.writeEndElement(); // </p>
+                generateBody(fn, marker);
+                //        generateAlsoList(inner, marker);
+            }
+    
+            writer.writeEndElement(); // </apiDesc>
+            writer.writeEndElement(); // </cxxFunctionDetail>
+            writer.writeEndElement(); // </cxxFunction>
+
+            if (fn->metaness() == FunctionNode::Ctor ||
+                fn->metaness() == FunctionNode::Dtor ||
+                fn->overloadNumber() != 1) {
+            }
+        }
+        ++m;
+    }
+}
+
+void DitaXmlGenerator::writeNestedClasses(const Section& s, 
+                                          const ClassNode* cn, 
+                                          CodeMarker* marker) {
+}
+
+void DitaXmlGenerator::writeEnumerations(const Section& s, 
+                                         const ClassNode* cn, 
+                                         CodeMarker* marker) {
+}
+
+void DitaXmlGenerator::writeTypedefs(const Section& s, 
+                                     const ClassNode* cn, 
+                                     CodeMarker* marker) {
+}
+
+void DitaXmlGenerator::writeDataMembers(const Section& s, 
+                                        const ClassNode* cn, 
+                                        CodeMarker* marker) {
+}
+
+void DitaXmlGenerator::writeProperties(const Section& s, 
+                                       const ClassNode* cn, 
+                                       CodeMarker* marker) {
 }
 
 QT_END_NAMESPACE
