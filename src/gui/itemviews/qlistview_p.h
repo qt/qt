@@ -376,7 +376,10 @@ public:
     inline bool isSelectionRectVisible() const { return showElasticBand; }
 
     inline QModelIndex modelIndex(int row) const { return model->index(row, column, root); }
-    inline bool isHidden(int row) const { return hiddenRows.contains(model->index(row, 0, root)); }
+    inline bool isHidden(int row) const {
+        QModelIndex idx = model->index(row, 0, root);
+        return isPersistent(idx) && hiddenRows.contains(idx);
+    }
     inline bool isHiddenOrDisabled(int row) const { return isHidden(row) || !isIndexEnabled(modelIndex(row)); }
 
     inline void removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const {
@@ -430,7 +433,7 @@ public:
     QBasicTimer batchLayoutTimer;
 
     // used for hidden items
-    QVector<QPersistentModelIndex> hiddenRows;
+    QSet<QPersistentModelIndex> hiddenRows;
 
     int column;
     bool uniformItemSizes;

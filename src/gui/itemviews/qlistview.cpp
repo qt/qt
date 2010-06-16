@@ -756,10 +756,13 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
     // if the parent is above d->root in the tree, nothing will happen
     QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
     if (parent == d->root) {
-        for (int i = d->hiddenRows.count() - 1; i >= 0; --i) {
-            int hiddenRow = d->hiddenRows.at(i).row();
+        QSet<QPersistentModelIndex>::iterator it = d->hiddenRows.begin();
+        while (it != d->hiddenRows.end()) {
+            int hiddenRow = it->row();
             if (hiddenRow >= start && hiddenRow <= end) {
-                d->hiddenRows.remove(i);
+                it = d->hiddenRows.erase(it);
+            } else {
+                ++it;
             }
         }
     }
@@ -1842,12 +1845,12 @@ QAbstractItemView::DropIndicatorPosition QListViewPrivate::position(const QPoint
 
 void QCommonListViewBase::appendHiddenRow(int row)
 {
-    dd->hiddenRows.append(dd->model->index(row, 0, qq->rootIndex()));
+    dd->hiddenRows.insert(dd->model->index(row, 0, qq->rootIndex()));
 }
 
 void QCommonListViewBase::removeHiddenRow(int row)
 {
-    dd->hiddenRows.remove(dd->hiddenRows.indexOf(dd->model->index(row, 0, qq->rootIndex())));
+    dd->hiddenRows.remove(dd->model->index(row, 0, qq->rootIndex()));
 }
 
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
