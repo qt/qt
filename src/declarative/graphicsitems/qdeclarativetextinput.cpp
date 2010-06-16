@@ -845,12 +845,18 @@ void QDeclarativeTextInput::moveCursor()
 }
 
 /*!
-    \qmlmethod rect TextInput::positionToRectangle(int x)
+    \qmlmethod rect TextInput::positionToRectangle(int pos)
+
+    This function takes a character position and returns the rectangle that the
+    cursor would occupy, if it was placed at that character position.
+
+    This is similar to setting the cursorPosition, and then querying the cursor
+    rectangle, but the cursorPosition is not changed.
 */
-QRectF QDeclarativeTextInput::positionToRectangle(int x) const
+QRectF QDeclarativeTextInput::positionToRectangle(int pos) const
 {
     Q_D(const QDeclarativeTextInput);
-    return QRectF(d->control->cursorToX(x)-d->hscroll,
+    return QRectF(d->control->cursorToX(pos)-d->hscroll,
         0.0,
         d->control->cursorWidth(),
         cursorRectangle().height());
