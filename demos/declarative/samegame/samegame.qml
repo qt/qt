@@ -115,6 +115,8 @@ Rectangle {
             id: nameInputText
             anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
             focus: false
+            autoScroll: false
+            maximumLength: 24
             onTextChanged: {
                 var newWidth = nameInputText.width + dialogText.width + 40;
                 if ( (newWidth > nameInputDialog.width && newWidth < screen.width) 
