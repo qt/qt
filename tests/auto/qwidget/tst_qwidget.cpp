@@ -151,16 +151,6 @@ bool macHasAccessToWindowsServer()
 #undef Bool
 #endif
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 2 seconds.
-#define WAIT_FOR_CONDITION(expr, expected) \
-    do { \
-        const int step = 100; \
-        for (int i = 0; i < 2000 && expr != expected; i+=step) { \
-            QTest::qWait(step); \
-        } \
-    } while(0)
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -1657,13 +1647,11 @@ void tst_QWidget::focusChainOnHide()
     child->setFocus();
     qApp->processEvents();
 
-    WAIT_FOR_CONDITION(child->hasFocus(), true);
-    QCOMPARE(child->hasFocus(), true);
+    QTRY_COMPARE(child->hasFocus(), true);
     child->hide();
     qApp->processEvents();
 
-    WAIT_FOR_CONDITION(parent->hasFocus(), true);
-    QCOMPARE(parent->hasFocus(), true);
+    QTRY_COMPARE(parent->hasFocus(), true);
     QCOMPARE(parent, qApp->focusWidget());
 
     delete parent;
