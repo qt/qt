@@ -354,6 +354,10 @@ void QOutlineMapper::clipElements(const QPointF *elements,
     // this part of code hardly every used, it shouldn't matter.
 
     QPainterPath path;
+
+    if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
+        path.setFillRule(Qt::WindingFill);
+
     if (types) {
         for (int i=0; i<element_count; ++i) {
             switch (types[i]) {
