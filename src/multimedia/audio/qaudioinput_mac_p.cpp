@@ -259,7 +259,7 @@ public:
                              UInt32 inBusNumber,
                              UInt32 inNumberFrames)
     {
-        const bool  wasEmpty = m_buffer->used() == 0;
+        const bool  pullMode = m_device == 0;
 
         OSStatus    err;
         qint64      framesRendered = 0;
@@ -330,7 +330,7 @@ public:
             framesRendered = copied / m_outputFormat.mBytesPerFrame;
         }
 
-        if (wasEmpty && framesRendered > 0)
+        if (pullMode && framesRendered > 0)
             emit readyRead();
 
         return framesRendered;
