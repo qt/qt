@@ -160,6 +160,7 @@ void HelpViewer::setSource(const QUrl &url)
     if (launchWithExternalApp(url))
         return;
 
+    emit loadStarted();
     QString string = url.toString();
     const HelpEngineWrapper &engine = HelpEngineWrapper::instance();
     const QUrl &resolvedUrl = (string == QLatin1String("help") ? LocalHelpFile :

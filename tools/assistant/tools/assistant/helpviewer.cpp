@@ -189,9 +189,14 @@ void HelpViewer::home()
 
 // -- private slots
 
+void HelpViewer::setLoadStarted()
+{
+    d->m_loadFinished = false;
+}
+
 void HelpViewer::setLoadFinished(bool ok)
 {
-    Q_UNUSED(ok)
+    d->m_loadFinished = ok;
     emit sourceChanged(source());
 }
 

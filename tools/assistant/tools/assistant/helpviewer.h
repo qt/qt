@@ -127,6 +127,7 @@ signals:
     void highlighted(const QString &link);
     void printRequested();
 #else
+    void loadStarted();
     void loadFinished(bool finished);
 #endif
 
@@ -138,6 +139,7 @@ protected:
 
 private slots:
     void actionChanged();
+    void setLoadStarted();
     void setLoadFinished(bool ok);
 
 private:

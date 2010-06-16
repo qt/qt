@@ -67,6 +67,7 @@ public:
     HelpViewerPrivate()
 #endif
     {
+        m_loadFinished = false;
     }
 
 #ifdef QT_NO_WEBKIT
@@ -112,6 +113,9 @@ public:
     bool forceFont;
     QString lastAnchor;
 #endif // QT_NO_WEBKIT
+
+public:
+    bool m_loadFinished;
 };
 
 QT_END_NAMESPACE
