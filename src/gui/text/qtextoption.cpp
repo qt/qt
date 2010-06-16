@@ -65,7 +65,7 @@ QTextOption::QTextOption()
       tab(-1),
       d(0)
 {
-    direction = QApplication::layoutDirection();
+    direction = Qt::LayoutDirectionAuto;
 }
 
 /*!

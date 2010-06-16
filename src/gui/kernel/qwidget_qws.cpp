@@ -256,7 +256,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destro
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
-
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
 

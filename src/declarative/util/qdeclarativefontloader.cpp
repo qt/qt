@@ -79,18 +79,27 @@ public:
 /*!
     \qmlclass FontLoader QDeclarativeFontLoader
     \since 4.7
-    \brief This item allows using fonts by name or url.
+    \brief The FontLoader element allows fonts to be loaded by name or URL.
 
-    Example:
+    The FontLoader element is used to load fonts by name or URL. 
+    
+    The \l status indicates when the font has been loaded, which is useful 
+    for fonts loaded from remote sources.
+
+    For example:
     \qml
     import Qt 4.7
 
-    FontLoader { id: fixedFont; name: "Courier" }
-    FontLoader { id: webFont; source: "http://www.mysite.com/myfont.ttf" }
+    Column { 
+        FontLoader { id: fixedFont; name: "Courier" }
+        FontLoader { id: webFont; source: "http://www.mysite.com/myfont.ttf" }
 
-    Text { text: "Fixed-size font"; font.family: fixedFont.name }
-    Text { text: "Fancy font"; font.family: webFont.name }
+        Text { text: "Fixed-size font"; font.family: fixedFont.name }
+        Text { text: "Fancy font"; font.family: webFont.name }
+    }
     \endqml
+
+    \sa {declarative/text/fonts}{Fonts example}
 */
 QDeclarativeFontLoader::QDeclarativeFontLoader(QObject *parent)
     : QObject(*(new QDeclarativeFontLoaderPrivate), parent)

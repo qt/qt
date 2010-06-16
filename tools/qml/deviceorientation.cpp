@@ -47,7 +47,7 @@ class DefaultDeviceOrientation : public DeviceOrientation
 {
     Q_OBJECT
 public:
-    DefaultDeviceOrientation() : DeviceOrientation(), m_orientation(DeviceOrientation::TopUp) {}
+    DefaultDeviceOrientation() : DeviceOrientation(), m_orientation(DeviceOrientation::Portrait) {}
 
     Orientation orientation() const {
         return m_orientation;

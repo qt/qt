@@ -1,3 +1,53 @@
+2010-06-09  Pierre Rossi  <pierre.rossi@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        QWebPage::findText() does not clear selection when passed empty string
+        https://bugs.webkit.org/show_bug.cgi?id=31779
+
+        * Api/qwebpage.cpp:
+        (QWebPage::findText):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::findText):
+
+2010-06-12  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Add documentation to the QtWebkit bridge
+        https://bugs.webkit.org/show_bug.cgi?id=35861
+
+        The previous accepted patch was actually a faulty one; It was hard to trace since it's just a documentation
+        change. The new patch amends that, with the correct snippets and grammar fixes.
+
+        * docs/qtwebkit-bridge.qdoc:
+        * docs/webkitsnippets/qtwebkit_bridge_snippets.cpp:
+        (wrapInFunction):
+
+2010-06-11  Jesus Sanchez-Palencia  <jesus@webkit.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Typo error in QWebPluginFactory Documentation
+        https://bugs.webkit.org/show_bug.cgi?id=40490
+
+        * Api/qwebpluginfactory.cpp:
+
+2010-06-10  Andy Shaw  <andy.shaw@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        REGRESSION: [Qt] When dragging onto a page that handles the drag in Javascript it will be a move and not a copy by default
+        https://bugs.webkit.org/show_bug.cgi?id=40401
+
+        The correct pattern in Qt for Dnd events is to use acceptProposedAction() instead
+        of accept().
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::dragEnterEvent):
+        (QWebPagePrivate::dragMoveEvent):
+        (QWebPagePrivate::dropEvent):
+
 2010-06-02  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
 
         Reviewed by Shinichiro Hamaji.

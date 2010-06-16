@@ -41,7 +41,7 @@
 import Qt 4.7
 
 Rectangle {
-    id: targetItem
+    id: parentItem
     property QtObject newObject
 
     width: 100
@@ -50,7 +50,7 @@ Rectangle {
     function createIt() {
 //![0]
 newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    targetItem, "dynamicSnippet1");
+    parentItem, "dynamicSnippet1");
 //![0]
     }
 

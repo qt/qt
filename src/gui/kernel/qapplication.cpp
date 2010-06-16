@@ -146,7 +146,7 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-Q_DECL_IMPORT extern void qt_call_post_routines();
+Q_CORE_EXPORT void qt_call_post_routines();
 
 int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
 
@@ -3544,7 +3544,7 @@ int QApplication::startDragDistance()
 
 void QApplication::setLayoutDirection(Qt::LayoutDirection direction)
 {
-    if (layout_direction == direction)
+    if (layout_direction == direction || direction == Qt::LayoutDirectionAuto)
         return;
 
     layout_direction = direction;

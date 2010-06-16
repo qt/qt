@@ -40,12 +40,27 @@
 
 import Qt 4.7
 
-//! [0]
-Column {
-    Repeater {
-        model: ["apples", "oranges", "pears"]
-        Text { text: "Data: " + modelData }
+Rectangle {
+    width: 490
+    height: 285
+
+    Grid {
+        property int cellWidth: (width - (spacing * (columns - 1))) / columns
+        property int cellHeight: (height - (spacing * (rows - 1))) / rows
+
+        anchors.fill: parent
+        anchors.margins: 30
+
+        columns: 3
+        rows: 2
+        spacing: 30
+
+        ImageCell { mode: Image.Stretch; caption: "Stretch" }
+        ImageCell { mode: Image.PreserveAspectFit; caption: "PreserveAspectFit" }
+        ImageCell { mode: Image.PreserveAspectCrop; caption: "PreserveAspectCrop" }
+
+        ImageCell { mode: Image.Tile; caption: "Tile" }
+        ImageCell { mode: Image.TileHorizontally; caption: "TileHorizontally" }
+        ImageCell { mode: Image.TileVertically; caption: "TileVertically" }
     }
 }
-//! [0]
-

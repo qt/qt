@@ -2688,6 +2688,7 @@ QWidget::macCGHandle() const
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -3994,10 +3995,10 @@ static void qt_mac_update_widget_position(QWidget *q, QRect oldRect, QRect newRe
         (oldRect.isValid() == false || newRect.isValid() == false)  ||
 
         // the position update is a part of a drag-and-drop operation
-        QDragManager::self()->object || 
-        
-        // we are on Panther (no HIViewSetNeedsDisplayInRect) 
-        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4 
+        QDragManager::self()->object ||
+
+        // we are on Panther (no HIViewSetNeedsDisplayInRect)
+        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4
     ){
         HIViewSetFrame(view, &bounds);
         return;

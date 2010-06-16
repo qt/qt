@@ -1453,6 +1453,11 @@ void QX11PaintEngine::drawEllipse(const QRectF &rect)
 
 void QX11PaintEngine::drawEllipse(const QRect &rect)
 {
+    if (rect.isEmpty()) {
+        drawRects(&rect, 1);
+        return;
+    }
+
     Q_D(QX11PaintEngine);
     QRect devclip(SHRT_MIN, SHRT_MIN, SHRT_MAX*2 - 1, SHRT_MAX*2 - 1);
     QRect r(rect);

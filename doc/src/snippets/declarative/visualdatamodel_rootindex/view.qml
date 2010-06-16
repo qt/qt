@@ -37,35 +37,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
-Item {
-    id: page
-    property int repeatdelay: 300
-    property int repeatperiod: 75
-    property bool isPressed: false
+ListView {
+    id: view
+    width: 300
+    height: 400
 
-    signal pressed
-    signal released
-    signal clicked
+    model: VisualDataModel {
+        model: dirModel
 
-    SequentialAnimation on isPressed {
-        running: false
-        id: autoRepeat
-        PropertyAction { target: page; property: "isPressed"; value: true }
-        ScriptAction { script: page.pressed() }
-        ScriptAction { script: page.clicked() }
-        PauseAnimation { duration: repeatdelay }
-        SequentialAnimation {
-            loops: Animation.Infinite
-            ScriptAction { script: page.clicked() }
-            PauseAnimation { duration: repeatperiod }
+        delegate: Rectangle {
+            width: 200; height: 25
+            Text { text: filePath }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (hasModelChildren) 
+                        view.model.rootIndex = view.model.modelIndex(index)
+                }
+            }
         }
     }
-    MouseArea {
-        anchors.fill: parent
-        onPressed: autoRepeat.start()
-        onReleased: { autoRepeat.stop(); parent.isPressed = false; page.released() }
-    }
 }
+//![0]

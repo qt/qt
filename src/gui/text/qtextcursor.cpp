@@ -362,7 +362,7 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     QTextBlock blockIt = block();
 
     if (op >= QTextCursor::Left && op <= QTextCursor::WordRight
-        && blockIt.blockFormat().layoutDirection() == Qt::RightToLeft) {
+        && blockIt.textDirection() == Qt::RightToLeft) {
         if (op == QTextCursor::Left)
             op = QTextCursor::NextCharacter;
         else if (op == QTextCursor::Right)
@@ -2436,6 +2436,9 @@ void QTextCursor::beginEditBlock()
 {
     if (!d || !d->priv)
         return;
+
+    if (d->priv->editBlock == 0) // we are the initial edit block, store current cursor position for undo
+        d->priv->editBlockCursorPosition = d->position;
 
     d->priv->beginEditBlock();
 }
