@@ -924,13 +924,7 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeTextInput);
     if(d->focusOnPress){
         bool hadFocus = hasFocus();
-        QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
-        while(p) {
-            if (p->flags() & QGraphicsItem::ItemIsFocusScope)
-                p->setFocus();
-            p = p->parentItem();
-        }
-        setFocus(true);
+        forceFocus();
         if (d->showInputPanelOnFocus) {
             if (hasFocus() && hadFocus && !isReadOnly()) {
                 // re-open input panel on press if already focused
