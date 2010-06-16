@@ -9233,7 +9233,8 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(grandChild->numLeaveEvents, 0);
     QCOMPARE(child1->numLeaveEvents, 0);
 
-    QCOMPARE(window.numEnterEvents, 1);
+    // This event arrives asynchronously
+    QTRY_COMPARE(window.numEnterEvents, 1);
     QCOMPARE(child2->numEnterEvents, 1);
     QCOMPARE(grandChild->numEnterEvents, 1);
     QCOMPARE(child1->numEnterEvents, 0);
