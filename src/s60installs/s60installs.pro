@@ -16,8 +16,8 @@ symbian: {
         # It is also expected that devices newer than those based on S60 5.0 all have sqlite3.dll.
         contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {            
             BLD_INF_RULES.prj_exports += \
-                "sqlite3.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis" \
-                "sqlite3_selfsigned.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3_selfsigned.sis"
+                "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis" \
+                "sqlite3_selfsigned.sis /epoc32/data/qt/sis/sqlite3_selfsigned.sis"
             symbian-abld|symbian-sbsv2 {
                 sqlitedeployment = \
                     "; Deploy sqlite onto phone that does not have it already" \

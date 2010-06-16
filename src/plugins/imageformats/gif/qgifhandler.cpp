@@ -1061,12 +1061,12 @@ bool QGifHandler::imageIsComing() const
 
 bool QGifHandler::canRead() const
 {
-    if (canRead(device())) {
+    if (canRead(device()) || imageIsComing()) {
         setFormat("gif");
         return true;
     }
 
-    return imageIsComing();
+    return false;
 }
 
 bool QGifHandler::canRead(QIODevice *device)

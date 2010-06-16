@@ -4238,8 +4238,6 @@ void QPainter::drawEllipse(const QRectF &r)
         return;
 
     QRectF rect(r.normalized());
-    if (rect.isEmpty())
-        return;
 
     if (d->extended) {
         d->extended->drawEllipse(rect);
@@ -4281,8 +4279,6 @@ void QPainter::drawEllipse(const QRect &r)
         return;
 
     QRect rect(r.normalized());
-    if (rect.isEmpty())
-        return;
 
     if (d->extended) {
         d->extended->drawEllipse(rect);

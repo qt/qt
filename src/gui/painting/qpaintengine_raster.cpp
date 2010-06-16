@@ -3789,6 +3789,7 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
     if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
          || (qpen_style(s->lastPen) == Qt::NoPen && !s->flags.antialiased))
         && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
+        && !rect.isEmpty()
         && s->matrix.type() <= QTransform::TxScale) // no shear
     {
         ensureBrush();
