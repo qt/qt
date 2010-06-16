@@ -93,7 +93,6 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
-#include <QGraphicsObject>
 #include <QtCore/qcryptographichash.h>
 
 #include <private/qobject_p.h>
@@ -1195,10 +1194,12 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     Q_ASSERT(obj);
 
     obj->setParent(parentArg);
-    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
-    QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
-    if(gobj && gparent)
-        gobj->setParentItem(gparent);
+
+    QList<QDeclarativePrivate::AutoParentFunction> functions = QDeclarativeMetaType::parentFunctions();
+    for (int ii = 0; ii < functions.count(); ++ii) {
+        if (QDeclarativePrivate::Parented == functions.at(ii)(obj, parentArg))
+            break;
+    }
 
     QDeclarativeData::get(obj, true)->setImplicitDestructible();
     return activeEnginePriv->objectClass->newQObject(obj, QMetaType::QObjectStar);
