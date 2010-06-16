@@ -83,6 +83,8 @@ void QDesktopWidgetPrivate::updateScreenList()
     }
 
     virtualScreen.setGeometry(virtualGeometry.boundingRect());
+    Q_Q(QDesktopWidget);
+    q->setGeometry(virtualScreen.geometry());
 }
 
 QDesktopWidget::QDesktopWidget()
@@ -90,7 +92,7 @@ QDesktopWidget::QDesktopWidget()
 {
     Q_D(QDesktopWidget);
     setObjectName(QLatin1String("desktop"));
-    this->setGeometry(d->virtualScreen.geometry());
+    d->updateScreenList();
 }
 
 QDesktopWidget::~QDesktopWidget()
