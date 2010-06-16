@@ -154,6 +154,41 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 }
 
 /*!
+  Returns a string representing the access specifier.
+ */
+QString Node::accessString() const
+{
+    switch (acc) {
+    case Protected:
+        return "protected";
+    case Private:
+        return "private";
+    case Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+
+/*!
+  Returns a string representing the access specifier.
+ */
+QString RelatedClass::accessString() const
+{
+    switch (access) {
+    case Node::Protected:
+        return "protected";
+    case Node::Private:
+        return "private";
+    case Node::Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+/*!
  */
 Node::Status Node::inheritedStatus() const
 {

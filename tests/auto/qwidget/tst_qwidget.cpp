@@ -610,10 +610,14 @@ void tst_QWidget::getSetCheck()
     obj1.setAttribute(Qt::WA_InputMethodEnabled);
     obj1.setInputContext(var13);
     QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
+    // QWidget takes ownership, so check parent
+    QCOMPARE(var13->parent(), static_cast<QObject *>(&obj1));
+    // Check self assignment
+    obj1.setInputContext(obj1.inputContext());
+    QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
     obj1.setInputContext((QInputContext *)0);
     QCOMPARE(qApp->inputContext(), obj1.inputContext());
     QVERIFY(qApp->inputContext() != var13);
-    //delete var13; // No delete, since QWidget takes ownership
 
     // bool QWidget::autoFillBackground()
     // void QWidget::setAutoFillBackground(bool)
