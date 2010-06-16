@@ -2322,6 +2322,11 @@ if [ "$CFG_GUI" = "no" ]; then
     CFG_QT3SUPPORT="no"
 fi
 
+#disable Qt3Support for Lighthouse
+if [ "$PLATFORM_EMBLITE" = "yes" ]; then
+    CFG_QT3SUPPORT="no"
+fi
+
 # update QT_CONFIG to show our current predefined configuration
 case "$CFG_QCONFIG" in
 minimal|small|medium|large|full)
