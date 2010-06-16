@@ -390,7 +390,6 @@ void QFbWindow::repaint(const QRegion &region)
     while (i != end) {
         // If this is a move, redraw the previous location
         if (oldGeometryLocal != currentGeometry) {
-            qDebug() << "repaint old area on screen" << (*i)->objectName();
             (*i)->setDirty(oldGeometryLocal);
         }
         (*i)->setDirty(dirtyRegion);

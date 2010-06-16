@@ -82,15 +82,15 @@ void QDesktopWidgetPrivate::updateScreenList()
             virtualGeometry += screenGeometry;
     }
 
-    if (doVirtualGeometry) {
-        virtualScreen.setGeometry(virtualGeometry.boundingRect());
-    }
+    virtualScreen.setGeometry(virtualGeometry.boundingRect());
 }
 
 QDesktopWidget::QDesktopWidget()
     : QWidget(*new QDesktopWidgetPrivate, 0, Qt::Desktop)
 {
+    Q_D(QDesktopWidget);
     setObjectName(QLatin1String("desktop"));
+    this->setGeometry(d->virtualScreen.geometry());
 }
 
 QDesktopWidget::~QDesktopWidget()
