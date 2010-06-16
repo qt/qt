@@ -31,6 +31,10 @@
 
 HB_BEGIN_HEADER
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
+
 /* GDEF glyph properties.  Note that HB_GDEF_COMPONENT has no corresponding
  * flag in the LookupFlag field.     */
 #define HB_GDEF_BASE_GLYPH  0x0002
@@ -44,12 +48,11 @@ typedef struct HB_AttachPoint_  HB_AttachPoint;
 
 struct  HB_AttachList_
 {
-  HB_Bool           loaded;
-
+  HB_AttachPoint*   AttachPoint;      /* array of AttachPoint tables */
   HB_Coverage       Coverage;         /* Coverage table              */
   HB_UShort         GlyphCount;       /* number of glyphs with
 					 attachments                 */
-  HB_AttachPoint*   AttachPoint;      /* array of AttachPoint tables */
+  HB_Bool           loaded;
 };
 
 typedef struct HB_AttachList_  HB_AttachList;
@@ -58,11 +61,10 @@ typedef struct HB_LigGlyph_  HB_LigGlyph;
 
 struct  HB_LigCaretList_
 {
-  HB_Bool        loaded;
-
+  HB_LigGlyph*   LigGlyph;            /* array of LigGlyph tables  */
   HB_Coverage    Coverage;            /* Coverage table            */
   HB_UShort      LigGlyphCount;       /* number of ligature glyphs */
-  HB_LigGlyph*   LigGlyph;            /* array of LigGlyph tables  */
+  HB_Bool        loaded;
 };
 
 typedef struct HB_LigCaretList_  HB_LigCaretList;
@@ -91,18 +93,18 @@ typedef struct HB_LigCaretList_  HB_LigCaretList;
 
 struct  HB_GDEFHeader_
 {
+  HB_UShort**          NewGlyphClasses;
   HB_UInt             offset;
+  HB_UInt             MarkAttachClassDef_offset;
 
   HB_16Dot16             Version;
 
   HB_ClassDefinition   GlyphClassDef;
   HB_AttachList        AttachList;
   HB_LigCaretList      LigCaretList;
-  HB_UInt             MarkAttachClassDef_offset;
   HB_ClassDefinition   MarkAttachClassDef;        /* new in OT 1.2 */
 
   HB_UShort            LastGlyph;
-  HB_UShort**          NewGlyphClasses;
 };
 
 typedef struct HB_GDEFHeader_   HB_GDEFHeader;
@@ -129,6 +131,9 @@ HB_Error  HB_GDEF_Build_ClassDefinition( HB_GDEFHeader*  gdef,
 					 HB_UShort*       glyph_array,
 					 HB_UShort*       class_array );
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 
