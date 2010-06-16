@@ -39,6 +39,10 @@
 #define HB_END_HEADER  /* nothing */
 #endif
 
+#if defined(__GNUC__) || defined(_MSC_VER)
+#define HB_USE_PACKED_STRUCTS
+#endif
+
 HB_BEGIN_HEADER
 
 #ifndef FALSE
