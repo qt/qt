@@ -43,21 +43,34 @@
 #include "qvgfontglyphcache_p.h"
 
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
-#include <private/qt_s60_p.h>
-#include <fbs.h>
-#include <gdi.h>
-#include <sgresource/sgimage.h>
-typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
-typedef EGLBoolean (*pfnEglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
-typedef VGImage (*pfnVgCreateEGLImageTargetKHR)(VGeglImageKHR);
-#ifdef SYMBIAN_GDI_GLYPHDATA // defined in gdi.h
-#define QT_SYMBIAN_HARDWARE_GLYPH_CACHE
-#include <graphics/glyphdataiterator.h>
-#include <private/qfontengine_s60_p.h>
-#endif
+#  include <private/qt_s60_p.h>
+#  include <fbs.h>
+#  include <gdi.h>
+#  include <sgresource/sgimage.h>
+#  ifdef SYMBIAN_GDI_GLYPHDATA // defined in gdi.h
+#    define QT_SYMBIAN_HARDWARE_GLYPH_CACHE
+#    include <graphics/glyphdataiterator.h>
+#    include <private/qfontengine_s60_p.h>
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
+
+typedef VGImage (*_vgCreateEGLImageTargetKHR)(VGeglImageKHR);
+static _vgCreateEGLImageTargetKHR qt_vgCreateEGLImageTargetKHR = 0;
+
+namespace QVG
+{
+    VGImage vgCreateEGLImageTargetKHR(VGeglImageKHR eglImage);
+}
+
+VGImage QVG::vgCreateEGLImageTargetKHR(VGeglImageKHR eglImage)
+{
+    if (!qt_vgCreateEGLImageTargetKHR && QEgl::hasExtension("EGL_KHR_image"))
+        qt_vgCreateEGLImageTargetKHR = (_vgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
+
+    return qt_vgCreateEGLImageTargetKHR ? qt_vgCreateEGLImageTargetKHR(eglImage) : 0;
+}
 
 extern int qt_vg_pixmap_serial;
 
@@ -117,37 +130,28 @@ static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
         return vgImage;
     }
 
-    pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-    pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
-    pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
-
-    if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
-        driver.Close();
-        return vgImage;
-    }
-
     const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-    EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+    EGLImageKHR eglImage = QEgl::eglCreateImageKHR(QEgl::display(),
             EGL_NO_CONTEXT,
             EGL_NATIVE_PIXMAP_KHR,
             (EGLClientBuffer)&sgImage,
             (EGLint*)KEglImageAttribs);
 
-    if (eglGetError() != EGL_SUCCESS) {
+    if (!eglImage || eglGetError() != EGL_SUCCESS) {
         driver.Close();
         return vgImage;
     }
 
-    vgImage = vgCreateEGLImageTargetKHR(eglImage);
-    if (vgGetError() != VG_NO_ERROR) {
-        eglDestroyImageKHR(context->display(), eglImage);
+    vgImage = QVG::vgCreateEGLImageTargetKHR(eglImage);
+    if (!vgImage || vgGetError() != VG_NO_ERROR) {
+        QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
         driver.Close();
         return vgImage;
     }
 
     //setSerialNumber(++qt_vg_pixmap_serial);
     // release stuff
-    eglDestroyImageKHR(context->display(), eglImage);
+    QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
     driver.Close();
     return vgImage;
 }
@@ -255,30 +259,21 @@ void* QVGPixmapData::toNativeType(NativeType type)
             return 0;
         }
 
-        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
-        pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
-
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
-            driver.Close();
-            return 0;
-        }
-
         const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-        EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+        EGLImageKHR eglImage = QEgl::eglCreateImageKHR(QEgl::display(),
                 EGL_NO_CONTEXT,
                 EGL_NATIVE_PIXMAP_KHR,
                 (EGLClientBuffer)sgImage,
                 (EGLint*)KEglImageAttribs);
-        if (eglGetError() != EGL_SUCCESS) {
+        if (!eglImage || eglGetError() != EGL_SUCCESS) {
             sgImage->Close();
             driver.Close();
             return 0;
         }
 
-        VGImage dstVgImage = vgCreateEGLImageTargetKHR(eglImage);
-        if (vgGetError() != VG_NO_ERROR) {
-            eglDestroyImageKHR(context->display(), eglImage);
+        VGImage dstVgImage = QVG::vgCreateEGLImageTargetKHR(eglImage);
+        if (!dstVgImage || vgGetError() != VG_NO_ERROR) {
+            QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
             sgImage->Close();
             driver.Close();
             return 0;
@@ -294,7 +289,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         }
         // release stuff
         vgDestroyImage(dstVgImage);
-        eglDestroyImageKHR(context->display(), eglImage);
+        QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
         driver.Close();
         return reinterpret_cast<void*>(sgImage);
 #endif
@@ -330,8 +325,8 @@ QSymbianVGFontGlyphCache::QSymbianVGFontGlyphCache() : QVGFontGlyphCache()
 }
 
 void QSymbianVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
-                                           const QTextItemInt &ti,
-                                           const QVarLengthArray<glyph_t> &glyphs)
+                                           QFontEngine *fontEngine,
+                                           const glyph_t *g, int count)
 {
 #ifdef QT_SYMBIAN_HARDWARE_GLYPH_CACHE
     QFontEngineS60 *fontEngine = static_cast<QFontEngineS60*>(ti.fontEngine);
@@ -385,7 +380,7 @@ void QSymbianVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
     else if (err != KErrNotFound)
         qWarning("Received error %d from glyph cache", err);
 #else
-    QVGFontGlyphCache::cacheGlyphs(d, ti, glyphs);
+    QVGFontGlyphCache::cacheGlyphs(d, fontEngine, g, count);
 #endif
 }
 

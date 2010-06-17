@@ -85,8 +85,8 @@ class QSymbianVGFontGlyphCache : public QVGFontGlyphCache
 public:
     QSymbianVGFontGlyphCache();
     void cacheGlyphs(QVGPaintEnginePrivate *d,
-                     const QTextItemInt &ti,
-                     const QVarLengthArray<glyph_t> &glyphs);
+                     QFontEngine *fontEngine,
+                     const glyph_t *g, int count);
 };
 #endif
 
