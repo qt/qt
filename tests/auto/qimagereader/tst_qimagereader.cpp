@@ -1912,14 +1912,14 @@ void tst_QImageReader::testIgnoresFormatAndExtension()
     QFETCH(QString, expected);
 
     QList<QByteArray> formats = QImageReader::supportedImageFormats();
-    QString fileNameBase = "images/" + name + ".";
+    QString fileNameBase = prefix + name + ".";
 
     foreach (const QByteArray &f, formats) {
         if (f == extension)
             continue;
         QFile tmp(QDir::tempPath() + "/" + name + "_" + expected + "." + f);
 
-        QFile::copy(fileNameBase + extension, QFileInfo(tmp).absoluteFilePath());
+        QVERIFY(QFile::copy(fileNameBase + extension, QFileInfo(tmp).absoluteFilePath()));
 
         QString format;
         QImage image;

@@ -32,6 +32,9 @@
 
 HB_BEGIN_HEADER
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
 
 /* shared tables */
 
@@ -45,18 +48,20 @@ struct  HB_ValueRecord_
 					 advance                        */
   HB_Short    YAdvance;               /* vertical adjustment for
 					 advance                        */
-  HB_Device  XPlacementDevice;       /* device table for horizontal
+  HB_Device*  XPlacementDevice;       /* device table for horizontal
 					 placement                      */
-  HB_Device  YPlacementDevice;       /* device table for vertical
+  HB_Device*  YPlacementDevice;       /* device table for vertical
 					 placement                      */
-  HB_Device  XAdvanceDevice;         /* device table for horizontal
+  HB_Device*  XAdvanceDevice;         /* device table for horizontal
 					 advance                        */
-  HB_Device  YAdvanceDevice;         /* device table for vertical
+  HB_Device*  YAdvanceDevice;         /* device table for vertical
 					 advance                        */
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
   HB_UShort   XIdPlacement;           /* horizontal placement metric ID */
   HB_UShort   YIdPlacement;           /* vertical placement metric ID   */
   HB_UShort   XIdAdvance;             /* horizontal advance metric ID   */
   HB_UShort   YIdAdvance;             /* vertical advance metric ID     */
+#endif
 };
 
 typedef struct HB_ValueRecord_  HB_ValueRecord;
@@ -102,13 +107,14 @@ struct  HB_AnchorFormat3_
 {
   HB_Short    XCoordinate;            /* horizontal value              */
   HB_Short    YCoordinate;            /* vertical value                */
-  HB_Device  XDeviceTable;           /* device table for X coordinate */
-  HB_Device  YDeviceTable;           /* device table for Y coordinate */
+  HB_Device*  XDeviceTable;           /* device table for X coordinate */
+  HB_Device*  YDeviceTable;           /* device table for Y coordinate */
 };
 
 typedef struct HB_AnchorFormat3_  HB_AnchorFormat3;
 
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
 struct  HB_AnchorFormat4_
 {
   HB_UShort  XIdAnchor;               /* horizontal metric ID */
@@ -116,11 +122,12 @@ struct  HB_AnchorFormat4_
 };
 
 typedef struct HB_AnchorFormat4_  HB_AnchorFormat4;
+#endif
 
 
 struct  HB_Anchor_
 {
-  HB_UShort  PosFormat;               /* 1, 2, 3, or 4 -- 0 indicates
+  HB_Byte  PosFormat;                 /* 1, 2, 3, or 4 -- 0 indicates
 					 that there is no Anchor table */
 
   union
@@ -128,7 +135,9 @@ struct  HB_Anchor_
     HB_AnchorFormat1  af1;
     HB_AnchorFormat2  af2;
     HB_AnchorFormat3  af3;
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
     HB_AnchorFormat4  af4;
+#endif
   } af;
 };
 
@@ -175,7 +184,7 @@ typedef struct HB_SinglePosFormat2_  HB_SinglePosFormat2;
 
 struct  HB_SinglePos_
 {
-  HB_UShort     PosFormat;            /* 1 or 2         */
+  HB_Byte       PosFormat;            /* 1 or 2         */
   HB_Coverage  Coverage;             /* Coverage table */
 
   HB_UShort     ValueFormat;          /* format of ValueRecord table */
@@ -255,7 +264,7 @@ typedef struct HB_PairPosFormat2_  HB_PairPosFormat2;
 
 struct  HB_PairPos_
 {
-  HB_UShort     PosFormat;            /* 1 or 2         */
+  HB_Byte       PosFormat;            /* 1 or 2         */
   HB_Coverage  Coverage;             /* Coverage table */
   HB_UShort     ValueFormat1;         /* format of ValueRecord table
 					 for first glyph             */
@@ -507,7 +516,7 @@ typedef struct HB_ContextPosFormat3_  HB_ContextPosFormat3;
 
 struct  HB_ContextPos_
 {
-  HB_UShort  PosFormat;               /* 1, 2, or 3     */
+  HB_Byte  PosFormat;                 /* 1, 2, or 3     */
 
   union
   {
@@ -656,7 +665,7 @@ typedef struct HB_ChainContextPosFormat3_  HB_ChainContextPosFormat3;
 
 struct  HB_ChainContextPos_
 {
-  HB_UShort  PosFormat;             /* 1, 2, or 3 */
+  HB_Byte  PosFormat;               /* 1, 2, or 3 */
 
   union
   {
@@ -706,6 +715,10 @@ _HB_GPOS_Load_SubTable( HB_GPOS_SubTable* st,
 HB_INTERNAL void
 _HB_GPOS_Free_SubTable( HB_GPOS_SubTable* st,
 			      HB_UShort     lookup_type );
+
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 
