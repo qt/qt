@@ -66,7 +66,7 @@ class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QObject, public QImageTextur
 {
     Q_OBJECT
 public:
-    QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
+    QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
     ~QGLTextureGlyphCache();
 
     virtual void createTextureData(int width, int height);
@@ -81,6 +81,13 @@ public:
     inline int height() const { return m_height; }
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
+
+    void setContext(const QGLContext *context);
+    inline const QGLContext *context() const
+    {
+        return ctx;
+    }
+
 
 
 public Q_SLOTS:
@@ -105,7 +112,9 @@ public Q_SLOTS:
     }
 
 private:
-    QGLContext *ctx;
+    void cleanUpContext();
+
+    const QGLContext *ctx;
 
     QGL2PaintEngineExPrivate *pex;
 

@@ -3009,6 +3009,7 @@ void QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     }
 
     cache->populate(fontEngine, numGlyphs, glyphs, positions);
+    cache->fillInPendingGlyphs();
 
     const QImage &image = cache->image();
     int bpl = image.bytesPerLine();

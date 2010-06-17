@@ -192,6 +192,11 @@ public:
     QFont smallCapsFont() const { return QFont(smallCapsFontPrivate()); }
     QFontPrivate *smallCapsFontPrivate() const;
 
+    static QFontPrivate *get(const QFont &font)
+    {
+        return font.d.data();
+    }
+
     void resolve(uint mask, const QFontPrivate *other);
 private:
     QFontPrivate &operator=(const QFontPrivate &) { return *this; }
