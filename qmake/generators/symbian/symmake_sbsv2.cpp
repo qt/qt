@@ -99,7 +99,9 @@ void SymbianSbsv2MakefileGenerator::writeSbsDeploymentList(const DeploymentList&
         fromItem.replace("\\", "/");
         toItem.replace("\\", "/");
 #if defined(Q_OS_WIN)
-        toItem.prepend(QDir::current().absolutePath().left(2)); // add drive
+        // add drive if it doesn't have one yet
+        if (toItem.size() > 1 && toItem[1] != QLatin1Char(':'))
+            toItem.prepend(QDir::current().absolutePath().left(2));
 #endif
         t << "OPTION DEPLOY_SOURCE " << fromItem << endl;
         t << "OPTION DEPLOY_TARGET " << toItem << endl;

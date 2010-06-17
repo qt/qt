@@ -118,8 +118,6 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #  include <winable.h>
 #endif
 
-#include "private/qwinnativepangesturerecognizer_win_p.h"
-
 #ifndef WM_TOUCH
 #  define WM_TOUCH 0x0240
 
@@ -4066,36 +4064,9 @@ PtrCloseTouchInputHandle QApplicationPrivate::CloseTouchInputHandle = 0;
 
 void QApplicationPrivate::initializeMultitouch_sys()
 {
-    static const IID QT_IID_IInkTablets = {0x112086D9, 0x7779, 0x4535, {0xA6, 0x99, 0x86, 0x2B, 0x43, 0xAC, 0x18, 0x63} };
-    static const IID QT_IID_IInkTablet2 = {0x90c91ad2, 0xfa36, 0x49d6, {0x95, 0x16, 0xce, 0x8d, 0x57, 0x0f, 0x6f, 0x85} };
-    static const CLSID QT_CLSID_InkTablets = {0x6E4FCB12, 0x510A, 0x4d40, {0x93, 0x04, 0x1D, 0xA1, 0x0A, 0xE9, 0x14, 0x7C} };
-
-    IInkTablets *iInkTablets = 0;
-    HRESULT hr = CoCreateInstance(QT_CLSID_InkTablets, NULL, CLSCTX_ALL, QT_IID_IInkTablets, (void**)&iInkTablets);
-    if (SUCCEEDED(hr)) {
-        long count = 0;
-        iInkTablets->get_Count(&count);
-        for (long i = 0; i < count; ++i) {
-            IInkTablet *iInkTablet = 0;
-            hr = iInkTablets->Item(i, &iInkTablet);
-            if (FAILED(hr))
-                continue;
-            IInkTablet2 *iInkTablet2 = 0;
-            hr = iInkTablet->QueryInterface(QT_IID_IInkTablet2, (void**)&iInkTablet2);
-            iInkTablet->Release();
-            if (FAILED(hr))
-                continue;
-            TabletDeviceKind kind;
-            hr = iInkTablet2->get_DeviceKind(&kind);
-            iInkTablet2->Release();
-            if (FAILED(hr))
-                continue;
-            if (kind == TDK_Touch) {
-                QApplicationPrivate::HasTouchSupport = true;
-                break;
-            }
-        }
-        iInkTablets->Release();
+    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+        static const int QT_SM_DIGITIZER = 94;
+        QApplicationPrivate::HasTouchSupport = GetSystemMetrics(QT_SM_DIGITIZER);
     }
 
     QLibrary library(QLatin1String("user32"));

@@ -115,6 +115,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/mmf \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/waveout \
                           $QT_SOURCE_TREE/doc/src/snippets \
+                          $QT_SOURCE_TREE/doc/src/ja_JP \
                           $QT_SOURCE_TREE/doc/src/zh_CN
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"

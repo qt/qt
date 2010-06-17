@@ -16,8 +16,8 @@ symbian: {
         # It is also expected that devices newer than those based on S60 5.0 all have sqlite3.dll.
         contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {            
             BLD_INF_RULES.prj_exports += \
-                "sqlite3.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3.sis" \
-                "sqlite3_selfsigned.sis $${EPOCROOT}epoc32/data/qt/sis/sqlite3_selfsigned.sis"
+                "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis" \
+                "sqlite3_selfsigned.sis /epoc32/data/qt/sis/sqlite3_selfsigned.sis"
             symbian-abld|symbian-sbsv2 {
                 sqlitedeployment = \
                     "; Deploy sqlite onto phone that does not have it already" \
@@ -54,20 +54,35 @@ symbian: {
 
     symbian-abld|symbian-sbsv2 {
         pluginLocations = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
+        bearerPluginLocation = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
+        bearerStubZ = $${EPOCROOT}$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin
+        BLD_INF_RULES.prj_exports += \
+            "qsymbianbearer.qtplugin $$bearerStubZ" \
+            "qsymbianbearer.qtplugin $${EPOCROOT}epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         pluginLocations = $$QT_BUILD_TREE/plugins/s60
+        bearerPluginLocation = $$QT_BUILD_TREE/plugins/bearer
+        bearerStubZ = $${PWD}/qsymbianbearer.qtplugin
     }
 
     qts60plugindeployment = \
-        "IF package(0x1028315F)" \
+        "IF package(0x20022E6D)" \
         "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
+        "ELSEIF package(0x1028315F)" \
+        "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSEIF package(0x102752AE)" \
         "   \"$$pluginLocations/qts60plugin_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_3_2$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSEIF package(0x102032BE)" \
         "   \"$$pluginLocations/qts60plugin_3_1$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_3_1$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer_3_1$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSE" \
         "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
-        "ENDIF"
+        "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
+        "ENDIF" \
+        "   \"$$bearerStubZ\" - \"c:$$replace(QT_PLUGINS_BASE_DIR,/,\\)\\bearer\\qsymbianbearer$${QT_LIBINFIX}.qtplugin\"
     qtlibraries.pkg_postrules += qts60plugindeployment
 
 
@@ -118,15 +133,11 @@ symbian: {
     qtbackup.sources = backup_registration.xml
     qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
 
-    bearer_plugins.path = c:$$QT_PLUGINS_BASE_DIR/bearer
-    bearer_plugins.sources += $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
-
     DEPLOYMENT += qtlibraries \
                   qtbackup \
                   imageformats_plugins \
                   codecs_plugins \
-                  graphicssystems_plugins \
-                  bearer_plugins
+                  graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {
        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtSvg$${QT_LIBINFIX}.dll

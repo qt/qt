@@ -135,7 +135,7 @@ public:
     void _q_canWrite();
     void _q_pipeClosed();
     void _q_emitReadyRead();
-    DWORD bytesAvailable();
+    DWORD checkPipeState();
     void startAsyncRead();
     bool completeAsyncRead();
     void checkReadyRead();

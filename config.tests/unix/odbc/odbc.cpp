@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifdef __MINGW32__
+#include <windows.h>
+#endif
 #include <sql.h>
 #include <sqlext.h>
 

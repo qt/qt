@@ -107,7 +107,7 @@ greaterThan(QT_MINOR_VERSION, 5) {
      !lessThan(QT_MINOR_VERSION, 7) {
         DEFINES += ENABLE_QT_BEARER=1
      } else {
-        load(mobilityconfig)
+        load(mobilityconfig, true)
         contains(MOBILITY_CONFIG, bearer) {
             DEFINES += ENABLE_QT_BEARER=1
         }

@@ -72,6 +72,7 @@ private slots:
     void transforms();
     void transforms_data();
     void childrenRect();
+    void childrenRectBug();
 
     void childrenProperty();
     void resourcesProperty();
@@ -734,6 +735,22 @@ void tst_QDeclarativeItem::childrenRect()
     QCOMPARE(item->height(), qreal(0));
 
     delete o;
+}
+
+// QTBUG-11383
+void tst_QDeclarativeItem::childrenRectBug()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/childrenRectBug.qml"));
+    canvas->show();
+
+    QGraphicsObject *o = canvas->rootObject();
+    QDeclarativeItem *item = o->findChild<QDeclarativeItem*>("theItem");
+    QCOMPARE(item->width(), qreal(200));
+    QCOMPARE(item->height(), qreal(100));
+    QCOMPARE(item->x(), qreal(100));
+
+    delete canvas;
 }
 
 template<typename T>

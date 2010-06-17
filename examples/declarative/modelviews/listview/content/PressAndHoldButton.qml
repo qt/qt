@@ -40,36 +40,40 @@
 
 import Qt 4.7
 
-Item {
-    property variant text
+Image {
+    id: container
+
+    property int repeatDelay: 300
+    property int repeatDuration: 75
+    property bool pressed: false
+
     signal clicked
 
-    id: container
-    Image {
-        id: normal
-        source: "pics/button.png"
-    }
-    Image {
-        id: pressed
-        source: "pics/button-pressed.png"
-        opacity: 0
-    }
-    MouseArea {
-        id: clickRegion
-        anchors.fill: normal
-        onClicked: { container.clicked(); }
-    }
-    Text {
-        font.bold: true
-        color: "white"
-        anchors.centerIn: normal
-        text: container.text
-    }
-    width: normal.width
+    scale: pressed ? 0.9 : 1
 
-    states: State {
-        name: "Pressed"
-        when: clickRegion.pressed == true
-        PropertyChanges { target: pressed; opacity: 1 }
+    SequentialAnimation on pressed {
+        id: autoRepeatClicks
+        running: false
+
+        PropertyAction { target: container; property: "pressed"; value: true }
+        ScriptAction { script: container.clicked() }
+        PauseAnimation { duration: repeatDelay }
+
+        SequentialAnimation {
+            loops: Animation.Infinite
+            ScriptAction { script: container.clicked() }
+            PauseAnimation { duration: repeatDuration }
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+
+        onPressed: autoRepeatClicks.start()
+        onReleased: { 
+            autoRepeatClicks.stop()
+            container.pressed = false
+        }
     }
 }
+

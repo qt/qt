@@ -231,9 +231,10 @@ QT_BEGIN_NAMESPACE
     \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
 
 */
-
-QDeclarativeContents::QDeclarativeContents() : m_x(0), m_y(0), m_width(0), m_height(0)
+QDeclarativeContents::QDeclarativeContents(QDeclarativeItem *item) : m_item(item), m_x(0), m_y(0), m_width(0), m_height(0)
 {
+    //### optimize
+    connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
 }
 
 QDeclarativeContents::~QDeclarativeContents()
@@ -328,12 +329,8 @@ void QDeclarativeContents::calcWidth(QDeclarativeItem *changed)
         emit rectChanged(rectF());
 }
 
-void QDeclarativeContents::setItem(QDeclarativeItem *item)
+void QDeclarativeContents::complete()
 {
-    m_item = item;
-    //### optimize
-    connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
-
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
@@ -343,9 +340,7 @@ void QDeclarativeContents::setItem(QDeclarativeItem *item)
         //###what about changes to visibility?
     }
 
-    //### defer until componentComplete
-    calcHeight();
-    calcWidth();
+    calcGeometry();
 }
 
 void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -360,16 +355,14 @@ void QDeclarativeContents::itemDestroyed(QDeclarativeItem *item)
 {
     if (item)
         QDeclarativeItemPrivate::get(item)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
-    calcWidth();
-    calcHeight();
+    calcGeometry();
 }
 
 void QDeclarativeContents::childRemoved(QDeclarativeItem *item)
 {
     if (item)
         QDeclarativeItemPrivate::get(item)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
-    calcWidth();
-    calcHeight();
+    calcGeometry();
 }
 
 void QDeclarativeContents::childAdded(QDeclarativeItem *item)
@@ -1752,8 +1745,9 @@ QRectF QDeclarativeItem::childrenRect()
 {
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
-        d->_contents = new QDeclarativeContents;
-        d->_contents->setItem(this);
+        d->_contents = new QDeclarativeContents(this);
+        if (d->_componentComplete)
+            d->_contents->complete();
     }
     return d->_contents->rectF();
 }
@@ -2619,6 +2613,8 @@ void QDeclarativeItem::componentComplete()
     }
     if (d->keyHandler)
         d->keyHandler->componentComplete();
+    if (d->_contents)
+        d->_contents->complete();
 }
 
 QDeclarativeStateGroup *QDeclarativeItemPrivate::_states()
