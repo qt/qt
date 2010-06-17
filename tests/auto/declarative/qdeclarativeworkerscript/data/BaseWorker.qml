@@ -13,7 +13,7 @@ WorkerScript {
 
     function compareLiteralResponse(expected) {
         var e = eval('(' + expected + ')')
-        return worker.response == e
+        return JSON.stringify(worker.response) == JSON.stringify(e)
     }
 
     onMessage: {
