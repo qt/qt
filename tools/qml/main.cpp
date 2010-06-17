@@ -347,8 +347,9 @@ int main(int argc, char ** argv)
         wflags |= Qt::WindowStaysOnTopHint;
 
     QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
+    viewer->setAttribute(Qt::WA_DeleteOnClose, true);
     if (!scriptopts.isEmpty()) {
-        QStringList options = 
+        QStringList options =
             scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
 
         QDeclarativeViewer::ScriptOptions scriptOptions = 0;
@@ -451,7 +452,5 @@ int main(int argc, char ** argv)
     viewer->setUseGL(useGL);
     viewer->raise();
 
-    int rv = app.exec();
-    delete viewer;
-    exit(rv);
+    return app.exec();
 }
