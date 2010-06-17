@@ -46,26 +46,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLGradientCacheResource : public QGLContextResource
-{
-public:
-    void freeResource(void *value)
-    {
-        delete reinterpret_cast<QGL2GradientCache *>(value);
-    }
-};
-
-Q_GLOBAL_STATIC(QGLGradientCacheResource, qt_gradient_caches)
+Q_GLOBAL_STATIC(QGLContextGroupResource<QGL2GradientCache>, qt_gradient_caches)
 
 QGL2GradientCache *QGL2GradientCache::cacheForContext(const QGLContext *context)
 {
-    QGL2GradientCache *p = reinterpret_cast<QGL2GradientCache *>(qt_gradient_caches()->value(context));
-    if (!p) {
-        QGLShareContextScope scope(context);
-        p = new QGL2GradientCache;
-        qt_gradient_caches()->insert(context, p);
-    }
-    return p;
+    return qt_gradient_caches()->value(context);
 }
 
 void QGL2GradientCache::cleanCache() {

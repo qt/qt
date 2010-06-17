@@ -315,7 +315,7 @@ class QGLBlurTextureCache : public QObject
 public:
     static QGLBlurTextureCache *cacheForContext(const QGLContext *context);
 
-    QGLBlurTextureCache();
+    QGLBlurTextureCache(const QGLContext *);
     ~QGLBlurTextureCache();
 
     QGLBlurTextureInfo *takeBlurTextureInfo(const QPixmap &pixmap);
@@ -336,19 +336,9 @@ private:
 };
 
 QList<QGLBlurTextureCache *> QGLBlurTextureCache::blurTextureCaches;
+Q_GLOBAL_STATIC(QGLContextGroupResource<QGLBlurTextureCache>, qt_blur_texture_caches)
 
-class QGLBlurCacheResource : public QGLContextResource
-{
-public:
-    void freeResource(void *value)
-    {
-        delete reinterpret_cast<QGLBlurTextureCache *>(value);
-    }
-};
-
-Q_GLOBAL_STATIC(QGLBlurCacheResource, qt_blur_texture_caches)
-
-QGLBlurTextureCache::QGLBlurTextureCache()
+QGLBlurTextureCache::QGLBlurTextureCache(const QGLContext *)
     : timerId(0)
 {
     cache.setMaxCost(4 * 1024 * 1024);
@@ -370,12 +360,7 @@ void QGLBlurTextureCache::timerEvent(QTimerEvent *)
 
 QGLBlurTextureCache *QGLBlurTextureCache::cacheForContext(const QGLContext *context)
 {
-    QGLBlurTextureCache *p = reinterpret_cast<QGLBlurTextureCache *>(qt_blur_texture_caches()->value(context));
-    if (!p) {
-        p = new QGLBlurTextureCache;
-        qt_blur_texture_caches()->insert(context, p);
-    }
-    return p;
+    return qt_blur_texture_caches()->value(context);
 }
 
 QGLBlurTextureInfo *QGLBlurTextureCache::takeBlurTextureInfo(const QPixmap &pixmap)

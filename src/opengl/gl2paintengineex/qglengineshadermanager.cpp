@@ -48,65 +48,27 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLSharedShaderResource : public QGLContextResource
-{
-public:
-    ~QGLSharedShaderResource() {
-        qDebug() << "~QGLSharedShaderResource cleaned up" << hex << this;
-    }
-
-    void freeResource(void *value)
-    {
-        qDebug() << "Context destroyed:";
-        qDebug() << " -> deleting shader cache" << hex << value;
-        delete reinterpret_cast<QGLEngineSharedShaders *>(value);
-    }
-};
-
-class QGLThreadLocalShaders
-{
-public:
-    QGLEngineSharedShaders *shadersForContext(const QGLContext *context) {
-        QGLEngineSharedShaders *shaders = reinterpret_cast<QGLEngineSharedShaders *>(m_resource.value(context));
-        if (!shaders) {
-            QGLShareContextScope scope(context);
-            shaders = new QGLEngineSharedShaders(context);
-            qDebug() << " -> new shader cache for context:" << hex << context << "cache:" << shaders;
-            m_resource.insert(context, shaders);
-        }
-        return shaders;
-    }
-
-    ~QGLThreadLocalShaders() {
-        qDebug() << "Thread exit:";
-        qDebug() << "~QGLThreadLocalShaders() for thread:" << hex << QThread::currentThread();
-    }
-
-private:
-    QGLSharedShaderResource m_resource;
-};
-
 class QGLShaderStorage
 {
 public:
     QGLEngineSharedShaders *shadersForThread(const QGLContext *context) {
-        QGLThreadLocalShaders *&shaders = m_storage.localData();
+        QGLContextGroupResource<QGLEngineSharedShaders> *&shaders = m_storage.localData();
         if (!shaders) {
             qDebug() << "New thread storage for:" << hex << QThread::currentThread();
-            shaders = new QGLThreadLocalShaders;
+            shaders = new QGLContextGroupResource<QGLEngineSharedShaders>();
         }
-        return shaders->shadersForContext(context);
+        return shaders->value(context);
     }
 
 private:
-    QThreadStorage<QGLThreadLocalShaders *> m_storage;
+    QThreadStorage<QGLContextGroupResource<QGLEngineSharedShaders> *> m_storage;
 };
 
 Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage);
 
 QGLEngineSharedShaders *QGLEngineSharedShaders::shadersForContext(const QGLContext *context)
 {
-    return reinterpret_cast<QGLEngineSharedShaders *>(qt_shader_storage()->shadersForThread(context));
+    return qt_shader_storage()->shadersForThread(context);
 }
 
 const char* QGLEngineSharedShaders::qShaderSnippets[] = {
@@ -271,6 +233,7 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
 QGLEngineSharedShaders::~QGLEngineSharedShaders()
 {
+    qDebug() << "####### ~QGLEngineSharedShaders() ##########";
     qDeleteAll(shaders);
     shaders.clear();
 

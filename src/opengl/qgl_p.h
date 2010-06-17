@@ -206,7 +206,7 @@ public:
 #endif
 };
 
-class QGLContextResource;
+class QGLContextGroupResourceBase;
 class QGLSharedResourceGuard;
 
 // QGLContextPrivate has the responsibility of creating context groups.
@@ -234,7 +234,7 @@ private:
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
     QList<const QGLContext *> m_shares;
-    QHash<QGLContextResource *, void *> m_resources;
+    QHash<QGLContextGroupResourceBase *, void *> m_resources;
     QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
 
@@ -242,7 +242,7 @@ private:
 
     friend class QGLContext;
     friend class QGLContextPrivate;
-    friend class QGLContextResource;
+    friend class QGLContextGroupResourceBase;
 };
 
 // Get the context that resources for "ctx" will transfer to once
@@ -306,6 +306,8 @@ class QGLTexture;
 // This probably needs to grow to GL_MAX_VERTEX_ATTRIBS, but 3 is ok for now as that's
 // all the GL2 engine uses:
 #define QT_GL_VERTEX_ARRAY_TRACKED_COUNT 3
+
+class QGLContextResourceBase;
 
 class QGLContextPrivate
 {
@@ -398,6 +400,7 @@ public:
     GLuint current_fbo;
     GLuint default_fbo;
     QPaintEngine *active_engine;
+    QHash<QGLContextResourceBase *, void *> m_resources;
 
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
@@ -606,22 +609,128 @@ inline GLenum qt_gl_preferredTextureTarget()
 #endif
 }
 
-// One resource per group of shared contexts.
-class Q_OPENGL_EXPORT QGLContextResource
+/*
+   Base for resources that are shared in a context group.
+*/
+class QGLContextGroupResourceBase
 {
 public:
-    QGLContextResource();
-    virtual ~QGLContextResource();
-    // Set resource 'value' for 'key' and all its shared contexts.
-    void insert(const QGLContext *key, void *value);
-    // Return resource for 'key' or a shared context.
-    void *value(const QGLContext *key);
-    // Cleanup 'value' in response to a context group being destroyed.
-    void cleanup(const QGLContext *ctx, void *value);
+    QGLContextGroupResourceBase();
+    virtual ~QGLContextGroupResourceBase();
+    void insert(const QGLContext *context, void *value);
+    void *value(const QGLContext *context);
+    void cleanup(const QGLContext *context, void *value);
     virtual void freeResource(void *value) = 0;
-private:
+
+protected:
     QList<QGLContextGroup *> m_groups;
+
+private:
     QAtomicInt active;
+};
+
+/*
+   The QGLContextGroupResource template is used to manage a resource
+   for a group of sharing GL contexts. When the last context in the
+   group is destroyed, or when the QGLContextGroupResource object
+   itself is destroyed (implies potential context switches), the
+   resource will be freed.
+
+   The class used as the template class type needs to have a
+   constructor with the following signature:
+     T(const QGLContext *);
+*/
+template <class T>
+class QGLContextGroupResource : public QGLContextGroupResourceBase
+{
+public:
+    ~QGLContextGroupResource() {
+        for (int i = 0; i < m_groups.size(); ++i) {
+            const QGLContext *context = m_groups.at(i)->context();
+            T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
+            if (resource) {
+                QGLShareContextScope scope(context);
+                delete resource;
+            }
+        }
+    }
+
+    T *value(const QGLContext *context) {
+        T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
+        if (!resource) {
+            resource = new T(context);
+            insert(context, resource);
+        }
+        return resource;
+    }
+
+protected:
+    void freeResource(void *resource) {
+        delete reinterpret_cast<T *>(resource);
+    }
+};
+
+/*
+   Base for resources that are context specific.
+*/
+class QGLContextResourceBase
+{
+public:
+    virtual ~QGLContextResourceBase() {
+        for (int i = 0; i < m_contexts.size(); ++i)
+            m_contexts.at(i)->d_ptr->m_resources.remove(this);
+    }
+
+    void insert(const QGLContext *context, void *value) {
+        context->d_ptr->m_resources.insert(this, value);
+    }
+
+    void *value(const QGLContext *context) {
+        return context->d_ptr->m_resources.value(this, 0);
+    }
+    virtual void freeResource(void *value) = 0;
+
+protected:
+    QList<const QGLContext *> m_contexts;
+};
+
+/*
+   The QGLContextResource template is used to manage a resource for a
+   single GL context. Just before the context is destroyed (while it's
+   still the current context), or when the QGLContextResource object
+   itself is destroyed (implies potential context switches), the
+   resource will be freed.  The class used as the template class type
+   needs to have a constructor with the following signature: T(const
+   QGLContext *);
+*/
+template <class T>
+class QGLContextResource : public QGLContextResourceBase
+{
+public:
+    ~QGLContextResource() {
+        for (int i = 0; i < m_contexts.size(); ++i) {
+            const QGLContext *context = m_contexts.at(i);
+            T *resource = reinterpret_cast<T *>(QGLContextResourceBase::value(context));
+            if (resource) {
+                QGLShareContextScope scope(context);
+                delete resource;
+            }
+        }
+    }
+
+    T *value(const QGLContext *context) {
+        T *resource = reinterpret_cast<T *>(QGLContextResourceBase::value(context));
+        if (!resource) {
+            resource = new T(context);
+            insert(context, resource);
+        }
+        return resource;
+    }
+
+protected:
+    void freeResource(void *resource) {
+        delete reinterpret_cast<T *>(resource);
+    }
 };
 
 // Put a guard around a GL object identifier and its context.

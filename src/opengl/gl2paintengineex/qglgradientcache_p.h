@@ -75,8 +75,8 @@ class QGL2GradientCache
 public:
     static QGL2GradientCache *cacheForContext(const QGLContext *context);
 
-    QGL2GradientCache() { }
-    ~QGL2GradientCache() {cleanCache();}
+    QGL2GradientCache(const QGLContext *) {}
+    ~QGL2GradientCache() { cleanCache(); }
 
     GLuint getBuffer(const QGradient &gradient, qreal opacity);
     inline int paletteSize() const { return 1024; }
