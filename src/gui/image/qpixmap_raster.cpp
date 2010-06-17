@@ -192,10 +192,23 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
             }
 #endif
 
-            if (!sourceImage.hasAlphaChannel()
-                || ((flags & Qt::NoOpaqueDetection) == 0
-                    && !const_cast<QImage &>(sourceImage).data_ptr()->checkForAlphaPixels())) {
+            if (!sourceImage.hasAlphaChannel()) {
                 image = sourceImage.convertToFormat(opaqueFormat);
+            } else if ((flags & Qt::NoOpaqueDetection) == 0
+                       && !const_cast<QImage &>(sourceImage).data_ptr()->checkForAlphaPixels())
+            {
+                // image has alpha format but is really opaque, so try to do a
+                // more efficient conversion
+                if (sourceImage.format() == QImage::Format_ARGB32
+                    || sourceImage.format() == QImage::Format_ARGB32_Premultiplied)
+                {
+                    QImage rgbImage(sourceImage.bits(), sourceImage.width(), sourceImage.height(),
+                                    QImage::Format_RGB32);
+                    image = rgbImage.convertToFormat(opaqueFormat);
+                    image.detach();
+                } else {
+                    image = sourceImage.convertToFormat(opaqueFormat);
+                }
             } else {
                 image = sourceImage.convertToFormat(alphaFormat);
             }
