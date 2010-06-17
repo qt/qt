@@ -914,8 +914,14 @@ void QDeclarativeFlickable::timerEvent(QTimerEvent *event)
         d->delayedPressTimer.stop();
         if (d->delayedPressEvent) {
             QDeclarativeItem *grabber = scene() ? qobject_cast<QDeclarativeItem*>(scene()->mouseGrabberItem()) : 0;
-            if (!grabber || grabber != this)
-                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+            if (!grabber || grabber != this) {
+                // We replay the mouse press but the grabber we had might not be interessted by the event (e.g. overlay)
+                // so we reset the grabber
+                if (scene()->mouseGrabberItem() == d->delayedPressTarget)
+                    d->delayedPressTarget->ungrabMouse();
+                //Use the event handler that will take care of finding the proper item to propagate the event
+                QApplication::sendEvent(scene(), d->delayedPressEvent);
+            }
             delete d->delayedPressEvent;
             d->delayedPressEvent = 0;
         }
@@ -1206,8 +1212,17 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             break;
         case QEvent::GraphicsSceneMouseRelease:
             if (d->delayedPressEvent) {
-                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+                // We replay the mouse press but the grabber we had might not be interessted by the event (e.g. overlay)
+                // so we reset the grabber
+                if (s->mouseGrabberItem() == d->delayedPressTarget)
+                    d->delayedPressTarget->ungrabMouse();
+                //Use the event handler that will take care of finding the proper item to propagate the event
+                QApplication::sendEvent(scene(), d->delayedPressEvent);
                 d->clearDelayedPress();
+                // We send the release
+                scene()->sendEvent(s->mouseGrabberItem(), event);
+                // And the event has been consumed
+                return true;
             }
             d->handleMouseReleaseEvent(&mouseEvent);
             break;
