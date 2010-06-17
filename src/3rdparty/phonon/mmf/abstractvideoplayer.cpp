@@ -384,9 +384,6 @@ void MMF::AbstractVideoPlayer::initVideoOutput()
     // Suppress warnings in release builds
     Q_UNUSED(connected);
 
-    // Do these after all connections are complete, to ensure
-    // that any signals generated get to their destinations.
-    m_videoOutput->winId();
     m_videoOutput->setVideoSize(m_videoFrameSize);
 }
 
