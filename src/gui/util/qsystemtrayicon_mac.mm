@@ -226,6 +226,11 @@ bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
     return true;
 }
 
+bool QSystemTrayIconPrivate::supportsMessages_sys()
+{
+    return true;
+}
+
 void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString &message, QSystemTrayIcon::MessageIcon icon, int)
 {
 

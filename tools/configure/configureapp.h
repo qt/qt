@@ -133,6 +133,7 @@ private:
     QStringList qmakeIncludes;
     QStringList qmakeLibs;
     QString opensslLibs;
+    QString psqlLibs;
 
     QMap<QString,QString> licenseInfo;
     QString outputLine;

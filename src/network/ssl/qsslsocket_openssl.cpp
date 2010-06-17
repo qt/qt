@@ -57,12 +57,18 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QLibrary> // for loading the security lib for the CA store
 
-static void initNetworkResources()
-{
-    // Initialize resources
-    Q_INIT_RESOURCE(network);
-}
+#if defined(Q_OS_MAC)
+#define kSecTrustSettingsDomainSystem 2 // so we do not need to include the header file
+    PtrSecCertificateGetData QSslSocketPrivate::ptrSecCertificateGetData = 0;
+    PtrSecTrustSettingsCopyCertificates QSslSocketPrivate::ptrSecTrustSettingsCopyCertificates = 0;
+    PtrSecTrustCopyAnchorCertificates QSslSocketPrivate::ptrSecTrustCopyAnchorCertificates = 0;
+#elif defined(Q_OS_WIN)
+    PtrCertOpenSystemStoreW QSslSocketPrivate::ptrCertOpenSystemStoreW = 0;
+    PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = 0;
+    PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = 0;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -406,9 +412,6 @@ bool QSslSocketPrivate::ensureInitialized()
     if (!q_initialized) {
         q_initialized = true;
 
-        // Initialize resources
-        initNetworkResources();
-
         // Initialize OpenSSL.
         q_CRYPTO_set_id_callback(id_function);
         q_CRYPTO_set_locking_callback(locking_function);
@@ -448,6 +451,36 @@ bool QSslSocketPrivate::ensureInitialized()
         resetDefaultCiphers();
         setDefaultCaCertificates(systemCaCertificates());
     }
+
+    //load symbols needed to receive certificates from system store
+#if defined(Q_OS_MAC)
+    QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
+    if (securityLib.load()) {
+        ptrSecCertificateGetData = (PtrSecCertificateGetData) securityLib.resolve("SecCertificateGetData");
+        if (!ptrSecCertificateGetData)
+            qWarning("could not resolve symbols in security library"); // should never happen
+
+        ptrSecTrustSettingsCopyCertificates = (PtrSecTrustSettingsCopyCertificates) securityLib.resolve("SecTrustSettingsCopyCertificates");
+        if (!ptrSecTrustSettingsCopyCertificates) { // method was introduced in Leopard, use legacy method if it's not there
+            ptrSecTrustCopyAnchorCertificates = (PtrSecTrustCopyAnchorCertificates) securityLib.resolve("SecTrustCopyAnchorCertificates");
+            if (!ptrSecTrustCopyAnchorCertificates)
+                qWarning("could not resolve symbols in security library"); // should never happen
+        }
+    } else {
+        qWarning("could not load security library");
+    }
+#elif defined(Q_OS_WIN)
+    HINSTANCE hLib = LoadLibraryW(L"Crypt32");
+    if (hLib) {
+        ptrCertOpenSystemStoreW = (PtrCertOpenSystemStoreW)GetProcAddress(hLib, "CertOpenSystemStoreW");
+        ptrCertFindCertificateInStore = (PtrCertFindCertificateInStore)GetProcAddress(hLib, "CertFindCertificateInStore");
+        ptrCertCloseStore = (PtrCertCloseStore)GetProcAddress(hLib, "CertCloseStore");
+        if (!ptrCertOpenSystemStoreW || !ptrCertFindCertificateInStore || !ptrCertCloseStore)
+            qWarning("could not resolve symbols in crypt32 library"); // should never happen
+    } else {
+        qWarning("could not load crypt32 library"); // should never happen
+    }
+#endif
     return true;
 }
 
@@ -486,13 +519,74 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
-    // Qt provides a default bundle of certificates
-    QFile caBundle(QLatin1String(":/trolltech/network/ssl/qt-ca-bundle.crt"));
-    if (caBundle.open(QIODevice::ReadOnly | QIODevice::Text))
-        return QSslCertificate::fromDevice(&caBundle);
+    ensureInitialized();
+    QList<QSslCertificate> systemCerts;
+#if defined(Q_OS_MAC)
+    CFArrayRef cfCerts;
+    OSStatus status = 1;
 
-    // Unreachable; return no bundle.
-    return QList<QSslCertificate>();
+    OSStatus SecCertificateGetData (
+       SecCertificateRef certificate,
+       CSSM_DATA_PTR data
+    );
+
+    if (ptrSecCertificateGetData) {
+        if (ptrSecTrustSettingsCopyCertificates)
+            status = ptrSecTrustSettingsCopyCertificates(kSecTrustSettingsDomainSystem, &cfCerts);
+        else if (ptrSecTrustCopyAnchorCertificates)
+            status = ptrSecTrustCopyAnchorCertificates(&cfCerts);
+        if (!status) {
+            CFIndex size = CFArrayGetCount(cfCerts);
+            for (CFIndex i = 0; i < size; ++i) {
+                SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
+                CSSM_DATA data;
+                CSSM_DATA_PTR dataPtr = &data;
+                if (ptrSecCertificateGetData(cfCert, dataPtr)) {
+                    qWarning("error retrieving a CA certificate from the system store");
+                } else {
+                    int len = data.Length;
+                    char *rawData = reinterpret_cast<char *>(data.Data);
+                    QByteArray rawCert(rawData, len);
+                    systemCerts.append(QSslCertificate::fromData(rawCert, QSsl::Der));
+                }
+            }
+        }
+        else {
+           // no detailed error handling here
+           qWarning("could not retrieve system CA certificates");
+        }
+    }
+#elif defined(Q_OS_WIN)
+    if (ptrCertOpenSystemStoreW && ptrCertFindCertificateInStore && ptrCertCloseStore) {
+        HCERTSTORE hSystemStore;
+        hSystemStore = ptrCertOpenSystemStoreW(0, L"ROOT");
+        if(hSystemStore) {
+            PCCERT_CONTEXT pc = NULL;
+            while(1) {
+                pc = ptrCertFindCertificateInStore( hSystemStore, X509_ASN_ENCODING, 0, CERT_FIND_ANY, NULL, pc);
+                if(!pc)
+                    break;
+                QByteArray der((const char *)(pc->pbCertEncoded), static_cast<int>(pc->cbCertEncoded));
+                QSslCertificate cert(der,QSsl::Der);
+                systemCerts.append(cert);
+            }
+            ptrCertCloseStore(hSystemStore, 0);
+        }
+    }
+#elif defined(Q_OS_AIX)
+    systemCerts.append(QSslCertificate::fromPath("/var/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard));
+#elif defined(Q_OS_SOLARIS)
+    systemCerts.append(QSslCertificate::fromPath("/usr/local/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard));
+#elif defined(Q_OS_HPUX)
+    systemCerts.append(QSslCertificate::fromPath("/opt/openssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard));
+#elif defined(Q_OS_LINUX)
+    systemCerts.append(QSslCertificate::fromPath("/etc/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard)); // (K)ubuntu, OpenSUSE, Mandriva, ...
+    systemCerts.append(QSslCertificate::fromPath("/etc/pki/tls/certs/ca-bundle.crt", QSsl::Pem)); // Fedora
+    systemCerts.append(QSslCertificate::fromPath("/usr/lib/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard)); // Gentoo, Mandrake
+    systemCerts.append(QSslCertificate::fromPath("/usr/share/ssl/*.pem", QSsl::Pem, QRegExp::Wildcard)); // Centos, Redhat, SuSE
+    systemCerts.append(QSslCertificate::fromPath("/usr/local/ssl/*.pem", QSsl::Pem, QRegExp::Wildcard)); // Normal OpenSSL Tarball
+#endif
+    return systemCerts;
 }
 
 void QSslSocketBackendPrivate::startClientEncryption()

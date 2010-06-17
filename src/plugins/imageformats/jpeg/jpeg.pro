@@ -22,10 +22,9 @@ symbian: {
 }
 
 contains(QT_CONFIG, system-jpeg) {
-        unix:LIBS += -ljpeg
-        win32:LIBS += libjpeg.lib
-}
-!contains(QT_CONFIG, system-jpeg) {
+        unix|win32-g++*:LIBS += -ljpeg
+        win32:!win32-g++*:LIBS += libjpeg.lib
+} else {
 	INCLUDEPATH += ../../../3rdparty/libjpeg
 	SOURCES  += \
 	    ../../../3rdparty/libjpeg/jaricom.c \

@@ -1,0 +1,11 @@
+include(qt.qdocconf)
+
+imagedirs               = $QTDIR/doc/src/images \
+                          $QTDIR/examples \
+			  $QTDIR/doc/src/template/images
+
+outputdir               = $QTDIR/doc/ditaxml
+outputformats           = DITAXML
+
+generateindex           = true
+url                     = .
