@@ -71,6 +71,7 @@ public:
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     virtual Qt::WindowFlags windowFlags() const;
     virtual WId winId() const;
+    virtual void setParent(const QPlatformWindow *window);
 
     virtual void setWindowTitle(const QString &);
     virtual void raise();

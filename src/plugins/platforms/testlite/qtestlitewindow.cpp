@@ -623,11 +623,6 @@ void QTestLiteWindow::handleKeyEvent(QEvent::Type type, void *ev)
 
 void QTestLiteWindow::setGeometry(const QRect &rect)
 {
-    QRect oldRect = geometry();
-    if (rect == oldRect)
-        return;
-
-    //if unchanged ###
     XMoveResizeWindow(xd->display, x_window, rect.x(), rect.y(), rect.width(), rect.height());
     QPlatformWindow::setGeometry(rect);
 }
@@ -641,6 +636,23 @@ Qt::WindowFlags QTestLiteWindow::windowFlags() const
 WId QTestLiteWindow::winId() const
 {
     return x_window;
+}
+
+void QTestLiteWindow::setParent(const QPlatformWindow *window)
+{
+    /******** Cleaning up **********/
+    Window parentXWindow, rootXWindow;
+    Window *children;
+    unsigned int nChildren;
+    if (XQueryTree(xd->display, x_window, &rootXWindow, &parentXWindow, &children, &nChildren)) {
+        if (parentXWindow) {
+            XUnmapWindow(xd->display, x_window);
+            XReparentWindow(xd->display, x_window, rootXWindow, 0, 0);
+        }
+    }
+    /******* Done cleaning up ********/
+    XReparentWindow(xd->display,x_window,window->winId(),geometry().x(),geometry().y());
+    XMapWindow(xd->display, x_window);
 }
 
 void QTestLiteWindow::raise()

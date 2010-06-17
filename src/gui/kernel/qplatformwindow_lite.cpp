@@ -65,6 +65,8 @@ Qt::WindowFlags QPlatformWindow::windowFlags() const
 
 WId QPlatformWindow::winId() const { return WId(0); }
 
+void QPlatformWindow::setParent(const QPlatformWindow *) { qWarning("This plugin does not support setParent!"); }
+
 void QPlatformWindow::setWindowTitle(const QString &) {}
 
 void QPlatformWindow::raise() { qWarning("This plugin does not support raise()"); }

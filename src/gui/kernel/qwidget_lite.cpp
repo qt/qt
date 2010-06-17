@@ -85,6 +85,17 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     setWinId(q->platformWindow()->winId());
 
+    QObjectList children = q->children();
+    for (int i = 0; i < children.size(); i++) {
+        if (children.at(i)->isWidgetType()) {
+            const QWidget *childWidget = qobject_cast<const QWidget *>(children.at(i));
+            QPlatformWindow *childWindow = childWidget->platformWindow();
+            if (childWindow) {
+                childWindow->setParent(platformWindow);
+            }
+        }
+    }
+
     QApplicationPrivate::platformIntegration()->moveToScreen(q, screenNumber);
 //    qDebug() << "create_sys" << q << q->internalWinId();
 }
@@ -92,6 +103,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    //### jl: subwindows now enabled
     Q_UNUSED(destroySubWindows);
 
     if ((windowType() == Qt::Popup))
@@ -137,6 +149,13 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
+        if (q->platformWindow()) {
+            QWidget * parentWithWindow = newparent->platformWindow()? newparent : newparent->nativeParentWidget();
+            if (parentWithWindow && parentWithWindow->platformWindow()) {
+                q->platformWindow()->setParent(parentWithWindow->platformWindow());
+            }
+        }
+
     }
 
     if (!newparent) {
@@ -166,6 +185,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     } else if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
         qDebug() << "######## setParent_sys() change from toplevel not implemented ########";
     }
+
 
     if (q->isWindow() || (!newparent || newparent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
@@ -340,25 +360,26 @@ void QWidgetPrivate::show_sys()
 
     QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
 
-    if (!q->isWindow())
-        return;
-
-    if (QPlatformWindow *window = q->platformWindow()) {
+    QPlatformWindow *window = q->platformWindow();
+    if (window) {
          const QRect geomRect = q->geometry();
          const QRect windowRect = window->geometry();
          if (windowRect != geomRect) {
-             q->platformWindow()->setGeometry(geomRect);
+             window->setGeometry(geomRect);
+         }
+         if (q->isWindow()) {
              if (QWindowSurface *surface = q->windowSurface())
                  if (windowRect.size() != geomRect.size()) {
                  surface->resize(geomRect.size());
              }
+
+             if (window)
+                 window->setVisible(true);
+
+             if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
+                 q->activateWindow(); //###
          }
-         q->platformWindow()->setVisible(true);
      }
-
-
-    if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
-        q->activateWindow(); //###
 }
 
 
@@ -540,10 +561,10 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     if (q->isVisible()) {
 
-        if (q->isWindow()) {
+        if (q->platformWindow()) {
+            q->platformWindow()->setGeometry(q->frameGeometry());
             const QWidgetBackingStore *bs = maybeBackingStore();
             if (bs->windowSurface) {
-                q->platformWindow()->setGeometry(q->frameGeometry());
                 if (isResize)
                     bs->windowSurface->resize(r.size());
             }

@@ -120,6 +120,7 @@ public:
     Qt::WindowFlags windowFlags() const;
     void setVisible(bool visible);
     WId winId() const;
+    void setParent(const QPlatformWindow *window);
     void raise();
     void lower();
     void setWindowTitle(const QString &title);
