@@ -171,7 +171,8 @@
            constructed.
 
     \value AA_X11InitThreads Calls XInitThreads() as part of the QApplication
-           construction in order to make Xlib calls thread-safe.
+           construction in order to make Xlib calls thread-safe. This
+           attribute must be set before QApplication is constructed.
 
 
     \omitvalue AA_AttributeCount
