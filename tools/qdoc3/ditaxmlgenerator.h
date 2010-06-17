@@ -110,6 +110,8 @@ class DitaXmlGenerator : public PageGenerator
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);
     
+    QString fullQualification(const Node* n);
+
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
     void writeLocation(const Node* n, CodeMarker* marker);
     void writeFunctions(const Section& s, 

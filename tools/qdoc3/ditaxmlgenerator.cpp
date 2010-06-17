@@ -4500,6 +4500,31 @@ void DitaXmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* ma
 
 #endif
 
+/*!
+  Return the full qualification of the node \a n, but without
+  the name of \a n itself. e.g. A::B::C
+ */
+QString DitaXmlGenerator::fullQualification(const Node* n)
+{
+    QString fq;
+    InnerNode* in = n->parent();
+    while (in) {
+        if ((in->type() == Node::Class) ||
+            (in->type() == Node::Namespace)) {
+            if (in->name().isEmpty())
+                break;
+            if (fq.isEmpty())
+                fq = in->name();
+            else
+                fq = in->name() + "::" + fq;
+        }
+        else
+            break;
+        in = in->parent();
+    }
+    return fq;
+}
+
 void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
 {
     QList<RelatedClass>::ConstIterator r;
@@ -4555,7 +4580,8 @@ void DitaXmlGenerator::writeLocation(const Node* n, CodeMarker* marker)
 
 void DitaXmlGenerator::writeFunctions(const Section& s, 
                                       const ClassNode* cn, 
-                                      CodeMarker* marker) {
+                                      CodeMarker* marker)
+{
     NodeList::ConstIterator m = s.members.begin();
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Function) {
@@ -4573,19 +4599,80 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             writer.writeAttribute("value",fn->accessString());
             writer.writeEndElement(); // <cxxFunctionAccessSpecifier>
 
+            if (fn->isStatic()) {
+                writer.writeStartElement(CXXFUNCTIONSTORAGECLASSSPECIFIERSTATIC);
+                writer.writeAttribute("name","static");
+                writer.writeAttribute("value","static");
+                writer.writeEndElement(); // <cxxFunctionStorageClassSpecifierStatic>
+            }
+            
+            if (fn->isConst()) {
+                writer.writeStartElement(CXXFUNCTIONCONST);
+                writer.writeAttribute("name","const");
+                writer.writeAttribute("value","const");
+                writer.writeEndElement(); // <cxxFunctionConst>
+            }
+
+            if (fn->virtualness() != FunctionNode::NonVirtual) {
+                writer.writeStartElement(CXXFUNCTIONVIRTUAL);
+                writer.writeAttribute("name","virtual");
+                writer.writeAttribute("value","virtual");
+                writer.writeEndElement(); // <cxxFunctionVirtual>
+                if (fn->virtualness() == FunctionNode::PureVirtual) {
+                    writer.writeStartElement(CXXFUNCTIONPUREVIRTUAL);
+                    writer.writeAttribute("name","pure virtual");
+                    writer.writeAttribute("value","pure virtual");
+                    writer.writeEndElement(); // <cxxFunctionPureVirtual>
+                }
+            }
+            
+            if (fn->name() == cn->name()) {
+                writer.writeStartElement(CXXFUNCTIONCONSTRUCTOR);
+                writer.writeAttribute("name","constructor");
+                writer.writeAttribute("value","constructor");
+                writer.writeEndElement(); // <cxxFunctionConstructor>
+            }
+            else if (fn->name()[0] == QChar('~')) {
+                writer.writeStartElement(CXXFUNCTIONDESTRUCTOR);
+                writer.writeAttribute("name","destructor");
+                writer.writeAttribute("value","destructor");
+                writer.writeEndElement(); // <cxxFunctionDestructor>
+            }
+            else {
+                writer.writeStartElement(CXXFUNCTIONDECLAREDTYPE);
+                writer.writeCharacters(fn->returnType());
+                writer.writeEndElement(); // <cxxFunctionDeclaredType>
+            }
+            QString fq = fullQualification(fn);
+            if (!fq.isEmpty()) {
+                writer.writeStartElement(CXXFUNCTIONSCOPEDNAME);
+                writer.writeCharacters(fq);
+                writer.writeEndElement(); // <cxxFunctionScopedName>
+            }
+            writer.writeStartElement(CXXFUNCTIONPROTOTYPE);
+            writer.writeCharacters(fn->signature(true));
+            writer.writeEndElement(); // <cxxFunctionPrototype>
+
+            QString fnl = fn->signature(false);
+            int idx = fnl.indexOf(' ');
+            if (idx < 0)
+                idx = 0;
+            else
+                ++idx;
+            fnl = fn->parent()->name() + "::" + fnl.mid(idx);
+            writer.writeStartElement(CXXFUNCTIONNAMELOOKUP);
+            writer.writeCharacters(fnl);
+            writer.writeEndElement(); // <cxxFunctionNameLookup>
+            
             writeLocation(fn, marker);
             writer.writeEndElement(); // <cxxFunctionDefinition>
             writer.writeStartElement(APIDESC);
 
             if (!fn->doc().isEmpty()) {
-                writer.writeStartElement("p");
-                writer.writeAttribute("outputclass","h2");
-                writer.writeCharacters("Function Description");
-                writer.writeEndElement(); // </p>
                 generateBody(fn, marker);
                 //        generateAlsoList(inner, marker);
             }
-    
+
             writer.writeEndElement(); // </apiDesc>
             writer.writeEndElement(); // </cxxFunctionDetail>
             writer.writeEndElement(); // </cxxFunction>
@@ -4601,27 +4688,32 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
 
 void DitaXmlGenerator::writeNestedClasses(const Section& s, 
                                           const ClassNode* cn, 
-                                          CodeMarker* marker) {
+                                          CodeMarker* marker)
+{
 }
 
 void DitaXmlGenerator::writeEnumerations(const Section& s, 
                                          const ClassNode* cn, 
-                                         CodeMarker* marker) {
+                                         CodeMarker* marker)
+{
 }
 
 void DitaXmlGenerator::writeTypedefs(const Section& s, 
                                      const ClassNode* cn, 
-                                     CodeMarker* marker) {
+                                     CodeMarker* marker)
+{
 }
 
 void DitaXmlGenerator::writeDataMembers(const Section& s, 
                                         const ClassNode* cn, 
-                                        CodeMarker* marker) {
+                                        CodeMarker* marker)
+{
 }
 
 void DitaXmlGenerator::writeProperties(const Section& s, 
                                        const ClassNode* cn, 
-                                       CodeMarker* marker) {
+                                       CodeMarker* marker)
+{
 }
 
 QT_END_NAMESPACE
