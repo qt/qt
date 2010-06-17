@@ -1270,7 +1270,7 @@ void tst_QScriptValue::toVariant_old()
     QCOMPARE(opaque.toVariant(), var);
 
     QScriptValue object = eng.newObject();
-    QCOMPARE(object.toVariant(), QVariant(QString("[object Object]")));
+    QCOMPARE(object.toVariant(), QVariant(QVariantMap()));
 
     QScriptValue qobject = eng.newQObject(this);
     {
@@ -2296,7 +2296,7 @@ void tst_QScriptValue::getSetScriptClass()
         QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isVariant());
-        QVERIFY(!obj.toVariant().isValid());
+        QCOMPARE(obj.toVariant(), QVariant(QVariantMap()));
     }
     {
         QScriptValue obj = eng.newQObject(this);
@@ -3470,6 +3470,91 @@ void tst_QScriptValue::objectId()
     QScriptValue obj = eng.objectById(globalObjectId);
     QVERIFY(obj.isObject());
     QVERIFY(obj.strictlyEquals(eng.globalObject()));
+}
+
+void tst_QScriptValue::nestedObjectToVariant_data()
+{
+    QTest::addColumn<QString>("program");
+    QTest::addColumn<QVariant>("expected");
+
+    // Array literals
+    QTest::newRow("[[]]")
+        << QString::fromLatin1("[[]]")
+        << QVariant(QVariantList() << (QVariant(QVariantList())));
+    QTest::newRow("[[123]]")
+        << QString::fromLatin1("[[123]]")
+        << QVariant(QVariantList() << (QVariant(QVariantList() << 123)));
+    QTest::newRow("[[], 123]")
+        << QString::fromLatin1("[[], 123]")
+        << QVariant(QVariantList() << QVariant(QVariantList()) << 123);
+
+    // Cyclic arrays
+    QTest::newRow("var a=[]; a.push(a)")
+        << QString::fromLatin1("var a=[]; a.push(a); a")
+        << QVariant(QVariantList() << QVariant(QVariantList()));
+    QTest::newRow("var a=[]; a.push(123, a)")
+        << QString::fromLatin1("var a=[]; a.push(123, a); a")
+        << QVariant(QVariantList() << 123 << QVariant(QVariantList()));
+    QTest::newRow("var a=[]; var b=[]; a.push(b); b.push(a)")
+        << QString::fromLatin1("var a=[]; var b=[]; a.push(b); b.push(a); a")
+        << QVariant(QVariantList() << QVariant(QVariantList() << QVariant(QVariantList())));
+    QTest::newRow("var a=[]; var b=[]; a.push(123, b); b.push(456, a)")
+        << QString::fromLatin1("var a=[]; var b=[]; a.push(123, b); b.push(456, a); a")
+        << QVariant(QVariantList() << 123 << QVariant(QVariantList() << 456 << QVariant(QVariantList())));
+
+    // Object literals
+    {
+        QVariantMap m;
+        m["a"] = QVariantMap();
+        QTest::newRow("{ a:{} }")
+            << QString::fromLatin1("({ a:{} })")
+            << QVariant(m);
+    }
+    {
+        QVariantMap m, m2;
+        m2["b"] = 10;
+        m2["c"] = 20;
+        m["a"] = m2;
+        QTest::newRow("{ a:{b:10, c:20} }")
+            << QString::fromLatin1("({ a:{b:10, c:20} })")
+            << QVariant(m);
+    }
+    {
+        QVariantMap m;
+        m["a"] = 10;
+        m["b"] = QVariantList() << 20 << 30;
+        QTest::newRow("{ a:10, b:[20, 30]}")
+            << QString::fromLatin1("({ a:10, b:[20,30]})")
+            << QVariant(m);
+    }
+
+    // Cyclic objects
+    {
+        QVariantMap m;
+        m["p"] = QVariantMap();
+        QTest::newRow("var o={}; o.p=o")
+            << QString::fromLatin1("var o={}; o.p=o; o")
+            << QVariant(m);
+    }
+    {
+        QVariantMap m;
+        m["p"] = 123;
+        m["q"] = QVariantMap();
+        QTest::newRow("var o={}; o.p=123; o.q=o")
+            << QString::fromLatin1("var o={}; o.p=123; o.q=o; o")
+            << QVariant(m);
+    }
+}
+
+void tst_QScriptValue::nestedObjectToVariant()
+{
+    QScriptEngine eng;
+    QFETCH(QString, program);
+    QFETCH(QVariant, expected);
+    QScriptValue o = eng.evaluate(program);
+    QVERIFY(!o.isError());
+    QVERIFY(o.isObject());
+    QCOMPARE(o.toVariant(), expected);
 }
 
 QTEST_MAIN(tst_QScriptValue)
