@@ -112,6 +112,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
                           p1.pos().y() - p1.startPos().y() + p2.pos().y() - p2.startPos().y()) / 2;
             if (d->offset.x() > 10  || d->offset.y() > 10 ||
                 d->offset.x() < -10 || d->offset.y() < -10) {
+                q->setHotSpot(p1.startScreenPos());
                 result = QGestureRecognizer::TriggerGesture;
             } else {
                 result = QGestureRecognizer::MayBeGesture;
@@ -441,6 +442,7 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     switch (event->type()) {
     case QEvent::TouchBegin: {
         d->position = ev->touchPoints().at(0).pos();
+        q->setHotSpot(ev->touchPoints().at(0).screenPos());
         result = QGestureRecognizer::TriggerGesture;
         break;
     }
@@ -523,6 +525,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         if (d->timerId)
             q->killTimer(d->timerId);
         d->timerId = q->startTimer(TimerInterval);
+        q->setHotSpot(ev->touchPoints().at(0).startScreenPos());
         result = QGestureRecognizer::TriggerGesture;
         break;
     case QEvent::TouchEnd:

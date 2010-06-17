@@ -442,7 +442,11 @@ static HB_Error  Load_CaretValue( HB_CaretValue*  cv,
     if ( ACCESS_Frame( 2L ) )
       return error;
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
     cv->cvf.cvf4.IdCaretValue = GET_UShort();
+#else
+    (void) GET_UShort();
+#endif
 
     FORGET_Frame();
     break;

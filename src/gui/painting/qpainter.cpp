@@ -2391,6 +2391,8 @@ void QPainter::setCompositionMode(CompositionMode mode)
         qWarning("QPainter::setCompositionMode: Painter not active");
         return;
     }
+    if (d->state->composition_mode == mode)
+        return;
     if (d->extended) {
         d->state->composition_mode = mode;
         d->extended->compositionModeChanged();
@@ -4238,8 +4240,6 @@ void QPainter::drawEllipse(const QRectF &r)
         return;
 
     QRectF rect(r.normalized());
-    if (rect.isEmpty())
-        return;
 
     if (d->extended) {
         d->extended->drawEllipse(rect);
@@ -4281,8 +4281,6 @@ void QPainter::drawEllipse(const QRect &r)
         return;
 
     QRect rect(r.normalized());
-    if (rect.isEmpty())
-        return;
 
     if (d->extended) {
         d->extended->drawEllipse(rect);

@@ -83,7 +83,9 @@ public:
     void updateMenu_sys();
     QRect geometry_sys() const;
     void showMessage_sys(const QString &msg, const QString &title, QSystemTrayIcon::MessageIcon icon, int secs);
+
     static bool isSystemTrayAvailable_sys();
+    static bool supportsMessages_sys();
 
     QPointer<QMenu> menu;
     QIcon icon;

@@ -13,7 +13,7 @@ LUPDATE += -locations relative -no-ui-lines
 
 ###### Qt Libraries
 
-QT_TS        = ar cs da de es fr he hu ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
+QT_TS        = ar cs da de es fr he hu ja pl pt ru sk sl sv uk zh_CN zh_TW
 
 ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                 -I../include -I../include/Qt \
@@ -73,5 +73,8 @@ ts-qvfb.depends = sub-tools
 
 ts.depends = ts-qt ts-designer ts-linguist ts-assistant ts-qtconfig ts-qvfb
 
+check-ts.commands = (cd $$PWD && perl check-ts.pl)
+check-ts.depends = ts
+
 QMAKE_EXTRA_TARGETS += ts-qt ts-designer ts-linguist ts-assistant ts-qtconfig ts-qvfb \
-                       ts
+                       ts check-ts

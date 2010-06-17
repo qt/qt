@@ -1766,6 +1766,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     function returns the actual matrix used for transforming the
     pixmap.
 
+    \note When using the native X11 graphics system, the pixmap
+    becomes invalid when the QApplication instance is destroyed.
+
     \sa QBitmap, QImage, QImageReader, QImageWriter
 */
 
