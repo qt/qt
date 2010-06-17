@@ -672,23 +672,7 @@ QKeyMapperPrivate::updateKeyboard()
 #endif
     if (iso639Code) {
         keyboardInputLocale = QLocale(QCFString::toQString(iso639Code));
-        QString monday = keyboardInputLocale.dayName(1);
-        bool rtl = false;
-        for (int i = 0; i < monday.length(); ++i) {
-            switch (monday.at(i).direction()) {
-            default:
-                break;
-            case QChar::DirR:
-            case QChar::DirAL:
-            case QChar::DirRLE:
-            case QChar::DirRLO:
-                rtl = true;
-                break;
-            }
-            if (rtl)
-                break;
-        }
-        keyboardInputDirection = rtl ? Qt::RightToLeft : Qt::LeftToRight;
+        keyboardInputDirection = keyboardInputLocale.textDirection();
     } else {
         keyboardInputLocale = QLocale::c();
         keyboardInputDirection = Qt::LeftToRight;

@@ -119,8 +119,6 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     A Text item can display both plain and rich text. For example:
 
     \qml
-    import Qt 4.7
-
     Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
     \endqml
@@ -128,10 +126,10 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     \image declarative-text.png
 
     If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
+    much room is needed and set it accordingly. Unless \l wrapMode is set, it will always
     prefer width to height (all text will be placed on a single line).
 
-    The \c elide property can alternatively be used to fit a single line of
+    The \l elide property can alternatively be used to fit a single line of
     plain text to a set width.
 
     Note that the \l{Supported HTML Subset} is limited. Also, if the text contains
@@ -163,7 +161,7 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
     The \c elide property can alternatively be used to fit a line of plain text to a set width.
 
-    A QDeclarativeText object can be instantiated in Qml using the tag \c Text.
+    A QDeclarativeText object can be instantiated in QML using the tag \c Text.
 */
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
@@ -507,13 +505,11 @@ void QDeclarativeText::setVAlign(VAlignment align)
     wrap if an explicit width has been set.  wrapMode can be one of:
 
     \list
-    \o Text.NoWrap - no wrapping will be performed. If the text contains insufficient newlines, then implicitWidth will exceed a set width.
-    \o Text.WordWrap - wrapping is done on word boundaries only. If a word is too long, implicitWidth will exceed a set width.
+    \o Text.NoWrap (default) - no wrapping will be performed. If the text contains insufficient newlines, then \l paintedWidth will exceed a set width.
+    \o Text.WordWrap - wrapping is done on word boundaries only. If a word is too long, \l paintedWidth will exceed a set width.
     \o Text.WrapAnywhere - wrapping is done at any point on a line, even if it occurs in the middle of a word.
     \o Text.Wrap - if possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
-
-    The default is Text.NoWrap.
 */
 QDeclarativeText::WrapMode QDeclarativeText::wrapMode() const
 {
@@ -543,13 +539,13 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
     Supported text formats are:
     
     \list
-    \o Text.AutoText
+    \o Text.AutoText (default)
     \o Text.PlainText
     \o Text.RichText
     \o Text.StyledText
     \endlist
 
-    The default is Text.AutoText.  If the text format is Text.AutoText the text element
+    If the text format is \c Text.AutoText the text element
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
@@ -1171,7 +1167,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 }
 
 /*!
-    \qmlsignal Text::linkActivated(link)
+    \qmlsignal Text::onLinkActivated(link)
 
     This handler is called when the user clicks on a link embedded in the text.
 */

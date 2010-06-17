@@ -7,7 +7,8 @@ symbian-abld|symbian-sbsv2 {
     # Firstly, if the MMP_RULES already contain a defBlock variable, don't generate another one
     # (this bit is slightly magic, because it depends upon everyone creating their DEFFILE statements
     # in a defBlock variable; but otherwise we have to expand MMP_RULES then scan for the DEFFILE keyword)
-    !contains(MMP_RULES, defBlock) {
+    # Similarly, explicit EXPORTUNFROZEN should block adding defBlock
+    !contains(MMP_RULES, defBlock):!contains(MMP_RULES, EXPORTUNFROZEN) {
         # Apps are executables on Symbian, so don't have exports, and therefore don't have DEF files
         # Plugins use standard DEF files, which qmake generates, so shouldn't be using these DEFFILE
         # statements - they use the qmake generated statements instead
@@ -41,7 +42,7 @@ symbian-abld|symbian-sbsv2 {
         }
     }
 
-} else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
+} else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib):!contains(CONFIG, plugin) {
     !isEmpty(DEF_FILE) {
         defFile = $$DEF_FILE
     } else {

@@ -1032,6 +1032,9 @@ void QSymbianControl::SizeChanged()
                 qwidget->d_func()->syncBackingStore();
             if (!slowResize && tlwExtra)
                 tlwExtra->inTopLevelResize = false;
+        } else {
+            QResizeEvent *e = new QResizeEvent(newSize, oldSize);
+            QApplication::postEvent(qwidget, e);
         }
     }
 
@@ -1800,19 +1803,27 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
                 return 1;
             const TWsVisibilityChangedEvent *visChangedEvent = event->VisibilityChanged();
             QWidget *w = QWidgetPrivate::mapper->value(control);
-            if (!w->d_func()->maybeTopData())
+            QWidget *const window = w->window();
+            if (!window->d_func()->maybeTopData())
                 break;
+            QRefCountedWidgetBackingStore &backingStore = window->d_func()->maybeTopData()->backingStore;
             if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
-                delete w->d_func()->topData()->backingStore;
-                w->d_func()->topData()->backingStore = 0;
+                // Decrement backing store reference count
+                backingStore.deref();
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.
                 S60->wsSession().Flush();
-            } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
-                       && !w->d_func()->maybeBackingStore()) {
-                w->d_func()->topData()->backingStore = new QWidgetBackingStore(w);
-                w->d_func()->invalidateBuffer(w->rect());
-                w->repaint();
+            } else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
+                if (backingStore.data()) {
+                    // Increment backing store reference count
+                    backingStore.ref();
+                } else {
+                    // Create backing store with an initial reference count of 1
+                    backingStore.create(window);
+                    backingStore.ref();
+                    w->d_func()->invalidateBuffer(w->rect());
+                    w->repaint();
+                }
             }
             return 1;
         }
@@ -2184,5 +2195,30 @@ void QApplication::restoreOverrideCursor()
 }
 
 #endif // QT_NO_CURSOR
+
+QS60ThreadLocalData::QS60ThreadLocalData()
+{
+    CCoeEnv *env = CCoeEnv::Static();
+    if (env) {
+        //if this is the UI thread, share objects owned by CONE
+        usingCONEinstances = true;
+        wsSession = env->WsSession();
+        screenDevice = env->ScreenDevice();
+    }
+    else {
+        usingCONEinstances = false;
+        qt_symbian_throwIfError(wsSession.Connect(qt_s60GetRFs()));
+        screenDevice = new CWsScreenDevice(wsSession);
+        screenDevice->Construct();
+    }
+}
+
+QS60ThreadLocalData::~QS60ThreadLocalData()
+{
+    if (!usingCONEinstances) {
+        delete screenDevice;
+        wsSession.Close();
+    }
+}
 
 QT_END_NAMESPACE

@@ -4,9 +4,8 @@ SOURCES += tst_qdeclarativeanchors.cpp
 macx:CONFIG -= app_bundle
 
 symbian: {
-    DEFINES += SRCDIR=\".\"
     importFiles.sources = data
-    importFiles.path = 
+    importFiles.path = .
     DEPLOYMENT = importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"

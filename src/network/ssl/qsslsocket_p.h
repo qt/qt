@@ -66,6 +66,24 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(Q_OS_MAC)
+#include <Security/SecCertificate.h>
+#include <CoreFoundation/CFArray.h>
+    typedef OSStatus (*PtrSecCertificateGetData)(SecCertificateRef, CSSM_DATA_PTR);
+    typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
+    typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
+#elif defined(Q_OS_WIN)
+#include <Wincrypt.h>
+#ifndef HCRYPTPROV_LEGACY
+#define HCRYPTPROV_LEGACY HCRYPTPROV
+#endif
+    typedef HCERTSTORE (WINAPI *PtrCertOpenSystemStoreW)(HCRYPTPROV_LEGACY, LPCWSTR);
+    typedef PCCERT_CONTEXT (WINAPI *PtrCertFindCertificateInStore)(HCERTSTORE, DWORD, DWORD, DWORD, const void*, PCCERT_CONTEXT);
+    typedef BOOL (WINAPI *PtrCertCloseStore)(HCERTSTORE, DWORD);
+#endif
+
+
+
 class QSslSocketPrivate : public QTcpSocketPrivate
 {
     Q_DECLARE_PUBLIC(QSslSocket)
@@ -105,6 +123,16 @@ public:
                                          QRegExp::PatternSyntax syntax);
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
+
+#if defined(Q_OS_MAC)
+    static PtrSecCertificateGetData ptrSecCertificateGetData;
+    static PtrSecTrustSettingsCopyCertificates ptrSecTrustSettingsCopyCertificates;
+    static PtrSecTrustCopyAnchorCertificates ptrSecTrustCopyAnchorCertificates;
+#elif defined(Q_OS_WIN)
+    static PtrCertOpenSystemStoreW ptrCertOpenSystemStoreW;
+    static PtrCertFindCertificateInStore ptrCertFindCertificateInStore;
+    static PtrCertCloseStore ptrCertCloseStore;
+#endif
 
     // The socket itself, including private slots.
     QTcpSocket *plainSocket;

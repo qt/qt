@@ -837,6 +837,26 @@ void tst_QMap::qmultimap_specific()
     QVERIFY(i.key() == 9);
     QVERIFY(i.value() == 98);
     }
+
+    {
+    QMultiMap<int, int> map1;
+    map1.insert(42, 1);
+    map1.insert(10, 2);
+    map1.insert(48, 3);
+    QMultiMap<int, int> map2;
+    map2.insert(8, 4);
+    map2.insert(42, 5);
+    map2.insert(95, 12);
+
+    map1+=map2;
+    map2.insert(42, 1);
+    map2.insert(10, 2);
+    map2.insert(48, 3);
+    QCOMPARE(map1.count(), map2.count());
+    QVERIFY(map1.remove(42,5));
+    QVERIFY(map2.remove(42,5));
+    QVERIFY(map1 == map2);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)

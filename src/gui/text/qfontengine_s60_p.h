@@ -62,6 +62,10 @@
 #define Q_SYMBIAN_HAS_FONTTABLE_API
 #endif
 
+#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
+#define Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API
+
 class CFont;
 
 QT_BEGIN_NAMESPACE
@@ -96,6 +100,9 @@ public:
 
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
     void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const;
+
+    void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
+                         QPainterPath *path, QTextItem::RenderFlags flags);
 
     QImage alphaMapForGlyph(glyph_t glyph);
 

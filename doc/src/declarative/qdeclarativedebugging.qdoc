@@ -60,8 +60,35 @@ Rectangle {
 \section1 Debugging Transitions
 
 When a transition doesn't look quite right, it can be helpful to view it in slow
-motion to see what is happening more clearly. The \l {Qt Declarative UI Runtime}{qml} tool provides a 
-"Slow Down Animations" menu option to facilitate this.
+motion to see what is happening more clearly. This functionality is supported
+in the \l {Qt Declarative UI Runtime}{qmlviewer} tool: to enable this,
+click on the "Debugging" menu, then "Slow Down Animations".
+
+
+\section1 Debugging module imports
+
+The \c QML_IMPORT_TRACE environment variable can be set to enable debug output
+from QML's import loading mechanisms. 
+
+For example, for a simple QML file like this:
+
+\qml
+import Qt 4.7
+
+Rectangle { width: 100; height: 100 }
+\endqml
+
+If you set \c {QML_IMPORT_TRACE=1} before running the \l {Qt Declarative UI Runtime}{qmlviewer}
+(or your QML C++ application), you will see output similar to this:
+
+\code
+QDeclarativeImportDatabase::addImportPath "/qt-sdk/imports" 
+QDeclarativeImportDatabase::addImportPath "/qt-sdk/bin/QMLViewer.app/Contents/MacOS" 
+QDeclarativeImportDatabase::addToImport 0x106237370 "." -1.-1 File as ""
+QDeclarativeImportDatabase::addToImport 0x106237370 "Qt" 4.7 Library as ""
+QDeclarativeImportDatabase::resolveType "Rectangle" = "QDeclarativeRectangle"
+\endcode
+
 
 \section1 Debugging with Qt Creator
 

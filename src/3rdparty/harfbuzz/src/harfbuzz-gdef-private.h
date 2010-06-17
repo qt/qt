@@ -34,12 +34,16 @@
 HB_BEGIN_HEADER
 
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
+
 /* Attachment related structures */
 
 struct  HB_AttachPoint_
 {
-  HB_UShort   PointCount;             /* size of the PointIndex array */
   HB_UShort*  PointIndex;             /* array of contour points      */
+  HB_UShort   PointCount;             /* size of the PointIndex array */
 };
 
 /* Ligature Caret related structures */
@@ -62,32 +66,36 @@ typedef struct HB_CaretValueFormat2_  HB_CaretValueFormat2;
 
 struct  HB_CaretValueFormat3_
 {
+  HB_Device*  Device;                 /* Device table for x or y value  */
   HB_Short    Coordinate;             /* x or y value (in design units) */
-  HB_Device  Device;                 /* Device table for x or y value  */
 };
 
 typedef struct HB_CaretValueFormat3_  HB_CaretValueFormat3;
 
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
 struct  HB_CaretValueFormat4_
 {
   HB_UShort  IdCaretValue;            /* metric ID */
 };
 
 typedef struct HB_CaretValueFormat4_  HB_CaretValueFormat4;
+#endif
 
 
 struct  HB_CaretValue_
 {
-  HB_UShort  CaretValueFormat;        /* 1, 2, 3, or 4 */
-
   union
   {
     HB_CaretValueFormat1  cvf1;
     HB_CaretValueFormat2  cvf2;
     HB_CaretValueFormat3  cvf3;
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
     HB_CaretValueFormat4  cvf4;
+#endif
   } cvf;
+
+  HB_Byte  CaretValueFormat;          /* 1, 2, 3, or 4 */
 };
 
 typedef struct HB_CaretValue_  HB_CaretValue;
@@ -95,10 +103,9 @@ typedef struct HB_CaretValue_  HB_CaretValue;
 
 struct  HB_LigGlyph_
 {
-  HB_Bool          loaded;
-
-  HB_UShort        CaretCount;        /* number of caret values */
   HB_CaretValue*  CaretValue;        /* array of caret values  */
+  HB_UShort        CaretCount;        /* number of caret values */
+  HB_Bool          loaded;
 };
 
 
@@ -118,6 +125,10 @@ _HB_GDEF_LoadMarkAttachClassDef_From_LookupFlags( HB_GDEFHeader* gdef,
 						  HB_Stream      input,
 						  HB_Lookup*     lo,
 						  HB_UShort      num_lookups );
+
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 

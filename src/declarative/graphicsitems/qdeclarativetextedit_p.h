@@ -247,7 +247,6 @@ protected:
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
     void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
 
     // mouse filter?
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

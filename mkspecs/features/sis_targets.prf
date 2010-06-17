@@ -1,5 +1,15 @@
 # Sis file creation
-contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
+GENERATE_SIS_TARGETS = false
+
+contains(TEMPLATE, app): GENERATE_SIS_TARGETS = true
+else:!equals(DEPLOYMENT, default_deployment) {
+    for(dep_item, $$list($$DEPLOYMENT)) {
+        dep_item_sources = $$eval($${dep_item}.sources)
+        !isEmpty(dep_item_sources): GENERATE_SIS_TARGETS = true
+    }
+}
+
+equals(GENERATE_SIS_TARGETS, true) {
     symbian-abld|symbian-sbsv2 {
         sis_destdir =
         make_cache_name = .make.cache
@@ -129,7 +139,8 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
     } else {
         # Make sure we build everything, since other sis targets in a recursive invocation
         # may depend on them, even if this one is empty.
-        sis_target.depends = first
+        # In abld/sbsv2, we assume that subdir has been built already, as all builds are recursive.
+        !symbian-abld:!symbian-sbsv2: sis_target.depends = first
     }
     sis_target.commands =
     sis_target.target = sis

@@ -1026,7 +1026,7 @@ inline QRgb QGIFFormat::color(uchar index) const
 QGifHandler::QGifHandler()
 {
     gifFormat = new QGIFFormat;
-    nextDelay = 0;
+    nextDelay = 100;
     loopCnt = 1;
     frameNumber = -1;
     scanIsCached = false;
@@ -1061,12 +1061,12 @@ bool QGifHandler::imageIsComing() const
 
 bool QGifHandler::canRead() const
 {
-    if (!nextDelay && canRead(device())) {
+    if (canRead(device()) || imageIsComing()) {
         setFormat("gif");
         return true;
     }
 
-    return imageIsComing();
+    return false;
 }
 
 bool QGifHandler::canRead(QIODevice *device)

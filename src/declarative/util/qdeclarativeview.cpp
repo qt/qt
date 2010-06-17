@@ -131,7 +131,7 @@ class QDeclarativeViewPrivate : public QGraphicsViewPrivate, public QDeclarative
     Q_DECLARE_PUBLIC(QDeclarativeView)
 public:
     QDeclarativeViewPrivate()
-        : root(0), declarativeItemRoot(0), graphicsWidgetRoot(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject) {}
+        : root(0), declarativeItemRoot(0), graphicsWidgetRoot(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject), initialSize(0,0) {}
     ~QDeclarativeViewPrivate() { delete root; }
     void execute();
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
@@ -150,6 +150,7 @@ public:
     QBasicTimer resizetimer;
 
     QDeclarativeView::ResizeMode resizeMode;
+    QSize initialSize;
     QElapsedTimer frameTimer;
 
     void init();
@@ -586,9 +587,11 @@ void QDeclarativeView::setRootObject(QObject *obj)
     }
 
     if (d->root) {
-        QSize initialSize = d->rootObjectSize();
-        if (initialSize != size()) {
-            resize(initialSize);
+        d->initialSize = d->rootObjectSize();
+        if (d->initialSize != size()) {
+            if (!(parentWidget() && parentWidget()->layout())) {
+                resize(d->initialSize);
+            }
         }
         d->initResize();
     }
@@ -635,6 +638,15 @@ QSize QDeclarativeView::sizeHint() const
     } else {
         return rootObjectSize;
     }
+}
+
+/*!
+  Returns the initial size of the root object
+*/
+QSize QDeclarativeView::initialSize() const
+{
+    Q_D(const QDeclarativeView);
+    return d->initialSize;
 }
 
 /*!

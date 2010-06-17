@@ -68,6 +68,8 @@ public:
 
     struct Q_GUI_EXPORT Tab {
         inline Tab() : position(80), type(QTextOption::LeftTab) { }
+        inline Tab(qreal pos, TabType tabType, QChar delim = QChar())
+            : position(pos), type(tabType), delimiter(delim) {}
 
         inline bool operator==(const Tab &other) const {
             return type == other.type
@@ -134,8 +136,8 @@ private:
     uint align : 8;
     uint wordWrap : 4;
     uint design : 1;
-    uint direction : 1;
-    uint unused : 19;
+    uint direction : 2;
+    uint unused : 18;
     uint f;
     qreal tab;
     QTextOptionPrivate *d;

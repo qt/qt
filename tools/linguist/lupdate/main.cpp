@@ -63,7 +63,7 @@ static void printOut(const QString & out)
 }
 
 class LU {
-    Q_DECLARE_TR_FUNCTIONS(LUpdate);
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
 };
 
 static void recursiveFileInfoList(const QDir &dir,
@@ -651,6 +651,7 @@ int main(int argc, char **argv)
                     }
                 } else {
                     sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
+                    projectRoots.insert(fi.absolutePath() + QLatin1Char('/'));
                 }
             }
             numFiles++;
