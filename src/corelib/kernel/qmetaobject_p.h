@@ -131,6 +131,8 @@ struct QMetaObjectPrivate
 #ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
     enum DisconnectType { DisconnectAll, DisconnectOne };
+    static void memberIndexes(const QObject *obj, const QMetaMethod &member,
+                              int *signalIndex, int *methodIndex);
     static bool connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
                         int type = 0, int *types = 0);

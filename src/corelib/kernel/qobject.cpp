@@ -2364,6 +2364,71 @@ int QObject::receivers(const char *signal) const
 }
 
 /*!
+    \internal
+
+    This helper function calculates signal and method index for the given
+    member in the specified class.
+
+    \li If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
+
+    \li If specified member is not a member of obj instance class (or one of
+    its parent classes) then both signalIndex and methodIndex are set to -1.
+
+    This function is used by QObject::connect and QObject::disconnect which
+    are working with QMetaMethod.
+
+    \param[out] signalIndex is set to the signal index of member. If the member
+    specified is not signal this variable is set to -1.
+
+    \param[out] methodIndex is set to the method index of the member. If the
+    member is not a method of the object specified by obj param this variable
+    is set to -1.
+*/
+void QMetaObjectPrivate::memberIndexes(const QObject *obj,
+                                       const QMetaMethod &member,
+                                       int *signalIndex, int *methodIndex)
+{
+    *signalIndex = -1;
+    *methodIndex = -1;
+    if (!obj || !member.mobj)
+        return;
+    const QMetaObject *m = obj->metaObject();
+    // Check that member is member of obj class
+    while (m != 0 && m != member.mobj)
+        m = m->d.superdata;
+    if (!m)
+        return;
+    *signalIndex = *methodIndex = (member.handle - get(member.mobj)->methodData)/5;
+
+    int signalOffset;
+    int methodOffset;
+    computeOffsets(m, &signalOffset, &methodOffset);
+
+    *methodIndex += methodOffset;
+    if (member.methodType() == QMetaMethod::Signal) {
+        *signalIndex = originalClone(m, *signalIndex);
+        *signalIndex += signalOffset;
+    } else {
+        *signalIndex = -1;
+    }
+}
+
+static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaMethod &signal,
+                                         const QMetaObject *receiver, const QMetaMethod &method)
+{
+    if (signal.attributes() & QMetaMethod::Compatibility) {
+        if (!(method.attributes() & QMetaMethod::Compatibility))
+            qWarning("QObject::connect: Connecting from COMPAT signal (%s::%s)",
+                     sender->className(), signal.signature());
+    } else if ((method.attributes() & QMetaMethod::Compatibility) &&
+               method.methodType() == QMetaMethod::Signal) {
+        qWarning("QObject::connect: Connecting from %s::%s to COMPAT slot (%s::%s)",
+                 sender->className(), signal.signature(),
+                 receiver->className(), method.signature());
+    }
+}
+
+/*!
     \threadsafe
 
     Creates a connection of the given \a type from the \a signal in
@@ -2548,15 +2613,8 @@ bool QObject::connect(const QObject *sender, const char *signal,
     {
         QMetaMethod smethod = smeta->method(signal_absolute_index);
         QMetaMethod rmethod = rmeta->method(method_index);
-        if (warnCompat) {
-            if(smethod.attributes() & QMetaMethod::Compatibility) {
-                if (!(rmethod.attributes() & QMetaMethod::Compatibility))
-                    qWarning("QObject::connect: Connecting from COMPAT signal (%s::%s)", smeta->className(), signal);
-            } else if(rmethod.attributes() & QMetaMethod::Compatibility && membcode != QSIGNAL_CODE) {
-                qWarning("QObject::connect: Connecting from %s::%s to COMPAT slot (%s::%s)",
-                         smeta->className(), signal, rmeta->className(), method);
-            }
-        }
+        if (warnCompat)
+            check_and_warn_compat(smeta, smethod, rmeta, rmethod);
     }
 #endif
     if (!QMetaObjectPrivate::connect(sender, signal_index, receiver, method_index, type, types))
@@ -2565,6 +2623,99 @@ bool QObject::connect(const QObject *sender, const char *signal,
     return true;
 }
 
+/*!
+    \since 4.8
+
+    Creates a connection of the given \a type from the \a signal in
+    the \a sender object to the \a method in the \a receiver object.
+    Returns true if the connection succeeds; otherwise returns false.
+
+    This function works in the same way as
+    connect(const QObject *sender, const char *signal,
+            const QObject *receiver, const char *method,
+            Qt::ConnectionType type)
+    but it uses QMetaMethod to specify signal and method.
+
+    \see connect(const QObject *sender, const char *signal,
+                 const QObject *receiver, const char *method,
+                 Qt::ConnectionType type)
+ */
+bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
+                      const QObject *receiver, const QMetaMethod &method,
+                      Qt::ConnectionType type)
+{
+
+#ifndef QT_NO_DEBUG
+    bool warnCompat = true;
+#endif
+    if (type == Qt::AutoCompatConnection) {
+        type = Qt::AutoConnection;
+#ifndef QT_NO_DEBUG
+        warnCompat = false;
+#endif
+    }
+
+    if (sender == 0
+            || receiver == 0
+            || signal.methodType() != QMetaMethod::Signal
+            || method.methodType() == QMetaMethod::Constructor) {
+        qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
+                 sender ? sender->metaObject()->className() : "(null)",
+                 signal.signature(),
+                 receiver ? receiver->metaObject()->className() : "(null)",
+                 method.signature() );
+        return false;
+    }
+
+    int signal_index;
+    int method_index;
+    {
+        int dummy;
+        QMetaObjectPrivate::memberIndexes(sender, signal, &signal_index, &dummy);
+        QMetaObjectPrivate::memberIndexes(receiver, method, &dummy, &method_index);
+    }
+
+    const QMetaObject *smeta = sender->metaObject();
+    const QMetaObject *rmeta = receiver->metaObject();
+    if (signal_index == -1) {
+        qWarning("QObject::connect: Can't find signal %s on instance of class %s",
+                 signal.signature(), smeta->className());
+        return false;
+    }
+    if (method_index == -1) {
+        qWarning("QObject::connect: Can't find method %s on instance of class %s",
+                 method.signature(), rmeta->className());
+        return false;
+    }
+    
+    if (!QMetaObject::checkConnectArgs(signal.signature(), method.signature())) {
+        qWarning("QObject::connect: Incompatible sender/receiver arguments"
+                 "\n        %s::%s --> %s::%s",
+                 smeta->className(), signal.signature(),
+                 rmeta->className(), method.signature());
+        return false;
+    }
+
+    int *types = 0;
+    if ((type == Qt::QueuedConnection)
+            && !(types = queuedConnectionTypes(signal.parameterTypes())))
+        return false;
+
+#ifndef QT_NO_DEBUG
+    if (warnCompat)
+        check_and_warn_compat(smeta, signal, rmeta, method);
+#endif
+    if (!QMetaObjectPrivate::connect(sender, signal_index, receiver, method_index, type, types))
+        return false;
+    // Reconstructing SIGNAL() macro result for signal.signature() string
+    QByteArray signalSignature;
+    signalSignature.reserve(qstrlen(signal.signature())+1);
+    signalSignature.append((char)(QSIGNAL_CODE + '0'));
+    signalSignature.append(signal.signature());
+
+    const_cast<QObject*>(sender)->connectNotify(signalSignature.constData());
+    return true;
+}
 
 /*!
     \fn bool QObject::connect(const QObject *sender, const char *signal, const char *method, Qt::ConnectionType type) const
@@ -2744,6 +2895,93 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     return res;
 }
 
+/*!
+    \since 4.8
+
+    Disconnects \a signal in object \a sender from \a method in object
+    \a receiver. Returns true if the connection is successfully broken;
+    otherwise returns false.
+
+    This function provides the same posibilities like
+    disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
+    but uses QMetaMethod to represent the signal and the method to be disconnected.
+
+    Additionally this function returnsfalse and no signals and slots disconnected
+    if:
+    \list 1
+
+        \i \a signal is not a member of sender class or one of its parent classes.
+
+        \i \a method is not a member of receiver class or one of its parent classes.
+
+        \i \a signal instance represents not a signal.
+
+    \endlist
+
+    QMetaMethod() may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
+    In the same way 0 can be used for \a receiver in the meaning "any receiving object". In this case
+    method shoud also be QMetaMethod(). \a sender parameter should be never 0.
+
+    \see disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
+ */
+bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
+                         const QObject *receiver, const QMetaMethod &method)
+{
+    if (sender == 0 || (receiver == 0 && method.mobj != 0)) {
+        qWarning("Object::disconnect: Unexpected null parameter");
+        return false;
+    }
+    if (signal.mobj) {
+        if(signal.methodType() != QMetaMethod::Signal) {
+            qWarning("Object::%s: Attempt to %s non-signal %s::%s",
+                     "disconnect","unbind",
+                     sender->metaObject()->className(), signal.signature());
+            return false;
+        }
+    }
+    if (method.mobj) {
+        if(method.methodType() == QMetaMethod::Constructor) {
+            qWarning("QObject::disconect: cannot use constructor as argument %s::%s",
+                     receiver->metaObject()->className(), method.signature());
+            return false;
+        }
+    }
+
+    int signal_index;
+    int method_index;
+    {
+        int dummy;
+        QMetaObjectPrivate::memberIndexes(sender, signal, &signal_index, &dummy);
+        QMetaObjectPrivate::memberIndexes(receiver, method, &dummy, &method_index);
+    }
+    // If we are here sender is not null. If signal is not null while signal_index
+    // is -1 then this signal is not a member of sender.
+    if (signal.mobj && signal_index == -1) {
+        qWarning("QObject::disconect: signal %s not found on class %s",
+                 signal.signature(), sender->metaObject()->className());
+        return false;
+    }
+    // If this condition is true then method is not a member of receeiver.
+    if (receiver && method.mobj && method_index == -1) {
+        qWarning("QObject::disconect: method %s not found on class %s",
+                 method.signature(), receiver->metaObject()->className());
+        return false;
+    }
+
+    if (!QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index))
+        return false;
+    if (!signal.mobj) {
+        const_cast<QObject*>(sender)->disconnectNotify(0);
+    } else {
+        // Reconstructing SIGNAL() macro result for signal.signature() string
+        QByteArray signalSignature;
+        signalSignature.reserve(qstrlen(signal.signature())+1);
+        signalSignature.append((char)(QSIGNAL_CODE + '0'));
+        signalSignature.append(signal.signature());
+        const_cast<QObject*>(sender)->disconnectNotify(signalSignature.constData());
+    }
+    return true;
+}
 
 /*!
     \threadsafe
