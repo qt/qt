@@ -32,6 +32,24 @@ equals(GENERATE_SIS_TARGETS, true) {
         ok_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
+        unsigned_sis_target.target = unsigned_sis
+        unsigned_sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
+                                  $(if $(wildcard $$make_cache_name), \
+                                      $(MAKE) -f $(MAKEFILE) ok_unsigned_sis MAKEFILES=$$make_cache_name \
+                                  , \
+                                      $(if $(QT_SIS_TARGET), \
+                                          $(MAKE) -f $(MAKEFILE) ok_unsigned_sis \
+                                      , \
+                                          $(MAKE) -f $(MAKEFILE) fail_sis_nocache \
+                                      ) \
+                                  ) \
+                              , \
+                                  $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
+                              )
+
+        ok_unsigned_sis_target.target = ok_unsigned_sis
+        ok_unsigned_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg $(QT_SIS_TARGET)
+
         target_sis_target.target = $${sis_destdir}$${TARGET}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
 
@@ -74,6 +92,8 @@ equals(GENERATE_SIS_TARGETS, true) {
 
         QMAKE_EXTRA_TARGETS += sis_target \
                                ok_sis_target \
+                               unsigned_sis_target \
+                               ok_unsigned_sis_target \
                                target_sis_target \
                                installer_sis_target \
                                ok_installer_sis_target \
@@ -114,6 +134,10 @@ equals(GENERATE_SIS_TARGETS, true) {
                                   - $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
         sis_target.depends = first
 
+        unsigned_sis_target.target = unsigned_sis
+        unsigned_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg
+        unsigned_sis_target.depends = first
+
         target_sis_target.target = $${sis_destdir}$${TARGET}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
 
@@ -128,6 +152,7 @@ equals(GENERATE_SIS_TARGETS, true) {
         }
 
         QMAKE_EXTRA_TARGETS += sis_target \
+                               unsigned_sis_target \
                                target_sis_target \
                                installer_sis_target
     }

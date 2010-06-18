@@ -99,6 +99,8 @@ public:
     static StringConverter customStringConverter(int);
 
     static bool isModule(const QByteArray &module, int versionMajor, int versionMinor);
+
+    static QList<QDeclarativePrivate::AutoParentFunction> parentFunctions();
 };
 
 class QDeclarativeTypePrivate;

@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeexpression.h>
 #include <private/qdeclarativerepeater_p.h>
 #include <private/qdeclarativetext_p.h>
 
@@ -74,6 +75,8 @@ private slots:
 
 private:
     QDeclarativeView *createView();
+    template<typename T>
+    T *findItem(QGraphicsObject *parent, const QString &objectName, int index);
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &id);
 };
@@ -312,6 +315,20 @@ void tst_QDeclarativeRepeater::dataModel()
     testModel.removeItem(2);
     QCOMPARE(container->childItems().count(), 4);
 
+    // Check that model changes are propagated
+    QDeclarativeText *text = findItem<QDeclarativeText>(canvas->rootObject(), "myName", 1);
+    QVERIFY(text);
+    QCOMPARE(text->text(), QString("two"));
+
+    testModel.modifyItem(1, "Item two", "_2");
+    text = findItem<QDeclarativeText>(canvas->rootObject(), "myName", 1);
+    QVERIFY(text);
+    QCOMPARE(text->text(), QString("Item two"));
+
+    text = findItem<QDeclarativeText>(canvas->rootObject(), "myNumber", 1);
+    QVERIFY(text);
+    QCOMPARE(text->text(), QString("_2"));
+
     delete testObject;
     delete canvas;
 }
@@ -384,6 +401,33 @@ QDeclarativeView *tst_QDeclarativeRepeater::createView()
     canvas->setFixedSize(240,320);
 
     return canvas;
+}
+
+template<typename T>
+T *tst_QDeclarativeRepeater::findItem(QGraphicsObject *parent, const QString &objectName, int index)
+{
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->childItems().count() << "children";
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
+            if (index != -1) {
+                QDeclarativeExpression e(qmlContext(item), item, "index");
+                if (e.evaluate().toInt() == index)
+                    return static_cast<T*>(item);
+            } else {
+                return static_cast<T*>(item);
+            }
+        }
+        item = findItem<T>(item, objectName, index);
+        if (item)
+            return static_cast<T*>(item);
+    }
+
+    return 0;
 }
 
 template<typename T>

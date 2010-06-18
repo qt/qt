@@ -237,7 +237,8 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
         *nglyphs = len;
         for (int i = 0; i < len; ++i) {
             outGlyphs[i] = 0;
-            logClusters[i] = i;
+            if (logClusters)
+                logClusters[i] = i;
             outAdvances_x[i] = QFixed();
             outAdvances_y[i] = QFixed();
             outAttributes[i].clusterStart = true;
