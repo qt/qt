@@ -57,7 +57,8 @@ public:
         SystemTime,
         MonotonicClock,
         TickCounter,
-        MachAbsoluteTime
+        MachAbsoluteTime,
+        PerformanceCounter
     };
     static ClockType clockType();
     static bool isMonotonic();
