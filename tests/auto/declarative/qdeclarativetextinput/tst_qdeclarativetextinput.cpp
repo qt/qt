@@ -396,7 +396,6 @@ void tst_qdeclarativetextinput::positionAt()
 #endif
 
     // Check without autoscroll...
-    QEXPECT_FAIL("", "QTBUG-11127", Abort);
     textinputObject->setAutoScroll(false);
     pos = textinputObject->positionAt(textinputObject->width()/2);
     diff = abs(fm.width(textinputObject->text().left(pos))-textinputObject->width()/2);

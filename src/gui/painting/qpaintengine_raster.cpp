@@ -459,13 +459,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     QRasterPaintEngineState *s = state();
     ensureOutlineMapper();
-    d->outlineMapper->m_clip_rect = d->deviceRect.adjusted(-10, -10, 10, 10);
+    d->outlineMapper->m_clip_rect = d->deviceRect;
 
-    // This is the upp
-    QRect bounds(-QT_RASTER_COORD_LIMIT, -QT_RASTER_COORD_LIMIT,
-                 QT_RASTER_COORD_LIMIT*2 - 1, QT_RASTER_COORD_LIMIT * 2 - 1);
-    d->outlineMapper->m_clip_rect = bounds.intersected(d->outlineMapper->m_clip_rect);
-
+    if (d->outlineMapper->m_clip_rect.width() > QT_RASTER_COORD_LIMIT)
+        d->outlineMapper->m_clip_rect.setWidth(QT_RASTER_COORD_LIMIT);
+    if (d->outlineMapper->m_clip_rect.height() > QT_RASTER_COORD_LIMIT)
+        d->outlineMapper->m_clip_rect.setHeight(QT_RASTER_COORD_LIMIT);
 
     d->rasterizer->setClipRect(d->deviceRect);
 

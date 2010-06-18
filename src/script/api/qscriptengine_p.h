@@ -215,10 +215,10 @@ public:
     static QStringList stringListFromArray(JSC::ExecState*, JSC::JSValue arr);
 
     static JSC::JSValue arrayFromVariantList(JSC::ExecState*, const QVariantList &lst);
-    static QVariantList variantListFromArray(JSC::ExecState*, JSC::JSValue arr);
+    static QVariantList variantListFromArray(JSC::ExecState*, JSC::JSArray *arr);
 
     static JSC::JSValue objectFromVariantMap(JSC::ExecState*, const QVariantMap &vmap);
-    static QVariantMap variantMapFromObject(JSC::ExecState*, JSC::JSValue obj);
+    static QVariantMap variantMapFromObject(JSC::ExecState*, JSC::JSObject *obj);
 
     JSC::JSValue defaultPrototype(int metaTypeId) const;
     void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
@@ -377,6 +377,8 @@ public:
     
     QHash<intptr_t, QScript::UStringSourceProviderWithFeedback*> loadedScripts;
     QScriptValue m_currentException;
+
+    QSet<JSC::JSObject*> visitedConversionObjects;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

@@ -99,6 +99,7 @@ public:
     void init();
     void startCreatingCursor();
     void focusChanged(bool hasFocus);
+    void updateHorizontalScroll();
 
     QLineControl* control;
 

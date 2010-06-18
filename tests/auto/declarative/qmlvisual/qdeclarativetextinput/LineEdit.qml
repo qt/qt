@@ -30,13 +30,14 @@ Item {
         y: 5
         //Below function implements all scrolling logic
         onCursorPositionChanged: {
-            if(cursorRect.x < leftMargin - textInp.x){//Cursor went off the front
-                textInp.x = leftMargin - Math.max(0, cursorRect.x);
-            }else if(cursorRect.x > parent.width - leftMargin - rightMargin - textInp.x){//Cusor went off the end
-                textInp.x = leftMargin - Math.max(0, cursorRect.x - (parent.width - leftMargin - rightMargin));
+            if(cursorRectangle.x < leftMargin - textInp.x){//Cursor went off the front
+                textInp.x = leftMargin - Math.max(0, cursorRectangle.x);
+            }else if(cursorRectangle.x > parent.width - leftMargin - rightMargin - textInp.x){//Cusor went off the end
+                textInp.x = leftMargin - Math.max(0, cursorRectangle.x - (parent.width - leftMargin - rightMargin));
             }
         }
 
+        autoScroll: false //It is preferable to implement your own scrolling
         text:""
         horizontalAlignment: TextInput.AlignLeft
         font.pixelSize:15

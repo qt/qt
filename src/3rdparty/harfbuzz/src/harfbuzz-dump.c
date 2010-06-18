@@ -519,13 +519,14 @@ Dump_ValueRecord (HB_ValueRecord *ValueRecord, FILE *stream, int indent, HB_Type
   if (value_format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE)
     DUMP_FINT (ValueRecord, XAdvance);
   if (value_format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE)
-    RECURSE (Device, Device, &ValueRecord->XPlacementDevice);
+    RECURSE (Device, Device, &*ValueRecord->DeviceTables[VR_X_PLACEMENT_DEVICE]);
   if (value_format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT_DEVICE)
-    RECURSE (Device, Device, &ValueRecord->YPlacementDevice);
+    RECURSE (Device, Device, &*ValueRecord->DeviceTables[VR_Y_PLACEMENT_DEVICE]);
   if (value_format & HB_GPOS_FORMAT_HAVE_X_ADVANCE_DEVICE)
-    RECURSE (Device, Device, &ValueRecord->XAdvanceDevice);
+    RECURSE (Device, Device, &*ValueRecord->DeviceTables[VR_X_ADVANCE_DEVICE]);
   if (value_format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE_DEVICE)
-    RECURSE (Device, Device, &ValueRecord->YAdvanceDevice);
+    RECURSE (Device, Device, &*ValueRecord->DeviceTables[VR_Y_ADVANCE_DEVICE]);
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
   if (value_format & HB_GPOS_FORMAT_HAVE_X_ID_PLACEMENT)
     DUMP_FUINT (ValueRecord, XIdPlacement);
   if (value_format & HB_GPOS_FORMAT_HAVE_Y_ID_PLACEMENT)
@@ -534,6 +535,7 @@ Dump_ValueRecord (HB_ValueRecord *ValueRecord, FILE *stream, int indent, HB_Type
     DUMP_FUINT (ValueRecord, XIdAdvance);
   if (value_format & HB_GPOS_FORMAT_HAVE_Y_ID_ADVANCE)
     DUMP_FUINT (ValueRecord, XIdAdvance);
+#endif
 }
 
 static void

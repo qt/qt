@@ -66,7 +66,7 @@ QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont
 
 QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
 {
-    QS60Data::screenDevice()->ReleaseFont(m_cFont);
+    S60->screenDevice()->ReleaseFont(m_cFont);
 }
 
 QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const

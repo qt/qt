@@ -79,8 +79,24 @@
 #endif
 #include "private/qdeclarativeanchors_p.h"
 
+static QDeclarativePrivate::AutoParentResult qgraphicsobject_autoParent(QObject *obj, QObject *parent)
+{
+    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
+    if (!gobj)
+        return QDeclarativePrivate::IncompatibleObject;
+
+    QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
+    if (!gparent)
+        return QDeclarativePrivate::IncompatibleParent;
+
+    gobj->setParentItem(gparent);
+    return QDeclarativePrivate::Parented;
+}
+
 void QDeclarativeItemModule::defineModule()
 {
+    QDeclarativePrivate::registerAutoParentFunction(qgraphicsobject_autoParent);
+
 #ifdef QT_NO_MOVIE
     qmlRegisterTypeNotAvailable("Qt",4,7,"AnimatedImage",
         qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
