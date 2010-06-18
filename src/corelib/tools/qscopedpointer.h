@@ -213,7 +213,7 @@ public:
     }
 
 private:
-    explicit inline QScopedArrayPointer(void *p) {
+    explicit inline QScopedArrayPointer(void *) {
         // Enforce the same type.
 
         // If you get a compile error here, make sure you declare
