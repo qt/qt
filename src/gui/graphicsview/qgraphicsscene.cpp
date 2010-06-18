@@ -885,8 +885,7 @@ void QGraphicsScenePrivate::removePopup(QGraphicsWidget *widget, bool itemIsDyin
             ungrabKeyboard(static_cast<QGraphicsItem *>(widget), itemIsDying);
         }
         if (!itemIsDying && widget->isVisible()) {
-            widget->hide();
-            widget->QGraphicsItem::d_ptr->explicitlyHidden = 0;
+            widget->QGraphicsItem::d_ptr->setVisibleHelper(false, /* explicit = */ false);
         }
     }
 }
