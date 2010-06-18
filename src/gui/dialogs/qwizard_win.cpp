@@ -180,7 +180,8 @@ QVistaBackButton::QVistaBackButton(QWidget *widget)
 QSize QVistaBackButton::sizeHint() const
 {
     ensurePolished();
-    int width = 32, height = 32;
+    int size = int(QStyleHelper::dpiScaled(32));
+    int width = size, height = size;
 /*
     HANDLE theme = pOpenThemeData(0, L"Navigation");
     SIZE size;
@@ -213,8 +214,8 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     HANDLE theme = pOpenThemeData(0, L"Navigation");
     //RECT rect;
     RECT clipRect;
-    int xoffset = QWidget::mapToParent(r.topLeft()).x();
-    int yoffset = QWidget::mapToParent(r.topLeft()).y();
+    int xoffset = QWidget::mapToParent(r.topLeft()).x() - 1;
+    int yoffset = QWidget::mapToParent(r.topLeft()).y() - 1;
 
     clipRect.top = r.top() + yoffset;
     clipRect.bottom = r.bottom() + yoffset;
@@ -245,6 +246,11 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     is_vista = resolveSymbols();
     if (is_vista)
         backButton_ = new QVistaBackButton(wizard);
+
+    // Handle diff between Windows 7 and Vista
+    iconSpacing = QStyleHelper::dpiScaled(7);
+    textSpacing = QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ?
+                  iconSpacing : QStyleHelper::dpiScaled(20);
 }
 
 QVistaHelper::~QVistaHelper()
@@ -308,18 +314,15 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
 
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
-    if (vistaState() == VistaAero)
-        drawBlackRect(
-            QRect(0, 0, wizard->width(), titleBarSize() + topOffset()),
-            painter->paintEngine()->getDC());
+    HDC hdc = painter->paintEngine()->getDC();
 
+    if (vistaState() == VistaAero)
+        drawBlackRect(QRect(0, 0, wizard->width(),
+                            titleBarSize() + topOffset()), hdc);
     Q_ASSERT(backButton_);
     const int btnTop = backButton_->mapToParent(QPoint()).y();
     const int btnHeight = backButton_->size().height();
-    const int verticalCenter = (btnTop + btnHeight / 2);
-
-    wizard->windowIcon().paint(
-        painter, QRect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize()));
+    const int verticalCenter = (btnTop + btnHeight / 2) - 1;
 
     const QString text = wizard->window()->windowTitle();
     const QFont font = QApplication::font("QWorkspaceTitleBar");
@@ -327,14 +330,25 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     const QRect brect = fontMetrics.boundingRect(text);
     int textHeight = brect.height();
     int textWidth = brect.width();
+    int glowOffset = 0;
+
     if (vistaState() == VistaAero) {
         textHeight += 2 * glowSize();
         textWidth += 2 * glowSize();
+        glowOffset = glowSize();
     }
+
     drawTitleText(
         painter, text,
-        QRect(titleOffset(), verticalCenter - textHeight / 2, textWidth, textHeight),
-        painter->paintEngine()->getDC());
+        QRect(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight),
+        hdc);
+
+    if (!wizard->windowIcon().isNull()) {
+        QRect rect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize());
+        HICON hIcon = wizard->windowIcon().pixmap(iconSize()).toWinHICON();
+        DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
+        DestroyIcon(hIcon);
+    }
 }
 
 void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
@@ -734,7 +748,7 @@ bool QVistaHelper::resolveSymbols()
 
 int QVistaHelper::titleOffset()
 {
-    int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + padding();
+    int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + textSpacing;
     return leftMargin() + iconOffset;
 }
 

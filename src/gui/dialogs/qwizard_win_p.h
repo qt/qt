@@ -61,6 +61,7 @@
 #include <qwidget.h>
 #include <qabstractbutton.h>
 #include <QtGui/private/qwidget_p.h>
+#include <QtGui/private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,9 +101,14 @@ public:
     enum VistaState { VistaAero, VistaBasic, Classic, Dirty };
     static VistaState vistaState();
     static int titleBarSize() { return frameSize() + captionSize(); }
-    static int topPadding() { return 8; }
-    static int topOffset() { return titleBarSize() + (vistaState() == VistaAero ? 13 : 3); }
-
+    static int topPadding() { // padding under text
+        return int(QStyleHelper::dpiScaled(
+                QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ? 4 : 6));
+    }
+    static int topOffset() {
+        static int aeroOffset = QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ?
+                                QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
+        return (titleBarSize() + (vistaState() == VistaAero ? aeroOffset : 3)); }
 private:
     static HFONT getCaptionFont(HANDLE hTheme);
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
@@ -111,11 +117,10 @@ private:
     static int frameSize() { return GetSystemMetrics(SM_CYSIZEFRAME); }
     static int captionSize() { return GetSystemMetrics(SM_CYCAPTION); }
 
-    static int backButtonSize() { return 31; } // ### should be queried from back button itself
+    static int backButtonSize() { return int(QStyleHelper::dpiScaled(30)); }
     static int iconSize() { return 16; } // Standard Aero
-    static int padding() { return 7; } // Standard Aero
-    static int leftMargin() { return backButtonSize() + padding(); }
     static int glowSize() { return 10; }
+    int leftMargin() { return backButton_->isVisible() ? backButtonSize() + iconSpacing : 0; }
 
     int titleOffset();
     bool resolveSymbols();
@@ -139,6 +144,10 @@ private:
     QRect rtTitle;
     QWizard *wizard;
     QVistaBackButton *backButton_;
+
+    int titleBarOffset;  // Extra spacing above the text
+    int iconSpacing;    // Space between button and icon
+    int textSpacing;    // Space between icon and text
 };
 
 
