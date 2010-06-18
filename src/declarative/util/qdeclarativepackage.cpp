@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlattachedproperty bool Package::name
+    \qmlattachedproperty string Package::name
     This attached property holds the name of an item within a Package.
 */
 
