@@ -533,18 +533,18 @@ typedef struct HB_ContextPos_  HB_ContextPos;
 
 struct  HB_ChainPosRule_
 {
-  HB_UShort             BacktrackGlyphCount;
-				      /* total number of backtrack glyphs */
   HB_UShort*            Backtrack;    /* array of backtrack glyph IDs     */
-  HB_UShort             InputGlyphCount;
-				      /* total number of input glyphs     */
   HB_UShort*            Input;        /* array of input glyph IDs         */
-  HB_UShort             LookaheadGlyphCount;
-				      /* total number of lookahead glyphs */
   HB_UShort*            Lookahead;    /* array of lookahead glyph IDs     */
-  HB_UShort             PosCount;     /* number of PosLookupRecords       */
   HB_PosLookupRecord*  PosLookupRecord;
 				      /* array of PosLookupRecords       */
+  HB_UShort             BacktrackGlyphCount;
+				      /* total number of backtrack glyphs */
+  HB_UShort             InputGlyphCount;
+				      /* total number of input glyphs     */
+  HB_UShort             LookaheadGlyphCount;
+				      /* total number of lookahead glyphs */
+  HB_UShort             PosCount;     /* number of PosLookupRecords       */
 };
 
 typedef struct HB_ChainPosRule_  HB_ChainPosRule;
@@ -574,20 +574,20 @@ typedef struct HB_ChainContextPosFormat1_  HB_ChainContextPosFormat1;
 
 struct  HB_ChainPosClassRule_
 {
+  HB_UShort*            Backtrack;    /* array of backtrack classes      */
+  HB_UShort*            Input;        /* array of context classes        */
+  HB_UShort*            Lookahead;    /* array of lookahead classes      */
+  HB_PosLookupRecord*  PosLookupRecord;
+				      /* array of substitution lookups   */
   HB_UShort             BacktrackGlyphCount;
 				      /* total number of backtrack
 					 classes                         */
-  HB_UShort*            Backtrack;    /* array of backtrack classes      */
   HB_UShort             InputGlyphCount;
 				      /* total number of context classes */
-  HB_UShort*            Input;        /* array of context classes        */
   HB_UShort             LookaheadGlyphCount;
 				      /* total number of lookahead
 					 classes                         */
-  HB_UShort*            Lookahead;    /* array of lookahead classes      */
   HB_UShort             PosCount;     /* number of PosLookupRecords      */
-  HB_PosLookupRecord*  PosLookupRecord;
-				      /* array of substitution lookups   */
 };
 
 typedef struct HB_ChainPosClassRule_  HB_ChainPosClassRule;
