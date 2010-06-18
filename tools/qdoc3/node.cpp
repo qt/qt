@@ -101,6 +101,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
+    uuid = QUuid::createUuid();
 }
 
 /*!
@@ -199,6 +200,11 @@ Node::Status Node::inheritedStatus() const
 }
 
 /*!
+  Returns the thread safeness value for whatever this node
+  represents. But if this node has a parent and the thread
+  safeness value of the parent is the same as the thread
+  safeness value of this node, what is returned is the
+  value \c{UnspecifiedSafeness}. Why?
  */
 Node::ThreadSafeness Node::threadSafeness() const
 {
@@ -208,6 +214,9 @@ Node::ThreadSafeness Node::threadSafeness() const
 }
 
 /*!
+  If this node has a parent, the parent's thread safeness
+  value is returned. Otherwise, this node's thread safeness
+  value is returned. Why?
  */
 Node::ThreadSafeness Node::inheritedThreadSafeness() const
 {
@@ -217,6 +226,9 @@ Node::ThreadSafeness Node::inheritedThreadSafeness() const
 }
 
 /*!
+  Returns the sanitized file name without the path.
+  If the the file is an html file, the html suffix
+  is removed. Why?
  */
 QString Node::fileBase() const
 {
@@ -229,11 +241,32 @@ QString Node::fileBase() const
     return base.toLower();
 }
 
+/*! \fnQUuid Node::guid() const
+  Returns this node's Universally Unique IDentifier.
+  If its UUID has not yet been created, it is created
+  first.
+ */
+
+/*!
+  Composes a string to be used as an href attribute in DITA
+  XML. It is composed of the file name and the UUID separated
+  by a '#'
+ */
+QString Node::ditaXmlHref()
+{
+    QString href = fileBase();
+    if (!href.endsWith(".xml"))
+        href += ".xml";
+    return href + "#" + guid();
+}
+
 /*!
   \class InnerNode
  */
 
 /*!
+  The inner node destructor deletes the children and removes
+  this node from its related nodes.
  */
 InnerNode::~InnerNode()
 {
@@ -577,6 +610,7 @@ InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
 }
 
 /*!
+  Appends an \a include file to the list of include files.
  */
 void InnerNode::addInclude(const QString& include)
 {
@@ -584,6 +618,7 @@ void InnerNode::addInclude(const QString& include)
 }
 
 /*!
+  Sets the list of include files to \a includes.
  */
 void InnerNode::setIncludes(const QStringList& includes)
 {
