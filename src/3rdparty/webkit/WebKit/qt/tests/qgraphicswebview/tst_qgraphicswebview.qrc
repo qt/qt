@@ -1,7 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file>data/index.html</file>
-    <file>data/frame_a.html</file>
     <file>resources/input_types.html</file>
 </qresource>
 </RCC>
