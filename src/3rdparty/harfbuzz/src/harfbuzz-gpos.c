@@ -631,18 +631,20 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
 
     if ( new_offset )
     {
+      if ( ALLOC_ARRAY( an->af.af3.DeviceTables, 2, HB_Device ) )
+        return error;
+
+      an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] = 0;
+      an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] = 0;
+
       new_offset += base_offset;
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &an->af.af3.XDeviceTable,
+	   ( error = _HB_OPEN_Load_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE],
 				  stream ) ) != HB_Err_Ok )
 	return error;
       (void)FILE_Seek( cur_offset );
-    }
-    else
-    {
-      an->af.af3.XDeviceTable = 0;
     }
 
     if ( ACCESS_Frame( 2L ) )
@@ -654,18 +656,23 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
 
     if ( new_offset )
     {
+      if ( !an->af.af3.DeviceTables )
+      {
+        if ( ALLOC_ARRAY( an->af.af3.DeviceTables, 2, HB_Device ) )
+          return error;
+
+        an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] = 0;
+        an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] = 0;
+      }
+
       new_offset += base_offset;
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &an->af.af3.YDeviceTable,
+	   ( error = _HB_OPEN_Load_Device( &an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE],
 				  stream ) ) != HB_Err_Ok )
 	goto Fail;
       (void)FILE_Seek( cur_offset );
-    }
-    else
-    {
-      an->af.af3.YDeviceTable = 0;
     }
     break;
 
@@ -691,7 +698,9 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
   return HB_Err_Ok;
 
 Fail:
-  _HB_OPEN_Free_Device( &an->af.af3.XDeviceTable );
+  _HB_OPEN_Free_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
+
+  FREE( an->af.af3.DeviceTables );
   return error;
 }
 
@@ -700,8 +709,9 @@ static void  Free_Anchor( HB_Anchor*  an)
 {
   if ( an->PosFormat == 3 )
   {
-    _HB_OPEN_Free_Device( &an->af.af3.YDeviceTable );
-    _HB_OPEN_Free_Device( &an->af.af3.XDeviceTable );
+    _HB_OPEN_Free_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
+    _HB_OPEN_Free_Device( &an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] );
+    FREE( an->af.af3.DeviceTables );
   }
 }
 
@@ -769,9 +779,12 @@ static HB_Error  Get_Anchor( GPOS_Instance*   gpi,
   case 3:
     if ( !gpi->dvi )
     {
-      _HB_OPEN_Get_Device( &an->af.af3.XDeviceTable, x_ppem, &pixel_value );
+      if ( ALLOC_ARRAY( an->af.af3.DeviceTables, 2, HB_Device ) )
+        return error;
+
+      _HB_OPEN_Get_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE], x_ppem, &pixel_value );
       *x_value = pixel_value << 6;
-      _HB_OPEN_Get_Device( &an->af.af3.YDeviceTable, y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( &an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE], y_ppem, &pixel_value );
       *y_value = pixel_value << 6;
     }
     else
