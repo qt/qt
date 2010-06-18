@@ -648,7 +648,7 @@ void QGraphicsLayoutItem::setMaximumHeight(qreal height)
     is equivalent to the item's position in parent coordinates).
 
     You must reimplement this function in a subclass of QGraphicsLayoutItem to
-    receive geometry updates. The layout will call this function when it does a 
+    receive geometry updates. The layout will call this function when it does a
     rearrangement.
 
     If \a rect is outside of the bounds of minimumSize and maximumSize, it

@@ -456,11 +456,9 @@ static void* qt_load_library_runtime(const char *library, int vernum,
     Q_FOREACH(int version, versions) {
         QLatin1String libName(library);
         QLibrary xfixesLib(libName, version);
-        if (xfixesLib.load()) {
-            void *ptr = xfixesLib.resolve(symbol);
-            if (ptr)
-                return ptr;
-        }
+        void *ptr = xfixesLib.resolve(symbol);
+        if (ptr)
+            return ptr;
     }
     return 0;
 }
@@ -2557,22 +2555,20 @@ void qt_init(QApplicationPrivate *priv, int,
 
 #if !defined (Q_OS_IRIX) && !defined (QT_NO_TABLET)
     QLibrary wacom(QString::fromLatin1("wacomcfg"), 0); // version 0 is the latest release at time of writing this.
-    if (wacom.load()) {
-        // NOTE: C casts instead of reinterpret_cast for GCC 3.3.x
-        ptrWacomConfigInit = (PtrWacomConfigInit)wacom.resolve("WacomConfigInit");
-        ptrWacomConfigOpenDevice = (PtrWacomConfigOpenDevice)wacom.resolve("WacomConfigOpenDevice");
-        ptrWacomConfigGetRawParam  = (PtrWacomConfigGetRawParam)wacom.resolve("WacomConfigGetRawParam");
-        ptrWacomConfigCloseDevice = (PtrWacomConfigCloseDevice)wacom.resolve("WacomConfigCloseDevice");
-        ptrWacomConfigTerm = (PtrWacomConfigTerm)wacom.resolve("WacomConfigTerm");
+    // NOTE: C casts instead of reinterpret_cast for GCC 3.3.x
+    ptrWacomConfigInit = (PtrWacomConfigInit)wacom.resolve("WacomConfigInit");
+    ptrWacomConfigOpenDevice = (PtrWacomConfigOpenDevice)wacom.resolve("WacomConfigOpenDevice");
+    ptrWacomConfigGetRawParam  = (PtrWacomConfigGetRawParam)wacom.resolve("WacomConfigGetRawParam");
+    ptrWacomConfigCloseDevice = (PtrWacomConfigCloseDevice)wacom.resolve("WacomConfigCloseDevice");
+    ptrWacomConfigTerm = (PtrWacomConfigTerm)wacom.resolve("WacomConfigTerm");
 
-        if (ptrWacomConfigInit == 0 || ptrWacomConfigOpenDevice == 0 || ptrWacomConfigGetRawParam == 0
-                || ptrWacomConfigCloseDevice == 0 || ptrWacomConfigTerm == 0) { // either we have all, or we have none.
+    if (ptrWacomConfigInit == 0 || ptrWacomConfigOpenDevice == 0 || ptrWacomConfigGetRawParam == 0
+        || ptrWacomConfigCloseDevice == 0 || ptrWacomConfigTerm == 0) { // either we have all, or we have none.
             ptrWacomConfigInit = 0;
             ptrWacomConfigOpenDevice = 0;
             ptrWacomConfigGetRawParam  = 0;
             ptrWacomConfigCloseDevice = 0;
             ptrWacomConfigTerm = 0;
-        }
     }
 #endif
 }

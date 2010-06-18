@@ -52,6 +52,8 @@
 #include "qtextformat_p.h"
 #include "qstyleoption.h"
 #include "qpainterpath.h"
+#include "qglyphs.h"
+#include "qglyphs_p.h"
 #include <limits.h>
 
 #include <qdebug.h>
@@ -894,6 +896,7 @@ qreal QTextLayout::maximumWidth() const
     return d->maxWidth.toReal();
 }
 
+
 /*!
   \internal
 */
@@ -1104,6 +1107,24 @@ static void addSelectedRegionsToPath(QTextEngine *eng, int lineNumber, const QPo
 static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
 {
     return clip.isValid() ? (rect & clip) : rect;
+}
+
+
+/*!
+    Returns the glyph indexes and positions for all glyphs in this QTextLayout. This is an
+    expensive function, and should not be called in a time sensitive context.
+
+    \since 4.8
+
+    \sa draw(), QPainter::drawGlyphs()
+*/
+QList<QGlyphs> QTextLayout::glyphs() const
+{
+    QList<QGlyphs> glyphs;
+    for (int i=0; i<d->lines.size(); ++i)
+        glyphs += QTextLine(i, d).glyphs();
+
+    return glyphs;
 }
 
 /*!
@@ -2133,6 +2154,121 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
         p->setPen(QPen(c, 0));
     }
 
+}
+
+namespace {
+    struct GlyphInfo
+    {
+        GlyphInfo(const QGlyphLayout &layout, const QPointF &position)
+            : glyphLayout(layout), itemPosition(position)
+        {
+        }
+
+        QGlyphLayout glyphLayout;
+        QPointF itemPosition;
+    };
+}
+
+/*!
+    \internal
+
+    Returns the glyph indexes and positions for all glyphs in this QTextLine.
+
+    \since 4.8
+
+    \sa QTextLayout::glyphs()
+*/
+QList<QGlyphs> QTextLine::glyphs() const
+{
+    const QScriptLine &line = eng->lines[i];
+
+    if (line.length == 0)
+        return QList<QGlyphs>();
+
+    QHash<QFontEngine *, GlyphInfo> glyphLayoutHash;
+
+    QTextLineItemIterator iterator(eng, i);
+    qreal y = line.y.toReal() + line.base().toReal();
+    while (!iterator.atEnd()) {
+        QScriptItem &si = iterator.next();
+        QPointF pos(iterator.x.toReal(), y);
+
+        QFont font = eng->font(si);
+        QGlyphLayout glyphLayout = eng->shapedGlyphs(&si).mid(iterator.glyphsStart,
+                                                              iterator.glyphsEnd - iterator.glyphsStart);
+
+        if (glyphLayout.numGlyphs > 0) {
+            QFontEngine *mainFontEngine = font.d->engineForScript(si.analysis.script);
+            if (mainFontEngine->type() == QFontEngine::Multi) {
+                QFontEngineMulti *multiFontEngine = static_cast<QFontEngineMulti *>(mainFontEngine);
+                int start = 0;
+                int end;
+                int which = glyphLayout.glyphs[0] >> 24;
+                for (end = 0; end < glyphLayout.numGlyphs; ++end) {
+                    const int e = glyphLayout.glyphs[end] >> 24;
+                    if (e == which)
+                        continue;
+
+                    QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
+                    glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
+                                                GlyphInfo(subLayout, pos));
+
+                    start = end;
+                    which = e;
+                }
+
+                QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
+                glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
+                                            GlyphInfo(subLayout, pos));
+
+            } else {
+                glyphLayoutHash.insertMulti(mainFontEngine,
+                                            GlyphInfo(glyphLayout, pos));
+            }
+        }
+    }
+
+    QHash<QFontEngine *, QGlyphs> glyphsHash;
+
+    QList<QFontEngine *> keys = glyphLayoutHash.uniqueKeys();
+    for (int i=0; i<keys.size(); ++i) {
+        QFontEngine *fontEngine = keys.at(i);
+
+        // Make a font for this particular engine
+        QFont font = fontEngine->createExplicitFont();
+
+        QList<GlyphInfo> glyphLayouts = glyphLayoutHash.values(fontEngine);
+        for (int j=0; j<glyphLayouts.size(); ++j) {
+            const QPointF &pos = glyphLayouts.at(j).itemPosition;
+            const QGlyphLayout &glyphLayout = glyphLayouts.at(j).glyphLayout;
+
+            QVarLengthArray<glyph_t> glyphsArray;
+            QVarLengthArray<QFixedPoint> positionsArray;
+
+            fontEngine->getGlyphPositions(glyphLayout, QTransform(), 0, glyphsArray, positionsArray);
+            Q_ASSERT(glyphsArray.size() == positionsArray.size());
+
+            QVector<quint32> glyphs;
+            QVector<QPointF> positions;
+            for (int i=0; i<glyphsArray.size(); ++i) {
+                glyphs.append(glyphsArray.at(i) & 0xffffff);
+                positions.append(positionsArray.at(i).toPointF() + pos);
+            }
+
+            QGlyphs glyphIndexes;
+            glyphIndexes.setGlyphIndexes(glyphs);
+            glyphIndexes.setPositions(positions);
+
+            if (!glyphsHash.contains(fontEngine))
+                glyphsHash.insert(fontEngine, QGlyphs());
+
+            QGlyphs &target = glyphsHash[fontEngine];
+            target += glyphIndexes;
+            target.setFont(font);
+        }
+    }
+
+    return glyphsHash.values();
 }
 
 /*!

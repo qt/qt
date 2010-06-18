@@ -7625,9 +7625,9 @@ int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObjec
 QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGraphicsObject> *list, int index)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    if (index >= 0 && index < d->children.count()) 
+    if (index >= 0 && index < d->children.count())
         return d->children.at(index)->toGraphicsObject();
-    else 
+    else
         return 0;
 }
 

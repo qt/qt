@@ -761,7 +761,7 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
 
     QGraphicsWidget *firstOld = 0;
     bool wasPreviousNew = true;
-    
+
     while (w != q) {
         bool isCurrentNew = q->isAncestorOf(w);
         if (isCurrentNew) {
